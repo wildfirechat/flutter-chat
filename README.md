@@ -5,7 +5,7 @@
 进入到项目工程目录下，依次执行下述命令：
 1. ``` flutter packages get```
 2. ``` cd example/ios/ && pod install ```(仅iOS平台需要)
-3. ``` cd ../ && flutter run ```
+3. ``` flutter run ```
 
 ## 集成到flutter应用
 1. 在项目的```pubspec.yaml```文件依赖配置中，添加如下内容。其中 ```${path_to_flutter_imclient}``` 为 ```Flutter_IMClient``` 项目目录。
