@@ -66,7 +66,7 @@ FlutterImclient.init(...);
 ```
 
 ### 连接
-连接需要```IM Token```，必须在客户服务进行获取```token```，获取```token```时必须使用从SDK内获取到的```clientId```，否则会连接不上。
+连接需要```IM Token```，必须在应用服务进行获取```token```，获取```token```时必须使用从SDK内获取到的```clientId```，否则会连接不上。
 ```
 var clientId = await FlutterImclient.clientId;
 // 调用应用服务去IM服务获取token，需要使用从SDK内获取的clientId。得到token后调用connect函数。
