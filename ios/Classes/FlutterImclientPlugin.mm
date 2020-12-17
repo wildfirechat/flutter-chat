@@ -1169,6 +1169,13 @@ public:
 @property(nonatomic, assign)BOOL deviceTokenUploaded;
 @property(nonatomic, assign)BOOL voipDeviceTokenUploaded;
 
+
+@property(nonatomic, assign)UIBackgroundTaskIdentifier bgTaskId;
+@property(nonatomic, strong)NSTimer *forceConnectTimer;
+@property(nonatomic, strong)NSTimer *suspendTimer;
+@property(nonatomic, strong)NSTimer *endBgTaskTimer;
+@property(nonatomic, assign)NSUInteger backgroudRunTime;
+
 @property(nonatomic, strong)FlutterMethodChannel* channel;
 @end
 
@@ -2586,6 +2593,19 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
         mars::stn::setRefreshSettingCallback(new GSCB(self));
         
         mars::baseevent::OnCreate();
+        
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(onAppSuspend)
+                                                     name:UIApplicationDidEnterBackgroundNotification
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(onAppResume)
+                                                     name:UIApplicationWillEnterForegroundNotification
+                                                   object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(onAppTerminate)
+                                                     name:UIApplicationWillTerminateNotification
+                                                   object:nil];
     }
 }
 - (void)connect:(NSString *)host userId:(NSString *)userId token:(NSString *)token result:(FlutterResult)result {
@@ -2612,11 +2632,135 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
         return;
     }
     [[WFCCNetworkStatus sharedInstance] Start:self];
+    mars::baseevent::OnForeground(true);
     self.connectionStatus = kConnectionStatusConnecting;
     
     bool newDB = mars::stn::Connect([host UTF8String]);
     result(@(newDB));
 }
+
+- (void)startBackgroundTask {
+    if (!_logined) {
+        return;
+    }
+    
+    if (_bgTaskId !=  UIBackgroundTaskInvalid) {
+        [[UIApplication sharedApplication] endBackgroundTask:_bgTaskId];
+    }
+    __weak typeof(self) ws = self;
+    _bgTaskId = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        if (ws.suspendTimer) {
+            [ws.suspendTimer invalidate];
+            ws.suspendTimer = nil;
+        }
+        
+        if(ws.endBgTaskTimer) {
+            [ws.endBgTaskTimer invalidate];
+            ws.endBgTaskTimer = nil;
+        }
+        if(ws.forceConnectTimer) {
+            [ws.forceConnectTimer invalidate];
+            ws.forceConnectTimer = nil;
+        }
+        
+        ws.bgTaskId = UIBackgroundTaskInvalid;
+    }];
+}
+
+- (void)onAppSuspend {
+    if (!_logined) {
+        return;
+    }
+    
+    mars::baseevent::OnForeground(false);
+    
+    self.backgroudRunTime = 0;
+    [self startBackgroundTask];
+    
+    [self checkBackGroundTask];
+}
+
+- (void)checkBackGroundTask {
+    if(_suspendTimer) {
+        [_suspendTimer invalidate];
+    }
+    if(_endBgTaskTimer) {
+        [_endBgTaskTimer invalidate];
+        _endBgTaskTimer = nil;
+    }
+    
+    NSTimeInterval timeInterval = 3;
+    
+    _suspendTimer = [NSTimer scheduledTimerWithTimeInterval:timeInterval
+                                                     target:self
+                                                   selector:@selector(suspend)
+                                                   userInfo:nil
+                                                    repeats:NO];
+
+}
+- (void)suspend {
+  if(_bgTaskId != UIBackgroundTaskInvalid) {
+      self.backgroudRunTime += 3;
+      BOOL inCall = NO;
+      Class cls = NSClassFromString(@"WFAVEngineKit");
+      
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
+      if (cls && [cls respondsToSelector:@selector(isCallActive)] && [cls performSelector:@selector(isCallActive)]) {
+          inCall = YES;
+      }
+#pragma clang diagnostic pop
+      
+      if ((mars::stn::GetTaskCount() > 0 && self.backgroudRunTime < 60) || (inCall && self.backgroudRunTime < 1800)) {
+          [self checkBackGroundTask];
+      } else {
+          mars::stn::ClearTasks();
+          _endBgTaskTimer = [NSTimer scheduledTimerWithTimeInterval:1
+                                                       target:self
+                                                     selector:@selector(endBgTask)
+                                                     userInfo:nil
+                                                      repeats:NO];
+      }
+  }
+}
+- (void)endBgTask {
+  if(_bgTaskId !=  UIBackgroundTaskInvalid) {
+    [[UIApplication sharedApplication] endBackgroundTask:_bgTaskId];
+    _bgTaskId =  UIBackgroundTaskInvalid;
+  }
+  
+  if (_suspendTimer) {
+    [_suspendTimer invalidate];
+    _suspendTimer = nil;
+  }
+  
+  if(_endBgTaskTimer) {
+    [_endBgTaskTimer invalidate];
+    _endBgTaskTimer = nil;
+  }
+    
+    if (_forceConnectTimer) {
+        [_forceConnectTimer invalidate];
+        _forceConnectTimer = nil;
+    }
+    
+    self.backgroudRunTime = 0;
+}
+
+- (void)onAppResume {
+  if (!_logined) {
+    return;
+  }
+    
+  mars::baseevent::OnForeground(true);
+  mars::stn::MakesureLonglinkConnected();
+  [self endBgTask];
+}
+
+- (void)onAppTerminate {
+    mars::stn::AppWillTerminate();
+}
+
 
 - (void)disconnect:(BOOL)disablePush clearSession:(BOOL)clearSession {
     if(!_logined) {
