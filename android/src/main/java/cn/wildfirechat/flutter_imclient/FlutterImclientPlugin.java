@@ -14,6 +14,10 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleObserver;
+import androidx.lifecycle.OnLifecycleEvent;
+import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.tencent.mars.BaseEvent;
 import com.tencent.mars.Mars;
@@ -127,6 +131,18 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
           deviceTokenSetted = true;
           ProtoLogic.setDeviceToken(gContext.getPackageName(), pushToken, pushType);
         }
+      }
+    });
+
+    ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifecycleObserver() {
+      @OnLifecycleEvent(Lifecycle.Event.ON_START)
+      public void onForeground() {
+        BaseEvent.onForeground(true);
+      }
+
+      @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
+      public void onBackground() {
+        BaseEvent.onForeground(false);
       }
     });
   }
