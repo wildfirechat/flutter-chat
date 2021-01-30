@@ -2025,7 +2025,7 @@ class FlutterImclient {
       "groupName": groupName,
       "groupPortrait": groupPortrait,
       "type": type,
-      "members": members,
+      "groupMembers": members,
       "notifyLines": notifyLines,
       "notifyContent": _convertMessageContent(notifyContent)
     });

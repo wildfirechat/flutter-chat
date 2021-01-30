@@ -739,7 +739,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       String groupId = call.argument("groupId");
       String groupName = call.argument("groupName");
       String groupPortrait = call.argument("groupPortrait");
-      int groupType = call.argument("groupType");
+      int groupType = call.argument("type");
       List<String> groupMembers = call.argument("groupMembers");
       List<Integer> notifyLines = call.argument("notifyLines");
       Map notifyContent = call.argument("notifyContent");
@@ -1711,6 +1711,9 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
 
   private ProtoMessageContent convertMessageContent(Map<String, Object> map) {
     ProtoMessageContent protoData = new ProtoMessageContent();
+    if(map == null || map.isEmpty() || !map.containsKey("type")) {
+      return null;
+    }
 
     protoData.setType((int)map.get("type"));
     protoData.setSearchableContent((String)map.get("searchableContent"));
