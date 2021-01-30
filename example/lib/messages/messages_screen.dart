@@ -50,6 +50,7 @@ class _State extends State<MessagesScreen> {
 
   @override
   void dispose() {
+    super.dispose();
     _receiveMessageSubscription?.cancel();
   }
 
