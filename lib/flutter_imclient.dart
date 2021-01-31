@@ -5,14 +5,14 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_imclient/message/card_message_content.dart';
 import 'package:flutter_imclient/message/composite_message_content.dart';
-import 'package:flutter_imclient/message/notification/delete_message_content.dart';
 import 'package:flutter_imclient/message/file_message_content.dart';
-import 'package:flutter_imclient/message/notification/friend_added_message_content.dart';
 import 'package:flutter_imclient/message/image_message_content.dart';
 import 'package:flutter_imclient/message/link_message_content.dart';
 import 'package:flutter_imclient/message/location_message_content.dart';
 import 'package:flutter_imclient/message/message.dart';
 import 'package:flutter_imclient/message/message_content.dart';
+import 'package:flutter_imclient/message/notification/delete_message_content.dart';
+import 'package:flutter_imclient/message/notification/friend_added_message_content.dart';
 import 'package:flutter_imclient/message/notification/friend_greeting_message_content.dart';
 import 'package:flutter_imclient/message/notification/group/add_group_member_notification_content.dart';
 import 'package:flutter_imclient/message/notification/group/change_group_name_notification_content.dart';
@@ -130,16 +130,13 @@ const int kConnectionStatusConnected = 1;
 /// 同步中。同步成功后会转入到连接成功状态。
 const int kConnectionStatusReceiving = 2;
 
-
 class ConnectionStatusChangedEvent {
   int connectionStatus;
 
   ConnectionStatusChangedEvent(this.connectionStatus);
 }
 
-class UserSettingUpdatedEvent {
-
-}
+class UserSettingUpdatedEvent {}
 
 class ReceiveMessagesEvent {
   List<Message> messages;
@@ -222,9 +219,7 @@ class ClearConversationsUnreadEvent {
   ClearConversationsUnreadEvent(this.types, this.lines);
 }
 
-class ClearFriendRequestUnreadEvent {
-
-}
+class ClearFriendRequestUnreadEvent {}
 
 class FlutterImclient {
   static const MethodChannel _channel = const MethodChannel('flutter_imclient');
@@ -725,12 +720,13 @@ class FlutterImclient {
     return msg;
   }
 
-  static Future<List<Message>> _convertProtoMessages(List<dynamic> datas) async {
+  static Future<List<Message>> _convertProtoMessages(
+      List<dynamic> datas) async {
     if (datas.isEmpty) {
       return new List();
     }
     List<Message> messages = new List();
-    for(int i = 0; i < datas.length; ++i) {
+    for (int i = 0; i < datas.length; ++i) {
       var element = datas[i];
       Message msg = await _convertProtoMessage(element);
       messages.add(msg);
@@ -757,7 +753,7 @@ class FlutterImclient {
       return new List();
     }
     List<ConversationInfo> infos = new List();
-    for(int i = 0; i < maps.length; ++i) {
+    for (int i = 0; i < maps.length; ++i) {
       var element = maps[i];
       infos.add(await _convertProtoConversationInfo(element));
     }
@@ -765,12 +761,13 @@ class FlutterImclient {
     return infos;
   }
 
-  static Future<ConversationInfo> _convertProtoConversationInfo (
-      Map<dynamic, dynamic> map)  async {
+  static Future<ConversationInfo> _convertProtoConversationInfo(
+      Map<dynamic, dynamic> map) async {
     ConversationInfo conversationInfo = new ConversationInfo();
     conversationInfo.conversation =
         _convertProtoConversation(map['conversation']);
-    conversationInfo.lastMessage = await _convertProtoMessage(map['lastMessage']);
+    conversationInfo.lastMessage =
+        await _convertProtoMessage(map['lastMessage']);
     conversationInfo.draft = map['draft'];
     if (map['timestamp'] != null) conversationInfo.timestamp = map['timestamp'];
     if (map['isTop'] != null) conversationInfo.isTop = map['isTop'];
@@ -780,14 +777,14 @@ class FlutterImclient {
     return conversationInfo;
   }
 
-  static Future<List<ConversationSearchInfo>> _convertProtoConversationSearchInfos(
-      List<dynamic> maps) async {
+  static Future<List<ConversationSearchInfo>>
+      _convertProtoConversationSearchInfos(List<dynamic> maps) async {
     if (maps.isEmpty) {
       return new List();
     }
 
     List<ConversationSearchInfo> infos = new List();
-    for(int i = 0; i < maps.length; i++) {
+    for (int i = 0; i < maps.length; i++) {
       var element = maps[i];
       infos.add(await _convertProtoConversationSearchInfo(element));
     }
@@ -902,7 +899,8 @@ class FlutterImclient {
     return map;
   }
 
-  static Future<Map<String, dynamic>> _convertMessageContent(MessageContent content) async {
+  static Future<Map<String, dynamic>> _convertMessageContent(
+      MessageContent content) async {
     Map<String, dynamic> map = new Map();
     MessagePayload payload = await content.encode();
     map['type'] = payload.contentType;
@@ -985,7 +983,7 @@ class FlutterImclient {
   }
 
   static UserInfo _convertProtoUserInfo(Map<dynamic, dynamic> map) {
-    if(map == null) {
+    if (map == null) {
       return null;
     }
     UserInfo userInfo = new UserInfo();
@@ -1171,7 +1169,8 @@ class FlutterImclient {
   ///断开IM服务连接。
   /// * disablePush 是否继续接受推送。
   /// * clearSession 是否清除session
-  static void disconnect({bool disablePush = false, bool clearSession = false}) async {
+  static void disconnect(
+      {bool disablePush = false, bool clearSession = false}) async {
     Map<String, dynamic> args = <String, dynamic>{};
     args.putIfAbsent('disablePush', () => disablePush);
     args.putIfAbsent('clearSession', () => clearSession);
@@ -1328,7 +1327,7 @@ class FlutterImclient {
       Conversation conversation) async {
     bool ret = await _channel.invokeMethod('clearConversationUnreadStatus',
         {'conversation': _convertConversation(conversation)});
-    if(ret) {
+    if (ret) {
       _eventBus.fire(ClearConversationUnreadEvent(conversation));
     }
     return ret;
@@ -1347,7 +1346,7 @@ class FlutterImclient {
 
     bool ret = await _channel.invokeMethod(
         'clearConversationsUnreadStatus', {'types': itypes, 'lines': lines});
-    if(ret) {
+    if (ret) {
       _eventBus.fire(ClearConversationsUnreadEvent(types, lines));
     }
     return ret;
@@ -1385,7 +1384,7 @@ class FlutterImclient {
       {List<int> contentTypes, String withUser}) async {
     Map<String, dynamic> args = {
       "conversation": _convertConversation(conversation),
-      "fromIndex": fromIndex,
+      "fromIndex": fromIndex.toString(),
       "count": count
     };
     if (contentTypes != null) {
@@ -1405,7 +1404,7 @@ class FlutterImclient {
       {String withUser}) async {
     Map<String, dynamic> args = {
       "conversation": _convertConversation(conversation),
-      "fromIndex": fromIndex,
+      "fromIndex": fromIndex.toString(),
       "count": count,
       "messageStatus": _convertMessageStatusList(messageStatus)
     };
@@ -1434,7 +1433,7 @@ class FlutterImclient {
     Map<String, dynamic> args = {
       "types": itypes,
       "lines": lines,
-      "fromIndex": fromIndex,
+      "fromIndex": fromIndex.toString(),
       "count": count
     };
     if (contentTypes != null) {
@@ -1468,7 +1467,7 @@ class FlutterImclient {
     Map<String, dynamic> args = {
       "types": itypes,
       "lines": lines,
-      "fromIndex": fromIndex,
+      "fromIndex": fromIndex.toString(),
       "count": count,
       "messageStatus": _convertMessageStatusList(messageStatus)
     };
@@ -1497,22 +1496,22 @@ class FlutterImclient {
     await _channel.invokeMethod("getRemoteMessages", {
       "requestId": requestId,
       "conversation": _convertConversation(conversation),
-      "beforeMessageUid": beforeMessageUid,
+      "beforeMessageUid": beforeMessageUid.toString(),
       "count": count
     });
   }
 
   ///根据消息Id获取消息
   static Future<Message> getMessage(int messageId) async {
-    Map<dynamic, dynamic> datas =
-        await _channel.invokeMethod("getMessage", {"messageId": messageId});
+    Map<dynamic, dynamic> datas = await _channel
+        .invokeMethod("getMessage", {"messageId": messageId.toString()});
     return _convertProtoMessage(datas);
   }
 
   ///根据消息Uid获取消息
   static Future<Message> getMessageByUid(int messageUid) async {
     Map<dynamic, dynamic> datas = await _channel
-        .invokeMethod("getMessageByUid", {"messageUid": messageUid});
+        .invokeMethod("getMessageByUid", {"messageUid": messageUid.toString()});
     return _convertProtoMessage(datas);
   }
 
@@ -1550,7 +1549,7 @@ class FlutterImclient {
       "types": itypes,
       "lines": lines,
       "keyword": keyword,
-      "fromIndex": fromIndex,
+      "fromIndex": fromIndex.toString(),
       "count": count
     };
     if (contentTypes != null) {
@@ -1622,7 +1621,7 @@ class FlutterImclient {
 
     return await _channel.invokeMethod("sendSavedMessage", {
       "requestId": requestId,
-      "messageId": messageId,
+      "messageId": messageId.toString(),
       "expireDuration": expireDuration
     });
   }
@@ -1636,8 +1635,8 @@ class FlutterImclient {
     if (successCallback != null)
       _operationSuccessCallbackMap[requestId] = successCallback;
     if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await _channel.invokeMethod(
-        'recallMessage', {"requestId": requestId, "messageUid": messageUid});
+    await _channel.invokeMethod('recallMessage',
+        {"requestId": requestId, "messageUid": messageUid.toString()});
   }
 
   ///上传媒体数据
@@ -1665,20 +1664,22 @@ class FlutterImclient {
   ///删除消息
   static Future<bool> deleteMessage(int messageId) async {
     return await _channel
-        .invokeMethod("deleteMessage", {"messageId": messageId});
+        .invokeMethod("deleteMessage", {"messageId": messageId.toString()});
   }
 
   ///清空会话内消息
   static Future<bool> clearMessages(Conversation conversation,
       {int before = 0}) async {
-    return await _channel.invokeMethod("clearMessages",
-        {"conversation": _convertConversation(conversation), "before": before});
+    return await _channel.invokeMethod("clearMessages", {
+      "conversation": _convertConversation(conversation),
+      "before": before.toString()
+    });
   }
 
   ///设置消息已经播放
   static Future<void> setMediaMessagePlayed(int messageId) async {
-    await _channel
-        .invokeMethod("setMediaMessagePlayed", {"messageId": messageId});
+    await _channel.invokeMethod(
+        "setMediaMessagePlayed", {"messageId": messageId.toString()});
   }
 
   ///插入消息
@@ -1688,7 +1689,7 @@ class FlutterImclient {
       "conversation": _convertConversation(conversation),
       "content": _convertMessageContent(content),
       "status": status,
-      "serverTime": serverTime
+      "serverTime": serverTime.toString()
     });
     return _convertProtoMessage(datas);
   }
@@ -1696,15 +1697,17 @@ class FlutterImclient {
   ///更新消息内容
   static Future<void> updateMessage(
       int messageId, MessageContent content) async {
-    await _channel.invokeMethod("updateMessage",
-        {"messageId": messageId, "content": _convertMessageContent(content)});
+    await _channel.invokeMethod("updateMessage", {
+      "messageId": messageId.toString(),
+      "content": _convertMessageContent(content)
+    });
   }
 
   ///更新消息状态
   static Future<void> updateMessageStatus(
       int messageId, MessageStatus status) async {
     await _channel.invokeMethod("updateMessageStatus",
-        {"messageId": messageId, "status": status.index});
+        {"messageId": messageId.toString(), "status": status.index});
   }
 
   ///获取会话内消息数量
@@ -1835,7 +1838,7 @@ class FlutterImclient {
   ///清除未读好友请求计数
   static Future<bool> clearUnreadFriendRequestStatus() async {
     bool ret = await _channel.invokeMethod("clearUnreadFriendRequestStatus");
-    if(ret) {
+    if (ret) {
       _eventBus.fire(ClearFriendRequestUnreadEvent());
     }
     return ret;
@@ -2495,14 +2498,18 @@ class FlutterImclient {
   ///获取聊天室信息
   static Future<void> getChatroomInfo(
       String chatroomId,
+      int updateDt,
       OperationSuccessChatroomInfoCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
     if (successCallback != null)
       _operationSuccessCallbackMap[requestId] = successCallback;
     if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await _channel.invokeMethod(
-        "getChatroomInfo", {"requestId": requestId, "chatroomId": chatroomId});
+    await _channel.invokeMethod("getChatroomInfo", {
+      "requestId": requestId,
+      "chatroomId": chatroomId,
+      "updateDt": updateDt.toString()
+    });
   }
 
   ///获取聊天室成员信息
@@ -2678,7 +2685,7 @@ class FlutterImclient {
       "requestId": requestId,
       "conversation": _convertConversation(conversation),
       "fromUser": fromUser,
-      "beforeMessageUid": beforeMessageUid,
+      "beforeMessageUid": beforeMessageUid.toString(),
       "count": count
     });
   }
@@ -2695,7 +2702,7 @@ class FlutterImclient {
     if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
     await _channel.invokeMethod("getMyFiles", {
       "requestId": requestId,
-      "beforeMessageUid": beforeMessageUid,
+      "beforeMessageUid": beforeMessageUid.toString(),
       "count": count
     });
   }
@@ -2710,8 +2717,8 @@ class FlutterImclient {
     if (successCallback != null)
       _operationSuccessCallbackMap[requestId] = successCallback;
     if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await _channel.invokeMethod(
-        "deleteFileRecord", {"requestId": requestId, "messageUid": messageUid});
+    await _channel.invokeMethod("deleteFileRecord",
+        {"requestId": requestId, "messageUid": messageUid.toString()});
   }
 
   ///搜索文件记录
@@ -2730,7 +2737,7 @@ class FlutterImclient {
     await _channel.invokeMethod("searchFiles", {
       "requestId": requestId,
       "keyword": keyword,
-      "beforeMessageUid": beforeMessageUid,
+      "beforeMessageUid": beforeMessageUid.toString(),
       "count": count,
       "conversation": _convertConversation(conversation),
       "fromUser": fromUser
@@ -2751,7 +2758,7 @@ class FlutterImclient {
     await _channel.invokeMethod("searchMyFiles", {
       "requestId": requestId,
       "keyword": keyword,
-      "beforeMessageUid": beforeMessageUid,
+      "beforeMessageUid": beforeMessageUid.toString(),
       "count": count
     });
   }
@@ -2770,7 +2777,7 @@ class FlutterImclient {
     await _channel.invokeMethod("getAuthorizedMediaUrl", {
       "requestId": requestId,
       "mediaPath": mediaPath,
-      "messageUid": messageUid,
+      "messageUid": messageUid.toString(),
       "mediaType": mediaType
     });
   }
