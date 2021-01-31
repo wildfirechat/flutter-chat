@@ -2022,16 +2022,28 @@ class FlutterImclient {
     if (successCallback != null)
       _operationSuccessCallbackMap[requestId] = successCallback;
     if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await _channel.invokeMethod("createGroup", {
-      "requestId": requestId,
-      "groupId": groupId,
-      "groupName": groupName,
-      "groupPortrait": groupPortrait,
-      "type": type,
-      "groupMembers": members,
-      "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
-    });
+
+    Map<String, dynamic> args = new Map();
+    args['requestId'] = requestId;
+    if (groupId != null) {
+      args['groupId'] = groupId;
+    }
+    if (groupName != null) {
+      args['groupName'] = groupName;
+    }
+    if (groupPortrait != null) {
+      args['groupPortrait'] = groupPortrait;
+    }
+    args['type'] = type;
+    args['groupMembers'] = members;
+    if (notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    await _channel.invokeMethod("createGroup", args);
   }
 
   ///添加群成员

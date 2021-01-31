@@ -1839,8 +1839,12 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       fillMessageContent(tcontent, notifyContent);
       
       std::list<int> lines;
-      for (NSNumber *number in notifyLines) {
-          lines.push_back([number intValue]);
+      if([notifyLines isKindOfClass:NSNull.class] || !notifyLines.count) {
+          lines.push_back(0);
+      } else {
+          for (NSNumber *number in notifyLines) {
+              lines.push_back([number intValue]);
+          }
       }
       mars::stn::createGroup(groupId == nil ? "" : [groupId UTF8String], groupName == nil ? "" : [groupName UTF8String], groupPortrait == nil ? "" : [groupPortrait UTF8String], groupType, memberList, lines, tcontent, new IMCreateGroupCallback(^(NSString *groupId) {
           [self callbackOperationStringSuccess:requestId strValue:groupId];

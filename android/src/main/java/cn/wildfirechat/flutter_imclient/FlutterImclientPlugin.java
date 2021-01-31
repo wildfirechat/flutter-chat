@@ -477,7 +477,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       Map conversation = call.argument("conversation");
       Map content = call.argument("content");
       List<String> toUsers = call.argument("toUsers");
-      int expireDuration = call.argument("expireDuration");
+      int expireDuration = call.argument("expireDuration") == null ? 0 : (Integer) call.argument("expireDuration");
       ProtoMessage msg = new ProtoMessage();
       msg.setConversationType((int)conversation.get("type"));
       msg.setTarget((String)conversation.get("target"));
