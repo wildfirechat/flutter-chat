@@ -1,0 +1,4 @@
+include ':push'
+include ':mars-core-release'
+include ':app'
+
