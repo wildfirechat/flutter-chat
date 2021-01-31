@@ -309,7 +309,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       int type = (int)conversation.get("type");
       String target = (String)conversation.get("target");
       int line = (int)conversation.get("line");
-      long timestamp = call.argument("timestamp");
+      long timestamp = getLongPara(call, "timestamp");
       ProtoLogic.setConversationTimestamp(type, target, line, timestamp);
       result.success(null);
     } else if("getFirstUnreadMessageId".equals(call.method)) {
@@ -357,7 +357,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
 
       List<Integer> contentTypes = call.argument("contentTypes");
       String withUser = call.argument("withUser");
-      long fromIndex = call.argument("fromIndex");
+      long fromIndex = getLongPara(call, "fromIndex");
       int count = call.argument("count");
       boolean isDesc = false;
       if(count < 0) {
@@ -377,7 +377,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
 
       List<Integer> messageStatus = call.argument("messageStatus");
       String withUser = call.argument("withUser");
-      long fromIndex = call.argument("fromIndex");
+      long fromIndex = getLongPara(call, "fromIndex");
       int count = call.argument("count");
       boolean isDesc = false;
       if(count < 0) {
@@ -395,7 +395,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
 
       List<Integer> contentTypes = call.argument("contentTypes");
       String withUser = call.argument("withUser");
-      long fromIndex = call.argument("fromIndex");
+      long fromIndex = getLongPara(call, "fromIndex");
       int count = call.argument("count");
       boolean isDesc = false;
       if(count < 0) {
@@ -410,7 +410,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
 
       List<Integer> messageStatus = call.argument("messageStatus");
       String withUser = call.argument("withUser");
-      long fromIndex = call.argument("fromIndex");
+      long fromIndex = getLongPara(call, "fromIndex");
       int count = call.argument("count");
       boolean isDesc = false;
       if(count < 0) {
@@ -425,7 +425,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       int type = (int)conversation.get("type");
       String target = (String)conversation.get("target");
       int line = (int)conversation.get("line");
-      long beforeMessageUid = call.argument("beforeMessageUid");
+      long beforeMessageUid = getLongPara(call, "beforeMessageUid");
       int count = call.argument("count");
 
       ProtoLogic.getRemoteMessages(type, target, line, beforeMessageUid, count, new ProtoLogic.ILoadRemoteMessagesCallback() {
@@ -443,10 +443,10 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       });
       result.success(null);
     } else if("getMessage".equals(call.method)) {
-      long messageId = call.argument("messageId");
+      long messageId = getLongPara(call, "messageId");
       result.success(convertProtoMessage(ProtoLogic.getMessage(messageId)));
     } else if("getMessageByUid".equals(call.method)) {
-      long messageUid = call.argument("messageUid");
+      long messageUid = getLongPara(call, "messageUid");
       result.success(convertProtoMessage(ProtoLogic.getMessageByUid(messageUid)));
     } else if("searchMessages".equals(call.method)) {
       Map conversation = call.argument("conversation");
@@ -464,7 +464,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       List<Integer> lines = call.argument("lines");
       String keyword = call.argument("keyword");
       List<Integer> contentTypes = call.argument("contentTypes");
-      long fromIndex = call.argument("fromIndex");
+      long fromIndex = getLongPara(call, "fromIndex");
       int count = call.argument("count");
       boolean desc = false;
       if(count < 0) {
@@ -494,26 +494,26 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       result.success(null);
     } else if("sendSavedMessage".equals(call.method)) {
       int requestId = call.argument("requestId");
-      long messageId = call.argument("messageId");
+      long messageId = getLongPara(call, "messageId");
       int expireDuration = call.argument("expireDuration");
       ProtoLogic.sendMessageEx(messageId, expireDuration, new SendMessageCallback(requestId));
       result.success(null);
     } else if("recallMessage".equals(call.method)) {
       int requestId = call.argument("requestId");
-      long messageUid = call.argument("messageUid");
+      long messageUid = getLongPara(call, "messageUid");
       ProtoLogic.recallMessage(messageUid, new GeneralVoidCallback(requestId));
       result.success(null);
     } else if("uploadMedia".equals(call.method)) {
       result.success(null);
     } else if("deleteMessage".equals(call.method)) {
-      long messageId = call.argument("messageId");
+      long messageId = getLongPara(call, "messageId");
       result.success(ProtoLogic.deleteMessage(messageId));
     } else if("clearMessages".equals(call.method)) {
       Map conversation = call.argument("conversation");
       int type = (int)conversation.get("type");
       String target = (String)conversation.get("target");
       int line = (int)conversation.get("line");
-      long before = call.argument("before");
+      long before = getLongPara(call, "before");
 
       boolean ret;
       if(before > 0)
@@ -522,14 +522,14 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
         ret = ProtoLogic.clearMessages(type, target, line);
       result.success(ret);
     } else if("setMediaMessagePlayed".equals(call.method)) {
-      long messageId = call.argument("messageId");
+      long messageId = getLongPara(call, "messageId");
       ProtoLogic.setMediaMessagePlayed(messageId);
       result.success(null);
     } else if("insertMessage".equals(call.method)) {
       Map conversation = call.argument("conversation");
       Map content = call.argument("content");
       int status = call.argument("status");
-      long serverTime = call.argument("serverTime");
+      long serverTime = getLongPara(call, "serverTime");
       ProtoMessage msg = new ProtoMessage();
       msg.setConversationType((int)conversation.get("type"));
       msg.setTarget((String)conversation.get("target"));
@@ -544,7 +544,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
 
       result.success(ProtoLogic.insertMessage(msg));
     } else if("updateMessage".equals(call.method)) {
-      long messageId = call.argument("messageId");
+      long messageId = getLongPara(call, "messageId");
       Map content = call.argument("content");
       ProtoMessage msg = new ProtoMessage();
       msg.setMessageId(messageId);
@@ -552,7 +552,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       ProtoLogic.updateMessageContent(msg);
       result.success(null);
     } else if("updateMessageStatus".equals(call.method)) {
-      long messageId = call.argument("messageId");
+      long messageId = getLongPara(call, "messageId");
       int status = call.argument("status");
       ProtoLogic.updateMessageStatus(messageId, status);
       result.success(null);
@@ -960,7 +960,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
     } else if("getChatroomInfo".equals(call.method)) {
       final int requestId = call.argument("requestId");
       final String chatroomId = call.argument("chatroomId");
-      long updateDt = call.argument("updateDt");
+      long updateDt = getLongPara(call, "updateDt");
       ProtoLogic.getChatRoomInfo(chatroomId, updateDt, new ProtoLogic.IGetChatRoomInfoCallback() {
         @Override
         public void onSuccess(ProtoChatRoomInfo protoChatRoomInfo) {
@@ -1096,7 +1096,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       final int requestId = call.argument("requestId");
       String userId = call.argument("userId");
       Map conversation = call.argument("conversation");
-      long beforeMessageUid = call.argument("beforeMessageUid");
+      long beforeMessageUid = getLongPara(call, "beforeMessageUid");
       int count = call.argument("count");
 
       int type = 0;
@@ -1124,7 +1124,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       result.success(null);
     } else if("getMyFiles".equals(call.method)) {
       final int requestId = call.argument("requestId");
-      long beforeMessageUid = call.argument("beforeMessageUid");
+      long beforeMessageUid = getLongPara(call, "beforeMessageUid");
       int count = call.argument("count");
       ProtoLogic.getMyFileRecords(beforeMessageUid, count, new ProtoLogic.ILoadFileRecordCallback() {
         @Override
@@ -1143,7 +1143,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       result.success(null);
     } else if("deleteFileRecord".equals(call.method)) {
       int requestId = call.argument("requestId");
-      long messageUid = call.argument("messageUid");
+      long messageUid = getLongPara(call, "messageUid");
       ProtoLogic.deleteFileRecords(messageUid, new GeneralVoidCallback(requestId));
       result.success(null);
     } else if("searchFiles".equals(call.method)) {
@@ -1151,7 +1151,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       String keyword = call.argument("keyword");
       String userId = call.argument("userId");
       Map conversation = call.argument("conversation");
-      long beforeMessageUid = call.argument("beforeMessageUid");
+      long beforeMessageUid = getLongPara(call, "beforeMessageUid");
       int count = call.argument("count");
 
       int type = 0;
@@ -1180,7 +1180,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
     } else if("searchMyFiles".equals(call.method)) {
       final int requestId = call.argument("requestId");
       String keyword = call.argument("keyword");
-      long beforeMessageUid = call.argument("beforeMessageUid");
+      long beforeMessageUid = getLongPara(call, "beforeMessageUid");
       int count = call.argument("count");
 
       ProtoLogic.searchMyFileRecords(keyword, beforeMessageUid, count, new ProtoLogic.ILoadFileRecordCallback() {
@@ -1201,7 +1201,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
     } else if("getAuthorizedMediaUrl".equals(call.method)) {
       final int requestId = call.argument("requestId");
       final String mediaPath = call.argument("mediaPath");
-      long messageUid = call.argument("messageUid");
+      long messageUid = getLongPara(call, "messageUid");
       int mediaType = call.argument("mediaType");
       ProtoLogic.getAuthorizedMediaUrl(messageUid, mediaType, mediaPath, new ProtoLogic.IGeneralCallback2() {
         @Override
@@ -1258,6 +1258,10 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       arr[i] = ints.get(i);
     }
     return arr;
+  }
+
+  private long getLongPara(MethodCall call, String key) {
+    return Long.valueOf(call.argument(key).toString());
   }
 
   private List<Map<String, Object>> convertProtoConversationInfos(ProtoConversationInfo[] protoDatas) {
