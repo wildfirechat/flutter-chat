@@ -479,6 +479,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       List<String> toUsers = call.argument("toUsers");
       int expireDuration = call.argument("expireDuration") == null ? 0 : (Integer) call.argument("expireDuration");
       ProtoMessage msg = new ProtoMessage();
+      msg.setFrom(userId);
       msg.setConversationType((int)conversation.get("type"));
       msg.setTarget((String)conversation.get("target"));
       msg.setLine((int)conversation.get("line"));
@@ -490,13 +491,13 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
         }
         msg.setTos(arr);
       }
-      ProtoLogic.sendMessage(msg, expireDuration, new SendMessageCallback(requestId));
-      result.success(null);
+      ProtoLogic.sendMessage(msg, expireDuration, new SendMessageCallback(requestId, msg));
+      result.success(convertProtoMessage(msg));
     } else if("sendSavedMessage".equals(call.method)) {
       int requestId = call.argument("requestId");
       long messageId = getLongPara(call, "messageId");
       int expireDuration = call.argument("expireDuration");
-      ProtoLogic.sendMessageEx(messageId, expireDuration, new SendMessageCallback(requestId));
+      ProtoLogic.sendMessageEx(messageId, expireDuration, new SendMessageCallback(requestId, null));
       result.success(null);
     } else if("recallMessage".equals(call.method)) {
       int requestId = call.argument("requestId");
@@ -1794,9 +1795,11 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
   }
   private class SendMessageCallback implements ProtoLogic.ISendMessageCallback {
     private int requestId;
+    private ProtoMessage message;
 
-    public SendMessageCallback(int requestId) {
+    public SendMessageCallback(int requestId, ProtoMessage msg) {
       this.requestId = requestId;
+      this.message = msg;
     }
 
     @Override
@@ -1815,7 +1818,10 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
 
     @Override
     public void onPrepared(long l, long l1) {
-
+      if(message != null) {
+        message.setMessageId(l);
+        message.setTimestamp(l1);
+      }
     }
 
     @Override
