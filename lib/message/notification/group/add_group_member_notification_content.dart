@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:flutter_imclient/message/message.dart';
 import 'package:flutter_imclient/flutter_imclient.dart';
+import 'package:flutter_imclient/message/message.dart';
 import 'package:flutter_imclient/message/message_content.dart';
 import 'package:flutter_imclient/message/notification/notification_message_content.dart';
 import 'package:flutter_imclient/model/message_payload.dart';
@@ -12,8 +12,11 @@ import 'package:flutter_imclient/model/user_info.dart';
 MessageContent AddGroupMemberNotificationContentCreator() {
   return new AddGroupMemberNotificationContent();
 }
-const addGroupMemberNotificationContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_ADD_GROUP_MEMBER,
-    MessageFlag.PERSIST, AddGroupMemberNotificationContentCreator);
+
+const addGroupMemberNotificationContentMeta = MessageContentMeta(
+    MESSAGE_CONTENT_TYPE_ADD_GROUP_MEMBER,
+    MessageFlag.PERSIST,
+    AddGroupMemberNotificationContentCreator);
 
 class AddGroupMemberNotificationContent extends NotificationMessageContent {
   String groupId;
@@ -23,7 +26,7 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(new String.fromCharCodes(payload.binaryContent));
+    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
     invitor = map['o'];
     groupId = map['g'];
     invitees = FlutterImclient.convertDynamicList(map['ms']);
@@ -47,17 +50,20 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
 
   @override
   Future<String> formatNotification(Message message) async {
-    if(invitees.length == 1 && invitees[0] == invitor) {
-      if(invitor == await FlutterImclient.currentUserId) {
+    if (invitees.length == 1 && invitees[0] == invitor) {
+      if (invitor == await FlutterImclient.currentUserId) {
         return '你加入了群聊';
       } else {
-        UserInfo userInfo = await FlutterImclient.getUserInfo(invitor, groupId: groupId);
-        if(userInfo != null) {
+        UserInfo userInfo =
+            await FlutterImclient.getUserInfo(invitor, groupId: groupId);
+        if (userInfo != null) {
           if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
             return '${userInfo.friendAlias} 加入了群聊';
-          } else if (userInfo.groupAlias != null && userInfo.groupAlias.isNotEmpty) {
+          } else if (userInfo.groupAlias != null &&
+              userInfo.groupAlias.isNotEmpty) {
             return '${userInfo.groupAlias} 加入了群聊';
-          } else if (userInfo.displayName != null && userInfo.displayName.isNotEmpty) {
+          } else if (userInfo.displayName != null &&
+              userInfo.displayName.isNotEmpty) {
             return '${userInfo.displayName} 加入了群聊';
           } else {
             return '$invitor 加入了群聊';
@@ -68,16 +74,19 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
       }
     }
     String formatMsg;
-    if(invitor == await FlutterImclient.currentUserId) {
+    if (invitor == await FlutterImclient.currentUserId) {
       formatMsg = '你 邀请';
     } else {
-      UserInfo userInfo = await FlutterImclient.getUserInfo(invitor, groupId: groupId);
-      if(userInfo != null) {
+      UserInfo userInfo =
+          await FlutterImclient.getUserInfo(invitor, groupId: groupId);
+      if (userInfo != null) {
         if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
           formatMsg = '${userInfo.friendAlias} 邀请';
-        } else if (userInfo.groupAlias != null && userInfo.groupAlias.isNotEmpty) {
+        } else if (userInfo.groupAlias != null &&
+            userInfo.groupAlias.isNotEmpty) {
           formatMsg = '${userInfo.groupAlias} 邀请';
-        } else if (userInfo.displayName != null && userInfo.displayName.isNotEmpty) {
+        } else if (userInfo.displayName != null &&
+            userInfo.displayName.isNotEmpty) {
           formatMsg = '${userInfo.displayName} 邀请';
         } else {
           formatMsg = '$invitor 邀请';
@@ -87,18 +96,21 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
       }
     }
 
-    for(int i = 0; i < invitees.length; ++i) {
+    for (int i = 0; i < invitees.length; ++i) {
       String memberId = invitees[i];
-      if(memberId == await FlutterImclient.currentUserId) {
+      if (memberId == await FlutterImclient.currentUserId) {
         formatMsg = '$formatMsg 你';
       } else {
-        UserInfo userInfo = await FlutterImclient.getUserInfo(memberId, groupId: groupId);
-        if(userInfo != null) {
+        UserInfo userInfo =
+            await FlutterImclient.getUserInfo(memberId, groupId: groupId);
+        if (userInfo != null) {
           if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
             formatMsg = '$formatMsg ${userInfo.friendAlias}';
-          } else if (userInfo.groupAlias != null && userInfo.groupAlias.isNotEmpty) {
+          } else if (userInfo.groupAlias != null &&
+              userInfo.groupAlias.isNotEmpty) {
             formatMsg = '$formatMsg ${userInfo.groupAlias}';
-          } else if (userInfo.displayName != null && userInfo.displayName.isNotEmpty) {
+          } else if (userInfo.displayName != null &&
+              userInfo.displayName.isNotEmpty) {
             formatMsg = '$formatMsg ${userInfo.displayName}';
           } else {
             formatMsg = '$formatMsg $invitor';

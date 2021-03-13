@@ -28,8 +28,7 @@ class GroupPrivateChatNotificationContent extends NotificationMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map =
-        json.decode(new String.fromCharCodes(payload.binaryContent));
+    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
     invitor = map['o'];
     groupId = map['g'];
     type = map['n'];

@@ -1,11 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:image/image.dart';
 
 import 'package:flutter_imclient/message/media_message_content.dart';
+import 'package:flutter_imclient/message/message.dart';
 import 'package:flutter_imclient/message/message_content.dart';
 import 'package:flutter_imclient/model/message_payload.dart';
-import 'package:flutter_imclient/message/message.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent StickerMessageContentCreator() {
@@ -14,7 +13,6 @@ MessageContent StickerMessageContentCreator() {
 
 const stickerContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_STICKER,
     MessageFlag.PERSIST_AND_COUNT, StickerMessageContentCreator);
-
 
 class StickerMessageContent extends MediaMessageContent {
   int width;
@@ -26,7 +24,7 @@ class StickerMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(new String.fromCharCodes(payload.binaryContent));
+    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
     width = map['x'];
     height = map['y'];
   }
@@ -35,7 +33,8 @@ class StickerMessageContent extends MediaMessageContent {
   Future<MessagePayload> encode() async {
     MessagePayload payload = await super.encode();
     payload.searchableContent = '[动态表情]';
-    payload.binaryContent = new Uint8List.fromList(json.encode({'x':width, 'y':height}).codeUnits);
+    payload.binaryContent = new Uint8List.fromList(
+        json.encode({'x': width, 'y': height}).codeUnits);
     return payload;
   }
 

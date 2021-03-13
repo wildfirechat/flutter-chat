@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter_imclient/model/im_constant.dart';
-import 'package:image/image.dart';
 
 import 'package:flutter_imclient/message/media_message_content.dart';
-import 'package:flutter_imclient/message/message_content.dart';
-import 'package:flutter_imclient/model/message_payload.dart';
 import 'package:flutter_imclient/message/message.dart';
+import 'package:flutter_imclient/message/message_content.dart';
+import 'package:flutter_imclient/model/im_constant.dart';
+import 'package:flutter_imclient/model/message_payload.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent PCLoginRequestMessageContentCreator() {
@@ -15,7 +14,6 @@ MessageContent PCLoginRequestMessageContentCreator() {
 
 const pcLoginContentMeta = MessageContentMeta(MESSAGE_PC_LOGIN_REQUSET,
     MessageFlag.NOT_PERSIST, PCLoginRequestMessageContentCreator);
-
 
 class PCLoginRequestMessageContent extends MediaMessageContent {
   String sessionId;
@@ -27,7 +25,7 @@ class PCLoginRequestMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(new String.fromCharCodes(payload.binaryContent));
+    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
     platform = PlatformType.values[map['p']];
     sessionId = map['t'];
   }
@@ -36,7 +34,8 @@ class PCLoginRequestMessageContent extends MediaMessageContent {
   Future<MessagePayload> encode() async {
     MessagePayload payload = await super.encode();
 
-    payload.binaryContent = new Uint8List.fromList(json.encode({'p':platform.index, 't':sessionId}).codeUnits);
+    payload.binaryContent = new Uint8List.fromList(
+        json.encode({'p': platform.index, 't': sessionId}).codeUnits);
     return payload;
   }
 

@@ -9,6 +9,7 @@ import 'package:flutter_imclient/model/message_payload.dart';
 MessageContent DeleteMessageContentCreator() {
   return new DeleteMessageContent();
 }
+
 const deleteMessageContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_DELETE,
     MessageFlag.NOT_PERSIST, DeleteMessageContentCreator);
 
@@ -20,7 +21,7 @@ class DeleteMessageContent extends NotificationMessageContent {
   Future<Function> decode(MessagePayload payload) async {
     super.decode(payload);
     operatorId = payload.content;
-    messageUid = int.parse(new String.fromCharCodes(payload.binaryContent));
+    messageUid = int.parse(utf8.decode(payload.binaryContent));
   }
 
   @override
@@ -35,7 +36,8 @@ class DeleteMessageContent extends NotificationMessageContent {
   Future<MessagePayload> encode() async {
     MessagePayload payload = await super.encode();
     payload.content = operatorId;
-    payload.binaryContent = new Uint8List.fromList(messageUid.toString().codeUnits);
+    payload.binaryContent =
+        new Uint8List.fromList(messageUid.toString().codeUnits);
     return payload;
   }
 

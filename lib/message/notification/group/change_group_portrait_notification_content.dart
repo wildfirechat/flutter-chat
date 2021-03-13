@@ -26,8 +26,7 @@ class ChangeGroupPortraitNotificationContent
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map =
-        json.decode(new String.fromCharCodes(payload.binaryContent));
+    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
     operateUser = map['o'];
     groupId = map['g'];
   }

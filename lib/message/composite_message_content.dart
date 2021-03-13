@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
-import 'package:flutter_imclient/flutter_imclient.dart';
-import 'package:flutter_imclient/message/message.dart';
-import 'package:flutter_imclient/model/conversation.dart';
-import 'package:flutter_imclient/model/im_constant.dart';
-import 'package:image/image.dart';
 
+import 'package:flutter_imclient/flutter_imclient.dart';
 import 'package:flutter_imclient/message/media_message_content.dart';
+import 'package:flutter_imclient/message/message.dart';
 import 'package:flutter_imclient/message/message_content.dart';
+import 'package:flutter_imclient/model/conversation.dart';
 import 'package:flutter_imclient/model/message_payload.dart';
 
 // ignore: non_constant_identifier_names
@@ -15,11 +13,12 @@ MessageContent CompositeMessageContentCreator() {
   return new CompositeMessageContent();
 }
 
-const compositeContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_COMPOSITE_MESSAGE,
-    MessageFlag.PERSIST_AND_COUNT, CompositeMessageContentCreator);
+const compositeContentMeta = MessageContentMeta(
+    MESSAGE_CONTENT_TYPE_COMPOSITE_MESSAGE,
+    MessageFlag.PERSIST_AND_COUNT,
+    CompositeMessageContentCreator);
 
 class CompositeMessageContent extends MediaMessageContent {
-
   String title;
   List<Message> messages;
 
@@ -31,9 +30,9 @@ class CompositeMessageContent extends MediaMessageContent {
     super.decode(payload);
     title = payload.content;
     messages = new List();
-    Map<dynamic, dynamic> map = json.decode(new String.fromCharCodes(payload.binaryContent));
+    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
     List<dynamic> ms = map['ms'];
-    for(int i = 0; i < ms.length; ++i) {
+    for (int i = 0; i < ms.length; ++i) {
       Map map = ms[i];
       Message msg = new Message();
       msg.messageUid = map['uid'];
@@ -54,7 +53,7 @@ class CompositeMessageContent extends MediaMessageContent {
       payload.pushContent = map['cpc'];
       payload.pushData = map['cpd'];
       payload.content = map['cc'];
-      if(map['cbc'] != null) {
+      if (map['cbc'] != null) {
         payload.binaryContent = Base64Decoder().convert(map['cbc']);
       }
       payload.mentionedType = map['cmt'];
@@ -74,17 +73,17 @@ class CompositeMessageContent extends MediaMessageContent {
 
     payload.content = title;
     List<Map> ms = new List();
-    for(int i = 0; i < messages.length; ++i) {
+    for (int i = 0; i < messages.length; ++i) {
       Message msg = messages.elementAt(i);
       Map map = Map();
-      if(msg.messageUid > 0) {
+      if (msg.messageUid > 0) {
         map['uid'] = msg.messageUid;
       }
       map['type'] = msg.conversation.conversationType;
       map['target'] = msg.conversation.target;
       map['line'] = msg.conversation.line;
       map['from'] = msg.fromUser;
-      if(msg.toUsers != null && msg.toUsers.isNotEmpty) {
+      if (msg.toUsers != null && msg.toUsers.isNotEmpty) {
         map['tos'] = msg.toUsers;
       }
       map['direction'] = msg.direction.index;
@@ -99,24 +98,26 @@ class CompositeMessageContent extends MediaMessageContent {
       map['cc'] = payload.content;
       map['cbc'] = Base64Encoder().convert(payload.binaryContent);
       map['cmt'] = payload.mentionedType;
-      if(payload.mentionedTargets != null && payload.mentionedTargets.isNotEmpty) {
+      if (payload.mentionedTargets != null &&
+          payload.mentionedTargets.isNotEmpty) {
         map['cmts'] = payload.mentionedTargets;
       }
       map['ce'] = payload.extra;
       map['mt'] = payload.mediaType.index;
-      if(payload.remoteMediaUrl != null) {
+      if (payload.remoteMediaUrl != null) {
         map['mru'] = payload.remoteMediaUrl;
       }
       ms.add(map);
     }
 
-    payload.binaryContent = new Uint8List.fromList(json.encode({'ms':ms}).codeUnits);
+    payload.binaryContent =
+        new Uint8List.fromList(json.encode({'ms': ms}).codeUnits);
     return payload;
   }
 
   @override
   Future<String> digest(Message message) async {
-    if(title != null && title.isNotEmpty) {
+    if (title != null && title.isNotEmpty) {
       return '[聊天]:$title';
     }
     return '[聊天]';
