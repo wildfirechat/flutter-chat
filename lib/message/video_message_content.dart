@@ -29,6 +29,9 @@ class VideoMessageContent extends MediaMessageContent {
     thumbnail = decodeJpg(payload.binaryContent);
     var map = json.decode(payload.content);
     duration = map['duration'];
+    if(duration == 0) {
+      duration = map['d'];
+    }
   }
 
   @override
@@ -36,7 +39,7 @@ class VideoMessageContent extends MediaMessageContent {
     MessagePayload payload = await super.encode();
     payload.searchableContent = '[视频]';
     payload.binaryContent = encodeJpg(thumbnail, quality: 35);
-    payload.content = json.encode({'duration':duration});
+    payload.content = json.encode({'duration':duration,'d':duration});
     return payload;
   }
 
