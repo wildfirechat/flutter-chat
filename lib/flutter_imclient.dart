@@ -1007,7 +1007,7 @@ class FlutterImclient {
   }
 
   static List<UserInfo> _convertProtoUserInfos(List<dynamic> datas) {
-    if (datas.isEmpty) {
+    if (datas == null || datas.isEmpty) {
       return new List();
     }
     List<UserInfo> list = new List();
