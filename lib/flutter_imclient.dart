@@ -1876,7 +1876,7 @@ class FlutterImclient {
       String userId,
       bool accept,
       String extra,
-      OperationSuccessUserInfoCallback successCallback,
+      OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
     if (successCallback != null)
