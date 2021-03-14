@@ -1861,7 +1861,7 @@ class FlutterImclient {
   static Future<void> sendFriendRequest(
       String userId,
       String reason,
-      OperationSuccessUserInfoCallback successCallback,
+      OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
     if (successCallback != null)
