@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter_imclient/message/media_message_content.dart';
 import 'package:flutter_imclient/message/message.dart';
@@ -47,12 +46,12 @@ class CardMessageContent extends MediaMessageContent {
     MessagePayload payload = await super.encode();
 
     payload.content = targetId;
-    payload.binaryContent = new Uint8List.fromList(json.encode({
+    payload.binaryContent = utf8.encode(json.encode({
       'n': name,
       'd': displayName,
       'p': portrait,
-      't': type.index
-    }).codeUnits);
+      't': type.index,
+    }));
     return payload;
   }
 
