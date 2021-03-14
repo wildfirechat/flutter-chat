@@ -26,7 +26,7 @@ class ImageMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    thumbnail = decodeJpg(payload.binaryContent);
+    if (payload.binaryContent != null) thumbnail = decodeJpg(payload.binaryContent);
   }
 
   @override

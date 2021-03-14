@@ -1901,7 +1901,7 @@ class FlutterImclient {
   static Future<void> setFriendAlias(
       String userId,
       String alias,
-      OperationSuccessUserInfoCallback successCallback,
+      OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -1936,7 +1936,7 @@ class FlutterImclient {
   static Future<void> setBlackList(
       String userId,
       bool isBlackListed,
-      OperationSuccessUserInfoCallback successCallback,
+      OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
     if (successCallback != null)

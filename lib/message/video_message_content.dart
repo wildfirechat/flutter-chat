@@ -26,11 +26,15 @@ class VideoMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    thumbnail = decodeJpg(payload.binaryContent);
-    var map = json.decode(payload.content);
-    duration = map['duration'];
-    if(duration == 0) {
-      duration = map['d'];
+    if (payload?.binaryContent != null) {
+      thumbnail = decodeJpg(payload.binaryContent);
+    }
+    if (payload?.content != null) {
+      var map = json.decode(payload.content);
+      duration = map['duration'];
+      if(duration == 0) {
+        duration = map['d'];
+      }
     }
   }
 

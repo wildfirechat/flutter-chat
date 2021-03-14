@@ -25,8 +25,12 @@ class SoundMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(payload.content);
-    duration = map['duration'];
+    if (payload.content != null) {
+      Map<dynamic, dynamic> map = json.decode(payload.content);
+      duration = map['duration'];
+    } else {
+      duration = 0;
+    }
   }
 
   @override
