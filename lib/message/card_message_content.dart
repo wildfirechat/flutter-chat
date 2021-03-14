@@ -46,6 +46,7 @@ class CardMessageContent extends MediaMessageContent {
   Future<MessagePayload> encode() async {
     MessagePayload payload = await super.encode();
 
+    payload.content = targetId;
     payload.binaryContent = new Uint8List.fromList(json.encode({
       'n': name,
       'd': displayName,
