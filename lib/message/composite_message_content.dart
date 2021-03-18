@@ -42,7 +42,9 @@ class CompositeMessageContent extends MediaMessageContent {
 
       msg.fromUser = map['from'];
       msg.toUsers = map['tos'];
-      msg.direction = MessageDirection.values[map['direction']];
+      msg.direction = MessageDirection.MessageDirection_Send;
+      if(map['direction'] != null)
+        msg.direction = MessageDirection.values[map['direction']];
       msg.status = MessageStatus.values[map['status']];
       msg.serverTime = map['serverTime'];
 
