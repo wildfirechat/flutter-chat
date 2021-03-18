@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter_imclient/message/media_message_content.dart';
 import 'package:flutter_imclient/message/message.dart';
@@ -38,8 +37,11 @@ class LinkMessageContent extends MediaMessageContent {
     MessagePayload payload = await super.encode();
 
     payload.searchableContent = title;
-    payload.binaryContent = new Uint8List.fromList(json
-        .encode({'d': contentDigest, 'u': url, 't': thumbnailUrl}).codeUnits);
+    payload.binaryContent = utf8.encode(json.encode({
+      'd': contentDigest,
+      'u': url,
+      't': thumbnailUrl,
+    }));
     return payload;
   }
 

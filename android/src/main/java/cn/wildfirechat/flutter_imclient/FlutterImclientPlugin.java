@@ -1476,6 +1476,8 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
   }
 
   private Map<String, Object> convertProtoGroupInfo(ProtoGroupInfo protoData) {
+    if (protoData == null) return null;
+
     Map<String, Object> map = new HashMap<>();
     map.put("type", protoData.getType());
     map.put("target", protoData.getTarget());

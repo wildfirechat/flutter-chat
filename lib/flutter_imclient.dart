@@ -901,6 +901,8 @@ class FlutterImclient {
 
   static Future<Map<String, dynamic>> _convertMessageContent(
       MessageContent content) async {
+    if (content == null) return null;
+
     Map<String, dynamic> map = new Map();
     MessagePayload payload = await content.encode();
     map['type'] = payload.contentType;
@@ -935,6 +937,8 @@ class FlutterImclient {
   }
 
   static GroupInfo _convertProtoGroupInfo(Map<dynamic, dynamic> map) {
+    if (map == null) return null;
+
     GroupInfo groupInfo = new GroupInfo();
     groupInfo.type = GroupType.values[map['type']];
     groupInfo.target = map['target'];
@@ -1687,7 +1691,7 @@ class FlutterImclient {
       MessageContent content, int status, int serverTime) async {
     Map<dynamic, dynamic> datas = await _channel.invokeMethod("insertMessage", {
       "conversation": _convertConversation(conversation),
-      "content": _convertMessageContent(content),
+      "content": await _convertMessageContent(content),
       "status": status,
       "serverTime": serverTime.toString()
     });
@@ -1699,7 +1703,7 @@ class FlutterImclient {
       int messageId, MessageContent content) async {
     await _channel.invokeMethod("updateMessage", {
       "messageId": messageId.toString(),
-      "content": _convertMessageContent(content)
+      "content": await _convertMessageContent(content)
     });
   }
 
@@ -2040,7 +2044,7 @@ class FlutterImclient {
       args['notifyLines'] = notifyLines;
     }
     if (notifyContent != null) {
-      args['notifyContent'] = _convertMessageContent(notifyContent);
+      args['notifyContent'] = await _convertMessageContent(notifyContent);
     }
 
     await _channel.invokeMethod("createGroup", args);
@@ -2061,9 +2065,9 @@ class FlutterImclient {
     await _channel.invokeMethod("addGroupMembers", {
       "requestId": requestId,
       "groupId": groupId,
-      "members": members,
+      "groupMembers": members,
       "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
+      "notifyContent": await _convertMessageContent(notifyContent)
     });
   }
 
@@ -2082,9 +2086,9 @@ class FlutterImclient {
     await _channel.invokeMethod("kickoffGroupMembers", {
       "requestId": requestId,
       "groupId": groupId,
-      "members": members,
+      "groupMembers": members,
       "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
+      "notifyContent": await _convertMessageContent(notifyContent)
     });
   }
 
@@ -2103,7 +2107,7 @@ class FlutterImclient {
       "requestId": requestId,
       "groupId": groupId,
       "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
+      "notifyContent": await _convertMessageContent(notifyContent)
     });
   }
 
@@ -2122,7 +2126,7 @@ class FlutterImclient {
       "requestId": requestId,
       "groupId": groupId,
       "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
+      "notifyContent": await _convertMessageContent(notifyContent)
     });
   }
 
@@ -2143,9 +2147,9 @@ class FlutterImclient {
       "requestId": requestId,
       "groupId": groupId,
       "modifyType": modifyType.index,
-      "newValue": newValue,
+      "value": newValue,
       "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
+      "notifyContent": await _convertMessageContent(notifyContent)
     });
   }
 
@@ -2166,7 +2170,7 @@ class FlutterImclient {
       "groupId": groupId,
       "newAlias": newAlias,
       "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
+      "notifyContent": await _convertMessageContent(notifyContent)
     });
   }
 
@@ -2188,7 +2192,7 @@ class FlutterImclient {
       "groupId": groupId,
       "newAlias": newAlias,
       "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
+      "notifyContent": await _convertMessageContent(notifyContent)
     });
   }
 
@@ -2209,7 +2213,7 @@ class FlutterImclient {
       "groupId": groupId,
       "newOwner": newOwner,
       "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
+      "notifyContent": await _convertMessageContent(notifyContent)
     });
   }
 
@@ -2232,7 +2236,7 @@ class FlutterImclient {
       "isSet": isSet,
       "memberIds": memberIds,
       "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
+      "notifyContent": await _convertMessageContent(notifyContent)
     });
   }
 
@@ -2255,7 +2259,7 @@ class FlutterImclient {
       "isSet": isSet,
       "memberIds": memberIds,
       "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
+      "notifyContent": await _convertMessageContent(notifyContent)
     });
   }
 
@@ -2278,7 +2282,7 @@ class FlutterImclient {
       "isSet": isSet,
       "memberIds": memberIds,
       "notifyLines": notifyLines,
-      "notifyContent": _convertMessageContent(notifyContent)
+      "notifyContent": await _convertMessageContent(notifyContent)
     });
   }
 

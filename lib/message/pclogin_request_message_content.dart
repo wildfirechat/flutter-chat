@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter_imclient/message/media_message_content.dart';
 import 'package:flutter_imclient/message/message.dart';
@@ -34,8 +33,8 @@ class PCLoginRequestMessageContent extends MediaMessageContent {
   Future<MessagePayload> encode() async {
     MessagePayload payload = await super.encode();
 
-    payload.binaryContent = new Uint8List.fromList(
-        json.encode({'p': platform.index, 't': sessionId}).codeUnits);
+    payload.binaryContent =
+        utf8.encode(json.encode({'p': platform.index, 't': sessionId}));
     return payload;
   }
 

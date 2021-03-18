@@ -66,7 +66,7 @@ class GroupMuteNotificationContent extends NotificationMessageContent {
       if (userInfo != null) {
         if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
           return '${userInfo.friendAlias} $str';
-        } else if (userInfo.groupAlias.isNotEmpty) {
+        } else if (userInfo.groupAlias != null) {
           return '${userInfo.groupAlias} $str';
         } else if (userInfo.displayName != null &&
             userInfo.displayName.isNotEmpty) {

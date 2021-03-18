@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter_imclient/flutter_imclient.dart';
 import 'package:flutter_imclient/message/message.dart';
@@ -44,7 +43,7 @@ class ChangeGroupNameNotificationContent extends NotificationMessageContent {
     map['o'] = operateUser;
     map['g'] = groupId;
     map['n'] = name;
-    payload.binaryContent = new Uint8List.fromList(json.encode(map).codeUnits);
+    payload.binaryContent = utf8.encode(json.encode(map));
     return payload;
   }
 

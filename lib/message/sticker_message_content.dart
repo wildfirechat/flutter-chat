@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter_imclient/message/media_message_content.dart';
 import 'package:flutter_imclient/message/message.dart';
@@ -33,8 +32,7 @@ class StickerMessageContent extends MediaMessageContent {
   Future<MessagePayload> encode() async {
     MessagePayload payload = await super.encode();
     payload.searchableContent = '[动态表情]';
-    payload.binaryContent = new Uint8List.fromList(
-        json.encode({'x': width, 'y': height}).codeUnits);
+    payload.binaryContent = utf8.encode(json.encode({'x': width, 'y': height}));
     return payload;
   }
 

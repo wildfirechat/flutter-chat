@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter_imclient/flutter_imclient.dart';
 import 'package:flutter_imclient/message/media_message_content.dart';
@@ -59,7 +58,7 @@ class CompositeMessageContent extends MediaMessageContent {
       payload.mentionedType = map['cmt'];
       payload.mentionedTargets = map['cmts'];
       payload.extra = map['ce'];
-      payload.mediaType = map['mt'];
+      payload.mediaType = MediaType.values[map['mt']];
       payload.remoteMediaUrl = map['mru'];
 
       msg.content = FlutterImclient.decodeMessageContent(payload);
@@ -79,7 +78,7 @@ class CompositeMessageContent extends MediaMessageContent {
       if (msg.messageUid > 0) {
         map['uid'] = msg.messageUid;
       }
-      map['type'] = msg.conversation.conversationType;
+      map['type'] = msg.conversation.conversationType.index;
       map['target'] = msg.conversation.target;
       map['line'] = msg.conversation.line;
       map['from'] = msg.fromUser;
@@ -96,7 +95,9 @@ class CompositeMessageContent extends MediaMessageContent {
       map['cpc'] = payload.pushContent;
       map['cpd'] = payload.pushData;
       map['cc'] = payload.content;
-      map['cbc'] = Base64Encoder().convert(payload.binaryContent);
+      if (payload.binaryContent != null) {
+        map['cbc'] = Base64Encoder().convert(payload.binaryContent);
+      }
       map['cmt'] = payload.mentionedType;
       if (payload.mentionedTargets != null &&
           payload.mentionedTargets.isNotEmpty) {
@@ -110,8 +111,7 @@ class CompositeMessageContent extends MediaMessageContent {
       ms.add(map);
     }
 
-    payload.binaryContent =
-        new Uint8List.fromList(json.encode({'ms': ms}).codeUnits);
+    payload.binaryContent = utf8.encode(json.encode({'ms': ms}));
     return payload;
   }
 
