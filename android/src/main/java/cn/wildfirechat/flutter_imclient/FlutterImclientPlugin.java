@@ -1430,6 +1430,8 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
   }
 
   private Map<String, Object> convertProtoUserInfo(ProtoUserInfo protoData) {
+    if (protoData == null) return null;
+
     Map<String, Object> map = new HashMap<>();
     map.put("userId", protoData.getUid());
     map.put("name", protoData.getName());
@@ -1489,7 +1491,13 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       map.put("portrait", protoData.getPortrait());
     if (!TextUtils.isEmpty(protoData.getOwner()))
       map.put("owner", protoData.getOwner());
-    //Todo
+    map.put("memberCount", protoData.getMemberCount());
+    map.put("mute", protoData.getMute());
+    map.put("joinType", protoData.getJoinType());
+    map.put("privateChat", protoData.getPrivateChat());
+    map.put("searchable", protoData.getSearchable());
+    map.put("historyMessage", protoData.getHistoryMessage());
+    map.put("updateDt", protoData.getUpdateDt());
     return map;
   }
 
@@ -1683,7 +1691,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
     Map<String, Object> map = new HashMap<>();
     map.put("memberCount", protoData.getMemberCount());
     if(protoData.getMembers() != null)
-    map.put("members", protoData.getMembers());
+      map.put("members", protoData.getMembers());
     return map;
   }
 
