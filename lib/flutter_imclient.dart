@@ -711,9 +711,9 @@ class FlutterImclient {
     msg.messageUid = map['messageUid'];
     msg.conversation = _convertProtoConversation(map['conversation']);
     msg.fromUser = map['fromUser'];
-    msg.toUsers = map['toUsers'];
+    msg.toUsers = (map['toUsers'] as List)?.cast<String>();
     msg.content =
-        await decodeMessageContent(_convertProtoMessageContent(map['content']));
+        decodeMessageContent(_convertProtoMessageContent(map['content']));
     msg.direction = MessageDirection.values[map['direction']];
     msg.status = MessageStatus.values[map['status']];
     msg.serverTime = map['timestamp'];
