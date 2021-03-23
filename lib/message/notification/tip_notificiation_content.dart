@@ -7,6 +7,7 @@ import 'package:flutter_imclient/model/message_payload.dart';
 MessageContent TipNotificationContentCreator() {
   return new TipNotificationContent();
 }
+
 const tipNotificationContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_TIP,
     MessageFlag.PERSIST, TipNotificationContentCreator);
 
@@ -14,7 +15,7 @@ class TipNotificationContent extends NotificationMessageContent {
   String tip;
 
   @override
-  Future<Function> decode(MessagePayload payload) async {
+  Future<void> decode(MessagePayload payload) async {
     super.decode(payload);
     tip = payload.content;
   }

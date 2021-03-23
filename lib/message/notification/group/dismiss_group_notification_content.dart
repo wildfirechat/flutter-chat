@@ -55,7 +55,8 @@ class DismissGroupNotificationContent extends NotificationMessageContent {
       if (userInfo != null) {
         if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
           return '${userInfo.friendAlias} 销毁了群组';
-        } else if (userInfo.groupAlias.isNotEmpty) {
+        } else if (userInfo.groupAlias != null &&
+            userInfo.groupAlias.isNotEmpty) {
           return '${userInfo.groupAlias} 销毁了群组';
         } else if (userInfo.displayName != null &&
             userInfo.displayName.isNotEmpty) {

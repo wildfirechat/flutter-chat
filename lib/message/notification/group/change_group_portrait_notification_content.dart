@@ -56,7 +56,8 @@ class ChangeGroupPortraitNotificationContent
       if (userInfo != null) {
         if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
           return '${userInfo.friendAlias} 修改了群头像';
-        } else if (userInfo.groupAlias.isNotEmpty) {
+        } else if (userInfo.groupAlias != null &&
+            userInfo.groupAlias.isNotEmpty) {
           return '${userInfo.groupAlias} 修改了群头像';
         } else if (userInfo.displayName != null &&
             userInfo.displayName.isNotEmpty) {

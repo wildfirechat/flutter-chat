@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter_imclient/flutter_imclient.dart';
 import 'package:flutter_imclient/message/message.dart';
@@ -30,7 +29,7 @@ class RecallNotificationContent extends NotificationMessageContent {
   int originalMessageTimestamp;
 
   @override
-  Future<Function> decode(MessagePayload payload) async {
+  Future<void> decode(MessagePayload payload) async {
     super.decode(payload);
     operatorId = payload.content;
     messageUid = int.parse(utf8.decode(payload.binaryContent));
@@ -57,8 +56,7 @@ class RecallNotificationContent extends NotificationMessageContent {
   Future<MessagePayload> encode() async {
     MessagePayload payload = await super.encode();
     payload.content = operatorId;
-    payload.binaryContent =
-        new Uint8List.fromList(messageUid.toString().codeUnits);
+    payload.binaryContent = utf8.encode(messageUid.toString());
     return payload;
   }
 
