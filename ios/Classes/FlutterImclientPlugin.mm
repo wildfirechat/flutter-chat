@@ -2125,6 +2125,15 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
           [self callbackOperationFailure:requestId errorCode:errorCode];
       }));
       result(nil);
+  } else if([@"getFavGroups" isEqualToString:call.method]) {
+      NSDictionary *favUserDict = [self getUserSettings:6];
+      NSMutableArray *ids = [[NSMutableArray alloc] init];
+      [favUserDict enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+          if ([obj isEqualToString:@"1"]) {
+              [ids addObject:key];
+          }
+      }];
+      result(ids);
   } else if([@"isFavGroup" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
       NSString *groupId = dict[@"groupId"];

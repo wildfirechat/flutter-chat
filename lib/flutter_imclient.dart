@@ -2286,9 +2286,14 @@ class FlutterImclient {
     });
   }
 
+  ///获取收藏群组列表
+  static Future<List<String>> getFavGroups() async {
+    return convertDynamicList(await _channel.invokeMethod("getFavGroups"));
+  }
+
   ///是否收藏群组
-  static Future<bool> isFavGroup(String userId) async {
-    return await _channel.invokeMethod("isFavGroup", {"userId": userId});
+  static Future<bool> isFavGroup(String groupId) async {
+    return await _channel.invokeMethod("isFavGroup", {"groupId": groupId});
   }
 
   ///设置/取消收藏群组
