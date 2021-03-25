@@ -839,6 +839,14 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       Map notifyContent = call.argument("notifyContent");
       ProtoLogic.muteOrAllowGroupMember(groupId, true, isSet, convertStringList(memberIds), convertIntegerList(notifyLines), convertMessageContent(notifyContent), new GeneralVoidCallback(requestId));
       result.success(null);
+    } else if("getFavGroups".equals(call.method)) {
+      Map<String, String> map = getUserSettings(6);
+      List<String> output = new ArrayList<>();
+      for (Map.Entry<String, String> entry:map.entrySet()) {
+        if("1".equals(entry.getValue()))
+          output.add(entry.getKey());
+      }
+      result.success(output);
     } else if("isFavGroup".equals(call.method)) {
       String groupId = call.argument("groupId");
       String value = getUserSetting(6, groupId);
