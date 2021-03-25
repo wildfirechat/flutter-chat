@@ -1903,7 +1903,7 @@ class FlutterImclient {
 
   ///设置好友备注名
   static Future<void> setFriendAlias(
-      String userId,
+      String friendId,
       String alias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) async {
@@ -1912,7 +1912,7 @@ class FlutterImclient {
       _operationSuccessCallbackMap[requestId] = successCallback;
     if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
     await _channel.invokeMethod("setFriendAlias",
-        {"requestId": requestId, "userId": userId, "alias": alias});
+        {"requestId": requestId, "friendId": friendId, "alias": alias});
   }
 
   ///获取好友extra信息
