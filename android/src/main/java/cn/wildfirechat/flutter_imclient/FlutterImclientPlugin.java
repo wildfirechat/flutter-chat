@@ -359,9 +359,9 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       String withUser = call.argument("withUser");
       long fromIndex = getLongPara(call, "fromIndex");
       int count = call.argument("count");
-      boolean isDesc = false;
+      boolean isDesc = true;
       if(count < 0) {
-        isDesc = true;
+        isDesc = false;
         count = -count;
       }
       if(contentTypes == null || contentTypes.isEmpty()) {
