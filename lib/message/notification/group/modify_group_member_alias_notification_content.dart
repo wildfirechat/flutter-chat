@@ -85,6 +85,8 @@ class ModifyGroupMemberAliasNotificationContent
 
     if (memberId == await FlutterImclient.currentUserId) {
       formatMsg = '$formatMsg 你';
+    } else if (memberId == null || memberId.isEmpty) {
+      formatMsg = '$formatMsg 自己';
     } else {
       UserInfo userInfo =
           await FlutterImclient.getUserInfo(memberId, groupId: groupId);
