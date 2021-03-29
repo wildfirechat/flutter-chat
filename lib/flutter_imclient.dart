@@ -65,8 +65,8 @@ typedef void SendMessageSuccessCallback(int messageUid, int timestamp);
 typedef void SendMediaMessageProgressCallback(int uploaded, int total);
 typedef void SendMediaMessageUploadedCallback(String remoteUrl);
 
-typedef void RecallMessageCallback(int errorCode);
-typedef void DeleteMessageCallback(int errorCode);
+typedef void RecallMessageCallback(int messageUid);
+typedef void DeleteMessageCallback(int messageUid);
 
 typedef void MessageDeliveriedCallback(Map<String, int> deliveryMap);
 typedef void MessageReadedCallback(List<ReadReport> readReports);
@@ -318,7 +318,7 @@ class FlutterImclient {
     _groupMemberUpdatedCallback = groupMemberUpdatedCallback;
     _userInfoUpdatedCallback = userInfoUpdatedCallback;
     _friendListUpdatedCallback = friendListUpdatedCallback;
-    _friendRequestListUpdatedCallback = friendListUpdatedCallback;
+    _friendRequestListUpdatedCallback = friendRequestListUpdatedCallback;
     _userSettingsUpdatedCallback = userSettingsUpdatedCallback;
     _channelInfoUpdatedCallback = channelInfoUpdatedCallback;
 
@@ -467,15 +467,13 @@ class FlutterImclient {
           }
           _eventBus.fire(FriendUpdateEvent(friends));
           break;
-        case 'onFriendRequestsUpdated':
+        case 'onFriendRequestUpdated':
           Map<dynamic, dynamic> args = call.arguments;
-          List<dynamic> friendRequestList = args['requests'];
-          List<String> requests = List(0);
-          friendRequestList.forEach((element) => requests.add(element));
+          final friendRequestList = (args['requests'] as List).cast<String>();
           if (_friendRequestListUpdatedCallback != null) {
-            _friendRequestListUpdatedCallback(requests);
+            _friendRequestListUpdatedCallback(friendRequestList);
           }
-          _eventBus.fire(FriendRequestUpdateEvent(requests));
+          _eventBus.fire(FriendRequestUpdateEvent(friendRequestList));
           break;
         case 'onSettingUpdated':
           if (_userSettingsUpdatedCallback != null) {
@@ -1851,7 +1849,7 @@ class FlutterImclient {
   ///删除好友
   static Future<void> deleteFriend(
       String userId,
-      OperationSuccessUserInfoCallback successCallback,
+      OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
     if (successCallback != null)
