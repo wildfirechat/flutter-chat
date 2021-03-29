@@ -1552,15 +1552,15 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
   } else if([@"updateMessage" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
       NSDictionary *content = dict[@"content"];
-      long messageId = [dict[@"messageId"] longValue];
-      
+      long messageId = [((NSString*) dict[@"messageId"]) longLongValue];
+
       mars::stn::TMessageContent tmc;
       fillMessageContent(tmc, content);
       result(@(mars::stn::MessageDB::Instance()->UpdateMessageContent(messageId, tmc)));
   } else if([@"updateMessageStatus" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
       int status = [dict[@"status"] intValue];
-      long messageId = [dict[@"messageId"] longValue];
+      long messageId = [((NSString*) dict[@"messageId"]) longLongValue];
       result(@(mars::stn::MessageDB::Instance()->updateMessageStatus(messageId, (mars::stn::MessageStatus)status)));
   } else if([@"getMessageCount" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
