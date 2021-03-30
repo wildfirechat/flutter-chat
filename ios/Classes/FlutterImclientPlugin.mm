@@ -683,6 +683,10 @@ public:
 
 
 static void fillMessageContent(mars::stn::TMessageContent &content, NSDictionary *payload) {
+    if (payload == nil || (NSNull*) payload == [NSNull null]) {
+        return;
+    }
+
     content.type = [payload[@"type"] intValue];
     content.searchableContent = payload[@"searchableContent"] ? [(NSString *)payload[@"searchableContent"] UTF8String] : "";
     content.pushContent = payload[@"pushContent"] ? [payload[@"pushContent"] UTF8String] : "";
