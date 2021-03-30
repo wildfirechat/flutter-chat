@@ -1171,7 +1171,7 @@ class FlutterImclient {
   ///断开IM服务连接。
   /// * disablePush 是否继续接受推送。
   /// * clearSession 是否清除session
-  static void disconnect(
+  static Future<void> disconnect(
       {bool disablePush = false, bool clearSession = false}) async {
     Map<String, dynamic> args = <String, dynamic>{};
     args.putIfAbsent('disablePush', () => disablePush);
@@ -2018,7 +2018,7 @@ class FlutterImclient {
       List<String> members,
       OperationSuccessStringCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -2054,7 +2054,7 @@ class FlutterImclient {
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -2075,7 +2075,7 @@ class FlutterImclient {
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -2095,7 +2095,7 @@ class FlutterImclient {
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -2114,7 +2114,7 @@ class FlutterImclient {
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -2135,7 +2135,7 @@ class FlutterImclient {
       String newValue,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -2157,7 +2157,7 @@ class FlutterImclient {
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -2179,7 +2179,7 @@ class FlutterImclient {
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -2200,7 +2200,7 @@ class FlutterImclient {
       String newOwner,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -2222,7 +2222,7 @@ class FlutterImclient {
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -2245,7 +2245,7 @@ class FlutterImclient {
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
@@ -2268,7 +2268,7 @@ class FlutterImclient {
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines,
+      {List<int> notifyLines = const [],
       MessageContent notifyContent}) async {
     int requestId = _requestId++;
     if (successCallback != null)
