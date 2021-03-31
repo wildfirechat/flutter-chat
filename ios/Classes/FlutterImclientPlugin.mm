@@ -1636,8 +1636,8 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       result(@(mars::stn::MessageDB::Instance()->isMyFriend([userId UTF8String])));
   } else if([@"getMyFriendList" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
-      BOOL refresh = dict[@"refresh"];
-      
+      BOOL refresh = [dict[@"refresh"] boolValue];
+
       NSMutableArray *ret = [[NSMutableArray alloc] init];
       std::list<std::string> friendList = mars::stn::MessageDB::Instance()->getMyFriendList(refresh);
       for (std::list<std::string>::iterator it = friendList.begin(); it != friendList.end(); it++) {
@@ -1752,7 +1752,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       result(@(mars::stn::MessageDB::Instance()->isBlackListed([userId UTF8String])));
   } else if([@"getBlackList" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
-      BOOL refresh = dict[@"refresh"];
+      BOOL refresh = [dict[@"refresh"] boolValue];
       NSMutableArray *ret = [[NSMutableArray alloc] init];
       std::list<std::string> friendList = mars::stn::MessageDB::Instance()->getBlackList(refresh);
       for (std::list<std::string>::iterator it = friendList.begin(); it != friendList.end(); it++) {
@@ -2363,7 +2363,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
   } else if([@"getChannelInfo" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
       NSString *channelId = dict[@"channelId"];
-      BOOL refresh = dict[@"refresh"];
+      BOOL refresh = [dict[@"refresh"] boolValue];
       
       mars::stn::TChannelInfo tgi = mars::stn::MessageDB::Instance()->GetChannelInfo([channelId UTF8String], refresh);
       
@@ -3291,7 +3291,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
 }
 
 - (void)onFriendRequestsUpdated:(NSMutableArray<NSString *> *)newFriendRequests {
-    [self.channel invokeMethod:@"onFriendRequestsUpdated" arguments:@{@"requests":newFriendRequests}];
+    [self.channel invokeMethod:@"onFriendRequestUpdated" arguments:@{@"requests":newFriendRequests}];
 }
 
 - (void)onSettingUpdated {

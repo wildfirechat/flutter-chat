@@ -21,12 +21,12 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - flutter_imclient (from `.symlinks/plugins/flutter_imclient/ios`)
-  - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
-  - image_picker (from `.symlinks/plugins/image_picker/ios`)
-  - path_provider (from `.symlinks/plugins/path_provider/ios`)
-  - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
-  - sqflite (from `.symlinks/plugins/sqflite/ios`)
+  - "flutter_imclient (from `/Volumes/yohom/public/工作/新声IM/库/wildfire_flutter/flutter_imclient//ios/flutter_imclient.podspec`)"
+  - fluttertoast (from `/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/fluttertoast-7.1.5//ios/fluttertoast.podspec`)
+  - "image_picker (from `/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/image_picker-0.6.7+14//ios/image_picker.podspec`)"
+  - path_provider (from `/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/path_provider-1.6.24//ios/path_provider.podspec`)
+  - shared_preferences (from `/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/shared_preferences-0.4.3//ios/shared_preferences.podspec`)
+  - "sqflite (from `/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/sqflite-1.3.2+1//ios/sqflite.podspec`)"
 
 SPEC REPOS:
   trunk:
@@ -37,17 +37,17 @@ EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
   flutter_imclient:
-    :path: ".symlinks/plugins/flutter_imclient/ios"
+    :path: "/Volumes/yohom/public/工作/新声IM/库/wildfire_flutter/flutter_imclient//ios/flutter_imclient.podspec"
   fluttertoast:
-    :path: ".symlinks/plugins/fluttertoast/ios"
+    :path: "/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/fluttertoast-7.1.5//ios/fluttertoast.podspec"
   image_picker:
-    :path: ".symlinks/plugins/image_picker/ios"
+    :path: "/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/image_picker-0.6.7+14//ios/image_picker.podspec"
   path_provider:
-    :path: ".symlinks/plugins/path_provider/ios"
+    :path: "/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/path_provider-1.6.24//ios/path_provider.podspec"
   shared_preferences:
-    :path: ".symlinks/plugins/shared_preferences/ios"
+    :path: "/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/shared_preferences-0.4.3//ios/shared_preferences.podspec"
   sqflite:
-    :path: ".symlinks/plugins/sqflite/ios"
+    :path: "/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/sqflite-1.3.2+1//ios/sqflite.podspec"
 
 SPEC CHECKSUMS:
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
@@ -62,4 +62,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 8e679eca47255a8ca8067c4c67aab20e64cb974d
 
-COCOAPODS: 1.10.0
+COCOAPODS: 1.10.1
