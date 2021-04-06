@@ -287,7 +287,7 @@ NSMutableDictionary *convertProtoGroupInfo(const mars::stn::TGroupInfo &tgi) {
         groupInfo[@"mute"] = @(tgi.mute);
     if(tgi.joinType)
         groupInfo[@"joinType"] = @(tgi.joinType);
-    if(tgi.searchable)
+    if(tgi.privateChat)
         groupInfo[@"privateChat"] = @(tgi.privateChat);
     if(tgi.searchable)
         groupInfo[@"searchable"] = @(tgi.searchable);
@@ -342,7 +342,7 @@ NSMutableDictionary *convertProtoGroupSearchResult(const mars::stn::TGroupSearch
         }
         searchGroupInfo[@"marchedMemberNames"] = [members copy];
     }
-    
+
     return searchGroupInfo;
 }
 
@@ -402,12 +402,12 @@ static NSMutableDictionary* convertProtoConversationInfo(const mars::stn::TConve
     if (msgDict) {
         info[@"lastMessage"] = msgDict;
     }
-    
+
     if(!tConv.draft.empty())
         info[@"draft"] = [NSString stringWithUTF8String:tConv.draft.c_str()];
     if(tConv.timestamp)
         info[@"timestamp"] = @(tConv.timestamp);
-    
+
     NSMutableDictionary *unreadDict = convertProtoUnreadCount(tConv.unreadCount);
     if (unreadDict) {
         info[@"unreadCount"] = unreadDict;
@@ -472,7 +472,7 @@ static NSMutableArray<NSString *> *convertStdList(const std::list<std::string> &
 
 static NSMutableDictionary* convertProtoFileRecord(const mars::stn::TFileRecord &tfr) {
     NSMutableDictionary *record = [[NSMutableDictionary alloc] init];
-    
+
     NSMutableDictionary *conversation = [[NSMutableDictionary alloc] init];
     record[@"conversation"] = conversation;
     conversation[@"type"] = @(tfr.conversationType);
@@ -486,7 +486,7 @@ static NSMutableDictionary* convertProtoFileRecord(const mars::stn::TFileRecord 
     record[@"size"] = @(tfr.size);
     record[@"downloadCount"] = @(tfr.downloadCount);
     record[@"timestamp"] = @(tfr.timestamp);
-    
+
     return record;
 }
 
@@ -509,7 +509,7 @@ static NSMutableDictionary* convertProtoChatroomInfo(const mars::stn::TChatroomI
     chatroomInfo[@"memberCount"] = @(info.memberCount);
     chatroomInfo[@"createDt"] = @(info.createDt);
     chatroomInfo[@"updateDt"] = @(info.updateDt);
-    
+
     return chatroomInfo;
 }
 
@@ -527,40 +527,40 @@ static NSMutableDictionary* convertProtoChatroomMemberInfo(const mars::stn::TCha
 class RPCB : public mars::stn::ReceiveMessageCallback {
 public:
     RPCB(id<ReceiveMessageDelegate> delegate) : m_delegate(delegate) {}
-    
+
     void onReceiveMessage(const std::list<mars::stn::TMessage> &messageList, bool hasMore) {
         if (m_delegate && !messageList.empty()) {
             NSMutableArray<NSMutableDictionary *> *messages = convertProtoMessageList(messageList, NO);
             [m_delegate onReceiveMessage:messages hasMore:hasMore];
         }
     }
-    
+
     void onRecallMessage(const std::string &operatorId, long long messageUid) {
         if (m_delegate) {
             [m_delegate onRecallMessage:messageUid];
         }
     }
-    
+
     void onDeleteMessage(long long messageUid) {
         if (m_delegate) {
             [m_delegate onDeleteMessage:messageUid];
         }
     }
-    
+
     void onUserReceivedMessage(const std::map<std::string, int64_t> &userReceived) {
         if (m_delegate && !userReceived.empty()) {
             NSMutableDictionary *userRecvdDict = convertProtoUserReceivedList(userReceived);
             [m_delegate onMessageDelivered:userRecvdDict];
         }
     }
-    
+
     void onUserReadedMessage(const std::list<mars::stn::TReadEntry> &userReceived) {
         if (m_delegate && !userReceived.empty()) {
             NSMutableArray<NSMutableDictionary *> *readList = convertProtoReadEntryList(userReceived);
             [m_delegate onMessageReaded:readList];
         }
     }
-    
+
     id<ReceiveMessageDelegate> m_delegate;
 };
 
@@ -568,14 +568,14 @@ public:
 class GUCB : public mars::stn::GetUserInfoCallback {
   public:
   GUCB(id<RefreshUserInfoDelegate> delegate) : m_delegate(delegate) {}
-  
+
   void onSuccess(const std::list<mars::stn::TUserInfo> &userInfoList) {
       if(m_delegate && !userInfoList.empty()) {
           [m_delegate onUserInfoUpdated:converProtoUserInfos(userInfoList)];
       }
   }
   void onFalure(int errorCode) {
-    
+
   }
   id<RefreshUserInfoDelegate> m_delegate;
 };
@@ -583,7 +583,7 @@ class GUCB : public mars::stn::GetUserInfoCallback {
 class GGCB : public mars::stn::GetGroupInfoCallback {
   public:
   GGCB(id<RefreshGroupInfoDelegate> delegate) : m_delegate(delegate) {}
-  
+
   void onSuccess(const std::list<mars::stn::TGroupInfo> &groupInfoList) {
       if(m_delegate && !groupInfoList.empty()) {
           [m_delegate onGroupInfoUpdated:convertProtoGroupInfos(groupInfoList)];
@@ -597,7 +597,7 @@ class GGCB : public mars::stn::GetGroupInfoCallback {
 class GGMCB : public mars::stn::GetGroupMembersCallback {
 public:
     GGMCB(id<RefreshGroupMemberDelegate> delegate) : m_delegate(delegate) {}
-    
+
     void onSuccess(const std::string &groupId, const std::list<mars::stn::TGroupMember> &groupMemberList) {
         if(m_delegate && !groupMemberList.empty()) {
             [m_delegate onGroupMemberUpdated:[NSString stringWithUTF8String:groupId.c_str()] members:convertProtoGroupMembers(groupMemberList)];
@@ -611,7 +611,7 @@ public:
 class GCHCB : public mars::stn::GetChannelInfoCallback {
 public:
     GCHCB(id<RefreshChannelInfoDelegate> delegate) : m_delegate(delegate) {}
-    
+
     void onSuccess(const std::list<mars::stn::TChannelInfo> &channelInfoList) {
         if(m_delegate && !channelInfoList.empty()) {
             NSMutableArray<NSMutableDictionary *> *cs = convertProtoChannelInfoList(channelInfoList);
@@ -632,7 +632,7 @@ public:
         }
     }
     void onFalure(int errorCode) {
-        
+
     }
     id<RefreshFriendListDelegate> m_delegate;
 };
@@ -647,7 +647,7 @@ public:
         }
     }
     void onFalure(int errorCode) {
-        
+
     }
     id<RefreshFriendRequestDelegate> m_delegate;
 };
@@ -661,7 +661,7 @@ public:
     }
   }
   void onFalure(int errorCode) {
-    
+
   }
   id<RefreshSettingDelegate> m_delegate;
 };
@@ -676,7 +676,7 @@ public:
         [m_delegate onConferenceEvent:[NSString stringWithUTF8String:event.c_str()]];
     }
   }
-    
+
   id<ConferenceEventDelegate> m_delegate;
 };
 
@@ -692,13 +692,13 @@ static void fillMessageContent(mars::stn::TMessageContent &content, NSDictionary
     content.pushContent = payload[@"pushContent"] ? [payload[@"pushContent"] UTF8String] : "";
     content.pushData = payload[@"pushData"] ? [payload[@"pushData"] UTF8String] : "";
     content.content = payload[@"content"] ? [payload[@"content"] UTF8String] : "";
-    
+
     FlutterStandardTypedData *binaryData = payload[@"binaryContent"];
     if (binaryData) {
         NSData *data = binaryData.data;
         content.binaryContent = std::string((const char *)data.bytes, data.length);
     }
-    
+
     content.localContent = payload[@"localContent"] ? [payload[@"localContent"] UTF8String] : "";
     content.mediaType = [payload[@"mediaType"] intValue];
     content.remoteMediaUrl = payload[@"remoteMediaUrl"] ? [payload[@"remoteMediaUrl"] UTF8String] : "";
@@ -711,7 +711,7 @@ static void fillMessageContent(mars::stn::TMessageContent &content, NSDictionary
             content.mentionedTargets.push_back([t UTF8String]);
         }
     }
-    
+
     content.extra = payload[@"extra"] ? [payload[@"extra"] UTF8String] : "";
 }
 
@@ -769,16 +769,16 @@ public:
         delete this;
     }
     void onPrepared(long messageId, int64_t savedTime) {
-        
+
     }
     void onMediaUploaded(std::string remoteUrl) {
         m_uploadedBlock([NSString stringWithUTF8String:remoteUrl.c_str()]);
     }
-    
+
     void onProgress(int uploaded, int total) {
         m_progressBlock(uploaded, total);
     }
-    
+
     virtual ~IMSendMessageCallback() {
         m_successBlock = nil;
         m_errorBlock = nil;
@@ -803,7 +803,7 @@ public:
         }
         delete this;
     }
-    
+
     virtual ~IMLoadRemoteMessagesCallback() {
         m_successBlock = nil;
         m_errorBlock = nil;
@@ -832,7 +832,7 @@ public:
             delete this;
         });
     }
-    
+
     virtual ~RecallMessageCallback() {
         m_successBlock = nil;
         m_errorBlock = nil;
@@ -844,9 +844,9 @@ public:
   void(^m_successBlock)(NSString *remoteUrl);
   void(^m_errorBlock)(int error_code);
   void(^m_progressBlock)(long uploaded, long total);
-  
+
   GeneralUpdateMediaCallback(void(^successBlock)(NSString *remoteUrl), void(^progressBlock)(long uploaded, long total), void(^errorBlock)(int error_code)) : mars::stn::UpdateMediaCallback(), m_successBlock(successBlock), m_progressBlock(progressBlock), m_errorBlock(errorBlock) {}
-  
+
   void onSuccess(const std::string &remoteUrl) {
       NSString *url = [NSString stringWithUTF8String:remoteUrl.c_str()];
       dispatch_async(dispatch_get_main_queue(), ^{
@@ -856,7 +856,7 @@ public:
           delete this;
       });
   }
-  
+
   void onFalure(int errorCode) {
       dispatch_async(dispatch_get_main_queue(), ^{
           if (m_errorBlock) {
@@ -865,7 +865,7 @@ public:
           delete this;
       });
   }
-  
+
     void onProgress(int current, int total) {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (m_progressBlock) {
@@ -873,7 +873,7 @@ public:
             }
         });
     }
-    
+
   ~GeneralUpdateMediaCallback() {
     m_successBlock = nil;
     m_errorBlock = nil;
@@ -886,7 +886,7 @@ private:
     void(^m_errorBlock)(int errorCode);
 public:
     IMSearchUserCallback(void(^successBlock)(const std::list<mars::stn::TUserInfo> &users), void(^errorBlock)(int errorCode)) : m_successBlock(successBlock), m_errorBlock(errorBlock) {}
-    
+
     void onSuccess(const std::list<mars::stn::TUserInfo> &users, const std::string &keyword, int page) {
         m_successBlock(users);
         delete this;
@@ -895,7 +895,7 @@ public:
         m_errorBlock(errorCode);
         delete this;
     }
-    
+
     ~IMSearchUserCallback() {}
 };
 
@@ -905,21 +905,21 @@ private:
     void(^m_errorBlock)(int errorCode);
 public:
     IMGetOneUserInfoCallback(void(^successBlock)(const mars::stn::TUserInfo &tUserInfo), void(^errorBlock)(int errorCode)) : m_successBlock(successBlock), m_errorBlock(errorBlock) {}
-    
+
     void onSuccess(const mars::stn::TUserInfo &tUserInfo) {
         if(m_successBlock) {
             m_successBlock(tUserInfo);
         }
         delete this;
     }
-    
+
     void onFalure(int errorCode) {
         if(m_errorBlock) {
             m_errorBlock(errorCode);
         }
         delete this;
     }
-    
+
     ~IMGetOneUserInfoCallback() {}
 };
 
@@ -929,7 +929,7 @@ private:
     void(^m_errorBlock)(int error_code);
 public:
     IMGetGroupMembersCallback(void(^successBlock)(const std::list<mars::stn::TGroupMember> &groupMemberList), void(^errorBlock)(int error_code)) : mars::stn::GetGroupMembersCallback(), m_successBlock(successBlock), m_errorBlock(errorBlock) {};
-    
+
     void onSuccess(const std::string &groupId, const std::list<mars::stn::TGroupMember> &groupMemberList) {
             if(m_successBlock) {
                 m_successBlock(groupMemberList);
@@ -944,7 +944,7 @@ public:
             delete this;
         });
     }
-    
+
     virtual ~IMGetGroupMembersCallback() {
         m_successBlock = nil;
         m_errorBlock = nil;
@@ -957,12 +957,12 @@ private:
     void(^m_errorBlock)(int error_code);
 public:
     IMGetOneGroupInfoCallback(void(^successBlock)(const mars::stn::TGroupInfo &tgi), void(^errorBlock)(int error_code)) : mars::stn::GetOneGroupInfoCallback(), m_successBlock(successBlock), m_errorBlock(errorBlock) {};
-    
+
     void onSuccess(const mars::stn::TGroupInfo &tgi) {
             if (m_successBlock) {
                 m_successBlock(tgi);
             }
-                
+
             delete this;
     }
     void onFalure(int errorCode) {
@@ -973,7 +973,7 @@ public:
             delete this;
         });
     }
-    
+
     virtual ~IMGetOneGroupInfoCallback() {
         m_successBlock = nil;
         m_errorBlock = nil;
@@ -1058,7 +1058,7 @@ public:
         }
         delete this;
     }
-    
+
     virtual ~IMLoadFileRecordCallback() {
         m_successBlock = nil;
         m_errorBlock = nil;
@@ -1083,7 +1083,7 @@ public:
             }
             delete this;
     }
-    
+
     virtual ~IMCreateChannelCallback() {
         m_successBlock = nil;
         m_errorBlock = nil;
@@ -1096,7 +1096,7 @@ private:
     void(^m_errorBlock)(int errorCode);
 public:
     IMSearchChannelCallback(void(^successBlock)(const std::list<mars::stn::TChannelInfo> &channels), void(^errorBlock)(int errorCode)) : m_successBlock(successBlock), m_errorBlock(errorBlock) {}
-    
+
     void onSuccess(const std::list<mars::stn::TChannelInfo> &channels, const std::string &keyword) {
         m_successBlock(channels);
         delete this;
@@ -1105,7 +1105,7 @@ public:
         m_errorBlock(errorCode);
         delete this;
     }
-    
+
     ~IMSearchChannelCallback() {}
 };
 
@@ -1127,7 +1127,7 @@ public:
         }
         delete this;
     }
-    
+
     virtual ~IMGetChatroomInfoCallback() {
         m_successBlock = nil;
         m_errorBlock = nil;
@@ -1154,7 +1154,7 @@ public:
             delete this;
         });
     }
-    
+
     virtual ~IMGetChatroomMemberInfoCallback() {
         m_successBlock = nil;
         m_errorBlock = nil;
@@ -1209,7 +1209,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
         self.deviceTokenUploaded = NO;
         return;
     }
-  
+
     NSString *appName =
     [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleIdentifier"];
     mars::stn::setDeviceToken([appName UTF8String], [token UTF8String], mars::app::AppCallBack::Instance()->GetPushType());
@@ -1226,7 +1226,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       NSString *host = dict[@"host"];
       self.userId = dict[@"userId"];
       NSString *token = dict[@"token"];
-      
+
       [self connect:host userId:self.userId token:token result:result];
   } else if([@"currentUserId" isEqualToString:call.method]) {
       result(self.userId);
@@ -1355,7 +1355,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       NSString *withUser = dict[@"withUser"];
       long long fromIndex = [dict[@"fromIndex"] longLongValue];
       int count = [dict[@"count"] intValue];
-      
+
       [self getMessages:convDict contentTypes:contentTypes from:fromIndex count:count withUser:withUser result:result];
   } else if([@"getMessagesByStatus" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
@@ -1364,7 +1364,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       NSString *withUser = dict[@"withUser"];
       long long fromIndex = [dict[@"fromIndex"] longLongValue];
       int count = [dict[@"count"] intValue];;
-      
+
       [self getMessages:convDict messageStatus:messageStatus from:fromIndex count:count withUser:withUser result:result];
   } else if([@"getConversationsMessages" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
@@ -1374,7 +1374,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       NSString *withUser = dict[@"withUser"];
       long long fromIndex = [dict[@"fromIndex"] longLongValue];
       int count = [dict[@"count"] intValue];
-      
+
       [self getConversationsMessages:types lines:lines contentTypes:contentTypes from:fromIndex count:count withUser:withUser result:result];
   } else if([@"getConversationsMessageByStatus" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
@@ -1391,7 +1391,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       int requestId = [dict[@"requestId"] intValue];
       long long beforeMessageUid = [dict[@"beforeMessageUid"] longLongValue];
       int count = [dict[@"count"] intValue];
-      
+
       [self getRemoteMessages:convDict before:beforeMessageUid count:count ofRequest:requestId];
       result(nil);
   } else if([@"getMessage" isEqualToString:call.method]) {
@@ -1411,18 +1411,18 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       BOOL order = [dict[@"order"] boolValue];
       int limit = [dict[@"limit"] intValue];
       int offset = [dict[@"offset"] intValue];
-      
+
       if (keyword.length == 0 || limit == 0) {
           result(nil);
           return;
       }
-      
+
       int type = [convDict[@"type"] intValue];
       std::string target = [convDict[@"target"] UTF8String];
       int line = [convDict[@"line"] intValue];
-      
+
       std::list<mars::stn::TMessage> tmessages = mars::stn::MessageDB::Instance()->SearchMessages(type, target, line, [keyword UTF8String], order ? true : false, limit, offset);
-      
+
       result(convertProtoMessageList(tmessages, YES));
   } else if([@"searchConversationsMessages" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
@@ -1432,31 +1432,31 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       NSArray<NSNumber *> *contentTypes = dict[@"contentTypes"];
       long long fromIndex = [dict[@"fromIndex"] intValue];
       int count = [dict[@"count"] intValue];
-      
+
       std::list<int> convtypes;
       for (NSNumber *ct in conversationTypes) {
           convtypes.push_back([ct intValue]);
       }
-      
+
       std::list<int> ls;
       for (NSNumber *type in lines) {
           ls.push_back([type intValue]);
       }
-      
-      
+
+
       std::list<int> types;
       if (![contentTypes isKindOfClass:[NSNull class]]) {
           for (NSNumber *num in contentTypes) {
               types.push_back(num.intValue);
           }
       }
-      
+
       bool direction = true;
       if (count < 0) {
           direction = false;
           count = -count;
       }
-      
+
       std::list<mars::stn::TMessage> tmessages = mars::stn::MessageDB::Instance()->SearchMessagesEx(convtypes, ls, [keyword UTF8String], types, direction, (int)count, fromIndex);
       result(convertProtoMessageList(tmessages, false));
   } else if([@"sendMessage" isEqualToString:call.method]) {
@@ -1472,7 +1472,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       int requestId = [dict[@"requestId"] intValue];
       long messageId = [dict[@"messageId"] longValue];
       int expireDuration = [dict[@"expireDuration"] intValue];
-      
+
       if(mars::stn::sendMessageEx(messageId, new IMSendMessageCallback(requestId, ^(long long messageUid, long long timestamp) {
           [self.channel invokeMethod:@"onSendMessageSuccess" arguments:@{@"requestId":@(requestId), @"messageUid":@(messageUid), @"timestamp":@(timestamp)}];
       },nil,nil,^(int errorCode) {
@@ -1486,7 +1486,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       NSDictionary *dict = (NSDictionary *)call.arguments;
       int requestId = [dict[@"requestId"] intValue];
       long long messageUid = [dict[@"messageUid"] longLongValue];
-      
+
       mars::stn::recallMessage(messageUid, new RecallMessageCallback(^(void){
           [self callbackOperationVoidSuccess:requestId];
       }, ^(int errorCode) {
@@ -1500,7 +1500,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       int mediaType = [dict[@"mediaType"] intValue];
       FlutterStandardTypedData *binaryData = dict[@"mediaData"];
       NSData *mediaData = binaryData.data;
-      
+
       mars::stn::uploadGeneralMedia(fileName == nil ? "" : [fileName UTF8String], std::string((char *)mediaData.bytes, mediaData.length), (int)mediaType, new GeneralUpdateMediaCallback(^(NSString *remoteUrl) {
           [self.channel invokeMethod:@"onSendMediaMessageUploaded" arguments:@{@"requestId":@(requestId), @"remoteUrl":remoteUrl}];
       }, ^(long uploaded, long total) {
@@ -1517,7 +1517,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       NSDictionary *dict = (NSDictionary *)call.arguments;
       NSDictionary *convDict = dict[@"conversation"];
       long long beforeTime = [dict[@"before"] longLongValue];
-      
+
       int type = [convDict[@"type"] intValue];
       std::string target = [convDict[@"target"] UTF8String];
       int line = [convDict[@"line"] intValue];
@@ -1530,7 +1530,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
   } else if([@"setMediaMessagePlayed" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
       long messageId = [dict[@"messageId"] longValue];
-      
+
       result(@(mars::stn::MessageDB::Instance()->updateMessageStatus(messageId, mars::stn::Message_Status_Played)));
   } else if([@"insertMessage" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
@@ -1538,19 +1538,19 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       NSDictionary *content = dict[@"content"];
       int status = [dict[@"status"] intValue];
       long long serverTime = [dict[@"serverTime"] longLongValue];
-      
+
       mars::stn::TMessage tmsg;
       fillTMessage(tmsg, conversation, content);
-      
+
       if(status >= mars::stn::Message_Status_Unread) {
           tmsg.direction = 1;
       }
-      
+
       tmsg.from = [self.userId UTF8String];
-      
+
       tmsg.status = (mars::stn::MessageStatus)status;
       tmsg.timestamp = serverTime;
-      
+
       long msgId = mars::stn::MessageDB::Instance()->InsertMessage(tmsg);
       result(@(msgId));
   } else if([@"updateMessage" isEqualToString:call.method]) {
@@ -1572,14 +1572,14 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       int type = [convDict[@"type"] intValue];
       std::string target = [convDict[@"target"] UTF8String];
       int line = [convDict[@"line"] intValue];
-      
+
       result(@(mars::stn::MessageDB::Instance()->GetMsgTotalCount(type, target, line)));
   } else if([@"getUserInfo" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
       NSString *userId = dict[@"userId"];
       BOOL refresh = [dict[@"refresh"] boolValue];
       NSString *groupId = dict[@"groupId"];
-      
+
       mars::stn::TUserInfo tui = mars::stn::MessageDB::Instance()->getUserInfo([userId UTF8String], groupId ? [groupId UTF8String] : "", refresh);
       if (!tui.uid.empty()) {
           result(convertProtoUserInfo(tui));
@@ -1590,13 +1590,13 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       NSDictionary *dict = (NSDictionary *)call.arguments;
       NSArray<NSString *> *userIds = dict[@"userIds"];
       NSString *groupId = dict[@"groupId"];
-      
+
       std::list<std::string> strIds;
       for (NSString *userId in userIds) {
           strIds.insert(strIds.end(), [userId UTF8String]);
       }
       std::list<mars::stn::TUserInfo> tuis = mars::stn::MessageDB::Instance()->getUserInfos(strIds, groupId ? [groupId UTF8String] : "");
-      
+
       NSMutableArray<NSMutableDictionary *> *ret = [[NSMutableArray alloc] init];
       for (std::list<mars::stn::TUserInfo>::iterator it = tuis.begin(); it != tuis.end(); it++) {
           NSMutableDictionary *userInfo = convertProtoUserInfo(*it);
@@ -1609,7 +1609,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       int searchType = [dict[@"searchType"] intValue];
       int page = [dict[@"page"] intValue];
       int requestId = [dict[@"requestId"] intValue];
-      
+
       mars::stn::searchUser([keyword UTF8String], (int)searchType, page, new IMSearchUserCallback(^(const std::list<mars::stn::TUserInfo> &tUserInfos) {
           [self.channel invokeMethod:@"onSearchUserResult" arguments:@{@"requestId":@(requestId), @"users":converProtoUserInfos(tUserInfos)}];
       }, ^(int errorCode) {
@@ -1621,8 +1621,8 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
       int requestId = [dict[@"requestId"] intValue];
       NSString *userId = dict[@"userId"];
       BOOL refresh = [dict[@"refresh"] boolValue];
-      
-      
+
+
       mars::stn::MessageDB::Instance()->GetUserInfo([userId UTF8String], refresh, new IMGetOneUserInfoCallback(^(const mars::stn::TUserInfo &tUserInfo) {
           [self.channel invokeMethod:@"getUserInfoAsyncCallback" arguments:@{@"requestId":@(requestId), @"user":convertProtoUserInfo(tUserInfo)}];
       }, ^(int errorCode) {
@@ -1632,7 +1632,7 @@ FlutterImclientPlugin *gIMClientInstance = [[FlutterImclientPlugin alloc] init];
   } else if([@"isMyFriend" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
       NSString *userId = dict[@"userId"];
-      
+
       result(@(mars::stn::MessageDB::Instance()->isMyFriend([userId UTF8String])));
   } else if([@"getMyFriendList" isEqualToString:call.method]) {
       NSDictionary *dict = (NSDictionary *)call.arguments;
