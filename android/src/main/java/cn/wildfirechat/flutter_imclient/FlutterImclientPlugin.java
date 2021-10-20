@@ -505,6 +505,11 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       ProtoLogic.recallMessage(messageUid, new GeneralVoidCallback(requestId));
       result.success(null);
     } else if("uploadMedia".equals(call.method)) {
+      int requestId = call.argument("requestId");
+      String fileName = call.argument("fileName");
+      int mediaType = call.argument("mediaType");
+      byte[] mediaData = call.argument("mediaData");
+      ProtoLogic.ProtoLogic.uploadMedia(fileName, mediaData, mediaType, new UploadMediaCallback(requestId));
       result.success(null);
     } else if("deleteMessage".equals(call.method)) {
       long messageId = getLongPara(call, "messageId");
@@ -1857,6 +1862,36 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       args.put("requestId", requestId);
       args.put("remoteUrl", s);
       callback2UI("onSendMediaMessageUploaded", args);
+    }
+  }
+
+  private class UploadMediaCallback implements ProtoLogic.IUploadMediaCallback {
+    private int requestId;
+
+    public UploadMediaCallback(int requestId) {
+      this.requestId = requestId;
+    }
+
+    @Override
+    public void onSuccess(String s) {
+      Map args = new HashMap();
+      args.put("requestId", requestId);
+      args.put("remoteUrl", s);
+      callback2UI("onSendMediaMessageUploaded", args);
+    }
+
+    @Override
+    public void onFailure(int i) {
+      callbackFailure(requestId, i);
+    }
+
+    @Override
+    public void onProgress(long l, long l1) {
+      Map args = new HashMap();
+      args.put("requestId", requestId);
+      args.put("uploaded", l);
+      args.put("total", l1);
+      callback2UI("onSendMediaMessageProgress", args);
     }
   }
 
