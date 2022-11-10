@@ -509,7 +509,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       String fileName = call.argument("fileName");
       int mediaType = call.argument("mediaType");
       byte[] mediaData = call.argument("mediaData");
-      ProtoLogic.ProtoLogic.uploadMedia(fileName, mediaData, mediaType, new UploadMediaCallback(requestId));
+      ProtoLogic.uploadMedia(fileName, mediaData, mediaType, new UploadMediaCallback(requestId));
       result.success(null);
     } else if("deleteMessage".equals(call.method)) {
       long messageId = getLongPara(call, "messageId");

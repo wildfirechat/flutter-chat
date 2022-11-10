@@ -11,9 +11,11 @@ class _SettingsTabState extends State<SettingsTab> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: RaisedButton(onPressed: (){
+        child: ElevatedButton(onPressed: (){
           FlutterImclient.disconnect();
-        }, child: Text('退出'), color: Colors.red,),
+        }, child: Text('退出'),
+          // color: Colors.red,
+        ),
       ),
     );
   }

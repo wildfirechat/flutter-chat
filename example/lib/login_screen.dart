@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_imclient/flutter_imclient.dart';
 import 'package:flutter_imclient_example/app_server.dart';
 import 'package:flutter_imclient_example/config.dart';
@@ -70,7 +69,7 @@ class LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   SizedBox(width: 8,),
-                  RaisedButton(onPressed: isSentCode? null : (){
+                  ElevatedButton(onPressed: isSentCode? null : (){
                     AppServer.sendCode(phoneFieldController.value.text, (){
                       Fluttertoast.showToast(msg: "验证码发送成功，请在5分钟内进行验证!");
                       final Duration duration = Duration(seconds: 1);
@@ -90,15 +89,17 @@ class LoginScreenState extends State<LoginScreen> {
                         isSentCode = true;
                       });
                     }, (msg) => Fluttertoast.showToast(msg: "发送验证码失败!"));
-                  }, child: isSentCode ? Text('$waitResendCount s') : Text('发送验证码'), color: Colors.blue, disabledColor: Colors.grey,),
+                  }, child: isSentCode ? Text('$waitResendCount s') : Text('发送验证码'),
+                    // color: Colors.blue, disabledColor: Colors.grey,
+                  ),
                 ],
               ),
             ),
-            RaisedButton(
+            ElevatedButton(
               child: Text(
                 '登录',
               ),
-              color: Colors.blue[600],
+              // color: Colors.blue[600],
               onPressed: () {
                 String phoneNum = phoneFieldController.value.text;
                 String code = codeFieldController.value.text;
@@ -106,7 +107,7 @@ class LoginScreenState extends State<LoginScreen> {
                   AppServer.login(
                       phoneNum, code, (userId, token, isNewUser) {
                     FlutterImclient.connect(Config.IM_Host, userId, token);
-                    
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => HomeTabBar()),

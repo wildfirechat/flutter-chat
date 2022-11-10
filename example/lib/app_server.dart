@@ -24,9 +24,9 @@ class AppServer {
   }
 
   static void login(String phoneNum, String smsCode, AppServerLoginSuccessCallback successCallback, AppServerErrorCallback errorCallback) async {
-    String jsonStr = json.encode({'mobile':phoneNum, 'code':smsCode, 'clientId':await FlutterImclient.clientId});
+    String jsonStr = json.encode({'mobile':phoneNum, 'code':smsCode, 'clientId':await FlutterImclient.clientId, 'platform': 2});
     postJson('/login', jsonStr, (response) {
-      
+
       Map<dynamic, dynamic> map = json.decode(response);
       if(map['code'] == 0) {
         Map<dynamic, dynamic> result = map['result'];
