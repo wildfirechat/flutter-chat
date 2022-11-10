@@ -118,21 +118,21 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "flutter_imclient");
     channel.setMethodCallHandler(this);
 
-    PushService.init(flutterPluginBinding.getApplicationContext(), BuildConfig.APPLICATION_ID, new PushService.IPushCallback() {
-      @Override
-      public void onPushToken(int pushType, String pushToken) {
-        if(TextUtils.isEmpty(pushToken)) {
-          return;
-        }
-
-        FlutterImclientPlugin.this.pushType = pushType;
-        FlutterImclientPlugin.this.pushToken = pushToken;
-        if(connectionStatus == 1) {
-          deviceTokenSetted = true;
-          ProtoLogic.setDeviceToken(gContext.getPackageName(), pushToken, pushType);
-        }
-      }
-    });
+//    PushService.init(flutterPluginBinding.getApplicationContext(), BuildConfig.APPLICATION_ID, new PushService.IPushCallback() {
+//      @Override
+//      public void onPushToken(int pushType, String pushToken) {
+//        if(TextUtils.isEmpty(pushToken)) {
+//          return;
+//        }
+//
+//        FlutterImclientPlugin.this.pushType = pushType;
+//        FlutterImclientPlugin.this.pushToken = pushToken;
+//        if(connectionStatus == 1) {
+//          deviceTokenSetted = true;
+//          ProtoLogic.setDeviceToken(gContext.getPackageName(), pushToken, pushType);
+//        }
+//      }
+//    });
 
     ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifecycleObserver() {
       @OnLifecycleEvent(Lifecycle.Event.ON_START)
