@@ -1,5 +1,7 @@
 package cn.wildfirechat.flutter_imclient;
 
+import static com.tencent.mars.xlog.Xlog.AppednerModeAsync;
+
 import android.content.Context;
 import android.content.IntentFilter;
 import android.os.Build;
@@ -13,7 +15,6 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
@@ -25,7 +26,6 @@ import com.tencent.mars.app.AppLogic;
 import com.tencent.mars.proto.ProtoLogic;
 import com.tencent.mars.sdt.SdtLogic;
 import com.tencent.mars.xlog.Xlog;
-
 
 import java.io.File;
 import java.io.RandomAccessFile;
@@ -53,14 +53,11 @@ import cn.wildfirechat.model.ProtoMessageContent;
 import cn.wildfirechat.model.ProtoReadEntry;
 import cn.wildfirechat.model.ProtoUnreadCount;
 import cn.wildfirechat.model.ProtoUserInfo;
-import cn.wildfirechat.push.PushService;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-
-import static com.tencent.mars.xlog.Xlog.AppednerModeAsync;
 
 /** FlutterImclientPlugin */
 public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, AppLogic.ICallBack, SdtLogic.ICallBack, ProtoLogic.IUserInfoUpdateCallback, ProtoLogic.ISettingUpdateCallback, ProtoLogic.IFriendListUpdateCallback, ProtoLogic.IFriendRequestListUpdateCallback, ProtoLogic.IGroupInfoUpdateCallback, ProtoLogic.IGroupMembersUpdateCallback, ProtoLogic.IChannelInfoUpdateCallback, ProtoLogic.IConnectionStatusCallback, ProtoLogic.IReceiveMessageCallback, ProtoLogic.IConferenceEventCallback {
@@ -1957,8 +1954,14 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
 
   @Override
   public String getAppFilePath() {
-    if (userId != null)
-      return appPath + "/" + userId;
+    if (userId != null){
+        String path = appPath + "/" + userId;
+        File file = new File(appPath + "/" + userId);
+        if (!file.exists()){
+            file.mkdir();
+        }
+        return  path;
+    }
     return appPath;
   }
 
