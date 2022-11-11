@@ -425,7 +425,8 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       long beforeMessageUid = getLongPara(call, "beforeMessageUid");
       int count = call.argument("count");
 
-      ProtoLogic.getRemoteMessages(type, target, line, beforeMessageUid, count, new ProtoLogic.ILoadRemoteMessagesCallback() {
+      int[] contentTypes = {};
+      ProtoLogic.getRemoteMessages(type, target, line, beforeMessageUid, count,contentTypes, new ProtoLogic.ILoadRemoteMessagesCallback() {
         @Override
         public void onSuccess(ProtoMessage[] protoMessages) {
           Map args = new HashMap();
@@ -650,7 +651,8 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       int requestId = call.argument("requestId");
       String userId = call.argument("userId");
       String reason = call.argument("reason");
-      ProtoLogic.sendFriendRequest(userId, reason, new GeneralVoidCallback(requestId));
+      String extra = "";
+      ProtoLogic.sendFriendRequest(userId, reason,extra, new GeneralVoidCallback(requestId));
       result.success(null);
     } else if("handleFriendRequest".equals(call.method)) {
       int requestId = call.argument("requestId");
@@ -748,7 +750,9 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       Map notifyContent = call.argument("notifyContent");
 
       ProtoMessageContent content = convertMessageContent(notifyContent);
-      ProtoLogic.createGroup(groupId, groupName, groupPortrait, groupType, convertStringList(groupMembers), convertIntegerList(notifyLines), content, new GeneralStringCallback(requestId));
+      String groupExtra = "";
+      String groupMemberExtra = "";
+      ProtoLogic.createGroup(groupId, groupName, groupPortrait, groupType, groupExtra, convertStringList(groupMembers), groupMemberExtra, convertIntegerList(notifyLines), content, new GeneralStringCallback(requestId));
       result.success(null);
     } else if("addGroupMembers".equals(call.method)) {
       int requestId = call.argument("requestId");
@@ -756,7 +760,8 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       List<String> groupMembers = call.argument("groupMembers");
       List<Integer> notifyLines = call.argument("notifyLines");
       Map notifyContent = call.argument("notifyContent");
-      ProtoLogic.addMembers(groupId, convertStringList(groupMembers), convertIntegerList(notifyLines), convertMessageContent(notifyContent), new GeneralVoidCallback(requestId));
+      String extra = "";
+      ProtoLogic.addMembers(groupId, convertStringList(groupMembers), extra, convertIntegerList(notifyLines), convertMessageContent(notifyContent), new GeneralVoidCallback(requestId));
       result.success(null);
     } else if("kickoffGroupMembers".equals(call.method)) {
       int requestId = call.argument("requestId");
@@ -1118,7 +1123,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
         target = (String)conversation.get("target");
         line = (int)conversation.get("line");
       }
-      ProtoLogic.getConversationFileRecords(type, target, line, userId, beforeMessageUid, count, new ProtoLogic.ILoadFileRecordCallback() {
+      ProtoLogic.getConversationFileRecords(type, target, line, userId, beforeMessageUid, 0, count, new ProtoLogic.ILoadFileRecordCallback() {
         @Override
         public void onSuccess(ProtoFileRecord[] protoFileRecords) {
           Map args = new HashMap();
@@ -1137,7 +1142,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       final int requestId = call.argument("requestId");
       long beforeMessageUid = getLongPara(call, "beforeMessageUid");
       int count = call.argument("count");
-      ProtoLogic.getMyFileRecords(beforeMessageUid, count, new ProtoLogic.ILoadFileRecordCallback() {
+      ProtoLogic.getMyFileRecords(beforeMessageUid, 0, count, new ProtoLogic.ILoadFileRecordCallback() {
         @Override
         public void onSuccess(ProtoFileRecord[] protoFileRecords) {
           Map args = new HashMap();
@@ -1173,7 +1178,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
         target = (String)conversation.get("target");
         line = (int)conversation.get("line");
       }
-      ProtoLogic.searchConversationFileRecords(keyword, type, target, line, userId, beforeMessageUid, count, new ProtoLogic.ILoadFileRecordCallback() {
+      ProtoLogic.searchConversationFileRecords(keyword, type, target, line, userId, beforeMessageUid, 0, count, new ProtoLogic.ILoadFileRecordCallback() {
         @Override
         public void onSuccess(ProtoFileRecord[] protoFileRecords) {
           Map args = new HashMap();
@@ -1194,7 +1199,7 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       long beforeMessageUid = getLongPara(call, "beforeMessageUid");
       int count = call.argument("count");
 
-      ProtoLogic.searchMyFileRecords(keyword, beforeMessageUid, count, new ProtoLogic.ILoadFileRecordCallback() {
+      ProtoLogic.searchMyFileRecords(keyword, beforeMessageUid, 0, count, new ProtoLogic.ILoadFileRecordCallback() {
         @Override
         public void onSuccess(ProtoFileRecord[] protoFileRecords) {
           Map args = new HashMap();
@@ -1214,9 +1219,9 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
       final String mediaPath = call.argument("mediaPath");
       long messageUid = getLongPara(call, "messageUid");
       int mediaType = call.argument("mediaType");
-      ProtoLogic.getAuthorizedMediaUrl(messageUid, mediaType, mediaPath, new ProtoLogic.IGeneralCallback2() {
+      ProtoLogic.getAuthorizedMediaUrl(messageUid, mediaType, mediaPath, new ProtoLogic.IGetAuthorizedMediaUrlCallback() {
         @Override
-        public void onSuccess(String s) {
+        public void onSuccess(String s, String s2) {
           Map args = new HashMap();
           args.put("requestId", requestId);
           args.put("string", s);
@@ -1308,8 +1313,8 @@ public class FlutterImclientPlugin implements FlutterPlugin, MethodCallHandler, 
     if(unread != null)
       map.put("unreadCount", unread);
 
-    if(protoData.isTop())
-      map.put("isTop", protoData.isTop());
+    if(protoData.getIsTop() == 1)
+      map.put("isTop", protoData.getIsTop());
     if(protoData.isSilent())
       map.put("isSilent", protoData.isSilent());
 
