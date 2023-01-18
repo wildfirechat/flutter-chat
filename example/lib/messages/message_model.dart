@@ -1,4 +1,4 @@
-import 'package:flutter_imclient/message/message.dart';
+import 'package:imclient/message/message.dart';
 
 class MessageModel {
 

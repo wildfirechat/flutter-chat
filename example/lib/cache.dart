@@ -1,8 +1,9 @@
-import 'package:flutter_imclient/model/channel_info.dart';
-import 'package:flutter_imclient/model/conversation.dart';
-import 'package:flutter_imclient/model/group_info.dart';
-import 'package:flutter_imclient/model/user_info.dart';
 
+
+import 'package:imclient/model/channel_info.dart';
+import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/group_info.dart';
+import 'package:imclient/model/user_info.dart';
 
 class Cache {
  static Map<String, UserInfo> _userInfoCache = Map();

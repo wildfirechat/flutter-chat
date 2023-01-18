@@ -1,16 +1,18 @@
 PODS:
   - Flutter (1.0.0)
-  - flutter_imclient (0.0.1):
-    - Flutter
   - fluttertoast (0.0.2):
     - Flutter
     - Toast
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
-  - image_picker (0.0.1):
+  - image_picker_ios (0.0.1):
     - Flutter
-  - path_provider (0.0.1):
+  - imclient (0.0.1):
+    - Flutter
+  - path_provider_ios (0.0.1):
+    - Flutter
+  - rtckit (0.0.1):
     - Flutter
   - shared_preferences (0.0.1):
     - Flutter
@@ -21,12 +23,13 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - "flutter_imclient (from `/Volumes/yohom/public/工作/新声IM/库/wildfire_flutter/flutter_imclient//ios/flutter_imclient.podspec`)"
-  - fluttertoast (from `/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/fluttertoast-7.1.5//ios/fluttertoast.podspec`)
-  - "image_picker (from `/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/image_picker-0.6.7+14//ios/image_picker.podspec`)"
-  - path_provider (from `/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/path_provider-1.6.24//ios/path_provider.podspec`)
-  - shared_preferences (from `/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/shared_preferences-0.4.3//ios/shared_preferences.podspec`)
-  - "sqflite (from `/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/sqflite-1.3.2+1//ios/sqflite.podspec`)"
+  - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
+  - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - imclient (from `.symlinks/plugins/imclient/ios`)
+  - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
+  - rtckit (from `.symlinks/plugins/rtckit/ios`)
+  - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
+  - sqflite (from `.symlinks/plugins/sqflite/ios`)
 
 SPEC REPOS:
   trunk:
@@ -36,30 +39,33 @@ SPEC REPOS:
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
-  flutter_imclient:
-    :path: "/Volumes/yohom/public/工作/新声IM/库/wildfire_flutter/flutter_imclient//ios/flutter_imclient.podspec"
   fluttertoast:
-    :path: "/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/fluttertoast-7.1.5//ios/fluttertoast.podspec"
-  image_picker:
-    :path: "/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/image_picker-0.6.7+14//ios/image_picker.podspec"
-  path_provider:
-    :path: "/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/path_provider-1.6.24//ios/path_provider.podspec"
+    :path: ".symlinks/plugins/fluttertoast/ios"
+  image_picker_ios:
+    :path: ".symlinks/plugins/image_picker_ios/ios"
+  imclient:
+    :path: ".symlinks/plugins/imclient/ios"
+  path_provider_ios:
+    :path: ".symlinks/plugins/path_provider_ios/ios"
+  rtckit:
+    :path: ".symlinks/plugins/rtckit/ios"
   shared_preferences:
-    :path: "/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/shared_preferences-0.4.3//ios/shared_preferences.podspec"
+    :path: ".symlinks/plugins/shared_preferences/ios"
   sqflite:
-    :path: "/Users/yohom/.pub-cache/hosted/pub.flutter-io.cn/sqflite-1.3.2+1//ios/sqflite.podspec"
+    :path: ".symlinks/plugins/sqflite/ios"
 
 SPEC CHECKSUMS:
-  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  flutter_imclient: 01177516b52a85923f5e54da22b5aca183b0f11f
-  fluttertoast: 6122fa75143e992b1d3470f61000f591a798cc58
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  fluttertoast: eb263d302cc92e04176c053d2385237e9f43fad0
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
-  image_picker: 9c3312491f862b28d21ecd8fdf0ee14e601b3f09
-  path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
-  shared_preferences: 1feebfa37bb57264736e16865e7ffae7fc99b523
+  image_picker_ios: b786a5dcf033a8336a657191401bfdf12017dabb
+  imclient: f6c1a8cc36cba50958f4d4b27d226c2da3b37ade
+  path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
+  rtckit: 1fba5c8e5d88384457f750d148bcdd28cf435b8a
+  shared_preferences: 430726339841afefe5142b9c1f50cb6bd7793e01
   sqflite: 6d358c025f5b867b29ed92fc697fd34924e11904
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
 
-PODFILE CHECKSUM: 8e679eca47255a8ca8067c4c67aab20e64cb974d
+PODFILE CHECKSUM: 663715e941f9adb426e33bf9376914006f9ea95b
 
-COCOAPODS: 1.10.1
+COCOAPODS: 1.11.3

@@ -1,5 +1,3 @@
-include ':push'
-include ':mars-core-release'
 include ':app'
 
 def localPropertiesFile = new File(rootProject.projectDir, "local.properties")

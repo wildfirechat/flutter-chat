@@ -2,12 +2,16 @@ import 'dart:async';
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_imclient/flutter_imclient.dart';
-import 'package:flutter_imclient/message/message.dart';
-import 'package:flutter_imclient/message/text_message_content.dart';
-import 'package:flutter_imclient/model/conversation.dart';
-import 'package:flutter_imclient_example/messages/message_cell.dart';
-import 'package:flutter_imclient_example/messages/message_model.dart';
+import 'package:imclient/imclient.dart';
+import 'package:imclient/message/message.dart';
+import 'package:imclient/message/text_message_content.dart';
+import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/group_member.dart';
+import 'package:rtckit/rtckit.dart';
+
+import 'message_cell.dart';
+import 'message_model.dart';
+
 
 class MessagesScreen extends StatefulWidget {
   final Conversation conversation;
@@ -20,7 +24,7 @@ class MessagesScreen extends StatefulWidget {
 
 class _State extends State<MessagesScreen> {
   List<MessageModel> models = List<MessageModel>();
-  EventBus _eventBus = FlutterImclient.IMEventBus;
+  final EventBus _eventBus = Imclient.IMEventBus;
   StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
 
   bool isLoading = false;
@@ -32,7 +36,7 @@ class _State extends State<MessagesScreen> {
 
   @override
   void initState() {
-    FlutterImclient.getMessages(widget.conversation, 0, 10).then((value) {
+    Imclient.getMessages(widget.conversation, 0, 10).then((value) {
       if(value != null && value.isNotEmpty) {
         _appendMessage(value);
       }
@@ -45,7 +49,7 @@ class _State extends State<MessagesScreen> {
       }
     });
 
-    FlutterImclient.clearConversationUnreadStatus(widget.conversation);
+    Imclient.clearConversationUnreadStatus(widget.conversation);
   }
 
   @override
@@ -61,9 +65,10 @@ class _State extends State<MessagesScreen> {
         if(element.conversation != widget.conversation) {
           return;
         }
-        if(element.content.meta.flag.index & 0x2 == 0) {
+        if(element.messageId == 0) {
           return;
         }
+
         haveNewMsg = true;
         MessageModel model = MessageModel(element, showTimeLabel: true);
         if(front)
@@ -72,7 +77,7 @@ class _State extends State<MessagesScreen> {
           models.add(model);
       });
       if(haveNewMsg)
-        FlutterImclient.clearConversationUnreadStatus(widget.conversation);
+        Imclient.clearConversationUnreadStatus(widget.conversation);
     });
   }
 
@@ -97,7 +102,7 @@ class _State extends State<MessagesScreen> {
         return;
       } else {
         fromIndex = models.last.message.messageUid;
-        FlutterImclient.getRemoteMessages(widget.conversation, fromIndex, 20, (messages) {
+        Imclient.getRemoteMessages(widget.conversation, fromIndex, 20, (messages) {
           if(messages == null || messages.isEmpty) {
             noMoreRemoteHistoryMsg = true;
           }
@@ -109,7 +114,7 @@ class _State extends State<MessagesScreen> {
         });
       }
     } else {
-      FlutterImclient.getMessages(widget.conversation, fromIndex, 20).then((
+      Imclient.getMessages(widget.conversation, fromIndex, 20).then((
           value) {
         _appendMessage(value);
         isLoading = false;
@@ -154,8 +159,10 @@ class _State extends State<MessagesScreen> {
                   IconButton(icon: Icon(Icons.record_voice_over), onPressed: null),
                   Expanded(child: TextField(controller: textEditingController,onSubmitted: (text){
                     TextMessageContent txt = TextMessageContent(text:text);
-                    FlutterImclient.sendMessage(widget.conversation, txt).then((value) {
-                      _appendMessage([value], front: true);
+                    Imclient.sendMessage(widget.conversation, txt).then((value) {
+                      if(value != null) {
+                        _appendMessage([value], front: true);
+                      }
                       textEditingController.clear();
                     });
                   }, onChanged: (text) {
@@ -163,6 +170,16 @@ class _State extends State<MessagesScreen> {
                   },), ),
                   IconButton(icon: Icon(Icons.emoji_emotions), onPressed: null),
                   IconButton(icon: Icon(Icons.add_circle_outline_rounded), onPressed: null),
+                  IconButton(icon: Icon(Icons.camera_enhance_rounded), onPressed: (){
+                    if(widget.conversation.conversationType == ConversationType.Single) {
+                      Rtckit.startSingleCall(widget.conversation.target, true);
+                    } else if(widget.conversation.conversationType == ConversationType.Group) {
+                      //Select participants first;
+                      // List<String> participants = List();
+                      // Future<List<GroupMember>> members = Imclient.getGroupMembers(widget.conversation.target);
+                      // Rtckit.startMultiCall(widget.conversation.target, participants, true);
+                    }
+                  }),
                 ],
               ),
             ),

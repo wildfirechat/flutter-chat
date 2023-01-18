@@ -1,12 +1,12 @@
 buildscript {
-    ext.kotlin_version = '1.7.21'
+    ext.kotlin_version = '1.6.10'
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.2'
+        classpath 'com.android.tools.build:gradle:7.1.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -14,11 +14,9 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
-        //添加华为仓库地址
-        maven {
-            url "http://developer.huawei.com/repo/"
-        }
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://dl.bintray.com/jenly/maven' }
     }
 }
 

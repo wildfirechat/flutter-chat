@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_imclient/flutter_imclient.dart';
-import 'package:flutter_imclient/model/user_info.dart';
+import 'package:imclient/imclient.dart';
+import 'package:imclient/model/user_info.dart';
+
 
 class ContactListWidget extends StatefulWidget {
   @override
@@ -12,7 +13,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   @override
   void initState() {
     super.initState();
-    FlutterImclient.getMyFriendList(refresh: true).then((value){
+    Imclient.getMyFriendList(refresh: true).then((value){
       setState(() {
         friendList = value;
       });
@@ -55,7 +56,7 @@ class _ContactListItemState extends State<ContactListItem> {
 
   _ContactListItemState(this.userId) {
 
-    FlutterImclient.getUserInfo(userId).then((value) {
+    Imclient.getUserInfo(userId).then((value) {
       setState(() {
         userInfo = value;
       });

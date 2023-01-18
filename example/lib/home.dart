@@ -5,9 +5,10 @@
 import 'package:badges/badges.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_imclient_example/contact_list_widget.dart';
-import 'package:flutter_imclient_example/conversation_list_widget.dart';
-import 'package:flutter_imclient_example/settings.dart';
+import 'package:wfc_example/settings.dart';
+
+import 'contact_list_widget.dart';
+import 'conversation_list_widget.dart';
 
 class HomeTabBar extends StatefulWidget {
   @override
