@@ -4,15 +4,17 @@ import 'package:badges/badges.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_imclient/flutter_imclient.dart';
-import 'package:flutter_imclient/model/channel_info.dart';
-import 'package:flutter_imclient/model/conversation.dart';
-import 'package:flutter_imclient/model/conversation_info.dart';
-import 'package:flutter_imclient/model/group_info.dart';
-import 'package:flutter_imclient/model/user_info.dart';
-import 'package:flutter_imclient_example/cache.dart';
-import 'package:flutter_imclient_example/messages/messages_screen.dart';
-import 'package:flutter_imclient_example/utilities.dart';
+import 'package:imclient/imclient.dart';
+import 'package:imclient/model/channel_info.dart';
+import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/conversation_info.dart';
+import 'package:imclient/model/group_info.dart';
+import 'package:imclient/model/user_info.dart';
+import 'package:intl/intl.dart';
+import 'package:wfc_example/utilities.dart';
+
+import 'cache.dart';
+import 'messages/messages_screen.dart';
 
 // ignore: must_be_immutable
 class ConversationListWidget extends StatefulWidget {
@@ -33,7 +35,7 @@ class _ConversationListWidgetState extends State<ConversationListWidget> {
   StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
   StreamSubscription<ClearConversationUnreadEvent> _clearConveratonUnreadSubscription;
   StreamSubscription<ClearConversationsUnreadEvent> _clearConveratonsUnreadSubscription;
-  EventBus _eventBus = FlutterImclient.IMEventBus;
+  final EventBus _eventBus = Imclient.IMEventBus;
 
   @override
   void initState() {
@@ -57,7 +59,7 @@ class _ConversationListWidgetState extends State<ConversationListWidget> {
   }
 
   void _loadConversation() {
-    FlutterImclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((value){
+    Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((value){
       if(widget.unreadCountCallback != null) {
         int unreadCount = 0;
         value.forEach((element) {
@@ -125,12 +127,12 @@ class _ConversationListItemState extends State<ConversationListItem> {
 
   var defaultAvatar = 'assets/images/user_avatar_default.png';
 
-  EventBus _eventBus = FlutterImclient.IMEventBus;
+  final EventBus _eventBus = Imclient.IMEventBus;
 
   _ConversationListItemState(this.conversationInfo) {
    if(conversationInfo.conversation.conversationType == ConversationType.Single) {
      userInfo = Cache.getUserInfo(conversationInfo.conversation.target);
-     FlutterImclient.getUserInfo(conversationInfo.conversation.target).then((value) {
+     Imclient.getUserInfo(conversationInfo.conversation.target).then((value) {
        if(value != null && value != userInfo && value.userId == conversationInfo.conversation.target) {
          Cache.putUserInfo(value);
          setState(() {
@@ -141,7 +143,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
 
    } else if(conversationInfo.conversation.conversationType == ConversationType.Group) {
      groupInfo = Cache.getGroupInfo(conversationInfo.conversation.target);
-     FlutterImclient.getGroupInfo(conversationInfo.conversation.target).then((value) {
+     Imclient.getGroupInfo(conversationInfo.conversation.target).then((value) {
        if(value != null && value != groupInfo && value.target == conversationInfo.conversation.target) {
          Cache.putGroupInfo(value);
          setState(() {
@@ -150,7 +152,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
        }
      });
    } else if(conversationInfo.conversation.conversationType == ConversationType.Channel) {
-     FlutterImclient.getChannelInfo(conversationInfo.conversation.target).then((value) {
+     Imclient.getChannelInfo(conversationInfo.conversation.target).then((value) {
        channelInfo = Cache.getChannelInfo(conversationInfo.conversation.target);
        if(value != null && value != channelInfo && value.channelId == conversationInfo.conversation.target) {
          Cache.putChannelInfo(value);
@@ -189,9 +191,13 @@ class _ConversationListItemState extends State<ConversationListItem> {
       }
       localPortrait = 'assets/images/user_avatar_default.png';
     } else if(conversationInfo.conversation.conversationType == ConversationType.Group) {
-      if(groupInfo != null && groupInfo.portrait != null && groupInfo.portrait.isNotEmpty) {
-        portrait = groupInfo.portrait;
-        convTitle = groupInfo.name;
+      if(groupInfo != null) {
+        if(groupInfo.portrait != null && groupInfo.portrait.isNotEmpty) {
+          portrait = groupInfo.portrait;
+        }
+        if(groupInfo.name != null && groupInfo.name.isNotEmpty) {
+          convTitle = groupInfo.name;
+        }
       } else {
         convTitle = '群聊';
       }
@@ -210,7 +216,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
 
     return new GestureDetector(
       child: new Container(
-        color: conversationInfo.isTop ? CupertinoColors.secondarySystemBackground :  CupertinoColors.systemBackground,
+        color: conversationInfo.isTop > 0 ? CupertinoColors.secondarySystemBackground :  CupertinoColors.systemBackground,
         child: new Column(
           children: <Widget>[
             new Container(

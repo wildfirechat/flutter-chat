@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_imclient/flutter_imclient.dart';
-import 'package:flutter_imclient_example/app_server.dart';
-import 'package:flutter_imclient_example/config.dart';
-import 'package:flutter_imclient_example/home.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:imclient/imclient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'app_server.dart';
+import 'config.dart';
+import 'home.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -106,7 +107,7 @@ class LoginScreenState extends State<LoginScreen> {
                 if(phoneNum != null && code != null) {
                   AppServer.login(
                       phoneNum, code, (userId, token, isNewUser) {
-                    FlutterImclient.connect(Config.IM_Host, userId, token);
+                    Imclient.connect(Config.IM_Host, userId, token);
 
                     Navigator.push(
                       context,

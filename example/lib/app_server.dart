@@ -1,9 +1,9 @@
 
 import 'dart:convert';
-
-import 'package:flutter_imclient/flutter_imclient.dart';
-import 'package:flutter_imclient_example/config.dart';
 import 'package:http/http.dart' as http;
+import 'package:imclient/imclient.dart';
+
+import 'config.dart';
 
 typedef AppServerErrorCallback = Function(String msg);
 typedef AppServerLoginSuccessCallback = Function(String userId, String token, bool isNewUser);
@@ -24,7 +24,7 @@ class AppServer {
   }
 
   static void login(String phoneNum, String smsCode, AppServerLoginSuccessCallback successCallback, AppServerErrorCallback errorCallback) async {
-    String jsonStr = json.encode({'mobile':phoneNum, 'code':smsCode, 'clientId':await FlutterImclient.clientId, 'platform': 2});
+    String jsonStr = json.encode({'mobile':phoneNum, 'code':smsCode, 'clientId':await Imclient.clientId, 'platform': 2});
     postJson('/login', jsonStr, (response) {
 
       Map<dynamic, dynamic> map = json.decode(response);
@@ -45,7 +45,7 @@ class AppServer {
 
     // print(json);
     http.Response response = await http.post(
-        url, // post地址
+        Uri.parse(url), // post地址
         headers: {"content-type": "application/json"}, //设置content-type为json
         body: json //json参数
     );

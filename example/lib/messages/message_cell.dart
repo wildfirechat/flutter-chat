@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_imclient/flutter_imclient.dart';
-import 'package:flutter_imclient/message/image_message_content.dart';
-import 'package:flutter_imclient/message/message.dart';
-import 'package:flutter_imclient/message/notification/notification_message_content.dart';
-import 'package:flutter_imclient/message/text_message_content.dart';
-import 'package:flutter_imclient/model/conversation.dart';
-import 'package:flutter_imclient/model/user_info.dart';
-import 'package:flutter_imclient_example/messages/message_model.dart';
+import 'package:imclient/imclient.dart';
+import 'package:imclient/message/image_message_content.dart';
+import 'package:imclient/message/message.dart';
+import 'package:imclient/message/notification/notification_message_content.dart';
+import 'package:imclient/message/text_message_content.dart';
+import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/user_info.dart';
+
+import 'message_model.dart';
+
 
 
 class MessageCell extends StatefulWidget {
@@ -77,11 +79,13 @@ class _PortraitCellState extends _MessageBaseCellState {
       groupId = widget.model.message.conversation.target;
     }
 
-    FlutterImclient.getUserInfo(widget.model.message.fromUser, groupId: groupId).then((value) {
+    Imclient.getUserInfo(widget.model.message.fromUser, groupId: groupId).then((value) {
       if(value != null)
       setState(() {
         userInfo = value;
-        portrait = userInfo.portrait;
+        if(userInfo.portrait != null && userInfo.portrait.isNotEmpty) {
+          portrait = userInfo.portrait;
+        }
         userName = userInfo.friendAlias != null ? userInfo.friendAlias : userInfo.groupAlias != null ? userInfo.groupAlias : userInfo.displayName;
       });
     });

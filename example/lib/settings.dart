@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_imclient/flutter_imclient.dart';
+import 'package:imclient/imclient.dart';
 
 class SettingsTab extends StatefulWidget {
   @override
@@ -12,7 +12,7 @@ class _SettingsTabState extends State<SettingsTab> {
     return Scaffold(
       body: Center(
         child: ElevatedButton(onPressed: (){
-          FlutterImclient.disconnect();
+          Imclient.disconnect();
         }, child: Text('退出'),
           // color: Colors.red,
         ),

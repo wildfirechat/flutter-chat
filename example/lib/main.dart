@@ -1,17 +1,18 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_imclient/flutter_imclient.dart';
-import 'package:flutter_imclient/message/message.dart';
-import 'package:flutter_imclient/model/channel_info.dart';
-import 'package:flutter_imclient/model/group_info.dart';
-import 'package:flutter_imclient/model/group_member.dart';
-import 'package:flutter_imclient/model/read_report.dart';
-import 'package:flutter_imclient/model/user_info.dart';
-import 'package:flutter_imclient_example/config.dart';
-import 'package:flutter_imclient_example/home.dart';
+import 'package:imclient/imclient.dart';
+import 'package:imclient/message/message.dart';
+import 'package:imclient/model/channel_info.dart';
+import 'package:imclient/model/group_info.dart';
+import 'package:imclient/model/group_member.dart';
+import 'package:imclient/model/read_report.dart';
+import 'package:imclient/model/user_info.dart';
+import 'package:rtckit/rtckit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'config.dart';
+import 'home.dart';
 import 'login_screen.dart';
 
 void main() {
@@ -33,16 +34,23 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initIMClient() async {
-    FlutterImclient.init((int status) {
+    Rtckit.init();
+    if (Config.ICE_SERVERS != null){
+      for (int i = 0; i < Config.ICE_SERVERS.length; i ++){
+        var iceServer = Config.ICE_SERVERS[i];
+        Rtckit.addICEServer(iceServer[0], iceServer[1], iceServer[2]);
+      }
+    }
+    Imclient.init((int status) {
       print(status);
       if (status == kConnectionStatusSecretKeyMismatch ||
           status == kConnectionStatusTokenIncorrect ||
           status == kConnectionStatusRejected ||
           status == kConnectionStatusLogout) {
         if(status != kConnectionStatusLogout) {
-          FlutterImclient.isLogined.then((value) {
+          Imclient.isLogined.then((value) {
             if(value) {
-              FlutterImclient.disconnect();
+              Imclient.disconnect();
             }
           });
         }
@@ -84,7 +92,7 @@ class _MyAppState extends State<MyApp> {
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString("userId") != null && prefs.getString("token") != null) {
-      FlutterImclient.connect(
+      Imclient.connect(
           Config.IM_Host, prefs.getString("userId"), prefs.getString("token"));
       setState(() {
         isLogined = true;
