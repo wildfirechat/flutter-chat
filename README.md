@@ -23,6 +23,9 @@
 # WFC Flutter Plugins
 野火Flutter插件，包含即时通讯插件和实时音视频插件。
 
+## V1版本
+master分支为新版本，之前旧版本在v1分支。请尽快升级到新版本。
+
 ## 运行
 进入到项目工程目录下，依次执行下述命令：
 1. ``` cd example && flutter packages get && cd .. ```
