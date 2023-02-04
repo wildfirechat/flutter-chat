@@ -582,7 +582,7 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
 
-  static Future<Message> _convertProtoMessage(Map<dynamic, dynamic> map) async {
+  Future<Message> _convertProtoMessage(Map<dynamic, dynamic> map) async {
     if (map == null) {
       return null;
     }
@@ -609,7 +609,7 @@ class MethodChannelImclient extends ImclientPlatform {
     return msg;
   }
 
-  static Future<List<Message>> _convertProtoMessages(
+  Future<List<Message>> _convertProtoMessages(
       List<dynamic> datas) async {
     if (datas.isEmpty) {
       return new List();
@@ -636,7 +636,7 @@ class MethodChannelImclient extends ImclientPlatform {
     return conversation;
   }
 
-  static Future<List<ConversationInfo>> _convertProtoConversationInfos(
+  Future<List<ConversationInfo>> _convertProtoConversationInfos(
       List<dynamic> maps) async {
     if (maps == null || maps.isEmpty) {
       return new List();
@@ -650,7 +650,7 @@ class MethodChannelImclient extends ImclientPlatform {
     return infos;
   }
 
-  static Future<ConversationInfo> _convertProtoConversationInfo(
+  Future<ConversationInfo> _convertProtoConversationInfo(
       Map<dynamic, dynamic> map) async {
     ConversationInfo conversationInfo = new ConversationInfo();
     conversationInfo.conversation =
@@ -666,7 +666,7 @@ class MethodChannelImclient extends ImclientPlatform {
     return conversationInfo;
   }
 
-  static Future<List<ConversationSearchInfo>>
+  Future<List<ConversationSearchInfo>>
   _convertProtoConversationSearchInfos(List<dynamic> maps) async {
     if (maps.isEmpty) {
       return new List();
@@ -681,7 +681,7 @@ class MethodChannelImclient extends ImclientPlatform {
     return infos;
   }
 
-  static Future<ConversationSearchInfo> _convertProtoConversationSearchInfo(
+  Future<ConversationSearchInfo> _convertProtoConversationSearchInfo(
       Map<dynamic, dynamic> map) async {
     ConversationSearchInfo conversationInfo = new ConversationSearchInfo();
     conversationInfo.conversation =
@@ -1050,7 +1050,8 @@ class MethodChannelImclient extends ImclientPlatform {
     return list;
   }
 
-  static MessageContent decodeMessageContent(MessagePayload payload) {
+  @override
+  MessageContent decodeMessageContent(MessagePayload payload) {
     MessageContentMeta meta = _contentMetaMap[payload.contentType];
     MessageContent content;
     if (meta == null) {
