@@ -518,7 +518,7 @@ class Imclient {
   }
 
   static MessageContent decodeMessageContent(MessagePayload payload) {
-    return ImclientPlatform.decodeMessageContent(payload);
+    return ImclientPlatform.instance.decodeMessageContent(payload);
   }
   ///获取会话的消息列表
   static Future<List<Message>> getMessages(

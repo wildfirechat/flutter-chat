@@ -270,7 +270,7 @@ abstract class ImclientPlatform extends PlatformInterface {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  static MessageContent decodeMessageContent(MessagePayload payload) {
+  MessageContent decodeMessageContent(MessagePayload payload) {
     throw UnimplementedError('method has not been implemented.');
   }
 

@@ -46,7 +46,8 @@ class CompositeMessageContent extends MediaMessageContent {
       msg.direction = MessageDirection.MessageDirection_Send;
       if(map['direction'] != null)
         msg.direction = MessageDirection.values[map['direction']];
-      msg.status = MessageStatus.values[map['status']];
+      if(map['status'] != null)
+        msg.status = MessageStatus.values[map['status']];
       msg.serverTime = map['serverTime'];
 
       MessagePayload payload = new MessagePayload();
@@ -61,7 +62,9 @@ class CompositeMessageContent extends MediaMessageContent {
       payload.mentionedType = map['cmt'];
       payload.mentionedTargets = map['cmts'];
       payload.extra = map['ce'];
-      payload.mediaType = MediaType.values[map['mt']];
+      if(map['mt'] != null) {
+        payload.mediaType = MediaType.values[map['mt']];
+      }
       payload.remoteMediaUrl = map['mru'];
 
       msg.content = Imclient.decodeMessageContent(payload);
