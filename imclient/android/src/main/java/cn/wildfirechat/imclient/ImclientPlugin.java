@@ -729,6 +729,16 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                 Message msg = ChatManager.Instance().getMessage(l);
                 result.success(convertMessage(msg));
             }
+
+            @Override
+            public void onProgress(long uploaded, long total) {
+                callbackBuilder(requestId).put("uploaded",uploaded).put("total", total).success("onSendMediaMessageProgress");
+            }
+
+            @Override
+            public void onMediaUpload(String remoteUrl) {
+                callbackBuilder(requestId).put("remoteUrl",remoteUrl).success("onSendMediaMessageUploaded");
+            }
         });
     }
 
