@@ -1966,7 +1966,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         if(protoData.messageUid > 0)
             map.put("messageUid", protoData.messageUid);
         if(protoData.serverTime > 0)
-            map.put("timestamp", protoData.serverTime);
+            map.put("serverTime", protoData.serverTime);
 
         if(protoData.toUsers != null && protoData.toUsers.length > 0) {
             map.put("toUsers", convertProtoStringArray(protoData.toUsers));
