@@ -2519,7 +2519,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //
 //                        }
 //
-                        case "onConnectionStatusChanged": {
+                        case "onConnectionStatusChange": {
                             int newStatus = (int)args[0];
                             callback2UI("onConnectionStatusChanged", status);
                             break;
