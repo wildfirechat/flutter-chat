@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:wfc_example/settings.dart';
@@ -97,7 +97,7 @@ class HomeTabBarState extends State<HomeTabBar> {
         bottomNavigationBar: CupertinoTabBar(//
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-                icon: Badge(
+                icon: badge.Badge(
                   badgeContent: Text('$unreadCount'),
                   showBadge: unreadCount > 0,
                   child: getTabIcon(0),

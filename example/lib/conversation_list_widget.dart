@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -162,7 +162,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
        }
      });
    }
-   
+
    if(conversationInfo.lastMessage != null && conversationInfo.lastMessage.content != null) {
      digest = Cache.getConversationDigest(conversationInfo.conversation);
      print('digest is $digest');
@@ -224,7 +224,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
               margin: new EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
               child: new Row(
                 children: <Widget>[
-                  Badge(
+                  badge.Badge(
                     showBadge: conversationInfo.unreadCount.unread > 0,
                     badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
                     child: portrait == null ? new Image.asset(localPortrait, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
