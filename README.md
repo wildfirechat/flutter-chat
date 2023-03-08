@@ -47,6 +47,15 @@ dependencies:
 2. 项目目录下执行 ``` flutter packages get``` 命令。
 3. 如果有iOS平台，执行 ``` cd example/ios/ && pod install ``` 命令。
 4. 分别运行iOS平台和Android平台。
+5. Android 平台，集成音视频的时候，需要在`AndroidManifest.xml`入口`activity`的配置里面添加如下`intent-filter`
+```xml
+<!-- 音视频通话，需要加入下面的 intent-filter-->
+            <intent-filter>
+                <action android:name="${applicationId}.main" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+```
 
 ## SDK的使用
 ### 基础知识
