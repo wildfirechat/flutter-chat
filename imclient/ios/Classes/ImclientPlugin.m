@@ -1616,7 +1616,9 @@ ImclientPlugin *gIMClientInstance;
 
 - (WFCCMessageContent *)contentFromDict:(NSDictionary *)content {
     WFCCMessagePayload *payload = [self payloadFromDict:content];
-    return [WFCCRawMessageContent contentOfPayload:payload];
+    WFCCMessageContent *cnt = [WFCCRawMessageContent contentOfPayload:payload];
+    cnt.extra = payload.extra;
+    return cnt;
 }
 
 #pragma mark - delegates
