@@ -3,7 +3,7 @@ import '../model/message_payload.dart';
 import 'message_content.dart';
 
 class UnknownMessageContent extends MessageContent {
-  MessagePayload rawPayload;
+  late MessagePayload rawPayload;
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
@@ -11,7 +11,7 @@ class UnknownMessageContent extends MessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async{
+  MessagePayload encode() {
     return rawPayload;
   }
 }

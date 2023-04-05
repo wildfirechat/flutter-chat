@@ -11,13 +11,13 @@ class GroupInfo {
       this.historyMessage = 0,
       this.maxMemberCount = 0,
       this.updateDt = 0});
-  String target;
+  late String target;
   GroupType type;
-  String name;
-  String portrait;
+  String? name;
+  String? portrait;
   int memberCount;
-  String owner;
-  String extra;
+  String? owner;
+  String? extra;
   int mute;
   int joinType;
   int privateChat;

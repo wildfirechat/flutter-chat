@@ -1,10 +1,10 @@
 class Tools {
 
-  static List<String> convertDynamicList(List<dynamic> datas) {
+  static List<String>? convertDynamicList(List<dynamic>? datas) {
     if (datas == null || datas.isEmpty) {
-      return new List();
+      return [];
     }
-    List<String> list = new List();
+    List<String> list = [];
     datas.forEach((element) {
       list.add(element);
     });

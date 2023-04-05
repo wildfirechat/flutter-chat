@@ -12,7 +12,7 @@ import '../notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent AddGroupMemberNotificationContentCreator() {
-  return new AddGroupMemberNotificationContent();
+  return AddGroupMemberNotificationContent();
 }
 
 const addGroupMemberNotificationContentMeta = MessageContentMeta(
@@ -21,17 +21,24 @@ const addGroupMemberNotificationContentMeta = MessageContentMeta(
     AddGroupMemberNotificationContentCreator);
 
 class AddGroupMemberNotificationContent extends NotificationMessageContent {
-  String groupId;
-  String invitor;
-  List<String> invitees;
+  late String groupId;
+  late String invitor;
+  late List<String> invitees;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    invitor = map['o'];
-    groupId = map['g'];
-    invitees = Tools.convertDynamicList(map['ms']);
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      invitor = map['o'];
+      groupId = map['g'];
+      invitees = Tools.convertDynamicList(map['ms'])!;
+    } else {
+      groupId = "";
+      invitees = [];
+      invitor = "";
+    }
   }
 
   @override
@@ -40,13 +47,13 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
-    Map<String, dynamic> map = new Map();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
+    Map<String, dynamic> map = {};
     map['o'] = invitor;
     map['g'] = groupId;
     map['ms'] = invitees;
-    payload.binaryContent = new Uint8List.fromList(json.encode(map).codeUnits);
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -56,43 +63,24 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
       if (invitor == await Imclient.currentUserId) {
         return '你加入了群聊';
       } else {
-        UserInfo userInfo =
+        UserInfo? userInfo =
             await Imclient.getUserInfo(invitor, groupId: groupId);
         if (userInfo != null) {
-          if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-            return '${userInfo.friendAlias} 加入了群聊';
-          } else if (userInfo.groupAlias != null &&
-              userInfo.groupAlias.isNotEmpty) {
-            return '${userInfo.groupAlias} 加入了群聊';
-          } else if (userInfo.displayName != null &&
-              userInfo.displayName.isNotEmpty) {
-            return '${userInfo.displayName} 加入了群聊';
-          } else {
-            return '$invitor 加入了群聊';
-          }
+          return '${userInfo.getReadableName()} 加入了群聊';
         } else {
           return '$invitor 加入了群聊';
         }
       }
     }
+
     String formatMsg;
     if (invitor == await Imclient.currentUserId) {
       formatMsg = '你 邀请';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(invitor, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          formatMsg = '${userInfo.friendAlias} 邀请';
-        } else if (userInfo.groupAlias != null &&
-            userInfo.groupAlias.isNotEmpty) {
-          formatMsg = '${userInfo.groupAlias} 邀请';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          formatMsg = '${userInfo.displayName} 邀请';
-        } else {
-          formatMsg = '$invitor 邀请';
-        }
+        formatMsg = '${userInfo.getReadableName()} 邀请';
       } else {
         formatMsg = '$invitor 邀请';
       }
@@ -103,20 +91,10 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
       if (memberId == await Imclient.currentUserId) {
         formatMsg = '$formatMsg 你';
       } else {
-        UserInfo userInfo =
+        UserInfo? userInfo =
             await Imclient.getUserInfo(memberId, groupId: groupId);
         if (userInfo != null) {
-          if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-            formatMsg = '$formatMsg ${userInfo.friendAlias}';
-          } else if (userInfo.groupAlias != null &&
-              userInfo.groupAlias.isNotEmpty) {
-            formatMsg = '$formatMsg ${userInfo.groupAlias}';
-          } else if (userInfo.displayName != null &&
-              userInfo.displayName.isNotEmpty) {
-            formatMsg = '$formatMsg ${userInfo.displayName}';
-          } else {
-            formatMsg = '$formatMsg $invitor';
-          }
+          formatMsg = '$formatMsg ${userInfo.getReadableName()}';
         } else {
           formatMsg = '$formatMsg $invitor';
         }

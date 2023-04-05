@@ -7,11 +7,11 @@ class FileRecord {
       this.size = 0,
       this.downloadCount = 0,
       this.timestamp = 0});
-  Conversation conversation;
+  Conversation? conversation;
   int messageUid;
-  String userId;
-  String name;
-  String url;
+  String? userId;
+  String? name;
+  late String url;
   int size;
   int downloadCount;
   int timestamp;

@@ -66,28 +66,29 @@ class _NotificaitonCellState extends _MessageBaseCellState {
 }
 
 class _PortraitCellState extends _MessageBaseCellState {
-  UserInfo userInfo;
+  UserInfo? userInfo;
   final localPortrait = 'assets/images/user_avatar_default.png';
-  String portrait;
-  String userName;
+  String? portrait;
+  String? userName;
 
   @override
   void initState() {
     super.initState();
-    String groupId;
+    String groupId = "";
     if(widget.model.message.conversation.conversationType == ConversationType.Group) {
       groupId = widget.model.message.conversation.target;
     }
 
     Imclient.getUserInfo(widget.model.message.fromUser, groupId: groupId).then((value) {
-      if(value != null)
-      setState(() {
+      if(value != null) {
+        setState(() {
         userInfo = value;
-        if(userInfo.portrait != null && userInfo.portrait.isNotEmpty) {
-          portrait = userInfo.portrait;
+        if(userInfo!.portrait != null && userInfo!.portrait!.isNotEmpty) {
+          portrait = userInfo!.portrait;
         }
-        userName = userInfo.friendAlias != null ? userInfo.friendAlias : userInfo.groupAlias != null ? userInfo.groupAlias : userInfo.displayName;
+        userName = userInfo!.friendAlias ?? (userInfo?.groupAlias != null ? userInfo!.groupAlias : userInfo!.displayName);
       });
+      }
     });
   }
 
@@ -103,7 +104,7 @@ class _PortraitCellState extends _MessageBaseCellState {
 
   Widget getPortrait() {
     return Container(
-      child: portrait == null ? new Image.asset(localPortrait, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
+      child: portrait == null ? Image.asset(localPortrait, width: 44.0, height: 44.0) : Image.network(portrait!, width: 44.0, height: 44.0),
     );
   }
   Widget getBodyArea() {
@@ -111,7 +112,7 @@ class _PortraitCellState extends _MessageBaseCellState {
       child: Column(
         crossAxisAlignment: widget.model.message.direction == MessageDirection.MessageDirection_Receive ? CrossAxisAlignment.start : CrossAxisAlignment.end,
         children: [
-          widget.model.showNameLabel ? Text(userName) : SizedBox(),
+          widget.model.showNameLabel ? Text(userName!) : SizedBox(),
           Container(color: Colors.grey,
           child: getContentAres(),),
         ],
@@ -125,11 +126,11 @@ class _PortraitCellState extends _MessageBaseCellState {
 }
 
 class _TextMessageCell extends _PortraitCellState {
-  TextMessageContent textMessageContent;
+  late TextMessageContent textMessageContent;
   @override
   void initState() {
     super.initState();
-    textMessageContent = widget.model.message.content;
+    textMessageContent = widget.model.message.content as TextMessageContent;
   }
   Widget getContentAres() {
     return Text(textMessageContent.text, overflow: TextOverflow.ellipsis, maxLines: 10,);
@@ -137,13 +138,13 @@ class _TextMessageCell extends _PortraitCellState {
 }
 
 class _ImageMessageCell extends _PortraitCellState {
-  ImageMessageContent imageMessageContent;
+  late ImageMessageContent imageMessageContent;
   @override
   void initState() {
     super.initState();
-    imageMessageContent = widget.model.message.content;
+    imageMessageContent = widget.model.message.content as ImageMessageContent;
   }
   Widget getContentAres() {
-    return Image.network(imageMessageContent.remoteUrl, width: 240.0, height: 240.0);
+    return Image.network(imageMessageContent.remoteUrl!, width: 240.0, height: 240.0);
   }
 }

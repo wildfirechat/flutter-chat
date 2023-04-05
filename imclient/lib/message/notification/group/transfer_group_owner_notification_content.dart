@@ -10,7 +10,7 @@ import '../notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent TransferGroupOwnerNotificationContentCreator() {
-  return new TransferGroupOwnerNotificationContent();
+  return TransferGroupOwnerNotificationContent();
 }
 
 const transferGroupOwnerNotificationContentMeta = MessageContentMeta(
@@ -19,17 +19,24 @@ const transferGroupOwnerNotificationContentMeta = MessageContentMeta(
     TransferGroupOwnerNotificationContentCreator);
 
 class TransferGroupOwnerNotificationContent extends NotificationMessageContent {
-  String groupId;
-  String operateUser;
-  String owner;
+  late String groupId;
+  late String operateUser;
+  late String owner;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    operateUser = map['o'];
-    groupId = map['g'];
-    owner = map['m'];
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      operateUser = map['o'];
+      groupId = map['g'];
+      owner = map['m'];
+    } else {
+      operateUser = "";
+      groupId = "";
+      owner = "";
+    }
   }
 
   @override
@@ -38,13 +45,13 @@ class TransferGroupOwnerNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
-    Map<String, dynamic> map = new Map();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
+    Map<String, dynamic> map = {};
     map['o'] = operateUser;
     map['g'] = groupId;
     map['m'] = owner;
-    payload.binaryContent = new Uint8List.fromList(json.encode(map).codeUnits);
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -54,22 +61,12 @@ class TransferGroupOwnerNotificationContent extends NotificationMessageContent {
     if (operateUser == await Imclient.currentUserId) {
       formatMsg = '你';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(operateUser, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          formatMsg = '${userInfo.friendAlias}';
-        } else if (userInfo.groupAlias != null &&
-            userInfo.groupAlias.isNotEmpty) {
-          formatMsg = '${userInfo.groupAlias}';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          formatMsg = '${userInfo.displayName}';
-        } else {
-          formatMsg = '$operateUser';
-        }
+        formatMsg = userInfo.getReadableName();
       } else {
-        formatMsg = '$operateUser';
+        formatMsg = operateUser;
       }
     }
 
@@ -78,20 +75,10 @@ class TransferGroupOwnerNotificationContent extends NotificationMessageContent {
     if (owner == await Imclient.currentUserId) {
       formatMsg = '$formatMsg 你';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(owner, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          formatMsg = '$formatMsg ${userInfo.friendAlias}';
-        } else if (userInfo.groupAlias != null &&
-            userInfo.groupAlias.isNotEmpty) {
-          formatMsg = '$formatMsg ${userInfo.groupAlias}';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          formatMsg = '$formatMsg ${userInfo.displayName}';
-        } else {
-          formatMsg = '$formatMsg $operateUser';
-        }
+        formatMsg = '$formatMsg ${userInfo.getReadableName()}';
       } else {
         formatMsg = '$formatMsg $operateUser';
       }

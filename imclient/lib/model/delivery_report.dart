@@ -1,5 +1,5 @@
 class DeliveryReport {
-  DeliveryReport({this.timestamp = 0});
+  DeliveryReport(this.userId, {this.timestamp = 0});
   String userId;
   int timestamp;
 }

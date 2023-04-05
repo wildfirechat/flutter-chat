@@ -10,7 +10,7 @@ import '../notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent QuitGroupNotificationContentCreator() {
-  return new QuitGroupNotificationContent();
+  return QuitGroupNotificationContent();
 }
 
 const quitGroupNotificationContentMeta = MessageContentMeta(
@@ -19,15 +19,21 @@ const quitGroupNotificationContentMeta = MessageContentMeta(
     QuitGroupNotificationContentCreator);
 
 class QuitGroupNotificationContent extends NotificationMessageContent {
-  String groupId;
-  String quitMember;
+  late String groupId;
+  late String quitMember;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    quitMember = map['o'];
-    groupId = map['g'];
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      quitMember = map['o'];
+      groupId = map['g'];
+    } else {
+      groupId = "";
+      quitMember = "";
+    }
   }
 
   @override
@@ -36,12 +42,12 @@ class QuitGroupNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
-    Map<String, dynamic> map = new Map();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
+    Map<String, dynamic> map = {};
     map['o'] = quitMember;
     map['g'] = groupId;
-    payload.binaryContent = new Uint8List.fromList(json.encode(map).codeUnits);
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -50,20 +56,10 @@ class QuitGroupNotificationContent extends NotificationMessageContent {
     if (quitMember == await Imclient.currentUserId) {
       return '你 退出了群组';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(quitMember, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          return '${userInfo.friendAlias} 退出了群组';
-        } else if (userInfo.groupAlias != null &&
-            userInfo.groupAlias.isNotEmpty) {
-          return '${userInfo.groupAlias} 退出了群组';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          return '${userInfo.displayName} 退出了群组';
-        } else {
-          return '$quitMember 退出了群组';
-        }
+        return '${userInfo.getReadableName()} 退出了群组';
       } else {
         return '$quitMember 退出了群组';
       }

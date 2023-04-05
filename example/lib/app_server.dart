@@ -18,7 +18,7 @@ class AppServer {
       if(map['code'] == 0) {
         successCallback();
       } else {
-        errorCallback(map['message'] != null ? map['message'] : '网络错误');
+        errorCallback(map['message'] ?? '网络错误');
       }
     }, errorCallback);
   }
@@ -35,7 +35,7 @@ class AppServer {
         bool newUser = result['register'];
         successCallback(userId, token, newUser);
       } else {
-        errorCallback(map['message'] != null ? map['message'] : '网络错误');
+        errorCallback(map['message'] ?? '网络错误');
       }
     }, errorCallback);
   }

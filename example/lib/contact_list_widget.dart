@@ -9,13 +9,15 @@ class ContactListWidget extends StatefulWidget {
 }
 
 class _ContactListWidgetState extends State<ContactListWidget> {
-  List<String> friendList = new List();
+  List<String> friendList = [];
   @override
   void initState() {
     super.initState();
     Imclient.getMyFriendList(refresh: true).then((value){
       setState(() {
-        friendList = value;
+        if(value != null) {
+          friendList = value;
+        }
       });
     });
   }
@@ -50,7 +52,7 @@ class ContactListItem extends StatefulWidget {
 
 class _ContactListItemState extends State<ContactListItem> {
   String userId;
-  UserInfo userInfo;
+  UserInfo? userInfo;
 
   var defaultAvatar = 'assets/images/user_avatar_default.png';
 
@@ -65,13 +67,13 @@ class _ContactListItemState extends State<ContactListItem> {
 
   @override
   Widget build(BuildContext context) {
-    String portrait;
+    String? portrait;
     String localPortrait;
     String convTitle;
 
-      if(userInfo != null && userInfo.portrait != null && userInfo.portrait.isNotEmpty) {
-        portrait = userInfo.portrait;
-        convTitle = userInfo.displayName;
+      if(userInfo != null && userInfo?.portrait != null && userInfo!.portrait!.isNotEmpty) {
+        portrait = userInfo!.portrait!;
+        convTitle = userInfo!.displayName!;
       } else {
         convTitle = '私聊';
       }

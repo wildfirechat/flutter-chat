@@ -8,13 +8,14 @@ class FriendRequest {
   FriendRequest(
       {this.direction = FriendRequestDirection.Send,
       this.status = FriendRequestStatus.WaitingAccept,
-      this.readStatus = FriendRequestReadStatus.unread});
+      this.readStatus = FriendRequestReadStatus.unread,
+      this.timestamp = 0});
   //放向
   FriendRequestDirection direction;
   //ID
-  String target;
+  late String target;
   //请求说明
-  String reason;
+  String? reason;
   //接受状态
   FriendRequestStatus status;
   //已读

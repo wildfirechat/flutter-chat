@@ -19,8 +19,8 @@ class FriendGreetingMessageContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
     return payload;
   }
 

@@ -12,7 +12,7 @@ import '../notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent KickoffGroupMemberNotificationContentCreator() {
-  return new KickoffGroupMemberNotificationContent();
+  return KickoffGroupMemberNotificationContent();
 }
 
 const kickoffGroupMemberNotificationContentMeta = MessageContentMeta(
@@ -21,17 +21,24 @@ const kickoffGroupMemberNotificationContentMeta = MessageContentMeta(
     KickoffGroupMemberNotificationContentCreator);
 
 class KickoffGroupMemberNotificationContent extends NotificationMessageContent {
-  String groupId;
-  String operateUser;
-  List<String> kickedMembers;
+  late String groupId;
+  late String operateUser;
+  late List<String> kickedMembers;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    operateUser = map['o'];
-    groupId = map['g'];
-    kickedMembers = Tools.convertDynamicList(map['ms']);
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      operateUser = map['o'];
+      groupId = map['g'];
+      kickedMembers = Tools.convertDynamicList(map['ms'])!;
+    } else {
+      operateUser = "";
+      groupId = "";
+      kickedMembers = [];
+    }
   }
 
   @override
@@ -40,13 +47,13 @@ class KickoffGroupMemberNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
-    Map<String, dynamic> map = new Map();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
+    Map<String, dynamic> map = {};
     map['o'] = operateUser;
     map['g'] = groupId;
     map['ms'] = kickedMembers;
-    payload.binaryContent = new Uint8List.fromList(json.encode(map).codeUnits);
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -56,22 +63,12 @@ class KickoffGroupMemberNotificationContent extends NotificationMessageContent {
     if (operateUser == await Imclient.currentUserId) {
       formatMsg = '你';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(operateUser, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          formatMsg = '${userInfo.friendAlias}';
-        } else if (userInfo.groupAlias != null &&
-            userInfo.groupAlias.isNotEmpty) {
-          formatMsg = '${userInfo.groupAlias}';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          formatMsg = '${userInfo.displayName}';
-        } else {
-          formatMsg = '$operateUser';
-        }
+        formatMsg = userInfo.getReadableName();
       } else {
-        formatMsg = '$operateUser';
+        formatMsg = operateUser;
       }
     }
 
@@ -82,20 +79,10 @@ class KickoffGroupMemberNotificationContent extends NotificationMessageContent {
       if (memberId == await Imclient.currentUserId) {
         formatMsg = '$formatMsg 你';
       } else {
-        UserInfo userInfo =
+        UserInfo? userInfo =
             await Imclient.getUserInfo(memberId, groupId: groupId);
         if (userInfo != null) {
-          if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-            formatMsg = '$formatMsg ${userInfo.friendAlias}';
-          } else if (userInfo.groupAlias != null &&
-              userInfo.groupAlias.isNotEmpty) {
-            formatMsg = '$formatMsg ${userInfo.groupAlias}';
-          } else if (userInfo.displayName != null &&
-              userInfo.displayName.isNotEmpty) {
-            formatMsg = '$formatMsg ${userInfo.displayName}';
-          } else {
-            formatMsg = '$formatMsg $operateUser';
-          }
+          formatMsg = '$formatMsg ${userInfo.getReadableName()}';
         } else {
           formatMsg = '$formatMsg $operateUser';
         }

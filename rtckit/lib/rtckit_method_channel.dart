@@ -12,7 +12,7 @@ class MethodChannelRtckit extends RtckitPlatform {
   final methodChannel = const MethodChannel('rtckit');
 
   @override
-  Future<void> initProto() {
+  Future<void> initProto() async {
     methodChannel.invokeMethod<String>('initProto');
   }
 

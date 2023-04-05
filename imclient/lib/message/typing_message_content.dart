@@ -20,17 +20,19 @@ enum TypingType {
 }
 
 class TypingMessageContent extends MessageContent {
-  TypingType type;
+  late TypingType type;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    type = TypingType.values[int.parse(payload.content)];
+    if(payload.content != null) {
+      type = TypingType.values[int.parse(payload.content!)];
+    }
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
     payload.content = type.index.toString();
     return payload;
   }
@@ -38,7 +40,7 @@ class TypingMessageContent extends MessageContent {
 
   @override
   Future<String> digest(Message message) async {
-    return null;
+    return "";
   }
 
   @override

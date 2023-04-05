@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import '../imclient.dart';
 import '../model/conversation.dart';
@@ -10,7 +11,7 @@ import 'message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent CompositeMessageContentCreator() {
-  return new CompositeMessageContent();
+  return CompositeMessageContent();
 }
 
 const compositeContentMeta = MessageContentMeta(
@@ -19,8 +20,8 @@ const compositeContentMeta = MessageContentMeta(
     CompositeMessageContentCreator);
 
 class CompositeMessageContent extends MediaMessageContent {
-  String title;
-  List<Message> messages;
+  late String title;
+  late List<Message> messages;
 
   @override
   MessageContentMeta get meta => compositeContentMeta;
@@ -28,85 +29,95 @@ class CompositeMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    title = payload.content;
-    messages = new List();
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    List<dynamic> ms = map['ms'];
-    for (int i = 0; i < ms.length; ++i) {
-      Map map = ms[i];
-      Message msg = new Message();
-      msg.messageUid = map['uid'];
-      msg.conversation = new Conversation();
-      msg.conversation.conversationType = ConversationType.values[map['type']];
-      msg.conversation.target = map['target'];
-      msg.conversation.line = map['line'];
+    if(payload.content != null) {
+      title = payload.content!;
+    } else {
+      title = "";
+    }
+    messages = [];
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      List<dynamic> ms = map['ms'];
+      for (int i = 0; i < ms.length; ++i) {
+        Map map = ms[i];
+        Message msg = Message();
+        msg.messageUid = map['uid'];
+        msg.conversation = Conversation();
+        msg.conversation.conversationType =
+        ConversationType.values[map['type']];
+        msg.conversation.target = map['target'];
+        msg.conversation.line = map['line'];
 
-      msg.fromUser = map['from'];
-      msg.toUsers = map['tos'];
-      msg.direction = MessageDirection.MessageDirection_Send;
-      if(map['direction'] != null)
-        msg.direction = MessageDirection.values[map['direction']];
-      if(map['status'] != null)
-        msg.status = MessageStatus.values[map['status']];
-      msg.serverTime = map['serverTime'];
+        msg.fromUser = map['from'];
+        msg.toUsers = map['tos'];
+        msg.direction = MessageDirection.MessageDirection_Send;
+        if (map['direction'] != null) {
+          msg.direction = MessageDirection.values[map['direction']];
+        }
+        if (map['status'] != null) {
+          msg.status = MessageStatus.values[map['status']];
+        }
+        msg.serverTime = map['serverTime'];
 
-      MessagePayload payload = new MessagePayload();
-      payload.contentType = map['ctype'];
-      payload.searchableContent = map['csc'];
-      payload.pushContent = map['cpc'];
-      payload.pushData = map['cpd'];
-      payload.content = map['cc'];
-      if (map['cbc'] != null) {
-        payload.binaryContent = Base64Decoder().convert(map['cbc']);
+        MessagePayload payload = MessagePayload();
+        payload.contentType = map['ctype'];
+        payload.searchableContent = map['csc'];
+        payload.pushContent = map['cpc'];
+        payload.pushData = map['cpd'];
+        payload.content = map['cc'];
+        if (map['cbc'] != null) {
+          payload.binaryContent = const Base64Decoder().convert(map['cbc']);
+        }
+        payload.mentionedType = map['cmt'];
+        payload.mentionedTargets = map['cmts'];
+        payload.extra = map['ce'];
+        if (map['mt'] != null) {
+          payload.mediaType = MediaType.values[map['mt']];
+        }
+        payload.remoteMediaUrl = map['mru'];
+
+        msg.content = Imclient.decodeMessageContent(payload);
+        messages.add(msg);
       }
-      payload.mentionedType = map['cmt'];
-      payload.mentionedTargets = map['cmts'];
-      payload.extra = map['ce'];
-      if(map['mt'] != null) {
-        payload.mediaType = MediaType.values[map['mt']];
-      }
-      payload.remoteMediaUrl = map['mru'];
-
-      msg.content = Imclient.decodeMessageContent(payload);
-      messages.add(msg);
     }
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
 
     payload.content = title;
-    List<Map> ms = new List();
+    List<Map> ms = [];
     for (int i = 0; i < messages.length; ++i) {
       Message msg = messages.elementAt(i);
-      Map map = Map();
-      if (msg.messageUid > 0) {
+      Map map = {};
+      if (msg.messageUid != null && msg.messageUid! > 0) {
         map['uid'] = msg.messageUid;
       }
       map['type'] = msg.conversation.conversationType.index;
       map['target'] = msg.conversation.target;
       map['line'] = msg.conversation.line;
       map['from'] = msg.fromUser;
-      if (msg.toUsers != null && msg.toUsers.isNotEmpty) {
+      if (msg.toUsers != null && msg.toUsers!.isNotEmpty) {
         map['tos'] = msg.toUsers;
       }
       map['direction'] = msg.direction.index;
       map['status'] = msg.status.index;
       map['serverTime'] = msg.serverTime;
 
-      MessagePayload payload = await msg.content.encode();
+      MessagePayload payload = msg.content.encode();
       map['ctype'] = payload.contentType;
       map['csc'] = payload.searchableContent;
       map['cpc'] = payload.pushContent;
       map['cpd'] = payload.pushData;
       map['cc'] = payload.content;
       if (payload.binaryContent != null) {
-        map['cbc'] = Base64Encoder().convert(payload.binaryContent);
+        map['cbc'] = const Base64Encoder().convert(payload.binaryContent!);
       }
       map['cmt'] = payload.mentionedType;
       if (payload.mentionedTargets != null &&
-          payload.mentionedTargets.isNotEmpty) {
+          payload.mentionedTargets!.isNotEmpty) {
         map['cmts'] = payload.mentionedTargets;
       }
       map['ce'] = payload.extra;
@@ -117,7 +128,7 @@ class CompositeMessageContent extends MediaMessageContent {
       ms.add(map);
     }
 
-    payload.binaryContent = utf8.encode(json.encode({'ms': ms}));
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode({'ms': ms})));
     return payload;
   }
 

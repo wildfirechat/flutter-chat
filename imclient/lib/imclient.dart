@@ -59,52 +59,52 @@ import 'model/unread_count.dart';
 import 'model/user_info.dart';
 
 
-typedef void ConnectionStatusChangedCallback(int status);
-typedef void ReceiveMessageCallback(List<Message> messages, bool hasMore);
+typedef ConnectionStatusChangedCallback = void Function(int status);
+typedef ReceiveMessageCallback = void Function(List<Message> messages, bool hasMore);
 
-typedef void SendMessageSuccessCallback(int messageUid, int timestamp);
-typedef void SendMediaMessageProgressCallback(int uploaded, int total);
-typedef void SendMediaMessageUploadedCallback(String remoteUrl);
+typedef SendMessageSuccessCallback = void Function(int messageUid, int timestamp);
+typedef SendMediaMessageProgressCallback = void Function(int uploaded, int total);
+typedef SendMediaMessageUploadedCallback = void Function(String remoteUrl);
 
-typedef void RecallMessageCallback(int messageUid);
-typedef void DeleteMessageCallback(int messageUid);
+typedef RecallMessageCallback = void Function(int messageUid);
+typedef DeleteMessageCallback = void Function(int messageUid);
 
-typedef void MessageDeliveriedCallback(Map<String, int> deliveryMap);
-typedef void MessageReadedCallback(List<ReadReport> readReports);
+typedef MessageDeliveriedCallback = void Function(Map<String, int> deliveryMap);
+typedef MessageReadedCallback = void Function(List<ReadReport> readReports);
 
-typedef void GroupInfoUpdatedCallback(List<GroupInfo> groupInfos);
-typedef void GroupMemberUpdatedCallback(
+typedef GroupInfoUpdatedCallback = void Function(List<GroupInfo> groupInfos);
+typedef GroupMemberUpdatedCallback = void Function(
     String groupId, List<GroupMember> members);
-typedef void UserInfoUpdatedCallback(List<UserInfo> userInfos);
+typedef UserInfoUpdatedCallback = void Function(List<UserInfo> userInfos);
 
-typedef void FriendListUpdatedCallback(List<String> newFriends);
-typedef void FriendRequestListUpdatedCallback(List<String> newRequests);
+typedef FriendListUpdatedCallback = void Function(List<String> newFriends);
+typedef FriendRequestListUpdatedCallback = void Function(List<String> newRequests);
 
-typedef void UserSettingsUpdatedCallback();
+typedef UserSettingsUpdatedCallback = void Function();
 
-typedef void ChannelInfoUpdatedCallback(List<ChannelInfo> channelInfos);
+typedef ChannelInfoUpdatedCallback = void Function(List<ChannelInfo> channelInfos);
 
-typedef void OperationFailureCallback(int errorCode);
-typedef void OperationSuccessVoidCallback();
-typedef void OperationSuccessIntCallback(int i);
-typedef void OperationSuccessIntPairCallback(int first, int second);
-typedef void OperationSuccessStringCallback(String strValue);
-typedef void OperationSuccessMessagesCallback(List<Message> messages);
-typedef void OperationSuccessMessageCallback(Message message);
-typedef void OperationSuccessUserInfosCallback(List<UserInfo> userInfos);
-typedef void OperationSuccessUserInfoCallback(UserInfo userInfo);
-typedef void OperationSuccessGroupMembersCallback(List<GroupMember> members);
-typedef void OperationSuccessGroupInfoCallback(GroupInfo groupInfo);
-typedef void OperationSuccessChannelInfoCallback(ChannelInfo channelInfo);
-typedef void OperationSuccessChannelInfosCallback(
+typedef OperationFailureCallback = void Function(int errorCode);
+typedef OperationSuccessVoidCallback = void Function();
+typedef OperationSuccessIntCallback = void Function(int i);
+typedef OperationSuccessIntPairCallback = void Function(int first, int second);
+typedef OperationSuccessStringCallback = void Function(String strValue);
+typedef OperationSuccessMessagesCallback = void Function(List<Message> messages);
+typedef OperationSuccessMessageCallback = void Function(Message message);
+typedef OperationSuccessUserInfosCallback = void Function(List<UserInfo>? userInfos);
+typedef OperationSuccessUserInfoCallback = void Function(UserInfo userInfo);
+typedef OperationSuccessGroupMembersCallback = void Function(List<GroupMember> members);
+typedef OperationSuccessGroupInfoCallback = void Function(GroupInfo groupInfo);
+typedef OperationSuccessChannelInfoCallback = void Function(ChannelInfo channelInfo);
+typedef OperationSuccessChannelInfosCallback = void Function(
     List<ChannelInfo> channelInfos);
-typedef void OperationSuccessFilesCallback(List<FileRecord> files);
-typedef void OperationSuccessChatroomInfoCallback(ChatroomInfo chatroomInfo);
-typedef void OperationSuccessChatroomMemberInfoCallback(
+typedef OperationSuccessFilesCallback = void Function(List<FileRecord> files);
+typedef OperationSuccessChatroomInfoCallback = void Function(ChatroomInfo chatroomInfo);
+typedef OperationSuccessChatroomMemberInfoCallback = void Function(
     ChatroomMemberInfo memberInfo);
-typedef void OperationSuccessStringListCallback(List<String> strValues);
+typedef OperationSuccessStringListCallback = void Function(List<String> strValues);
 
-typedef void GetUploadUrlSuccessCallback(String uploadUrl, String downloadUrl, backupUploadUrl, int type);
+typedef GetUploadUrlSuccessCallback = void Function(String uploadUrl, String downloadUrl, String backupUploadUrl, int type);
 
 /// 密钥错误。一般是clientId不对，或者是连接的im跟请求token的im不是同一个环境，或者多端登录被踢出。
 /// 出现此错误时需要退出到登录界面。
@@ -324,7 +324,7 @@ class Imclient {
 
 
   ///获取协议栈日志文件路径
-  static Future<List<String>> get logFilesPath async {
+  static Future<List<String>?> get logFilesPath async {
     return ImclientPlatform.instance.logFilesPath;
   }
 
@@ -334,15 +334,15 @@ class Imclient {
       ReceiveMessageCallback receiveMessageCallback,
       RecallMessageCallback recallMessageCallback,
       DeleteMessageCallback deleteMessageCallback,
-      {MessageDeliveriedCallback messageDeliveriedCallback,
-        MessageReadedCallback messageReadedCallback,
-        GroupInfoUpdatedCallback groupInfoUpdatedCallback,
-        GroupMemberUpdatedCallback groupMemberUpdatedCallback,
-        UserInfoUpdatedCallback userInfoUpdatedCallback,
-        FriendListUpdatedCallback friendListUpdatedCallback,
-        FriendRequestListUpdatedCallback friendRequestListUpdatedCallback,
-        UserSettingsUpdatedCallback userSettingsUpdatedCallback,
-        ChannelInfoUpdatedCallback channelInfoUpdatedCallback}) async {
+      {MessageDeliveriedCallback? messageDeliveriedCallback,
+        MessageReadedCallback? messageReadedCallback,
+        GroupInfoUpdatedCallback? groupInfoUpdatedCallback,
+        GroupMemberUpdatedCallback? groupMemberUpdatedCallback,
+        UserInfoUpdatedCallback? userInfoUpdatedCallback,
+        FriendListUpdatedCallback? friendListUpdatedCallback,
+        FriendRequestListUpdatedCallback? friendRequestListUpdatedCallback,
+        UserSettingsUpdatedCallback? userSettingsUpdatedCallback,
+        ChannelInfoUpdatedCallback? channelInfoUpdatedCallback}) async {
 
     registerMessageContent(addGroupMemberNotificationContentMeta);
     registerMessageContent(changeGroupNameNotificationContentMeta);
@@ -523,21 +523,21 @@ class Imclient {
   ///获取会话的消息列表
   static Future<List<Message>> getMessages(
       Conversation conversation, int fromIndex, int count,
-      {List<int> contentTypes, String withUser}) async {
+      {List<int>? contentTypes, String? withUser}) async {
     return ImclientPlatform.instance.getMessages(conversation, fromIndex, count, contentTypes: contentTypes, withUser: withUser);
   }
 
   ///根据消息状态获取会话的消息列表
   static Future<List<Message>> getMessagesByStatus(Conversation conversation,
       int fromIndex, int count, List<MessageStatus> messageStatus,
-      {String withUser}) async {
+      {String? withUser}) async {
     return ImclientPlatform.instance.getMessagesByStatus(conversation, fromIndex, count, messageStatus);
   }
 
   ///获取某些类型会话的消息列表
   static Future<List<Message>> getConversationsMessages(
       List<ConversationType> types, List<int> lines, int fromIndex, int count,
-      {List<int> contentTypes, String withUser}) async {
+      {List<int>? contentTypes, String? withUser}) async {
     return ImclientPlatform.instance.getConversationsMessages(types, lines, fromIndex, count, contentTypes: contentTypes, withUser: withUser);
   }
 
@@ -548,7 +548,7 @@ class Imclient {
       int fromIndex,
       int count,
       List<MessageStatus> messageStatus,
-      {String withUser}) async {
+      {String? withUser}) async {
     return ImclientPlatform.instance.getConversationsMessageByStatus(types, lines, fromIndex, count, messageStatus, withUser: withUser);
   }
 
@@ -559,7 +559,7 @@ class Imclient {
       int count,
       OperationSuccessMessagesCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> contentTypes}) async {
+      {List<int>? contentTypes}) async {
     return ImclientPlatform.instance.getRemoteMessages(conversation, beforeMessageUid, count, successCallback, errorCallback, contentTypes: contentTypes);
   }
 
@@ -572,12 +572,12 @@ class Imclient {
 
 
   ///根据消息Id获取消息
-  static Future<Message> getMessage(int messageId) async {
+  static Future<Message?> getMessage(int messageId) async {
     return ImclientPlatform.instance.getMessage(messageId);
   }
 
   ///根据消息Uid获取消息
-  static Future<Message> getMessageByUid(int messageUid) async {
+  static Future<Message?> getMessageByUid(int messageUid) async {
     return ImclientPlatform.instance.getMessageByUid(messageUid);
   }
 
@@ -594,7 +594,7 @@ class Imclient {
       String keyword,
       int fromIndex,
       int count, {
-        List<int> contentTypes,
+        List<int>? contentTypes,
       }) async {
     return ImclientPlatform.instance.searchConversationsMessages(types, lines, keyword, fromIndex, count, contentTypes: contentTypes);
   }
@@ -602,10 +602,10 @@ class Imclient {
   ///发送消息
   static Future<Message> sendMessage(
       Conversation conversation, MessageContent content,
-      {List<String> toUsers,
+      {List<String>? toUsers,
         int expireDuration = 0,
-        SendMessageSuccessCallback successCallback,
-        OperationFailureCallback errorCallback}) async {
+        required SendMessageSuccessCallback successCallback,
+        required OperationFailureCallback errorCallback}) async {
     return sendMediaMessage(conversation, content,
         toUsers: toUsers,
         expireDuration: expireDuration,
@@ -616,20 +616,20 @@ class Imclient {
   ///发送媒体类型消息
   static Future<Message> sendMediaMessage(
       Conversation conversation, MessageContent content,
-      {List<String> toUsers,
-        int expireDuration,
-        SendMessageSuccessCallback successCallback,
-        OperationFailureCallback errorCallback,
-        SendMediaMessageProgressCallback progressCallback,
-        SendMediaMessageUploadedCallback uploadedCallback}) async {
+      {List<String>? toUsers,
+        int expireDuration = 0,
+        required SendMessageSuccessCallback successCallback,
+        required OperationFailureCallback errorCallback,
+        SendMediaMessageProgressCallback? progressCallback,
+        SendMediaMessageUploadedCallback? uploadedCallback}) async {
     return ImclientPlatform.instance.sendMediaMessage(conversation, content, toUsers: toUsers, expireDuration: expireDuration, successCallback: successCallback, errorCallback: errorCallback, progressCallback: progressCallback, uploadedCallback: uploadedCallback);
   }
 
   ///发送已保存消息
   static Future<bool> sendSavedMessage(int messageId,
-      {int expireDuration,
-        SendMessageSuccessCallback successCallback,
-        OperationFailureCallback errorCallback}) async {
+      {int expireDuration = 0,
+        required SendMessageSuccessCallback successCallback,
+        required OperationFailureCallback errorCallback}) async {
     return ImclientPlatform.instance.sendSavedMessage(messageId, expireDuration: expireDuration, successCallback: successCallback, errorCallback: errorCallback);
   }
 
@@ -691,7 +691,7 @@ class Imclient {
   }
 
   ///设置/取消会话免到扰
-  static Future<void> clearRemoteConversationMessage(Conversation conversation,
+  static Future<bool> clearRemoteConversationMessage(Conversation conversation,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) async {
     return ImclientPlatform.instance.clearRemoteConversationMessage(conversation, successCallback, errorCallback);
@@ -737,14 +737,14 @@ class Imclient {
   }
 
   ///获取用户信息
-  static Future<UserInfo> getUserInfo(String userId,
-      {String groupId, bool refresh = false}) async {
+  static Future<UserInfo?> getUserInfo(String userId,
+      {String? groupId, bool refresh = false}) async {
     return ImclientPlatform.instance.getUserInfo(userId, groupId: groupId, refresh: refresh);
   }
 
   ///批量获取用户信息
   static Future<List<UserInfo>> getUserInfos(List<String> userIds,
-      {String groupId}) async {
+      {String? groupId}) async {
     return ImclientPlatform.instance.getUserInfos(userIds, groupId: groupId);
   }
 
@@ -773,7 +773,7 @@ class Imclient {
   }
 
   ///获取好友列表
-  static Future<List<String>> getMyFriendList({bool refresh = false}) async {
+  static Future<List<String>?> getMyFriendList({bool refresh = false}) async {
     return ImclientPlatform.instance.getMyFriendList(refresh: refresh);
   }
 
@@ -802,7 +802,7 @@ class Imclient {
   }
 
   ///获取某个用户相关的好友请求
-  static Future<FriendRequest> getFriendRequest(
+  static Future<FriendRequest?> getFriendRequest(
       String userId, FriendRequestDirection direction) async {
     return ImclientPlatform.instance.getFriendRequest(userId, direction);
   }
@@ -874,7 +874,7 @@ class Imclient {
   }
 
   ///获取黑名单列表
-  static Future<List<String>> getBlackList({bool refresh = false}) async {
+  static Future<List<String>?> getBlackList({bool refresh = false}) async {
     return ImclientPlatform.instance.getBlackList(refresh: refresh);
   }
 
@@ -902,13 +902,13 @@ class Imclient {
   ///异步获取群成员列表
   static Future<void> getGroupMembersAsync(String groupId,
       {bool refresh = false,
-        OperationSuccessGroupMembersCallback successCallback,
-        OperationFailureCallback errorCallback}) async {
+        required OperationSuccessGroupMembersCallback successCallback,
+        required OperationFailureCallback errorCallback}) async {
     return ImclientPlatform.instance.getGroupMembersAsync(groupId, refresh: refresh, successCallback: successCallback, errorCallback: errorCallback);
   }
 
   ///获取群信息
-  static Future<GroupInfo> getGroupInfo(String groupId,
+  static Future<GroupInfo?> getGroupInfo(String groupId,
       {bool refresh = false}) async {
     return ImclientPlatform.instance.getGroupInfo(groupId, refresh: refresh);
   }
@@ -916,8 +916,8 @@ class Imclient {
   ///异步获取群信息
   static Future<void> getGroupInfoAsync(String groupId,
       {bool refresh = false,
-        OperationSuccessGroupInfoCallback successCallback,
-        OperationFailureCallback errorCallback}) async {
+        required OperationSuccessGroupInfoCallback successCallback,
+        required OperationFailureCallback errorCallback}) async {
     return ImclientPlatform.instance.getGroupInfoAsync(groupId, refresh: refresh, successCallback: successCallback, errorCallback: errorCallback);
   }
 
@@ -929,15 +929,15 @@ class Imclient {
 
   ///创建群组，groupId可以为空。
   static Future<void> createGroup(
-      String groupId,
-      String groupName,
-      String groupPortrait,
+      String? groupId,
+      String? groupName,
+      String? groupPortrait,
       int type,
       List<String> members,
       OperationSuccessStringCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.createGroup(groupId, groupName, groupPortrait, type, members, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -947,8 +947,8 @@ class Imclient {
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.addGroupMembers(groupId, members, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -958,8 +958,8 @@ class Imclient {
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.kickoffGroupMembers(groupId, members, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -968,8 +968,8 @@ class Imclient {
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.quitGroup(groupId, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -978,8 +978,8 @@ class Imclient {
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.dismissGroup(groupId, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -990,8 +990,8 @@ class Imclient {
       String newValue,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.modifyGroupInfo(groupId, modifyType, newValue, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -1001,8 +1001,8 @@ class Imclient {
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.modifyGroupAlias(groupId, newAlias, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -1013,8 +1013,8 @@ class Imclient {
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.modifyGroupMemberAlias(groupId, memberId, newAlias, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -1024,8 +1024,8 @@ class Imclient {
       String newOwner,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.transferGroup(groupId, newOwner, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -1036,8 +1036,8 @@ class Imclient {
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.setGroupManager(groupId, isSet, memberIds, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -1048,8 +1048,8 @@ class Imclient {
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.muteGroupMember(groupId, isSet, memberIds, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -1060,8 +1060,8 @@ class Imclient {
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     return ImclientPlatform.instance.allowGroupMember(groupId, isSet, memberIds,
         successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
@@ -1078,7 +1078,7 @@ class Imclient {
   }
 
   ///获取收藏群组列表
-  static Future<List<String>> getFavGroups() async {
+  static Future<List<String>?> getFavGroups() async {
     return ImclientPlatform.instance.getFavGroups();
   }
 
@@ -1239,7 +1239,7 @@ class Imclient {
   }
 
   ///获取收藏好友列表
-  static Future<List<String>> getFavUsers() async {
+  static Future<List<String>?> getFavUsers() async {
     return ImclientPlatform.instance.getFavUsers();
   }
 
@@ -1303,7 +1303,7 @@ class Imclient {
   }
 
   ///获取频道信息
-  static Future<ChannelInfo> getChannelInfo(String channelId,
+  static Future<ChannelInfo?> getChannelInfo(String channelId,
       {bool refresh = false}) async {
     return ImclientPlatform.instance.getChannelInfo(channelId, refresh: refresh);
   }
@@ -1341,12 +1341,12 @@ class Imclient {
   }
 
   ///获取我的频道
-  static Future<List<String>> getMyChannels() async {
+  static Future<List<String>?> getMyChannels() async {
     return ImclientPlatform.instance.getMyChannels();
   }
 
   ///获取我订阅的频道
-  static Future<List<String>> getListenedChannels() async {
+  static Future<List<String>?> getListenedChannels() async {
     return ImclientPlatform.instance.getListenedChannels();
   }
 
@@ -1390,8 +1390,8 @@ class Imclient {
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
-      {Conversation conversation,
-        String fromUser}) async {
+      {Conversation? conversation,
+        String? fromUser}) async {
     return ImclientPlatform.instance.getConversationFiles(beforeMessageUid, count, successCallback, errorCallback, conversation: conversation, fromUser: fromUser);
   }
 
@@ -1420,8 +1420,8 @@ class Imclient {
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
-      {Conversation conversation,
-        String fromUser}) async {
+      {Conversation? conversation,
+        String? fromUser}) async {
     return ImclientPlatform.instance.searchFiles(keyword, beforeMessageUid, count, successCallback, errorCallback, conversation: conversation, fromUser: fromUser);
   }
 

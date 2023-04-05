@@ -17,13 +17,13 @@ class LoginScreen extends StatefulWidget {
 
 class LoginScreenState extends State<LoginScreen> {
   LoginScreenState({this.title = '登录'});
-  SharedPreferences prefs;
+  late SharedPreferences prefs;
 
-  String currentUser;
+  String? currentUser;
   String title;
   bool isSentCode = false;
   int waitResendCount = 0;
-  Timer _timer;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -79,7 +79,7 @@ class LoginScreenState extends State<LoginScreen> {
                           waitResendCount = waitResendCount + 1;
                           if(waitResendCount >= 60) {
                             isSentCode = false;
-                            _timer.cancel();
+                            _timer!.cancel();
                           }
                         });
 

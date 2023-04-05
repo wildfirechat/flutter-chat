@@ -1,7 +1,7 @@
 class QuoteInfo {
-  QuoteInfo({this.messageUid = 0});
+  QuoteInfo(this.messageUid);
   int messageUid;
-  String userId;
-  String userDisplayName;
-  String messageDigest;
+  String? userId;
+  String? userDisplayName;
+  String? messageDigest;
 }

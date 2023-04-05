@@ -93,7 +93,7 @@ class _MyAppState extends State<MyApp> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString("userId") != null && prefs.getString("token") != null) {
       Imclient.connect(
-          Config.IM_Host, prefs.getString("userId"), prefs.getString("token"));
+          Config.IM_Host, prefs.getString("userId")!, prefs.getString("token")!);
       setState(() {
         isLogined = true;
       });

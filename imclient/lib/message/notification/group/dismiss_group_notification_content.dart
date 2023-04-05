@@ -10,7 +10,7 @@ import '../notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent DismissGroupNotificationContentCreator() {
-  return new DismissGroupNotificationContent();
+  return DismissGroupNotificationContent();
 }
 
 const dismissGroupNotificationContentMeta = MessageContentMeta(
@@ -19,15 +19,21 @@ const dismissGroupNotificationContentMeta = MessageContentMeta(
     DismissGroupNotificationContentCreator);
 
 class DismissGroupNotificationContent extends NotificationMessageContent {
-  String groupId;
-  String operateUser;
+  late String groupId;
+  late String operateUser;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    operateUser = map['o'];
-    groupId = map['g'];
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      operateUser = map['o'];
+      groupId = map['g'];
+    } else {
+      operateUser = "";
+      groupId = "";
+    }
   }
 
   @override
@@ -36,12 +42,12 @@ class DismissGroupNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
-    Map<String, dynamic> map = new Map();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
+    Map<String, dynamic> map = {};
     map['o'] = operateUser;
     map['g'] = groupId;
-    payload.binaryContent = new Uint8List.fromList(json.encode(map).codeUnits);
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -50,20 +56,10 @@ class DismissGroupNotificationContent extends NotificationMessageContent {
     if (operateUser == await Imclient.currentUserId) {
       return '你 销毁了群组';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(operateUser, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          return '${userInfo.friendAlias} 销毁了群组';
-        } else if (userInfo.groupAlias != null &&
-            userInfo.groupAlias.isNotEmpty) {
-          return '${userInfo.groupAlias} 销毁了群组';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          return '${userInfo.displayName} 销毁了群组';
-        } else {
-          return '$operateUser 销毁了群组';
-        }
+        return '${userInfo.getReadableName()} 销毁了群组';
       } else {
         return '$operateUser 销毁了群组';
       }

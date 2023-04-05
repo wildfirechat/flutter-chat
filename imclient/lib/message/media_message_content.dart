@@ -3,8 +3,8 @@ import '../model/message_payload.dart';
 import 'message_content.dart';
 
 class MediaMessageContent extends MessageContent {
-  String localPath;
-  String remoteUrl;
+  String? localPath;
+  String? remoteUrl;
 
   @override
   void decode(MessagePayload payload) {
@@ -14,8 +14,8 @@ class MediaMessageContent extends MessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
     payload.localMediaPath = localPath;
     payload.remoteMediaUrl = remoteUrl;
     payload.mediaType = mediaType;

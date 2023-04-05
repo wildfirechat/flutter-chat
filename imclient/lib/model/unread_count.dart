@@ -1,6 +1,5 @@
 class UnreadCount {
-  UnreadCount(
-      {this.unread = 0, this.unreadMention = 0, this.unreadMentionAll = 0});
+  UnreadCount({this.unread = 0, this.unreadMention = 0, this.unreadMentionAll = 0});
   int unread;
   int unreadMention;
   int unreadMentionAll;

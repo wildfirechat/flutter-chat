@@ -10,7 +10,7 @@ import '../notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent GroupJoinTypeNotificationContentCreator() {
-  return new GroupJoinTypeNotificationContent();
+  return GroupJoinTypeNotificationContent();
 }
 
 const groupJoinTypeNotificationContentMeta = MessageContentMeta(
@@ -19,19 +19,26 @@ const groupJoinTypeNotificationContentMeta = MessageContentMeta(
     GroupJoinTypeNotificationContentCreator);
 
 class GroupJoinTypeNotificationContent extends NotificationMessageContent {
-  String groupId;
-  String operatorId;
+  late String groupId;
+  late String operatorId;
 
   ///0 开放加入，1 运行群成员添加，2 仅管理员或群主添加
-  String type;
+  late String type;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    operatorId = map['o'];
-    groupId = map['g'];
-    type = map['n'];
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      operatorId = map['o'];
+      groupId = map['g'];
+      type = map['n'];
+    } else {
+      operatorId = "";
+      groupId = "";
+      type = "";
+    }
   }
 
   @override
@@ -40,13 +47,13 @@ class GroupJoinTypeNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
-    Map<String, dynamic> map = new Map();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
+    Map<String, dynamic> map = {};
     map['o'] = operatorId;
     map['g'] = groupId;
     map['n'] = type;
-    payload.binaryContent = new Uint8List.fromList(json.encode(map).codeUnits);
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -56,22 +63,12 @@ class GroupJoinTypeNotificationContent extends NotificationMessageContent {
     if (operatorId == await Imclient.currentUserId) {
       formatMsg = '你';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(operatorId, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          formatMsg = '${userInfo.friendAlias}';
-        } else if (userInfo.groupAlias != null &&
-            userInfo.groupAlias.isNotEmpty) {
-          formatMsg = '${userInfo.groupAlias}';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          formatMsg = '${userInfo.displayName}';
-        } else {
-          formatMsg = '$operatorId';
-        }
+        formatMsg = userInfo.getReadableName();
       } else {
-        formatMsg = '$operatorId';
+        formatMsg = operatorId;
       }
     }
 

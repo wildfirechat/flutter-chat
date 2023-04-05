@@ -36,19 +36,19 @@ class MethodChannelImclient extends ImclientPlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('imclient');
 
-  static ConnectionStatusChangedCallback _connectionStatusChangedCallback;
-  static ReceiveMessageCallback _receiveMessageCallback;
-  static RecallMessageCallback _recallMessageCallback;
-  static DeleteMessageCallback _deleteMessageCallback;
-  static MessageDeliveriedCallback _messageDeliveriedCallback;
-  static MessageReadedCallback _messageReadedCallback;
-  static GroupInfoUpdatedCallback _groupInfoUpdatedCallback;
-  static GroupMemberUpdatedCallback _groupMemberUpdatedCallback;
-  static UserInfoUpdatedCallback _userInfoUpdatedCallback;
-  static FriendListUpdatedCallback _friendListUpdatedCallback;
-  static FriendRequestListUpdatedCallback _friendRequestListUpdatedCallback;
-  static UserSettingsUpdatedCallback _userSettingsUpdatedCallback;
-  static ChannelInfoUpdatedCallback _channelInfoUpdatedCallback;
+  static late ConnectionStatusChangedCallback _connectionStatusChangedCallback;
+  static late ReceiveMessageCallback _receiveMessageCallback;
+  static late RecallMessageCallback _recallMessageCallback;
+  static late DeleteMessageCallback _deleteMessageCallback;
+  static MessageDeliveriedCallback? _messageDeliveriedCallback;
+  static MessageReadedCallback? _messageReadedCallback;
+  static GroupInfoUpdatedCallback? _groupInfoUpdatedCallback;
+  static GroupMemberUpdatedCallback? _groupMemberUpdatedCallback;
+  static UserInfoUpdatedCallback? _userInfoUpdatedCallback;
+  static FriendListUpdatedCallback? _friendListUpdatedCallback;
+  static FriendRequestListUpdatedCallback? _friendRequestListUpdatedCallback;
+  static UserSettingsUpdatedCallback? _userSettingsUpdatedCallback;
+  static ChannelInfoUpdatedCallback? _channelInfoUpdatedCallback;
 
 
   static int _requestId = 0;
@@ -170,7 +170,7 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取协议栈日志文件路径
   @override
-  Future<List<String>> get logFilesPath async {
+  Future<List<String>?> get logFilesPath async {
     return Tools.convertDynamicList(await methodChannel.invokeMethod('getLogFilesPath'));
   }
 
@@ -180,15 +180,15 @@ class MethodChannelImclient extends ImclientPlatform {
       ReceiveMessageCallback receiveMessageCallback,
       RecallMessageCallback recallMessageCallback,
       DeleteMessageCallback deleteMessageCallback,
-      {MessageDeliveriedCallback messageDeliveriedCallback,
-        MessageReadedCallback messageReadedCallback,
-        GroupInfoUpdatedCallback groupInfoUpdatedCallback,
-        GroupMemberUpdatedCallback groupMemberUpdatedCallback,
-        UserInfoUpdatedCallback userInfoUpdatedCallback,
-        FriendListUpdatedCallback friendListUpdatedCallback,
-        FriendRequestListUpdatedCallback friendRequestListUpdatedCallback,
-        UserSettingsUpdatedCallback userSettingsUpdatedCallback,
-        ChannelInfoUpdatedCallback channelInfoUpdatedCallback}) async {
+      {MessageDeliveriedCallback? messageDeliveriedCallback,
+        MessageReadedCallback? messageReadedCallback,
+        GroupInfoUpdatedCallback? groupInfoUpdatedCallback,
+        GroupMemberUpdatedCallback? groupMemberUpdatedCallback,
+        UserInfoUpdatedCallback? userInfoUpdatedCallback,
+        FriendListUpdatedCallback? friendListUpdatedCallback,
+        FriendRequestListUpdatedCallback? friendRequestListUpdatedCallback,
+        UserSettingsUpdatedCallback? userSettingsUpdatedCallback,
+        ChannelInfoUpdatedCallback? channelInfoUpdatedCallback}) async {
     _connectionStatusChangedCallback = connectionStatusChangedCallback;
     _receiveMessageCallback = receiveMessageCallback;
     _recallMessageCallback = recallMessageCallback;
@@ -206,62 +206,58 @@ class MethodChannelImclient extends ImclientPlatform {
 
     methodChannel.invokeMethod<Void>('initProto');
 
-    methodChannel.setMethodCallHandler((MethodCall call) {
+    methodChannel.setMethodCallHandler((MethodCall call) async {
       switch (call.method) {
         case 'onConnectionStatusChanged':
           int status = call.arguments;
-          if (_connectionStatusChangedCallback != null) {
-            _connectionStatusChangedCallback(status);
-          }
+          _connectionStatusChangedCallback!(status);
           _eventBus.fire(ConnectionStatusChangedEvent(status));
           break;
         case 'onReceiveMessage':
           Map<dynamic, dynamic> args = call.arguments;
           bool hasMore = args['hasMore'];
           List<dynamic> list = args['messages'];
-          _convertProtoMessages(list).then((value) {
-            if (_receiveMessageCallback != null) {
-              _receiveMessageCallback(value, hasMore);
-            }
-            _eventBus.fire(ReceiveMessagesEvent(value, hasMore));
-          });
+          List<Message> messages = _convertProtoMessages(list);
+          if(messages.isNotEmpty) {
+            _receiveMessageCallback(messages, hasMore);
+            _eventBus.fire(ReceiveMessagesEvent(messages, hasMore));
+          }
           break;
         case 'onRecallMessage':
           Map<dynamic, dynamic> args = call.arguments;
           int messageUid = args['messageUid'];
-          if (_recallMessageCallback != null) {
-            _recallMessageCallback(messageUid);
-          }
+          _recallMessageCallback!(messageUid);
           _eventBus.fire(RecallMessageEvent(messageUid));
           break;
         case 'onDeleteMessage':
           Map<dynamic, dynamic> args = call.arguments;
           int messageUid = args['messageUid'];
-          if (_deleteMessageCallback != null) {
-            _deleteMessageCallback(messageUid);
-          }
+          _deleteMessageCallback!(messageUid);
           _eventBus.fire(DeleteMessageEvent(messageUid));
           break;
         case 'onMessageDelivered':
           Map<dynamic, dynamic> args = call.arguments;
-          Map<String, int> data = new Map();
+          Map<String, int> data = {};
           args.forEach((key, value) {
             data[key] = value;
           });
           if (_messageDeliveriedCallback != null) {
-            _messageDeliveriedCallback(data);
+            _messageDeliveriedCallback!(data);
           }
           _eventBus.fire(MessageDeliveriedEvent(data));
           break;
         case 'onMessageReaded':
           Map<dynamic, dynamic> args = call.arguments;
           List<dynamic> reads = args['readeds'];
-          List<ReadReport> reports = new List();
+          List<ReadReport> reports = [];
           reads.forEach((element) {
-            reports.add(_convertProtoReadEntry(element));
+            ReadReport? readReport = _convertProtoReadEntry(element);
+            if(readReport != null) {
+              reports.add(readReport);
+            }
           });
           if (_messageReadedCallback != null) {
-            _messageReadedCallback(reports);
+            _messageReadedCallback!(reports);
           }
           _eventBus.fire(MessageReadedEvent(reports));
           break;
@@ -270,12 +266,15 @@ class MethodChannelImclient extends ImclientPlatform {
         case 'onGroupInfoUpdated':
           Map<dynamic, dynamic> args = call.arguments;
           List<dynamic> groups = args['groups'];
-          List<GroupInfo> data = new List();
+          List<GroupInfo> data = [];
           groups.forEach((element) {
-            data.add(_convertProtoGroupInfo(element));
+            GroupInfo? groupInfo = _convertProtoGroupInfo(element);
+            if(groupInfo != null) {
+              data.add(groupInfo);
+            }
           });
           if (_groupInfoUpdatedCallback != null) {
-            _groupInfoUpdatedCallback(data);
+            _groupInfoUpdatedCallback!(data);
           }
           _eventBus.fire(GroupInfoUpdatedEvent(data));
           break;
@@ -283,24 +282,27 @@ class MethodChannelImclient extends ImclientPlatform {
           Map<dynamic, dynamic> args = call.arguments;
           String groupId = args['groupId'];
           List<dynamic> members = args['members'];
-          List<GroupMember> data = new List();
+          List<GroupMember> data = [];
           members.forEach((element) {
             data.add(_convertProtoGroupMember(element));
           });
           if (_groupMemberUpdatedCallback != null) {
-            _groupMemberUpdatedCallback(groupId, data);
+            _groupMemberUpdatedCallback!(groupId, data);
           }
           _eventBus.fire(GroupMembersUpdatedEvent(groupId, data));
           break;
         case 'onUserInfoUpdated':
           Map<dynamic, dynamic> args = call.arguments;
           List<dynamic> users = args['users'];
-          List<UserInfo> data = new List();
+          List<UserInfo> data = [];
           users.forEach((element) {
-            data.add(_convertProtoUserInfo(element));
+            UserInfo? userInfo = _convertProtoUserInfo(element);
+            if(userInfo != null) {
+              data.add(userInfo);
+            }
           });
           if (_userInfoUpdatedCallback != null) {
-            _userInfoUpdatedCallback(data);
+            _userInfoUpdatedCallback!(data);
           }
           _eventBus.fire(UserInfoUpdatedEvent(data));
 
@@ -308,10 +310,10 @@ class MethodChannelImclient extends ImclientPlatform {
         case 'onFriendListUpdated':
           Map<dynamic, dynamic> args = call.arguments;
           List<dynamic> friendIdList = args['friends'];
-          List<String> friends = List(0);
+          List<String> friends = [];
           friendIdList.forEach((element) => friends.add(element));
           if (_friendListUpdatedCallback != null) {
-            _friendListUpdatedCallback(friends);
+            _friendListUpdatedCallback!(friends);
           }
           _eventBus.fire(FriendUpdateEvent(friends));
           break;
@@ -319,25 +321,28 @@ class MethodChannelImclient extends ImclientPlatform {
           Map<dynamic, dynamic> args = call.arguments;
           final friendRequestList = (args['requests'] as List).cast<String>();
           if (_friendRequestListUpdatedCallback != null) {
-            _friendRequestListUpdatedCallback(friendRequestList);
+            _friendRequestListUpdatedCallback!(friendRequestList);
           }
           _eventBus.fire(FriendRequestUpdateEvent(friendRequestList));
           break;
         case 'onSettingUpdated':
           if (_userSettingsUpdatedCallback != null) {
-            _userSettingsUpdatedCallback();
+            _userSettingsUpdatedCallback!();
           }
           _eventBus.fire(UserSettingUpdatedEvent());
           break;
         case 'onChannelInfoUpdated':
           Map<dynamic, dynamic> args = call.arguments;
           List<dynamic> channels = args['channels'];
-          List<ChannelInfo> data = new List();
+          List<ChannelInfo> data = [];
           channels.forEach((element) {
-            data.add(_convertProtoChannelInfo(element));
+            ChannelInfo? channelInfo = _convertProtoChannelInfo(element);
+            if(channelInfo != null) {
+              data.add(channelInfo);
+            }
           });
           if (_channelInfoUpdatedCallback != null) {
-            _channelInfoUpdatedCallback(data);
+            _channelInfoUpdatedCallback!(data);
           }
           _eventBus.fire(ChannelInfoUpdateEvent(data));
           break;
@@ -545,9 +550,10 @@ class MethodChannelImclient extends ImclientPlatform {
           }
           _removeAllOperationCallback(requestId);
           break;
+        default:
+          //should not be here!
+          break;
       }
-
-      return Future(null);
     });
   }
 
@@ -575,19 +581,18 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   void registerMessage(MessageContentMeta contentMeta) {
     _contentMetaMap.putIfAbsent(contentMeta.type, () => contentMeta);
-    Map<String, dynamic> map = new Map();
+    Map<String, dynamic> map = {};
     map["type"] = contentMeta.type;
     map["flag"] = contentMeta.flag.index;
     methodChannel.invokeMethod('registerMessage', map);
   }
 
-
-  Future<Message> _convertProtoMessage(Map<dynamic, dynamic> map) async {
-    if (map == null) {
+  Message? _convertProtoMessage(Map<dynamic, dynamic>? map) {
+    if(map == null) {
       return null;
     }
 
-    Message msg = new Message();
+    Message msg = Message();
     msg.messageId = map['messageId'];
     if(map['messageUid'] is String) {
       String str = map['messageUid'];
@@ -599,7 +604,9 @@ class MethodChannelImclient extends ImclientPlatform {
 
     msg.conversation = _convertProtoConversation(map['conversation']);
     msg.fromUser = map['sender'];
-    msg.toUsers = (map['toUsers'] as List)?.cast<String>();
+    if(map['toUsers'] != null) {
+      msg.toUsers = (map['toUsers'] as List)?.cast<String>();
+    }
     msg.content =
         decodeMessageContent(_convertProtoMessageContent(map['content']));
     msg.direction = MessageDirection.values[map['direction']];
@@ -609,22 +616,23 @@ class MethodChannelImclient extends ImclientPlatform {
     return msg;
   }
 
-  Future<List<Message>> _convertProtoMessages(
-      List<dynamic> datas) async {
+  List<Message> _convertProtoMessages(List<dynamic> datas) {
     if (datas.isEmpty) {
-      return new List();
+      return [];
     }
-    List<Message> messages = new List();
+    List<Message> messages = [];
     for (int i = 0; i < datas.length; ++i) {
       var element = datas[i];
-      Message msg = await _convertProtoMessage(element);
-      messages.add(msg);
+      Message? msg = _convertProtoMessage(element);
+      if(msg != null) {
+        messages.add(msg);
+      }
     }
     return messages;
   }
 
   static Conversation _convertProtoConversation(Map<dynamic, dynamic> map) {
-    Conversation conversation = new Conversation();
+    Conversation conversation = Conversation();
     conversation.conversationType = ConversationType.values[map['type']];
     conversation.target = map['target'];
     if (map['line'] == null) {
@@ -639,9 +647,9 @@ class MethodChannelImclient extends ImclientPlatform {
   Future<List<ConversationInfo>> _convertProtoConversationInfos(
       List<dynamic> maps) async {
     if (maps == null || maps.isEmpty) {
-      return new List();
+      return [];
     }
-    List<ConversationInfo> infos = new List();
+    List<ConversationInfo> infos = [];
     for (int i = 0; i < maps.length; ++i) {
       var element = maps[i];
       infos.add(await _convertProtoConversationInfo(element));
@@ -652,11 +660,10 @@ class MethodChannelImclient extends ImclientPlatform {
 
   Future<ConversationInfo> _convertProtoConversationInfo(
       Map<dynamic, dynamic> map) async {
-    ConversationInfo conversationInfo = new ConversationInfo();
+    ConversationInfo conversationInfo = ConversationInfo();
     conversationInfo.conversation =
         _convertProtoConversation(map['conversation']);
-    conversationInfo.lastMessage =
-    await _convertProtoMessage(map['lastMessage']);
+    conversationInfo.lastMessage = _convertProtoMessage(map['lastMessage']);
     conversationInfo.draft = map['draft'];
     if (map['timestamp'] != null) conversationInfo.timestamp = map['timestamp'];
     if (map['isTop'] != null) conversationInfo.isTop = map['isTop'];
@@ -669,10 +676,10 @@ class MethodChannelImclient extends ImclientPlatform {
   Future<List<ConversationSearchInfo>>
   _convertProtoConversationSearchInfos(List<dynamic> maps) async {
     if (maps.isEmpty) {
-      return new List();
+      return [];
     }
 
-    List<ConversationSearchInfo> infos = new List();
+    List<ConversationSearchInfo> infos = [];
     for (int i = 0; i < maps.length; i++) {
       var element = maps[i];
       infos.add(await _convertProtoConversationSearchInfo(element));
@@ -683,11 +690,11 @@ class MethodChannelImclient extends ImclientPlatform {
 
   Future<ConversationSearchInfo> _convertProtoConversationSearchInfo(
       Map<dynamic, dynamic> map) async {
-    ConversationSearchInfo conversationInfo = new ConversationSearchInfo();
+    ConversationSearchInfo conversationInfo = ConversationSearchInfo();
     conversationInfo.conversation =
         _convertProtoConversation(map['conversation']);
     conversationInfo.marchedMessage =
-    await _convertProtoMessage(map['marchedMessage']);
+    _convertProtoMessage(map['marchedMessage']);
     if (map['marchedCount'] != null) {
       conversationInfo.marchedCount = map['marchedCount'];
     }
@@ -695,8 +702,12 @@ class MethodChannelImclient extends ImclientPlatform {
     return conversationInfo;
   }
 
-  static FriendRequest _convertProtoFriendRequest(Map<dynamic, dynamic> data) {
-    FriendRequest friendRequest = new FriendRequest();
+  static FriendRequest? _convertProtoFriendRequest(Map<dynamic, dynamic>? data) {
+    if(data == null || data['target'] == null) {
+      return null;
+    }
+
+    FriendRequest friendRequest = FriendRequest();
     friendRequest.target = data['target'];
     friendRequest.direction = FriendRequestDirection.values[data['direction']];
     friendRequest.reason = data['reason'];
@@ -709,12 +720,15 @@ class MethodChannelImclient extends ImclientPlatform {
 
   static List<FriendRequest> _convertProtoFriendRequests(List<dynamic> datas) {
     if (datas.isEmpty) {
-      return new List();
+      return [];
     }
 
-    List<FriendRequest> list = new List();
+    List<FriendRequest> list = [];
     datas.forEach((element) {
-      list.add(_convertProtoFriendRequest(element));
+      FriendRequest? request = _convertProtoFriendRequest(element);
+      if(request != null) {
+        list.add(request);
+      }
     });
     return list;
   }
@@ -730,10 +744,10 @@ class MethodChannelImclient extends ImclientPlatform {
 
   static List<Friend> _convertProtoFriends(List<dynamic> datas) {
     if (datas.isEmpty) {
-      return new List();
+      return [];
     }
 
-    List<Friend> list = new List();
+    List<Friend> list = [];
     datas.forEach((element) {
       list.add(_convertProtoFriend(element));
     });
@@ -743,10 +757,10 @@ class MethodChannelImclient extends ImclientPlatform {
   static List<GroupSearchInfo> _convertProtoGroupSearchInfos(
       List<dynamic> maps) {
     if (maps.isEmpty) {
-      return new List();
+      return [];
     }
 
-    List<GroupSearchInfo> infos = new List();
+    List<GroupSearchInfo> infos = [];
     maps.forEach((element) {
       infos.add(_convertProtoGroupSearchInfo(element));
     });
@@ -756,7 +770,7 @@ class MethodChannelImclient extends ImclientPlatform {
 
   static GroupSearchInfo _convertProtoGroupSearchInfo(
       Map<dynamic, dynamic> map) {
-    GroupSearchInfo groupSearchInfo = new GroupSearchInfo();
+    GroupSearchInfo groupSearchInfo = GroupSearchInfo();
     groupSearchInfo.groupInfo = _convertProtoGroupInfo(map['groupInfo']);
     groupSearchInfo.marchType = GroupSearchResultType.values[map['marchType']];
     groupSearchInfo.marchedMemberNames = map['marchedMemberNames'];
@@ -764,34 +778,34 @@ class MethodChannelImclient extends ImclientPlatform {
     return groupSearchInfo;
   }
 
-  static UnreadCount _convertProtoUnreadCount(Map<dynamic, dynamic> map) {
+  static UnreadCount _convertProtoUnreadCount(Map<dynamic, dynamic>? map) {
     if (map == null) {
-      return null;
+      return UnreadCount();
     }
-    UnreadCount unreadCount = new UnreadCount();
+    UnreadCount unreadCount = UnreadCount();
     if (map['unread'] != null) unreadCount.unread = map['unread'];
-    if (map['unreadMention'] != null)
-      unreadCount.unreadMention = map['unreadMention'];
-    if (map['unreadMentionAll'] != null)
-      unreadCount.unreadMentionAll = map['unreadMentionAll'];
+    if (map['unreadMention'] != null) unreadCount.unreadMention = map['unreadMention'];
+    if (map['unreadMentionAll'] != null) unreadCount.unreadMentionAll = map['unreadMentionAll'];
     return unreadCount;
   }
 
   static MessagePayload _convertProtoMessageContent(Map<dynamic, dynamic> map) {
-    MessagePayload payload = new MessagePayload();
+    MessagePayload payload = MessagePayload();
     payload.contentType = map['type'];
     payload.searchableContent = map['searchableContent'];
     payload.pushContent = map['pushContent'];
     payload.pushData = map['pushData'];
     payload.content = map['content'];
-    String str = map['binaryContent'];
-    if(str != null) {
-      payload.binaryContent = base64Decode(str);
+    if(map['binaryContent'] != null) {
+      payload.binaryContent = base64Decode(map['binaryContent']);
     }
     payload.localContent = map['localContent'];
-    if (map['mentionedType'] != null)
+    if (map['mentionedType'] != null) {
       payload.mentionedType = map['mentionedType'];
-    payload.mentionedTargets = Tools.convertDynamicList(map['mentionedTargets']);
+    }
+    if(map['mentionedTargets'] != null) {
+      payload.mentionedTargets = Tools.convertDynamicList(map['mentionedTargets']);
+    }
 
     if (map['mediaType'] != null) {
       payload.mediaType = MediaType.values[map['mediaType']];
@@ -804,7 +818,7 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   static Map<String, dynamic> _convertConversation(Conversation conversation) {
-    Map<String, dynamic> map = new Map();
+    Map<String, dynamic> map = {};
 
     map['type'] = conversation.conversationType.index;
     map['target'] = conversation.target;
@@ -812,47 +826,56 @@ class MethodChannelImclient extends ImclientPlatform {
     return map;
   }
 
-  static Future<Map<String, dynamic>> _convertMessageContent(
-      MessageContent content) async {
-    if (content == null) return null;
-
-    Map<String, dynamic> map = new Map();
-    MessagePayload payload = await content.encode();
+  static Map<String, dynamic> _convertMessageContent(
+      MessageContent content) {
+    Map<String, dynamic> map = {};
+    MessagePayload payload = content.encode();
     map['type'] = payload.contentType;
-    if (payload.searchableContent != null)
+    if (payload.searchableContent != null) {
       map['searchableContent'] = payload.searchableContent;
+    }
     if (payload.pushContent != null) map['pushContent'] = payload.pushContent;
     if (payload.pushData != null) map['pushData'] = payload.pushData;
     if (payload.content != null) map['content'] = payload.content;
-    if (payload.binaryContent != null)
+    if (payload.binaryContent != null) {
       map['binaryContent'] = payload.binaryContent;
-    if (payload.localContent != null)
+    }
+    if (payload.localContent != null) {
       map['localContent'] = payload.localContent;
-    if (payload.mentionedType != null)
+    }
+    if (payload.mentionedType != null) {
       map['mentionedType'] = payload.mentionedType;
-    if (payload.mentionedTargets != null)
+    }
+    if (payload.mentionedTargets != null) {
       map['mentionedTargets'] = payload.mentionedTargets;
+    }
     map['mediaType'] = payload.mediaType.index;
-    if (payload.remoteMediaUrl != null)
+    if (payload.remoteMediaUrl != null) {
       map['remoteMediaUrl'] = payload.remoteMediaUrl;
-    if (payload.localMediaPath != null)
+    }
+    if (payload.localMediaPath != null) {
       map['localMediaPath'] = payload.localMediaPath;
+    }
     if (payload.extra != null) map['extra'] = payload.extra;
     return map;
   }
 
-  static ReadReport _convertProtoReadEntry(Map<dynamic, dynamic> map) {
-    ReadReport report = new ReadReport();
+  static ReadReport? _convertProtoReadEntry(Map<dynamic, dynamic>? map) {
+    if(map == null) {
+      return null;
+    }
+
+    ReadReport report = ReadReport();
     report.conversation = _convertProtoConversation(map['conversation']);
     report.userId = map['userId'];
     report.readDt = map['readDt'];
     return report;
   }
 
-  static GroupInfo _convertProtoGroupInfo(Map<dynamic, dynamic> map) {
-    if (map == null) return null;
+  static GroupInfo? _convertProtoGroupInfo(Map<dynamic, dynamic>? map) {
+    if (map == null || map['target'] == null) return null;
 
-    GroupInfo groupInfo = new GroupInfo();
+    GroupInfo groupInfo = GroupInfo();
     groupInfo.type = GroupType.values[map['type']];
     groupInfo.target = map['target'];
     groupInfo.name = map['name'];
@@ -865,18 +888,20 @@ class MethodChannelImclient extends ImclientPlatform {
     if (map['joinType'] != null) groupInfo.joinType = map['joinType'];
     if (map['privateChat'] != null) groupInfo.privateChat = map['privateChat'];
     if (map['searchable'] != null) groupInfo.searchable = map['searchable'];
-    if (map['historyMessage'] != null)
+    if (map['historyMessage'] != null) {
       groupInfo.historyMessage = map['historyMessage'];
+    }
     if (map['updateDt'] != null) groupInfo.updateDt = map['updateDt'];
     return groupInfo;
   }
 
   static GroupMember _convertProtoGroupMember(Map<dynamic, dynamic> map) {
-    GroupMember groupMember = new GroupMember();
-    if (map['type'] != null)
+    GroupMember groupMember = GroupMember();
+    if (map['type'] != null) {
       groupMember.type = GroupMemberType.values[map['type']];
-    else
+    } else {
       groupMember.type = GroupMemberType.Normal;
+    }
 
     groupMember.groupId = map['groupId'];
     groupMember.memberId = map['memberId'];
@@ -890,20 +915,20 @@ class MethodChannelImclient extends ImclientPlatform {
 
   static List<GroupMember> _convertProtoGroupMembers(List<dynamic> datas) {
     if (datas.isEmpty) {
-      return new List();
+      return [];
     }
-    List<GroupMember> list = new List();
+    List<GroupMember> list = [];
     datas.forEach((element) {
       list.add(_convertProtoGroupMember(element));
     });
     return list;
   }
 
-  static UserInfo _convertProtoUserInfo(Map<dynamic, dynamic> map) {
-    if (map == null) {
+  static UserInfo? _convertProtoUserInfo(Map<dynamic, dynamic>? map) {
+    if (map == null || map['uid'] == null) {
       return null;
     }
-    UserInfo userInfo = new UserInfo();
+    UserInfo userInfo = UserInfo();
     userInfo.userId = map['uid'];
     userInfo.name = map['name'];
     userInfo.displayName = map['displayName'];
@@ -923,22 +948,25 @@ class MethodChannelImclient extends ImclientPlatform {
     return userInfo;
   }
 
-  static List<UserInfo> _convertProtoUserInfos(List<dynamic> datas) {
+  static List<UserInfo> _convertProtoUserInfos(List<dynamic>? datas) {
     if (datas == null || datas.isEmpty) {
-      return new List();
+      return [];
     }
-    List<UserInfo> list = new List();
+    List<UserInfo> list = [];
     datas.forEach((element) {
-      list.add(_convertProtoUserInfo(element));
+      UserInfo? userInfo = _convertProtoUserInfo(element);
+      if(userInfo != null) {
+        list.add(userInfo);
+      }
     });
     return list;
   }
 
-  static ChannelInfo _convertProtoChannelInfo(Map<dynamic, dynamic> map) {
-    if(map == null) {
+  static ChannelInfo? _convertProtoChannelInfo(Map<dynamic, dynamic>? map) {
+    if(map == null || map['channelId'] == null) {
       return null;
     }
-    ChannelInfo channelInfo = new ChannelInfo();
+    ChannelInfo channelInfo = ChannelInfo();
     channelInfo.channelId = map['channelId'];
     channelInfo.desc = map['desc'];
     channelInfo.extra = map['extra'];
@@ -947,8 +975,9 @@ class MethodChannelImclient extends ImclientPlatform {
     channelInfo.owner = map['owner'];
     channelInfo.secret = map['secret'];
     channelInfo.callback = map['callback'];
-    if (map['status'] != null)
-      channelInfo.status = ChannelStatus.values[map['status']];
+    if (map['status'] != null) {
+      channelInfo.status = map['status'];
+    }
     if (map['updateDt'] != null) channelInfo.updateDt = map['updateDt'];
 
     return channelInfo;
@@ -956,26 +985,34 @@ class MethodChannelImclient extends ImclientPlatform {
 
   static List<ChannelInfo> _convertProtoChannelInfos(List<dynamic> datas) {
     if (datas.isEmpty) {
-      return new List();
+      return [];
     }
-    List<ChannelInfo> list = new List();
+    List<ChannelInfo> list = [];
     datas.forEach((element) {
-      list.add(_convertProtoChannelInfo(element));
+      ChannelInfo? channelInfo = _convertProtoChannelInfo(element);
+      if(channelInfo != null) {
+        list.add(channelInfo);
+      }
     });
     return list;
   }
 
-  static ChatroomInfo _convertProtoChatroomInfo(Map<dynamic, dynamic> map) {
-    ChatroomInfo chatroomInfo = new ChatroomInfo();
+  static ChatroomInfo? _convertProtoChatroomInfo(Map<dynamic, dynamic>? map) {
+    if(map == null) {
+      return null;
+    }
+    ChatroomInfo chatroomInfo = ChatroomInfo();
     chatroomInfo.chatroomId = map['chatroomId'];
     chatroomInfo.desc = map['desc'];
     chatroomInfo.extra = map['extra'];
     chatroomInfo.portrait = map['portrait'];
     chatroomInfo.title = map['title'];
-    if (map['status'] != null)
+    if (map['status'] != null) {
       chatroomInfo.state = ChatroomState.values[map['state']];
-    if (map['memberCount'] != null)
+    }
+    if (map['memberCount'] != null) {
       chatroomInfo.memberCount = map['memberCount'];
+    }
     if (map['createDt'] != null) chatroomInfo.createDt = map['createDt'];
     if (map['updateDt'] != null) chatroomInfo.updateDt = map['updateDt'];
 
@@ -983,7 +1020,7 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   static FileRecord _convertProtoFileRecord(Map<dynamic, dynamic> map) {
-    FileRecord record = new FileRecord();
+    FileRecord record = FileRecord();
     Map<dynamic, dynamic> conversation = map['conversation'];
     record.conversation = _convertProtoConversation(conversation);
     record.userId = map['userId'];
@@ -998,9 +1035,9 @@ class MethodChannelImclient extends ImclientPlatform {
 
   static List<FileRecord> _convertProtoFileRecords(List<dynamic> datas) {
     if (datas.isEmpty) {
-      return new List();
+      return [];
     }
-    List<FileRecord> list = new List();
+    List<FileRecord> list = [];
     datas.forEach((element) {
       list.add(_convertProtoFileRecord(element));
     });
@@ -1018,7 +1055,7 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   static OnlineInfo _convertProtoOnlineInfo(Map<dynamic, dynamic> data) {
-    OnlineInfo info = new OnlineInfo();
+    OnlineInfo info = OnlineInfo();
     info.type = data['type'];
     info.isOnline = data['isOnline'];
     info.platform = data['platform'];
@@ -1029,10 +1066,7 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   static List<OnlineInfo> _convertProtoOnlineInfos(List<dynamic> datas) {
-    if (datas.isEmpty) {
-      return new List();
-    }
-    List<OnlineInfo> list = new List();
+    List<OnlineInfo> list = [];
     datas.forEach((element) {
       list.add(_convertProtoOnlineInfo(element));
     });
@@ -1040,10 +1074,7 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   static List<int> _convertMessageStatusList(List<MessageStatus> status) {
-    if (status.isEmpty) {
-      return new List();
-    }
-    List<int> list = new List();
+    List<int> list = [];
     status.forEach((element) {
       list.add(element.index);
     });
@@ -1052,10 +1083,10 @@ class MethodChannelImclient extends ImclientPlatform {
 
   @override
   MessageContent decodeMessageContent(MessagePayload payload) {
-    MessageContentMeta meta = _contentMetaMap[payload.contentType];
+    MessageContentMeta? meta = _contentMetaMap[payload.contentType];
     MessageContent content;
     if (meta == null) {
-      content = new UnknownMessageContent();
+      content = UnknownMessageContent();
     } else {
       content = meta.creator();
     }
@@ -1093,7 +1124,7 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<List<ConversationInfo>> getConversationInfos(
       List<ConversationType> types, List<int> lines) async {
-    List<int> itypes = new List();
+    List<int> itypes = [];
     types.forEach((element) {
       itypes.add(element.index);
     });
@@ -1122,7 +1153,7 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<List<ConversationSearchInfo>> searchConversation(
       String keyword, List<ConversationType> types, List<int> lines) async {
-    List<int> itypes = new List();
+    List<int> itypes = [];
     types.forEach((element) {
       itypes.add(element.index);
     });
@@ -1141,7 +1172,7 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<void> removeConversation(
       Conversation conversation, bool clearMessage) async {
-    Map<String, dynamic> args = new Map();
+    Map<String, dynamic> args = {};
     args['conversation'] = _convertConversation(conversation);
     args['clearMessage'] = clearMessage;
     await methodChannel.invokeMethod("removeConversation", args);
@@ -1194,7 +1225,7 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<void> setConversationDraft(
       Conversation conversation, String draft) async {
-    Map<String, dynamic> args = new Map();
+    Map<String, dynamic> args = {};
     args['conversation'] = _convertConversation(conversation);
     args['draft'] = draft;
     await methodChannel.invokeMethod("setConversationDraft", args);
@@ -1204,7 +1235,7 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<void> setConversationTimestamp(
       Conversation conversation, int timestamp) async {
-    Map<String, dynamic> args = new Map();
+    Map<String, dynamic> args = {};
     args['conversation'] = _convertConversation(conversation);
     args['timestamp'] = timestamp;
     await methodChannel.invokeMethod("setConversationTimestamp", args);
@@ -1232,7 +1263,7 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<UnreadCount> getConversationsUnreadCount(
       List<ConversationType> types, List<int> lines) async {
-    List<int> itypes = new List();
+    List<int> itypes = [];
     types.forEach((element) {
       itypes.add(element.index);
     });
@@ -1261,7 +1292,7 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<bool> clearConversationsUnreadStatus(
       List<ConversationType> types, List<int> lines) async {
-    List<int> itypes = new List();
+    List<int> itypes = [];
     types.forEach((element) {
       itypes.add(element.index);
     });
@@ -1294,7 +1325,7 @@ class MethodChannelImclient extends ImclientPlatform {
     Map<dynamic, dynamic> datas = await methodChannel.invokeMethod(
         'getConversationRead',
         {'conversation': _convertConversation(conversation)});
-    Map<String, int> map = new Map();
+    Map<String, int> map = {};
     datas.forEach((key, value) {
       map.putIfAbsent(key, () => value);
     });
@@ -1308,7 +1339,7 @@ class MethodChannelImclient extends ImclientPlatform {
     Map<dynamic, dynamic> datas = await methodChannel.invokeMethod(
         'getMessageDelivery',
         {'conversation': _convertConversation(conversation)});
-    Map<String, int> map = new Map();
+    Map<String, int> map = {};
     datas.forEach((key, value) {
       map.putIfAbsent(key, () => value);
     });
@@ -1319,7 +1350,7 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<List<Message>> getMessages(
       Conversation conversation, int fromIndex, int count,
-      {List<int> contentTypes, String withUser}) async {
+      {List<int>? contentTypes, String? withUser}) async {
     Map<String, dynamic> args = {
       "conversation": _convertConversation(conversation),
       "fromIndex": fromIndex,
@@ -1339,14 +1370,17 @@ class MethodChannelImclient extends ImclientPlatform {
   ///根据消息状态获取会话的消息列表
   @override
   Future<List<Message>> getMessagesByStatus(Conversation conversation,
-      int fromIndex, int count, List<MessageStatus> messageStatus,
-      {String withUser}) async {
+      int fromIndex, int count, List<MessageStatus>? messageStatus,
+      {String? withUser}) async {
     Map<String, dynamic> args = {
       "conversation": _convertConversation(conversation),
       "fromIndex": fromIndex,
-      "count": count,
-      "messageStatus": _convertMessageStatusList(messageStatus)
+      "count": count
     };
+
+    if(messageStatus != null) {
+      args["messageStatus"] = _convertMessageStatusList(messageStatus);
+    }
 
     if (withUser != null) {
       args["withUser"] = withUser;
@@ -1361,8 +1395,8 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<List<Message>> getConversationsMessages(
       List<ConversationType> types, List<int> lines, int fromIndex, int count,
-      {List<int> contentTypes, String withUser}) async {
-    List<int> itypes = new List();
+      {List<int>? contentTypes, String? withUser}) async {
+    List<int> itypes = [];
     types.forEach((element) {
       itypes.add(element.index);
     });
@@ -1396,8 +1430,8 @@ class MethodChannelImclient extends ImclientPlatform {
       int fromIndex,
       int count,
       List<MessageStatus> messageStatus,
-      {String withUser}) async {
-    List<int> itypes = new List();
+      {String? withUser}) async {
+    List<int> itypes = [];
     types.forEach((element) {
       itypes.add(element.index);
     });
@@ -1429,11 +1463,10 @@ class MethodChannelImclient extends ImclientPlatform {
       int beforeMessageUid,
       int count,
       OperationSuccessMessagesCallback successCallback,
-      OperationFailureCallback errorCallback, {List<int> contentTypes}) async {
+          OperationFailureCallback errorCallback, {List<int>? contentTypes}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
 
     Map<String, dynamic> args = {
       "requestId": requestId,
@@ -1455,16 +1488,15 @@ class MethodChannelImclient extends ImclientPlatform {
       OperationSuccessMessageCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
 
     await methodChannel.invokeMethod("getRemoteMessage", {"messageUid":messageUid});
   }
 
   ///根据消息Id获取消息
   @override
-  Future<Message> getMessage(int messageId) async {
+  Future<Message?> getMessage(int messageId) async {
     Map<dynamic, dynamic> datas = await methodChannel
         .invokeMethod("getMessage", {"messageId": messageId});
     return _convertProtoMessage(datas);
@@ -1472,7 +1504,7 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///根据消息Uid获取消息
   @override
-  Future<Message> getMessageByUid(int messageUid) async {
+  Future<Message?> getMessageByUid(int messageUid) async {
     Map<dynamic, dynamic> datas = await methodChannel
         .invokeMethod("getMessageByUid", {"messageUid": messageUid});
     return _convertProtoMessage(datas);
@@ -1500,9 +1532,9 @@ class MethodChannelImclient extends ImclientPlatform {
       String keyword,
       int fromIndex,
       int count, {
-        List<int> contentTypes,
+        List<int>? contentTypes,
       }) async {
-    List<int> itypes = new List();
+    List<int> itypes = [];
     types.forEach((element) {
       itypes.add(element.index);
     });
@@ -1529,10 +1561,10 @@ class MethodChannelImclient extends ImclientPlatform {
   ///发送消息
   Future<Message> sendMessage(
       Conversation conversation, MessageContent content,
-      {List<String> toUsers,
+      {List<String>? toUsers,
         int expireDuration = 0,
-        SendMessageSuccessCallback successCallback,
-        OperationFailureCallback errorCallback}) async {
+        required SendMessageSuccessCallback successCallback,
+        required OperationFailureCallback errorCallback}) async {
     return sendMediaMessage(conversation, content,
         toUsers: toUsers,
         expireDuration: expireDuration,
@@ -1544,23 +1576,24 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<Message> sendMediaMessage(
       Conversation conversation, MessageContent content,
-      {List<String> toUsers,
-        int expireDuration,
-        SendMessageSuccessCallback successCallback,
-        OperationFailureCallback errorCallback,
-        SendMediaMessageProgressCallback progressCallback,
-        SendMediaMessageUploadedCallback uploadedCallback}) async {
+      {List<String>? toUsers,
+        int expireDuration = 0,
+        required SendMessageSuccessCallback successCallback,
+        required OperationFailureCallback errorCallback,
+        SendMediaMessageProgressCallback? progressCallback,
+        SendMediaMessageUploadedCallback? uploadedCallback}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _sendMessageSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    if (progressCallback != null)
-      _sendMediaMessageProgressCallbackMap[requestId] = progressCallback;
-    if (uploadedCallback != null)
-      _sendMediaMessageUploadedCallbackMap[requestId] = uploadedCallback;
+    _sendMessageSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    if (progressCallback != null) {
+      _sendMediaMessageProgressCallbackMap[requestId] = progressCallback!;
+    }
+    if (uploadedCallback != null) {
+      _sendMediaMessageUploadedCallbackMap[requestId] = uploadedCallback!;
+    }
 
     Map<String, dynamic> convMap = _convertConversation(conversation);
-    Map<String, dynamic> contMap = await _convertMessageContent(content);
+    Map<String, dynamic> contMap = _convertMessageContent(content);
     Map<String, dynamic> args = {
       "requestId": requestId,
       "conversation": convMap,
@@ -1572,19 +1605,18 @@ class MethodChannelImclient extends ImclientPlatform {
 
     Map<dynamic, dynamic> fm = await methodChannel.invokeMethod('sendMessage', args);
 
-    return _convertProtoMessage(fm);
+    return _convertProtoMessage(fm)!;
   }
 
   ///发送已保存消息
   @override
   Future<bool> sendSavedMessage(int messageId,
-      {int expireDuration,
-        SendMessageSuccessCallback successCallback,
-        OperationFailureCallback errorCallback}) async {
+      {int expireDuration = 0,
+        required SendMessageSuccessCallback successCallback,
+        required OperationFailureCallback errorCallback}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _sendMessageSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _sendMessageSuccessCallbackMap[requestId] = successCallback!;
+    _errorCallbackMap[requestId] = errorCallback;
 
     return await methodChannel.invokeMethod("sendSavedMessage", {
       "requestId": requestId,
@@ -1733,7 +1765,7 @@ class MethodChannelImclient extends ImclientPlatform {
       "status": status,
       "serverTime": serverTime
     });
-    return _convertProtoMessage(datas);
+    return _convertProtoMessage(datas)!;
   }
 
   ///更新消息内容
@@ -1782,14 +1814,14 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取用户信息
   @override
-  Future<UserInfo> getUserInfo(String userId,
-      {String groupId, bool refresh = false}) async {
+  Future<UserInfo?> getUserInfo(String userId,
+      {String? groupId, bool refresh = false}) async {
     var args = {"userId": userId, "refresh": refresh};
     if (groupId != null) {
       args['groupId'] = groupId;
     }
 
-    Map<dynamic, dynamic> datas =
+    Map<dynamic, dynamic>? datas =
     await methodChannel.invokeMethod("getUserInfo", args);
     return _convertProtoUserInfo(datas);
   }
@@ -1797,37 +1829,35 @@ class MethodChannelImclient extends ImclientPlatform {
   ///批量获取用户信息
   @override
   Future<List<UserInfo>> getUserInfos(List<String> userIds,
-      {String groupId}) async {
+      {String? groupId}) async {
     var args;
     if (groupId != null) {
       args = {"userIds": userIds, "groupId": groupId};
     } else {
       args = {"userIds": userIds};
     }
-    List<dynamic> datas = await methodChannel.invokeMethod("getUserInfos", args);
+    List<dynamic>? datas = await methodChannel.invokeMethod("getUserInfos", args);
     return _convertProtoUserInfos(datas);
   }
 
   ///搜索用户
   @override
-  Future<void> searchUser(
+    Future<void> searchUser(
       String keyword,
       int searchType,
       int page,
       OperationSuccessUserInfosCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
 
-    List<dynamic> datas = await methodChannel.invokeMethod("searchUser", {
+    await methodChannel.invokeMethod("searchUser", {
       "requestId": requestId,
       "keyword": keyword,
       "searchType": searchType,
       "page": page
     });
-    return _convertProtoUserInfos(datas);
   }
 
   ///异步获取用户信息
@@ -1838,9 +1868,8 @@ class MethodChannelImclient extends ImclientPlatform {
       OperationFailureCallback errorCallback,
       {bool refresh = false}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
     await methodChannel.invokeMethod(
         "getUserInfoAsync", {"requestId": requestId, "userId": userId});
   }
@@ -1853,8 +1882,8 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取好友列表
   @override
-  Future<List<String>> getMyFriendList({bool refresh = false}) async {
-    List<dynamic> datas =
+  Future<List<String>?> getMyFriendList({bool refresh = false}) async {
+    List<dynamic>? datas =
     await methodChannel.invokeMethod("getMyFriendList", {"refresh": refresh});
     return Tools.convertDynamicList(datas);
   }
@@ -1900,9 +1929,9 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取某个用户相关的好友请求
   @override
-  Future<FriendRequest> getFriendRequest(
+  Future<FriendRequest?> getFriendRequest(
       String userId, FriendRequestDirection direction) async {
-    Map<dynamic, dynamic> data = await methodChannel.invokeMethod(
+    Map<dynamic, dynamic>? data = await methodChannel.invokeMethod(
         "getFriendRequest", {"userId": userId, "direction": direction.index});
     return _convertProtoFriendRequest(data);
   }
@@ -2019,8 +2048,8 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取黑名单列表
   @override
-  Future<List<String>> getBlackList({bool refresh = false}) async {
-    List<dynamic> datas =
+  Future<List<String>?> getBlackList({bool refresh = false}) async {
+    List<dynamic>? datas =
     await methodChannel.invokeMethod("getBlackList", {"refresh": refresh});
     return Tools.convertDynamicList(datas);
   }
@@ -2065,19 +2094,18 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<void> getGroupMembersAsync(String groupId,
       {bool refresh = false,
-        OperationSuccessGroupMembersCallback successCallback,
-        OperationFailureCallback errorCallback}) async {
+        required OperationSuccessGroupMembersCallback successCallback,
+        required OperationFailureCallback errorCallback}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
     await methodChannel.invokeMethod("getGroupMembersAsync",
         {"requestId": requestId, "groupId": groupId, "refresh": refresh});
   }
 
   ///获取群信息
   @override
-  Future<GroupInfo> getGroupInfo(String groupId,
+  Future<GroupInfo?> getGroupInfo(String groupId,
       {bool refresh = false}) async {
     Map<dynamic, dynamic> datas = await methodChannel
         .invokeMethod("getGroupInfo", {"groupId": groupId, "refresh": refresh});
@@ -2088,12 +2116,11 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<void> getGroupInfoAsync(String groupId,
       {bool refresh = false,
-        OperationSuccessGroupInfoCallback successCallback,
-        OperationFailureCallback errorCallback}) async {
+        required OperationSuccessGroupInfoCallback successCallback,
+        required OperationFailureCallback errorCallback}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
     await methodChannel.invokeMethod("getGroupInfoAsync",
         {"requestId": requestId, "groupId": groupId, "refresh": refresh});
   }
@@ -2110,21 +2137,20 @@ class MethodChannelImclient extends ImclientPlatform {
   ///创建群组，groupId可以为空。
   @override
   Future<void> createGroup(
-      String groupId,
-      String groupName,
-      String groupPortrait,
+      String? groupId,
+      String? groupName,
+      String? groupPortrait,
       int type,
       List<String> members,
       OperationSuccessStringCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
 
-    Map<String, dynamic> args = new Map();
+    Map<String, dynamic> args = {};
     args['requestId'] = requestId;
     if (groupId != null) {
       args['groupId'] = groupId;
@@ -2154,19 +2180,26 @@ class MethodChannelImclient extends ImclientPlatform {
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("addGroupMembers", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+
+    Map<String, dynamic> args = {
       "requestId": requestId,
       "groupId": groupId,
-      "groupMembers": members,
-      "notifyLines": notifyLines,
-      "notifyContent": await _convertMessageContent(notifyContent)
-    });
+      "groupMembers": members
+    };
+
+    if(notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    await methodChannel.invokeMethod("addGroupMembers", args);
   }
 
   ///移除群成员
@@ -2176,19 +2209,25 @@ class MethodChannelImclient extends ImclientPlatform {
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("kickoffGroupMembers", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    Map<String, dynamic> args = {
       "requestId": requestId,
       "groupId": groupId,
-      "groupMembers": members,
-      "notifyLines": notifyLines,
-      "notifyContent": await _convertMessageContent(notifyContent)
-    });
+      "groupMembers": members
+    };
+
+    if(notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    await methodChannel.invokeMethod("kickoffGroupMembers", args);
   }
 
   ///退出群组
@@ -2197,18 +2236,24 @@ class MethodChannelImclient extends ImclientPlatform {
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("quitGroup", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    Map<String, dynamic> args = {
       "requestId": requestId,
-      "groupId": groupId,
-      "notifyLines": notifyLines,
-      "notifyContent": await _convertMessageContent(notifyContent)
-    });
+      "groupId": groupId
+    };
+
+    if(notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    await methodChannel.invokeMethod("quitGroup", args);
   }
 
   ///解散群组
@@ -2217,18 +2262,24 @@ class MethodChannelImclient extends ImclientPlatform {
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("dismissGroup", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    Map<String, dynamic> args = {
       "requestId": requestId,
-      "groupId": groupId,
-      "notifyLines": notifyLines,
-      "notifyContent": await _convertMessageContent(notifyContent)
-    });
+      "groupId": groupId
+    };
+
+    if(notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    await methodChannel.invokeMethod("dismissGroup", args);
   }
 
   ///修改群组信息
@@ -2239,20 +2290,27 @@ class MethodChannelImclient extends ImclientPlatform {
       String newValue,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("modifyGroupInfo", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+
+    Map<String, dynamic> args = {
       "requestId": requestId,
       "groupId": groupId,
       "modifyType": modifyType.index,
-      "value": newValue,
-      "notifyLines": notifyLines,
-      "notifyContent": await _convertMessageContent(notifyContent)
-    });
+      "value": newValue
+    };
+
+    if(notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    await methodChannel.invokeMethod("modifyGroupInfo", args);
   }
 
   ///修改自己的群名片
@@ -2262,19 +2320,25 @@ class MethodChannelImclient extends ImclientPlatform {
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("modifyGroupAlias", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    Map<String, dynamic> args = {
       "requestId": requestId,
       "groupId": groupId,
-      "newAlias": newAlias,
-      "notifyLines": notifyLines,
-      "notifyContent": await _convertMessageContent(notifyContent)
-    });
+      "newAlias": newAlias
+    };
+
+    if(notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    await methodChannel.invokeMethod("modifyGroupAlias", args);
   }
 
   ///修改群成员的群名片
@@ -2285,19 +2349,25 @@ class MethodChannelImclient extends ImclientPlatform {
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("modifyGroupMemberAlias", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    Map<String, dynamic> args = {
       "requestId": requestId,
       "groupId": groupId,
-      "newAlias": newAlias,
-      "notifyLines": notifyLines,
-      "notifyContent": await _convertMessageContent(notifyContent)
-    });
+      "newAlias": newAlias
+    };
+
+    if(notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    await methodChannel.invokeMethod("modifyGroupMemberAlias", args);
   }
 
   ///转移群组
@@ -2307,19 +2377,24 @@ class MethodChannelImclient extends ImclientPlatform {
       String newOwner,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("transferGroup", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    Map<String, dynamic> args = {
       "requestId": requestId,
       "groupId": groupId,
-      "newOwner": newOwner,
-      "notifyLines": notifyLines,
-      "notifyContent": await _convertMessageContent(notifyContent)
-    });
+      "newOwner": newOwner
+    };
+
+    if(notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+    await methodChannel.invokeMethod("transferGroup", args);
   }
 
   ///设置/取消群管理员
@@ -2330,20 +2405,26 @@ class MethodChannelImclient extends ImclientPlatform {
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("setGroupManager", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    Map<String, dynamic> args = {
       "requestId": requestId,
       "groupId": groupId,
       "isSet": isSet,
-      "memberIds": memberIds,
-      "notifyLines": notifyLines,
-      "notifyContent": await _convertMessageContent(notifyContent)
-    });
+      "memberIds": memberIds
+    };
+
+    if(notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    await methodChannel.invokeMethod("setGroupManager", args);
   }
 
   ///禁言/取消禁言群成员
@@ -2354,20 +2435,26 @@ class MethodChannelImclient extends ImclientPlatform {
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("muteGroupMember", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    Map<String, dynamic> args = {
       "requestId": requestId,
       "groupId": groupId,
       "isSet": isSet,
-      "memberIds": memberIds,
-      "notifyLines": notifyLines,
-      "notifyContent": await _convertMessageContent(notifyContent)
-    });
+      "memberIds": memberIds
+    };
+
+    if(notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    await methodChannel.invokeMethod("muteGroupMember", args);
   }
 
   ///设置/取消群白名单
@@ -2378,20 +2465,26 @@ class MethodChannelImclient extends ImclientPlatform {
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int> notifyLines = const [],
-        MessageContent notifyContent}) async {
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("allowGroupMember", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    Map<String, dynamic> args = {
       "requestId": requestId,
       "groupId": groupId,
       "isSet": isSet,
-      "memberIds": memberIds,
-      "notifyLines": notifyLines,
-      "notifyContent": await _convertMessageContent(notifyContent)
-    });
+      "memberIds": memberIds
+    };
+
+    if(notifyLines != null) {
+      args['notifyLines'] = notifyLines;
+    }
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    await methodChannel.invokeMethod("allowGroupMember", args);
   }
 
   @override
@@ -2404,9 +2497,8 @@ class MethodChannelImclient extends ImclientPlatform {
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
     await methodChannel.invokeMethod("setGroupRemark", {
       "requestId": requestId,
       "groupId": groupId,
@@ -2416,7 +2508,7 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取收藏群组列表
   @override
-  Future<List<String>> getFavGroups() async {
+  Future<List<String>?> getFavGroups() async {
     return Tools.convertDynamicList(await methodChannel.invokeMethod("getFavGroups"));
   }
 
@@ -2481,7 +2573,7 @@ class MethodChannelImclient extends ImclientPlatform {
       _operationSuccessCallbackMap[requestId] = successCallback;
     if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
 
-    Map<int, String> v = new Map();
+    Map<int, String> v = {};
     values.forEach((key, value) {
       v.putIfAbsent(key.index, () => value);
     });
@@ -2679,7 +2771,7 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取收藏好友列表
   @override
-  Future<List<String>> getFavUsers() async {
+  Future<List<String>?> getFavUsers() async {
     return Tools.convertDynamicList(await methodChannel.invokeMethod("getFavUsers"));
   }
 
@@ -2790,9 +2882,9 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取频道信息
   @override
-  Future<ChannelInfo> getChannelInfo(String channelId,
+  Future<ChannelInfo?> getChannelInfo(String channelId,
       {bool refresh = false}) async {
-    Map<dynamic, dynamic> data = await methodChannel.invokeMethod(
+    Map<dynamic, dynamic>? data = await methodChannel.invokeMethod(
         "getChannelInfo", {"channelId": channelId, "refresh": refresh});
     return _convertProtoChannelInfo(data);
   }
@@ -2846,22 +2938,21 @@ class MethodChannelImclient extends ImclientPlatform {
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
     await methodChannel.invokeMethod("listenChannel",
         {"requestId": requestId, "channelId": channelId, "isListen": isListen});
   }
 
   ///获取我的频道
   @override
-  Future<List<String>> getMyChannels() async {
+  Future<List<String>?> getMyChannels() async {
     return Tools.convertDynamicList(await methodChannel.invokeMethod("getMyChannels"));
   }
 
   ///获取我订阅的频道
   @override
-  Future<List<String>> getListenedChannels() async {
+  Future<List<String>?> getListenedChannels() async {
     return Tools.convertDynamicList(
         await methodChannel.invokeMethod("getListenedChannels"));
   }
@@ -2928,19 +3019,27 @@ class MethodChannelImclient extends ImclientPlatform {
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
-      {Conversation conversation,
-        String fromUser}) async {
+      {Conversation? conversation,
+        String? fromUser}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("getConversationFiles", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+
+    Map<String, dynamic> args = {
       "requestId": requestId,
-      "conversation": _convertConversation(conversation),
-      "fromUser": fromUser,
       "beforeMessageUid": beforeMessageUid,
       "count": count
-    });
+    };
+
+    if (conversation != null) {
+      args['conversation'] = _convertConversation(conversation!);
+    }
+
+    if(fromUser != null) {
+      args['fromUser'] = fromUser;
+    }
+
+    await methodChannel.invokeMethod("getConversationFiles", args);
   }
 
   ///获取我的文件记录
@@ -2951,9 +3050,8 @@ class MethodChannelImclient extends ImclientPlatform {
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
     await methodChannel.invokeMethod("getMyFiles", {
       "requestId": requestId,
       "beforeMessageUid": beforeMessageUid,
@@ -2969,9 +3067,8 @@ class MethodChannelImclient extends ImclientPlatform {
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
     await methodChannel.invokeMethod("deleteFileRecord",
         {"requestId": requestId, "messageUid": messageUid});
   }
@@ -2984,20 +3081,27 @@ class MethodChannelImclient extends ImclientPlatform {
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
-      {Conversation conversation,
-        String fromUser}) async {
+      {Conversation? conversation,
+        String? fromUser}) async {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("searchFiles", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    Map<String, dynamic> args = {
       "requestId": requestId,
       "keyword": keyword,
       "beforeMessageUid": beforeMessageUid,
       "count": count,
-      "conversation": _convertConversation(conversation),
-      "fromUser": fromUser
-    });
+    };
+
+    if (conversation != null) {
+      args['conversation'] = _convertConversation(conversation!);
+    }
+
+    if(fromUser != null) {
+      args['fromUser'] = fromUser;
+    }
+
+    await methodChannel.invokeMethod("searchFiles", args);
   }
 
   int addCallback(dynamic successCallback, OperationFailureCallback errorCallback) {

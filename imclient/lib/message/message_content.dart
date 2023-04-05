@@ -5,6 +5,8 @@
  */
 //基本消息类型
 //未知类型的消息
+import 'package:imclient/message/unknown_message_content.dart';
+
 import '../model/message_payload.dart';
 import 'message.dart';
 
@@ -126,7 +128,11 @@ enum MediaType {
   Media_Type_MOMENTS
 }
 
-typedef MessageContent MessageContentCreator();
+typedef MessageContentCreator = MessageContent Function();
+
+MessageContent UnknownContentCreator() {
+  return UnknownMessageContent();
+}
 
 class MessageContentMeta {
   const MessageContentMeta(this.type, this.flag, this.creator);
@@ -137,10 +143,12 @@ class MessageContentMeta {
 }
 
 class MessageContent {
+  MessageContent({this.mentionedType = 0});
+
   ///0 普通消息；1 提醒mentionedTargets用户；2 提醒所有用户。
   int mentionedType;
-  List<String> mentionedTargets;
-  String extra;
+  List<String>? mentionedTargets;
+  String? extra;
 
   void decode(MessagePayload payload) {
     mentionedType = payload.mentionedType;
@@ -148,14 +156,12 @@ class MessageContent {
     extra = payload.extra;
   }
 
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = new MessagePayload();
+  MessagePayload encode() {
+    MessagePayload payload = MessagePayload();
     payload.mentionedType = mentionedType;
     payload.mentionedTargets = mentionedTargets;
     payload.extra = extra;
-    if (meta != null) {
-      payload.contentType = meta.type;
-    }
+    payload.contentType = meta.type;
     payload.mentionedType = 0;
     payload.mediaType = MediaType.Media_Type_GENERAL;
     return payload;
@@ -165,5 +171,5 @@ class MessageContent {
     return '未知消息';
   }
 
-  MessageContentMeta get meta => null;
+  MessageContentMeta get meta => const MessageContentMeta(0, MessageFlag.NOT_PERSIST, UnknownContentCreator);
 }

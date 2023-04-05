@@ -10,7 +10,7 @@ import 'message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent ImageMessageContentCreator() {
-  return new ImageMessageContent();
+  return ImageMessageContent();
 }
 
 const imageContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_IMAGE,
@@ -18,7 +18,7 @@ const imageContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_IMAGE,
 
 
 class ImageMessageContent extends MediaMessageContent {
-  Image thumbnail;
+  Image? thumbnail;
 
   @override
   MessageContentMeta get meta => imageContentMeta;
@@ -26,14 +26,16 @@ class ImageMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if (payload.binaryContent != null) thumbnail = decodeJpg(payload.binaryContent);
+    if (payload.binaryContent != null) thumbnail = decodeJpg(payload.binaryContent!);
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
     payload.searchableContent = '[图片]';
-    payload.binaryContent = encodeJpg(thumbnail, quality: 35);
+    if(thumbnail != null) {
+      payload.binaryContent = encodeJpg(thumbnail!, quality: 35);
+    }
 
     return payload;
   }

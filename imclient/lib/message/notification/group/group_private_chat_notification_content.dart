@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import '../../../imclient.dart';
 import '../../../model/message_payload.dart';
@@ -9,7 +10,7 @@ import '../notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent GroupPrivateChatNotificationContentCreator() {
-  return new GroupPrivateChatNotificationContent();
+  return GroupPrivateChatNotificationContent();
 }
 
 const groupPrivateChatNotificationContentMeta = MessageContentMeta(
@@ -18,19 +19,26 @@ const groupPrivateChatNotificationContentMeta = MessageContentMeta(
     GroupPrivateChatNotificationContentCreator);
 
 class GroupPrivateChatNotificationContent extends NotificationMessageContent {
-  String groupId;
-  String invitor;
+  late String groupId;
+  late String invitor;
 
   ///0 允许私聊，1 不允许私聊。
-  String type;
+  late String type;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    invitor = map['o'];
-    groupId = map['g'];
-    type = map['n'];
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      invitor = map['o'];
+      groupId = map['g'];
+      type = map['n'];
+    } else {
+      invitor = "";
+      groupId = "";
+      type = "0";
+    }
   }
 
   @override
@@ -39,13 +47,13 @@ class GroupPrivateChatNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
-    Map<String, dynamic> map = new Map();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
+    Map<String, dynamic> map = {};
     map['o'] = invitor;
     map['g'] = groupId;
     map['n'] = type;
-    payload.binaryContent = utf8.encode(json.encode(map));
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -61,20 +69,10 @@ class GroupPrivateChatNotificationContent extends NotificationMessageContent {
     if (invitor == await Imclient.currentUserId) {
       return '你 $str';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(invitor, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          return '${userInfo.friendAlias} $str';
-        } else if (userInfo.groupAlias != null &&
-            userInfo.groupAlias.isNotEmpty) {
-          return '${userInfo.groupAlias} $str';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          return '${userInfo.displayName} $str';
-        } else {
-          return '$invitor $str';
-        }
+        return '${userInfo.getReadableName()} $str';
       } else {
         return '$invitor $str';
       }
