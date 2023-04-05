@@ -14,7 +14,7 @@ MessageContent TransferGroupOwnerNotificationContentCreator() {
 }
 
 const transferGroupOwnerNotificationContentMeta = MessageContentMeta(
-    MESSAGE_CONTENT_TYPE_ADD_GROUP_MEMBER,
+    MESSAGE_CONTENT_TYPE_TRANSFER_GROUP_OWNER,
     MessageFlag.PERSIST,
     TransferGroupOwnerNotificationContentCreator);
 

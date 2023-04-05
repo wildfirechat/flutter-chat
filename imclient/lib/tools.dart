@@ -1,13 +1,13 @@
 class Tools {
 
-  static List<String>? convertDynamicList(List<dynamic>? datas) {
+  static List<String> convertDynamicList(List<dynamic>? datas) {
     if (datas == null || datas.isEmpty) {
       return [];
     }
     List<String> list = [];
-    datas.forEach((element) {
+    for (var element in datas) {
       list.add(element);
-    });
+    }
     return list;
   }
 }
