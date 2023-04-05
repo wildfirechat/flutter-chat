@@ -103,24 +103,24 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///开启协议栈日志
   @override
-  void startLog() async {
-    methodChannel.invokeMethod('startLog');
+  Future<void> startLog() async {
+    await methodChannel.invokeMethod('startLog');
   }
 
   ///结束协议栈日志
   @override
-  void stopLog() async {
-    methodChannel.invokeMethod('stopLog');
+  Future<void> stopLog() async {
+    await methodChannel.invokeMethod('stopLog');
   }
 
   @override
-  void setSendLogCommand(String sendLogCmd) async {
-    methodChannel.invokeMethod('setSendLogCommand', {"cmd":sendLogCmd});
+  Future<void> setSendLogCommand(String sendLogCmd) async {
+    await methodChannel.invokeMethod('setSendLogCommand', {"cmd":sendLogCmd});
   }
 
   @override
-  void useSM4() async {
-    methodChannel.invokeMethod('useSM4');
+  Future<void> useSM4() async {
+    await methodChannel.invokeMethod('useSM4');
   }
 
   @override
@@ -159,8 +159,17 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   @override
-  Future<void> setProxyInfo(String host, String ip, int port, String userName, String password) async {
-    return methodChannel.invokeMethod('setProxyInfo', {"host":host, "ip":ip, "port":port, "userName":userName, "password":password});
+  Future<void> setProxyInfo(String host, String ip, int port, {String? userName, String? password}) async {
+    Map<String, dynamic> args = {"host":host, "ip":ip, "port":port, "userName":userName, "password":password};
+
+    if(userName != null) {
+      args['userName'] = userName;
+    }
+    if(password != null) {
+      args['password'] = password;
+    }
+
+    return methodChannel.invokeMethod('setProxyInfo', args);
   }
 
   @override
@@ -170,7 +179,7 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取协议栈日志文件路径
   @override
-  Future<List<String>?> get logFilesPath async {
+  Future<List<String>> get logFilesPath async {
     return Tools.convertDynamicList(await methodChannel.invokeMethod('getLogFilesPath'));
   }
 
@@ -210,7 +219,7 @@ class MethodChannelImclient extends ImclientPlatform {
       switch (call.method) {
         case 'onConnectionStatusChanged':
           int status = call.arguments;
-          _connectionStatusChangedCallback!(status);
+          _connectionStatusChangedCallback(status);
           _eventBus.fire(ConnectionStatusChangedEvent(status));
           break;
         case 'onReceiveMessage':
@@ -226,13 +235,13 @@ class MethodChannelImclient extends ImclientPlatform {
         case 'onRecallMessage':
           Map<dynamic, dynamic> args = call.arguments;
           int messageUid = args['messageUid'];
-          _recallMessageCallback!(messageUid);
+          _recallMessageCallback(messageUid);
           _eventBus.fire(RecallMessageEvent(messageUid));
           break;
         case 'onDeleteMessage':
           Map<dynamic, dynamic> args = call.arguments;
           int messageUid = args['messageUid'];
-          _deleteMessageCallback!(messageUid);
+          _deleteMessageCallback(messageUid);
           _eventBus.fire(DeleteMessageEvent(messageUid));
           break;
         case 'onMessageDelivered':
@@ -250,12 +259,12 @@ class MethodChannelImclient extends ImclientPlatform {
           Map<dynamic, dynamic> args = call.arguments;
           List<dynamic> reads = args['readeds'];
           List<ReadReport> reports = [];
-          reads.forEach((element) {
+          for (var element in reads) {
             ReadReport? readReport = _convertProtoReadEntry(element);
             if(readReport != null) {
               reports.add(readReport);
             }
-          });
+          }
           if (_messageReadedCallback != null) {
             _messageReadedCallback!(reports);
           }
@@ -267,12 +276,12 @@ class MethodChannelImclient extends ImclientPlatform {
           Map<dynamic, dynamic> args = call.arguments;
           List<dynamic> groups = args['groups'];
           List<GroupInfo> data = [];
-          groups.forEach((element) {
+          for (var element in groups) {
             GroupInfo? groupInfo = _convertProtoGroupInfo(element);
             if(groupInfo != null) {
               data.add(groupInfo);
             }
-          });
+          }
           if (_groupInfoUpdatedCallback != null) {
             _groupInfoUpdatedCallback!(data);
           }
@@ -283,9 +292,9 @@ class MethodChannelImclient extends ImclientPlatform {
           String groupId = args['groupId'];
           List<dynamic> members = args['members'];
           List<GroupMember> data = [];
-          members.forEach((element) {
-            data.add(_convertProtoGroupMember(element));
-          });
+          for (var element in members) {
+            data.add(_convertProtoGroupMember(element)!);
+          }
           if (_groupMemberUpdatedCallback != null) {
             _groupMemberUpdatedCallback!(groupId, data);
           }
@@ -295,12 +304,12 @@ class MethodChannelImclient extends ImclientPlatform {
           Map<dynamic, dynamic> args = call.arguments;
           List<dynamic> users = args['users'];
           List<UserInfo> data = [];
-          users.forEach((element) {
+          for (var element in users) {
             UserInfo? userInfo = _convertProtoUserInfo(element);
             if(userInfo != null) {
               data.add(userInfo);
             }
-          });
+          }
           if (_userInfoUpdatedCallback != null) {
             _userInfoUpdatedCallback!(data);
           }
@@ -311,7 +320,9 @@ class MethodChannelImclient extends ImclientPlatform {
           Map<dynamic, dynamic> args = call.arguments;
           List<dynamic> friendIdList = args['friends'];
           List<String> friends = [];
-          friendIdList.forEach((element) => friends.add(element));
+          for (var element in friendIdList) {
+            friends.add(element);
+          }
           if (_friendListUpdatedCallback != null) {
             _friendListUpdatedCallback!(friends);
           }
@@ -335,12 +346,12 @@ class MethodChannelImclient extends ImclientPlatform {
           Map<dynamic, dynamic> args = call.arguments;
           List<dynamic> channels = args['channels'];
           List<ChannelInfo> data = [];
-          channels.forEach((element) {
+          for (var element in channels) {
             ChannelInfo? channelInfo = _convertProtoChannelInfo(element);
             if(channelInfo != null) {
               data.add(channelInfo);
             }
-          });
+          }
           if (_channelInfoUpdatedCallback != null) {
             _channelInfoUpdatedCallback!(data);
           }
@@ -580,7 +591,7 @@ class MethodChannelImclient extends ImclientPlatform {
 
   @override
   void registerMessage(MessageContentMeta contentMeta) {
-    _contentMetaMap.putIfAbsent(contentMeta.type, () => contentMeta);
+    _contentMetaMap[contentMeta.type] = contentMeta;
     Map<String, dynamic> map = {};
     map["type"] = contentMeta.type;
     map["flag"] = contentMeta.flag.index;
@@ -605,7 +616,7 @@ class MethodChannelImclient extends ImclientPlatform {
     msg.conversation = _convertProtoConversation(map['conversation']);
     msg.fromUser = map['sender'];
     if(map['toUsers'] != null) {
-      msg.toUsers = (map['toUsers'] as List)?.cast<String>();
+      msg.toUsers = (map['toUsers'] as List).cast<String>();
     }
     msg.content =
         decodeMessageContent(_convertProtoMessageContent(map['content']));
@@ -644,22 +655,22 @@ class MethodChannelImclient extends ImclientPlatform {
     return conversation;
   }
 
-  Future<List<ConversationInfo>> _convertProtoConversationInfos(
-      List<dynamic> maps) async {
+  List<ConversationInfo> _convertProtoConversationInfos(
+      List<dynamic>? maps) {
     if (maps == null || maps.isEmpty) {
       return [];
     }
     List<ConversationInfo> infos = [];
     for (int i = 0; i < maps.length; ++i) {
       var element = maps[i];
-      infos.add(await _convertProtoConversationInfo(element));
+      infos.add(_convertProtoConversationInfo(element));
     }
 
     return infos;
   }
 
-  Future<ConversationInfo> _convertProtoConversationInfo(
-      Map<dynamic, dynamic> map) async {
+  ConversationInfo _convertProtoConversationInfo(
+      Map<dynamic, dynamic> map) {
     ConversationInfo conversationInfo = ConversationInfo();
     conversationInfo.conversation =
         _convertProtoConversation(map['conversation']);
@@ -673,8 +684,7 @@ class MethodChannelImclient extends ImclientPlatform {
     return conversationInfo;
   }
 
-  Future<List<ConversationSearchInfo>>
-  _convertProtoConversationSearchInfos(List<dynamic> maps) async {
+  List<ConversationSearchInfo> _convertProtoConversationSearchInfos(List<dynamic> maps) {
     if (maps.isEmpty) {
       return [];
     }
@@ -682,14 +692,14 @@ class MethodChannelImclient extends ImclientPlatform {
     List<ConversationSearchInfo> infos = [];
     for (int i = 0; i < maps.length; i++) {
       var element = maps[i];
-      infos.add(await _convertProtoConversationSearchInfo(element));
+      infos.add(_convertProtoConversationSearchInfo(element));
     }
 
     return infos;
   }
 
-  Future<ConversationSearchInfo> _convertProtoConversationSearchInfo(
-      Map<dynamic, dynamic> map) async {
+  ConversationSearchInfo _convertProtoConversationSearchInfo(
+      Map<dynamic, dynamic> map) {
     ConversationSearchInfo conversationInfo = ConversationSearchInfo();
     conversationInfo.conversation =
         _convertProtoConversation(map['conversation']);
@@ -724,12 +734,12 @@ class MethodChannelImclient extends ImclientPlatform {
     }
 
     List<FriendRequest> list = [];
-    datas.forEach((element) {
+    for (var element in datas) {
       FriendRequest? request = _convertProtoFriendRequest(element);
       if(request != null) {
         list.add(request);
       }
-    });
+    }
     return list;
   }
 
@@ -748,9 +758,9 @@ class MethodChannelImclient extends ImclientPlatform {
     }
 
     List<Friend> list = [];
-    datas.forEach((element) {
+    for (var element in datas) {
       list.add(_convertProtoFriend(element));
-    });
+    }
     return list;
   }
 
@@ -761,9 +771,9 @@ class MethodChannelImclient extends ImclientPlatform {
     }
 
     List<GroupSearchInfo> infos = [];
-    maps.forEach((element) {
+    for (var element in maps) {
       infos.add(_convertProtoGroupSearchInfo(element));
-    });
+    }
 
     return infos;
   }
@@ -843,9 +853,7 @@ class MethodChannelImclient extends ImclientPlatform {
     if (payload.localContent != null) {
       map['localContent'] = payload.localContent;
     }
-    if (payload.mentionedType != null) {
-      map['mentionedType'] = payload.mentionedType;
-    }
+    map['mentionedType'] = payload.mentionedType;
     if (payload.mentionedTargets != null) {
       map['mentionedTargets'] = payload.mentionedTargets;
     }
@@ -895,7 +903,10 @@ class MethodChannelImclient extends ImclientPlatform {
     return groupInfo;
   }
 
-  static GroupMember _convertProtoGroupMember(Map<dynamic, dynamic> map) {
+  static GroupMember? _convertProtoGroupMember(Map<dynamic, dynamic>? map) {
+    if(map == null || map['memberId'] == null) {
+      return null;
+    }
     GroupMember groupMember = GroupMember();
     if (map['type'] != null) {
       groupMember.type = GroupMemberType.values[map['type']];
@@ -918,9 +929,12 @@ class MethodChannelImclient extends ImclientPlatform {
       return [];
     }
     List<GroupMember> list = [];
-    datas.forEach((element) {
-      list.add(_convertProtoGroupMember(element));
-    });
+    for (var element in datas) {
+      GroupMember? member = _convertProtoGroupMember(element);
+      if(member != null) {
+        list.add(member);
+      }
+    }
     return list;
   }
 
@@ -953,12 +967,12 @@ class MethodChannelImclient extends ImclientPlatform {
       return [];
     }
     List<UserInfo> list = [];
-    datas.forEach((element) {
+    for (var element in datas) {
       UserInfo? userInfo = _convertProtoUserInfo(element);
       if(userInfo != null) {
         list.add(userInfo);
       }
-    });
+    }
     return list;
   }
 
@@ -988,12 +1002,12 @@ class MethodChannelImclient extends ImclientPlatform {
       return [];
     }
     List<ChannelInfo> list = [];
-    datas.forEach((element) {
+    for (var element in datas) {
       ChannelInfo? channelInfo = _convertProtoChannelInfo(element);
       if(channelInfo != null) {
         list.add(channelInfo);
       }
-    });
+    }
     return list;
   }
 
@@ -1038,18 +1052,19 @@ class MethodChannelImclient extends ImclientPlatform {
       return [];
     }
     List<FileRecord> list = [];
-    datas.forEach((element) {
+    for (var element in datas) {
       list.add(_convertProtoFileRecord(element));
-    });
+    }
     return list;
   }
 
   static ChatroomMemberInfo _convertProtoChatroomMemberInfo(
       Map<dynamic, dynamic> map) {
-    ChatroomMemberInfo chatroomInfo = new ChatroomMemberInfo();
+    ChatroomMemberInfo chatroomInfo = ChatroomMemberInfo();
     chatroomInfo.members = map['members'];
-    if (map['memberCount'] != null)
+    if (map['memberCount'] != null) {
       chatroomInfo.memberCount = map['memberCount'];
+    }
 
     return chatroomInfo;
   }
@@ -1067,17 +1082,17 @@ class MethodChannelImclient extends ImclientPlatform {
 
   static List<OnlineInfo> _convertProtoOnlineInfos(List<dynamic> datas) {
     List<OnlineInfo> list = [];
-    datas.forEach((element) {
+    for (var element in datas) {
       list.add(_convertProtoOnlineInfo(element));
-    });
+    }
     return list;
   }
 
   static List<int> _convertMessageStatusList(List<MessageStatus> status) {
     List<int> list = [];
-    status.forEach((element) {
+    for (var element in status) {
       list.add(element.index);
-    });
+    }
     return list;
   }
 
@@ -1094,17 +1109,13 @@ class MethodChannelImclient extends ImclientPlatform {
     return content;
   }
 
-  static Map<int, MessageContentMeta> _contentMetaMap = {};
+  static final Map<int, MessageContentMeta> _contentMetaMap = {};
 
   /// 连接IM服务。调用连接之后才可以调用获取数据接口。连接状态会通过连接状态回调返回。
   /// [host]为IM服务域名或IP，必须im.example.com或114.144.114.144，不带http头和端口。
   @override
   Future<bool> connect(String host, String userId, String token) async {
-    Map<String, dynamic> args = <String, dynamic>{};
-    args.putIfAbsent('host', () => host);
-    args.putIfAbsent('userId', () => userId);
-    args.putIfAbsent('token', () => token);
-    final bool newDb = await methodChannel.invokeMethod('connect', args);
+    bool newDb = await methodChannel.invokeMethod('connect', {'host':host, 'userId':userId, 'token':token});
     return newDb;
   }
 
@@ -1114,10 +1125,7 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<void> disconnect(
       {bool disablePush = false, bool clearSession = false}) async {
-    Map<String, dynamic> args = <String, dynamic>{};
-    args.putIfAbsent('disablePush', () => disablePush);
-    args.putIfAbsent('clearSession', () => clearSession);
-    await methodChannel.invokeMethod('disconnect', args);
+    await methodChannel.invokeMethod('disconnect', {'disablePush':disablePush, 'clearSession':clearSession});
   }
 
   ///获取会话列表
@@ -1125,16 +1133,16 @@ class MethodChannelImclient extends ImclientPlatform {
   Future<List<ConversationInfo>> getConversationInfos(
       List<ConversationType> types, List<int> lines) async {
     List<int> itypes = [];
-    types.forEach((element) {
+    for (var element in types) {
       itypes.add(element.index);
-    });
-    if (lines == null || lines.isEmpty) {
+    }
+    if (lines.isEmpty) {
       lines = [0];
     }
 
-    List<dynamic> datas = await methodChannel.invokeMethod(
+    List<dynamic>? datas = await methodChannel.invokeMethod(
         'getConversationInfos', {'types': itypes, 'lines': lines});
-    List<ConversationInfo> infos = await _convertProtoConversationInfos(datas);
+    List<ConversationInfo> infos = _convertProtoConversationInfos(datas);
     return infos;
   }
 
@@ -1145,7 +1153,7 @@ class MethodChannelImclient extends ImclientPlatform {
     var args = _convertConversation(conversation);
     Map<dynamic, dynamic> datas =
     await methodChannel.invokeMethod("getConversationInfo", args);
-    ConversationInfo info = await _convertProtoConversationInfo(datas);
+    ConversationInfo info = _convertProtoConversationInfo(datas);
     return info;
   }
 
@@ -1154,17 +1162,16 @@ class MethodChannelImclient extends ImclientPlatform {
   Future<List<ConversationSearchInfo>> searchConversation(
       String keyword, List<ConversationType> types, List<int> lines) async {
     List<int> itypes = [];
-    types.forEach((element) {
+    for (var element in types) {
       itypes.add(element.index);
-    });
-    if (lines == null || lines.isEmpty) {
+    }
+    if (lines.isEmpty) {
       lines = [0];
     }
 
     List<dynamic> datas = await methodChannel.invokeMethod('searchConversation',
         {'keyword': keyword, 'types': itypes, 'lines': lines});
-    List<ConversationSearchInfo> infos =
-    await _convertProtoConversationSearchInfos(datas);
+    List<ConversationSearchInfo> infos = _convertProtoConversationSearchInfos(datas);
     return infos;
   }
 
@@ -1176,24 +1183,20 @@ class MethodChannelImclient extends ImclientPlatform {
     args['conversation'] = _convertConversation(conversation);
     args['clearMessage'] = clearMessage;
     await methodChannel.invokeMethod("removeConversation", args);
-    return;
   }
 
   ///设置/取消会话置顶
   @override
-  Future<void> setConversationTop(
+  void setConversationTop(
       Conversation conversation,
       bool isTop,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null) {
-      _operationSuccessCallbackMap.putIfAbsent(
-          requestId, () => successCallback);
-    }
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
 
-    await methodChannel.invokeMethod("setConversationTop", {
+    methodChannel.invokeMethod("setConversationTop", {
       "requestId": requestId,
       'conversation': _convertConversation(conversation),
       "isTop": isTop
@@ -1202,19 +1205,16 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///设置/取消会话免到扰
   @override
-  Future<void> setConversationSilent(
+  void setConversationSilent(
       Conversation conversation,
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null) {
-      _operationSuccessCallbackMap.putIfAbsent(
-          requestId, () => successCallback);
-    }
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
 
-    await methodChannel.invokeMethod("setConversationSilent", {
+    methodChannel.invokeMethod("setConversationSilent", {
       "requestId": requestId,
       'conversation': _convertConversation(conversation),
       "isSilent": isSilent
@@ -1264,10 +1264,10 @@ class MethodChannelImclient extends ImclientPlatform {
   Future<UnreadCount> getConversationsUnreadCount(
       List<ConversationType> types, List<int> lines) async {
     List<int> itypes = [];
-    types.forEach((element) {
+    for (var element in types) {
       itypes.add(element.index);
-    });
-    if (lines == null || lines.isEmpty) {
+    }
+    if (lines.isEmpty) {
       lines = [0];
     }
 
@@ -1293,10 +1293,10 @@ class MethodChannelImclient extends ImclientPlatform {
   Future<bool> clearConversationsUnreadStatus(
       List<ConversationType> types, List<int> lines) async {
     List<int> itypes = [];
-    types.forEach((element) {
+    for (var element in types) {
       itypes.add(element.index);
-    });
-    if (lines == null || lines.isEmpty) {
+    }
+    if (lines.isEmpty) {
       lines = [0];
     }
 
@@ -1397,10 +1397,10 @@ class MethodChannelImclient extends ImclientPlatform {
       List<ConversationType> types, List<int> lines, int fromIndex, int count,
       {List<int>? contentTypes, String? withUser}) async {
     List<int> itypes = [];
-    types.forEach((element) {
+    for (var element in types) {
       itypes.add(element.index);
-    });
-    if (lines == null || lines.isEmpty) {
+    }
+    if (lines.isEmpty) {
       lines = [0];
     }
 
@@ -1432,10 +1432,10 @@ class MethodChannelImclient extends ImclientPlatform {
       List<MessageStatus> messageStatus,
       {String? withUser}) async {
     List<int> itypes = [];
-    types.forEach((element) {
+    for (var element in types) {
       itypes.add(element.index);
-    });
-    if (lines == null || lines.isEmpty) {
+    }
+    if (lines.isEmpty) {
       lines = [0];
     }
 
@@ -1458,12 +1458,12 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取远端历史消息
   @override
-  Future<void> getRemoteMessages(
+  void getRemoteMessages(
       Conversation conversation,
       int beforeMessageUid,
       int count,
       OperationSuccessMessagesCallback successCallback,
-          OperationFailureCallback errorCallback, {List<int>? contentTypes}) async {
+          OperationFailureCallback errorCallback, {List<int>? contentTypes}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -1479,19 +1479,19 @@ class MethodChannelImclient extends ImclientPlatform {
       args["contentTypes"] = contentTypes;
     }
 
-    await methodChannel.invokeMethod("getRemoteMessages", args);
+    methodChannel.invokeMethod("getRemoteMessages", args);
   }
 
   @override
-  Future<void> getRemoteMessage(
+  void getRemoteMessage(
       int messageUid,
       OperationSuccessMessageCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
 
-    await methodChannel.invokeMethod("getRemoteMessage", {"messageUid":messageUid});
+    methodChannel.invokeMethod("getRemoteMessage", {"messageUid":messageUid});
   }
 
   ///根据消息Id获取消息
@@ -1535,10 +1535,10 @@ class MethodChannelImclient extends ImclientPlatform {
         List<int>? contentTypes,
       }) async {
     List<int> itypes = [];
-    types.forEach((element) {
+    for (var element in types) {
       itypes.add(element.index);
-    });
-    if (lines == null || lines.isEmpty) {
+    }
+    if (lines.isEmpty) {
       lines = [0];
     }
 
@@ -1586,10 +1586,10 @@ class MethodChannelImclient extends ImclientPlatform {
     _sendMessageSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
     if (progressCallback != null) {
-      _sendMediaMessageProgressCallbackMap[requestId] = progressCallback!;
+      _sendMediaMessageProgressCallbackMap[requestId] = progressCallback;
     }
     if (uploadedCallback != null) {
-      _sendMediaMessageUploadedCallbackMap[requestId] = uploadedCallback!;
+      _sendMediaMessageUploadedCallbackMap[requestId] = uploadedCallback;
     }
 
     Map<String, dynamic> convMap = _convertConversation(conversation);
@@ -1615,7 +1615,7 @@ class MethodChannelImclient extends ImclientPlatform {
         required SendMessageSuccessCallback successCallback,
         required OperationFailureCallback errorCallback}) async {
     int requestId = _requestId++;
-    _sendMessageSuccessCallbackMap[requestId] = successCallback!;
+    _sendMessageSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
 
     return await methodChannel.invokeMethod("sendSavedMessage", {
@@ -1632,34 +1632,31 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///撤回消息
   @override
-  Future<void> recallMessage(
+  void recallMessage(
       int messageUid,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod('recallMessage',
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod('recallMessage',
         {"requestId": requestId, "messageUid": messageUid});
   }
 
   ///上传媒体数据
   @override
-  Future<void> uploadMedia(
+  void uploadMedia(
       String fileName,
       Uint8List mediaData,
       int mediaType,
       OperationSuccessStringCallback successCallback,
       SendMediaMessageProgressCallback progressCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    if (progressCallback != null)
-      _sendMediaMessageProgressCallbackMap[requestId] = progressCallback;
-    await methodChannel.invokeMethod("uploadMedia", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    _sendMediaMessageProgressCallbackMap[requestId] = progressCallback;
+    methodChannel.invokeMethod("uploadMedia", {
       "requestId": requestId,
       "fileName": fileName,
       "mediaData": mediaData,
@@ -1668,18 +1665,17 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   @override
-  Future<void> getMediaUploadUrl(
+  void getMediaUploadUrl(
       String fileName,
       int mediaType,
       String contentType,
       GetUploadUrlSuccessCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
 
-    await methodChannel.invokeMethod("getUploadUrl", {
+    methodChannel.invokeMethod("getUploadUrl", {
       "requestId": requestId,
       "fileName": fileName,
       "contentType": contentType,
@@ -1705,15 +1701,14 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   @override
-  Future<void> deleteRemoteMessage(
+  void deleteRemoteMessage(
       int messageUid,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod('deleteRemoteMessage',
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod('deleteRemoteMessage',
         {"requestId": requestId, "messageUid": messageUid});
   }
 
@@ -1728,15 +1723,14 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   @override
-  Future<bool> clearRemoteConversationMessage(Conversation conversation,
+  void clearRemoteConversationMessage(Conversation conversation,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
 
-    return await methodChannel.invokeMethod("clearMessages", {
+    methodChannel.invokeMethod("clearRemoteConversationMessage", {
       "requestId": requestId,
       "conversation": _convertConversation(conversation)
     });
@@ -1761,7 +1755,7 @@ class MethodChannelImclient extends ImclientPlatform {
       MessageContent content, int status, int serverTime) async {
     Map<dynamic, dynamic> datas = await methodChannel.invokeMethod("insertMessage", {
       "conversation": _convertConversation(conversation),
-      "content": await _convertMessageContent(content),
+      "content": _convertMessageContent(content),
       "status": status,
       "serverTime": serverTime
     });
@@ -1774,24 +1768,23 @@ class MethodChannelImclient extends ImclientPlatform {
       int messageId, MessageContent content) async {
     await methodChannel.invokeMethod("updateMessage", {
       "messageId": messageId,
-      "content": await _convertMessageContent(content)
+      "content": _convertMessageContent(content)
     });
   }
 
   @override
-  Future<void> updateRemoteMessageContent(
+  void updateRemoteMessageContent(
       int messageUid, MessageContent content, bool distribute, bool updateLocal,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
 
-    await methodChannel.invokeMethod("updateRemoteMessageContent", {
+    methodChannel.invokeMethod("updateRemoteMessageContent", {
       "requestId": requestId,
       "messageUid": messageUid,
-      "content": await _convertMessageContent(content),
+      "content": _convertMessageContent(content),
       "distribute": distribute,
       "updateLocal":updateLocal
     });
@@ -1830,7 +1823,7 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<List<UserInfo>> getUserInfos(List<String> userIds,
       {String? groupId}) async {
-    var args;
+    var args = {};
     if (groupId != null) {
       args = {"userIds": userIds, "groupId": groupId};
     } else {
@@ -1842,17 +1835,17 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///搜索用户
   @override
-    Future<void> searchUser(
+  void searchUser(
       String keyword,
       int searchType,
       int page,
       OperationSuccessUserInfosCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
 
-    await methodChannel.invokeMethod("searchUser", {
+    methodChannel.invokeMethod("searchUser", {
       "requestId": requestId,
       "keyword": keyword,
       "searchType": searchType,
@@ -1862,15 +1855,15 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///异步获取用户信息
   @override
-  Future<void> getUserInfoAsync(
+  void getUserInfoAsync(
       String userId,
       OperationSuccessUserInfoCallback successCallback,
       OperationFailureCallback errorCallback,
-      {bool refresh = false}) async {
+      {bool refresh = false}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod(
+    methodChannel.invokeMethod(
         "getUserInfoAsync", {"requestId": requestId, "userId": userId});
   }
 
@@ -1882,7 +1875,7 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取好友列表
   @override
-  Future<List<String>?> getMyFriendList({bool refresh = false}) async {
+  Future<List<String>> getMyFriendList({bool refresh = false}) async {
     List<dynamic>? datas =
     await methodChannel.invokeMethod("getMyFriendList", {"refresh": refresh});
     return Tools.convertDynamicList(datas);
@@ -1960,46 +1953,43 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///删除好友
   @override
-  Future<void> deleteFriend(
+  void deleteFriend(
       String userId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod(
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod(
         "deleteFriend", {"requestId": requestId, "userId": userId});
   }
 
   ///发送好友请求
   @override
-  Future<void> sendFriendRequest(
+  void sendFriendRequest(
       String userId,
       String reason,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("sendFriendRequest",
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("sendFriendRequest",
         {"requestId": requestId, "userId": userId, "reason": reason});
   }
 
   ///处理好友请求
   @override
-  Future<void> handleFriendRequest(
+  void handleFriendRequest(
       String userId,
       bool accept,
       String extra,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("handleFriendRequest", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("handleFriendRequest", {
       "requestId": requestId,
       "userId": userId,
       "accept": accept,
@@ -2009,25 +1999,22 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取好友备注名
   @override
-  Future<String> getFriendAlias(String userId) async {
-    String data =
-    await methodChannel.invokeMethod("getFriendAlias", {"userId": userId});
-    return data;
+  Future<String?> getFriendAlias(String userId) async {
+    return await methodChannel.invokeMethod("getFriendAlias", {"userId": userId});
   }
 
   ///设置好友备注名
   @override
-  Future<void> setFriendAlias(
+  void setFriendAlias(
       String friendId,
-      String alias,
+      String? alias,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("setFriendAlias",
-        {"requestId": requestId, "friendId": friendId, "alias": alias});
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("setFriendAlias",
+        {"requestId": requestId, "friendId": friendId, "alias": alias??""});
   }
 
   ///获取好友extra信息
@@ -2048,7 +2035,7 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取黑名单列表
   @override
-  Future<List<String>?> getBlackList({bool refresh = false}) async {
+  Future<List<String>> getBlackList({bool refresh = false}) async {
     List<dynamic>? datas =
     await methodChannel.invokeMethod("getBlackList", {"refresh": refresh});
     return Tools.convertDynamicList(datas);
@@ -2056,16 +2043,15 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///设置/取消用户黑名单
   @override
-  Future<void> setBlackList(
+  void setBlackList(
       String userId,
       bool isBlackListed,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("setBlackList", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("setBlackList", {
       "requestId": requestId,
       "userId": userId,
       "isBlackListed": isBlackListed
@@ -2092,14 +2078,14 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///异步获取群成员列表
   @override
-  Future<void> getGroupMembersAsync(String groupId,
+  void getGroupMembersAsync(String groupId,
       {bool refresh = false,
         required OperationSuccessGroupMembersCallback successCallback,
-        required OperationFailureCallback errorCallback}) async {
+        required OperationFailureCallback errorCallback}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("getGroupMembersAsync",
+    methodChannel.invokeMethod("getGroupMembersAsync",
         {"requestId": requestId, "groupId": groupId, "refresh": refresh});
   }
 
@@ -2107,27 +2093,27 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   Future<GroupInfo?> getGroupInfo(String groupId,
       {bool refresh = false}) async {
-    Map<dynamic, dynamic> datas = await methodChannel
+    Map<dynamic, dynamic>? datas = await methodChannel
         .invokeMethod("getGroupInfo", {"groupId": groupId, "refresh": refresh});
     return _convertProtoGroupInfo(datas);
   }
 
   ///异步获取群信息
   @override
-  Future<void> getGroupInfoAsync(String groupId,
+  void getGroupInfoAsync(String groupId,
       {bool refresh = false,
         required OperationSuccessGroupInfoCallback successCallback,
-        required OperationFailureCallback errorCallback}) async {
+        required OperationFailureCallback errorCallback}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("getGroupInfoAsync",
+    methodChannel.invokeMethod("getGroupInfoAsync",
         {"requestId": requestId, "groupId": groupId, "refresh": refresh});
   }
 
   ///获取单个群成员信息
   @override
-  Future<GroupMember> getGroupMember(
+  Future<GroupMember?> getGroupMember(
       String groupId, String memberId) async {
     Map<dynamic, dynamic> datas = await methodChannel.invokeMethod(
         "getGroupMember", {"groupId": groupId, "memberId": memberId});
@@ -2136,7 +2122,7 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///创建群组，groupId可以为空。
   @override
-  Future<void> createGroup(
+  void createGroup(
       String? groupId,
       String? groupName,
       String? groupPortrait,
@@ -2145,7 +2131,7 @@ class MethodChannelImclient extends ImclientPlatform {
       OperationSuccessStringCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2167,21 +2153,21 @@ class MethodChannelImclient extends ImclientPlatform {
       args['notifyLines'] = notifyLines;
     }
     if (notifyContent != null) {
-      args['notifyContent'] = await _convertMessageContent(notifyContent);
+      args['notifyContent'] = _convertMessageContent(notifyContent);
     }
 
-    await methodChannel.invokeMethod("createGroup", args);
+    methodChannel.invokeMethod("createGroup", args);
   }
 
   ///添加群成员
   @override
-  Future<void> addGroupMembers(
+  void addGroupMembers(
       String groupId,
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2199,18 +2185,18 @@ class MethodChannelImclient extends ImclientPlatform {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
 
-    await methodChannel.invokeMethod("addGroupMembers", args);
+    methodChannel.invokeMethod("addGroupMembers", args);
   }
 
   ///移除群成员
   @override
-  Future<void> kickoffGroupMembers(
+  void kickoffGroupMembers(
       String groupId,
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2227,17 +2213,17 @@ class MethodChannelImclient extends ImclientPlatform {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
 
-    await methodChannel.invokeMethod("kickoffGroupMembers", args);
+    methodChannel.invokeMethod("kickoffGroupMembers", args);
   }
 
   ///退出群组
   @override
-  Future<void> quitGroup(
+  void quitGroup(
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2253,17 +2239,17 @@ class MethodChannelImclient extends ImclientPlatform {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
 
-    await methodChannel.invokeMethod("quitGroup", args);
+    methodChannel.invokeMethod("quitGroup", args);
   }
 
   ///解散群组
   @override
-  Future<void> dismissGroup(
+  void dismissGroup(
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2279,19 +2265,19 @@ class MethodChannelImclient extends ImclientPlatform {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
 
-    await methodChannel.invokeMethod("dismissGroup", args);
+    methodChannel.invokeMethod("dismissGroup", args);
   }
 
   ///修改群组信息
   @override
-  Future<void> modifyGroupInfo(
+  void modifyGroupInfo(
       String groupId,
       ModifyGroupInfoType modifyType,
       String newValue,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2310,18 +2296,18 @@ class MethodChannelImclient extends ImclientPlatform {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
 
-    await methodChannel.invokeMethod("modifyGroupInfo", args);
+    methodChannel.invokeMethod("modifyGroupInfo", args);
   }
 
   ///修改自己的群名片
   @override
-  Future<void> modifyGroupAlias(
+  void modifyGroupAlias(
       String groupId,
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2338,19 +2324,19 @@ class MethodChannelImclient extends ImclientPlatform {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
 
-    await methodChannel.invokeMethod("modifyGroupAlias", args);
+    methodChannel.invokeMethod("modifyGroupAlias", args);
   }
 
   ///修改群成员的群名片
   @override
-  Future<void> modifyGroupMemberAlias(
+  void modifyGroupMemberAlias(
       String groupId,
       String memberId,
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2367,18 +2353,18 @@ class MethodChannelImclient extends ImclientPlatform {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
 
-    await methodChannel.invokeMethod("modifyGroupMemberAlias", args);
+    methodChannel.invokeMethod("modifyGroupMemberAlias", args);
   }
 
   ///转移群组
   @override
-  Future<void> transferGroup(
+  void transferGroup(
       String groupId,
       String newOwner,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2394,19 +2380,19 @@ class MethodChannelImclient extends ImclientPlatform {
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
-    await methodChannel.invokeMethod("transferGroup", args);
+    methodChannel.invokeMethod("transferGroup", args);
   }
 
   ///设置/取消群管理员
   @override
-  Future<void> setGroupManager(
+  void setGroupManager(
       String groupId,
       bool isSet,
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2424,19 +2410,19 @@ class MethodChannelImclient extends ImclientPlatform {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
 
-    await methodChannel.invokeMethod("setGroupManager", args);
+    methodChannel.invokeMethod("setGroupManager", args);
   }
 
   ///禁言/取消禁言群成员
   @override
-  Future<void> muteGroupMember(
+  void muteGroupMember(
       String groupId,
       bool isSet,
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2454,19 +2440,19 @@ class MethodChannelImclient extends ImclientPlatform {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
 
-    await methodChannel.invokeMethod("muteGroupMember", args);
+    methodChannel.invokeMethod("muteGroupMember", args);
   }
 
   ///设置/取消群白名单
   @override
-  Future<void> allowGroupMember(
+  void allowGroupMember(
       String groupId,
       bool isSet,
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -2484,7 +2470,7 @@ class MethodChannelImclient extends ImclientPlatform {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
 
-    await methodChannel.invokeMethod("allowGroupMember", args);
+    methodChannel.invokeMethod("allowGroupMember", args);
   }
 
   @override
@@ -2493,13 +2479,13 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   @override
-  Future<void> setGroupRemark(String groupId, String remark,
+  void setGroupRemark(String groupId, String remark,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("setGroupRemark", {
+    methodChannel.invokeMethod("setGroupRemark", {
       "requestId": requestId,
       "groupId": groupId,
       "remark": remark
@@ -2520,16 +2506,15 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///设置/取消收藏群组
   @override
-  Future<void> setFavGroup(
+  void setFavGroup(
       String groupId,
       bool isFav,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("setFavGroup",
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("setFavGroup",
         {"requestId": requestId, "groupId": groupId, "isFav": isFav});
   }
 
@@ -2548,37 +2533,35 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///设置用户设置
   @override
-  Future<void> setUserSetting(
+  void setUserSetting(
       int scope,
       String key,
       String value,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("setUserSetting",
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("setUserSetting",
         {"requestId": requestId, "scope": scope, "key": key, "value": value});
   }
 
   ///修改当前用户信息
   @override
-  Future<void> modifyMyInfo(
+  void modifyMyInfo(
       Map<ModifyMyInfoType, String> values,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
 
     Map<int, String> v = {};
     values.forEach((key, value) {
       v.putIfAbsent(key.index, () => value);
     });
 
-    await methodChannel
+    methodChannel
         .invokeMethod("modifyMyInfo", {"requestId": requestId, "values": v});
   }
 
@@ -2590,15 +2573,14 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///设置/取消全局静音
   @override
-  Future<void> setGlobalSilent(
+  void setGlobalSilent(
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod(
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod(
         "setGlobalSilent", {"requestId": requestId, "isSilent": isSilent});
   }
 
@@ -2607,15 +2589,15 @@ class MethodChannelImclient extends ImclientPlatform {
     return await methodChannel.invokeMethod("isVoipNotificationSilent");
   }
 
-  Future<void> setVoipNotificationSilent(
+  @override
+  void setVoipNotificationSilent(
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod(
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod(
         "setVoipNotificationSilent", {"requestId": requestId, "isSilent": isSilent});
   }
 
@@ -2625,56 +2607,52 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   @override
-  Future<void> setEnableSyncDraft(
+  void setEnableSyncDraft(
       bool enable,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod(
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod(
         "setEnableSyncDraft", {"requestId": requestId, "enable": enable});
   }
 
   ///获取免打扰时间段
   @override
-  Future<void> getNoDisturbingTimes(
+  void getNoDisturbingTimes(
       OperationSuccessIntPairCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel
         .invokeMethod("getNoDisturbingTimes", {"requestId": requestId});
   }
 
   ///设置免打扰时间段
   @override
-  Future<void> setNoDisturbingTimes(
+  void setNoDisturbingTimes(
       int startMins,
       int endMins,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("setNoDisturbingTimes",
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("setNoDisturbingTimes",
         {"requestId": requestId, "startMins": startMins, "endMins": endMins});
   }
 
   ///取消免打扰时间段
   @override
-  Future<void> clearNoDisturbingTimes(
+  void clearNoDisturbingTimes(
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel
         .invokeMethod("clearNoDisturbingTimes", {"requestId": requestId});
   }
 
@@ -2691,15 +2669,14 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///设置推送隐藏详情
   @override
-  Future<void> setHiddenNotificationDetail(
+  void setHiddenNotificationDetail(
       bool isHidden,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("setHiddenNotificationDetail",
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("setHiddenNotificationDetail",
         {"requestId": requestId, "isHidden": isHidden});
   }
 
@@ -2712,40 +2689,37 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///设置是否群组隐藏用户名
   @override
-  Future<void> setHiddenGroupMemberName(
+  void setHiddenGroupMemberName(
       bool isHidden,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("setHiddenGroupMemberName",
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("setHiddenGroupMemberName",
         {"requestId": requestId, "isHidden": isHidden});
   }
 
 
   @override
-  Future<void> getMyGroups(
+  void getMyGroups(
       OperationSuccessStringListCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("getMyGroups",
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("getMyGroups",
         {"requestId": requestId});
   }
 
   @override
-  Future<void> getCommonGroups(String userId,
+  void getCommonGroups(String userId,
       OperationSuccessStringListCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("getCommonGroups",
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("getCommonGroups",
         {"requestId": requestId, "userId": userId});
   }
 
@@ -2757,15 +2731,14 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///设置当前用户是否启用回执功能，仅当服务支持回执功能有效
   @override
-  Future<void> setUserEnableReceipt(
+  void setUserEnableReceipt(
       bool isEnable,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod(
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod(
         "setUserEnableReceipt", {"requestId": requestId, "isEnable": isEnable});
   }
 
@@ -2783,59 +2756,55 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///设置收藏用户
   @override
-  Future<void> setFavUser(
+  void setFavUser(
       String userId,
       bool isFav,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("setFavUser",
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("setFavUser",
         {"requestId": requestId, "userId": userId, "isFav": isFav});
   }
 
   ///加入聊天室
   @override
-  Future<void> joinChatroom(
+  void joinChatroom(
       String chatroomId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod(
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod(
         "joinChatroom", {"requestId": requestId, "chatroomId": chatroomId});
   }
 
   ///退出聊天室
   @override
-  Future<void> quitChatroom(
+  void quitChatroom(
       String chatroomId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod(
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod(
         "quitChatroom", {"requestId": requestId, "chatroomId": chatroomId});
   }
 
   ///获取聊天室信息
   @override
-  Future<void> getChatroomInfo(
+  void getChatroomInfo(
       String chatroomId,
       int updateDt,
       OperationSuccessChatroomInfoCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("getChatroomInfo", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("getChatroomInfo", {
       "requestId": requestId,
       "chatroomId": chatroomId,
       "updateDt": updateDt
@@ -2844,33 +2813,31 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取聊天室成员信息
   @override
-  Future<void> getChatroomMemberInfo(
+  void getChatroomMemberInfo(
       String chatroomId,
       OperationSuccessChatroomMemberInfoCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("getChatroomMemberInfo",
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("getChatroomMemberInfo",
         {"requestId": requestId, "chatroomId": chatroomId});
   }
 
   ///创建频道
   @override
-  Future<void> createChannel(
+  void createChannel(
       String channelName,
       String channelPortrait,
       int status,
       String desc,
       String extra,
       OperationSuccessChannelInfoCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("createChannel", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("createChannel", {
       "requestId": requestId,
       "name": channelName,
       "portrait": channelPortrait,
@@ -2891,17 +2858,16 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///修改频道信息
   @override
-  Future<void> modifyChannelInfo(
+  void modifyChannelInfo(
       String channelId,
       ModifyChannelInfoType modifyType,
       String newValue,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("modifyChannelInfo", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("modifyChannelInfo", {
       "requestId": requestId,
       "channelId": channelId,
       "modifyType": modifyType.index,
@@ -2911,15 +2877,14 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///搜索频道
   @override
-  Future<void> searchChannel(
+  void searchChannel(
       String keyword,
       OperationSuccessChannelInfosCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod(
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod(
         "searchChannel", {"requestId": requestId, "keyword": keyword});
   }
 
@@ -2932,15 +2897,15 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///订阅/取消订阅频道
   @override
-  Future<void> listenChannel(
+  void listenChannel(
       String channelId,
       bool isListen,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("listenChannel",
+    methodChannel.invokeMethod("listenChannel",
         {"requestId": requestId, "channelId": channelId, "isListen": isListen});
   }
 
@@ -2959,15 +2924,14 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///销毁频道
   @override
-  Future<void> destroyChannel(
+  void destroyChannel(
       String channelId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod(
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod(
         "destoryChannel", {"requestId": requestId, "channelId": channelId});
   }
 
@@ -2980,15 +2944,14 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///踢掉PC客户端
   @override
-  Future<void> kickoffPCClient(
+  void kickoffPCClient(
       String clientId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod(
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod(
         "kickoffPCClient", {"requestId": requestId, "clientId": clientId});
   }
 
@@ -3000,27 +2963,26 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///设置/取消设置当PC在线时停止手机通知
   @override
-  Future<void> muteNotificationWhenPcOnline(
+  void muteNotificationWhenPcOnline(
       bool isMute,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("muteNotificationWhenPcOnline",
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("muteNotificationWhenPcOnline",
         {"requestId": requestId, "isMute": isMute});
   }
 
   ///获取会话文件记录
   @override
-  Future<void> getConversationFiles(
+  void getConversationFiles(
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
       {Conversation? conversation,
-        String? fromUser}) async {
+        String? fromUser}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -3032,27 +2994,27 @@ class MethodChannelImclient extends ImclientPlatform {
     };
 
     if (conversation != null) {
-      args['conversation'] = _convertConversation(conversation!);
+      args['conversation'] = _convertConversation(conversation);
     }
 
     if(fromUser != null) {
       args['fromUser'] = fromUser;
     }
 
-    await methodChannel.invokeMethod("getConversationFiles", args);
+    methodChannel.invokeMethod("getConversationFiles", args);
   }
 
   ///获取我的文件记录
   @override
-  Future<void> getMyFiles(
+  void getMyFiles(
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("getMyFiles", {
+    methodChannel.invokeMethod("getMyFiles", {
       "requestId": requestId,
       "beforeMessageUid": beforeMessageUid,
       "count": count
@@ -3061,28 +3023,28 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///删除文件记录
   @override
-  Future<void> deleteFileRecord(
+  void deleteFileRecord(
       int messageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("deleteFileRecord",
+    methodChannel.invokeMethod("deleteFileRecord",
         {"requestId": requestId, "messageUid": messageUid});
   }
 
   ///搜索文件记录
   @override
-  Future<void> searchFiles(
+  void searchFiles(
       String keyword,
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
       {Conversation? conversation,
-        String? fromUser}) async {
+        String? fromUser}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
@@ -3094,37 +3056,33 @@ class MethodChannelImclient extends ImclientPlatform {
     };
 
     if (conversation != null) {
-      args['conversation'] = _convertConversation(conversation!);
+      args['conversation'] = _convertConversation(conversation);
     }
 
     if(fromUser != null) {
       args['fromUser'] = fromUser;
     }
 
-    await methodChannel.invokeMethod("searchFiles", args);
+    methodChannel.invokeMethod("searchFiles", args);
   }
 
   int addCallback(dynamic successCallback, OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null) {
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    }
-    if (errorCallback != null) {
-      _errorCallbackMap[requestId] = errorCallback;
-    }
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
     return requestId;
   }
 
   ///搜索我的文件记录
   @override
-  Future<void> searchMyFiles(
+  void searchMyFiles(
       String keyword,
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = addCallback(successCallback, errorCallback);
-    await methodChannel.invokeMethod("searchMyFiles", {
+    methodChannel.invokeMethod("searchMyFiles", {
       "requestId": requestId,
       "keyword": keyword,
       "beforeMessageUid": beforeMessageUid,
@@ -3134,17 +3092,16 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取经过授权的媒体路径
   @override
-  Future<void> getAuthorizedMediaUrl(
+  void getAuthorizedMediaUrl(
       String mediaPath,
       int messageUid,
       int mediaType,
       OperationSuccessStringCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("getAuthorizedMediaUrl", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("getAuthorizedMediaUrl", {
       "requestId": requestId,
       "mediaPath": mediaPath,
       "messageUid": messageUid,
@@ -3153,17 +3110,16 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   @override
-  Future<void> getAuthCode(
+  void getAuthCode(
       String applicationId,
       int type,
       String host,
       OperationSuccessStringCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("getAuthCode", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("getAuthCode", {
       "requestId": requestId,
       "applicationId": applicationId,
       "type": type,
@@ -3172,19 +3128,18 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   @override
-  Future<void> configApplication(
+  void configApplication(
       String applicationId,
       int type,
       int timestamp,
       String nonce,
       String signature,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    if (successCallback != null)
-      _operationSuccessCallbackMap[requestId] = successCallback;
-    if (errorCallback != null) _errorCallbackMap[requestId] = errorCallback;
-    await methodChannel.invokeMethod("configApplication", {
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("configApplication", {
       "requestId": requestId,
       "applicationId": applicationId,
       "type": type,

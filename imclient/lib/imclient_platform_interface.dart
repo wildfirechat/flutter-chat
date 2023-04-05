@@ -72,21 +72,21 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///开启协议栈日志
-  void startLog() async {
+  Future<void> startLog() async {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///结束协议栈日志
-  void stopLog() async {
+  Future<void> stopLog() async {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///设置发送日志命令
-  void setSendLogCommand(String sendLogCmd) async {
+  Future<void> setSendLogCommand(String sendLogCmd) async {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  void useSM4() async {
+  Future<void> useSM4() async {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -118,7 +118,7 @@ abstract class ImclientPlatform extends PlatformInterface {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> setProxyInfo(String host, String ip, int port, String userName, String password) async {
+  Future<void> setProxyInfo(String host, String ip, int port, {String? userName, String? password}) async {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -127,7 +127,7 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取协议栈日志文件路径
-  Future<List<String>?> get logFilesPath async {
+  Future<List<String>> get logFilesPath async {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -191,20 +191,20 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置/取消会话置顶
-  Future<void> setConversationTop(
+  void setConversationTop(
       Conversation conversation,
       bool isTop,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///设置/取消会话免到扰
-  Future<void> setConversationSilent(
+  void setConversationSilent(
       Conversation conversation,
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -307,20 +307,20 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取远端历史消息
-  Future<void> getRemoteMessages(
+  void getRemoteMessages(
       Conversation conversation,
       int beforeMessageUid,
       int count,
       OperationSuccessMessagesCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int>? contentTypes}) async {
+      {List<int>? contentTypes}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> getRemoteMessage(
+  void getRemoteMessage(
       int messageUid,
       OperationSuccessMessageCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -379,30 +379,30 @@ abstract class ImclientPlatform extends PlatformInterface {
 
 
   ///撤回消息
-  Future<void> recallMessage(
+  void recallMessage(
       int messageUid,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///上传媒体数据
-  Future<void> uploadMedia(
+  void uploadMedia(
       String fileName,
       Uint8List mediaData,
       int mediaType,
       OperationSuccessStringCallback successCallback,
       SendMediaMessageProgressCallback progressCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> getMediaUploadUrl(
+  void getMediaUploadUrl(
       String fileName,
       int mediaType,
       String contentType,
       GetUploadUrlSuccessCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -419,10 +419,10 @@ abstract class ImclientPlatform extends PlatformInterface {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> deleteRemoteMessage(
+  void deleteRemoteMessage(
       int messageUid,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -433,9 +433,9 @@ abstract class ImclientPlatform extends PlatformInterface {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<bool> clearRemoteConversationMessage(Conversation conversation,
+  void clearRemoteConversationMessage(Conversation conversation,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -460,10 +460,10 @@ abstract class ImclientPlatform extends PlatformInterface {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> updateRemoteMessageContent(
+  void updateRemoteMessageContent(
       int messageUid, MessageContent content, bool distribute, bool updateLocal,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -491,21 +491,21 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///搜索用户
-  Future<void> searchUser(
+  void searchUser(
       String keyword,
       int searchType,
       int page,
       OperationSuccessUserInfosCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///异步获取用户信息
-  Future<void> getUserInfoAsync(
+  void getUserInfoAsync(
       String userId,
       OperationSuccessUserInfoCallback successCallback,
       OperationFailureCallback errorCallback,
-      {bool refresh = false}) async {
+      {bool refresh = false}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -515,7 +515,7 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取好友列表
-  Future<List<String>?> getMyFriendList({bool refresh = false}) async {
+  Future<List<String>> getMyFriendList({bool refresh = false}) async {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -565,43 +565,43 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///删除好友
-  Future<void> deleteFriend(
+  void deleteFriend(
       String userId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///发送好友请求
-  Future<void> sendFriendRequest(
+  void sendFriendRequest(
       String userId,
       String reason,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///处理好友请求
-  Future<void> handleFriendRequest(
+  void handleFriendRequest(
       String userId,
       bool accept,
       String extra,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///获取好友备注名
-  Future<String> getFriendAlias(String userId) async {
+  Future<String?> getFriendAlias(String userId) async {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///设置好友备注名
-  Future<void> setFriendAlias(
+  void setFriendAlias(
       String friendId,
-      String alias,
+      String? alias,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -616,16 +616,16 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取黑名单列表
-  Future<List<String>?> getBlackList({bool refresh = false}) async {
+  Future<List<String>> getBlackList({bool refresh = false}) async {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///设置/取消用户黑名单
-  Future<void> setBlackList(
+  void setBlackList(
       String userId,
       bool isBlackListed,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -642,10 +642,10 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///异步获取群成员列表
-  Future<void> getGroupMembersAsync(String groupId,
+  void getGroupMembersAsync(String groupId,
       {bool refresh = false,
         required OperationSuccessGroupMembersCallback successCallback,
-        required OperationFailureCallback errorCallback}) async {
+        required OperationFailureCallback errorCallback}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -656,21 +656,21 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///异步获取群信息
-  Future<void> getGroupInfoAsync(String groupId,
+  void getGroupInfoAsync(String groupId,
       {bool refresh = false,
         required OperationSuccessGroupInfoCallback successCallback,
-        required OperationFailureCallback errorCallback}) async {
+        required OperationFailureCallback errorCallback}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///获取单个群成员信息
-  Future<GroupMember> getGroupMember(
+  Future<GroupMember?> getGroupMember(
       String groupId, String memberId) async {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///创建群组，groupId可以为空。
-  Future<void> createGroup(
+  void createGroup(
       String? groupId,
       String? groupName,
       String? groupPortrait,
@@ -679,131 +679,131 @@ abstract class ImclientPlatform extends PlatformInterface {
       OperationSuccessStringCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///添加群成员
-  Future<void> addGroupMembers(
+  void addGroupMembers(
       String groupId,
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///移除群成员
-  Future<void> kickoffGroupMembers(
+  void kickoffGroupMembers(
       String groupId,
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///退出群组
-  Future<void> quitGroup(
+  void quitGroup(
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///解散群组
-  Future<void> dismissGroup(
+  void dismissGroup(
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///修改群组信息
-  Future<void> modifyGroupInfo(
+  void modifyGroupInfo(
       String groupId,
       ModifyGroupInfoType modifyType,
       String newValue,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///修改自己的群名片
-  Future<void> modifyGroupAlias(
+  void modifyGroupAlias(
       String groupId,
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///修改群成员的群名片
-  Future<void> modifyGroupMemberAlias(
+  void modifyGroupMemberAlias(
       String groupId,
       String memberId,
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///转移群组
-  Future<void> transferGroup(
+  void transferGroup(
       String groupId,
       String newOwner,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///设置/取消群管理员
-  Future<void> setGroupManager(
+  void setGroupManager(
       String groupId,
       bool isSet,
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///禁言/取消禁言群成员
-  Future<void> muteGroupMember(
+  void muteGroupMember(
       String groupId,
       bool isSet,
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///设置/取消群白名单
-  Future<void> allowGroupMember(
+  void allowGroupMember(
       String groupId,
       bool isSet,
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
+        MessageContent? notifyContent}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -811,9 +811,9 @@ abstract class ImclientPlatform extends PlatformInterface {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> setGroupRemark(String groupId, String remark,
+  void setGroupRemark(String groupId, String remark,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -828,11 +828,11 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置/取消收藏群组
-  Future<void> setFavGroup(
+  void setFavGroup(
       String groupId,
       bool isFav,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -847,20 +847,20 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置用户设置
-  Future<void> setUserSetting(
+  void setUserSetting(
       int scope,
       String key,
       String value,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///修改当前用户信息
-  Future<void> modifyMyInfo(
+  void modifyMyInfo(
       Map<ModifyMyInfoType, String> values,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -870,10 +870,10 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置/取消全局静音
-  Future<void> setGlobalSilent(
+  void setGlobalSilent(
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -881,10 +881,10 @@ abstract class ImclientPlatform extends PlatformInterface {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> setVoipNotificationSilent(
+  void setVoipNotificationSilent(
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -892,34 +892,34 @@ abstract class ImclientPlatform extends PlatformInterface {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> setEnableSyncDraft(
+  void setEnableSyncDraft(
       bool enable,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
 
   ///获取免打扰时间段
-  Future<void> getNoDisturbingTimes(
+  void getNoDisturbingTimes(
       OperationSuccessIntPairCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///设置免打扰时间段
-  Future<void> setNoDisturbingTimes(
+  void setNoDisturbingTimes(
       int startMins,
       int endMins,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///取消免打扰时间段
-  Future<void> clearNoDisturbingTimes(
+  void clearNoDisturbingTimes(
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -933,10 +933,10 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置推送隐藏详情
-  Future<void> setHiddenNotificationDetail(
+  void setHiddenNotificationDetail(
       bool isHidden,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -946,22 +946,22 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置是否群组隐藏用户名
-  Future<void> setHiddenGroupMemberName(
+  void setHiddenGroupMemberName(
       bool isHidden,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> getMyGroups(
+  void getMyGroups(
       OperationSuccessStringListCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> getCommonGroups(String userId,
+  void getCommonGroups(String userId,
       OperationSuccessStringListCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -971,10 +971,10 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置当前用户是否启用回执功能，仅当服务支持回执功能有效
-  Future<void> setUserEnableReceipt(
+  void setUserEnableReceipt(
       bool isEnable,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -989,56 +989,56 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置收藏用户
-  Future<void> setFavUser(
+  void setFavUser(
       String userId,
       bool isFav,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///加入聊天室
-  Future<void> joinChatroom(
+  void joinChatroom(
       String chatroomId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///退出聊天室
-  Future<void> quitChatroom(
+  void quitChatroom(
       String chatroomId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///获取聊天室信息
-  Future<void> getChatroomInfo(
+  void getChatroomInfo(
       String chatroomId,
       int updateDt,
       OperationSuccessChatroomInfoCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///获取聊天室成员信息
-  Future<void> getChatroomMemberInfo(
+  void getChatroomMemberInfo(
       String chatroomId,
       OperationSuccessChatroomMemberInfoCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///创建频道
-  Future<void> createChannel(
+  void createChannel(
       String channelName,
       String channelPortrait,
       int status,
       String desc,
       String extra,
       OperationSuccessChannelInfoCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -1049,20 +1049,20 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///修改频道信息
-  Future<void> modifyChannelInfo(
+  void modifyChannelInfo(
       String channelId,
       ModifyChannelInfoType modifyType,
       String newValue,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///搜索频道
-  Future<void> searchChannel(
+  void searchChannel(
       String keyword,
       OperationSuccessChannelInfosCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -1072,11 +1072,11 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///订阅/取消订阅频道
-  Future<void> listenChannel(
+  void listenChannel(
       String channelId,
       bool isListen,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -1091,10 +1091,10 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///销毁频道
-  Future<void> destroyChannel(
+  void destroyChannel(
       String channelId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -1104,10 +1104,10 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///踢掉PC客户端
-  Future<void> kickoffPCClient(
+  void kickoffPCClient(
       String clientId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -1117,91 +1117,91 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置/取消设置当PC在线时停止手机通知
-  Future<void> muteNotificationWhenPcOnline(
+  void muteNotificationWhenPcOnline(
       bool isMute,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///获取会话文件记录
-  Future<void> getConversationFiles(
+  void getConversationFiles(
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
       {Conversation? conversation,
-        String? fromUser}) async {
+        String? fromUser}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///获取我的文件记录
-  Future<void> getMyFiles(
+  void getMyFiles(
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///删除文件记录
-  Future<void> deleteFileRecord(
+  void deleteFileRecord(
       int messageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///搜索文件记录
-  Future<void> searchFiles(
+  void searchFiles(
       String keyword,
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
       {Conversation? conversation,
-        String? fromUser}) async {
+        String? fromUser}) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///搜索我的文件记录
-  Future<void> searchMyFiles(
+  void searchMyFiles(
       String keyword,
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
   ///获取经过授权的媒体路径
-  Future<void> getAuthorizedMediaUrl(
+  void getAuthorizedMediaUrl(
       String mediaPath,
       int messageUid,
       int mediaType,
       OperationSuccessStringCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> getAuthCode(
+  void getAuthCode(
       String applicationId,
       int type,
       String host,
       OperationSuccessStringCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 
-  Future<void> configApplication(
+  void configApplication(
       String applicationId,
       int type,
       int timestamp,
       String nonce,
       String signature,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
+      OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
 

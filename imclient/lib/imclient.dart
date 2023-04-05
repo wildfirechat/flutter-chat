@@ -106,6 +106,18 @@ typedef OperationSuccessStringListCallback = void Function(List<String> strValue
 
 typedef GetUploadUrlSuccessCallback = void Function(String uploadUrl, String downloadUrl, String backupUploadUrl, int type);
 
+
+/// 客户端和服务器之间的时间差值过大
+/// 出现此错误时需要校准时间
+const int kConnectionStatusTimeInconsistent = -9;
+
+/// 没有授权或者授权过期，只有专业版IM服务才会出此状态
+const int kConnectionStatusNotLicensed = -8;
+
+/// 客户端被踢，可能是多端登录引起或者是被封禁或者是被API踢掉。
+/// 出现此错误时需要退出到登录界面。
+const int kConnectionStatusKickedOff = -7;
+
 /// 密钥错误。一般是clientId不对，或者是连接的im跟请求token的im不是同一个环境，或者多端登录被踢出。
 /// 出现此错误时需要退出到登录界面。
 const int kConnectionStatusSecretKeyMismatch = -6;
@@ -258,63 +270,63 @@ class Imclient {
   }
 
   ///开启协议栈日志
-  static void startLog() async {
-    ImclientPlatform.instance.startLog();
+  static Future<void> startLog() async {
+    return ImclientPlatform.instance.startLog();
   }
 
   ///结束协议栈日志
-  static void stopLog() async {
-    ImclientPlatform.instance.stopLog();
+  static Future<void> stopLog() async {
+    return ImclientPlatform.instance.stopLog();
   }
 
   ///设置发送日志的命令，当发送此命令的文本消息时，会上传日志文件在当前会话中
-  static void setSendLogCommand(String sendLogCmd) async {
-    ImclientPlatform.instance.setSendLogCommand(sendLogCmd);
+  static Future<void> setSendLogCommand(String sendLogCmd) async {
+    return ImclientPlatform.instance.setSendLogCommand(sendLogCmd);
   }
 
   ///使用国密。国密需要和专业版IM服务同时开启，并且不支持切换。
-  static void useSM4() async {
-    ImclientPlatform.instance.useSM4();
+  static Future<void> useSM4() async {
+    return ImclientPlatform.instance.useSM4();
   }
 
   ///设置lite模式，lite模式下，协议栈不存储任何信息，也不拉取历史消息
   static Future<void> setLiteMode(bool liteMode) async {
-    ImclientPlatform.instance.setLiteMode(liteMode);
+    return ImclientPlatform.instance.setLiteMode(liteMode);
   }
 
   ///设置推送token和类型。iOS平台类型为0，android平台请参考推送服务
   static Future<void> setDeviceToken(int pushType, String deviceToken) async {
-    ImclientPlatform.instance.setDeviceToken(pushType, deviceToken);
+    return ImclientPlatform.instance.setDeviceToken(pushType, deviceToken);
   }
 
   ///设置voip推送token，只支持iOS平台
   static Future<void> setVoipDeviceToken(String voipToken) async {
-    ImclientPlatform.instance.setVoipDeviceToken(voipToken);
+    return ImclientPlatform.instance.setVoipDeviceToken(voipToken);
   }
 
   ///设置备选网络策略，双网相关知识请参考：https://docs.wildfirechat.cn/blogs/政企内外双网解决方案.html
   static Future<void> setBackupAddressStrategy(int strategy) async {
-    ImclientPlatform.instance.setBackupAddressStrategy(strategy);
+    return ImclientPlatform.instance.setBackupAddressStrategy(strategy);
   }
 
   ///设置备选地址和端口，只能设置一个。
   static Future<void> setBackupAddress(String host, int port) async {
-    ImclientPlatform.instance.setBackupAddress(host, port);
+    return ImclientPlatform.instance.setBackupAddress(host, port);
   }
 
   ///设置HTTP User Agent
   static Future<void> setProtoUserAgent(String agent) async {
-    ImclientPlatform.instance.setProtoUserAgent(agent);
+    return ImclientPlatform.instance.setProtoUserAgent(agent);
   }
 
   ///Http 添加header，可以添加多个
   static Future<void> addHttpHeader(String header, String value) async {
-    ImclientPlatform.instance.addHttpHeader(header, value);
+    return ImclientPlatform.instance.addHttpHeader(header, value);
   }
 
   ///设置代理
-  static Future<void> setProxyInfo(String host, String ip, int port, String userName, String password) async {
-    ImclientPlatform.instance.setProxyInfo(host, ip, port, userName, password);
+  static Future<void> setProxyInfo(String host, String ip, int port, {String? userName, String? password}) async {
+    return ImclientPlatform.instance.setProxyInfo(host, ip, port, userName:userName, password:password);
   }
 
   ///协议栈版本
@@ -324,7 +336,7 @@ class Imclient {
 
 
   ///获取协议栈日志文件路径
-  static Future<List<String>?> get logFilesPath async {
+  static Future<List<String>> get logFilesPath async {
     return ImclientPlatform.instance.logFilesPath;
   }
 
@@ -439,21 +451,21 @@ class Imclient {
   }
 
   ///设置/取消会话置顶
-  static Future<void> setConversationTop(
+  static void setConversationTop(
       Conversation conversation,
       bool isTop,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setConversationTop(conversation, isTop, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setConversationTop(conversation, isTop, successCallback, errorCallback);
   }
 
   ///设置/取消会话免到扰
-  static Future<void> setConversationSilent(
+  static void setConversationSilent(
       Conversation conversation,
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setConversationSilent(conversation, isSilent, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setConversationSilent(conversation, isSilent, successCallback, errorCallback);
   }
 
   ///保存草稿
@@ -497,10 +509,12 @@ class Imclient {
     return ImclientPlatform.instance.clearConversationsUnreadStatus(types, lines);
   }
 
+  ///请求某条消息的未读状态
   static Future<bool> clearMessageUnreadStatus(int messageId) async {
     return ImclientPlatform.instance.clearMessageUnreadStatus(messageId);
   }
 
+  ///设置会话为未读
   static Future<bool> markAsUnRead(Conversation conversation, bool syncToOtherClient) async {
     return ImclientPlatform.instance.markAsUnRead(conversation, syncToOtherClient);
   }
@@ -517,9 +531,11 @@ class Imclient {
     return ImclientPlatform.instance.getMessageDelivery(conversation);
   }
 
+  ///消息负载解码为消息内容
   static MessageContent decodeMessageContent(MessagePayload payload) {
     return ImclientPlatform.instance.decodeMessageContent(payload);
   }
+
   ///获取会话的消息列表
   static Future<List<Message>> getMessages(
       Conversation conversation, int fromIndex, int count,
@@ -553,23 +569,23 @@ class Imclient {
   }
 
   ///获取远端历史消息
-  static Future<void> getRemoteMessages(
+  static void getRemoteMessages(
       Conversation conversation,
       int beforeMessageUid,
       int count,
       OperationSuccessMessagesCallback successCallback,
       OperationFailureCallback errorCallback,
-      {List<int>? contentTypes}) async {
-    return ImclientPlatform.instance.getRemoteMessages(conversation, beforeMessageUid, count, successCallback, errorCallback, contentTypes: contentTypes);
+      {List<int>? contentTypes}) {
+    ImclientPlatform.instance.getRemoteMessages(conversation, beforeMessageUid, count, successCallback, errorCallback, contentTypes: contentTypes);
   }
 
-  static Future<void> getRemoteMessage(
+  ///获取服务器端的某条消息
+  static void getRemoteMessage(
       int messageUid,
       OperationSuccessMessageCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.getRemoteMessage(messageUid, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.getRemoteMessage(messageUid, successCallback, errorCallback);
   }
-
 
   ///根据消息Id获取消息
   static Future<Message?> getMessage(int messageId) async {
@@ -638,33 +654,35 @@ class Imclient {
   }
 
   ///撤回消息
-  static Future<void> recallMessage(
+  static void recallMessage(
       int messageUid,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.recallMessage(messageUid, successCallback, errorCallback);
+    ImclientPlatform.instance.recallMessage(messageUid, successCallback, errorCallback);
   }
 
   ///上传媒体数据
-  static Future<void> uploadMedia(
+  static void uploadMedia(
       String fileName,
       Uint8List mediaData,
       int mediaType,
       OperationSuccessStringCallback successCallback,
       SendMediaMessageProgressCallback progressCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.uploadMedia(fileName, mediaData, mediaType, successCallback, progressCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.uploadMedia(fileName, mediaData, mediaType, successCallback, progressCallback, errorCallback);
   }
 
-  static Future<void> getMediaUploadUrl(
+  ///获取上传地址，仅支持大文件上传功能时可用
+  static void getMediaUploadUrl(
       String fileName,
       int mediaType,
       String contentType,
       GetUploadUrlSuccessCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.getMediaUploadUrl(fileName, mediaType, contentType, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.getMediaUploadUrl(fileName, mediaType, contentType, successCallback, errorCallback);
   }
 
+  ///是否支持大文件上传功能
   static Future<bool> isSupportBigFilesUpload() async {
     return ImclientPlatform.instance.isSupportBigFilesUpload();
   }
@@ -674,14 +692,16 @@ class Imclient {
     return ImclientPlatform.instance.deleteMessage(messageId);
   }
 
+  ///批量删除消息
   static Future<bool> batchDeleteMessages(List<int> messageUids) async {
     return ImclientPlatform.instance.batchDeleteMessages(messageUids);
   }
 
-  static Future<void> deleteRemoteMessage(int messageUid,
+  ///删除本地和远端消息，仅当专业版IM支持，专业版IM服务中超级群组不支持服务器端删除.
+  static void deleteRemoteMessage(int messageUid,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.deleteRemoteMessage(messageUid, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.deleteRemoteMessage(messageUid, successCallback, errorCallback);
   }
 
   ///清空会话内消息
@@ -690,11 +710,11 @@ class Imclient {
     return ImclientPlatform.instance.clearMessages(conversation, before: before);
   }
 
-  ///设置/取消会话免到扰
-  static Future<bool> clearRemoteConversationMessage(Conversation conversation,
+  ///清除服务器端会话消息
+  static void clearRemoteConversationMessage(Conversation conversation,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.clearRemoteConversationMessage(conversation, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.clearRemoteConversationMessage(conversation, successCallback, errorCallback);
   }
 
   ///设置消息已经播放
@@ -718,11 +738,12 @@ class Imclient {
     return ImclientPlatform.instance.updateMessage(messageId, content);
   }
 
-  static Future<void> updateRemoteMessageContent(
+  ///更新消息内容
+  static void updateRemoteMessageContent(
       int messageUid, MessageContent content, bool distribute, bool updateLocal,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.updateRemoteMessageContent(messageUid, content, distribute, updateLocal, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.updateRemoteMessageContent(messageUid, content, distribute, updateLocal, successCallback, errorCallback);
   }
 
   ///更新消息状态
@@ -749,22 +770,22 @@ class Imclient {
   }
 
   ///搜索用户
-  static Future<void> searchUser(
+  static void searchUser(
       String keyword,
       int searchType,
       int page,
       OperationSuccessUserInfosCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.searchUser(keyword, searchType, page, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.searchUser(keyword, searchType, page, successCallback, errorCallback);
   }
 
   ///异步获取用户信息
-  static Future<void> getUserInfoAsync(
+  static void getUserInfoAsync(
       String userId,
       OperationSuccessUserInfoCallback successCallback,
       OperationFailureCallback errorCallback,
-      {bool refresh = false}) async {
-    return ImclientPlatform.instance.getUserInfoAsync(userId, successCallback, errorCallback, refresh: refresh);
+      {bool refresh = false}) {
+    ImclientPlatform.instance.getUserInfoAsync(userId, successCallback, errorCallback, refresh: refresh);
   }
 
   ///是否是好友
@@ -772,8 +793,8 @@ class Imclient {
     return ImclientPlatform.instance.isMyFriend(userId);
   }
 
-  ///获取好友列表
-  static Future<List<String>?> getMyFriendList({bool refresh = false}) async {
+  ///获取好友用户ID列表
+  static Future<List<String>> getMyFriendList({bool refresh = false}) async {
     return ImclientPlatform.instance.getMyFriendList(refresh: refresh);
   }
 
@@ -782,6 +803,7 @@ class Imclient {
     return ImclientPlatform.instance.searchFriends(keyword);
   }
 
+  ///获取好友列表
   static Future<List<Friend>> getFriends({bool refresh = false}) async {
     return ImclientPlatform.instance.getFriends(refresh);
   }
@@ -823,44 +845,44 @@ class Imclient {
   }
 
   ///删除好友
-  static Future<void> deleteFriend(
+  static void deleteFriend(
       String userId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.deleteFriend(userId, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.deleteFriend(userId, successCallback, errorCallback);
   }
 
   ///发送好友请求
-  static Future<void> sendFriendRequest(
+  static void sendFriendRequest(
       String userId,
       String reason,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.sendFriendRequest(userId, reason, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.sendFriendRequest(userId, reason, successCallback, errorCallback);
   }
 
   ///处理好友请求
-  static Future<void> handleFriendRequest(
+  static void handleFriendRequest(
       String userId,
       bool accept,
       String extra,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.handleFriendRequest(userId, accept, extra, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.handleFriendRequest(userId, accept, extra, successCallback, errorCallback);
   }
 
   ///获取好友备注名
-  static Future<String> getFriendAlias(String userId) async {
+  static Future<String?> getFriendAlias(String userId) async {
     return ImclientPlatform.instance.getFriendAlias(userId);
   }
 
   ///设置好友备注名
-  static Future<void> setFriendAlias(
+  static void setFriendAlias(
       String friendId,
-      String alias,
+      String? alias,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setFriendAlias(friendId, alias, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setFriendAlias(friendId, alias, successCallback, errorCallback);
   }
 
   ///获取好友extra信息
@@ -874,17 +896,17 @@ class Imclient {
   }
 
   ///获取黑名单列表
-  static Future<List<String>?> getBlackList({bool refresh = false}) async {
+  static Future<List<String>> getBlackList({bool refresh = false}) async {
     return ImclientPlatform.instance.getBlackList(refresh: refresh);
   }
 
   ///设置/取消用户黑名单
-  static Future<void> setBlackList(
+  static void setBlackList(
       String userId,
       bool isBlackListed,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setBlackList(userId, isBlackListed, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setBlackList(userId, isBlackListed, successCallback, errorCallback);
   }
 
   ///获取群成员列表
@@ -900,11 +922,11 @@ class Imclient {
   }
 
   ///异步获取群成员列表
-  static Future<void> getGroupMembersAsync(String groupId,
+  static void getGroupMembersAsync(String groupId,
       {bool refresh = false,
         required OperationSuccessGroupMembersCallback successCallback,
-        required OperationFailureCallback errorCallback}) async {
-    return ImclientPlatform.instance.getGroupMembersAsync(groupId, refresh: refresh, successCallback: successCallback, errorCallback: errorCallback);
+        required OperationFailureCallback errorCallback}) {
+    ImclientPlatform.instance.getGroupMembersAsync(groupId, refresh: refresh, successCallback: successCallback, errorCallback: errorCallback);
   }
 
   ///获取群信息
@@ -914,21 +936,21 @@ class Imclient {
   }
 
   ///异步获取群信息
-  static Future<void> getGroupInfoAsync(String groupId,
+  static void getGroupInfoAsync(String groupId,
       {bool refresh = false,
         required OperationSuccessGroupInfoCallback successCallback,
-        required OperationFailureCallback errorCallback}) async {
-    return ImclientPlatform.instance.getGroupInfoAsync(groupId, refresh: refresh, successCallback: successCallback, errorCallback: errorCallback);
+        required OperationFailureCallback errorCallback}) {
+    ImclientPlatform.instance.getGroupInfoAsync(groupId, refresh: refresh, successCallback: successCallback, errorCallback: errorCallback);
   }
 
   ///获取单个群成员信息
-  static Future<GroupMember> getGroupMember(
+  static Future<GroupMember?> getGroupMember(
       String groupId, String memberId) async {
     return ImclientPlatform.instance.getGroupMember(groupId, memberId);
   }
 
   ///创建群组，groupId可以为空。
-  static Future<void> createGroup(
+  static void createGroup(
       String? groupId,
       String? groupName,
       String? groupPortrait,
@@ -937,132 +959,132 @@ class Imclient {
       OperationSuccessStringCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.createGroup(groupId, groupName, groupPortrait, type, members, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.createGroup(groupId, groupName, groupPortrait, type, members, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
   ///添加群成员
-  static Future<void> addGroupMembers(
+  static void addGroupMembers(
       String groupId,
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.addGroupMembers(groupId, members, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.addGroupMembers(groupId, members, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
   ///移除群成员
-  static Future<void> kickoffGroupMembers(
+  static void kickoffGroupMembers(
       String groupId,
       List<String> members,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.kickoffGroupMembers(groupId, members, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.kickoffGroupMembers(groupId, members, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
   ///退出群组
-  static Future<void> quitGroup(
+  static void quitGroup(
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.quitGroup(groupId, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.quitGroup(groupId, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
   ///解散群组
-  static Future<void> dismissGroup(
+  static void dismissGroup(
       String groupId,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.dismissGroup(groupId, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.dismissGroup(groupId, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
   ///修改群组信息
-  static Future<void> modifyGroupInfo(
+  static void modifyGroupInfo(
       String groupId,
       ModifyGroupInfoType modifyType,
       String newValue,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.modifyGroupInfo(groupId, modifyType, newValue, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.modifyGroupInfo(groupId, modifyType, newValue, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
   ///修改自己的群名片
-  static Future<void> modifyGroupAlias(
+  static void modifyGroupAlias(
       String groupId,
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.modifyGroupAlias(groupId, newAlias, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.modifyGroupAlias(groupId, newAlias, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
   ///修改群成员的群名片
-  static Future<void> modifyGroupMemberAlias(
+  static void modifyGroupMemberAlias(
       String groupId,
       String memberId,
       String newAlias,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.modifyGroupMemberAlias(groupId, memberId, newAlias, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.modifyGroupMemberAlias(groupId, memberId, newAlias, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
   ///转移群组
-  static Future<void> transferGroup(
+  static void transferGroup(
       String groupId,
       String newOwner,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.transferGroup(groupId, newOwner, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.transferGroup(groupId, newOwner, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
   ///设置/取消群管理员
-  static Future<void> setGroupManager(
+  static void setGroupManager(
       String groupId,
       bool isSet,
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.setGroupManager(groupId, isSet, memberIds, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.setGroupManager(groupId, isSet, memberIds, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
   ///禁言/取消禁言群成员
-  static Future<void> muteGroupMember(
+  static void muteGroupMember(
       String groupId,
       bool isSet,
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.muteGroupMember(groupId, isSet, memberIds, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.muteGroupMember(groupId, isSet, memberIds, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
   ///设置/取消群白名单
-  static Future<void> allowGroupMember(
+  static void allowGroupMember(
       String groupId,
       bool isSet,
       List<String> memberIds,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback,
       {List<int>? notifyLines,
-        MessageContent? notifyContent}) async {
-    return ImclientPlatform.instance.allowGroupMember(groupId, isSet, memberIds,
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.allowGroupMember(groupId, isSet, memberIds,
         successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
@@ -1070,10 +1092,10 @@ class Imclient {
     return ImclientPlatform.instance.getGroupRemark(groupId);
   }
 
-  static Future<void> setGroupRemark(String groupId, String remark,
+  static void setGroupRemark(String groupId, String remark,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setGroupRemark(groupId, remark,
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setGroupRemark(groupId, remark,
         successCallback, errorCallback);
   }
 
@@ -1088,12 +1110,12 @@ class Imclient {
   }
 
   ///设置/取消收藏群组
-  static Future<void> setFavGroup(
+  static void setFavGroup(
       String groupId,
       bool isFav,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setFavGroup(groupId, isFav, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setFavGroup(groupId, isFav, successCallback, errorCallback);
   }
 
   ///获取用户设置
@@ -1107,21 +1129,21 @@ class Imclient {
   }
 
   ///设置用户设置
-  static Future<void> setUserSetting(
+  static void setUserSetting(
       int scope,
       String key,
       String value,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setUserSetting(scope, key, value, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setUserSetting(scope, key, value, successCallback, errorCallback);
   }
 
   ///修改当前用户信息
-  static Future<void> modifyMyInfo(
+  static void modifyMyInfo(
       Map<ModifyMyInfoType, String> values,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.modifyMyInfo(values, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.modifyMyInfo(values, successCallback, errorCallback);
   }
 
   ///是否全局静音
@@ -1130,56 +1152,56 @@ class Imclient {
   }
 
   ///设置/取消全局静音
-  static Future<void> setGlobalSilent(
+  static void setGlobalSilent(
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setGlobalSilent(isSilent, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setGlobalSilent(isSilent, successCallback, errorCallback);
   }
 
   static Future<bool> isVoipNotificationSilent() async {
     return ImclientPlatform.instance.isVoipNotificationSilent();
   }
 
-  static Future<void> setVoipNotificationSilent(
+  static void setVoipNotificationSilent(
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setVoipNotificationSilent(isSilent, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setVoipNotificationSilent(isSilent, successCallback, errorCallback);
   }
 
   static Future<bool> isEnableSyncDraft() async {
     return ImclientPlatform.instance.isEnableSyncDraft();
   }
 
-  static Future<void> setEnableSyncDraft(
+  static void setEnableSyncDraft(
       bool enable,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setEnableSyncDraft(enable, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setEnableSyncDraft(enable, successCallback, errorCallback);
   }
 
   ///获取免打扰时间段
-  static Future<void> getNoDisturbingTimes(
+  static void getNoDisturbingTimes(
       OperationSuccessIntPairCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.getNoDisturbingTimes(successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.getNoDisturbingTimes(successCallback, errorCallback);
   }
 
   ///设置免打扰时间段
-  static Future<void> setNoDisturbingTimes(
+  static void setNoDisturbingTimes(
       int startMins,
       int endMins,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setNoDisturbingTimes(startMins, endMins, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setNoDisturbingTimes(startMins, endMins, successCallback, errorCallback);
   }
 
   ///取消免打扰时间段
-  static Future<void> clearNoDisturbingTimes(
+  static void clearNoDisturbingTimes(
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.clearNoDisturbingTimes(successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.clearNoDisturbingTimes(successCallback, errorCallback);
   }
 
   static Future<bool> isNoDisturbing() async {
@@ -1192,11 +1214,11 @@ class Imclient {
   }
 
   ///设置推送隐藏详情
-  static Future<void> setHiddenNotificationDetail(
+  static void setHiddenNotificationDetail(
       bool isHidden,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setHiddenNotificationDetail(isHidden, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setHiddenNotificationDetail(isHidden, successCallback, errorCallback);
   }
 
   ///是否群组隐藏用户名
@@ -1205,23 +1227,23 @@ class Imclient {
   }
 
   ///设置是否群组隐藏用户名
-  static Future<void> setHiddenGroupMemberName(
+  static void setHiddenGroupMemberName(
       bool isHidden,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setHiddenGroupMemberName(isHidden, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setHiddenGroupMemberName(isHidden, successCallback, errorCallback);
   }
 
-  static Future<void> getMyGroups(
+  static void getMyGroups(
       OperationSuccessStringListCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.getMyGroups(successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.getMyGroups(successCallback, errorCallback);
   }
 
-  static Future<void> getCommonGroups(String userId,
+  static void getCommonGroups(String userId,
       OperationSuccessStringListCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.getCommonGroups(userId, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.getCommonGroups(userId, successCallback, errorCallback);
   }
 
 
@@ -1231,11 +1253,11 @@ class Imclient {
   }
 
   ///设置当前用户是否启用回执功能，仅当服务支持回执功能有效
-  static Future<void> setUserEnableReceipt(
+  static void setUserEnableReceipt(
       bool isEnable,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setUserEnableReceipt(isEnable, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setUserEnableReceipt(isEnable, successCallback, errorCallback);
   }
 
   ///获取收藏好友列表
@@ -1249,57 +1271,57 @@ class Imclient {
   }
 
   ///设置收藏用户
-  static Future<void> setFavUser(
+  static void setFavUser(
       String userId,
       bool isFav,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.setFavUser(userId, isFav, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setFavUser(userId, isFav, successCallback, errorCallback);
   }
 
   ///加入聊天室
-  static Future<void> joinChatroom(
+  static void joinChatroom(
       String chatroomId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.joinChatroom(chatroomId, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.joinChatroom(chatroomId, successCallback, errorCallback);
   }
 
   ///退出聊天室
-  static Future<void> quitChatroom(
+  static void quitChatroom(
       String chatroomId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.quitChatroom(chatroomId, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.quitChatroom(chatroomId, successCallback, errorCallback);
   }
 
   ///获取聊天室信息
-  static Future<void> getChatroomInfo(
+  static void getChatroomInfo(
       String chatroomId,
       int updateDt,
       OperationSuccessChatroomInfoCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.getChatroomInfo(chatroomId, updateDt, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.getChatroomInfo(chatroomId, updateDt, successCallback, errorCallback);
   }
 
   ///获取聊天室成员信息
-  static Future<void> getChatroomMemberInfo(
+  static void getChatroomMemberInfo(
       String chatroomId,
       OperationSuccessChatroomMemberInfoCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.getChatroomMemberInfo(chatroomId, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.getChatroomMemberInfo(chatroomId, successCallback, errorCallback);
   }
 
   ///创建频道
-  static Future<void> createChannel(
+  static void createChannel(
       String channelName,
       String channelPortrait,
       int status,
       String desc,
       String extra,
       OperationSuccessChannelInfoCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.createChannel(channelName, channelPortrait, status, desc, extra, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.createChannel(channelName, channelPortrait, status, desc, extra, successCallback, errorCallback);
   }
 
   ///获取频道信息
@@ -1309,21 +1331,21 @@ class Imclient {
   }
 
   ///修改频道信息
-  static Future<void> modifyChannelInfo(
+  static void modifyChannelInfo(
       String channelId,
       ModifyChannelInfoType modifyType,
       String newValue,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.modifyChannelInfo(channelId, modifyType, newValue, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.modifyChannelInfo(channelId, modifyType, newValue, successCallback, errorCallback);
   }
 
   ///搜索频道
-  static Future<void> searchChannel(
+  static void searchChannel(
       String keyword,
       OperationSuccessChannelInfosCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.searchChannel(keyword, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.searchChannel(keyword, successCallback, errorCallback);
   }
 
   ///是否是已订阅频道
@@ -1332,12 +1354,12 @@ class Imclient {
   }
 
   ///订阅/取消订阅频道
-  static Future<void> listenChannel(
+  static void listenChannel(
       String channelId,
       bool isListen,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.listenChannel(channelId, isListen, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.listenChannel(channelId, isListen, successCallback, errorCallback);
   }
 
   ///获取我的频道
@@ -1351,11 +1373,11 @@ class Imclient {
   }
 
   ///销毁频道
-  static Future<void> destroyChannel(
+  static void destroyChannel(
       String channelId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.destroyChannel(channelId, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.destroyChannel(channelId, successCallback, errorCallback);
   }
 
   ///获取PC端在线状态
@@ -1364,11 +1386,11 @@ class Imclient {
   }
 
   ///踢掉PC客户端
-  static Future<void> kickoffPCClient(
+  static void kickoffPCClient(
       String clientId,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.kickoffPCClient(clientId, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.kickoffPCClient(clientId, successCallback, errorCallback);
   }
 
   ///是否设置当PC在线时停止手机通知
@@ -1377,92 +1399,92 @@ class Imclient {
   }
 
   ///设置/取消设置当PC在线时停止手机通知
-  static Future<void> muteNotificationWhenPcOnline(
+  static void muteNotificationWhenPcOnline(
       bool isMute,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.muteNotificationWhenPcOnline(isMute, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.muteNotificationWhenPcOnline(isMute, successCallback, errorCallback);
   }
 
   ///获取会话文件记录
-  static Future<void> getConversationFiles(
+  static void getConversationFiles(
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
       {Conversation? conversation,
-        String? fromUser}) async {
-    return ImclientPlatform.instance.getConversationFiles(beforeMessageUid, count, successCallback, errorCallback, conversation: conversation, fromUser: fromUser);
+        String? fromUser}) {
+    ImclientPlatform.instance.getConversationFiles(beforeMessageUid, count, successCallback, errorCallback, conversation: conversation, fromUser: fromUser);
   }
 
   ///获取我的文件记录
-  static Future<void> getMyFiles(
+  static void getMyFiles(
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.getMyFiles(beforeMessageUid, count, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.getMyFiles(beforeMessageUid, count, successCallback, errorCallback);
   }
 
   ///删除文件记录
-  static Future<void> deleteFileRecord(
+  static void deleteFileRecord(
       int messageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.deleteFileRecord(messageUid, count, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.deleteFileRecord(messageUid, count, successCallback, errorCallback);
   }
 
   ///搜索文件记录
-  static Future<void> searchFiles(
+  static void searchFiles(
       String keyword,
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
       {Conversation? conversation,
-        String? fromUser}) async {
-    return ImclientPlatform.instance.searchFiles(keyword, beforeMessageUid, count, successCallback, errorCallback, conversation: conversation, fromUser: fromUser);
+        String? fromUser}) {
+    ImclientPlatform.instance.searchFiles(keyword, beforeMessageUid, count, successCallback, errorCallback, conversation: conversation, fromUser: fromUser);
   }
 
   ///搜索我的文件记录
-  static Future<void> searchMyFiles(
+  static void searchMyFiles(
       String keyword,
       int beforeMessageUid,
       int count,
       OperationSuccessFilesCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.searchMyFiles(keyword, beforeMessageUid, count, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.searchMyFiles(keyword, beforeMessageUid, count, successCallback, errorCallback);
   }
 
   ///获取经过授权的媒体路径
-  static Future<void> getAuthorizedMediaUrl(
+  static void getAuthorizedMediaUrl(
       String mediaPath,
       int messageUid,
       int mediaType,
       OperationSuccessStringCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.getAuthorizedMediaUrl(mediaPath, messageUid, mediaType, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.getAuthorizedMediaUrl(mediaPath, messageUid, mediaType, successCallback, errorCallback);
   }
 
-  static Future<void> getAuthCode(
+  static void getAuthCode(
       String applicationId,
       int type,
       String host,
       OperationSuccessStringCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.getAuthCode(applicationId, type, host, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.getAuthCode(applicationId, type, host, successCallback, errorCallback);
   }
 
-  static Future<void> configApplication(
+  static void configApplication(
       String applicationId,
       int type,
       int timestamp,
       String nonce,
       String signature,
       OperationSuccessVoidCallback successCallback,
-      OperationFailureCallback errorCallback) async {
-    return ImclientPlatform.instance.configApplication(applicationId, type, timestamp, nonce, signature, successCallback, errorCallback);
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.configApplication(applicationId, type, timestamp, nonce, signature, successCallback, errorCallback);
   }
 
   ///转换amr数据为wav数据，仅在iOS平台有效
