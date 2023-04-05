@@ -1,7 +1,7 @@
 class Friend {
-  Friend();
-  String userId;
-  String alias;
-  String extra;
+  Friend({this.timestamp = 0});
+  late String userId;
+  String? alias;
+  String? extra;
   int timestamp;
 }

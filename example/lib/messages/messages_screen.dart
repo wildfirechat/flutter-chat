@@ -23,9 +23,9 @@ class MessagesScreen extends StatefulWidget {
 }
 
 class _State extends State<MessagesScreen> {
-  List<MessageModel> models = List<MessageModel>();
+  List<MessageModel> models = <MessageModel>[];
   final EventBus _eventBus = Imclient.IMEventBus;
-  StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
+  late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
 
   bool isLoading = false;
 
@@ -86,7 +86,7 @@ class _State extends State<MessagesScreen> {
       return;
 
     isLoading = true;
-    int fromIndex = 0;
+    int? fromIndex = 0;
     if(models.isNotEmpty) {
       fromIndex = models.last.message.messageId;
     } else {
@@ -102,7 +102,7 @@ class _State extends State<MessagesScreen> {
         return;
       } else {
         fromIndex = models.last.message.messageUid;
-        Imclient.getRemoteMessages(widget.conversation, fromIndex, 20, (messages) {
+        Imclient.getRemoteMessages(widget.conversation, fromIndex!, 20, (messages) {
           if(messages == null || messages.isEmpty) {
             noMoreRemoteHistoryMsg = true;
           }
@@ -114,7 +114,7 @@ class _State extends State<MessagesScreen> {
         });
       }
     } else {
-      Imclient.getMessages(widget.conversation, fromIndex, 20).then((
+      Imclient.getMessages(widget.conversation, fromIndex!, 20).then((
           value) {
         _appendMessage(value);
         isLoading = false;
@@ -158,8 +158,8 @@ class _State extends State<MessagesScreen> {
                 children: [
                   IconButton(icon: Icon(Icons.record_voice_over), onPressed: null),
                   Expanded(child: TextField(controller: textEditingController,onSubmitted: (text){
-                    TextMessageContent txt = TextMessageContent(text:text);
-                    Imclient.sendMessage(widget.conversation, txt).then((value) {
+                    TextMessageContent txt = TextMessageContent(text);
+                    Imclient.sendMessage(widget.conversation, txt, successCallback: (int messageUid, int timestamp){}, errorCallback: (int errorCode) {}).then((value) {
                       if(value != null) {
                         _appendMessage([value], front: true);
                       }

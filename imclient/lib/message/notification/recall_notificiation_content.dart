@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import '../../imclient.dart';
 import '../../model/conversation.dart';
@@ -20,22 +21,30 @@ const recallNotificationContentMeta = MessageContentMeta(
     RecallNotificationContentCreator);
 
 class RecallNotificationContent extends NotificationMessageContent {
-  int messageUid;
-  String operatorId;
-  String originalSender;
-  int originalContentType;
-  String originalSearchableContent;
-  String originalContent;
-  String originalExtra;
-  int originalMessageTimestamp;
+  late int messageUid;
+  late String operatorId;
+  String? originalSender;
+  int? originalContentType;
+  String? originalSearchableContent;
+  String? originalContent;
+  String? originalExtra;
+  int? originalMessageTimestamp;
 
   @override
   Future<void> decode(MessagePayload payload) async {
     super.decode(payload);
-    operatorId = payload.content;
-    messageUid = int.parse(utf8.decode(payload.binaryContent));
+    if(payload.content != null) {
+      operatorId = payload.content!;
+    } else {
+      operatorId = "";
+    }
+    if(payload.binaryContent != null) {
+      messageUid = int.parse(utf8.decode(payload.binaryContent!));
+    } else {
+      messageUid = 0;
+    }
     if (extra != null) {
-      var map = json.decode(extra);
+      var map = json.decode(extra!);
       originalSender = map['s'];
       originalContentType = map['t'];
       originalSearchableContent = map['sc'];
@@ -54,18 +63,17 @@ class RecallNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
     payload.content = operatorId;
-    payload.binaryContent = utf8.encode(messageUid.toString());
+    payload.binaryContent = Uint8List.fromList(utf8.encode(messageUid.toString()));
     return payload;
   }
 
   @override
   Future<String> digest(Message message) async {
-    UserInfo userInfo;
-    if (message.conversation != null &&
-        message.conversation.conversationType == ConversationType.Group) {
+    UserInfo? userInfo;
+    if (message.conversation.conversationType == ConversationType.Group) {
       userInfo = await Imclient.getUserInfo(operatorId,
           groupId: message.conversation.target);
     } else {
@@ -73,14 +81,7 @@ class RecallNotificationContent extends NotificationMessageContent {
     }
     String name;
     if (userInfo != null) {
-      if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-        name = userInfo.friendAlias;
-      } else if (userInfo.groupAlias != null &&
-          userInfo.groupAlias.isNotEmpty) {
-        name = userInfo.groupAlias;
-      } else {
-        name = userInfo.displayName;
-      }
+      name = userInfo.getReadableName();
     } else {
       name = operatorId;
     }

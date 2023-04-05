@@ -6,7 +6,7 @@ import 'message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent LocationMessageContentCreator() {
-  return new LocationMessageContent();
+  return LocationMessageContent();
 }
 
 const locationMessageContentMeta = MessageContentMeta(
@@ -15,36 +15,49 @@ const locationMessageContentMeta = MessageContentMeta(
     LocationMessageContentCreator);
 
 class LocationMessageContent extends MessageContent {
-  double latitude;
-  double longitude;
-  String title;
-  Image thumbnail;
+  late double latitude;
+  late double longitude;
+  late String title;
+  Image? thumbnail;
 
   @override
   Future<void> decode(MessagePayload payload) async {
     super.decode(payload);
-    title = payload.searchableContent;
-    thumbnail = decodeJpg(payload.binaryContent);
-    var map = json.decode(payload.content);
-    latitude = map['lat'];
-    longitude = map['long'];
+    if(payload.searchableContent != null) {
+      title = payload.searchableContent!;
+    } else {
+      title = "";
+    }
+    if(payload.binaryContent != null) {
+      thumbnail = decodeJpg(payload.binaryContent!);
+    }
+    if(payload.content != null) {
+      var map = json.decode(payload.content!);
+      latitude = map['lat'];
+      longitude = map['long'];
+    } else {
+      latitude = 0;
+      longitude = 0;
+    }
   }
 
   @override
   MessageContentMeta get meta => locationMessageContentMeta;
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
     payload.searchableContent = title;
     payload.content = json.encode({'lat': latitude, 'long': longitude});
-    payload.binaryContent = encodeJpg(thumbnail, quality: 35);
+    if(thumbnail != null) {
+      payload.binaryContent = encodeJpg(thumbnail!, quality: 35);
+    }
     return payload;
   }
 
   @override
   Future<String> digest(Message message) async {
-    if (title != null && title.isNotEmpty) {
+    if (title.isNotEmpty) {
       return '[位置]:$title';
     }
 

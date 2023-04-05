@@ -16,7 +16,7 @@ const soundContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_SOUND,
 
 
 class SoundMessageContent extends MediaMessageContent {
-  int duration;
+  late int duration;
 
   @override
   MessageContentMeta get meta => soundContentMeta;
@@ -25,7 +25,7 @@ class SoundMessageContent extends MediaMessageContent {
   void decode(MessagePayload payload) {
     super.decode(payload);
     if (payload.content != null) {
-      Map<dynamic, dynamic> map = json.decode(payload.content);
+      Map<dynamic, dynamic> map = json.decode(payload.content!);
       duration = map['duration'];
     } else {
       duration = 0;
@@ -33,8 +33,8 @@ class SoundMessageContent extends MediaMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
     payload.searchableContent = '[语音]';
     payload.content = json.encode({'duration':duration});
     return payload;

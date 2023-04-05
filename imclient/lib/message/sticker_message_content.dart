@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import '../model/message_payload.dart';
 import 'media_message_content.dart';
@@ -13,8 +14,8 @@ const stickerContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_STICKER,
     MessageFlag.PERSIST_AND_COUNT, StickerMessageContentCreator);
 
 class StickerMessageContent extends MediaMessageContent {
-  int width;
-  int height;
+  late int width;
+  late int height;
 
   @override
   MessageContentMeta get meta => stickerContentMeta;
@@ -22,16 +23,22 @@ class StickerMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    width = map['x'];
-    height = map['y'];
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      width = map['x'];
+      height = map['y'];
+    } else {
+      width = 0;
+      height = 0;
+    }
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
     payload.searchableContent = '[动态表情]';
-    payload.binaryContent = utf8.encode(json.encode({'x': width, 'y': height}));
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode({'x': width, 'y': height})));
     return payload;
   }
 

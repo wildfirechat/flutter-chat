@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import '../../../imclient.dart';
 import '../../../model/message_payload.dart';
@@ -19,17 +20,24 @@ const changeGroupNameNotificationContentMeta = MessageContentMeta(
     ChangeGroupNameNotificationContentCreator);
 
 class ChangeGroupNameNotificationContent extends NotificationMessageContent {
-  String groupId;
-  String operateUser;
-  String name;
+  late String groupId;
+  late String operateUser;
+  late String name;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    operateUser = map['o'];
-    groupId = map['g'];
-    name = map['n'];
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      operateUser = map['o'];
+      groupId = map['g'];
+      name = map['n'];
+    } else {
+      groupId = "";
+      operateUser = "";
+      name = "";
+    }
   }
 
   @override
@@ -38,13 +46,13 @@ class ChangeGroupNameNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
-    Map<String, dynamic> map = new Map();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
+    Map<String, dynamic> map = {};
     map['o'] = operateUser;
     map['g'] = groupId;
     map['n'] = name;
-    payload.binaryContent = utf8.encode(json.encode(map));
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -53,20 +61,10 @@ class ChangeGroupNameNotificationContent extends NotificationMessageContent {
     if (operateUser == await Imclient.currentUserId) {
       return '你 修改群名片为: $name';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(operateUser, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          return '${userInfo.friendAlias} 修改群名片为: $name';
-        } else if (userInfo.groupAlias != null &&
-            userInfo.groupAlias.isNotEmpty) {
-          return '${userInfo.groupAlias} 修改群名片为: $name';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          return '${userInfo.displayName} 修改群名片为: $name';
-        } else {
-          return '$operateUser 修改群名片为: $name';
-        }
+        return '${userInfo.getReadableName()} 修改群名片为: $name';
       } else {
         return '$operateUser 修改群名片为: $name';
       }

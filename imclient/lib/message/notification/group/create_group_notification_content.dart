@@ -10,7 +10,7 @@ import '../notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent CreateGroupNotificationContentCreator() {
-  return new CreateGroupNotificationContent();
+  return CreateGroupNotificationContent();
 }
 
 const createGroupNotificationContentMeta = MessageContentMeta(
@@ -19,17 +19,24 @@ const createGroupNotificationContentMeta = MessageContentMeta(
     CreateGroupNotificationContentCreator);
 
 class CreateGroupNotificationContent extends NotificationMessageContent {
-  String groupId;
-  String creator;
-  String groupName;
+  late String groupId;
+  late String creator;
+  late String groupName;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    creator = map['o'];
-    groupId = map['g'];
-    groupName = map['n'];
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      creator = map['o'];
+      groupId = map['g'];
+      groupName = map['n'];
+    } else {
+      creator = "";
+      groupId = "";
+      groupName = "";
+    }
   }
 
   @override
@@ -38,13 +45,13 @@ class CreateGroupNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
-    Map<String, dynamic> map = new Map();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
+    Map<String, dynamic> map = {};
     map['o'] = creator;
     map['g'] = groupId;
     map['n'] = groupName;
-    payload.binaryContent = new Uint8List.fromList(json.encode(map).codeUnits);
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -53,20 +60,10 @@ class CreateGroupNotificationContent extends NotificationMessageContent {
     if (creator == await Imclient.currentUserId) {
       return '你 创建了群组';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(creator, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          return '${userInfo.friendAlias} 创建了群组';
-        } else if (userInfo.groupAlias != null &&
-            userInfo.groupAlias.isNotEmpty) {
-          return '${userInfo.groupAlias} 创建了群组';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          return '${userInfo.displayName} 创建了群组';
-        } else {
-          return '$creator 创建了群组';
-        }
+        return '${userInfo.getReadableName()} 创建了群组';
       } else {
         return '$creator 创建了群组';
       }

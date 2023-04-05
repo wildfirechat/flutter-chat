@@ -7,19 +7,23 @@ import '../message_content.dart';
 import 'notification_message_content.dart';
 
 MessageContent TipNotificationContentCreator() {
-  return new TipNotificationContent();
+  return TipNotificationContent();
 }
 
 const tipNotificationContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_TIP,
     MessageFlag.PERSIST, TipNotificationContentCreator);
 
 class TipNotificationContent extends NotificationMessageContent {
-  String tip;
+  late String tip;
 
   @override
   Future<void> decode(MessagePayload payload) async {
     super.decode(payload);
-    tip = payload.content;
+    if(payload.content != null) {
+      tip = payload.content!;
+    } else {
+      tip = "";
+    }
   }
 
   @override
@@ -31,8 +35,8 @@ class TipNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
     payload.content = tip;
     return payload;
   }

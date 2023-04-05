@@ -20,29 +20,30 @@ import 'messages/messages_screen.dart';
 class ConversationListWidget extends StatefulWidget {
   Function(int unreadCount) unreadCountCallback;
 
-  ConversationListWidget({this.unreadCountCallback});
+  ConversationListWidget(this.unreadCountCallback, {Key? key}) : super(key: key);
 
   @override
-  _ConversationListWidgetState createState() => _ConversationListWidgetState();
+  ConversationListWidgetState createState() => ConversationListWidgetState();
 }
 
-class _ConversationListWidgetState extends State<ConversationListWidget> {
-  List<ConversationInfo> conversationInfos = new List();
-  StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
-  StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
-  StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
-  StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
-  StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
-  StreamSubscription<ClearConversationUnreadEvent> _clearConveratonUnreadSubscription;
-  StreamSubscription<ClearConversationsUnreadEvent> _clearConveratonsUnreadSubscription;
+class ConversationListWidgetState extends State<ConversationListWidget> {
+  List<ConversationInfo> conversationInfos = [];
+  late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
+  late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
+  late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
+  late StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
+  late StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
+  late StreamSubscription<ClearConversationUnreadEvent> _clearConveratonUnreadSubscription;
+  late StreamSubscription<ClearConversationsUnreadEvent> _clearConveratonsUnreadSubscription;
   final EventBus _eventBus = Imclient.IMEventBus;
 
   @override
   void initState() {
     super.initState();
     _connectionStatusSubscription = _eventBus.on<ConnectionStatusChangedEvent>().listen((event) {
-      if(event.connectionStatus == kConnectionStatusConnected)
+      if(event.connectionStatus == kConnectionStatusConnected) {
         _loadConversation();
+      }
     });
 
     _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
@@ -60,14 +61,13 @@ class _ConversationListWidgetState extends State<ConversationListWidget> {
 
   void _loadConversation() {
     Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((value){
-      if(widget.unreadCountCallback != null) {
-        int unreadCount = 0;
-        value.forEach((element) {
-          if(!element.isSilent)
-            unreadCount += element.unreadCount.unread;
-        });
-        widget.unreadCountCallback(unreadCount);
-      }
+      int unreadCount = 0;
+      value.forEach((element) {
+        if(!element.isSilent) {
+          unreadCount += element.unreadCount.unread;
+        }
+      });
+      widget.unreadCountCallback(unreadCount);
       setState(() {
         conversationInfos = value;
       });
@@ -111,44 +111,49 @@ class ConversationListItem extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _ConversationListItemState(conversationInfo);
+    return ConversationListItemState(conversationInfo);
   }
+
 }
 
-class _ConversationListItemState extends State<ConversationListItem> {
-  ConversationInfo conversationInfo;
-  UserInfo userInfo;
-  GroupInfo groupInfo;
-  ChannelInfo channelInfo;
+class ConversationListItemState extends State<ConversationListItem> {
+  late ConversationInfo conversationInfo;
+  UserInfo? userInfo;
+  GroupInfo? groupInfo;
+  ChannelInfo? channelInfo;
 
-  UserInfo fromUser;
+  UserInfo? fromUser;
 
-  String digest = "";
+  String? digest = "";
+  bool disposed = false;
 
   var defaultAvatar = 'assets/images/user_avatar_default.png';
 
   final EventBus _eventBus = Imclient.IMEventBus;
 
-  _ConversationListItemState(this.conversationInfo) {
+  ConversationListItemState(this.conversationInfo) {
    if(conversationInfo.conversation.conversationType == ConversationType.Single) {
      userInfo = Cache.getUserInfo(conversationInfo.conversation.target);
      Imclient.getUserInfo(conversationInfo.conversation.target).then((value) {
        if(value != null && value != userInfo && value.userId == conversationInfo.conversation.target) {
          Cache.putUserInfo(value);
-         setState(() {
-           userInfo = value;
-         });
+         if(!disposed) {
+           setState(() {
+             userInfo = value;
+           });
+         }
        }
      });
-
    } else if(conversationInfo.conversation.conversationType == ConversationType.Group) {
      groupInfo = Cache.getGroupInfo(conversationInfo.conversation.target);
      Imclient.getGroupInfo(conversationInfo.conversation.target).then((value) {
        if(value != null && value != groupInfo && value.target == conversationInfo.conversation.target) {
          Cache.putGroupInfo(value);
-         setState(() {
-           groupInfo = value;
-         });
+         if(!disposed) {
+           setState(() {
+             groupInfo = value;
+           });
+         }
        }
      });
    } else if(conversationInfo.conversation.conversationType == ConversationType.Channel) {
@@ -156,22 +161,26 @@ class _ConversationListItemState extends State<ConversationListItem> {
        channelInfo = Cache.getChannelInfo(conversationInfo.conversation.target);
        if(value != null && value != channelInfo && value.channelId == conversationInfo.conversation.target) {
          Cache.putChannelInfo(value);
-         setState(() {
-           channelInfo = channelInfo;
-         });
+         if(!disposed) {
+           setState(() {
+             channelInfo = channelInfo;
+           });
+         }
        }
      });
    }
 
-   if(conversationInfo.lastMessage != null && conversationInfo.lastMessage.content != null) {
+   if(conversationInfo.lastMessage != null && conversationInfo.lastMessage!.content != null) {
      digest = Cache.getConversationDigest(conversationInfo.conversation);
      print('digest is $digest');
-     conversationInfo.lastMessage.content.digest(conversationInfo.lastMessage).then((value) {
+     conversationInfo.lastMessage!.content.digest(conversationInfo.lastMessage!).then((value) {
        if(digest != value) {
          Cache.putConversationDigest(conversationInfo.conversation, value);
-         setState(() {
-           digest = value;
-         });
+         if(!disposed) {
+           setState(() {
+             digest = value;
+           });
+         }
        }
      });
    }
@@ -179,33 +188,33 @@ class _ConversationListItemState extends State<ConversationListItem> {
 
   @override
   Widget build(BuildContext context) {
-    String portrait;
-    String localPortrait;
-    String convTitle;
+    String? portrait;
+    String? localPortrait;
+    String? convTitle;
     if(conversationInfo.conversation.conversationType == ConversationType.Single) {
-      if(userInfo != null && userInfo.portrait != null && userInfo.portrait.isNotEmpty) {
-        portrait = userInfo.portrait;
-        convTitle = userInfo.displayName;
+      if(userInfo != null && userInfo!.portrait != null && userInfo!.portrait!.isNotEmpty) {
+        portrait = userInfo!.portrait!;
+        convTitle = userInfo!.displayName!;
       } else {
         convTitle = '私聊';
       }
       localPortrait = 'assets/images/user_avatar_default.png';
     } else if(conversationInfo.conversation.conversationType == ConversationType.Group) {
       if(groupInfo != null) {
-        if(groupInfo.portrait != null && groupInfo.portrait.isNotEmpty) {
-          portrait = groupInfo.portrait;
+        if(groupInfo!.portrait != null && groupInfo!.portrait!.isNotEmpty) {
+          portrait = groupInfo!.portrait!;
         }
-        if(groupInfo.name != null && groupInfo.name.isNotEmpty) {
-          convTitle = groupInfo.name;
+        if(groupInfo!.name != null && groupInfo!.name!.isNotEmpty) {
+          convTitle = groupInfo!.name!;
         }
       } else {
         convTitle = '群聊';
       }
       localPortrait = 'assets/images/group_avatar_default.png';
     } else if(conversationInfo.conversation.conversationType == ConversationType.Channel) {
-      if(channelInfo != null && channelInfo.portrait != null && channelInfo.portrait.isNotEmpty) {
-        portrait = channelInfo.portrait;
-        convTitle = channelInfo.name;
+      if(channelInfo != null && channelInfo!.portrait != null && channelInfo!.portrait!.isNotEmpty) {
+        portrait = channelInfo!.portrait!;
+        convTitle = channelInfo!.name!;
       } else {
         convTitle = '频道';
       }
@@ -227,7 +236,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
                   badge.Badge(
                     showBadge: conversationInfo.unreadCount.unread > 0,
                     badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
-                    child: portrait == null ? new Image.asset(localPortrait, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
+                    child: portrait == null ? new Image.asset(localPortrait!, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
                   ),
                   new Expanded(
                       child: new Container(
@@ -296,5 +305,11 @@ class _ConversationListItemState extends State<ConversationListItem> {
       context,
       new MaterialPageRoute(builder: (context) => new MessagesScreen(conversation)),
     );
+  }
+
+  @override
+  void dispose() {
+    disposed = true;
+    super.dispose();
   }
 }

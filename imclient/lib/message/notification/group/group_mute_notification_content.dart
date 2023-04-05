@@ -10,7 +10,7 @@ import '../notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent GroupMuteNotificationContentCreator() {
-  return new GroupMuteNotificationContent();
+  return GroupMuteNotificationContent();
 }
 
 const groupMuteNotificationContentMeta = MessageContentMeta(
@@ -19,18 +19,25 @@ const groupMuteNotificationContentMeta = MessageContentMeta(
     GroupMuteNotificationContentCreator);
 
 class GroupMuteNotificationContent extends NotificationMessageContent {
-  String groupId;
-  String creator;
+  late String groupId;
+  late String creator;
   //0 设置群禁言，1 取消群禁言。
-  String type;
+  late String type;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    creator = map['o'];
-    groupId = map['g'];
-    type = map['n'];
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      creator = map['o'];
+      groupId = map['g'];
+      type = map['n'];
+    } else {
+      creator = "";
+      groupId = "";
+      type = "0";
+    }
   }
 
   @override
@@ -39,13 +46,13 @@ class GroupMuteNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
-    Map<String, dynamic> map = new Map();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
+    Map<String, dynamic> map = {};
     map['o'] = creator;
     map['g'] = groupId;
     map['n'] = type;
-    payload.binaryContent = new Uint8List.fromList(json.encode(map).codeUnits);
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -61,19 +68,10 @@ class GroupMuteNotificationContent extends NotificationMessageContent {
     if (creator == await Imclient.currentUserId) {
       return '你 $str';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(creator, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          return '${userInfo.friendAlias} $str';
-        } else if (userInfo.groupAlias != null) {
-          return '${userInfo.groupAlias} $str';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          return '${userInfo.displayName} $str';
-        } else {
-          return '$creator $str';
-        }
+        return '${userInfo.getReadableName()} $str';
       } else {
         return '$creator $str';
       }

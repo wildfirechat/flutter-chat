@@ -31,16 +31,17 @@ enum MessageStatus {
 enum MessageDirection { MessageDirection_Send, MessageDirection_Receive }
 
 class Message {
-  int messageId;
-  int messageUid;
-  Conversation conversation;
-  String fromUser;
-  List<String> toUsers;
-  MessageContent content;
-  MessageDirection direction;
-  MessageStatus status;
-  int serverTime;
-  String localExtra;
+  Message({this.messageId = 0, this.messageUid = 0});
+  int? messageId;
+  int? messageUid;
+  late Conversation conversation;
+  late String fromUser;
+  List<String>? toUsers;
+  late MessageContent content;
+  late MessageDirection direction;
+  late MessageStatus status;
+  late int serverTime;
+  String? localExtra;
 
   @override
   String toString() {

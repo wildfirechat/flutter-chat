@@ -11,18 +11,22 @@ const ptextContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_P_TEXT,
     MessageFlag.PERSIST, PTextMessageContentCreator);
 
 class PTextMessageContent extends MessageContent {
-  PTextMessageContent({String text}) : this.text = text;
-  String text;
+  PTextMessageContent();
+  late String text;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    text = payload.searchableContent;
+    if(payload.searchableContent != null) {
+      text = payload.searchableContent!;
+    } else {
+      text = "";
+    }
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
     payload.searchableContent = text;
     return payload;
   }

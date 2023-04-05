@@ -10,8 +10,8 @@ class MessageModel {
   bool voicePlaying;
   bool highlighted;
   bool lastReadMessage;
-  Map<String, int> deliveryDict;
-  Map<String, int> readDict;
+  Map<String, int>? deliveryDict;
+  Map<String, int>? readDict;
   double deliveryRate;
   double readRate;
   bool selecting;

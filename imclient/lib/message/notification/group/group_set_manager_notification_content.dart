@@ -12,7 +12,7 @@ import '../notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent GroupSetManagerNotificationContentCreator() {
-  return new GroupSetManagerNotificationContent();
+  return GroupSetManagerNotificationContent();
 }
 
 const groupSetManagerNotificationContentMeta = MessageContentMeta(
@@ -21,21 +21,29 @@ const groupSetManagerNotificationContentMeta = MessageContentMeta(
     GroupSetManagerNotificationContentCreator);
 
 class GroupSetManagerNotificationContent extends NotificationMessageContent {
-  String groupId;
-  String operatorId;
+  late String groupId;
+  late String operatorId;
 
   /// 0 取消，1 设置。
-  String type;
-  List<String> memberIds;
+  late String type;
+  late List<String> memberIds;
 
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent));
-    operatorId = map['o'];
-    groupId = map['g'];
-    type = map['n'];
-    memberIds = Tools.convertDynamicList(map['ms']);
+    if(payload.binaryContent != null) {
+      Map<dynamic, dynamic> map = json.decode(
+          utf8.decode(payload.binaryContent!));
+      operatorId = map['o'];
+      groupId = map['g'];
+      type = map['n'];
+      memberIds = Tools.convertDynamicList(map['ms'])!;
+    } else {
+      operatorId = "";
+      groupId = "";
+      type = "0";
+      memberIds = [];
+    }
   }
 
   @override
@@ -44,14 +52,14 @@ class GroupSetManagerNotificationContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
-    Map<String, dynamic> map = new Map();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
+    Map<String, dynamic> map = {};
     map['o'] = operatorId;
     map['g'] = groupId;
     map['n'] = type;
     map['ms'] = memberIds;
-    payload.binaryContent = new Uint8List.fromList(json.encode(map).codeUnits);
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -61,22 +69,12 @@ class GroupSetManagerNotificationContent extends NotificationMessageContent {
     if (operatorId == await Imclient.currentUserId) {
       formatMsg = '你';
     } else {
-      UserInfo userInfo =
+      UserInfo? userInfo =
           await Imclient.getUserInfo(operatorId, groupId: groupId);
       if (userInfo != null) {
-        if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-          formatMsg = '${userInfo.friendAlias}';
-        } else if (userInfo.groupAlias != null &&
-            userInfo.groupAlias.isNotEmpty) {
-          formatMsg = '${userInfo.groupAlias}';
-        } else if (userInfo.displayName != null &&
-            userInfo.displayName.isNotEmpty) {
-          formatMsg = '${userInfo.displayName}';
-        } else {
-          formatMsg = '$operatorId';
-        }
+        formatMsg = userInfo.getReadableName();
       } else {
-        formatMsg = '$operatorId';
+        formatMsg = operatorId;
       }
     }
 
@@ -91,20 +89,10 @@ class GroupSetManagerNotificationContent extends NotificationMessageContent {
       if (memberId == await Imclient.currentUserId) {
         formatMsg = '$formatMsg 你';
       } else {
-        UserInfo userInfo =
+        UserInfo? userInfo =
             await Imclient.getUserInfo(memberId, groupId: groupId);
         if (userInfo != null) {
-          if (userInfo.friendAlias != null && userInfo.friendAlias.isNotEmpty) {
-            formatMsg = '$formatMsg ${userInfo.friendAlias}';
-          } else if (userInfo.groupAlias != null &&
-              userInfo.groupAlias.isNotEmpty) {
-            formatMsg = '$formatMsg ${userInfo.groupAlias}';
-          } else if (userInfo.displayName != null &&
-              userInfo.displayName.isNotEmpty) {
-            formatMsg = '$formatMsg ${userInfo.displayName}';
-          } else {
-            formatMsg = '$formatMsg $operatorId';
-          }
+          formatMsg = '$formatMsg ${userInfo.getReadableName()}';
         } else {
           formatMsg = '$formatMsg $operatorId';
         }

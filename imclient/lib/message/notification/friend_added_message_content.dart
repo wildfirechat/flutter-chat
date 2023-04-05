@@ -6,7 +6,7 @@ import 'notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent FriendAddedMessageContentCreator() {
-  return new FriendAddedMessageContent();
+  return FriendAddedMessageContent();
 }
 
 const friendAddedContentMeta = MessageContentMeta(MESSAGE_FRIEND_ADDED_NOTIFICATION,
@@ -19,8 +19,8 @@ class FriendAddedMessageContent extends NotificationMessageContent {
   }
 
   @override
-  Future<MessagePayload> encode() async {
-    MessagePayload payload = await super.encode();
+  MessagePayload encode() {
+    MessagePayload payload = super.encode();
     return payload;
   }
 

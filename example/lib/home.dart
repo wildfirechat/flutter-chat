@@ -36,7 +36,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   @override
   void initState() {
     super.initState();
-    pages = <Widget>[ConversationListWidget(unreadCountCallback: (int count) {
+    pages = <Widget>[ConversationListWidget((int count) {
       setState(() {
         unreadCount = count;
       });

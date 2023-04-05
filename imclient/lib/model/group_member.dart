@@ -5,10 +5,10 @@ class GroupMember {
       {this.type = GroupMemberType.Normal,
       this.createDt = 0,
       this.updateDt = 0});
-  String groupId;
-  String memberId;
+  late String groupId;
+  late String memberId;
   GroupMemberType type;
-  String alias;
+  String? alias;
   int createDt;
   int updateDt;
 }
