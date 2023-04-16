@@ -1386,6 +1386,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             ModifyMyInfoEntry entry = new ModifyMyInfoEntry();
             entry.type = ModifyMyInfoType.type((Integer)o);
             entry.value = (String) values.get(o);
+            list.add(entry);
         }
         ChatManager.Instance().modifyMyInfo(list, new GeneralVoidCallback(requestId));
     }
