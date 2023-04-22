@@ -159,7 +159,11 @@ class _State extends State<MessagesScreen> {
                   IconButton(icon: Icon(Icons.record_voice_over), onPressed: null),
                   Expanded(child: TextField(controller: textEditingController,onSubmitted: (text){
                     TextMessageContent txt = TextMessageContent(text);
-                    Imclient.sendMessage(widget.conversation, txt, successCallback: (int messageUid, int timestamp){}, errorCallback: (int errorCode) {}).then((value) {
+                    Imclient.sendMessage(widget.conversation, txt, successCallback: (int messageUid, int timestamp){
+                      print("scuccess");
+                    }, errorCallback: (int errorCode) {
+                      print("send failure!");
+                    }).then((value) {
                       if(value != null) {
                         _appendMessage([value], front: true);
                       }
