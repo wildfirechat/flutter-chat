@@ -47,10 +47,16 @@ class CompositeMessageContent extends MediaMessageContent {
         msg.conversation.conversationType =
         ConversationType.values[map['type']];
         msg.conversation.target = map['target'];
-        msg.conversation.line = map['line'];
+        if(map['line'] != null) {
+          msg.conversation.line = map['line'];
+        } else {
+          msg.conversation.line = 0;
+        }
 
         msg.fromUser = map['from'];
-        msg.toUsers = map['tos'];
+        if(map['tos'] != null && map['tos'] is List<dynamic>) {
+          msg.toUsers = map['tos'].cast<String>();
+        }
         msg.direction = MessageDirection.MessageDirection_Send;
         if (map['direction'] != null) {
           msg.direction = MessageDirection.values[map['direction']];
@@ -69,8 +75,10 @@ class CompositeMessageContent extends MediaMessageContent {
         if (map['cbc'] != null) {
           payload.binaryContent = const Base64Decoder().convert(map['cbc']);
         }
-        payload.mentionedType = map['cmt'];
-        payload.mentionedTargets = map['cmts'];
+        payload.mentionedType = map['cmt']??0;
+        if(map['cmts'] != null) {
+          payload.mentionedTargets = map['cmts'].cast<String>();
+        }
         payload.extra = map['ce'];
         if (map['mt'] != null) {
           payload.mediaType = MediaType.values[map['mt']];
