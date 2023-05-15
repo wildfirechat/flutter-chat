@@ -94,7 +94,11 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     String groupId = call.argument("groupId");
     List<String> participants = call.argument("participants");
     boolean audioOnly = call.argument("audioOnly");
-    WfcUIKit.multiCall(gContent, groupId, participants, audioOnly);
+    if(gActivity != null) {
+        WfcUIKit.multiCall(gActivity, groupId, participants, audioOnly);
+    } else {
+        WfcUIKit.multiCall(gContent, groupId, participants, audioOnly);
+    }
   }
 
 
