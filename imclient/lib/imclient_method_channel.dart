@@ -2067,6 +2067,13 @@ class MethodChannelImclient extends ImclientPlatform {
     return _convertProtoGroupMembers(datas);
   }
 
+  @override
+  Future<List<GroupMember>> getGroupMembersByCount(String groupId, int count) async {
+    List<dynamic> datas = await methodChannel.invokeMethod(
+        "getGroupMembersByCount", {"groupId": groupId, "count": count});
+    return _convertProtoGroupMembers(datas);
+  }
+
   ///根据群成员类型获取群成员列表
   @override
   Future<List<GroupMember>> getGroupMembersByTypes(

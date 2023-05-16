@@ -780,6 +780,14 @@ ImclientPlugin *gIMClientInstance;
     result([self convertModelList:members]);
 }
 
+- (void)getGroupMembersByCount:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *groupId = dict[@"groupId"];
+    int count = [dict[@"count"] intValue];
+
+    NSArray<WFCCGroupMember *> *members = [[WFCCIMService sharedWFCIMService] getGroupMembers:groupId count:count];
+    result([self convertModelList:members]);
+}
+
 - (void)getGroupMembersByTypes:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *groupId = dict[@"groupId"];
     int memberType = [dict[@"memberType"] intValue];

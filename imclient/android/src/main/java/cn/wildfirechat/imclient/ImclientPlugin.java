@@ -1120,6 +1120,12 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         result.success(convertGroupMemberList(ChatManager.Instance().getGroupMembers(groupId, refresh)));
     }
 
+    private void getGroupMembersByCount(@NonNull MethodCall call, @NonNull Result result) {
+        String groupId = call.argument("groupId");
+        int count = call.argument("count");
+        result.success(convertGroupMemberList(ChatManager.Instance().getGroupMembersByCount(groupId, count)));
+    }
+
     private void getGroupMembersByTypes(@NonNull MethodCall call, @NonNull Result result) {
         String groupId = call.argument("groupId");
         int memberType = call.argument("memberType");
