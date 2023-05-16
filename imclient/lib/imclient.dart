@@ -915,6 +915,11 @@ class Imclient {
     return ImclientPlatform.instance.getGroupMembers(groupId, refresh: refresh);
   }
 
+  ///获取指定数目的群成员列表
+  static Future<List<GroupMember>> getGroupMembersByCount(String groupId, int count) async {
+    return ImclientPlatform.instance.getGroupMembersByCount(groupId, count);
+  }
+
   ///根据群成员类型获取群成员列表
   static Future<List<GroupMember>> getGroupMembersByTypes(
       String groupId, GroupMemberType memberType) async {

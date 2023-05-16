@@ -635,6 +635,11 @@ abstract class ImclientPlatform extends PlatformInterface {
     throw UnimplementedError('method has not been implemented.');
   }
 
+  ///获取群成员列表
+  Future<List<GroupMember>> getGroupMembersByCount(String groupId, int count) async {
+    throw UnimplementedError('method has not been implemented.');
+  }
+
   ///根据群成员类型获取群成员列表
   Future<List<GroupMember>> getGroupMembersByTypes(
       String groupId, GroupMemberType memberType) async {
