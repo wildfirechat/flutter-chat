@@ -43,8 +43,8 @@ class LoginScreenState extends State<LoginScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 40, 8, 10),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(8, 40, 8, 10),
               child: Text("手机号登录", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
             ),
             Padding(
@@ -69,11 +69,11 @@ class LoginScreenState extends State<LoginScreen> {
                       autocorrect: false,
                     ),
                   ),
-                  SizedBox(width: 8,),
+                  const SizedBox(width: 8,),
                   ElevatedButton(onPressed: isSentCode? null : (){
                     AppServer.sendCode(phoneFieldController.value.text, (){
                       Fluttertoast.showToast(msg: "验证码发送成功，请在5分钟内进行验证!");
-                      final Duration duration = Duration(seconds: 1);
+                      const Duration duration = Duration(seconds: 1);
                       _timer = Timer.periodic(duration, (timer) {
                         setState(() {
                           waitResendCount = waitResendCount + 1;
@@ -90,14 +90,14 @@ class LoginScreenState extends State<LoginScreen> {
                         isSentCode = true;
                       });
                     }, (msg) => Fluttertoast.showToast(msg: "发送验证码失败!"));
-                  }, child: isSentCode ? Text('$waitResendCount s') : Text('发送验证码'),
+                  }, child: isSentCode ? Text('$waitResendCount s') : const Text('发送验证码'),
                     // color: Colors.blue, disabledColor: Colors.grey,
                   ),
                 ],
               ),
             ),
             ElevatedButton(
-              child: Text(
+              child: const Text(
                 '登录',
               ),
               // color: Colors.blue[600],
@@ -108,11 +108,8 @@ class LoginScreenState extends State<LoginScreen> {
                   AppServer.login(
                       phoneNum, code, (userId, token, isNewUser) {
                     Imclient.connect(Config.IM_Host, userId, token);
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomeTabBar()),
-                    );
+                    Navigator.replace(context, oldRoute: ModalRoute.of(context)!,
+                        newRoute: MaterialPageRoute(builder: (context) => HomeTabBar()));
                     SharedPreferences.getInstance().then((value) {
                       value.setString("userId", userId);
                       value.setString("token", token);
