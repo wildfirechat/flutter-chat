@@ -2185,9 +2185,7 @@ class MethodChannelImclient extends ImclientPlatform {
       "groupMembers": members
     };
 
-    if(notifyLines != null) {
-      args['notifyLines'] = notifyLines;
-    }
+    args['notifyLines'] = notifyLines??[0];
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -2213,9 +2211,7 @@ class MethodChannelImclient extends ImclientPlatform {
       "groupMembers": members
     };
 
-    if(notifyLines != null) {
-      args['notifyLines'] = notifyLines;
-    }
+    args['notifyLines'] = notifyLines??[0];
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -2239,9 +2235,7 @@ class MethodChannelImclient extends ImclientPlatform {
       "groupId": groupId
     };
 
-    if(notifyLines != null) {
-      args['notifyLines'] = notifyLines;
-    }
+    args['notifyLines'] = notifyLines??[0];
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -2265,9 +2259,7 @@ class MethodChannelImclient extends ImclientPlatform {
       "groupId": groupId
     };
 
-    if(notifyLines != null) {
-      args['notifyLines'] = notifyLines;
-    }
+    args['notifyLines'] = notifyLines??[0];
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -2295,10 +2287,9 @@ class MethodChannelImclient extends ImclientPlatform {
       "modifyType": modifyType.index,
       "value": newValue
     };
-
-    if(notifyLines != null) {
-      args['notifyLines'] = notifyLines;
-    }
+    
+    args['notifyLines'] = notifyLines??[0];
+    
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -2324,9 +2315,7 @@ class MethodChannelImclient extends ImclientPlatform {
       "newAlias": newAlias
     };
 
-    if(notifyLines != null) {
-      args['notifyLines'] = notifyLines;
-    }
+    args['notifyLines'] = notifyLines??[0];
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -2353,9 +2342,7 @@ class MethodChannelImclient extends ImclientPlatform {
       "newAlias": newAlias
     };
 
-    if(notifyLines != null) {
-      args['notifyLines'] = notifyLines;
-    }
+    args['notifyLines'] = notifyLines??[0];
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -2381,9 +2368,7 @@ class MethodChannelImclient extends ImclientPlatform {
       "newOwner": newOwner
     };
 
-    if(notifyLines != null) {
-      args['notifyLines'] = notifyLines;
-    }
+    args['notifyLines'] = notifyLines??[0];
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -2410,9 +2395,7 @@ class MethodChannelImclient extends ImclientPlatform {
       "memberIds": memberIds
     };
 
-    if(notifyLines != null) {
-      args['notifyLines'] = notifyLines;
-    }
+    args['notifyLines'] = notifyLines??[0];
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -2440,9 +2423,7 @@ class MethodChannelImclient extends ImclientPlatform {
       "memberIds": memberIds
     };
 
-    if(notifyLines != null) {
-      args['notifyLines'] = notifyLines;
-    }
+    args['notifyLines'] = notifyLines??[0];
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -2470,9 +2451,7 @@ class MethodChannelImclient extends ImclientPlatform {
       "memberIds": memberIds
     };
 
-    if(notifyLines != null) {
-      args['notifyLines'] = notifyLines;
-    }
+    args['notifyLines'] = notifyLines??[0];
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
