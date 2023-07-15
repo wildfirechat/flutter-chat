@@ -61,52 +61,62 @@ dependencies:
 ### 基础知识
 必须对野火IM有一定认识后才可以顺利使用，建议做到以下几点：
 1. 仔细阅读野火[基础知识](https://docs.wildfirechat.cn/base_knowledge/)，建议最好把[文档](https://docs.wildfirechat.cn)都看一遍，仔细阅读一遍绝对会物超所值的。
-2. 仔细查看插件的接口文件```FlutterImclient.dart```文件，大概130+个接口，根据接口名称和简单的注释还有参数，了解到具体的功能，这样后面使用时也比较好找。
+2. 仔细查看插件的接口文件```Imclient.dart```文件，大概130+个接口，根据接口名称和简单的注释还有参数，了解到具体的功能，这样后面使用时也比较好找。
 3. 查看插件带的demo应用。demo应用十分不完善，但也基本能反应出使用的方法，如果您有时间可以给我们提PR来完善这个demo。
 4. 如果您有原生客户端开发经验，可以查看对于客户端的demo，原生客户端demo比较完善。
 
 ### 初始化
 初始化在应用启动时唯一调用一次即可，参数是各种事件的回调。
 ```
-FlutterImclient.init(...);
+Imclient.init(...);
 ```
 
 ### 连接
 连接需要```IM Token```，必须在应用服务进行获取```token```，获取```token```时必须使用从SDK内获取到的```clientId```，否则会连接不上。
 ```
-var clientId = await FlutterImclient.clientId;
+var clientId = await Imclient.clientId;
 // 调用应用服务去IM服务获取token，需要使用从SDK内获取的clientId。得到token后调用connect函数。
-FlutterImclient.connect(Config.IM_Host, userId, token);
+Imclient.connect(Config.IM_Host, userId, token);
 ```
 
 ### 获取会话列表
 展示用户的所有会话的列表使用。
 ```
-FlutterImclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
 ```
 
 ### 获取消息
 从指定会话获取消息，可以指定消息其实id和获取条目数，实际使用时可以滚动加载。
 ```
-FlutterImclient.getMessages(conversation, 0, 10);
+Imclient.getMessages(conversation, 0, 10);
 ```
 
 ### 发送消息
 构造消息内容，把消息发送到指定会话去。
 ```
-FlutterImclient.sendMessage(conversation, txtMsgContent);
+Imclient.sendMessage(conversation, txtMsgContent);
 ```
 
 ### 获取用户信息
 refresh参数表明是否强制从服务器刷新用户信息，函数会返回本地数据库存储用户信息，如果不存在将返回null。refresh为true或者用户信息不存在时会从服务器更新用户信息，如果信息有变化，会通过用户信息变更回调通知。注意仅当单聊会话和用户详情时强制刷新，避免反复refresh调用出现死循环。
 ```
-getUserInfo(userId, refresh:false);
+Imclient.getUserInfo(userId, refresh:false);
 ```
 
 ### 获取群组信息
 获取群组信息，具有可选参数refresh，refresh的使用方法请参考获取用户信息。
 ```
-getGroupInfo(groupId, refresh:false);
+Imclient.getGroupInfo(groupId, refresh:false);
+```
+
+### 发起单人音视频通话
+```
+Rtckit.startSingleCall(userid, audioOnly);
+```
+
+### 发起多人音视频通话
+```
+Rtckit.startMultiCall(groupid, participants, audioOnly);
 ```
 
 ## 推送
@@ -125,6 +135,10 @@ Imclient.setDeviceToken(pushType, deviceToken);
 
 ### 4 服务端推送开发
 下载[野火推送服务](https://gitee.com/wfchat/push_server)，在此基础上进行二次开发。推送服务会收到IM服务的推送请求，推送请求中有这个pushType和deviceToken及要推送的内容，推送服务根据这些信息找到对应厂商进行推送。
+
+### 5 使用个推
+实际上可以选用任意一个或者多个推送服务商，这里给出一个使用个推的介绍。
+[对接个推](https://gitee.com/wfchat/wfc_flutter_plugins/issues/I6P16V?from=project-issue)
 
 ## 一些知识要点
 1. 获取token的过程一定是先从客户端获取clientId，然后应用服务使用clientId和userId参数获取token，返回给当前客户端使用。即token是和客户端绑定的，该token仅能在当前客户端使用。
