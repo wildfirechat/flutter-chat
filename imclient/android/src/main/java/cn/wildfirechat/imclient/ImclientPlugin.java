@@ -712,7 +712,14 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         int expireDuration = call.argument("expireDuration") == null ? 0 : (Integer) call.argument("expireDuration");
 
 
-        final long[] messageId = {0};
+        Message msg = new Message();
+        msg.conversation = conversation;
+        msg.content = messageContent;
+        msg.sender = ChatManager.Instance().getUserId();
+        if(toUsers != null) {
+            msg.toUsers = toUsers.toArray(new String[0]);
+        }
+
         ChatManager.Instance().sendMessage(conversation, messageContent, toUsers != null ? toUsers.toArray(new String[0]) : null, expireDuration, new SendMessageCallback() {
             @Override
             public void onSuccess(long l, long l1) {
@@ -726,7 +733,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
             @Override
             public void onPrepare(long l, long l1) {
-                Message msg = ChatManager.Instance().getMessage(l);
+                msg.messageId = l;
+                msg.serverTime = l1;
                 result.success(convertMessage(msg));
             }
 
