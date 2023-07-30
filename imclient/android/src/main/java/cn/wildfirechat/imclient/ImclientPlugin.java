@@ -47,6 +47,7 @@ import cn.wildfirechat.client.NotInitializedExecption;
 import cn.wildfirechat.message.Message;
 import cn.wildfirechat.message.MessageContent;
 import cn.wildfirechat.message.MessageContentMediaType;
+import cn.wildfirechat.message.core.MessageDirection;
 import cn.wildfirechat.message.core.MessagePayload;
 import cn.wildfirechat.message.core.MessageStatus;
 import cn.wildfirechat.message.core.PersistFlag;
@@ -715,6 +716,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         Message msg = new Message();
         msg.conversation = conversation;
         msg.content = messageContent;
+        msg.status = MessageStatus.Sending;
+        msg.direction = MessageDirection.Send;
         msg.sender = ChatManager.Instance().getUserId();
         if(toUsers != null) {
             msg.toUsers = toUsers.toArray(new String[0]);
