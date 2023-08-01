@@ -46,8 +46,8 @@ ImclientPlugin *gIMClientInstance;
     NSString *userId = dict[@"userId"];
     NSString *token = dict[@"token"];
     [[WFCCNetworkService sharedInstance] setServerAddress:host];
-    BOOL ret = [[WFCCNetworkService sharedInstance] connect:userId token:token];
-    result(@(ret));
+    int64_t lastConnectTime = [[WFCCNetworkService sharedInstance] connect:userId token:token];
+    result(@(lastConnectTime));
 }
 
 - (void)currentUserId:(NSDictionary *)dict result:(FlutterResult)result {
@@ -533,8 +533,9 @@ ImclientPlugin *gIMClientInstance;
     NSDictionary *content = dict[@"content"];
     int status = [dict[@"status"] intValue];
     long long serverTime = [dict[@"serverTime"] longLongValue];
+    NSArray<NSString *> *toUsers = dict[@"toUsers"];
 
-    WFCCMessage *msg = [[WFCCIMService sharedWFCIMService] insert:[self conversationFromDict:conversation] sender:self.userId content:[self contentFromDict:content] status:(WFCCMessageStatus)status notify:NO serverTime:serverTime];
+    WFCCMessage *msg = [[WFCCIMService sharedWFCIMService] insert:[self conversationFromDict:conversation] sender:self.userId content:[self contentFromDict:content] status:(WFCCMessageStatus)status notify:NO toUsers:toUsers serverTime:serverTime];
     result(@(msg.messageId));
 }
 

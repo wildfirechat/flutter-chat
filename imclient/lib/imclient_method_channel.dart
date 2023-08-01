@@ -1114,9 +1114,9 @@ class MethodChannelImclient extends ImclientPlatform {
   /// 连接IM服务。调用连接之后才可以调用获取数据接口。连接状态会通过连接状态回调返回。
   /// [host]为IM服务域名或IP，必须im.example.com或114.144.114.144，不带http头和端口。
   @override
-  Future<bool> connect(String host, String userId, String token) async {
-    bool newDb = await methodChannel.invokeMethod('connect', {'host':host, 'userId':userId, 'token':token});
-    return newDb;
+  Future<int> connect(String host, String userId, String token) async {
+    int lastConnectTime = await methodChannel.invokeMethod('connect', {'host':host, 'userId':userId, 'token':token});
+    return lastConnectTime;
   }
 
   ///断开IM服务连接。
@@ -1752,13 +1752,14 @@ class MethodChannelImclient extends ImclientPlatform {
   ///插入消息
   @override
   Future<Message> insertMessage(Conversation conversation, String sender,
-      MessageContent content, int status, int serverTime) async {
+      MessageContent content, int status, int serverTime, {List<String>? toUsers}) async {
     Map<dynamic, dynamic> datas = await methodChannel.invokeMethod("insertMessage", {
       "conversation": _convertConversation(conversation),
       "content": _convertMessageContent(content),
       "status": status,
       "serverTime": serverTime
     });
+    if (toUsers != null && toUsers.isNotEmpty) datas['toUsers'] = toUsers;
     return _convertProtoMessage(datas)!;
   }
 

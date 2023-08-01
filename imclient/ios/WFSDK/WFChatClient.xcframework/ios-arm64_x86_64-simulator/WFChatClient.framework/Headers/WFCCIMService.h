@@ -146,6 +146,8 @@ typedef NS_ENUM(NSInteger, UserSettingScope) {
     UserSettingScope_Ptt_Silent = 25,
     //不能直接使用，协议栈内会使用此值
     UserSettingScope_Group_Remark = 26,
+    //不能直接使用，协议栈内会使用此值
+    UserSettingScope_Privacy_Searchable = 27,
     
     //自定义用户设置，请使用1000以上的key
     UserSettingScope_Custom_Begin = 1000
@@ -165,7 +167,21 @@ typedef NS_ENUM(NSInteger, WFCCSearchUserType) {
     SearchUserType_Name_Mobile,
     SearchUserType_Name,
     SearchUserType_Mobile,
-} ;
+};
+
+/**
+ 禁止搜索当前用户的掩码。
+
+ - DisableSearch_DisplayName_Mask: 第1位是是否禁止搜索昵称
+ - DisableSearch_Name_Mask: 第2位是否禁止搜索账户
+ - DisableSearch_Mobile_Mask: 精确第3位是否禁止搜索电话号码name
+ */
+typedef NS_ENUM(NSInteger, WFCCDisableSearchMask) {
+    DisableSearch_DisplayName_Mask = 1,
+    DisableSearch_Name_Mask = 2,
+    DisableSearch_Mobile_Mask = 4,
+};
+
 
 typedef NS_ENUM(NSInteger, WFCCPlatformType) {
     PlatformType_UNSET = 0,
@@ -298,6 +314,32 @@ typedef NS_ENUM(NSInteger, WFCCFileRecordOrder) {
  @return 会话搜索结果信息
  */
 - (NSArray<WFCCConversationSearchInfo *> *)searchConversation:(NSString *)keyword inConversation:(NSArray<NSNumber *> *)conversationTypes lines:(NSArray<NSNumber *> *)lines startTime:(int64_t)startTime endTime:(int64_t)endTime desc:(BOOL)desc limit:(int)limit offset:(int)offset;
+
+/**
+ 搜索会话
+ 
+ @param keyword 关键词
+ @param conversationTypes 会话类型
+ @param lines 默认传 @[@(0)]
+ @param cntTypes 消息内容类型
+ @param startTime 开始时间，如果不限制开始时间请使用0
+ @param endTime 结束时间，如果不限制开始时间请使用0
+ @param desc 是否逆序
+ @param limit limit
+ @param offset offset
+ @param onlyMentionedMsg 是否只搜索提醒消息
+ @return 会话搜索结果信息
+ */
+- (NSArray<WFCCConversationSearchInfo *> *)searchConversation:(NSString *)keyword
+                                               inConversation:(NSArray<NSNumber *> *)conversationTypes
+                                                        lines:(NSArray<NSNumber *> *)lines
+                                                     cntTypes:(NSArray<NSNumber *> *)cntTypes
+                                                    startTime:(int64_t)startTime
+                                                      endTime:(int64_t)endTime
+                                                         desc:(BOOL)desc
+                                                        limit:(int)limit
+                                                       offset:(int)offset
+                                             onlyMentionedMsg:(BOOL)onlyMentionedMsg;
 
 /**
  删除会话
@@ -509,6 +551,22 @@ typedef NS_ENUM(NSInteger, WFCCFileRecordOrder) {
              withUser:(NSString *)user
               success:(void(^)(NSArray<WFCCMessage *> *messages))successBlock
                 error:(void(^)(int error_code))errorBlock;
+
+/**
+ 获取提醒消息
+ @discuss 获取从fromIndex起count条旧的消息。如果想要获取比fromIndex新的消息，count传负值。
+ 
+ @param conversation 会话
+ @param fromIndex 起始index
+ @param count 总数
+ @param successBlock 成功的回调
+ @param errorBlock 失败的回调
+ */
+- (void)getMentionedMessages:(WFCCConversation *)conversation
+                        from:(NSUInteger)fromIndex
+                       count:(NSInteger)count
+                     success:(void(^)(NSArray<WFCCMessage *> *messages))successBlock
+                       error:(void(^)(int error_code))errorBlock;
 
 /**
  获取消息
@@ -837,6 +895,22 @@ typedef NS_ENUM(NSInteger, WFCCFileRecordOrder) {
                                  withUser:(NSString *)withUser;
 
 /**
+ 搜索提醒消息
+ 
+ @param conversation 会话，如果为空将搜索所有会话
+ @param keyword 关键词
+ @param desc order
+ @param offset offset
+ @param limit limit
+ @return 命中的消息
+ */
+- (NSArray<WFCCMessage *> *)searchMentionedMessages:(WFCCConversation *)conversation
+                                            keyword:(NSString *)keyword
+                                              order:(BOOL)desc
+                                              limit:(int)limit
+                                             offset:(int)offset;
+
+/**
  获取某类会话信息
  
  @param conversationTypes 会话类型
@@ -855,6 +929,24 @@ typedef NS_ENUM(NSInteger, WFCCFileRecordOrder) {
                                      from:(NSUInteger)fromIndex
                                     count:(NSInteger)count
                                  withUser:(NSString *)withUser;
+
+/**
+ 获取某类会话提醒信息
+ 
+ @param conversationTypes 会话类型
+ @param lines 默认传 @[@(0)]
+ @param keyword 关键字
+ @param desc order
+ @param offset offset
+ @param limit limit
+ @return 消息实体
+ */
+- (NSArray<WFCCMessage *> *)searchMentionedMessage:(NSArray<NSNumber *> *)conversationTypes
+                                             lines:(NSArray<NSNumber *> *)lines
+                                           keyword:(NSString *)keyword
+                                             order:(BOOL)desc
+                                             limit:(int)limit
+                                            offset:(int)offset;
 /**
  发送消息
 
@@ -1165,6 +1257,7 @@ typedef NS_ENUM(NSInteger, WFCCFileRecordOrder) {
                 content:(WFCCMessageContent *)content
                  status:(WFCCMessageStatus)status
                  notify:(BOOL)notify
+                toUsers:(NSArray<NSString *> *)toUsers
              serverTime:(long long)serverTime;
 
 /**
@@ -1327,6 +1420,13 @@ typedef NS_ENUM(NSInteger, WFCCFileRecordOrder) {
 - (NSArray<WFCCFriendRequest *> *)getOutgoingFriendRequest;
 
 /**
+ 获取所有的好友请求
+
+ @return 好友请求
+ */
+- (NSArray<WFCCFriendRequest *> *)getAllFriendRequest;
+
+/**
  获取某一条好友请求记录
  @param uerId 对方用户ID
  @param direction 0 发送的好友请求；1 收到的好友请求。
@@ -1334,6 +1434,24 @@ typedef NS_ENUM(NSInteger, WFCCFileRecordOrder) {
  @return 好友请求
  */
 - (WFCCFriendRequest *)getFriendRequest:(NSString *)uerId direction:(int)direction;
+
+/**
+ 清理好友请求
+ @param direction 好友请求的方向，0发送；1收到。
+ @param beforeTime 清理时间之前的请求，单位是毫秒。如果清理所有用0
+ 
+ @return 返回true表示清理成功，返回false表示没有符合条件的请求
+ */
+- (BOOL)clearFriendRequest:(int)direction beforeTime:(int64_t)beforeTime;
+
+/**
+ 删除好友请求
+ @param direction 好友请求的方向，0发送；1收到。
+ @param userId 用户ID
+ 
+ @return 返回true表示删除成功，返回false表示找到请求
+ */
+- (BOOL)deleteFriendRequest:(NSString *)userId direction:(int)direction;
 
 /**
  从服务器更新好友请求

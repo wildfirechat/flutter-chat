@@ -414,7 +414,7 @@ class Imclient {
 
   /// 连接IM服务。调用连接之后才可以调用获取数据接口。连接状态会通过连接状态回调返回。
   /// [host]为IM服务域名或IP，必须im.example.com或114.144.114.144，不带http头和端口。
-  static Future<bool> connect(String host, String userId, String token) async {
+  static Future<int> connect(String host, String userId, String token) async {
     return ImclientPlatform.instance.connect(host, userId, token);
   }
 
@@ -728,8 +728,8 @@ class Imclient {
 
   ///插入消息
   static Future<Message> insertMessage(Conversation conversation, String sender,
-      MessageContent content, int status, int serverTime) async {
-    return ImclientPlatform.instance.insertMessage(conversation, sender, content, status, serverTime);
+      MessageContent content, int status, int serverTime, {List<String>? toUsers}) async {
+    return ImclientPlatform.instance.insertMessage(conversation, sender, content, status, serverTime, toUsers: toUsers);
   }
 
   ///更新消息内容

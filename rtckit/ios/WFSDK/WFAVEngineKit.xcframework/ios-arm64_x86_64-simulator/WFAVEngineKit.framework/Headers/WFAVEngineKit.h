@@ -161,7 +161,9 @@ typedef NS_ENUM(NSInteger, WFAVCallEndReason) {
   kWFAVCallEndReasonRemoteNetworkError,
   kWFAVCallEndReasonRoomDestroyed,
   kWFAVCallEndReasonRoomNotExist,
-  kWFAVCallEndReasonRoomParticipantsFull
+  kWFAVCallEndReasonRoomParticipantsFull,
+  kWFAVCallEndReasonInterrupted,
+  kWFAVCallEndReasonRemoteInterrupted
 };
 
 @class WFCCConversation;
@@ -367,7 +369,7 @@ typedef NS_ENUM(NSInteger, WFAVCallEndReason) {
 @end
 
 @protocol WFAVExternalFrameDelegate <NSObject>
-- (void)didCaptureVideoFrame:(nonnull RTCVideoFrame *)frame;
+- (void)capturer:(_Nullable id)capturer didCaptureVideoFrame:(nonnull RTCVideoFrame *)frame;
 @end
 
 @protocol WFAVExternalVideoSource <NSObject>
@@ -472,6 +474,9 @@ typedef NS_ENUM(NSInteger, WFAVCallEndReason) {
 /* 此属性没有意义，仅为了兼容UI代码 */
 @property(nonatomic, assign) BOOL forceUseEAGLView;
 
+/* 此属性没有意义，仅为了兼容UI代码 */
+@property(nonatomic, assign) BOOL forceRelay;
+
 /* 此函数没有意义，仅为了兼容UI代码 */
 - (WFAVCallSession *_Nonnull)startConference:(NSString *_Nullable)callId
                                    audioOnly:(BOOL)audioOnly
@@ -483,6 +488,7 @@ typedef NS_ENUM(NSInteger, WFAVCallEndReason) {
                                     audience:(BOOL)audience
                                     advanced:(BOOL)advanced
                                       record:(BOOL)record
+                             maxParticipants:(int)maxParticipats
                              sessionDelegate:(id<WFAVCallSessionDelegate>_Nonnull)sessionDelegate;
 
 /* 为了兼容视频会议UI，本功能未实现*/
@@ -812,7 +818,10 @@ typedef NS_ENUM(NSInteger, WFAVVideoType) {
 - (void)leaveConference:(BOOL)destroy;
 
 /* 此函数没有意义，仅为了兼容UI代码 */
-- (void)switchAudience:(BOOL)audience;
+- (BOOL)canSwitchAudience;
+
+/* 此函数没有意义，仅为了兼容UI代码 */
+- (BOOL)switchAudience:(BOOL)audience;
 
 /* 此函数没有意义，仅为了兼容UI代码 */
 - (void)kickoffParticipant:(NSString *_Nonnull)participant

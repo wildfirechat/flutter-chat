@@ -263,8 +263,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String token = call.argument("token");
         String userId = call.argument("userId");
         ChatManager.Instance().setIMServerHost(host);
-        boolean ret = ChatManager.Instance().connect(userId, token);
-        result.success(ret);
+        long lastConnectTime = ChatManager.Instance().connect(userId, token);
+        result.success(lastConnectTime);
     }
 
     private void currentUserId(@NonNull MethodCall call, @NonNull Result result) {
@@ -928,8 +928,14 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         MessageContent messageContent = messageContentFromMaps(content);
         int status = call.argument("status");
         long serverTime = getLongPara(call, "serverTime");
+        List<String> toUsers = call.argument("toUsers");
 
-        Message msg = ChatManager.Instance().insertMessage(conversation, ChatManager.Instance().getUserId(), messageContent, MessageStatus.status(status), false, serverTime);
+        String[] tos = null;
+        if(toUsers != null) {
+            tos = toUsers.toArray(new String[0]);
+        }
+
+        Message msg = ChatManager.Instance().insertMessage(conversation, ChatManager.Instance().getUserId(), messageContent, MessageStatus.status(status), false, tos, serverTime);
         result.success(convertMessage(msg));
     }
 
