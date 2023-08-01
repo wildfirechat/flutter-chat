@@ -10,7 +10,7 @@
 		</data>
 		<key>Assets.car</key>
 		<data>
-		FMmRzWzPvTpEWnkdSKwTfYmwqEw=
+		Pfep1tpNrx8PUH0ZWDjLwKzMZ1Q=
 		</data>
 		<key>CodeScan.bundle/device_scan@2x.png</key>
 		<data>
@@ -110,7 +110,7 @@
 		</data>
 		<key>Headers/MWPhoto.h</key>
 		<data>
-		CbKmn6k5ZD3IhRKAkYw7Qb41B34=
+		/D0Z1tLDCEghSufndBYauhs6bxI=
 		</data>
 		<key>Headers/MWPhotoBrowser.h</key>
 		<data>
@@ -174,11 +174,11 @@
 		</data>
 		<key>Headers/WFCUConferenceViewController.h</key>
 		<data>
-		WwLfwGKPR6W3H0hPDlcWyxohxPQ=
+		s1m0UNWK5YkTD0tFNyDLIb0iMKE=
 		</data>
 		<key>Headers/WFCUConfigManager.h</key>
 		<data>
-		pkJSNLlSAj83Kzh/F0cx5rwc/Js=
+		8bLrznfazGx8iyAX9kf1TsIfL4c=
 		</data>
 		<key>Headers/WFCUContactListViewController.h</key>
 		<data>
@@ -187,6 +187,14 @@
 		<key>Headers/WFCUConversationTableViewController.h</key>
 		<data>
 		e7pbag3oBdBRg8AhxP2peFDbl8g=
+		</data>
+		<key>Headers/WFCUEmployee.h</key>
+		<data>
+		sC/uJUD/vsRGLoqaQUW3rtq0bZI=
+		</data>
+		<key>Headers/WFCUEmployeeEx.h</key>
+		<data>
+		Z7onzswMcZ8/eRY2GaULgEpTnHE=
 		</data>
 		<key>Headers/WFCUEnum.h</key>
 		<data>
@@ -272,6 +280,26 @@
 		<data>
 		HjK0j/JbIV1auKspTEmYIBzQjKE=
 		</data>
+		<key>Headers/WFCUOrgRelationship.h</key>
+		<data>
+		Fu5aVNKz4xq0TjaiH5nkieLmmEQ=
+		</data>
+		<key>Headers/WFCUOrgServiceProvider.h</key>
+		<data>
+		j0xxDlgY8ZQz9+z8o5P0OHWM3Cg=
+		</data>
+		<key>Headers/WFCUOrganization.h</key>
+		<data>
+		aqeL3nfwTfNiGaVK18R26LcEtgs=
+		</data>
+		<key>Headers/WFCUOrganizationCache.h</key>
+		<data>
+		3z6WCV/ZODiF692bIPZ3mdSxpzQ=
+		</data>
+		<key>Headers/WFCUOrganizationEx.h</key>
+		<data>
+		y0Gno7qjaSOjvKLvJT9y+GIUWGM=
+		</data>
 		<key>Headers/WFCUProfileTableViewController.h</key>
 		<data>
 		cPTa9uL3CwEa36xCakgueAEI5OI=
@@ -286,11 +314,11 @@
 		</data>
 		<key>Headers/WFChatUIKit.h</key>
 		<data>
-		/IoShWVqbMhxb170qsCZEJqEZSU=
+		VRMSLs6Q1NTFTjr0lOtpqB2UM6o=
 		</data>
 		<key>Headers/WFZConferenceInfo.h</key>
 		<data>
-		36OG/panBpWhyaHN+LPFsvwIRHU=
+		sph8RcAF80zTsPq7LlACC/dJo1E=
 		</data>
 		<key>Headers/WFZConferenceInfoViewController.h</key>
 		<data>
@@ -298,7 +326,7 @@
 		</data>
 		<key>Headers/WFZHomeViewController.h</key>
 		<data>
-		N3Fep7kcbJ5LS6AK9gKUvcBW4Qs=
+		KQjZR7kcmHgmcQIwHfmZrOqMrTo=
 		</data>
 		<key>Headers/WFZOrderConferenceViewController.h</key>
 		<data>
@@ -310,7 +338,7 @@
 		</data>
 		<key>Info.plist</key>
 		<data>
-		XQxBp+4odzU6SmZfoQp+VF4YgGw=
+		xk7dIUbK9rtfs/Iy6BrU44Xwtg0=
 		</data>
 		<key>MWPhotoBrowser.bundle/ImageError.png</key>
 		<data>
@@ -748,7 +776,7 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			eEp8NWrQrDYFyTOGAf6cBdVJgfg=
+			vUzKdRhpTBAScOKXDn2UcazFkVg=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -761,7 +789,7 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			z6HQX7j/XKOTHkusipzr6q4Vt+8=
+			fytLl6LxyXcGADakDW6QFhZXjLI=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -784,11 +812,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			FMmRzWzPvTpEWnkdSKwTfYmwqEw=
+			Pfep1tpNrx8PUH0ZWDjLwKzMZ1Q=
 			</data>
 			<key>hash2</key>
 			<data>
-			ivC2Bu2bEG96QYQ0JFGwia/PTlXrRJMG9IUwMs0EEOc=
+			TxzMuQjVfaLgfQhnuFW1HzZZ2ydqC2IY6EDsy4sM4X0=
 			</data>
 		</dict>
 		<key>CodeScan.bundle/device_scan@2x.png</key>
@@ -1059,11 +1087,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			CbKmn6k5ZD3IhRKAkYw7Qb41B34=
+			/D0Z1tLDCEghSufndBYauhs6bxI=
 			</data>
 			<key>hash2</key>
 			<data>
-			fp6A/U5j8qtrGtnrX1nVEdKwXTUYj0u3jtyI+ApQLm0=
+			Jz2URKGMLEMDMnG2gnFZyEbK4n/8gUneoroO9E3zObA=
 			</data>
 		</dict>
 		<key>Headers/MWPhotoBrowser.h</key>
@@ -1235,22 +1263,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			WwLfwGKPR6W3H0hPDlcWyxohxPQ=
+			s1m0UNWK5YkTD0tFNyDLIb0iMKE=
 			</data>
 			<key>hash2</key>
 			<data>
-			gWyjE99AGY5DQ0yUO8rIQKXlR9nli0KKfO141w/wH+k=
+			ZAWg9mAyI+8XKyUlcaVEmW5e8Af+7zsh+pq3k9wVFEc=
 			</data>
 		</dict>
 		<key>Headers/WFCUConfigManager.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			pkJSNLlSAj83Kzh/F0cx5rwc/Js=
+			8bLrznfazGx8iyAX9kf1TsIfL4c=
 			</data>
 			<key>hash2</key>
 			<data>
-			y5laQ76n6CpU8itiAwiWNAH0e5Y2e+bNnhatk69b3BI=
+			6/j7EAZy3ga0C1uxGmtaOK4X+4+vSfvAXBb76rOCKAc=
 			</data>
 		</dict>
 		<key>Headers/WFCUContactListViewController.h</key>
@@ -1273,6 +1301,28 @@
 			<key>hash2</key>
 			<data>
 			46om6qWE/qRxRrmDI0v5/5Y9RIERklMrHBHfh6ZDtus=
+			</data>
+		</dict>
+		<key>Headers/WFCUEmployee.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			sC/uJUD/vsRGLoqaQUW3rtq0bZI=
+			</data>
+			<key>hash2</key>
+			<data>
+			OdsS75iRAH0S/BstzaI9dQpfw+XZ4ZeJRuDyPbcbEYE=
+			</data>
+		</dict>
+		<key>Headers/WFCUEmployeeEx.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			Z7onzswMcZ8/eRY2GaULgEpTnHE=
+			</data>
+			<key>hash2</key>
+			<data>
+			B4NP3+1v4qSB0/vZjljI+1Zr8MbNu8j08fNrGF1iCzw=
 			</data>
 		</dict>
 		<key>Headers/WFCUEnum.h</key>
@@ -1506,6 +1556,61 @@
 			xBfnLbh8Xmh0e+CQg+H70jjaD90O0ojFIccsEDAYaF4=
 			</data>
 		</dict>
+		<key>Headers/WFCUOrgRelationship.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			Fu5aVNKz4xq0TjaiH5nkieLmmEQ=
+			</data>
+			<key>hash2</key>
+			<data>
+			9S7Jmb7Xos+q4DSTnMiHRcJcNfA42h5aJS3GXLlhR68=
+			</data>
+		</dict>
+		<key>Headers/WFCUOrgServiceProvider.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			j0xxDlgY8ZQz9+z8o5P0OHWM3Cg=
+			</data>
+			<key>hash2</key>
+			<data>
+			1dmvZtmRGNBh3A8mr+XpvTls90Nmp2JjeNdED8lV1to=
+			</data>
+		</dict>
+		<key>Headers/WFCUOrganization.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			aqeL3nfwTfNiGaVK18R26LcEtgs=
+			</data>
+			<key>hash2</key>
+			<data>
+			EDyTa2bk0VgdH7tBBFb3hsQMVLUw3+OzWnk+zc11iCU=
+			</data>
+		</dict>
+		<key>Headers/WFCUOrganizationCache.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			3z6WCV/ZODiF692bIPZ3mdSxpzQ=
+			</data>
+			<key>hash2</key>
+			<data>
+			fY17qxiBQT3A0KYEQiOo/kwgq51S0U6+wd7OQGsmhkU=
+			</data>
+		</dict>
+		<key>Headers/WFCUOrganizationEx.h</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			y0Gno7qjaSOjvKLvJT9y+GIUWGM=
+			</data>
+			<key>hash2</key>
+			<data>
+			idaMJbBph3FLLcypOlCQurVIaMpdthWEYdAHD0AIUNs=
+			</data>
+		</dict>
 		<key>Headers/WFCUProfileTableViewController.h</key>
 		<dict>
 			<key>hash</key>
@@ -1543,22 +1648,22 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			/IoShWVqbMhxb170qsCZEJqEZSU=
+			VRMSLs6Q1NTFTjr0lOtpqB2UM6o=
 			</data>
 			<key>hash2</key>
 			<data>
-			wcAQZenpK9F5jhiXHBNfFztvVzBKN8l8bv7x40DR1NQ=
+			6D/WaZGj+BK/MQkFieK6jV/9lYenN8hblrjjoEk7j7Y=
 			</data>
 		</dict>
 		<key>Headers/WFZConferenceInfo.h</key>
 		<dict>
 			<key>hash</key>
 			<data>
-			36OG/panBpWhyaHN+LPFsvwIRHU=
+			sph8RcAF80zTsPq7LlACC/dJo1E=
 			</data>
 			<key>hash2</key>
 			<data>
-			d2sHka0+QAeY81OnUuZfYB9060UP829RcBZnpgGSKno=
+			XvZDduSnACb3GqlFg4ww1zvdU/fSlttY4DL9dI1XvIo=
 			</data>
 		</dict>
 		<key>Headers/WFZConferenceInfoViewController.h</key>
@@ -1576,11 +1681,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			N3Fep7kcbJ5LS6AK9gKUvcBW4Qs=
+			KQjZR7kcmHgmcQIwHfmZrOqMrTo=
 			</data>
 			<key>hash2</key>
 			<data>
-			iIox1PBDTFsX951sU2rgCDu2+reIsKXOZX2O8hmzJE4=
+			JbIl7TAP9J7ROEAuxkPDA+tHT3kDqOpR0JNPzi8/cwg=
 			</data>
 		</dict>
 		<key>Headers/WFZOrderConferenceViewController.h</key>
@@ -2797,11 +2902,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			eEp8NWrQrDYFyTOGAf6cBdVJgfg=
+			vUzKdRhpTBAScOKXDn2UcazFkVg=
 			</data>
 			<key>hash2</key>
 			<data>
-			UP9IQUN3Zz4wfYsPMrZYbhbaXLyZxMGS8rn5tnQSV54=
+			CIrJGWBtv3ji/lbRs1zwuy0p9KF+7/GQUwW4yO1ZeNU=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -2821,11 +2926,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			z6HQX7j/XKOTHkusipzr6q4Vt+8=
+			fytLl6LxyXcGADakDW6QFhZXjLI=
 			</data>
 			<key>hash2</key>
 			<data>
-			3ImEfKFEBW4sRBIVlfz8iXqFfplUEUJNOxlmB2hBxNA=
+			oFYSlfHxcde3Rmnl3P0XdwFuH2KeN0Us06gTYMxAdBg=
 			</data>
 			<key>optional</key>
 			<true/>

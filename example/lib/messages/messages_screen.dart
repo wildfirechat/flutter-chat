@@ -181,7 +181,7 @@ class _State extends State<MessagesScreen> {
                       //Select participants first;
                       // List<String> participants = List();
                       // Future<List<GroupMember>> members = Imclient.getGroupMembers(widget.conversation.target);
-                      // Rtckit.startMultiCall(widget.conversation.target, participants, true);
+                      Rtckit.startMultiCall(widget.conversation.target, ["nl0qmws2k"], true);
                     }
                   }),
                 ],

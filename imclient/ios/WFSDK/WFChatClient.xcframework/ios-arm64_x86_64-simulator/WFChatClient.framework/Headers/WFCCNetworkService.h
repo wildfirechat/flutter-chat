@@ -296,6 +296,11 @@ typedef NS_ENUM(NSInteger, ConnectionStatus) {
 - (void)useSM4;
 
 /*
+ 使用AES256加密。注意必须和服务器同时配置，否则无法连接。
+ */
+- (void)useAES256;
+
+/*
  使用TCP的短连接。需要专业版IM服务支持。
  */
 - (void)useTcpShortLink;
@@ -305,6 +310,10 @@ typedef NS_ENUM(NSInteger, ConnectionStatus) {
  */
 - (BOOL)isTcpShortLink;
 
+/*
+ 不使用FTS搜索。仅在connect之前调用有效。
+ */
+- (void)noUseFts;
 /**
  设置Lite模式。
  Lite模式下，协议栈不存储数据库，不同步所有信息，只能收发消息，接收消息只接收连接以后发送的消息。
@@ -327,9 +336,9 @@ typedef NS_ENUM(NSInteger, ConnectionStatus) {
  @param userId 用户Id
  @param token 密码
  
- @return 是否是第一次连接。第一次连接需要同步用户信息，耗时较长，可以加个第一次登录的等待提示界面。
+ @return 返回上一次活动时间。如果间隔时间较长，可以加个第一次登录的等待提示界面，在等待时同步所有的用户信息/群组信息/频道信息等。
  */
-- (BOOL)connect:(NSString *)userId token:(NSString *)token;
+- (int64_t)connect:(NSString *)userId token:(NSString *)token;
 
 /**
  断开连接
