@@ -450,6 +450,12 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().clearUnreadStatusEx(types, lines);
     }
 
+    private void clearMessageUnreadStatusBefore(@NonNull MethodCall call, @NonNull Result result) {
+        Conversation conversation = conversationFromArgument(call, false);
+        long messageId = call.argument("messageId");
+        ChatManager.Instance().clearUnreadStatusBeforeMessage(messageId, conversation);
+    }
+
     private void clearMessageUnreadStatus(@NonNull MethodCall call, @NonNull Result result) {
         long messageId = getLongPara(call, "messageId");
         ChatManager.Instance().clearMessageUnreadStatus(messageId);
@@ -490,6 +496,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
             @Override
             public void onFail(int i) {
+                result.success(new ArrayList());
             }
         });
     }
@@ -517,6 +524,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
             @Override
             public void onFail(int i) {
+                result.success(new ArrayList());
             }
         });
     }
@@ -547,6 +555,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
             @Override
             public void onFail(int i) {
+                result.success(new ArrayList());
             }
         });
     }
@@ -581,6 +590,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
             @Override
             public void onFail(int i) {
+                result.success(new ArrayList());
             }
         });
     }

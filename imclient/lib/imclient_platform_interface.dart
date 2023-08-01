@@ -249,6 +249,12 @@ abstract class ImclientPlatform extends PlatformInterface {
     throw UnimplementedError('method has not been implemented.');
   }
 
+  ///清除一个会话的未读状态
+  Future<bool> clearConversationUnreadStatusBeforeMessage(
+      Conversation conversation, int messageId) async {
+    throw UnimplementedError('method has not been implemented.');
+  }
+
   Future<bool> clearMessageUnreadStatus(int messageId) async {
     throw UnimplementedError('method has not been implemented.');
   }

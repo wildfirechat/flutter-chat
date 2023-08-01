@@ -247,6 +247,13 @@ ImclientPlugin *gIMClientInstance;
     result(@(YES));
 }
 
+- (void)clearMessageUnreadStatusBefore:(NSDictionary *)dict result:(FlutterResult)result {
+    NSDictionary *convDict = dict[@"conversation"];
+    long messageId = [dict[@"messageId"] longValue];
+    [[WFCCIMService sharedWFCIMService] clearMessageUnreadStatusBefore:messageId conversation:[self conversationFromDict:convDict]];
+    result(@(YES));
+}
+
 - (void)clearMessageUnreadStatus:(NSDictionary *)dict result:(FlutterResult)result {
     long messageId = [dict[@"messageId"] longValue];
     [[WFCCIMService sharedWFCIMService] clearMessageUnreadStatus:messageId];
@@ -281,8 +288,11 @@ ImclientPlugin *gIMClientInstance;
     long long fromIndex = [dict[@"fromIndex"] longLongValue];
     int count = [dict[@"count"] intValue];
     
-    NSArray<WFCCMessage *> *messages = [[WFCCIMService sharedWFCIMService] getMessages:[self conversationFromDict:convDict] contentTypes:contentTypes from:fromIndex count:count withUser:withUser];
-    result([self convertModelList:messages]);
+    [[WFCCIMService sharedWFCIMService] getMessagesV2:[self conversationFromDict:convDict] contentTypes:contentTypes from:fromIndex count:count withUser:withUser success:^(NSArray<WFCCMessage *> *messages) {
+        result([self convertModelList:messages]);
+    } error:^(int error_code) {
+        result(@[]);
+    }];
 }
 
 - (void)getMessagesByStatus:(NSDictionary *)dict result:(FlutterResult)result {
@@ -292,8 +302,12 @@ ImclientPlugin *gIMClientInstance;
     long long fromIndex = [dict[@"fromIndex"] longLongValue];
     int count = [dict[@"count"] intValue];
     
-    NSArray<WFCCMessage *> *messages = [[WFCCIMService sharedWFCIMService] getMessages:[self conversationFromDict:convDict] messageStatus:messageStatus from:fromIndex count:count withUser:withUser];
-    result([self convertModelList:messages]);
+    [[WFCCIMService sharedWFCIMService] getMessagesV2:[self conversationFromDict:convDict] messageStatus:messageStatus from:fromIndex count:count withUser:withUser success:^(NSArray<WFCCMessage *> *messages) {
+        result([self convertModelList:messages]);
+    } error:^(int error_code) {
+        result(@[]);
+    }];
+    
 }
 
 - (void)getConversationsMessages:(NSDictionary *)dict result:(FlutterResult)result {
@@ -304,8 +318,11 @@ ImclientPlugin *gIMClientInstance;
     long long fromIndex = [dict[@"fromIndex"] longLongValue];
     int count = [dict[@"count"] intValue];
     
-    NSArray<WFCCMessage *> *messages = [[WFCCIMService sharedWFCIMService] getMessages:types lines:lines contentTypes:contentTypes from:fromIndex count:count withUser:withUser];
-    result([self convertModelList:messages]);
+    [[WFCCIMService sharedWFCIMService] getMessagesV2:types lines:lines contentTypes:contentTypes from:fromIndex count:count withUser:withUser success:^(NSArray<WFCCMessage *> *messages) {
+        result([self convertModelList:messages]);
+    } error:^(int error_code) {
+        result(@[]);
+    }];
 }
 
 - (void)getConversationsMessageByStatus:(NSDictionary *)dict result:(FlutterResult)result {
@@ -316,8 +333,11 @@ ImclientPlugin *gIMClientInstance;
     long long fromIndex = [dict[@"fromIndex"] longLongValue];
     int count = [dict[@"count"] intValue];
     
-    NSArray<WFCCMessage *> *messages = [[WFCCIMService sharedWFCIMService] getMessages:types lines:lines messageStatus:messageStatus from:fromIndex count:count withUser:withUser];
-    result([self convertModelList:messages]);
+    [[WFCCIMService sharedWFCIMService] getMessagesV2:types lines:lines messageStatus:messageStatus from:fromIndex count:count withUser:withUser success:^(NSArray<WFCCMessage *> *messages) {
+        result([self convertModelList:messages]);
+    } error:^(int error_code) {
+        result(@[]);
+    }];
 }
 
 - (void)getRemoteMessages:(NSDictionary *)dict result:(FlutterResult)result {
