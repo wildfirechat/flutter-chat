@@ -1308,6 +1308,19 @@ class MethodChannelImclient extends ImclientPlatform {
     return ret;
   }
 
+  ///清除一个会话的未读状态
+  @override
+  Future<bool> clearConversationUnreadStatusBeforeMessage(
+      Conversation conversation, int messageId) async {
+    bool ret = await methodChannel.invokeMethod('clearConversationUnreadStatus',
+        {'conversation': _convertConversation(conversation), 'messageId':messageId});
+    if (ret) {
+      _eventBus.fire(ClearConversationUnreadEvent(conversation));
+    }
+    return ret;
+  }
+
+
   @override
   Future<bool> clearMessageUnreadStatus(int messageId) async {
     return await methodChannel.invokeMethod('clearMessageUnreadStatus', {"messageId":messageId});

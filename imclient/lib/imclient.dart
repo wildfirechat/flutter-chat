@@ -509,6 +509,12 @@ class Imclient {
     return ImclientPlatform.instance.clearConversationsUnreadStatus(types, lines);
   }
 
+  ///清除一个会话的未读状态
+  static Future<bool> clearConversationUnreadStatusBeforeMessage(
+      Conversation conversation, int messageId) async {
+    return ImclientPlatform.instance.clearConversationUnreadStatusBeforeMessage(conversation, messageId);
+  }
+
   ///请求某条消息的未读状态
   static Future<bool> clearMessageUnreadStatus(int messageId) async {
     return ImclientPlatform.instance.clearMessageUnreadStatus(messageId);
