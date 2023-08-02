@@ -1,6 +1,7 @@
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/model/friend.dart';
+import 'package:imclient/model/user_online_state.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'imclient.dart';
@@ -17,7 +18,7 @@ import 'model/group_member.dart';
 import 'model/group_search_info.dart';
 import 'model/im_constant.dart';
 import 'model/message_payload.dart';
-import 'model/online_info.dart';
+import 'model/pc_online_info.dart';
 import 'model/unread_count.dart';
 import 'model/user_info.dart';
 
@@ -144,7 +145,8 @@ abstract class ImclientPlatform extends PlatformInterface {
         FriendListUpdatedCallback? friendListUpdatedCallback,
         FriendRequestListUpdatedCallback? friendRequestListUpdatedCallback,
         UserSettingsUpdatedCallback? userSettingsUpdatedCallback,
-        ChannelInfoUpdatedCallback? channelInfoUpdatedCallback}) async {
+        ChannelInfoUpdatedCallback? channelInfoUpdatedCallback,
+        OnlineEventCallback? onlineEventCallback}) async {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -1110,7 +1112,7 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取PC端在线状态
-  Future<List<OnlineInfo>> getOnlineInfos() async {
+  Future<List<PCOnlineInfo>> getOnlineInfos() async {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -1134,6 +1136,42 @@ abstract class ImclientPlatform extends PlatformInterface {
       OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
   }
+
+  ///获取用户的在线状态
+  Future<UserOnlineState> getUserOnlineState(String userId) async {
+    throw UnimplementedError('method has not been implemented.');
+  }
+
+  ///获取用户的在线状态
+  Future<CustomState> getMyCustomState() async {
+    throw UnimplementedError('method has not been implemented.');
+  }
+
+  void setMyCustomState(
+      int customState, String customText,
+      OperationSuccessVoidCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    throw UnimplementedError('method has not been implemented.');
+  }
+
+  void watchOnlineState(
+      ConversationType conversationType, List<String> targets, int watchDuration,
+      OperationSuccessWatchUserOnlineCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    throw UnimplementedError('method has not been implemented.');
+  }
+
+  void unwatchOnlineState(
+      ConversationType conversationType, List<String> targets,
+      OperationSuccessVoidCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    throw UnimplementedError('method has not been implemented.');
+  }
+
+  Future<bool> isEnableUserOnlineState() async {
+    throw UnimplementedError('method has not been implemented.');
+  }
+
 
   ///获取会话文件记录
   void getConversationFiles(

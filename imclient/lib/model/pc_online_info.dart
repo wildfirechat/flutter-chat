@@ -1,5 +1,5 @@
-class OnlineInfo {
-  OnlineInfo(
+class PCOnlineInfo {
+  PCOnlineInfo(
       {this.platform = 0, this.type = 0,
       this.isOnline = false,
       this.timestamp = 0});

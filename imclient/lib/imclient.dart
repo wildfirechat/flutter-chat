@@ -2,6 +2,7 @@
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/model/friend.dart';
+import 'package:imclient/model/user_online_state.dart';
 
 import 'imclient_platform_interface.dart';
 import 'message/card_message_content.dart';
@@ -53,7 +54,7 @@ import 'model/group_member.dart';
 import 'model/group_search_info.dart';
 import 'model/im_constant.dart';
 import 'model/message_payload.dart';
-import 'model/online_info.dart';
+import 'model/pc_online_info.dart';
 import 'model/read_report.dart';
 import 'model/unread_count.dart';
 import 'model/user_info.dart';
@@ -84,6 +85,8 @@ typedef UserSettingsUpdatedCallback = void Function();
 
 typedef ChannelInfoUpdatedCallback = void Function(List<ChannelInfo> channelInfos);
 
+typedef OnlineEventCallback = void Function(List<UserOnlineState> onlineInfos);
+
 typedef OperationFailureCallback = void Function(int errorCode);
 typedef OperationSuccessVoidCallback = void Function();
 typedef OperationSuccessIntCallback = void Function(int i);
@@ -102,6 +105,7 @@ typedef OperationSuccessFilesCallback = void Function(List<FileRecord> files);
 typedef OperationSuccessChatroomInfoCallback = void Function(ChatroomInfo chatroomInfo);
 typedef OperationSuccessChatroomMemberInfoCallback = void Function(
     ChatroomMemberInfo memberInfo);
+typedef OperationSuccessWatchUserOnlineCallback = void Function(List<UserOnlineState> members);
 typedef OperationSuccessStringListCallback = void Function(List<String> strValues);
 
 typedef GetUploadUrlSuccessCallback = void Function(String uploadUrl, String downloadUrl, String backupUploadUrl, int type);
@@ -221,6 +225,12 @@ class ChannelInfoUpdateEvent {
   List<ChannelInfo> channelInfos;
 
   ChannelInfoUpdateEvent(this.channelInfos);
+}
+
+class UserOnlineStateUpdatedEvent {
+  List<UserOnlineState> onlineInfos;
+
+  UserOnlineStateUpdatedEvent(this.onlineInfos);
 }
 
 class ClearConversationUnreadEvent {
@@ -354,7 +364,8 @@ class Imclient {
         FriendListUpdatedCallback? friendListUpdatedCallback,
         FriendRequestListUpdatedCallback? friendRequestListUpdatedCallback,
         UserSettingsUpdatedCallback? userSettingsUpdatedCallback,
-        ChannelInfoUpdatedCallback? channelInfoUpdatedCallback}) async {
+        ChannelInfoUpdatedCallback? channelInfoUpdatedCallback,
+        OnlineEventCallback? onlineEventCallback}) async {
 
     registerMessageContent(addGroupMemberNotificationContentMeta);
     registerMessageContent(changeGroupNameNotificationContentMeta);
@@ -404,7 +415,8 @@ class Imclient {
         friendListUpdatedCallback: friendListUpdatedCallback,
         friendRequestListUpdatedCallback: friendRequestListUpdatedCallback,
         userSettingsUpdatedCallback: userSettingsUpdatedCallback,
-        channelInfoUpdatedCallback: channelInfoUpdatedCallback);
+        channelInfoUpdatedCallback: channelInfoUpdatedCallback,
+        onlineEventCallback: onlineEventCallback);
   }
 
   ///注册消息，所有的预制消息和自定义消息都必须先注册才可以使用。
@@ -1392,7 +1404,7 @@ class Imclient {
   }
 
   ///获取PC端在线状态
-  static Future<List<OnlineInfo>> getOnlineInfos() async {
+  static Future<List<PCOnlineInfo>> getOnlineInfos() async {
     return ImclientPlatform.instance.getOnlineInfos();
   }
 
@@ -1415,6 +1427,46 @@ class Imclient {
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     ImclientPlatform.instance.muteNotificationWhenPcOnline(isMute, successCallback, errorCallback);
+  }
+
+
+  ///获取用户的在线状态
+  static Future<UserOnlineState> getUserOnlineState(String userId) async {
+    return ImclientPlatform.instance.getUserOnlineState(userId);
+  }
+
+  ///获取当前用户的自定义状态
+  static Future<CustomState> getMyCustomState() async {
+    return ImclientPlatform.instance.getMyCustomState();
+  }
+
+  ///设置当前用户的自定义状态
+  static void setMyCustomState(
+      int customState, String customText,
+      OperationSuccessVoidCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.setMyCustomState(customState, customText, successCallback, errorCallback);
+  }
+
+  ///订阅对象的用户在线状态
+  static void watchOnlineState(
+      ConversationType conversationType, List<String> targets, int watchDuration,
+      OperationSuccessWatchUserOnlineCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.watchOnlineState(conversationType, targets, watchDuration, successCallback, errorCallback);
+  }
+
+  ///取消订阅对象的用户在线状态
+  static void unwatchOnlineState(
+      ConversationType conversationType, List<String> targets,
+      OperationSuccessVoidCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.unwatchOnlineState(conversationType, targets, successCallback, errorCallback);
+  }
+
+  ///服务是否开启用户在线状态
+  static Future<bool> isEnableUserOnlineState() async {
+    return ImclientPlatform.instance.isEnableUserOnlineState();
   }
 
   ///获取会话文件记录

@@ -1587,6 +1587,61 @@ ImclientPlugin *gIMClientInstance;
     result(@(ret));
 }
 
+- (void)getUserOnlineState:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *userId = dict[@"userId"];
+    WFCCUserOnlineState *userOnline = [[WFCCIMService sharedWFCIMService] getUserOnlineState:userId];
+    result([userOnline toJsonObj]);
+}
+
+- (void)getMyCustomState:(NSDictionary *)dict result:(FlutterResult)result {
+    WFCCUserCustomState *customState = [[WFCCIMService sharedWFCIMService] getMyCustomState];
+    result([customState toJsonObj]);
+}
+
+- (void)setMyCustomState:(NSDictionary *)dict result:(FlutterResult)result {
+    int requestId = [dict[@"requestId"] intValue];
+    int customState = [dict[@"customState"] intValue];
+    NSString *customText = dict[@"customText"];
+    WFCCUserCustomState *state = [[WFCCUserCustomState alloc] init];
+    state.state = customState;
+    state.text = customText;
+    [[WFCCIMService sharedWFCIMService] setMyCustomState:state success:^{
+        [self callbackOperationVoidSuccess:requestId];
+    } error:^(int error_code) {
+        [self callbackOperationFailure:requestId errorCode:error_code];
+    }];
+}
+
+- (void)watchOnlineState:(NSDictionary *)dict result:(FlutterResult)result {
+    int requestId = [dict[@"requestId"] intValue];
+    int conversationType = [dict[@"conversationType"] intValue];
+    NSArray<NSString *> *targets = dict[@"targets"];
+    int watchDuration = [dict[@"watchDuration"] intValue];
+    
+    [[WFCCIMService sharedWFCIMService] watchOnlineState:conversationType targets:targets duration:watchDuration success:^(NSArray<WFCCUserOnlineState *> *states) {
+        [self.channel invokeMethod:@"onWatchOnlineStateSuccess" arguments:@{@"requestId":@(requestId), @"states":[self convertModelList:states]}];
+    } error:^(int error_code) {
+        [self callbackOperationFailure:requestId errorCode:error_code];
+    }];
+}
+
+- (void)unwatchOnlineState:(NSDictionary *)dict result:(FlutterResult)result {
+    int requestId = [dict[@"requestId"] intValue];
+    int conversationType = [dict[@"conversationType"] intValue];
+    NSArray<NSString *> *targets = dict[@"targets"];
+    
+    [[WFCCIMService sharedWFCIMService] unwatchOnlineState:conversationType targets:targets success:^{
+        [self callbackOperationVoidSuccess:requestId];
+    } error:^(int error_code) {
+        [self callbackOperationFailure:requestId errorCode:error_code];
+    }];
+}
+
+- (void)isEnableUserOnlineState:(NSDictionary *)dict result:(FlutterResult)result {
+    WFCCUserCustomState *customState = [[WFCCIMService sharedWFCIMService] getMyCustomState];
+    result(@([[WFCCIMService sharedWFCIMService] isEnableUserOnlineState]));
+}
+
 + (void)setDeviceToken:(NSString *)deviceToken {
     [[WFCCNetworkService sharedInstance] setDeviceToken:deviceToken];
 }
@@ -1702,7 +1757,7 @@ ImclientPlugin *gIMClientInstance;
 
 - (void)onUserOnlineStateUpdated:(NSNotification *)notification {
     NSArray<WFCCUserOnlineState *> *events = notification.userInfo[@"states"];
-    [self.channel invokeMethod:@"onUserOnlineStateUpdated" arguments:@{@"states":[self convertModelList:events]}];
+    [self.channel invokeMethod:@"onUserOnlineEvent" arguments:@{@"states":[self convertModelList:events]}];
 }
 
 - (void)onSecretChatStateChanged:(NSNotification *)notification {
