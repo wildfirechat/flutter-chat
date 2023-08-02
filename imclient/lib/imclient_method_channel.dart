@@ -4,6 +4,7 @@ import 'dart:ffi';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:imclient/model/user_online_state.dart';
 import 'package:imclient/tools.dart';
 
 import 'imclient.dart';
@@ -25,7 +26,7 @@ import 'model/group_member.dart';
 import 'model/group_search_info.dart';
 import 'model/im_constant.dart';
 import 'model/message_payload.dart';
-import 'model/online_info.dart';
+import 'model/pc_online_info.dart';
 import 'model/read_report.dart';
 import 'model/unread_count.dart';
 import 'model/user_info.dart';
@@ -49,6 +50,7 @@ class MethodChannelImclient extends ImclientPlatform {
   static FriendRequestListUpdatedCallback? _friendRequestListUpdatedCallback;
   static UserSettingsUpdatedCallback? _userSettingsUpdatedCallback;
   static ChannelInfoUpdatedCallback? _channelInfoUpdatedCallback;
+  static OnlineEventCallback? _onlineEventCallback;
 
 
   static int _requestId = 0;
@@ -197,7 +199,8 @@ class MethodChannelImclient extends ImclientPlatform {
         FriendListUpdatedCallback? friendListUpdatedCallback,
         FriendRequestListUpdatedCallback? friendRequestListUpdatedCallback,
         UserSettingsUpdatedCallback? userSettingsUpdatedCallback,
-        ChannelInfoUpdatedCallback? channelInfoUpdatedCallback}) async {
+        ChannelInfoUpdatedCallback? channelInfoUpdatedCallback,
+        OnlineEventCallback? onlineEventCallback}) async {
     _connectionStatusChangedCallback = connectionStatusChangedCallback;
     _receiveMessageCallback = receiveMessageCallback;
     _recallMessageCallback = recallMessageCallback;
@@ -211,6 +214,7 @@ class MethodChannelImclient extends ImclientPlatform {
     _friendRequestListUpdatedCallback = friendRequestListUpdatedCallback;
     _userSettingsUpdatedCallback = userSettingsUpdatedCallback;
     _channelInfoUpdatedCallback = channelInfoUpdatedCallback;
+    _onlineEventCallback = onlineEventCallback;
 
 
     methodChannel.invokeMethod<Void>('initProto');
@@ -357,6 +361,19 @@ class MethodChannelImclient extends ImclientPlatform {
           }
           _eventBus.fire(ChannelInfoUpdateEvent(data));
           break;
+        case 'onUserOnlineEvent':
+          Map<dynamic, dynamic> args = call.arguments;
+          List<dynamic> states = args['states'];
+          List<UserOnlineState> data = [];
+          for (var state in states) {
+            UserOnlineState info = _convertProtoUserOnlineState(state);
+            data.add(info);
+          }
+          if(_onlineEventCallback != null) {
+            _onlineEventCallback!(data);
+          }
+          _eventBus.fire(UserOnlineStateUpdatedEvent(data));
+          break;
         case 'onSendMessageSuccess':
           Map<dynamic, dynamic> args = call.arguments;
           int requestId = args['requestId'];
@@ -477,6 +494,21 @@ class MethodChannelImclient extends ImclientPlatform {
           var callback = _operationSuccessCallbackMap[requestId];
           if (callback != null) {
             callback(strValue);
+          }
+          _removeOperationCallback(requestId);
+          break;
+        case 'onWatchOnlineStateSuccess':
+          Map<dynamic, dynamic> args = call.arguments;
+          int requestId = args['requestId'];
+          List<dynamic> states = args['states'];
+          List<UserOnlineState> data = [];
+          for (var state in states) {
+            UserOnlineState info = _convertProtoUserOnlineState(state);
+            data.add(info);
+          }
+          var callback = _operationSuccessCallbackMap[requestId];
+          if (callback != null) {
+            callback(data);
           }
           _removeOperationCallback(requestId);
           break;
@@ -1069,8 +1101,29 @@ class MethodChannelImclient extends ImclientPlatform {
     return chatroomInfo;
   }
 
-  static OnlineInfo _convertProtoOnlineInfo(Map<dynamic, dynamic> data) {
-    OnlineInfo info = OnlineInfo();
+  static UserOnlineState _convertProtoUserOnlineState(Map<dynamic, dynamic> data) {
+    String userId = data['userId'];
+    UserOnlineState info = UserOnlineState(userId);
+    Map<dynamic, dynamic>? customState = data['customState'];
+    if(customState != null) {
+      info.customState = CustomState(customState['state']);
+      if(customState['text'] != null) {
+        info.customState!.text = customState['text'];
+      }
+    }
+    List? clientStates = data['clientStates'];
+    if(clientStates != null && clientStates.isNotEmpty) {
+      info.clientStates = [];
+      for (Map<dynamic, dynamic> clientState in clientStates) {
+        ClientState state = ClientState(clientState['platform'], clientState['state'], clientState['lastSeen']);
+        info.clientStates!.add(state);
+      }
+    }
+    return info;
+  }
+
+  static PCOnlineInfo _convertProtoPcOnlineInfo(Map<dynamic, dynamic> data) {
+    PCOnlineInfo info = PCOnlineInfo();
     info.type = data['type'];
     info.isOnline = data['isOnline'];
     info.platform = data['platform'];
@@ -1080,10 +1133,10 @@ class MethodChannelImclient extends ImclientPlatform {
     return info;
   }
 
-  static List<OnlineInfo> _convertProtoOnlineInfos(List<dynamic> datas) {
-    List<OnlineInfo> list = [];
+  static List<PCOnlineInfo> _convertProtoOnlineInfos(List<dynamic> datas) {
+    List<PCOnlineInfo> list = [];
     for (var element in datas) {
-      list.add(_convertProtoOnlineInfo(element));
+      list.add(_convertProtoPcOnlineInfo(element));
     }
     return list;
   }
@@ -2937,7 +2990,7 @@ class MethodChannelImclient extends ImclientPlatform {
 
   ///获取PC端在线状态
   @override
-  Future<List<OnlineInfo>> getOnlineInfos() async {
+  Future<List<PCOnlineInfo>> getOnlineInfos() async {
     List<dynamic> datas = await methodChannel.invokeMethod("getOnlineInfos");
     return _convertProtoOnlineInfos(datas);
   }
@@ -2972,6 +3025,57 @@ class MethodChannelImclient extends ImclientPlatform {
     _errorCallbackMap[requestId] = errorCallback;
     methodChannel.invokeMethod("muteNotificationWhenPcOnline",
         {"requestId": requestId, "isMute": isMute});
+  }
+
+  @override
+  Future<UserOnlineState> getUserOnlineState(String userId) async {
+    return await methodChannel.invokeMethod("getUserOnlineState", {"userId": userId});
+  }
+
+  @override
+  Future<CustomState> getMyCustomState() async {
+    return await methodChannel.invokeMethod("getMyCustomState");
+  }
+
+  @override
+  void setMyCustomState(
+      int customState, String customText,
+      OperationSuccessVoidCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("setMyCustomState",
+        {"requestId": requestId, "customState": customState, "customText":customText});
+  }
+
+  @override
+  void watchOnlineState(
+      ConversationType conversationType, List<String> targets, int watchDuration,
+      OperationSuccessWatchUserOnlineCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("watchOnlineState",
+        {"requestId": requestId, "conversationType": conversationType, "targets":targets, "watchDuration":watchDuration});
+  }
+
+  @override
+  void unwatchOnlineState(
+      ConversationType conversationType, List<String> targets,
+      OperationSuccessVoidCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("unwatchOnlineState",
+        {"requestId": requestId, "conversationType": conversationType, "targets":targets});
+  }
+
+  @override
+  Future<bool> isEnableUserOnlineState() async {
+    return await methodChannel.invokeMethod("isEnableUserOnlineState");
   }
 
   ///获取会话文件记录

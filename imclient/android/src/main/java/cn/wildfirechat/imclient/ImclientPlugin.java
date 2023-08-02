@@ -13,6 +13,7 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+import android.util.Pair;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -55,6 +56,7 @@ import cn.wildfirechat.message.notification.RecallMessageContent;
 import cn.wildfirechat.model.ChannelInfo;
 import cn.wildfirechat.model.ChatRoomInfo;
 import cn.wildfirechat.model.ChatRoomMembersInfo;
+import cn.wildfirechat.model.ClientState;
 import cn.wildfirechat.model.Conversation;
 import cn.wildfirechat.model.ConversationInfo;
 import cn.wildfirechat.model.ConversationSearchResult;
@@ -109,6 +111,7 @@ import cn.wildfirechat.remote.SearchChannelCallback;
 import cn.wildfirechat.remote.SearchUserCallback;
 import cn.wildfirechat.remote.SendMessageCallback;
 import cn.wildfirechat.remote.StringListCallback;
+import cn.wildfirechat.remote.WatchOnlineStateCallback;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -1637,7 +1640,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     private void getChannelInfo(@NonNull MethodCall call, @NonNull Result result) {
         String channelId = call.argument("channelId");
         boolean refresh = call.argument("refresh");
-        result.success(ChatManager.Instance().getChannelInfo(channelId, refresh));
+        result.success(convertChannelInfo(ChatManager.Instance().getChannelInfo(channelId, refresh)));
     }
 
     private void modifyChannelInfo(@NonNull MethodCall call, @NonNull Result result) {
@@ -1864,6 +1867,64 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         result.success(ChatManager.Instance().isGlobalDisableSyncDraft());
     }
 
+    private void getUserOnlineState(@NonNull MethodCall call, @NonNull Result result) {
+        String userId = call.argument("userId");
+        UserOnlineState userOnlineState = ChatManager.Instance().getUserOnlineState(userId);
+        result.success(convertUserOnlineState(userOnlineState));
+    }
+
+    private void getMyCustomState(@NonNull MethodCall call, @NonNull Result result) {
+        Pair<Integer, String> pair = ChatManager.Instance().getMyCustomState();
+        Map<String, Object> map = new HashMap<>();
+        map.put("state", pair.first);
+        map.put("text", pair.second);
+        result.success(map);
+    }
+
+    private void setMyCustomState(@NonNull MethodCall call, @NonNull Result result) {
+        final int requestId = call.argument("requestId");
+        String customText = call.argument("customText");
+        int customState = call.argument("customState");
+        ChatManager.Instance().setMyCustomState(customState, customText, new GeneralVoidCallback(requestId));
+    }
+
+    private void watchOnlineState(@NonNull MethodCall call, @NonNull Result result) {
+        final int requestId = call.argument("requestId");
+        List<String> targets = call.argument("targets");
+        int conversationType = call.argument("conversationType");
+        int watchDuration = call.argument("watchDuration");
+        ChatManager.Instance().watchOnlineState(conversationType, targets.toArray(new String[0]), watchDuration, new WatchOnlineStateCallback() {
+            @Override
+            public void onSuccess(UserOnlineState[] userOnlineStates) {
+                List list = new ArrayList();
+                for (UserOnlineState userOnlineState : userOnlineStates) {
+                    list.add(convertUserOnlineState(userOnlineState));
+                }
+                callbackBuilder(requestId).put("states", list).success("onWatchOnlineStateSuccess");
+            }
+
+            @Override
+            public void onFail(int i) {
+                callbackBuilder(requestId).fail(i);
+            }
+        });
+    }
+
+    private void unwatchOnlineState(@NonNull MethodCall call, @NonNull Result result) {
+        final int requestId = call.argument("requestId");
+        List<String> targets = call.argument("targets");
+        int conversationType = call.argument("conversationType");
+        ChatManager.Instance().unWatchOnlineState(conversationType, targets.toArray(new String[0]), new GeneralVoidCallback(requestId));
+    }
+
+    private void isEnableUserOnlineState(@NonNull MethodCall call, @NonNull Result result) {
+        result.success(ChatManager.Instance().isEnableUserOnlineState());
+    }
+
+//- (void)isEnableUserOnlineState:(NSDictionary *)dict result:(FlutterResult)result {
+//        WFCCUserCustomState *customState = [[WFCCIMService sharedWFCIMService] getMyCustomState];
+//        result(@([[WFCCIMService sharedWFCIMService] isEnableUserOnlineState]));
+//    }
     private void callback2UI(@NonNull final String method, @Nullable final Object arguments) {
         handler.post(new Runnable() {
             @Override
@@ -2505,6 +2566,38 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         channel.setMethodCallHandler(null);
     }
 
+    private static Map<String, Object> convertUserOnlineState(UserOnlineState userOnlineState) {
+        Map<String, Object> state = new HashMap<>();
+        state.put("userId", userOnlineState.getUserId());
+        Map<String, Object> customState = new HashMap<>();
+        state.put("customState", customState);
+        customState.put("state", userOnlineState.getCustomState());
+        if(!TextUtils.isEmpty(userOnlineState.getCustomText())) {
+            customState.put("text", userOnlineState.getCustomText());
+        }
+        if(userOnlineState.getClientStates() != null && userOnlineState.getClientStates().length > 0) {
+            List clientStates = new ArrayList();
+            state.put("clientStates", clientStates);
+            for (ClientState clientState : userOnlineState.getClientStates()) {
+                Map<String, Object> cs = new HashMap<>();
+                cs.put("state", clientState.getState());
+                cs.put("platform", clientState.getPlatform());
+                cs.put("lastSeen", clientState.getLastSeen());
+                clientStates.add(cs);
+            }
+        }
+        return state;
+    }
+
+    private static List convertUserOnlineMap(Map<String, UserOnlineState> map) {
+        List array = new ArrayList();
+        for (Map.Entry<String, UserOnlineState> entry : map.entrySet()) {
+            Map<String, Object> state = convertUserOnlineState(entry.getValue());
+            array.add(state);
+        }
+        return array;
+    }
+
     class WildfireListenerHandler implements InvocationHandler {
         private static final String TAG = "WildfireListenerHandler";
 
@@ -2544,6 +2637,15 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                            args.put("channels", convertProtoChannelInfoList(list));
 //                            callback2UI("onChannelInfoUpdated", args);
 //                        }
+
+                        case "onUserOnlineEvent": {
+                            List events = convertUserOnlineMap((Map<String, UserOnlineState>) args[0]);
+                            Map data = new HashMap();
+                            data.put("states", events);
+                            callback2UI("onUserOnlineEvent", data);
+                            break;
+                        }
+
                         case "onConferenceEvent": {
                             String confEvent = (String) args[0];
                             break;
