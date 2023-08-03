@@ -2,6 +2,7 @@ package cn.wildfirechat.imclient;
 
 import static com.tencent.mars.xlog.Xlog.AppednerModeAsync;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.os.Build;
@@ -2260,7 +2261,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         map.put("memberId", protoData.memberId);
         if (!TextUtils.isEmpty(protoData.alias))
             map.put("alias", protoData.alias);
-            map.put("type", protoData.type.value());
+        map.put("type", protoData.type.value());
         if(protoData.createDt > 0)
             map.put("createDt", protoData.createDt);
         if(protoData.updateDt > 0)
@@ -2568,6 +2569,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private static Map<String, Object> convertUserOnlineState(UserOnlineState userOnlineState) {
         Map<String, Object> state = new HashMap<>();
+        if(userOnlineState == null) {
+            return null;
+        }
         state.put("userId", userOnlineState.getUserId());
         Map<String, Object> customState = new HashMap<>();
         state.put("customState", customState);

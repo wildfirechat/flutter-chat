@@ -1429,9 +1429,8 @@ class Imclient {
     ImclientPlatform.instance.muteNotificationWhenPcOnline(isMute, successCallback, errorCallback);
   }
 
-
   ///获取用户的在线状态
-  static Future<UserOnlineState> getUserOnlineState(String userId) async {
+  static Future<UserOnlineState?> getUserOnlineState(String userId) async {
     return ImclientPlatform.instance.getUserOnlineState(userId);
   }
 
@@ -1442,7 +1441,7 @@ class Imclient {
 
   ///设置当前用户的自定义状态
   static void setMyCustomState(
-      int customState, String customText,
+      int customState, String? customText,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     ImclientPlatform.instance.setMyCustomState(customState, customText, successCallback, errorCallback);
