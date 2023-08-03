@@ -1138,7 +1138,7 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取用户的在线状态
-  Future<UserOnlineState> getUserOnlineState(String userId) async {
+  Future<UserOnlineState?> getUserOnlineState(String userId) async {
     throw UnimplementedError('method has not been implemented.');
   }
 
@@ -1148,7 +1148,7 @@ abstract class ImclientPlatform extends PlatformInterface {
   }
 
   void setMyCustomState(
-      int customState, String customText,
+      int customState, String? customText,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');

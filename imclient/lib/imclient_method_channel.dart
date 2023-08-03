@@ -3028,25 +3028,36 @@ class MethodChannelImclient extends ImclientPlatform {
   }
 
   @override
-  Future<UserOnlineState> getUserOnlineState(String userId) async {
-    return await methodChannel.invokeMethod("getUserOnlineState", {"userId": userId});
+  Future<UserOnlineState?> getUserOnlineState(String userId) async {
+    Map<dynamic, dynamic>? map = await methodChannel.invokeMethod("getUserOnlineState", {"userId": userId});
+    if(map == null) {
+      return null;
+    } else {
+      return _convertProtoUserOnlineState(map);
+    }
   }
 
   @override
   Future<CustomState> getMyCustomState() async {
-    return await methodChannel.invokeMethod("getMyCustomState");
+    Map<dynamic, dynamic> map =  await methodChannel.invokeMethod("getMyCustomState");
+    CustomState cs = CustomState(map['state']);
+    cs.text = map['text'];
+    return cs;
   }
 
   @override
   void setMyCustomState(
-      int customState, String customText,
+      int customState, String? customText,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
-    methodChannel.invokeMethod("setMyCustomState",
-        {"requestId": requestId, "customState": customState, "customText":customText});
+    Map<dynamic, dynamic> args = {"requestId": requestId, "customState": customState};
+    if(customText != null) {
+      args["customText"] = customText;
+    }
+    methodChannel.invokeMethod("setMyCustomState", args);
   }
 
   @override
@@ -3058,7 +3069,7 @@ class MethodChannelImclient extends ImclientPlatform {
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
     methodChannel.invokeMethod("watchOnlineState",
-        {"requestId": requestId, "conversationType": conversationType, "targets":targets, "watchDuration":watchDuration});
+        {"requestId": requestId, "conversationType": conversationType.index, "targets":targets, "watchDuration":watchDuration});
   }
 
   @override
@@ -3070,7 +3081,7 @@ class MethodChannelImclient extends ImclientPlatform {
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
     methodChannel.invokeMethod("unwatchOnlineState",
-        {"requestId": requestId, "conversationType": conversationType, "targets":targets});
+        {"requestId": requestId, "conversationType": conversationType.index, "targets":targets});
   }
 
   @override
