@@ -79,11 +79,11 @@ class _MyAppState extends State<MyApp> {
     }, groupMemberUpdatedCallback: (String groupId, List<GroupMember> members) {
       print("on group ${groupId} member updated $members");
     }, userInfoUpdatedCallback: (List<UserInfo> userInfos) {
-      print("on groupInfo updated $userInfos");
+      print("on UserInfo updated $userInfos");
     }, channelInfoUpdatedCallback: (List<ChannelInfo> channelInfos) {
-      print("on groupInfo updated $channelInfos");
+      print("on ChannelInfo updated $channelInfos");
     }, userSettingsUpdatedCallback: () {
-      print("on groupInfo updated");
+      print("on user settings updated");
     }, friendListUpdatedCallback: (List<String> newFriendIds) {
       print("on friend list updated $newFriendIds");
     }, friendRequestListUpdatedCallback: (List<String> newFriendRequests) {
