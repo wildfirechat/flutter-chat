@@ -2841,6 +2841,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                            args.put("users", convertProtoUserInfoList(list));
 //                            callback2UI("onUserInfoUpdated", args);
 //                        }
+                        case "onTrafficData":
+                            //ignore traffic statistics
+                            break;
                         default: {
                             Log.e(TAG, "not handled event " + methodName);
                             break;
