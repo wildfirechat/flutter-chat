@@ -2192,6 +2192,16 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                 map.put("friendAlias", protoData.friendAlias);
             if(!TextUtils.isEmpty(protoData.groupAlias))
                 map.put("groupAlias", protoData.groupAlias);
+            if(!TextUtils.isEmpty(protoData.mobile))
+                map.put("mobile", protoData.mobile);
+            if(!TextUtils.isEmpty(protoData.email))
+                map.put("email", protoData.email);
+            if(!TextUtils.isEmpty(protoData.address))
+                map.put("address", protoData.address);
+            if(!TextUtils.isEmpty(protoData.company))
+                map.put("company", protoData.company);
+            if(!TextUtils.isEmpty(protoData.social))
+                map.put("social", protoData.social);
             if(!TextUtils.isEmpty(protoData.extra))
                 map.put("extra", protoData.extra);
             if(protoData.updateDt > 0)
