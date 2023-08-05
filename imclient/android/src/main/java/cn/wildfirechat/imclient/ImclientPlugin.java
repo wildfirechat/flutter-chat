@@ -2672,7 +2672,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                            updateConnectionStatus(i);
 //                        }
 //
-                        case "onFriendListUpdated": {
+                        case "onFriendListUpdate": {
                             List<String> strings = (List<String>)args[0];
                             Map data = new HashMap();
                             data.put("friends", strings);
@@ -2686,7 +2686,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                            callback2UI("onFriendListUpdated", args);
 //                        }
 //
-                        case "onFriendRequestUpdated": {
+                        case "onFriendRequestUpdate": {
                             List<String> strings = (List<String>)args[0];
                             Map data = new HashMap();
                             data.put("requests", strings);
@@ -2700,7 +2700,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                            callback2UI("onFriendRequestUpdated", args);
 //                        }
 //
-                        case "onGroupInfoUpdated": {
+                        case "onGroupInfoUpdate": {
                             List<GroupInfo> groupInfos = (List<GroupInfo>)args[0];
                             Map data = new HashMap();
                             data.put("groups", convertGroupInfoList(groupInfos));
@@ -2714,7 +2714,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                            callback2UI("onGroupInfoUpdated", args);
 //                        }
 //
-                        case "onGroupMembersUpdated": {
+                        case "onGroupMembersUpdate": {
                             String s = (String) args[0];
                             List<GroupMember> list = (List<GroupMember>)args[1];
                             Map data = new HashMap();
@@ -2733,11 +2733,21 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //
                         case "onReceiveMessage": {
                             List<Message> list = (List<Message>)args[0];
+                            List<Map<String, Object>> msgs = convertMessageList(list, true);
                             boolean b = (boolean) args[1];
-                            Map<String, Object> data = new HashMap<>();
-                            data.put("messages", convertMessageList(list, true));
-                            data.put("hasMore", b);
-                            callback2UI("onReceiveMessage", data);
+                            int batchSize = 500;
+                            while (!msgs.isEmpty()) {
+                                Map<String, Object> data = new HashMap<>();
+                                data.put("messages", msgs.subList(0, Math.min(batchSize, msgs.size())));
+                                if(msgs.size() <= batchSize) {
+                                    data.put("hasMore", b);
+                                    msgs.clear();
+                                } else {
+                                    msgs = msgs.subList(batchSize, msgs.size());
+                                    data.put("hasMore", true);
+                                }
+                                callback2UI("onReceiveMessage", data);
+                            };
                             break;
                         }
 //                        @Override
@@ -2808,7 +2818,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                            callback2UI("onSettingUpdated", null);
 //                        }
 //
-                        case "onUserInfoUpdated": {
+                        case "onUserInfoUpdate": {
                             List<UserInfo> list = (List<UserInfo>)args[0];
                             Map<String, Object> data = new HashMap<>();
                             data.put("users", convertUserInfoList(list));

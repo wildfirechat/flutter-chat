@@ -1738,7 +1738,14 @@ ImclientPlugin *gIMClientInstance;
 - (void)onReceiveMessage:(NSNotification *)notification {
     NSMutableArray<WFCCMessage *> *messages = notification.object;
     BOOL hasMore = [notification.userInfo[@"hasMore"] boolValue];
-    [self.channel invokeMethod:@"onReceiveMessage" arguments:@{@"messages":[self convertModelList:messages], @"hasMore":@(hasMore)}];
+    NSArray<NSDictionary *> *msgs = [self convertModelList:messages];
+    NSUInteger batchSize = 500;
+    while (msgs.count) {
+        NSUInteger subCount = MIN(batchSize, msgs.count);
+        [self.channel invokeMethod:@"onReceiveMessage" arguments:@{@"messages":[msgs subarrayWithRange:NSMakeRange(0, subCount)], @"hasMore":@(msgs.count > batchSize?true:hasMore)}];
+        msgs = [msgs subarrayWithRange:NSMakeRange(subCount, msgs.count - subCount)];
+    }
+    
 }
 
 - (void)onMessageReaded:(NSNotification *)notification {

@@ -594,6 +594,7 @@ class MethodChannelImclient extends ImclientPlatform {
           _removeAllOperationCallback(requestId);
           break;
         default:
+          print("Unknown event:${call.method}");
           //should not be here!
           break;
       }
