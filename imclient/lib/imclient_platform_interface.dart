@@ -195,7 +195,7 @@ abstract class ImclientPlatform extends PlatformInterface {
   ///设置/取消会话置顶
   void setConversationTop(
       Conversation conversation,
-      bool isTop,
+      int isTop,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     throw UnimplementedError('method has not been implemented.');
