@@ -1365,18 +1365,21 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void getFavGroups(@NonNull MethodCall call, @NonNull Result result) {
-        int requestId = call.argument("requestId");
         ChatManager.Instance().getFavGroups(new GetGroupsCallback() {
             @Override
             public void onSuccess(List<GroupInfo> list) {
-                Map args = new HashMap();
-                args.put("groups", convertGroupInfoList(list));
-                callback2UI("getGroupCallback", args);
+                List<String> outlist = new ArrayList<>();
+                if(list != null) {
+                    for (GroupInfo groupInfo : list) {
+                        outlist.add(groupInfo.target);
+                    }
+                }
+                result.success(outlist);
             }
 
             @Override
             public void onFail(int i) {
-                callbackFailure(requestId, i);
+                result.success("");
             }
         });
     }

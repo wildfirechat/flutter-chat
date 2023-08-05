@@ -1242,7 +1242,7 @@ class MethodChannelImclient extends ImclientPlatform {
   @override
   void setConversationTop(
       Conversation conversation,
-      bool isTop,
+      int isTop,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     int requestId = _requestId++;

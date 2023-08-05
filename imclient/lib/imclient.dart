@@ -465,7 +465,7 @@ class Imclient {
   ///设置/取消会话置顶
   static void setConversationTop(
       Conversation conversation,
-      bool isTop,
+      int isTop,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     ImclientPlatform.instance.setConversationTop(conversation, isTop, successCallback, errorCallback);
