@@ -2751,7 +2751,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                                 data.put("messages", msgs.subList(0, Math.min(batchSize, msgs.size())));
                                 if(msgs.size() <= batchSize) {
                                     data.put("hasMore", b);
-                                    msgs.clear();
+                                    msgs = new ArrayList<>();
                                 } else {
                                     msgs = msgs.subList(batchSize, msgs.size());
                                     data.put("hasMore", true);
