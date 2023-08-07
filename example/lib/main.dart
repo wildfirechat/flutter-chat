@@ -8,6 +8,7 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/read_report.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:imclient/model/user_online_state.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -88,6 +89,8 @@ class _MyAppState extends State<MyApp> {
       print("on friend list updated $newFriendIds");
     }, friendRequestListUpdatedCallback: (List<String> newFriendRequests) {
       print("on friend request updated $newFriendRequests");
+    }, onlineEventCallback: (List<UserOnlineState> onlineInfos) {
+      print(onlineInfos);
     });
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
