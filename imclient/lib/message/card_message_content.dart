@@ -46,7 +46,11 @@ class CardMessageContent extends MediaMessageContent {
       name = map['n'];
       displayName = map['d'];
       portrait = map['p'];
-      type = CardType.values[map['t']];
+      if(map['t'] == null) {
+        type = CardType.CardType_User;
+      } else {
+        type = CardType.values[map['t']];
+      }
     } else {
       type = CardType.CardType_User;
     }
