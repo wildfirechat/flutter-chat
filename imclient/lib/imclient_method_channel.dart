@@ -1159,7 +1159,15 @@ class MethodChannelImclient extends ImclientPlatform {
     } else {
       content = meta.creator();
     }
-    content.decode(payload);
+
+    try {
+      content.decode(payload);
+    } catch (e) {
+      print(e);
+      content = UnknownMessageContent();
+      content.decode(payload);
+    }
+    
     return content;
   }
 
