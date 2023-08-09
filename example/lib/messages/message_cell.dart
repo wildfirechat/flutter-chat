@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/notification/notification_message_content.dart';
@@ -24,6 +25,8 @@ class MessageCell extends StatefulWidget {
       return _TextMessageCell();
     } else if(model.message.content is ImageMessageContent) {
       return _ImageMessageCell();
+    } else if(model.message.content is CallStartMessageContent) {
+      return _CallStartMessageCell();
     }
 
     return _MessageBaseCellState();
@@ -134,6 +137,18 @@ class _TextMessageCell extends _PortraitCellState {
   }
   Widget getContentAres() {
     return Text(textMessageContent.text, overflow: TextOverflow.ellipsis, maxLines: 10,);
+  }
+}
+
+class _CallStartMessageCell extends _PortraitCellState {
+  late CallStartMessageContent callStartMessageContent;
+  @override
+  void initState() {
+    super.initState();
+    callStartMessageContent = widget.model.message.content as CallStartMessageContent;
+  }
+  Widget getContentAres() {
+    return Text(callStartMessageContent.audioOnly?'[语音通话]':'[视频通话]', overflow: TextOverflow.ellipsis, maxLines: 10,);
   }
 }
 
