@@ -950,6 +950,7 @@ class MethodChannelImclient extends ImclientPlatform {
     groupMember.groupId = map['groupId'];
     groupMember.memberId = map['memberId'];
     groupMember.alias = map['alias'];
+    groupMember.extra = map['extra'];
 
     if (map['updateDt'] != null) groupMember.updateDt = map['updateDt'];
     if (map['createDt'] != null) groupMember.createDt = map['createDt'];

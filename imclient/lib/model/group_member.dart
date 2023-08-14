@@ -9,6 +9,7 @@ class GroupMember {
   late String memberId;
   GroupMemberType type;
   String? alias;
+  String? extra;
   int createDt;
   int updateDt;
 }

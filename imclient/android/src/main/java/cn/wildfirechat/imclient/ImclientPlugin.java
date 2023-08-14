@@ -2274,6 +2274,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         map.put("memberId", protoData.memberId);
         if (!TextUtils.isEmpty(protoData.alias))
             map.put("alias", protoData.alias);
+        if (!TextUtils.isEmpty(protoData.extra))
+            map.put("extra", protoData.extra);
         map.put("type", protoData.type.value());
         if(protoData.createDt > 0)
             map.put("createDt", protoData.createDt);
@@ -2769,9 +2771,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                        }
 //
                         case "onRecallMessage": {
-                            long l = (long) args[0];
+                            Message message = (Message) args[0];
                             Map<String, Object> data = new HashMap<>();
-                            data.put("messageUid", l);
+                            data.put("messageUid", message.messageUid);
                             callback2UI("onRecallMessage", data);
                             break;
                         }
@@ -2783,9 +2785,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                        }
 //
                         case "onDeleteMessage": {
-                            long l = (long) args[0];
+                            Message message = (Message) args[0];
                             Map<String, Object> data = new HashMap<>();
-                            data.put("messageUid", l);
+                            data.put("messageUid", message.messageUid);
                             callback2UI("onDeleteMessage", data);
                             break;
                         }
