@@ -1692,7 +1692,7 @@ ImclientPlugin *gIMClientInstance;
     content.mediaType = (WFCCMediaType)[payload[@"mediaType"] intValue];
     content.remoteMediaUrl = payload[@"remoteMediaUrl"];
     content.localMediaPath = payload[@"localMediaPath"];
-    content.mentionedType = [payload[@"mentionedtype"] intValue];
+    content.mentionedType = [payload[@"mentionedType"] intValue];
     content.mentionedTargets = payload[@"mentionedTargets"];
     content.extra = payload[@"extra"];
     return content;
