@@ -2846,6 +2846,14 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                         case "onTrafficData":
                             //ignore traffic statistics
                             break;
+                            
+                        case "onSendPrepare":
+                        case "onSendSuccess":
+                        case "onConversationTopUpdate":
+                        case "onConversationSilentUpdate":
+                        case "onClearMessage":
+                            //ignore these event
+                            break;
                         default: {
                             Log.e(TAG, "not handled event " + methodName);
                             break;
