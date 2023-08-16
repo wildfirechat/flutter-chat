@@ -2641,7 +2641,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                     }
                 }
                 String jsonStr = null;
-                if (args != null) {
+                if (args != null || "onSettingUpdate".equals(methodName)) {
                     switch (methodName) {
                         case "onChannelInfoUpdate": {
                             List<ChannelInfo> channelInfos = (List<ChannelInfo>)args[0];
@@ -2821,7 +2821,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                            callback2UI("onMessageReaded", args);
 //                        }
 //
-                        case "onSettingUpdated": {
+                        case "onSettingUpdate": {
                             callback2UI("onSettingUpdated", null);
                             break;
                         }
