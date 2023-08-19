@@ -399,7 +399,7 @@ class MethodChannelImclient extends ImclientPlatform {
           Map<dynamic, dynamic> args = call.arguments;
           int requestId = args['requestId'];
           String remoteUrl = args['remoteUrl'];
-          var callback = _sendMediaMessageUploadedCallbackMap[requestId];
+          var callback = _operationSuccessCallbackMap[requestId];
           if (callback != null) {
             callback(remoteUrl);
           }
