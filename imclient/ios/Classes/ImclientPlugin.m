@@ -1742,7 +1742,8 @@ ImclientPlugin *gIMClientInstance;
     NSUInteger batchSize = 500;
     while (msgs.count) {
         NSUInteger subCount = MIN(batchSize, msgs.count);
-        [self.channel invokeMethod:@"onReceiveMessage" arguments:@{@"messages":[msgs subarrayWithRange:NSMakeRange(0, subCount)], @"hasMore":@(msgs.count > batchSize?true:hasMore)}];
+        BOOL more = msgs.count > batchSize ? YES : hasMore;
+        [self.channel invokeMethod:@"onReceiveMessage" arguments:@{@"messages":[msgs subarrayWithRange:NSMakeRange(0, subCount)], @"hasMore":@(more)}];
         msgs = [msgs subarrayWithRange:NSMakeRange(subCount, msgs.count - subCount)];
     }
     
