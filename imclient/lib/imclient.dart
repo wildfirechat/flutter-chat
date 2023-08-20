@@ -429,6 +429,7 @@ class Imclient {
 
   /// 连接IM服务。调用连接之后才可以调用获取数据接口。连接状态会通过连接状态回调返回。
   /// [host]为IM服务域名或IP，必须im.example.com或114.144.114.144，不带http头和端口。
+  /// 返回数据为上一次连接的时间，如果首次连接返回0。UI层可以根据间隔判断是否添加等待同步画面
   static Future<int> connect(String host, String userId, String token) async {
     return ImclientPlatform.instance.connect(host, userId, token);
   }
