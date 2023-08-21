@@ -76,6 +76,7 @@ ImclientPlugin *gIMClientInstance;
     BOOL disablePush = [dict[@"disablePush"] boolValue];
     BOOL clearSession = [dict[@"clearSession"] boolValue];
     [[WFCCNetworkService sharedInstance] disconnect:disablePush clearSession:clearSession];
+    result(nil);
 }
 
 - (void)startLog:(NSDictionary *)dict result:(FlutterResult)result {
