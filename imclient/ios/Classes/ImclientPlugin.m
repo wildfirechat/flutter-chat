@@ -182,7 +182,7 @@ ImclientPlugin *gIMClientInstance;
 - (void)setConversationTop:(NSDictionary *)dict result:(FlutterResult)result {
     int requestId = [dict[@"requestId"] intValue];
     NSDictionary *convDict = dict[@"conversation"];
-    int top = [dict[@"top"] intValue];
+    int top = [dict[@"isTop"] intValue];
     [[WFCCIMService sharedWFCIMService] setConversation:[self conversationFromDict:convDict] top:top success:^{
         [self callbackOperationVoidSuccess:requestId];
     } error:^(int error_code) {
