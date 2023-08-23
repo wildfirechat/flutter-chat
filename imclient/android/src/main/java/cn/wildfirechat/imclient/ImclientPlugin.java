@@ -2619,15 +2619,6 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             try {
-                if (Object.class.equals(method.getDeclaringClass())) {
-                    if (method.getName() == "equals") {
-                        return proxy == args[0];
-                    } else if (method.getName() == "hasCode") {
-                        return System.identityHashCode(proxy);
-                    } else {
-                        return method.invoke(proxy, args);
-                    }
-                }
                 if (channel == null) {
                     return null;
                 }
