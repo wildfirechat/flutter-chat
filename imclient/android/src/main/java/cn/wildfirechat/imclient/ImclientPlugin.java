@@ -277,60 +277,71 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         boolean disablePush = call.argument("disablePush");
         boolean clearSession = call.argument("clearSession");
         ChatManager.Instance().disconnect(disablePush, clearSession);
+        result.success(null);
     }
 
     private void startLog(@NonNull MethodCall call, @NonNull Result result) {
         ChatManager.Instance().startLog();
+        result.success(null);
     }
 
     private void stopLog(@NonNull MethodCall call, @NonNull Result result) {
         ChatManager.Instance().stopLog();
+        result.success(null);
     }
 
     private void setSendLogCommand(@NonNull MethodCall call, @NonNull Result result) {
         String cmd = call.argument("cmd");
         ChatManager.Instance().setSendLogCommand(cmd);
+        result.success(null);
     }
 
     private void useSM4(@NonNull MethodCall call, @NonNull Result result) {
         ChatManager.Instance().useSM4();
+        result.success(null);
     }
 
     private void setLiteMode(@NonNull MethodCall call, @NonNull Result result) {
         boolean liteMode = call.argument("liteMode");
         ChatManager.Instance().setLiteMode(liteMode);
+        result.success(null);
     }
 
     private void setDeviceToken(@NonNull MethodCall call, @NonNull Result result) {
         String deviceToken = call.argument("deviceToken");
         int pushType = call.argument("pushType");
         ChatManager.Instance().setDeviceToken(deviceToken, pushType);
+        result.success(null);
     }
 
     private void setVoipDeviceToken(@NonNull MethodCall call, @NonNull Result result) {
-
+        result.success(null);
     }
 
     private void setBackupAddressStrategy(@NonNull MethodCall call, @NonNull Result result) {
         int strategy = call.argument("strategy");
         ChatManager.Instance().setBackupAddressStrategy(strategy);
+        result.success(null);
     }
 
     private void setBackupAddress(@NonNull MethodCall call, @NonNull Result result) {
         String host = call.argument("host");
         int port = call.argument("port");
         ChatManager.Instance().setBackupAddress(host, port);
+        result.success(null);
     }
 
     private void setProtoUserAgent(@NonNull MethodCall call, @NonNull Result result) {
         String agent = call.argument("agent");
         ChatManager.Instance().setProtoUserAgent(agent);
+        result.success(null);
     }
 
     private void addHttpHeader(@NonNull MethodCall call, @NonNull Result result) {
         String header = call.argument("header");
         String value = call.argument("value");
         ChatManager.Instance().addHttpHeader(header, value);
+        result.success(null);
     }
 
     private void setProxyInfo(@NonNull MethodCall call, @NonNull Result result) {
@@ -341,6 +352,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String password = call.argument("password");
         Socks5ProxyInfo socks5ProxyInfo = new Socks5ProxyInfo(host, ip, port, userName, password);
         ChatManager.Instance().setProxyInfo(socks5ProxyInfo);
+        result.success(null);
     }
 
     private void getProtoRevision(@NonNull MethodCall call, @NonNull Result result) {
@@ -375,6 +387,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         boolean clearMessage = call.argument("clearMessage");
         Conversation conversation = conversationFromArgument(call, false);
         ChatManager.Instance().removeConversation(conversation, clearMessage);
+        result.success(null);
     }
 
     private void setConversationTop(@NonNull MethodCall call, @NonNull Result result) {
@@ -395,12 +408,14 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String draft = (String) call.argument("draft");
         Conversation conversation = conversationFromArgument(call, false);
         ChatManager.Instance().setConversationDraft(conversation, draft);
+        result.success(null);
     }
 
     private void setConversationTimestamp(@NonNull MethodCall call, @NonNull Result result) {
         long timestamp = getLongPara(call, "timestamp");
         Conversation conversation = conversationFromArgument(call, false);
         ChatManager.Instance().setConversationTimestamp(conversation, timestamp);
+        result.success(null);
     }
 
     private void getFirstUnreadMessageId(@NonNull MethodCall call, @NonNull Result result) {
@@ -909,6 +924,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     private void setMediaMessagePlayed(@NonNull MethodCall call, @NonNull Result result) {
         long messageId = getLongPara(call, "messageId");
         ChatManager.Instance().setMediaMessagePlayed(messageId);
+        result.success(null);
     }
 
     private void setMessageLocalExtra(@NonNull MethodCall call, @NonNull Result result) {
@@ -1058,6 +1074,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void loadFriendRequestFromRemote(@NonNull MethodCall call, @NonNull Result result) {
         ChatManager.Instance().loadFriendRequestFromRemote();
+        result.success(null);
     }
 
     private void getUnreadFriendRequestStatus(@NonNull MethodCall call, @NonNull Result result) {

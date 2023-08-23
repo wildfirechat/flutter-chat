@@ -81,56 +81,67 @@ ImclientPlugin *gIMClientInstance;
 
 - (void)startLog:(NSDictionary *)dict result:(FlutterResult)result {
     [WFCCNetworkService startLog];
+    result(nil);
 }
 
 - (void)stopLog:(NSDictionary *)dict result:(FlutterResult)result {
     [WFCCNetworkService stopLog];
+    result(nil);
 }
 
 - (void)setSendLogCommand:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *cmd = dict[@"cmd"];
     [WFCCNetworkService sharedInstance].sendLogCommand = cmd;
+    result(nil);
 }
 
 - (void)useSM4:(NSDictionary *)dict result:(FlutterResult)result {
     [[WFCCNetworkService sharedInstance] useSM4];
+    result(nil);
 }
 
 - (void)setLiteMode:(NSDictionary *)dict result:(FlutterResult)result {
     BOOL liteMode = [dict[@"liteMode"] boolValue];
     [[WFCCNetworkService sharedInstance] setLiteMode:liteMode];
+    result(nil);
 }
 
 - (void)setDeviceToken:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *deviceToken = dict[@"deviceToken"];
     [[WFCCNetworkService sharedInstance] setDeviceToken:deviceToken];
+    result(nil);
 }
 
 - (void)setVoipDeviceToken:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *voipToken = dict[@"voipToken"];
     [[WFCCNetworkService sharedInstance] setVoipDeviceToken:voipToken];
+    result(nil);
 }
 
 - (void)setBackupAddressStrategy:(NSDictionary *)dict result:(FlutterResult)result {
     int strategy = [dict[@"strategy"] intValue];
     [[WFCCNetworkService sharedInstance] setBackupAddressStrategy:strategy];
+    result(nil);
 }
 
 - (void)setBackupAddress:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *host = dict[@"host"];
     int port = [dict[@"port"] intValue];
     [[WFCCNetworkService sharedInstance] setBackupAddress:host port:port];
+    result(nil);
 }
 
 - (void)setProtoUserAgent:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *agent = dict[@"agent"];
     [[WFCCNetworkService sharedInstance] setProtoUserAgent:agent];
+    result(nil);
 }
 
 - (void)addHttpHeader:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *header = dict[@"header"];
     NSString *value = dict[@"value"];
     [[WFCCNetworkService sharedInstance] addHttpHeader:header value:value];
+    result(nil);
 }
 
 - (void)setProxyInfo:(NSDictionary *)dict result:(FlutterResult)result {
@@ -140,6 +151,7 @@ ImclientPlugin *gIMClientInstance;
     NSString *userName = dict[@"userName"];
     NSString *password = dict[@"password"];
     [[WFCCNetworkService sharedInstance] setProxyInfo:host ip:ip port:port username:userName password:password];
+    result(nil);
 }
 
 - (void)getProtoRevision:(NSDictionary *)dict result:(FlutterResult)result {
@@ -177,6 +189,7 @@ ImclientPlugin *gIMClientInstance;
     BOOL clearMessage = [dict[@"clearMessage"] boolValue];
     
     [[WFCCIMService sharedWFCIMService] removeConversation:[self conversationFromDict:conversation] clearMessage:clearMessage];
+    result(nil);
 }
 
 - (void)setConversationTop:(NSDictionary *)dict result:(FlutterResult)result {
@@ -205,12 +218,14 @@ ImclientPlugin *gIMClientInstance;
     NSDictionary *convDict = dict[@"conversation"];
     NSString *draft = dict[@"draft"];
     [[WFCCIMService sharedWFCIMService] setConversation:[self conversationFromDict:convDict] draft:draft];
+    result(nil);
 }
 
 - (void)setConversationTimestamp:(NSDictionary *)dict result:(FlutterResult)result {
     NSDictionary *convDict = dict[@"conversation"];
     long long timestamp = [dict[@"timestamp"] longLongValue];
     [[WFCCIMService sharedWFCIMService] setConversation:[self conversationFromDict:convDict] timestamp:timestamp];
+    result(nil);
 }
 
 - (void)getFirstUnreadMessageId:(NSDictionary *)dict result:(FlutterResult)result {
@@ -541,6 +556,7 @@ ImclientPlugin *gIMClientInstance;
 - (void)setMediaMessagePlayed:(NSDictionary *)dict result:(FlutterResult)result {
     long messageId = [dict[@"messageId"] longValue];
     [[WFCCIMService sharedWFCIMService] setMediaMessagePlayed:messageId];
+    result(nil);
 }
 
 - (void)setMessageLocalExtra:(NSDictionary *)dict result:(FlutterResult)result {
@@ -565,6 +581,7 @@ ImclientPlugin *gIMClientInstance;
     long messageId = [((NSString*) dict[@"messageId"]) longLongValue];
 
     [[WFCCIMService sharedWFCIMService] updateMessage:messageId content:[self contentFromDict:content]];
+    result(nil);
 }
 
 - (void)updateRemoteMessageContent:(NSDictionary *)dict result:(FlutterResult)result {
@@ -588,6 +605,7 @@ ImclientPlugin *gIMClientInstance;
     long messageId = [((NSString*) dict[@"messageId"]) longLongValue];
 
     [[WFCCIMService sharedWFCIMService] updateMessage:messageId status:(WFCCMessageStatus)status];
+    result(nil);
 }
 
 - (void)getMessageCount:(NSDictionary *)dict result:(FlutterResult)result {
@@ -694,6 +712,7 @@ ImclientPlugin *gIMClientInstance;
 
 - (void)loadFriendRequestFromRemote:(NSDictionary *)dict result:(FlutterResult)result {
     [[WFCCIMService sharedWFCIMService] loadFriendRequestFromRemote];
+    result(nil);
 }
 
 - (void)getUnreadFriendRequestStatus:(NSDictionary *)dict result:(FlutterResult)result {
