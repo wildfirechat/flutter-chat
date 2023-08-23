@@ -2667,6 +2667,15 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             try {
+                if (Object.class.equals(method.getDeclaringClass())) {
+                    if (method.getName() == "equals") {
+                        return proxy == args[0];
+                    } else if (method.getName() == "hasCode") {
+                        return System.identityHashCode(proxy);
+                    } else {
+                        return method.invoke(proxy, args);
+                    }
+                }
                 String methodName = method.getName();
                 int status = ChatManager.Instance().getConnectionStatus();
                 // 回调 js 层时，好像有大小限制，先规避一下
