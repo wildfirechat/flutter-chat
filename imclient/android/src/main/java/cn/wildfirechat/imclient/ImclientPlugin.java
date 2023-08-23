@@ -1,16 +1,8 @@
 package cn.wildfirechat.imclient;
 
-import static com.tencent.mars.xlog.Xlog.AppednerModeAsync;
-
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Handler;
-import android.os.LocaleList;
 import android.os.Looper;
-import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
@@ -24,23 +16,14 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
-import java.io.File;
-import java.io.RandomAccessFile;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +36,6 @@ import cn.wildfirechat.message.core.MessageDirection;
 import cn.wildfirechat.message.core.MessagePayload;
 import cn.wildfirechat.message.core.MessageStatus;
 import cn.wildfirechat.message.core.PersistFlag;
-import cn.wildfirechat.message.notification.RecallMessageContent;
 import cn.wildfirechat.model.ChannelInfo;
 import cn.wildfirechat.model.ChatRoomInfo;
 import cn.wildfirechat.model.ChatRoomMembersInfo;
@@ -73,21 +55,6 @@ import cn.wildfirechat.model.ModifyGroupInfoType;
 import cn.wildfirechat.model.ModifyMyInfoEntry;
 import cn.wildfirechat.model.ModifyMyInfoType;
 import cn.wildfirechat.model.PCOnlineInfo;
-import cn.wildfirechat.model.ProtoChannelInfo;
-import cn.wildfirechat.model.ProtoChatRoomInfo;
-import cn.wildfirechat.model.ProtoChatRoomMembersInfo;
-import cn.wildfirechat.model.ProtoConversationInfo;
-import cn.wildfirechat.model.ProtoConversationSearchresult;
-import cn.wildfirechat.model.ProtoFileRecord;
-import cn.wildfirechat.model.ProtoFriendRequest;
-import cn.wildfirechat.model.ProtoGroupInfo;
-import cn.wildfirechat.model.ProtoGroupMember;
-import cn.wildfirechat.model.ProtoGroupSearchResult;
-import cn.wildfirechat.model.ProtoMessage;
-import cn.wildfirechat.model.ProtoMessageContent;
-import cn.wildfirechat.model.ProtoReadEntry;
-import cn.wildfirechat.model.ProtoUnreadCount;
-import cn.wildfirechat.model.ProtoUserInfo;
 import cn.wildfirechat.model.ReadEntry;
 import cn.wildfirechat.model.Socks5ProxyInfo;
 import cn.wildfirechat.model.UnreadCount;
@@ -119,19 +86,21 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 
-/** FlutterImclientPlugin */
+/**
+ * FlutterImclientPlugin
+ */
 public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     private static final String TAG = "ImclientPlugin";
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
-    private MethodChannel channel;
-    private Handler handler;
+    private static MethodChannel channel;
+    private static Handler handler;
 
-    private Map<String, Object> listeners = new HashMap<>();
+    private static boolean isWfcIMClientInitialized = false;
 
-    public ImclientPlugin(){
+    public ImclientPlugin() {
         super();
     }
 
@@ -153,37 +122,13 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                     Log.i(TAG, paramTypes[0].getDeclaredMethods()[0].getName());
                     WildfireListenerHandler wildfireListenerHandler = new WildfireListenerHandler();
                     Object listener = Proxy.newProxyInstance(
-                            ImclientPlugin.class.getClassLoader(),
-                            new Class[]{paramTypes[0]},
-                            wildfireListenerHandler);
+                        ImclientPlugin.class.getClassLoader(),
+                        new Class[]{paramTypes[0]},
+                        wildfireListenerHandler);
                     method.invoke(chatManager, listener);
-                    listeners.put(paramTypes[0].getName(), listener);
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void removeWfcListeners() {
-        ChatManager chatManager = ChatManager.Instance();
-        try {
-            Class<?> ChatManagerClazz = chatManager.getClass();
-            Method[] ChatManagerMethods = ChatManagerClazz.getDeclaredMethods();
-
-            Pattern pattern = Pattern.compile("remove(.*)Listener");
-
-            for (Method method : ChatManagerMethods) {
-                Matcher matcher = pattern.matcher(method.getName());
-                if (matcher.find()) {
-                    Class[] paramTypes = method.getParameterTypes();
-                    Object listener = listeners.get(paramTypes[0].getName());
-                    if(listener != null) {
-                        method.invoke(chatManager, listener);
-                    }
-                }
-            }
-        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -207,6 +152,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "imclient");
         channel.setMethodCallHandler(this);
 
+        if (isWfcIMClientInitialized) {
+            return;
+        }
+        isWfcIMClientInitialized = true;
         ChatManager.init(flutterPluginBinding.getApplicationContext(), null);
         if (!this.isWfcUIKitEnable()) {
             ChatManager chatManager = ChatManager.Instance();
@@ -237,7 +186,6 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         Log.d(TAG, "onDetachedFromEngine");
-        removeWfcListeners();
         channel.setMethodCallHandler(null);
         channel = null;
     }
@@ -257,7 +205,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String target;
         int line;
 
-        if(root) {
+        if (root) {
             type = Conversation.ConversationType.type((int) call.argument("type"));
             target = (String) call.argument("target");
             line = (int) call.argument("line");
@@ -431,20 +379,20 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void setConversationTop(@NonNull MethodCall call, @NonNull Result result) {
         int requestId = call.argument("requestId");
-        int top = (int)call.argument("isTop");
+        int top = (int) call.argument("isTop");
         Conversation conversation = conversationFromArgument(call, false);
         ChatManager.Instance().setConversationTop(conversation, top, new GeneralVoidCallback(requestId));
     }
 
     private void setConversationSilent(@NonNull MethodCall call, @NonNull Result result) {
         int requestId = call.argument("requestId");
-        boolean isSilent = (boolean)call.argument("isSilent");
+        boolean isSilent = (boolean) call.argument("isSilent");
         Conversation conversation = conversationFromArgument(call, false);
         ChatManager.Instance().setConversationSilent(conversation, isSilent, new GeneralVoidCallback(requestId));
     }
 
     private void setConversationDraft(@NonNull MethodCall call, @NonNull Result result) {
-        String draft = (String)call.argument("draft");
+        String draft = (String) call.argument("draft");
         Conversation conversation = conversationFromArgument(call, false);
         ChatManager.Instance().setConversationDraft(conversation, draft);
     }
@@ -544,7 +492,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         long fromIndex = getLongPara(call, "fromIndex");
         int count = call.argument("count");
         boolean isDesc = false;
-        if(count < 0) {
+        if (count < 0) {
             isDesc = true;
             count = -count;
         }
@@ -573,7 +521,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         long fromIndex = getLongPara(call, "fromIndex");
         int count = call.argument("count");
         boolean isDesc = false;
-        if(count < 0) {
+        if (count < 0) {
             isDesc = true;
             count = -count;
         }
@@ -608,7 +556,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         long fromIndex = getLongPara(call, "fromIndex");
         int count = call.argument("count");
         boolean isDesc = false;
-        if(count < 0) {
+        if (count < 0) {
             isDesc = true;
             count = -count;
         }
@@ -640,7 +588,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().getRemoteMessages(conversation, contentTypes, beforeMessageUid, count, new GetRemoteMessageCallback() {
             @Override
             public void onSuccess(List<Message> list) {
-                callbackBuilder(requestId).put("messages",convertMessageList(list, true)).success("onMessagesCallback");
+                callbackBuilder(requestId).put("messages", convertMessageList(list, true)).success("onMessagesCallback");
             }
 
             @Override
@@ -657,7 +605,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().getRemoteMessage(messageUid, new GetOneRemoteMessageCallback() {
             @Override
             public void onSuccess(Message message) {
-                callbackBuilder(requestId).put("messages",convertMessage(message)).success("onMessageCallback");
+                callbackBuilder(requestId).put("messages", convertMessage(message)).success("onMessageCallback");
             }
 
             @Override
@@ -697,7 +645,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         long fromIndex = getLongPara(call, "fromIndex");
         int count = call.argument("count");
         boolean desc = false;
-        if(count < 0) {
+        if (count < 0) {
             desc = true;
             count = -count;
         }
@@ -721,31 +669,31 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private MessageContent messageContentFromMaps(Map map) {
         MessagePayload protoData = new MessagePayload();
-        if(map == null || map.isEmpty() || !map.containsKey("type")) {
+        if (map == null || map.isEmpty() || !map.containsKey("type")) {
             return null;
         }
 
-        protoData.type = ((int)map.get("type"));
-        protoData.searchableContent = ((String)map.get("searchableContent"));
-        protoData.pushContent = ((String)map.get("pushContent"));
-        protoData.pushData = ((String)map.get("pushData"));
-        protoData.content = ((String)map.get("content"));
-        protoData.binaryContent = ((byte[])map.get("binaryContent"));
-        protoData.localContent = ((String)map.get("localContent"));
-        protoData.mediaType = MessageContentMediaType.mediaType((int)map.get("mediaType"));
-        protoData.remoteMediaUrl = ((String)map.get("remoteMediaUrl"));
-        protoData.localMediaPath = ((String)map.get("localMediaPath"));
-        protoData.mentionedType = ((int)map.get("mentionedType"));
-        if(map.get("mentionedTargets") != null) {
-            List<String> ts = (List<String>)map.get("mentionedTargets");
-            if(!ts.isEmpty()) {
+        protoData.type = ((int) map.get("type"));
+        protoData.searchableContent = ((String) map.get("searchableContent"));
+        protoData.pushContent = ((String) map.get("pushContent"));
+        protoData.pushData = ((String) map.get("pushData"));
+        protoData.content = ((String) map.get("content"));
+        protoData.binaryContent = ((byte[]) map.get("binaryContent"));
+        protoData.localContent = ((String) map.get("localContent"));
+        protoData.mediaType = MessageContentMediaType.mediaType((int) map.get("mediaType"));
+        protoData.remoteMediaUrl = ((String) map.get("remoteMediaUrl"));
+        protoData.localMediaPath = ((String) map.get("localMediaPath"));
+        protoData.mentionedType = ((int) map.get("mentionedType"));
+        if (map.get("mentionedTargets") != null) {
+            List<String> ts = (List<String>) map.get("mentionedTargets");
+            if (!ts.isEmpty()) {
                 protoData.mentionedTargets = new ArrayList<>();
                 for (int i = 0; i < ts.size(); i++) {
                     protoData.mentionedTargets.add(ts.get(i));
                 }
             }
         }
-        protoData.extra = ((String)map.get("extra"));
+        protoData.extra = ((String) map.get("extra"));
 
         return ChatManager.Instance().messageContentFromPayload(protoData, ChatManager.Instance().getUserId());
     }
@@ -765,14 +713,14 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         msg.status = MessageStatus.Sending;
         msg.direction = MessageDirection.Send;
         msg.sender = ChatManager.Instance().getUserId();
-        if(toUsers != null) {
+        if (toUsers != null) {
             msg.toUsers = toUsers.toArray(new String[0]);
         }
 
         ChatManager.Instance().sendMessage(conversation, messageContent, toUsers != null ? toUsers.toArray(new String[0]) : null, expireDuration, new SendMessageCallback() {
             @Override
             public void onSuccess(long l, long l1) {
-                callbackBuilder(requestId).put("messageUid",l).put("timestamp", l1).success("onSendMessageSuccess");
+                callbackBuilder(requestId).put("messageUid", l).put("timestamp", l1).success("onSendMessageSuccess");
             }
 
             @Override
@@ -789,12 +737,12 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
             @Override
             public void onProgress(long uploaded, long total) {
-                callbackBuilder(requestId).put("uploaded",uploaded).put("total", total).success("onSendMediaMessageProgress");
+                callbackBuilder(requestId).put("uploaded", uploaded).put("total", total).success("onSendMediaMessageProgress");
             }
 
             @Override
             public void onMediaUpload(String remoteUrl) {
-                callbackBuilder(requestId).put("remoteUrl",remoteUrl).success("onSendMediaMessageUploaded");
+                callbackBuilder(requestId).put("remoteUrl", remoteUrl).success("onSendMediaMessageUploaded");
             }
         });
     }
@@ -811,6 +759,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             this.requestId = requestId;
             args.put("requestId", requestId);
         }
+
         public CallbackBuilder put(String key, Object value) {
             args.put(key, value);
             return this;
@@ -845,11 +794,11 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         long messageId = getLongPara(call, "messageId");
         int expireDuration = call.argument("expireDuration");
         Message msg = ChatManager.Instance().getMessage(messageId);
-        if(msg != null) {
+        if (msg != null) {
             ChatManager.Instance().sendSavedMessage(msg, expireDuration, new SendMessageCallback() {
                 @Override
                 public void onSuccess(long l, long l1) {
-                    callbackBuilder(requestId).put("messageUid",l).put("timestamp", l1).success("onSendMessageSuccess");
+                    callbackBuilder(requestId).put("messageUid", l).put("timestamp", l1).success("onSendMessageSuccess");
                 }
 
                 @Override
@@ -875,7 +824,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         int requestId = call.argument("requestId");
         long messageUid = getLongPara(call, "messageUid");
         Message msg = ChatManager.Instance().getMessageByUid(messageUid);
-        if(msg != null) {
+        if (msg != null) {
             ChatManager.Instance().recallMessage(msg, new GeneralVoidCallback(requestId));
         }
     }
@@ -899,11 +848,11 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             @Override
             public void onSuccess(String s, String s1, String s2, int i) {
                 callbackBuilder(requestId)
-                        .put("uploadUrl", s)
-                        .put("downloadUrl", s1)
-                        .put("backupUploadUrl", s2)
-                        .put("type", i)
-                        .success("onGetUploadUrl");
+                    .put("uploadUrl", s)
+                    .put("downloadUrl", s1)
+                    .put("backupUploadUrl", s2)
+                    .put("type", i)
+                    .success("onGetUploadUrl");
             }
 
             @Override
@@ -922,7 +871,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         long messageId = getLongPara(call, "messageId");
         Message msg = ChatManager.Instance().getMessage(messageId);
         boolean ret = false;
-        if(msg != null) {
+        if (msg != null) {
             ret = ChatManager.Instance().deleteMessage(msg);
         }
         result.success(ret);
@@ -941,13 +890,13 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void clearMessages(@NonNull MethodCall call, @NonNull Result result) {
-            Conversation conversation = conversationFromArgument(call, false);
-            long before = getLongPara(call, "before");
-            if(before > 0)
-                ChatManager.Instance().clearMessages(conversation);
-            else
-                ChatManager.Instance().clearMessages(conversation, before);
-            result.success(true);
+        Conversation conversation = conversationFromArgument(call, false);
+        long before = getLongPara(call, "before");
+        if (before > 0)
+            ChatManager.Instance().clearMessages(conversation);
+        else
+            ChatManager.Instance().clearMessages(conversation, before);
+        result.success(true);
     }
 
     private void clearRemoteConversationMessage(@NonNull MethodCall call, @NonNull Result result) {
@@ -977,7 +926,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         List<String> toUsers = call.argument("toUsers");
 
         String[] tos = null;
-        if(toUsers != null) {
+        if (toUsers != null) {
             tos = toUsers.toArray(new String[0]);
         }
 
@@ -1104,7 +1053,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     private void getFriendRequest(@NonNull MethodCall call, @NonNull Result result) {
         String userId = call.argument("userId");
         int direction = call.argument("direction");
-        result.success(convertFriendRequest(ChatManager.Instance().getFriendRequest(userId, direction>0)));
+        result.success(convertFriendRequest(ChatManager.Instance().getFriendRequest(userId, direction > 0)));
     }
 
     private void loadFriendRequestFromRemote(@NonNull MethodCall call, @NonNull Result result) {
@@ -1401,7 +1350,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             @Override
             public void onSuccess(List<GroupInfo> list) {
                 List<String> outlist = new ArrayList<>();
-                if(list != null) {
+                if (list != null) {
                     for (GroupInfo groupInfo : list) {
                         outlist.add(groupInfo.target);
                     }
@@ -1456,7 +1405,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         List<ModifyMyInfoEntry> list = new ArrayList<>();
         for (Object o : values.keySet()) {
             ModifyMyInfoEntry entry = new ModifyMyInfoEntry();
-            entry.type = ModifyMyInfoType.type((Integer)o);
+            entry.type = ModifyMyInfoType.type((Integer) o);
             entry.value = (String) values.get(o);
             list.add(entry);
         }
@@ -1498,7 +1447,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().getNoDisturbingTimes(new ChatManager.GetNoDisturbingTimesCallback() {
             @Override
             public void onResult(boolean b, int i, int i1) {
-                if(b) {
+                if (b) {
                     callbackBuilder(requestId).put("first", i).put("second", i1).success("onOperationVoidSuccess");
                 } else {
                     callbackBuilder(requestId).fail(-1);
@@ -1957,15 +1906,15 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         result.success(ChatManager.Instance().isEnableUserOnlineState());
     }
 
-//- (void)isEnableUserOnlineState:(NSDictionary *)dict result:(FlutterResult)result {
+    //- (void)isEnableUserOnlineState:(NSDictionary *)dict result:(FlutterResult)result {
 //        WFCCUserCustomState *customState = [[WFCCIMService sharedWFCIMService] getMyCustomState];
 //        result(@([[WFCCIMService sharedWFCIMService] isEnableUserOnlineState]));
 //    }
-    private void callback2UI(@NonNull final String method, @Nullable final Object arguments) {
+    private static void callback2UI(@NonNull final String method, @Nullable final Object arguments) {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                if(channel != null) {
+                if (channel != null) {
                     try {
                         channel.invokeMethod(method, arguments);
                     } catch (Exception e) {
@@ -1979,11 +1928,12 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         });
 
     }
+
     private int[] convertIntegerList(List<Integer> ints) {
         if (ints == null || ints.size() == 0) {
             int[] arr = new int[1];
             arr[0] = 0;
-            return  arr;
+            return arr;
         }
 
         int[] arr = new int[ints.size()];
@@ -1995,60 +1945,60 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private long getLongPara(MethodCall call, String key) {
         Object obj = call.argument(key);
-        if(obj instanceof Long) {
+        if (obj instanceof Long) {
             Long l = (Long) obj;
             return l;
-        } else if(obj instanceof Integer) {
+        } else if (obj instanceof Integer) {
             int i = (Integer) obj;
             return i;
-        } else if(obj instanceof Float) {
+        } else if (obj instanceof Float) {
             float f = (Float) obj;
-            return (long)f;
-        } else if(obj instanceof Double) {
-            double d = (Double)obj;
-            return (long)d;
+            return (long) f;
+        } else if (obj instanceof Double) {
+            double d = (Double) obj;
+            return (long) d;
         } else {
             return Long.valueOf(call.argument(key).toString());
         }
     }
 
-    private List<Map<String, Object>> convertConversationInfos(ConversationInfo[] protoDatas) {
+    private static List<Map<String, Object>> convertConversationInfos(ConversationInfo[] protoDatas) {
         List<Map<String, Object>> output = new ArrayList<>();
-        if(protoDatas == null) {
+        if (protoDatas == null) {
             return output;
         }
-        for (ConversationInfo protoData:protoDatas) {
+        for (ConversationInfo protoData : protoDatas) {
             output.add(convertConversationInfo(protoData));
         }
         return output;
     }
 
-    private List<Map<String, Object>> convertConversationInfoList(List<ConversationInfo> protoDatas) {
+    private static List<Map<String, Object>> convertConversationInfoList(List<ConversationInfo> protoDatas) {
         List<Map<String, Object>> output = new ArrayList<>();
-        if(protoDatas == null) {
+        if (protoDatas == null) {
             return output;
         }
-        for (ConversationInfo protoData:protoDatas) {
+        for (ConversationInfo protoData : protoDatas) {
             output.add(convertConversationInfo(protoData));
         }
         return output;
     }
 
-    private Map<String, Object> convertConversationInfo(ConversationInfo protoData) {
+    private static Map<String, Object> convertConversationInfo(ConversationInfo protoData) {
         Map<String, Object> map = new HashMap<>();
 
         map.put("conversation", convertConversation(protoData.conversation));
         Map lastMsg = convertMessage(protoData.lastMessage);
-        if(lastMsg != null)
+        if (lastMsg != null)
             map.put("lastMessage", lastMsg);
 
-        if(!TextUtils.isEmpty(protoData.draft))
+        if (!TextUtils.isEmpty(protoData.draft))
             map.put("draft", protoData.draft);
 
         map.put("timestamp", protoData.timestamp);
 
         Map unread = convertUnreadCount(protoData.unreadCount);
-        if(unread != null)
+        if (unread != null)
             map.put("unreadCount", unread);
 
         map.put("isTop", protoData.top);
@@ -2057,7 +2007,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         return map;
     }
 
-    private Map<String, Object> convertConversation(Conversation protoData) {
+    private static Map<String, Object> convertConversation(Conversation protoData) {
         Map<String, Object> conversation = new HashMap<>();
         conversation.put("type", protoData.type.getValue());
         conversation.put("target", protoData.target);
@@ -2065,8 +2015,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         return conversation;
     }
 
-    private Map<String, Object> convertUnreadCount(UnreadCount protoData) {
-        if(protoData == null) {
+    private static Map<String, Object> convertUnreadCount(UnreadCount protoData) {
+        if (protoData == null) {
             return null;
         }
         Map<String, Object> map = new HashMap<>();
@@ -2076,8 +2026,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         return map;
     }
 
-    private List<Map<String, Object>> convertUnreadCountList(List<UnreadCount> protoDatas) {
-        if(protoDatas == null) {
+    private static List<Map<String, Object>> convertUnreadCountList(List<UnreadCount> protoDatas) {
+        if (protoDatas == null) {
             return null;
         }
 
@@ -2093,22 +2043,22 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         return maps;
     }
 
-    private Map<String, Object> convertMessage(Message protoData) {
-        if(protoData == null) {
+    private static Map<String, Object> convertMessage(Message protoData) {
+        if (protoData == null) {
             return null;
         }
         Map<String, Object> map = new HashMap<>();
 
         map.put("sender", protoData.sender);
         map.put("conversation", convertConversation(protoData.conversation));
-        if(protoData.messageId > 0)
+        if (protoData.messageId > 0)
             map.put("messageId", protoData.messageId);
-        if(protoData.messageUid > 0)
+        if (protoData.messageUid > 0)
             map.put("messageUid", protoData.messageUid);
-        if(protoData.serverTime > 0)
+        if (protoData.serverTime > 0)
             map.put("serverTime", protoData.serverTime);
 
-        if(protoData.toUsers != null && protoData.toUsers.length > 0) {
+        if (protoData.toUsers != null && protoData.toUsers.length > 0) {
             map.put("toUsers", convertProtoStringArray(protoData.toUsers));
         }
 
@@ -2117,18 +2067,19 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         map.put("content", convertMessageContent(protoData.content.encode()));
         return map;
     }
-    private List<Map<String, Object>> convertMessages(Message[] protoDatas) {
+
+    private static List<Map<String, Object>> convertMessages(Message[] protoDatas) {
         List output = new ArrayList();
-        for (Message protoData:protoDatas) {
+        for (Message protoData : protoDatas) {
             output.add(convertMessage(protoData));
         }
         return output;
     }
 
-    private List<Map<String, Object>> convertMessageList(List<Message> protoDatas, boolean reverse) {
+    private static List<Map<String, Object>> convertMessageList(List<Message> protoDatas, boolean reverse) {
         ArrayList output = new ArrayList();
-        for (Message protoData:protoDatas) {
-            if(reverse)
+        for (Message protoData : protoDatas) {
+            if (reverse)
                 output.add(0, convertMessage(protoData));
             else
                 output.add(convertMessage(protoData));
@@ -2136,47 +2087,47 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         return output;
     }
 
-    private List<String> convertProtoStringArray(String[] arr) {
+    private static List<String> convertProtoStringArray(String[] arr) {
         List output = new ArrayList();
-        for (String a:arr) {
+        for (String a : arr) {
             output.add(a);
         }
         return output;
     }
 
-    private Map<String, Object> convertMessageContent(MessagePayload protoData) {
+    private static Map<String, Object> convertMessageContent(MessagePayload protoData) {
         Map<String, Object> map = new HashMap<>();
         map.put("type", protoData.type);
 
-        if(!TextUtils.isEmpty(protoData.searchableContent))
+        if (!TextUtils.isEmpty(protoData.searchableContent))
             map.put("searchableContent", protoData.searchableContent);
-        if(!TextUtils.isEmpty(protoData.pushContent))
+        if (!TextUtils.isEmpty(protoData.pushContent))
             map.put("pushContent", protoData.pushContent);
-        if(!TextUtils.isEmpty(protoData.pushData))
+        if (!TextUtils.isEmpty(protoData.pushData))
             map.put("pushData", protoData.pushData);
-        if(!TextUtils.isEmpty(protoData.content))
+        if (!TextUtils.isEmpty(protoData.content))
             map.put("content", protoData.content);
-        if(protoData.binaryContent != null && protoData.binaryContent.length > 0)
+        if (protoData.binaryContent != null && protoData.binaryContent.length > 0)
             map.put("binaryContent", Base64.encodeToString(protoData.binaryContent, Base64.NO_WRAP));
-        if(!TextUtils.isEmpty(protoData.localContent))
+        if (!TextUtils.isEmpty(protoData.localContent))
             map.put("localContent", protoData.localContent);
-        if(protoData.mediaType != null)
+        if (protoData.mediaType != null)
             map.put("mediaType", protoData.mediaType.getValue());
-        if(!TextUtils.isEmpty(protoData.remoteMediaUrl))
+        if (!TextUtils.isEmpty(protoData.remoteMediaUrl))
             map.put("remoteMediaUrl", protoData.remoteMediaUrl);
-        if(!TextUtils.isEmpty(protoData.localMediaPath))
+        if (!TextUtils.isEmpty(protoData.localMediaPath))
             map.put("localMediaPath", protoData.localMediaPath);
-        if(protoData.mentionedType > 0)
+        if (protoData.mentionedType > 0)
             map.put("mentionedType", protoData.mentionedType);
-        if(protoData.mentionedTargets != null && protoData.mentionedTargets.size() > 0)
+        if (protoData.mentionedTargets != null && protoData.mentionedTargets.size() > 0)
             map.put("mentionedTargets", protoData.mentionedTargets);
-        if(!TextUtils.isEmpty(protoData.extra))
+        if (!TextUtils.isEmpty(protoData.extra))
             map.put("extra", protoData.extra);
 
         return map;
     }
 
-    private Map<String, Object> convertReadEntry(ReadEntry protoData) {
+    private static Map<String, Object> convertReadEntry(ReadEntry protoData) {
         Map<String, Object> map = new HashMap<>();
 
         map.put("conversation", convertConversation(protoData.conversation));
@@ -2185,9 +2136,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         return map;
     }
 
-    private List<Map<String, Object>> convertReadEntryList(List<ReadEntry> protoDatas) {
+    private static List<Map<String, Object>> convertReadEntryList(List<ReadEntry> protoDatas) {
         List output = new ArrayList();
-        for (ReadEntry protoData:protoDatas) {
+        for (ReadEntry protoData : protoDatas) {
             output.add(convertReadEntry(protoData));
         }
         return output;
@@ -2205,21 +2156,21 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertFriendList(List<Friend> protoDatas) {
         List output = new ArrayList();
-        for (Friend protoData:protoDatas) {
+        for (Friend protoData : protoDatas) {
             output.add(convertFriend(protoData));
         }
         return output;
     }
 
-    private Map<String, Object> convertUserInfo(UserInfo protoData) {
+    private static Map<String, Object> convertUserInfo(UserInfo protoData) {
         if (protoData == null) return null;
 
         Map<String, Object> map = new HashMap<>();
         map.put("uid", protoData.uid);
         map.put("name", protoData.name);
-        if(!TextUtils.isEmpty(protoData.portrait))
+        if (!TextUtils.isEmpty(protoData.portrait))
             map.put("portrait", protoData.portrait);
-        if(protoData.deleted > 0) {
+        if (protoData.deleted > 0) {
             map.put("deleted", protoData.deleted);
             map.put("displayName", "已删除用户");
         } else {
@@ -2229,33 +2180,33 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             //Todo convert more data
 
 
-            if(!TextUtils.isEmpty(protoData.friendAlias))
+            if (!TextUtils.isEmpty(protoData.friendAlias))
                 map.put("friendAlias", protoData.friendAlias);
-            if(!TextUtils.isEmpty(protoData.groupAlias))
+            if (!TextUtils.isEmpty(protoData.groupAlias))
                 map.put("groupAlias", protoData.groupAlias);
-            if(!TextUtils.isEmpty(protoData.mobile))
+            if (!TextUtils.isEmpty(protoData.mobile))
                 map.put("mobile", protoData.mobile);
-            if(!TextUtils.isEmpty(protoData.email))
+            if (!TextUtils.isEmpty(protoData.email))
                 map.put("email", protoData.email);
-            if(!TextUtils.isEmpty(protoData.address))
+            if (!TextUtils.isEmpty(protoData.address))
                 map.put("address", protoData.address);
-            if(!TextUtils.isEmpty(protoData.company))
+            if (!TextUtils.isEmpty(protoData.company))
                 map.put("company", protoData.company);
-            if(!TextUtils.isEmpty(protoData.social))
+            if (!TextUtils.isEmpty(protoData.social))
                 map.put("social", protoData.social);
-            if(!TextUtils.isEmpty(protoData.extra))
+            if (!TextUtils.isEmpty(protoData.extra))
                 map.put("extra", protoData.extra);
-            if(protoData.updateDt > 0)
+            if (protoData.updateDt > 0)
                 map.put("updateDt", protoData.updateDt);
-            if(protoData.type > 0)
+            if (protoData.type > 0)
                 map.put("type", protoData.type);
         }
         return map;
     }
 
-    private List<Map<String, Object>> convertUserInfoList(List<UserInfo> protoDatas) {
+    private static List<Map<String, Object>> convertUserInfoList(List<UserInfo> protoDatas) {
         List output = new ArrayList();
-        for (UserInfo protoData:protoDatas) {
+        for (UserInfo protoData : protoDatas) {
             output.add(convertUserInfo(protoData));
         }
         return output;
@@ -2263,13 +2214,13 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertUserInfos(UserInfo[] protoDatas) {
         List output = new ArrayList();
-        for (UserInfo protoData:protoDatas) {
+        for (UserInfo protoData : protoDatas) {
             output.add(convertUserInfo(protoData));
         }
         return output;
     }
 
-    private Map<String, Object> convertGroupInfo(GroupInfo protoData) {
+    private static Map<String, Object> convertGroupInfo(GroupInfo protoData) {
         if (protoData == null) return null;
 
         Map<String, Object> map = new HashMap<>();
@@ -2293,9 +2244,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         return map;
     }
 
-    private List<Map<String, Object>> convertGroupInfoList(List<GroupInfo> protoDatas) {
+    private static List<Map<String, Object>> convertGroupInfoList(List<GroupInfo> protoDatas) {
         List output = new ArrayList();
-        for (GroupInfo protoData:protoDatas) {
+        for (GroupInfo protoData : protoDatas) {
             output.add(convertGroupInfo(protoData));
         }
         return output;
@@ -2303,13 +2254,13 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertGroupInfos(GroupInfo[] protoDatas) {
         List output = new ArrayList();
-        for (GroupInfo protoData:protoDatas) {
+        for (GroupInfo protoData : protoDatas) {
             output.add(convertGroupInfo(protoData));
         }
         return output;
     }
 
-    private Map<String, Object> convertGroupMember(GroupMember protoData) {
+    private static Map<String, Object> convertGroupMember(GroupMember protoData) {
         Map<String, Object> map = new HashMap<>();
         map.put("groupId", protoData.groupId);
         map.put("memberId", protoData.memberId);
@@ -2318,16 +2269,16 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         if (!TextUtils.isEmpty(protoData.extra))
             map.put("extra", protoData.extra);
         map.put("type", protoData.type.value());
-        if(protoData.createDt > 0)
+        if (protoData.createDt > 0)
             map.put("createDt", protoData.createDt);
-        if(protoData.updateDt > 0)
+        if (protoData.updateDt > 0)
             map.put("updateDt", protoData.updateDt);
         return map;
     }
 
-    private List<Map<String, Object>> convertGroupMemberList(List<GroupMember> protoDatas) {
+    private static List<Map<String, Object>> convertGroupMemberList(List<GroupMember> protoDatas) {
         List output = new ArrayList();
-        for (GroupMember protoData:protoDatas) {
+        for (GroupMember protoData : protoDatas) {
             output.add(convertGroupMember(protoData));
         }
         return output;
@@ -2335,7 +2286,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertGroupMembers(GroupMember[] protoDatas) {
         List output = new ArrayList();
-        for (GroupMember protoData:protoDatas) {
+        for (GroupMember protoData : protoDatas) {
             output.add(convertGroupMember(protoData));
         }
         return output;
@@ -2345,7 +2296,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         Map<String, Object> map = new HashMap<>();
         map.put("groupInfo", convertGroupInfo(protoData.groupInfo));
         map.put("marchType", protoData.marchedType);
-        if(protoData.marchedMembers != null && protoData.marchedMembers.size() > 0) {
+        if (protoData.marchedMembers != null && protoData.marchedMembers.size() > 0) {
             map.put("marchedMemberNames", protoData.marchedMembers);
         }
         return map;
@@ -2353,7 +2304,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertGroupSearchResults(GroupSearchResult[] protoDatas) {
         List output = new ArrayList();
-        for (GroupSearchResult protoData:protoDatas) {
+        for (GroupSearchResult protoData : protoDatas) {
             output.add(convertGroupSearchResult(protoData));
         }
         return output;
@@ -2361,12 +2312,13 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertGroupSearchResultList(List<GroupSearchResult> protoDatas) {
         List output = new ArrayList();
-        for (GroupSearchResult protoData:protoDatas) {
+        for (GroupSearchResult protoData : protoDatas) {
             output.add(convertGroupSearchResult(protoData));
         }
         return output;
     }
-    private Map<String, Object> convertChannelInfo(ChannelInfo protoData) {
+
+    private static Map<String, Object> convertChannelInfo(ChannelInfo protoData) {
         Map<String, Object> map = new HashMap<>();
         map.put("channelId", protoData.channelId);
         if (!TextUtils.isEmpty(protoData.desc))
@@ -2379,16 +2331,16 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             map.put("portrait", protoData.portrait);
         if (!TextUtils.isEmpty(protoData.owner))
             map.put("owner", protoData.owner);
-        if(protoData.status>0)
+        if (protoData.status > 0)
             map.put("status", protoData.status);
-        if(protoData.updateDt>0)
+        if (protoData.updateDt > 0)
             map.put("updateDt", protoData.updateDt);
         return map;
     }
 
-    private List<Map<String, Object>> convertChannelInfoList(List<ChannelInfo> protoDatas) {
+    private static List<Map<String, Object>> convertChannelInfoList(List<ChannelInfo> protoDatas) {
         List output = new ArrayList();
-        for (ChannelInfo protoData:protoDatas) {
+        for (ChannelInfo protoData : protoDatas) {
             output.add(convertChannelInfo(protoData));
         }
         return output;
@@ -2396,7 +2348,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertProtoChannelInfos(ChannelInfo[] protoDatas) {
         List output = new ArrayList();
-        for (ChannelInfo protoData:protoDatas) {
+        for (ChannelInfo protoData : protoDatas) {
             output.add(convertChannelInfo(protoData));
         }
         return output;
@@ -2408,7 +2360,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         map.put("conversation", convertConversation(protoData.conversation));
 
         Map lastMsg = convertMessage(protoData.marchedMessage);
-        if(lastMsg != null)
+        if (lastMsg != null)
             map.put("marchedMessage", lastMsg);
 
         map.put("marchedCount", protoData.marchedCount);
@@ -2419,7 +2371,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertConversationSearchInfos(ConversationSearchResult[] protoDatas) {
         List output = new ArrayList();
-        for (ConversationSearchResult protoData:protoDatas) {
+        for (ConversationSearchResult protoData : protoDatas) {
             output.add(convertConversationSearchInfo(protoData));
         }
         return output;
@@ -2427,7 +2379,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertConversationSearchInfoList(List<ConversationSearchResult> protoDatas) {
         List output = new ArrayList();
-        for (ConversationSearchResult protoData:protoDatas) {
+        for (ConversationSearchResult protoData : protoDatas) {
             output.add(convertConversationSearchInfo(protoData));
         }
         return output;
@@ -2437,7 +2389,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         Map<String, Object> map = new HashMap<>();
         map.put("direction", protoData.direction);
         map.put("target", protoData.target);
-        if(!TextUtils.isEmpty(protoData.reason))
+        if (!TextUtils.isEmpty(protoData.reason))
             map.put("reason", protoData.reason);
         map.put("status", protoData.status);
         map.put("readStatus", protoData.readStatus);
@@ -2447,7 +2399,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertProtoFriendRequests(FriendRequest[] protoDatas) {
         List output = new ArrayList();
-        for (FriendRequest protoData:protoDatas) {
+        for (FriendRequest protoData : protoDatas) {
             output.add(convertFriendRequest(protoData));
         }
         return output;
@@ -2455,7 +2407,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertProtoFriendRequestList(List<FriendRequest> protoDatas) {
         List output = new ArrayList();
-        for (FriendRequest protoData:protoDatas) {
+        for (FriendRequest protoData : protoDatas) {
             output.add(convertFriendRequest(protoData));
         }
         return output;
@@ -2477,7 +2429,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertFileRecords(FileRecord[] protoDatas) {
         List output = new ArrayList();
-        for (FileRecord protoData:protoDatas) {
+        for (FileRecord protoData : protoDatas) {
             output.add(convertFileRecord(protoData));
         }
         return output;
@@ -2485,7 +2437,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private List<Map<String, Object>> convertFileRecordList(List<FileRecord> protoDatas) {
         List output = new ArrayList();
-        for (FileRecord protoData:protoDatas) {
+        for (FileRecord protoData : protoDatas) {
             output.add(convertFileRecord(protoData));
         }
         return output;
@@ -2507,7 +2459,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     private Map<String, Object> convertChatroomMemberInfo(ChatRoomMembersInfo protoData) {
         Map<String, Object> map = new HashMap<>();
         map.put("memberCount", protoData.memberCount);
-        if(protoData.members != null)
+        if (protoData.members != null)
             map.put("members", protoData.members);
         return map;
     }
@@ -2516,7 +2468,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         Map map = new HashMap();
         map.put("type", onlineInfo.getType().ordinal());
         map.put("isOnline", onlineInfo.isOnline());
-        if(onlineInfo.isOnline()) {
+        if (onlineInfo.isOnline()) {
             map.put("timestamp", onlineInfo.getTimestamp());
             map.put("platform", onlineInfo.getPlatform().ordinal());
             map.put("clientId", onlineInfo.getClientId());
@@ -2534,7 +2486,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private String[] convertStringList(List<String> list) {
-        if(list == null || list.isEmpty())
+        if (list == null || list.isEmpty())
             return null;
 
         String[] arr = new String[list.size()];
@@ -2546,31 +2498,31 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private MessagePayload convertMessageContent(Map<String, Object> map) {
         MessagePayload protoData = new MessagePayload();
-        if(map == null || map.isEmpty() || !map.containsKey("type")) {
+        if (map == null || map.isEmpty() || !map.containsKey("type")) {
             return null;
         }
 
-        protoData.type = ((int)map.get("type"));
-        protoData.searchableContent = ((String)map.get("searchableContent"));
-        protoData.pushContent = ((String)map.get("pushContent"));
-        protoData.pushData = ((String)map.get("pushData"));
-        protoData.content = ((String)map.get("content"));
-        protoData.binaryContent = ((byte[])map.get("binaryContent"));
-        protoData.localContent = ((String)map.get("localContent"));
-        protoData.mediaType = MessageContentMediaType.mediaType((int)map.get("mediaType"));
-        protoData.remoteMediaUrl = ((String)map.get("remoteMediaUrl"));
-        protoData.localMediaPath = ((String)map.get("localMediaPath"));
-        protoData.mentionedType = ((int)map.get("mentionedType"));
-        if(map.get("mentionedTargets") != null) {
-            List<String> ts = (List<String>)map.get("mentionedTargets");
-            if(!ts.isEmpty()) {
+        protoData.type = ((int) map.get("type"));
+        protoData.searchableContent = ((String) map.get("searchableContent"));
+        protoData.pushContent = ((String) map.get("pushContent"));
+        protoData.pushData = ((String) map.get("pushData"));
+        protoData.content = ((String) map.get("content"));
+        protoData.binaryContent = ((byte[]) map.get("binaryContent"));
+        protoData.localContent = ((String) map.get("localContent"));
+        protoData.mediaType = MessageContentMediaType.mediaType((int) map.get("mediaType"));
+        protoData.remoteMediaUrl = ((String) map.get("remoteMediaUrl"));
+        protoData.localMediaPath = ((String) map.get("localMediaPath"));
+        protoData.mentionedType = ((int) map.get("mentionedType"));
+        if (map.get("mentionedTargets") != null) {
+            List<String> ts = (List<String>) map.get("mentionedTargets");
+            if (!ts.isEmpty()) {
                 protoData.mentionedTargets = new ArrayList<>();
                 for (int i = 0; i < ts.size(); i++) {
                     protoData.mentionedTargets.add(ts.get(i));
                 }
             }
         }
-        protoData.extra = ((String)map.get("extra"));
+        protoData.extra = ((String) map.get("extra"));
 
         return protoData;
     }
@@ -2620,17 +2572,17 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private static Map<String, Object> convertUserOnlineState(UserOnlineState userOnlineState) {
         Map<String, Object> state = new HashMap<>();
-        if(userOnlineState == null) {
+        if (userOnlineState == null) {
             return null;
         }
         state.put("userId", userOnlineState.getUserId());
         Map<String, Object> customState = new HashMap<>();
         state.put("customState", customState);
         customState.put("state", userOnlineState.getCustomState());
-        if(!TextUtils.isEmpty(userOnlineState.getCustomText())) {
+        if (!TextUtils.isEmpty(userOnlineState.getCustomText())) {
             customState.put("text", userOnlineState.getCustomText());
         }
-        if(userOnlineState.getClientStates() != null && userOnlineState.getClientStates().length > 0) {
+        if (userOnlineState.getClientStates() != null && userOnlineState.getClientStates().length > 0) {
             List clientStates = new ArrayList();
             state.put("clientStates", clientStates);
             for (ClientState clientState : userOnlineState.getClientStates()) {
@@ -2653,7 +2605,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         return array;
     }
 
-    class WildfireListenerHandler implements InvocationHandler {
+    static class WildfireListenerHandler implements InvocationHandler {
         private static final String TAG = "WildfireListenerHandler";
 
         /**
@@ -2676,6 +2628,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                         return method.invoke(proxy, args);
                     }
                 }
+                if (channel == null) {
+                    return null;
+                }
+
                 String methodName = method.getName();
                 int status = ChatManager.Instance().getConnectionStatus();
                 // 回调 js 层时，好像有大小限制，先规避一下
@@ -2689,7 +2645,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                 if (args != null || "onSettingUpdate".equals(methodName)) {
                     switch (methodName) {
                         case "onChannelInfoUpdate": {
-                            List<ChannelInfo> channelInfos = (List<ChannelInfo>)args[0];
+                            List<ChannelInfo> channelInfos = (List<ChannelInfo>) args[0];
                             Map data = new HashMap();
                             data.put("channels", convertChannelInfoList(channelInfos));
                             callback2UI("onChannelInfoUpdated", data);
@@ -2720,7 +2676,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                        }
 //
                         case "onConnectionStatusChange": {
-                            int newStatus = (int)args[0];
+                            int newStatus = (int) args[0];
                             callback2UI("onConnectionStatusChanged", status);
                             break;
                         }
@@ -2730,7 +2686,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                        }
 //
                         case "onFriendListUpdate": {
-                            List<String> strings = (List<String>)args[0];
+                            List<String> strings = (List<String>) args[0];
                             Map data = new HashMap();
                             data.put("friends", strings);
                             callback2UI("onFriendListUpdated", data);
@@ -2744,7 +2700,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                        }
 //
                         case "onFriendRequestUpdate": {
-                            List<String> strings = (List<String>)args[0];
+                            List<String> strings = (List<String>) args[0];
                             Map data = new HashMap();
                             data.put("requests", strings);
                             callback2UI("onFriendRequestUpdated", data);
@@ -2758,7 +2714,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                        }
 //
                         case "onGroupInfoUpdate": {
-                            List<GroupInfo> groupInfos = (List<GroupInfo>)args[0];
+                            List<GroupInfo> groupInfos = (List<GroupInfo>) args[0];
                             Map data = new HashMap();
                             data.put("groups", convertGroupInfoList(groupInfos));
                             callback2UI("onGroupInfoUpdated", data);
@@ -2773,7 +2729,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //
                         case "onGroupMembersUpdate": {
                             String s = (String) args[0];
-                            List<GroupMember> list = (List<GroupMember>)args[1];
+                            List<GroupMember> list = (List<GroupMember>) args[1];
                             Map data = new HashMap();
                             data.put("groupId", s);
                             data.put("members", convertGroupMemberList(list));
@@ -2789,14 +2745,14 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                        }
 //
                         case "onReceiveMessage": {
-                            List<Message> list = (List<Message>)args[0];
+                            List<Message> list = (List<Message>) args[0];
                             List<Map<String, Object>> msgs = convertMessageList(list, true);
                             boolean b = (boolean) args[1];
                             int batchSize = 500;
                             while (!msgs.isEmpty()) {
                                 Map<String, Object> data = new HashMap<>();
                                 data.put("messages", msgs.subList(0, Math.min(batchSize, msgs.size())));
-                                if(msgs.size() <= batchSize) {
+                                if (msgs.size() <= batchSize) {
                                     data.put("hasMore", b);
                                     msgs = new ArrayList<>();
                                 } else {
@@ -2804,7 +2760,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                                     data.put("hasMore", true);
                                 }
                                 callback2UI("onReceiveMessage", data);
-                            };
+                            }
                             break;
                         }
 //                        @Override
@@ -2843,7 +2799,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                            callback2UI("onDeleteMessage", args);
 //                        }
                         case "onMessageDelivered": {
-                            Map<String, Long> map = (Map<String, Long>)args[0];
+                            Map<String, Long> map = (Map<String, Long>) args[0];
                             callback2UI("onMessageDelivered", map);
                             break;
                         }
@@ -2853,7 +2809,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                        }
 //
                         case "onMessageRead": {
-                            List<ReadEntry> list = (List<ReadEntry>)args[0];
+                            List<ReadEntry> list = (List<ReadEntry>) args[0];
                             Map<String, Object> data = new HashMap<>();
                             data.put("readeds", convertReadEntryList(list));
                             callback2UI("onMessageReaded", data);
@@ -2876,7 +2832,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                        }
 //
                         case "onUserInfoUpdate": {
-                            List<UserInfo> list = (List<UserInfo>)args[0];
+                            List<UserInfo> list = (List<UserInfo>) args[0];
                             Map<String, Object> data = new HashMap<>();
                             data.put("users", convertUserInfoList(list));
                             callback2UI("onUserInfoUpdated", data);
@@ -2891,7 +2847,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                         case "onTrafficData":
                             //ignore traffic statistics
                             break;
-                            
+
                         case "onSendPrepare":
                         case "onSendSuccess":
                         case "onConversationTopUpdate":
