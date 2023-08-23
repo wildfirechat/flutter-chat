@@ -128,6 +128,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     /// when the Flutter Engine is detached from the Activity
     private MethodChannel channel;
     private Handler handler;
+
+    private Map<String, Object> listeners = new HashMap<>();
+
     public ImclientPlugin(){
         super();
     }
@@ -144,23 +147,43 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             Pattern pattern = Pattern.compile("add(.*)Listener");
 
             for (Method method : ChatManagerMethods) {
-//                if ("addSendMessageListener".equals(method.getName())) {
-//                    // uniApp 不支持这个监听，如果需要支持的话，invoke 里面需要做相应处理
-//                    continue;
-//                }
                 Matcher matcher = pattern.matcher(method.getName());
                 if (matcher.find()) {
                     Class[] paramTypes = method.getParameterTypes();
                     Log.i(TAG, paramTypes[0].getDeclaredMethods()[0].getName());
                     WildfireListenerHandler wildfireListenerHandler = new WildfireListenerHandler();
-                    Object Listener = Proxy.newProxyInstance(
+                    Object listener = Proxy.newProxyInstance(
                             ImclientPlugin.class.getClassLoader(),
                             new Class[]{paramTypes[0]},
                             wildfireListenerHandler);
-                    method.invoke(chatManager, Listener);
+                    method.invoke(chatManager, listener);
+                    listeners.put(paramTypes[0].getName(), listener);
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void removeWfcListeners() {
+        ChatManager chatManager = ChatManager.Instance();
+        try {
+            Class<?> ChatManagerClazz = chatManager.getClass();
+            Method[] ChatManagerMethods = ChatManagerClazz.getDeclaredMethods();
+
+            Pattern pattern = Pattern.compile("remove(.*)Listener");
+
+            for (Method method : ChatManagerMethods) {
+                Matcher matcher = pattern.matcher(method.getName());
+                if (matcher.find()) {
+                    Class[] paramTypes = method.getParameterTypes();
+                    Object listener = listeners.get(paramTypes[0].getName());
+                    if(listener != null) {
+                        method.invoke(chatManager, listener);
+                    }
+                }
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -180,6 +203,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        Log.d(TAG, "onAttachedToEngine");
         channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "imclient");
         channel.setMethodCallHandler(this);
 
@@ -208,6 +232,14 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
             }
         });
+    }
+
+    @Override
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        Log.d(TAG, "onDetachedFromEngine");
+        removeWfcListeners();
+        channel.setMethodCallHandler(null);
+        channel = null;
     }
 
     private List<Conversation.ConversationType> conversationTypesFromArgument(@NonNull MethodCall call) {
@@ -1933,7 +1965,16 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                channel.invokeMethod(method, arguments);
+                if(channel != null) {
+                    try {
+                        channel.invokeMethod(method, arguments);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Callback failure!!!");
+                        e.printStackTrace();
+                    }
+                } else {
+                    Log.e(TAG, "Unable callback to UI, because engine is deattached");
+                }
             }
         });
 
@@ -2575,11 +2616,6 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         public void onFail(int i) {
             callbackFailure(requestId, i);
         }
-    }
-
-    @Override
-    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-        channel.setMethodCallHandler(null);
     }
 
     private static Map<String, Object> convertUserOnlineState(UserOnlineState userOnlineState) {
