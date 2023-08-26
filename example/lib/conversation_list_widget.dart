@@ -172,7 +172,6 @@ class ConversationListItemState extends State<ConversationListItem> {
 
    if(conversationInfo.lastMessage != null && conversationInfo.lastMessage!.content != null) {
      digest = Cache.getConversationDigest(conversationInfo.conversation);
-     print('digest is $digest');
      conversationInfo.lastMessage!.content.digest(conversationInfo.lastMessage!).then((value) {
        if(digest != value) {
          Cache.putConversationDigest(conversationInfo.conversation, value);

@@ -5,7 +5,7 @@ import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/model/friend.dart';
 import 'package:imclient/model/user_online_state.dart';
 
-import 'imclient_platform_interface.dart';
+import 'imclient_method_channel.dart';
 import 'message/card_message_content.dart';
 import 'message/composite_message_content.dart';
 import 'message/file_message_content.dart';

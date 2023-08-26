@@ -6,9 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/model/user_online_state.dart';
 import 'package:imclient/tools.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'imclient.dart';
-import 'imclient_platform_interface.dart';
 import 'message/message.dart';
 import 'message/message_content.dart';
 import 'message/unknown_message_content.dart';
@@ -32,7 +32,27 @@ import 'model/unread_count.dart';
 import 'model/user_info.dart';
 
 /// An implementation of [ImclientPlatform] that uses method channels.
-class MethodChannelImclient extends ImclientPlatform {
+class ImclientPlatform extends PlatformInterface {
+  /// Constructs a ImclientPlatform.
+  ImclientPlatform() : super(token: _token);
+
+  static final Object _token = Object();
+
+  static ImclientPlatform _instance = ImclientPlatform();
+
+  /// The default instance of [ImclientPlatform] to use.
+  ///
+  /// Defaults to [ImclientPlatform].
+  static ImclientPlatform get instance => _instance;
+
+  /// Platform-specific implementations should set this with their own
+  /// platform-specific class that extends [ImclientPlatform] when
+  /// they register themselves.
+  static set instance(ImclientPlatform instance) {
+    PlatformInterface.verifyToken(instance, _token);
+    _instance = instance;
+  }
+  
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel('imclient');

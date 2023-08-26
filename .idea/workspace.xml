@@ -5,15 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/imclient/lib/model/user_online_state.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android_client_aars/client-release.aar" beforeDir="false" afterPath="$PROJECT_DIR$/android_client_aars/client-release.aar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/android/src/main/java/cn/wildfirechat/imclient/ImclientPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/android/src/main/java/cn/wildfirechat/imclient/ImclientPlugin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/Classes/ImclientPlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/Classes/ImclientPlugin.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/conversation_list_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/conversation_list_widget.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imclient/lib/imclient.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_platform_interface.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient_platform_interface.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/model/online_info.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/model/pc_online_info.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_platform_interface.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/test/imclient_method_channel_test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/test/imclient_test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/rtckit.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/rtckit_method_channel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit_platform_interface.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/test/rtckit_method_channel_test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/test/rtckit_test.dart" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,7 +98,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
           <url>file://$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart</url>
-          <line>720</line>
+          <line>740</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>
