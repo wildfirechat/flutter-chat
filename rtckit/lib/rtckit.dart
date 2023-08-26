@@ -1,7 +1,8 @@
 
 import 'dart:ffi';
 
-import 'rtckit_platform_interface.dart';
+import 'package:rtckit/rtckit_method_channel.dart';
+
 
 class Rtckit {
   static void init() {
