@@ -5,18 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/example/assets/images/contact_fav_group.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/contact_new_friend.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/contact_subscribed_channel.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/discover_channel.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/discover_chatroom.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/discover_devdocs.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/discover_robot.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/lib/discovery.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/setting_favorite.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/setting_file.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/setting_general.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/setting_message_notification.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/setting_safety.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/config.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/config.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/lib/contact_list_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/contact_list_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/home.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/settings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/settings.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

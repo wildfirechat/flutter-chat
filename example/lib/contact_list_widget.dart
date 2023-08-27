@@ -3,6 +3,8 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'dart:ui';
 
+import 'package:wfc_example/config.dart';
+
 class ContactListWidget extends StatefulWidget {
   @override
   _ContactListWidgetState createState() => _ContactListWidgetState();
@@ -104,8 +106,6 @@ class _ContactListItemState extends State<ContactListItem> {
   String userId;
   UserInfo? userInfo;
 
-  var defaultAvatar = 'assets/images/user_avatar_default.png';
-
   _ContactListItemState(this.userId) {
 
     Imclient.getUserInfo(userId).then((value) {
@@ -127,7 +127,6 @@ class _ContactListItemState extends State<ContactListItem> {
       } else {
         convTitle = '私聊';
       }
-      localPortrait = 'assets/images/user_avatar_default.png';
 
 
     return GestureDetector(
@@ -136,7 +135,7 @@ class _ContactListItemState extends State<ContactListItem> {
         children: <Widget>[
           Container(
             height: widget.withSectionHeader?18:0,
-            width: View.of(context).physicalSize.width,
+            width: View.of(context).physicalSize.width/View.of(context).devicePixelRatio,
             color: const Color(0xffebebeb),
             child: widget.withSectionHeader && widget.sectionTitle != null ? Text(widget.sectionTitle!): null,
           ),
@@ -145,7 +144,7 @@ class _ContactListItemState extends State<ContactListItem> {
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                portrait == null ? Image.asset(localPortrait, width: 32.0, height: 32.0) : Image.network(portrait, width: 32.0, height: 32.0),
+                portrait == null ? Image.asset(Config.defaultUserPortrait, width: 32.0, height: 32.0) : Image.network(portrait, width: 32.0, height: 32.0),
                 Expanded(
                     child: Container(
                         height: 40.0,
