@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:wfc_example/general_settings.dart';
 
 import 'config.dart';
 
@@ -45,6 +46,7 @@ class SettingsTab extends StatelessWidget {
   Widget _buildRow(BuildContext context, int index) {
     Image image = Image.asset(modelList[index][0], width: 20.0, height: 20.0);
     String title = modelList[index][1];
+    String key = modelList[index][2];
     return GestureDetector(child: Column(children: [
       Container(
         height: 18,
@@ -59,8 +61,15 @@ class SettingsTab extends StatelessWidget {
       ),
     ],),
       onTap: () {
-        Fluttertoast.showToast(msg: "方法没有实现");
-        print("on tap item $index");
+        if(key == "settings") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => GeneralSettings()),
+          );
+        } else {
+          Fluttertoast.showToast(msg: "方法没有实现");
+          print("on tap item $index");
+        }
       },);
   }
 }

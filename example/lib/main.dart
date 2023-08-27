@@ -17,12 +17,14 @@ import 'home.dart';
 import 'login_screen.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
-  _MyAppState createState() => _MyAppState();
+  State createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
@@ -61,9 +63,13 @@ class _MyAppState extends State<MyApp> {
           value.commit();
         });
 
-        setState(() {
-          isLogined = false;
-        });
+        isLogined = false;
+        //变成未登录状态，需要转到登录界面。但为什么这里跳转不了？
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen(), maintainState: true),
+              (Route<dynamic> route) => false,
+        );
       }
     }, (List<Message> messages, bool hasMore) {
       print(messages);
@@ -106,7 +112,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: isLogined ? HomeTabBar() : LoginScreen(),
+      home: isLogined ? const HomeTabBar() : LoginScreen(),
     );
   }
 }

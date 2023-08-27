@@ -5,14 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/example/assets/images/setting_favorite.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/setting_file.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/setting_general.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/setting_message_notification.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/setting_safety.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/general_settings.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/config.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/config.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/contact_list_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/contact_list_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/conversation_list_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/conversation_list_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/login_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/main.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/lib/settings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/settings.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -106,6 +103,11 @@
           <url>file://$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart</url>
           <line>740</line>
           <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/example/lib/main.dart</url>
+          <line>65</line>
+          <option name="timeStamp" value="22" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

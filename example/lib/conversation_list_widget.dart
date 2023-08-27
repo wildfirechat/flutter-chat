@@ -302,7 +302,7 @@ class ConversationListItemState extends State<ConversationListItem> {
   _toChatPage(Conversation conversation) {
     Navigator.push(
       context,
-      new MaterialPageRoute(builder: (context) => new MessagesScreen(conversation)),
+      MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
     );
   }
 
