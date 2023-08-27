@@ -71,19 +71,22 @@ class _State extends State<MessagesScreen> {
 
         haveNewMsg = true;
         MessageModel model = MessageModel(element, showTimeLabel: true);
-        if(front)
+        if(front) {
           models.insert(0, model);
-        else
+        } else {
           models.add(model);
+        }
       });
-      if(haveNewMsg)
+      if(haveNewMsg) {
         Imclient.clearConversationUnreadStatus(widget.conversation);
+      }
     });
   }
 
   void loadHistoryMessage() {
-    if(isLoading)
+    if(isLoading) {
       return;
+    }
 
     isLoading = true;
     int? fromIndex = 0;

@@ -9,16 +9,19 @@ import 'package:wfc_example/settings.dart';
 
 import 'contact_list_widget.dart';
 import 'conversation_list_widget.dart';
+import 'discovery.dart';
 
 class HomeTabBar extends StatefulWidget {
+  const HomeTabBar({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => HomeTabBarState();
 }
 
 class HomeTabBarState extends State<HomeTabBar> {
   final appBarTitles = ['信息', '联系人', '发现', '我的'];
-  final tabTextStyleSelected = TextStyle(color: const Color(0xff3B9AFF));
-  final tabTextStyleNormal = TextStyle(color: const Color(0xff969696));
+  final tabTextStyleSelected = const TextStyle(color: Color(0xff3B9AFF));
+  final tabTextStyleNormal = const TextStyle(color: Color(0xff969696));
 
   Color themeColor = Colors.orange;
   int _tabIndex = 0;
@@ -40,9 +43,8 @@ class HomeTabBarState extends State<HomeTabBar> {
       setState(() {
         unreadCount = count;
       });
-    },), ContactListWidget(), SettingsTab(), SettingsTab()];
-    if (tabImages == null) {
-      tabImages = [
+    },), ContactListWidget(), DiscoveryTab(), SettingsTab()];
+    tabImages ??= [
         [
           getTabImage('assets/images/tabbar_chat.png'),
           getTabImage('assets/images/tabbar_chat_cover.png')
@@ -60,7 +62,6 @@ class HomeTabBarState extends State<HomeTabBar> {
           getTabImage('assets/images/tabbar_me_cover.png')
         ]
       ];
-    }
   }
 
   TextStyle getTabTextStyle(int curIndex) {//设置tabbar 选中和未选中的状态文本
@@ -90,8 +91,8 @@ class HomeTabBarState extends State<HomeTabBar> {
     return Scaffold(//布局结构
         appBar: AppBar(//选中每一项的标题和图标设置
             title: Text(appBarTitles[_tabIndex],
-                style: TextStyle(color: Colors.white)),
-            iconTheme: IconThemeData(color: Colors.white)
+                style: const TextStyle(color: Colors.white)),
+            iconTheme: const IconThemeData(color: Colors.white)
         ),
         body: _body,
         bottomNavigationBar: CupertinoTabBar(//

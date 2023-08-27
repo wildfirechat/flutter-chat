@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
-
+import 'dart:ui';
 
 class ContactListWidget extends StatefulWidget {
   @override
@@ -10,6 +10,13 @@ class ContactListWidget extends StatefulWidget {
 
 class _ContactListWidgetState extends State<ContactListWidget> {
   List<String> friendList = [];
+  List fixModelList = [
+    ['assets/images/contact_new_friend.png', '新好友', 'new_friend'],
+    ['assets/images/contact_fav_group.png', '收藏群组', 'fav_group'],
+    ['assets/images/contact_subscribed_channel.png', '订阅频道', 'subscribed_channel'],
+  ];
+
+
   @override
   void initState() {
     super.initState();
@@ -26,23 +33,66 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(child: ListView.builder(
-          itemCount: friendList.length,
+          itemCount: fixModelList.length + friendList.length,
           itemBuilder: /*1*/ (context, i) {
-            String userId = friendList[i];
-            return _row(userId);
+            if(i < fixModelList.length) {
+              return _fixRow(context, i);
+            } else {
+              String userId = friendList[i - fixModelList.length];
+              return _contactRow(userId, i - fixModelList.length == 0, '');
+            }
           }),),
     );
   }
 
-  Widget _row(String userId) {
-    return ContactListItem(userId);
+  Widget _contactRow(String userId, bool withSectionHeader, String? sectionTitle) {
+    return ContactListItem(userId, withSectionHeader, sectionTitle);
+  }
+
+  Widget _fixRow(BuildContext context, int index) {
+    String imagePaht = fixModelList[index][0];
+    String title = fixModelList[index][1];
+    return GestureDetector(
+      onTap: () {
+
+      },
+      child: Column(
+        children: <Widget>[
+          Container(
+            height: 48.0,
+            margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
+            child: Row(
+              children: <Widget>[
+                Image.asset(imagePaht, width: 32.0, height: 32.0),
+                Expanded(
+                    child: Container(
+                        height: 40.0,
+                        alignment: Alignment.centerLeft,
+                        margin: const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
+                        child: Text(
+                          title,
+                          style: const TextStyle(fontSize: 15.0),
+                        ))),
+              ],
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+            height: 0.5,
+            color: const Color(0xffebebeb),
+          ),
+        ],
+      ),
+    );;
   }
 }
 
 class ContactListItem extends StatefulWidget {
   String userId;
+  bool withSectionHeader;
+  String? sectionTitle;
 
-  ContactListItem(this.userId);
+  ContactListItem(this.userId, this.withSectionHeader, this.sectionTitle, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -80,37 +130,41 @@ class _ContactListItemState extends State<ContactListItem> {
       localPortrait = 'assets/images/user_avatar_default.png';
 
 
-    return new GestureDetector(
-      child: new Container(
-        child: new Column(
-          children: <Widget>[
-            new Container(
-              height: 48.0,
-              margin: new EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
-              child: new Row(
-                children: <Widget>[
-                  portrait == null ? new Image.asset(localPortrait, width: 32.0, height: 32.0) : Image.network(portrait, width: 32.0, height: 32.0),
-                  new Expanded(
-                      child: new Container(
-                          height: 40.0,
-                          alignment: Alignment.centerLeft,
-                          margin: new EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
-                          child: new Text(
-                            '$convTitle',
-                            style: TextStyle(fontSize: 15.0),
-                          ))),
-                ],
-              ),
-            ),
-            new Container(
-              margin: new EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-              height: 0.5,
-              color: const Color(0xffebebeb),
-            ),
-          ],
-        ),
-      ),
+    return GestureDetector(
       onTap: _toChatPage,
+      child: Column(
+        children: <Widget>[
+          Container(
+            height: widget.withSectionHeader?18:0,
+            width: View.of(context).physicalSize.width,
+            color: const Color(0xffebebeb),
+            child: widget.withSectionHeader && widget.sectionTitle != null ? Text(widget.sectionTitle!): null,
+          ),
+          Container(
+            height: 48.0,
+            margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
+            child: Row(
+              children: <Widget>[
+                portrait == null ? Image.asset(localPortrait, width: 32.0, height: 32.0) : Image.network(portrait, width: 32.0, height: 32.0),
+                Expanded(
+                    child: Container(
+                        height: 40.0,
+                        alignment: Alignment.centerLeft,
+                        margin: const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
+                        child: Text(
+                          convTitle,
+                          style: const TextStyle(fontSize: 15.0),
+                        ))),
+              ],
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+            height: 0.5,
+            color: const Color(0xffebebeb),
+          ),
+        ],
+      ),
     );
   }
 

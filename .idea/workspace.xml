@@ -5,18 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/example/assets/images/contact_fav_group.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/contact_new_friend.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/contact_subscribed_channel.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/discover_channel.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/discover_chatroom.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/discover_devdocs.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/discover_robot.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/discovery.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/conversation_list_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/conversation_list_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_platform_interface.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/test/imclient_method_channel_test.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/test/imclient_test.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/rtckit.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/rtckit_method_channel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit_platform_interface.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/test/rtckit_method_channel_test.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/test/rtckit_test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/contact_list_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/contact_list_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/home.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,16 +55,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
-    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "cidr.known.project.marker": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "io.flutter.reload.alreadyRun": "true",
+    "last_opened_file_path": "/Users/rain/Workspace/wfc_flutter_plugins/example/lib",
+    "show.migrate.to.gradle.popup": "false"
   }
-}</component>
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/example/lib" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/example/assets/images" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration name="wfc_example" type="FlutterRunConfigurationType" factoryName="Flutter">
       <option name="filePath" value="$PROJECT_DIR$/example/lib/main.dart" />
@@ -96,7 +105,7 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="Dart">
+        <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart</url>
           <line>740</line>
           <option name="timeStamp" value="1" />
