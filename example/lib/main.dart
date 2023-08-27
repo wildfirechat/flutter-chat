@@ -28,6 +28,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final navKey = GlobalKey<NavigatorState>();
+
   bool isLogined = false;
 
   @override
@@ -64,9 +66,7 @@ class _MyAppState extends State<MyApp> {
         });
 
         isLogined = false;
-        //变成未登录状态，需要转到登录界面。但为什么这里跳转不了？
-        Navigator.pushAndRemoveUntil(
-          context,
+        navKey.currentState?.pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => LoginScreen(), maintainState: true),
               (Route<dynamic> route) => false,
         );
@@ -112,6 +112,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navKey,
       home: isLogined ? const HomeTabBar() : LoginScreen(),
     );
   }
