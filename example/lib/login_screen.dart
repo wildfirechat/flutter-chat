@@ -109,7 +109,7 @@ class LoginScreenState extends State<LoginScreen> {
                       phoneNum, code, (userId, token, isNewUser) {
                     Imclient.connect(Config.IM_Host, userId, token);
                     Navigator.replace(context, oldRoute: ModalRoute.of(context)!,
-                        newRoute: MaterialPageRoute(builder: (context) => HomeTabBar()));
+                        newRoute: MaterialPageRoute(builder: (context) => const HomeTabBar()));
                     SharedPreferences.getInstance().then((value) {
                       value.setString("userId", userId);
                       value.setString("token", token);
