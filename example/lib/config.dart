@@ -20,4 +20,5 @@ class Config {
   ["turn:turn.wildfirechat.net:3478", "wfchat", "wfchat1"]
   ];
 
+  static const String defaultUserPortrait = 'assets/images/user_avatar_default.png';
 }
