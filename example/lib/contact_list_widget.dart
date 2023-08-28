@@ -4,10 +4,13 @@ import 'package:imclient/model/user_info.dart';
 import 'dart:ui';
 
 import 'package:wfc_example/config.dart';
+import 'package:wfc_example/user_info_widget.dart';
 
 class ContactListWidget extends StatefulWidget {
+  const ContactListWidget({Key? key}) : super(key: key);
+
   @override
-  _ContactListWidgetState createState() => _ContactListWidgetState();
+  State createState() => _ContactListWidgetState();
 }
 
 class _ContactListWidgetState extends State<ContactListWidget> {
@@ -61,14 +64,14 @@ class _ContactListWidgetState extends State<ContactListWidget> {
       child: Column(
         children: <Widget>[
           Container(
-            height: 48.0,
+            height: 52.0,
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                Image.asset(imagePaht, width: 32.0, height: 32.0),
+                Image.asset(imagePaht, width: 40.0, height: 40.0),
                 Expanded(
                     child: Container(
-                        height: 40.0,
+                        height: 52.0,
                         alignment: Alignment.centerLeft,
                         margin: const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
                         child: Text(
@@ -98,17 +101,19 @@ class ContactListItem extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return _ContactListItemState(userId);
+    return _ContactListItemState();
   }
 }
 
 class _ContactListItemState extends State<ContactListItem> {
-  String userId;
   UserInfo? userInfo;
 
-  _ContactListItemState(this.userId) {
+  _ContactListItemState();
 
-    Imclient.getUserInfo(userId).then((value) {
+
+  @override
+  void initState() {
+    Imclient.getUserInfo(widget.userId).then((value) {
       setState(() {
         userInfo = value;
       });
@@ -118,19 +123,20 @@ class _ContactListItemState extends State<ContactListItem> {
   @override
   Widget build(BuildContext context) {
     String? portrait;
-    String localPortrait;
     String convTitle;
 
-      if(userInfo != null && userInfo?.portrait != null && userInfo!.portrait!.isNotEmpty) {
-        portrait = userInfo!.portrait!;
+      if(userInfo != null) {
+        if(userInfo!.portrait != null && userInfo!.portrait!.isNotEmpty) {
+          portrait = userInfo!.portrait!;
+        }
         convTitle = userInfo!.displayName!;
       } else {
-        convTitle = '私聊';
+        convTitle = '用户';
       }
 
 
     return GestureDetector(
-      onTap: _toChatPage,
+      onTap: _toUserInfoPage,
       child: Column(
         children: <Widget>[
           Container(
@@ -140,11 +146,11 @@ class _ContactListItemState extends State<ContactListItem> {
             child: widget.withSectionHeader && widget.sectionTitle != null ? Text(widget.sectionTitle!): null,
           ),
           Container(
-            height: 48.0,
+            height: 52.0,
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                portrait == null ? Image.asset(Config.defaultUserPortrait, width: 32.0, height: 32.0) : Image.network(portrait, width: 32.0, height: 32.0),
+                portrait == null ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(portrait, width: 40.0, height: 40.0),
                 Expanded(
                     child: Container(
                         height: 40.0,
@@ -171,10 +177,10 @@ class _ContactListItemState extends State<ContactListItem> {
   /// 跳转聊天界面
   ///
   ///
-  _toChatPage() {
-    // Navigator.push(
-    //   context,
-    //   new MaterialPageRoute(builder: (context) => new MessagesScreen()),
-    // );
+  _toUserInfoPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => UserInfoWidget(widget.userId)),
+    );
   }
 }
