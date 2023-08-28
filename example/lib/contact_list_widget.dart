@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'dart:ui';
@@ -59,7 +60,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     String title = fixModelList[index][1];
     return GestureDetector(
       onTap: () {
-
+        Fluttertoast.showToast(msg: "方法没有实现");
+        print("on tap item $index");
       },
       child: Column(
         children: <Widget>[
@@ -69,15 +71,13 @@ class _ContactListWidgetState extends State<ContactListWidget> {
             child: Row(
               children: <Widget>[
                 Image.asset(imagePaht, width: 40.0, height: 40.0),
+                Container(margin: const EdgeInsets.only(left: 16),),
                 Expanded(
-                    child: Container(
-                        height: 52.0,
-                        alignment: Alignment.centerLeft,
-                        margin: const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
-                        child: Text(
-                          title,
-                          style: const TextStyle(fontSize: 15.0),
-                        ))),
+                    child: Text(
+                      title,
+                      style: const TextStyle(fontSize: 15.0),
+                    )
+                ),
               ],
             ),
           ),
@@ -151,15 +151,13 @@ class _ContactListItemState extends State<ContactListItem> {
             child: Row(
               children: <Widget>[
                 portrait == null ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(portrait, width: 40.0, height: 40.0),
+                Container(margin: const EdgeInsets.only(left: 16),),
                 Expanded(
-                    child: Container(
-                        height: 40.0,
-                        alignment: Alignment.centerLeft,
-                        margin: const EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
-                        child: Text(
-                          convTitle,
-                          style: const TextStyle(fontSize: 15.0),
-                        ))),
+                    child: Text(
+                      convTitle,
+                      style: const TextStyle(fontSize: 15.0),
+                    )
+                ),
               ],
             ),
           ),
