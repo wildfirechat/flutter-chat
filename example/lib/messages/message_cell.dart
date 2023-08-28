@@ -7,6 +7,7 @@ import 'package:imclient/message/notification/notification_message_content.dart'
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:wfc_example/utilities.dart';
 
 import 'message_model.dart';
 
@@ -18,7 +19,7 @@ class MessageCell extends StatefulWidget {
   MessageCell(this.model):super(key: ObjectKey(model));
 
   @override
-  _MessageBaseCellState createState() {
+  State createState() {
     if(model.message.content is NotificationMessageContent) {
       return _NotificaitonCellState();
     } else if(model.message.content is TextMessageContent) {
@@ -38,7 +39,7 @@ class _MessageBaseCellState extends State<MessageCell> {
   Widget build(BuildContext context) {
     return Padding(padding: EdgeInsets.all(5), child: Column(
       children: [
-        widget.model.showTimeLabel ? Padding(padding: EdgeInsets.all(3), child: Text('15:40', style: TextStyle(backgroundColor: Colors.grey[300]),),) : SizedBox(),
+        widget.model.showTimeLabel ? Padding(padding: EdgeInsets.all(3), child: Text(Utilities.formatMessageTime(widget.model.message.serverTime), style: TextStyle(backgroundColor: Colors.grey[300]),),) : SizedBox(),
         Container(child: getContent(context),),
       ],),
     );
