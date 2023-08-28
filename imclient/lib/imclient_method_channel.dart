@@ -87,6 +87,8 @@ class ImclientPlatform extends PlatformInterface {
 
   static final EventBus _eventBus = EventBus();
 
+  late String userId;
+
   // ignore: non_constant_identifier_names
   @override
   EventBus get IMEventBus {
@@ -113,8 +115,8 @@ class ImclientPlatform extends PlatformInterface {
 
   ///当前用户ID
   @override
-  Future<String> get currentUserId async {
-    return await methodChannel.invokeMethod('currentUserId');
+  String get currentUserId {
+    return userId;
   }
 
   ///当前服务器与客户端时间的差值，单位是毫秒，只能是初略估计，不精确。
@@ -1198,6 +1200,7 @@ class ImclientPlatform extends PlatformInterface {
   /// [host]为IM服务域名或IP，必须im.example.com或114.144.114.144，不带http头和端口。
   @override
   Future<int> connect(String host, String userId, String token) async {
+    this.userId = userId;
     int lastConnectTime = await methodChannel.invokeMethod('connect', {'host':host, 'userId':userId, 'token':token});
     return lastConnectTime;
   }

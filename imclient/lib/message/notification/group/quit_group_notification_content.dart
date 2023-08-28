@@ -53,7 +53,7 @@ class QuitGroupNotificationContent extends NotificationMessageContent {
 
   @override
   Future<String> formatNotification(Message message) async {
-    if (quitMember == await Imclient.currentUserId) {
+    if (quitMember == Imclient.currentUserId) {
       return '你 退出了群组';
     } else {
       UserInfo? userInfo =

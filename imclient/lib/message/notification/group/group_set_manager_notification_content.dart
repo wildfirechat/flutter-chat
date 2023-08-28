@@ -66,7 +66,7 @@ class GroupSetManagerNotificationContent extends NotificationMessageContent {
   @override
   Future<String> formatNotification(Message message) async {
     String formatMsg;
-    if (operatorId == await Imclient.currentUserId) {
+    if (operatorId == Imclient.currentUserId) {
       formatMsg = '你';
     } else {
       UserInfo? userInfo =
@@ -86,7 +86,7 @@ class GroupSetManagerNotificationContent extends NotificationMessageContent {
 
     for (int i = 0; i < memberIds.length; ++i) {
       String memberId = memberIds[i];
-      if (memberId == await Imclient.currentUserId) {
+      if (memberId == Imclient.currentUserId) {
         formatMsg = '$formatMsg 你';
       } else {
         UserInfo? userInfo =

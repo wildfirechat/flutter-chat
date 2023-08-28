@@ -60,7 +60,7 @@ class GroupJoinTypeNotificationContent extends NotificationMessageContent {
   @override
   Future<String> formatNotification(Message message) async {
     String formatMsg;
-    if (operatorId == await Imclient.currentUserId) {
+    if (operatorId == Imclient.currentUserId) {
       formatMsg = '你';
     } else {
       UserInfo? userInfo =

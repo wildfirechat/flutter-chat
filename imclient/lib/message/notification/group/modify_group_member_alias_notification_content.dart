@@ -67,7 +67,7 @@ class ModifyGroupMemberAliasNotificationContent
   @override
   Future<String> formatNotification(Message message) async {
     String formatMsg;
-    if (operateUser == await Imclient.currentUserId) {
+    if (operateUser == Imclient.currentUserId) {
       formatMsg = '你';
     } else {
       UserInfo? userInfo =
@@ -81,7 +81,7 @@ class ModifyGroupMemberAliasNotificationContent
 
     formatMsg = '$formatMsg 修改';
 
-    if (memberId == await Imclient.currentUserId) {
+    if (memberId == Imclient.currentUserId) {
       formatMsg = '$formatMsg 你';
     } else if (memberId == null || memberId!.isEmpty) {
       formatMsg = '$formatMsg 自己';

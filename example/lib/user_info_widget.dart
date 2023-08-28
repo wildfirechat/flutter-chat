@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
@@ -20,6 +23,8 @@ class UserInfoWidget extends StatefulWidget {
 }
 
 class _UserInfoState extends State<UserInfoWidget> {
+  final EventBus _eventBus = Imclient.IMEventBus;
+  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
   final List friendModelList = [
     //标题，key，是否带有section，是否居中，是否标红
     ['设置昵称或者别名', 'alias', false, false, false],
@@ -41,6 +46,15 @@ class _UserInfoState extends State<UserInfoWidget> {
   @override
   void initState() {
     super.initState();
+    _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
+      for(UserInfo userInfo in event.userInfos) {
+        if(userInfo.userId == widget.userId) {
+          loadUserInfo();
+          break;
+        }
+      }
+    });
+
     Imclient.isMyFriend(widget.userId).then((value) {
       isFriend = value;
       if(value) {
@@ -50,6 +64,10 @@ class _UserInfoState extends State<UserInfoWidget> {
     }
     });
 
+    loadUserInfo();
+  }
+
+  void loadUserInfo() {
     Imclient.getUserInfo(widget.userId, groupId: widget.inGroupId, refresh: true).then((value) => {
       setState((){
         userInfo = value;

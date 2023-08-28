@@ -60,7 +60,7 @@ class KickoffGroupMemberNotificationContent extends NotificationMessageContent {
   @override
   Future<String> formatNotification(Message message) async {
     String formatMsg;
-    if (operateUser == await Imclient.currentUserId) {
+    if (operateUser == Imclient.currentUserId) {
       formatMsg = '你';
     } else {
       UserInfo? userInfo =
@@ -76,7 +76,7 @@ class KickoffGroupMemberNotificationContent extends NotificationMessageContent {
 
     for (int i = 0; i < kickedMembers.length; ++i) {
       String memberId = kickedMembers[i];
-      if (memberId == await Imclient.currentUserId) {
+      if (memberId == Imclient.currentUserId) {
         formatMsg = '$formatMsg 你';
       } else {
         UserInfo? userInfo =

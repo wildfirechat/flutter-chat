@@ -271,7 +271,7 @@ class Imclient {
   }
 
   ///当前用户ID
-  static Future<String> get currentUserId async {
+  static String get currentUserId {
     return ImclientPlatform.instance.currentUserId;
   }
 

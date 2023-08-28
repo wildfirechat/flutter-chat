@@ -65,7 +65,7 @@ class GroupMuteNotificationContent extends NotificationMessageContent {
       str = '关闭了全员禁言';
     }
 
-    if (creator == await Imclient.currentUserId) {
+    if (creator == Imclient.currentUserId) {
       return '你 $str';
     } else {
       UserInfo? userInfo =
