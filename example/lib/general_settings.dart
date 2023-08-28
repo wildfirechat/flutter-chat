@@ -53,7 +53,7 @@ class GeneralSettings extends StatelessWidget {
       Container(
         margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
         height: 36,
-        child: center?Center(child: Text(title, style: const TextStyle(color: Colors.red),)):Row(children: [Text(title),],),
+        child: center?Center(child: Text(title, style: const TextStyle(color: Colors.red),)):Row(children: [Expanded(child: Text(title)),],),
       ),
       Container(
         margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
