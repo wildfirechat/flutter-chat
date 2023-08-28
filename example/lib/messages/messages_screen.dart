@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/text_message_content.dart';
+import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
+import 'package:imclient/model/user_info.dart';
 import 'package:rtckit/rtckit.dart';
 
 import 'message_cell.dart';
@@ -32,6 +35,13 @@ class _State extends State<MessagesScreen> {
   bool noMoreLocalHistoryMsg = false;
   bool noMoreRemoteHistoryMsg = false;
 
+  String title = "消息";
+
+  UserInfo? userInfo;
+  GroupInfo? groupInfo;
+  ChannelInfo? channelInfo;
+  List<GroupMember>? groupMembers;
+
   TextEditingController textEditingController = TextEditingController();
 
   @override
@@ -50,6 +60,34 @@ class _State extends State<MessagesScreen> {
     });
 
     Imclient.clearConversationUnreadStatus(widget.conversation);
+
+    if(widget.conversation.conversationType == ConversationType.Single) {
+      Imclient.getUserInfo(widget.conversation.target, refresh: true).then((value){
+        setState(() {
+          userInfo = value;
+          if(userInfo != null) {
+            if (userInfo!.friendAlias != null && userInfo!.friendAlias!.isNotEmpty) {
+              title = userInfo!.friendAlias!;
+            } else if(userInfo!.displayName != null) {
+              title = userInfo!.displayName!;
+            }
+          }
+        });
+      });
+    } else if(widget.conversation.conversationType == ConversationType.Group) {
+      Imclient.getGroupInfo(widget.conversation.target, refresh: true).then((value) {
+        setState(() {
+          groupInfo = value;
+          if(groupInfo != null) {
+            if(groupInfo!.remark != null && groupInfo!.remark!.isNotEmpty) {
+              title = groupInfo!.remark!;
+            } else if(groupInfo!.name != null) {
+              title = groupInfo!.name!;
+            }
+          }
+        });
+      });
+    }
   }
 
   @override
@@ -156,19 +194,22 @@ class _State extends State<MessagesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 232, 232, 232),
       appBar: AppBar(
-        title: Text('Message'),
+        title: Text(title),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            Expanded(child: NotificationListener(
-              onNotification: notificationFunction,
-              child: ListView.builder(
-                reverse: true,
-                itemBuilder: (BuildContext context, int index) => MessageCell(models[index]),
-                itemCount: models.length,),
-            )),
+            Flexible(
+                child: NotificationListener(
+                  onNotification: notificationFunction,
+                  child: ListView.builder(
+                  reverse: true,
+                  itemBuilder: (BuildContext context, int index) => MessageCell(models[index]),
+                  itemCount: models.length,),
+              ),
+            ),
             _getInputBar(),
           ],
         ),

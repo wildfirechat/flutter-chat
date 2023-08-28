@@ -5,26 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/call_start_cell_builder.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/image_cell_builder.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/message_cell_builder.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/notification_cell_builder.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/portrait_cell_builder.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/text_cell_builder.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/unknown_cell_builder.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/settings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/settings.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/user_info_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/user_info_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/message_cell.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/message_cell.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/add_group_member_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/add_group_member_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/change_group_name_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/change_group_name_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/change_group_portrait_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/change_group_portrait_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/create_group_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/create_group_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/dismiss_group_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/dismiss_group_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_join_type_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_join_type_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_member_allow_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_member_allow_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_member_mute_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_member_mute_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_mute_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_mute_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_private_chat_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_private_chat_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_set_manager_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_set_manager_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/kickoff_group_member_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/kickoff_group_member_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/modify_group_member_alias_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/modify_group_member_alias_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/quit_group_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/quit_group_notification_content.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/transfer_group_owner_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/transfer_group_owner_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/model/group_info.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/model/group_info.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,17 +55,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "cidr.known.project.marker": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "io.flutter.reload.alreadyRun": "true",
-    "last_opened_file_path": "/Users/rain/Workspace/wfc_flutter_plugins/example/lib",
-    "show.migrate.to.gradle.popup": "false"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/rain/Workspace/wfc_flutter_plugins/example/lib&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/example/lib" />
