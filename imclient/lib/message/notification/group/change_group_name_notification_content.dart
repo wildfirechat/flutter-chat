@@ -58,7 +58,7 @@ class ChangeGroupNameNotificationContent extends NotificationMessageContent {
 
   @override
   Future<String> formatNotification(Message message) async {
-    if (operateUser == await Imclient.currentUserId) {
+    if (operateUser == Imclient.currentUserId) {
       return '你 修改群名片为: $name';
     } else {
       UserInfo? userInfo =

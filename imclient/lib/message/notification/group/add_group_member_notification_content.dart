@@ -60,7 +60,7 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
   @override
   Future<String> formatNotification(Message message) async {
     if (invitees.length == 1 && invitees[0] == invitor) {
-      if (invitor == await Imclient.currentUserId) {
+      if (invitor == Imclient.currentUserId) {
         return '你加入了群聊';
       } else {
         UserInfo? userInfo =
@@ -74,7 +74,7 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
     }
 
     String formatMsg;
-    if (invitor == await Imclient.currentUserId) {
+    if (invitor == Imclient.currentUserId) {
       formatMsg = '你 邀请';
     } else {
       UserInfo? userInfo =
@@ -88,7 +88,7 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
 
     for (int i = 0; i < invitees.length; ++i) {
       String memberId = invitees[i];
-      if (memberId == await Imclient.currentUserId) {
+      if (memberId == Imclient.currentUserId) {
         formatMsg = '$formatMsg 你';
       } else {
         UserInfo? userInfo =

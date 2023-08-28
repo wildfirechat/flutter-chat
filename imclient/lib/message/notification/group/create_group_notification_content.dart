@@ -57,7 +57,7 @@ class CreateGroupNotificationContent extends NotificationMessageContent {
 
   @override
   Future<String> formatNotification(Message message) async {
-    if (creator == await Imclient.currentUserId) {
+    if (creator == Imclient.currentUserId) {
       return '你 创建了群组';
     } else {
       UserInfo? userInfo =

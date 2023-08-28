@@ -6,9 +6,25 @@
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/contact_list_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/contact_list_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/general_settings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/general_settings.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/settings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/settings.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/lib/user_info_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/user_info_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/add_group_member_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/add_group_member_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/change_group_name_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/change_group_name_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/change_group_portrait_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/change_group_portrait_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/create_group_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/create_group_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/dismiss_group_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/dismiss_group_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_join_type_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_join_type_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_member_allow_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_member_allow_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_member_mute_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_member_mute_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_mute_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_mute_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_private_chat_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_private_chat_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_set_manager_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/group_set_manager_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/kickoff_group_member_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/kickoff_group_member_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/modify_group_member_alias_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/modify_group_member_alias_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/quit_group_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/quit_group_notification_content.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/message/notification/group/transfer_group_owner_notification_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/notification/group/transfer_group_owner_notification_content.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,7 +115,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart</url>
-          <line>740</line>
+          <line>742</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>

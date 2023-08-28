@@ -94,20 +94,24 @@ class SettingProfileState extends State<SettingProfile> {
   void initState() {
     loadUserInfo();
     _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
-      loadUserInfo();
+      _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
+        for(UserInfo userInfo in event.userInfos) {
+          if(userInfo.userId == Imclient.currentUserId) {
+            loadUserInfo();
+            break;
+          }
+        }
+      });
     });
   }
 
   void loadUserInfo() {
-    Imclient.currentUserId.then((userId) => {
-      Imclient.getUserInfo(userId).then((ui) => {
-        setState((){
-          userInfo = ui;
-        })
+    Imclient.getUserInfo(Imclient.currentUserId).then((ui) => {
+      setState((){
+        userInfo = ui;
       })
     });
   }
-
 
   @override
   Widget build(BuildContext context) {

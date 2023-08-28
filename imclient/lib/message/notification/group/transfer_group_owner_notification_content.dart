@@ -58,7 +58,7 @@ class TransferGroupOwnerNotificationContent extends NotificationMessageContent {
   @override
   Future<String> formatNotification(Message message) async {
     String formatMsg;
-    if (operateUser == await Imclient.currentUserId) {
+    if (operateUser == Imclient.currentUserId) {
       formatMsg = '你';
     } else {
       UserInfo? userInfo =
@@ -72,7 +72,7 @@ class TransferGroupOwnerNotificationContent extends NotificationMessageContent {
 
     formatMsg = '$formatMsg 把群组转让给了';
 
-    if (owner == await Imclient.currentUserId) {
+    if (owner == Imclient.currentUserId) {
       formatMsg = '$formatMsg 你';
     } else {
       UserInfo? userInfo =

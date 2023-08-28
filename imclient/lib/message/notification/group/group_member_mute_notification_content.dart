@@ -65,7 +65,7 @@ class GroupMemberMuteNotificationContent extends NotificationMessageContent {
   @override
   Future<String> formatNotification(Message message) async {
     String formatMsg;
-    if (creator == await Imclient.currentUserId) {
+    if (creator == Imclient.currentUserId) {
       formatMsg = '你';
     } else {
       UserInfo? userInfo =
@@ -85,7 +85,7 @@ class GroupMemberMuteNotificationContent extends NotificationMessageContent {
 
     for (int i = 0; i < targetIds.length; ++i) {
       String memberId = targetIds[i];
-      if (memberId == await Imclient.currentUserId) {
+      if (memberId == Imclient.currentUserId) {
         formatMsg = '$formatMsg 你';
       } else {
         UserInfo? userInfo =

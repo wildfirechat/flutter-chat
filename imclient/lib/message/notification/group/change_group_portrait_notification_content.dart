@@ -54,7 +54,7 @@ class ChangeGroupPortraitNotificationContent
 
   @override
   Future<String> formatNotification(Message message) async {
-    if (operateUser == await Imclient.currentUserId) {
+    if (operateUser == Imclient.currentUserId) {
       return '你 修改了群头像';
     } else {
       UserInfo? userInfo =

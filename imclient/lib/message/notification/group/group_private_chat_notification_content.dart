@@ -66,7 +66,7 @@ class GroupPrivateChatNotificationContent extends NotificationMessageContent {
       str = '关闭了成员私聊';
     }
 
-    if (invitor == await Imclient.currentUserId) {
+    if (invitor == Imclient.currentUserId) {
       return '你 $str';
     } else {
       UserInfo? userInfo =
