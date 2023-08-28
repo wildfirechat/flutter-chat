@@ -16,10 +16,10 @@ import 'message_model.dart';
 class MessagesScreen extends StatefulWidget {
   final Conversation conversation;
 
-  MessagesScreen(this.conversation);
+  MessagesScreen(this.conversation, {Key? key}) : super(key: key);
 
   @override
-  _State createState() => _State();
+  State createState() => _State();
 }
 
 class _State extends State<MessagesScreen> {
@@ -61,22 +61,37 @@ class _State extends State<MessagesScreen> {
   void _appendMessage(List<Message> messages, {bool front = false}) {
     setState(() {
       bool haveNewMsg = false;
-      messages.forEach((element) {
+      for (var element in messages) {
         if(element.conversation != widget.conversation) {
-          return;
+          continue;
         }
         if(element.messageId == 0) {
-          return;
+          continue;
         }
 
         haveNewMsg = true;
-        MessageModel model = MessageModel(element, showTimeLabel: true);
+        MessageModel model = MessageModel(element, showTimeLabel: false);
         if(front) {
           models.insert(0, model);
         } else {
           models.add(model);
         }
-      });
+      }
+
+      for(int i = 0; i < models.length; ++i) {
+        MessageModel model = models[i];
+        if(i < models.length - 1) {
+          MessageModel nextModel = models[i+1];
+          if(model.message.serverTime - nextModel.message.serverTime > 60 * 1000) {
+            model.showTimeLabel = true;
+          } else {
+            model.showTimeLabel = false;
+          }
+        } else {
+          model.showTimeLabel = true;
+        }
+      }
+
       if(haveNewMsg) {
         Imclient.clearConversationUnreadStatus(widget.conversation);
       }
@@ -96,8 +111,6 @@ class _State extends State<MessagesScreen> {
       isLoading = false;
       return;
     }
-    bool noMoreLocalHistoryMsg = false;
-    bool noMoreRemoteHistoryMsg = false;
 
     if(noMoreLocalHistoryMsg) {
       if(noMoreRemoteHistoryMsg) {
@@ -121,8 +134,9 @@ class _State extends State<MessagesScreen> {
           value) {
         _appendMessage(value);
         isLoading = false;
-        if(value == null || value.isEmpty)
+        if(value == null || value.isEmpty) {
           noMoreLocalHistoryMsg = true;
+        }
       });
     }
   }
@@ -149,49 +163,53 @@ class _State extends State<MessagesScreen> {
         child: Column(
           children: [
             Expanded(child: NotificationListener(
+              onNotification: notificationFunction,
               child: ListView.builder(
                 reverse: true,
                 itemBuilder: (BuildContext context, int index) => MessageCell(models[index]),
                 itemCount: models.length,),
-              onNotification: notificationFunction,
             )),
-            Container(
-              height: 100,
-              child: Row(
-                children: [
-                  IconButton(icon: Icon(Icons.record_voice_over), onPressed: null),
-                  Expanded(child: TextField(controller: textEditingController,onSubmitted: (text){
-                    TextMessageContent txt = TextMessageContent(text);
-                    Imclient.sendMessage(widget.conversation, txt, successCallback: (int messageUid, int timestamp){
-                      print("scuccess");
-                    }, errorCallback: (int errorCode) {
-                      print("send failure!");
-                    }).then((value) {
-                      if(value != null) {
-                        _appendMessage([value], front: true);
-                      }
-                      textEditingController.clear();
-                    });
-                  }, onChanged: (text) {
-                    print(text);
-                  },), ),
-                  IconButton(icon: Icon(Icons.emoji_emotions), onPressed: null),
-                  IconButton(icon: Icon(Icons.add_circle_outline_rounded), onPressed: null),
-                  IconButton(icon: Icon(Icons.camera_enhance_rounded), onPressed: (){
-                    if(widget.conversation.conversationType == ConversationType.Single) {
-                      Rtckit.startSingleCall(widget.conversation.target, true);
-                    } else if(widget.conversation.conversationType == ConversationType.Group) {
-                      //Select participants first;
-                      // List<String> participants = List();
-                      // Future<List<GroupMember>> members = Imclient.getGroupMembers(widget.conversation.target);
-                      Rtckit.startMultiCall(widget.conversation.target, ["nl0qmws2k"], true);
-                    }
-                  }),
-                ],
-              ),
-            ),
+            _getInputBar(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _getInputBar() {
+    return SizedBox(
+      height: 100,
+      child: Row(
+        children: [
+          IconButton(icon: Icon(Icons.record_voice_over), onPressed: null),
+          Expanded(child: TextField(controller: textEditingController,onSubmitted: (text){
+            TextMessageContent txt = TextMessageContent(text);
+            Imclient.sendMessage(widget.conversation, txt, successCallback: (int messageUid, int timestamp){
+              print("scuccess");
+            }, errorCallback: (int errorCode) {
+              print("send failure!");
+            }).then((value) {
+              if(value != null) {
+                _appendMessage([value], front: true);
+              }
+              textEditingController.clear();
+            });
+          }, onChanged: (text) {
+            print(text);
+          },), ),
+          IconButton(icon: Icon(Icons.emoji_emotions), onPressed: null),
+          IconButton(icon: Icon(Icons.add_circle_outline_rounded), onPressed: null),
+          IconButton(icon: Icon(Icons.camera_enhance_rounded), onPressed: (){
+            if(widget.conversation.conversationType == ConversationType.Single) {
+              Rtckit.startSingleCall(widget.conversation.target, true);
+            } else if(widget.conversation.conversationType == ConversationType.Group) {
+              //Select participants first;
+              // List<String> participants = List();
+              // Future<List<GroupMember>> members = Imclient.getGroupMembers(widget.conversation.target);
+              Rtckit.startMultiCall(widget.conversation.target, ["nl0qmws2k"], true);
+            }
+          }),
+        ],
       ),
     );
   }
