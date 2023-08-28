@@ -41,22 +41,22 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   Widget getContent(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: isSendMessage ? [
-        getPadding(),
+      children: [
+        isSendMessage ?getPadding():getPortrait(),
         getBodyArea(),
-        getPortrait()
-      ] : [
-        getPortrait(),
-        getBodyArea(),
-        getPadding(),
+        isSendMessage ?getPortrait():getPadding()
       ],
     );
   }
 
   Widget getPortrait() {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-      child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0) : Image.network(portrait!, width: 44.0, height: 44.0),
+    return GestureDetector(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+        child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0) : Image.network(portrait!, width: 44.0, height: 44.0),
+      ),
+      onTap: () => state.onTapedPortrait(model),
+      onLongPress: () => state.onLongTapedPortrait(model),
     );
   }
 
@@ -81,7 +81,12 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                 bottomRight: Radius.circular(8),
               ),
             ),
-            child: getContentAres(),),
+            child: GestureDetector(
+              child: getContentAres(),
+              onTap: () => state.onTaped(model),
+              onDoubleTap: () => state.onDoubleTaped(model),
+            ),
+          ),
             Container(padding: const EdgeInsets.only(bottom: 3),)
         ],
       ),

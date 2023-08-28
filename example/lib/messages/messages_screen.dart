@@ -191,6 +191,22 @@ class _State extends State<MessagesScreen> {
     return true;
   }
 
+  void onTapedCell(MessageModel model) {
+    print("on taped cell");
+  }
+
+  void onDoubleTapedCell(MessageModel model) {
+    print("on double taped cell");
+  }
+
+  void onPortraitTaped(MessageModel model) {
+    print("on taped portrait");
+  }
+
+  void onPortraitLongTaped(MessageModel model) {
+    print("on long taped portrait");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -206,7 +222,13 @@ class _State extends State<MessagesScreen> {
                   onNotification: notificationFunction,
                   child: ListView.builder(
                   reverse: true,
-                  itemBuilder: (BuildContext context, int index) => MessageCell(models[index]),
+                  itemBuilder: (BuildContext context, int index) => MessageCell(
+                          models[index],
+                          (model)=> onTapedCell(model),
+                          (model)=>onDoubleTapedCell(model),
+                          (model)=>onPortraitTaped(model),
+                          (model)=>onPortraitLongTaped(model)
+                  ),
                   itemCount: models.length,),
               ),
             ),

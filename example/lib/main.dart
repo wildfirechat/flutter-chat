@@ -51,6 +51,7 @@ class _MyAppState extends State<MyApp> {
       if (status == kConnectionStatusSecretKeyMismatch ||
           status == kConnectionStatusTokenIncorrect ||
           status == kConnectionStatusRejected ||
+          status == kConnectionStatusKickedOff ||
           status == kConnectionStatusLogout) {
         if(status != kConnectionStatusLogout) {
           Imclient.isLogined.then((value) {

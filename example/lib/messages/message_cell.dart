@@ -4,6 +4,7 @@ import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/notification/notification_message_content.dart';
+import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
@@ -16,12 +17,22 @@ import 'cell_builder/notification_cell_builder.dart';
 import 'cell_builder/portrait_cell_builder.dart';
 import 'cell_builder/text_cell_builder.dart';
 import 'cell_builder/unknown_cell_builder.dart';
+import 'cell_builder/voice_cell_builder.dart';
 import 'message_model.dart';
+
+typedef OnMessageCellTapedCallback = void Function(MessageModel model);
+typedef OnMessageCellDoubleTapedCallback = void Function(MessageModel model);
+typedef OnPortraitTapedCallback = void Function(MessageModel model);
+typedef OnPortraitLongTapedCallback = void Function(MessageModel model);
 
 class MessageCell extends StatefulWidget {
   final MessageModel model;
+  OnMessageCellTapedCallback cellTapedCallback;
+  OnMessageCellDoubleTapedCallback cellDoubleTapedCallback;
+  OnPortraitTapedCallback portraitTapedCallback;
+  OnPortraitLongTapedCallback portraitLongTapedCallback;
 
-  MessageCell(this.model):super(key: ObjectKey(model));
+  MessageCell(this.model, this.cellTapedCallback, this.cellDoubleTapedCallback, this.portraitTapedCallback, this.portraitLongTapedCallback):super(key: ObjectKey(model));
 
   @override
   State createState() {
@@ -42,9 +53,27 @@ class MessageState extends State<MessageCell> {
       _cellBuilder = ImageCellBuilder(this, widget.model);
     } else if(widget.model.message.content is CallStartMessageContent) {
       _cellBuilder = CallStartCellBuilder(this, widget.model);
+    } else if(widget.model.message.content is SoundMessageContent) {
+      _cellBuilder = VoiceCellBuilder(this, widget.model);
     } else {
       _cellBuilder = UnknownCellBuilder(this, widget.model);
     }
+  }
+
+  void onTaped(MessageModel model) {
+    widget.cellTapedCallback(model);
+  }
+
+  void onDoubleTaped(MessageModel model) {
+    widget.cellDoubleTapedCallback(model);
+  }
+
+  void onTapedPortrait(MessageModel model) {
+    widget.portraitTapedCallback(model);
+  }
+
+  void onLongTapedPortrait(MessageModel model) {
+    widget.portraitLongTapedCallback(model);
   }
 
   @override
