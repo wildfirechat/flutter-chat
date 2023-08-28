@@ -943,6 +943,7 @@ class ImclientPlatform extends PlatformInterface {
     groupInfo.target = map['target'];
     groupInfo.name = map['name'];
     groupInfo.extra = map['extra'];
+    groupInfo.remark = map['remark'];
     groupInfo.portrait = map['portrait'];
     groupInfo.owner = map['owner'];
     if (map['memberCount'] != null) groupInfo.memberCount = map['memberCount'];

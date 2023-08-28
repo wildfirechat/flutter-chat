@@ -18,6 +18,7 @@ class GroupInfo {
   int memberCount;
   String? owner;
   String? extra;
+  String? remark;
   int mute;
   int joinType;
   int privateChat;
