@@ -13,7 +13,7 @@ class CallStartCellBuilder extends PortraitCellBuilder {
   }
 
   @override
-  Widget getContentAres() {
+  Widget getContentAres(BuildContext context) {
     return Text(callStartMessageContent.audioOnly?'[语音通话]':'[视频通话]', overflow: TextOverflow.ellipsis, maxLines: 10, style: TextStyle(fontSize: 16),);
   }
 }

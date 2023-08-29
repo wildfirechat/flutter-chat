@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:path/path.dart' as p;
 
 class Utilities {
   static String formatTime(int timestamp) {
@@ -51,5 +52,57 @@ class Utilities {
     }
 
     return time;
+  }
+
+  static String formatSize(int size) {
+    if(size < 1024) {
+      return '${size}B';
+    } else if(size < 1024 * 1024) {
+      int k = (size / 1024).toInt();
+      return '${k}KB';
+    } else if(size < 1024 * 1024 * 1024) {
+      int m = (size/1024/1024).toInt();
+      return '${m}MB';
+    } else {
+      double g = size/1024/1024;
+      String s = g.toStringAsFixed(2);
+      return '${s}GB';
+    }
+  }
+
+  static String fileType(String fileName) {
+    var ext = p.extension(fileName);
+
+    if (ext == ".doc" || ext == ".docx" || ext == ".pages") {
+      return "word";
+    } else if (ext == ".xls" || ext == ".xlsx" || ext == ".numbers") {
+      return "xls";
+    } else if (ext == ".ppt" || ext == ".pptx" || ext == ".keynote") {
+      return "ppt";
+    } else if (ext == ".pdf") {
+      return "pdf";
+    } else if(ext == ".html" || ext == ".htm") {
+      return "html";
+    } else if(ext == ".txt") {
+      return "text";
+    } else if(ext == ".jpg" || ext == ".png" || ext == ".jpeg") {
+      return "image";
+    } else if(ext == ".mp3" || ext == ".amr" || ext == ".acm" || ext == ".aif") {
+      return "audio";
+    } else if(ext == ".mp4" || ext == ".avi"
+    || ext == ".mov" || ext == ".asf"
+    || ext == ".wmv" || ext == ".mpeg"
+    || ext == ".ogg" || ext == ".mkv"
+    || ext == ".rmvb" || ext == ".f4v") {
+      return "video";
+    } else if(ext == ".exe") {
+      return "exe";
+    } else if(ext == ".xml") {
+      return "xml";
+    } else if(ext == ".zip" || ext == ".rar" || ext == ".gzip" || ext == ".gz" || ext == ".xz") {
+      return "zip";
+    }
+
+    return "unknown";
   }
 }

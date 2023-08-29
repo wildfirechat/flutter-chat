@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:event_bus/event_bus.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
-import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
@@ -278,6 +278,31 @@ class _State extends State<MessagesScreen> {
             print(text);
           },), ),
           IconButton(icon: Icon(Icons.emoji_emotions), onPressed: null),
+          IconButton(icon: Icon(Icons.file_copy_rounded), onPressed: () {
+            FilePicker.platform.pickFiles().then((value) {
+              if(value != null && value.files.isNotEmpty) {
+                String path = value.files.first.name;
+                int size = value.files.first.size;
+
+                FileMessageContent fileCnt = FileMessageContent();
+                fileCnt.name = path;
+                fileCnt.size = size;
+                Imclient.sendMediaMessage(widget.conversation, fileCnt, successCallback: (int messageUid, int timestamp) {
+
+                }, errorCallback: (int errorCode) {
+
+                }, progressCallback: (int uploaded, int total) {
+
+                }, uploadedCallback: (String remoteUrl) {
+
+                }).then((message) {
+                  if(message.messageId! > 0) {
+                    _appendMessage([message], front: true);
+                  }
+                });
+              }
+            });
+          }),
           IconButton(icon: Icon(Icons.add_circle_outline_rounded), onPressed: () {
               var picker = ImagePicker();
               picker.pickImage(source: ImageSource.gallery).then((value) {

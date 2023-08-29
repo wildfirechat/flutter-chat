@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/call_start_message_content.dart';
+import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/notification/notification_message_content.dart';
@@ -11,6 +12,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/utilities.dart';
 import 'cell_builder/call_start_cell_builder.dart';
+import 'cell_builder/file_cell_builder.dart';
 import 'cell_builder/image_cell_builder.dart';
 import 'cell_builder/message_cell_builder.dart';
 import 'cell_builder/notification_cell_builder.dart';
@@ -60,6 +62,8 @@ class MessageState extends State<MessageCell> {
       _cellBuilder = CallStartCellBuilder(this, widget.model);
     } else if(widget.model.message.content is SoundMessageContent) {
       _cellBuilder = VoiceCellBuilder(this, widget.model);
+    } else if(widget.model.message.content is FileMessageContent) {
+      _cellBuilder = FileCellBuilder(this, widget.model);
     } else {
       _cellBuilder = UnknownCellBuilder(this, widget.model);
     }

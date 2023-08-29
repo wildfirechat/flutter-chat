@@ -80,7 +80,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         isSendMessage ?getPadding():getPortrait(),
-        getBodyArea(),
+        getBodyArea(context),
         isSendMessage ?getPortrait():getPadding()
       ],
     );
@@ -109,7 +109,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return SizedBox.fromSize(size: const Size(68, 60),);
   }
 
-  Widget getBodyArea() {
+  Widget getBodyArea(BuildContext context) {
     return Flexible(
       child: Column(
         crossAxisAlignment: isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -133,7 +133,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                       ),
                     ),
                     child: GestureDetector(
-                      child: getContentAres(),
+                      child: getContentAres(context),
                       onTap: () => state.onTaped(model),
                       onDoubleTap: () => state.onDoubleTaped(model),
                     ),
@@ -186,5 +186,5 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return Container();
   }
 
-  Widget getContentAres();
+  Widget getContentAres(BuildContext context);
 }
