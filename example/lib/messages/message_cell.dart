@@ -24,6 +24,8 @@ typedef OnMessageCellTapedCallback = void Function(MessageModel model);
 typedef OnMessageCellDoubleTapedCallback = void Function(MessageModel model);
 typedef OnPortraitTapedCallback = void Function(MessageModel model);
 typedef OnPortraitLongTapedCallback = void Function(MessageModel model);
+typedef OnResendTapedCallback = void Function(MessageModel model);
+typedef OnReadedTapedCallback = void Function(MessageModel model);
 
 class MessageCell extends StatefulWidget {
   final MessageModel model;
@@ -31,8 +33,10 @@ class MessageCell extends StatefulWidget {
   OnMessageCellDoubleTapedCallback cellDoubleTapedCallback;
   OnPortraitTapedCallback portraitTapedCallback;
   OnPortraitLongTapedCallback portraitLongTapedCallback;
+  OnResendTapedCallback resendTapedCallback;
+  OnReadedTapedCallback readedTapedCallback;
 
-  MessageCell(this.model, this.cellTapedCallback, this.cellDoubleTapedCallback, this.portraitTapedCallback, this.portraitLongTapedCallback):super(key: ObjectKey(model));
+  MessageCell(this.model, this.cellTapedCallback, this.cellDoubleTapedCallback, this.portraitTapedCallback, this.portraitLongTapedCallback, this.resendTapedCallback, this.readedTapedCallback):super(key: ObjectKey(model));
 
   @override
   State createState() {
@@ -81,6 +85,14 @@ class MessageState extends State<MessageCell> {
 
   void onLongTapedPortrait(MessageModel model) {
     widget.portraitLongTapedCallback(model);
+  }
+
+  void onResendTaped(MessageModel model) {
+    widget.resendTapedCallback(model);
+  }
+
+  void onReadedTaped(MessageModel model) {
+    widget.readedTapedCallback(model);
   }
 
   @override

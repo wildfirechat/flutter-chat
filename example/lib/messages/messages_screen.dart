@@ -199,19 +199,27 @@ class _State extends State<MessagesScreen> {
   }
 
   void onTapedCell(MessageModel model) {
-    print("on taped cell");
+    debugPrint("on taped cell");
   }
 
   void onDoubleTapedCell(MessageModel model) {
-    print("on double taped cell");
+    debugPrint("on double taped cell");
   }
 
   void onPortraitTaped(MessageModel model) {
-    print("on taped portrait");
+    debugPrint("on taped portrait");
   }
 
   void onPortraitLongTaped(MessageModel model) {
-    print("on long taped portrait");
+    debugPrint("on long taped portrait");
+  }
+
+  void onResendTaped(MessageModel model) {
+    debugPrint("on taped resend");
+  }
+
+  void onReadedTaped(MessageModel model) {
+    debugPrint("on taped readed");
   }
 
   @override
@@ -234,7 +242,9 @@ class _State extends State<MessagesScreen> {
                           (model)=> onTapedCell(model),
                           (model)=>onDoubleTapedCell(model),
                           (model)=>onPortraitTaped(model),
-                          (model)=>onPortraitLongTaped(model)
+                          (model)=>onPortraitLongTaped(model),
+                          (model)=>onResendTaped(model),
+                          (model)=>onReadedTaped(model),
                   ),
                   itemCount: models.length,),
               ),

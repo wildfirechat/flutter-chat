@@ -48,6 +48,9 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
 
     _sendSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
       if(event.messageId > 0 && event.messageId == model.message.messageId) {
+        if(model.message.status == MessageStatus.Message_Status_Sending) {
+          model.message.status = MessageStatus.Message_Status_Sent;
+        }
         setState(() { });
       }
     });
@@ -58,6 +61,9 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     });
     _sendFailureSubscription = _eventBus.on<SendMessageFailureEvent>().listen((event) {
       if(event.messageId > 0 && event.messageId == model.message.messageId) {
+        if(model.message.status != MessageStatus.Message_Status_Send_Failure) {
+          model.message.status == MessageStatus.Message_Status_Send_Failure;
+        }
         setState(() { });
       }
     });
@@ -145,9 +151,20 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   Widget getSendStatus() {
     if(model.message.direction == MessageDirection.MessageDirection_Send) {
       if(model.message.status == MessageStatus.Message_Status_Sending) {
-        return Text("X");
+        return Container(
+          margin: const EdgeInsets.all(5),
+          width: 10,
+          height: 10,
+          child: const CircularProgressIndicator(),
+        );
       } else if(model.message.status == MessageStatus.Message_Status_Send_Failure) {
-        return Text("Y");
+        return GestureDetector(
+          child: Padding(
+            padding: const EdgeInsets.all(3),
+            child: Image.asset('assets/images/message_send_failure.png', width: 20, height: 20,),
+          ),
+          onTap: ()=>state.onResendTaped(model),
+        );
       }
     }
 
