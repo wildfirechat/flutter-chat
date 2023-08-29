@@ -33,9 +33,9 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
   late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
   late StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
   late StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
-  late StreamSubscription<ClearConversationUnreadEvent> _clearConveratonUnreadSubscription;
-  late StreamSubscription<ClearConversationsUnreadEvent> _clearConveratonsUnreadSubscription;
-  late StreamSubscription<SendMessageStartEvent> _SendMessageStartSubscription;
+  late StreamSubscription<ClearConversationUnreadEvent> _clearConversationUnreadSubscription;
+  late StreamSubscription<ClearConversationsUnreadEvent> _clearConversationsUnreadSubscription;
+  late StreamSubscription<SendMessageStartEvent> _sendMessageStartSubscription;
 
   final EventBus _eventBus = Imclient.IMEventBus;
 
@@ -62,13 +62,13 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
     _deleteMessageSubscription = _eventBus.on<DeleteMessageEvent>().listen((event) {
       _loadConversation();
     });
-    _clearConveratonUnreadSubscription = _eventBus.on<ClearConversationUnreadEvent>().listen((event) {
+    _clearConversationUnreadSubscription = _eventBus.on<ClearConversationUnreadEvent>().listen((event) {
       _loadConversation();
     });
-    _clearConveratonsUnreadSubscription = _eventBus.on<ClearConversationsUnreadEvent>().listen((event) {
+    _clearConversationsUnreadSubscription = _eventBus.on<ClearConversationsUnreadEvent>().listen((event) {
       _loadConversation();
     });
-    _SendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
+    _sendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
       _loadConversation();
     });
     _loadConversation();
@@ -114,9 +114,9 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
     _userSettingUpdatedSubscription.cancel();
     _recallMessageSubscription.cancel();
     _deleteMessageSubscription.cancel();
-    _clearConveratonUnreadSubscription.cancel();
-    _clearConveratonsUnreadSubscription.cancel();
-    _SendMessageStartSubscription.cancel();
+    _clearConversationUnreadSubscription.cancel();
+    _clearConversationsUnreadSubscription.cancel();
+    _sendMessageStartSubscription.cancel();
     super.dispose();
   }
 }
@@ -237,69 +237,67 @@ class ConversationListItemState extends State<ConversationListItem> {
       localPortrait = 'assets/images/channel_avatar_default.png';
     }
 
-
-
-    return new GestureDetector(
-      child: new Container(
+    return GestureDetector(
+      child: Container(
         color: conversationInfo.isTop > 0 ? CupertinoColors.secondarySystemBackground :  CupertinoColors.systemBackground,
-        child: new Column(
+        child: Column(
           children: <Widget>[
-            new Container(
+            Container(
               height: 64.0,
-              margin: new EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
-              child: new Row(
+              margin: const EdgeInsets.only(left: 15),
+              child: Row(
                 children: <Widget>[
                   badge.Badge(
                     showBadge: conversationInfo.unreadCount.unread > 0,
                     badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
-                    child: portrait == null ? new Image.asset(localPortrait!, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
+                    child: portrait == null ? Image.asset(localPortrait!, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
                   ),
-                  new Expanded(
-                      child: new Container(
+                  Expanded(
+                      child: Container(
                           height: 48.0,
                           alignment: Alignment.centerLeft,
-                          margin: new EdgeInsets.fromLTRB(15.0, 0.0, 0.0, 0.0),
-                          child: new Column(
+                          margin: const EdgeInsets.only(left: 15),
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              new Text(
+                              Text(
                                 '$convTitle',
-                                style: TextStyle(fontSize: 15.0),
+                                style: const TextStyle(fontSize: 15.0),
                               ),
-                              new Container(
+                              Container(
                                 height: 2,
                               ),
-                              new Text(
+                              Text(
                                 '$digest',
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 12.0,
-                                    color: const Color(0xffaaaaaa)),
+                                    color: Color(0xffaaaaaa)),
                                 maxLines: 1,
                                 softWrap: true,
                               ),
                             ],
                           ))),
-                  new Column(children: [
-                    new Padding(
-                      padding: new EdgeInsets.fromLTRB(0.0, 15.0, 15.0, 0.0),
-                      child: new Text(
-                        '${Utilities.formatTime(conversationInfo.timestamp)}',
-                        style: TextStyle(
+                  Column(children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0.0, 15.0, 15.0, 0.0),
+                      child: Text(
+                        Utilities.formatTime(conversationInfo.timestamp),
+                        style: const TextStyle(
                           fontSize: 10.0,
-                          color: const Color(0xffaaaaaa),
+                          color: Color(0xffaaaaaa),
                         ),
                       ),
                     ),
-                    new Padding(
-                      padding: new EdgeInsets.fromLTRB(0.0, 5.0, 15.0, 0.0),
-                      child: conversationInfo.isSilent ? new Image.asset('assets/images/conversation_mute.png', width: 10, height: 10,) : null,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0.0, 5.0, 15.0, 0.0),
+                      child: conversationInfo.isSilent ? Image.asset('assets/images/conversation_mute.png', width: 10, height: 10,) : null,
                     ),
                   ],),
                 ],
               ),
             ),
-            new Container(
-              margin: new EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+            Container(
+              margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
               height: 0.5,
               color: const Color(0xffebebeb),
             ),
