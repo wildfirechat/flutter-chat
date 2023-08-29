@@ -13,7 +13,7 @@ class TextCellBuilder extends PortraitCellBuilder {
   }
 
   @override
-  Widget getContentAres() {
+  Widget getContentAres(BuildContext context) {
     return Text(textMessageContent.text, overflow: TextOverflow.ellipsis, maxLines: 1000, style: const TextStyle(fontSize: 16),);
   }
 }

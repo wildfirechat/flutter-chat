@@ -49,6 +49,7 @@ dependencies:
   image: ^4.0.15
   badges: ^3.0.3
   intl: ^0.18.0
+  file_picker: ^5.3.4
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +75,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/file_type/
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

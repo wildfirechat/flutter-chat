@@ -17,7 +17,7 @@ class VoiceCellBuilder extends PortraitCellBuilder {
   }
 
   @override
-  Widget getContentAres() {
+  Widget getContentAres(BuildContext context) {
     String imagePaht = isSendMessage ? 'assets/images/send_voice.png' : 'assets/images/receive_voice.png';
     Image image = Image.asset(imagePaht, width: 20.0, height: 20.0);
     Text text = Text('${soundMessageContent.duration}"');

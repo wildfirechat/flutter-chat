@@ -28,7 +28,7 @@ class ImageCellBuilder extends PortraitCellBuilder {
   }
 
   @override
-  Widget getContentAres() {
+  Widget getContentAres(BuildContext context) {
     if(uiImage != null) {
       return RawImage(image: uiImage,);
     } else if(imageMessageContent.remoteUrl != null) {
