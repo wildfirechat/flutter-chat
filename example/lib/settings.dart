@@ -94,15 +94,20 @@ class SettingProfileState extends State<SettingProfile> {
   void initState() {
     loadUserInfo();
     _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
-      _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
-        for(UserInfo userInfo in event.userInfos) {
-          if(userInfo.userId == Imclient.currentUserId) {
-            loadUserInfo();
-            break;
-          }
+      for(UserInfo userInfo in event.userInfos) {
+        if(userInfo.userId == Imclient.currentUserId) {
+          loadUserInfo();
+          break;
         }
-      });
+      }
     });
+  }
+
+
+  @override
+  void dispose() {
+    super.dispose();
+    _userInfoUpdatedSubscription.cancel();
   }
 
   void loadUserInfo() {

@@ -1,8 +1,12 @@
 
+import 'dart:async';
+
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
+import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 
@@ -12,6 +16,12 @@ import '../message_model.dart';
 import 'message_cell_builder.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
+  final EventBus _eventBus = Imclient.IMEventBus;
+  late StreamSubscription<SendMessageSuccessEvent> _sendSuccessSubscription;
+  late StreamSubscription<SendMessageProgressEvent> _sendProgressSubscription;
+  late StreamSubscription<SendMessageMediaUploadedEvent> _sendUploadedSubscription;
+  late StreamSubscription<SendMessageFailureEvent> _sendFailureSubscription;
+
   UserInfo? userInfo;
   String? portrait;
   String? userName;
@@ -35,6 +45,27 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
         });
       }
     });
+
+    _sendSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
+      if(event.messageId > 0 && event.messageId == model.message.messageId) {
+        setState(() { });
+      }
+    });
+    _sendProgressSubscription = _eventBus.on<SendMessageProgressEvent>().listen((event) {
+      if(event.messageId > 0 && event.messageId == model.message.messageId) {
+        setState(() { });
+      }
+    });
+    _sendFailureSubscription = _eventBus.on<SendMessageFailureEvent>().listen((event) {
+      if(event.messageId > 0 && event.messageId == model.message.messageId) {
+        setState(() { });
+      }
+    });
+    _sendUploadedSubscription = _eventBus.on<SendMessageMediaUploadedEvent>().listen((event) {
+      if(event.messageId > 0 && event.messageId == model.message.messageId) {
+        setState(() { });
+      }
+    });
   }
 
   @override
@@ -47,6 +78,14 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
         isSendMessage ?getPortrait():getPadding()
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _sendSuccessSubscription.cancel();
+    _sendProgressSubscription.cancel();
+    _sendUploadedSubscription.cancel();
+    _sendFailureSubscription.cancel();
   }
 
   Widget getPortrait() {
@@ -70,27 +109,64 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
         crossAxisAlignment: isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
           model.showNameLabel ? Text(userName!) : Container(),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: isSendMessage ? Colors.green :  Colors.white,
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(8),
-                topLeft: Radius.circular(8),
-                bottomLeft: Radius.circular(8),
-                bottomRight: Radius.circular(8),
+          Row(
+            mainAxisAlignment: isSendMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              getSendStatus(),
+              Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isSendMessage ? Colors.green :  Colors.white,
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(8),
+                        topLeft: Radius.circular(8),
+                        bottomLeft: Radius.circular(8),
+                        bottomRight: Radius.circular(8),
+                      ),
+                    ),
+                    child: GestureDetector(
+                      child: getContentAres(),
+                      onTap: () => state.onTaped(model),
+                      onDoubleTap: () => state.onDoubleTaped(model),
+                    ),
+                  ),
               ),
-            ),
-            child: GestureDetector(
-              child: getContentAres(),
-              onTap: () => state.onTaped(model),
-              onDoubleTap: () => state.onDoubleTaped(model),
-            ),
+              getUnplayed(),
+            ],
           ),
-            Container(padding: const EdgeInsets.only(bottom: 3),)
+          Container(padding: const EdgeInsets.only(bottom: 3),)
         ],
       ),
     );
+  }
+
+  Widget getSendStatus() {
+    if(model.message.direction == MessageDirection.MessageDirection_Send) {
+      if(model.message.status == MessageStatus.Message_Status_Sending) {
+        return Text("X");
+      } else if(model.message.status == MessageStatus.Message_Status_Send_Failure) {
+        return Text("Y");
+      }
+    }
+
+    return Container();
+  }
+
+  Widget getUnplayed() {
+    if(model.message.direction == MessageDirection.MessageDirection_Receive && model.message.status == MessageStatus.Message_Status_Readed && model.message.content is SoundMessageContent) {
+      return Container(
+        margin: const EdgeInsets.only(left: 8),
+        width: 8,
+        height: 8,
+        decoration: const BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.all(Radius.circular(8))
+        ),
+      );
+    }
+    return Container();
   }
 
   Widget getContentAres();

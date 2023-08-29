@@ -54,7 +54,9 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
     _userSettingUpdatedSubscription = _eventBus.on<UserSettingUpdatedEvent>().listen((event) => _loadConversation());
     _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) => _loadConversation());
     _deleteMessageSubscription = _eventBus.on<DeleteMessageEvent>().listen((event) => _loadConversation());
-    _clearConveratonUnreadSubscription = _eventBus.on<ClearConversationUnreadEvent>().listen((event) => _loadConversation());
+    _clearConveratonUnreadSubscription = _eventBus.on<ClearConversationUnreadEvent>().listen((event) {
+      _loadConversation();
+    });
     _clearConveratonsUnreadSubscription = _eventBus.on<ClearConversationsUnreadEvent>().listen((event) => _loadConversation());
     _loadConversation();
   }

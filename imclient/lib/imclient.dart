@@ -249,6 +249,35 @@ class ClearConversationsUnreadEvent {
 
 class ClearFriendRequestUnreadEvent {}
 
+class SendMessageSuccessEvent {
+  int messageId;
+  int messageUid;
+  int timestamp;
+
+  SendMessageSuccessEvent(this.messageId, this.messageUid, this.timestamp);
+}
+
+class SendMessageProgressEvent {
+  int messageId;
+  int total;
+  int uploaded;
+
+  SendMessageProgressEvent(this.messageId, this.total, this.uploaded);
+}
+
+class SendMessageMediaUploadedEvent {
+  int messageId;
+  String mediaUrl;
+
+  SendMessageMediaUploadedEvent(this.messageId, this.mediaUrl);
+}
+
+class SendMessageFailureEvent {
+  int messageId;
+  int errorCode;
+
+  SendMessageFailureEvent(this.messageId, this.errorCode);
+}
 
 class Imclient {
   static EventBus get IMEventBus {

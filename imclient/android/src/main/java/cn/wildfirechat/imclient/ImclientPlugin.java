@@ -79,6 +79,7 @@ import cn.wildfirechat.remote.SearchChannelCallback;
 import cn.wildfirechat.remote.SearchUserCallback;
 import cn.wildfirechat.remote.SendMessageCallback;
 import cn.wildfirechat.remote.StringListCallback;
+import cn.wildfirechat.remote.UploadMediaCallback;
 import cn.wildfirechat.remote.WatchOnlineStateCallback;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
@@ -440,24 +441,28 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void clearConversationUnreadStatus(@NonNull MethodCall call, @NonNull Result result) {
         Conversation conversation = conversationFromArgument(call, false);
-        ChatManager.Instance().clearUnreadStatus(conversation);
+        boolean ret = ChatManager.Instance().clearUnreadStatus(conversation);
+        result.success(ret);
     }
 
     private void clearConversationsUnreadStatus(@NonNull MethodCall call, @NonNull Result result) {
         List<Conversation.ConversationType> types = conversationTypesFromArgument(call);
         List<Integer> lines = call.argument("lines");
-        ChatManager.Instance().clearUnreadStatusEx(types, lines);
+        boolean ret = ChatManager.Instance().clearUnreadStatusEx(types, lines);
+        result.success(ret);
     }
 
     private void clearMessageUnreadStatusBefore(@NonNull MethodCall call, @NonNull Result result) {
         Conversation conversation = conversationFromArgument(call, false);
         long messageId = call.argument("messageId");
-        ChatManager.Instance().clearUnreadStatusBeforeMessage(messageId, conversation);
+        boolean ret = ChatManager.Instance().clearUnreadStatusBeforeMessage(messageId, conversation);
+        result.success(ret);
     }
 
     private void clearMessageUnreadStatus(@NonNull MethodCall call, @NonNull Result result) {
         long messageId = getLongPara(call, "messageId");
-        ChatManager.Instance().clearMessageUnreadStatus(messageId);
+        boolean ret = ChatManager.Instance().clearMessageUnreadStatus(messageId);
+        result.success(ret);
     }
 
     private void markAsUnRead(@NonNull MethodCall call, @NonNull Result result) {
@@ -732,19 +737,21 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             msg.toUsers = toUsers.toArray(new String[0]);
         }
 
+        long[] idArray = new long[1];
         ChatManager.Instance().sendMessage(conversation, messageContent, toUsers != null ? toUsers.toArray(new String[0]) : null, expireDuration, new SendMessageCallback() {
             @Override
             public void onSuccess(long l, long l1) {
-                callbackBuilder(requestId).put("messageUid", l).put("timestamp", l1).success("onSendMessageSuccess");
+                callbackBuilder(requestId).put("messageId", idArray[0]).put("messageUid", l).put("timestamp", l1).success("onSendMessageSuccess");
             }
 
             @Override
             public void onFail(int i) {
-                callbackFailure(requestId, i);
+                callbackBuilder(requestId).put("messageId", idArray[0]).put("errorCode", i).success("onSendMessageFailure");
             }
 
             @Override
             public void onPrepare(long l, long l1) {
+                idArray[0] = l;
                 msg.messageId = l;
                 msg.serverTime = l1;
                 result.success(convertMessage(msg));
@@ -752,12 +759,12 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
             @Override
             public void onProgress(long uploaded, long total) {
-                callbackBuilder(requestId).put("uploaded", uploaded).put("total", total).success("onSendMediaMessageProgress");
+                callbackBuilder(requestId).put("messageId", idArray[0]).put("uploaded", uploaded).put("total", total).success("onSendMediaMessageProgress");
             }
 
             @Override
             public void onMediaUpload(String remoteUrl) {
-                callbackBuilder(requestId).put("remoteUrl", remoteUrl).success("onSendMediaMessageUploaded");
+                callbackBuilder(requestId).put("messageId", idArray[0]).put("remoteUrl", remoteUrl).success("onSendMediaMessageUploaded");
             }
         });
     }
@@ -850,7 +857,27 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         int mediaType = call.argument("mediaType");
         byte[] mediaData = call.argument("mediaData");
 
-        ChatManager.Instance().uploadMedia(fileName, mediaData, mediaType, new GeneralStringCallback(requestId));
+        ChatManager.Instance().uploadMedia2(fileName, mediaData, mediaType, new UploadMediaCallback(){
+            @Override
+            public void onSuccess(String s) {
+                callbackBuilder(requestId)
+                        .put("remoteUrl", s)
+                        .success("onUploadMediaUploaded");
+            }
+
+            @Override
+            public void onProgress(long l, long l1) {
+                callbackBuilder(requestId)
+                        .put("uploaded", l)
+                        .put("total", l1)
+                        .success("onUploadMediaProgress");
+            }
+
+            @Override
+            public void onFail(int i) {
+                callbackBuilder(requestId).fail(i);
+            }
+        });
     }
 
     private void getMediaUploadUrl(@NonNull MethodCall call, @NonNull Result result) {
