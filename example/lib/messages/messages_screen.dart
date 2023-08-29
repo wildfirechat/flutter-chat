@@ -111,7 +111,10 @@ class _State extends State<MessagesScreen> {
           continue;
         }
 
-        haveNewMsg = true;
+        if(element.status == MessageStatus.Message_Status_AllMentioned || element.status == MessageStatus.Message_Status_Mentioned || element.status == MessageStatus.Message_Status_Unread) {
+          haveNewMsg = true;
+        }
+
         MessageModel model = MessageModel(element, showTimeLabel: false);
         if(front) {
           models.insert(0, model);

@@ -249,6 +249,12 @@ class ClearConversationsUnreadEvent {
 
 class ClearFriendRequestUnreadEvent {}
 
+class SendMessageStartEvent {
+  int messageId;
+
+  SendMessageStartEvent(this.messageId);
+}
+
 class SendMessageSuccessEvent {
   int messageId;
   int messageUid;
