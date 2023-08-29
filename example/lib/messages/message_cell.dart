@@ -46,6 +46,7 @@ class MessageCell extends StatefulWidget {
 
 class MessageState extends State<MessageCell> {
   late MessageCellBuilder _cellBuilder;
+  bool disposed = false;
   @override
   void initState() {
     super.initState();
@@ -69,6 +70,7 @@ class MessageState extends State<MessageCell> {
   void dispose() {
     super.dispose();
     _cellBuilder.dispose();
+    disposed = true;
   }
 
   void onTaped(MessageModel model) {
@@ -101,7 +103,9 @@ class MessageState extends State<MessageCell> {
   }
 
   void refreshAfter(VoidCallback callback) {
-    setState(callback);
+    if(!disposed) {
+      setState(callback);
+    }
   }
 }
 
