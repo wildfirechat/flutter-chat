@@ -1774,6 +1774,7 @@ class ImclientPlatform extends PlatformInterface {
     Message message = _convertProtoMessage(fm)!;
     if(message.messageId! > 0) {
       _sendingMessages[message.messageId!] = message;
+      _eventBus.fire(SendMessageStartEvent(message.messageId!));
     }
 
     return message;

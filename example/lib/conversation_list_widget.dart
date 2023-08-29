@@ -35,6 +35,8 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
   late StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
   late StreamSubscription<ClearConversationUnreadEvent> _clearConveratonUnreadSubscription;
   late StreamSubscription<ClearConversationsUnreadEvent> _clearConveratonsUnreadSubscription;
+  late StreamSubscription<SendMessageStartEvent> _SendMessageStartSubscription;
+
   final EventBus _eventBus = Imclient.IMEventBus;
 
   @override
@@ -51,17 +53,29 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
         _loadConversation();
       }
     });
-    _userSettingUpdatedSubscription = _eventBus.on<UserSettingUpdatedEvent>().listen((event) => _loadConversation());
-    _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) => _loadConversation());
-    _deleteMessageSubscription = _eventBus.on<DeleteMessageEvent>().listen((event) => _loadConversation());
+    _userSettingUpdatedSubscription = _eventBus.on<UserSettingUpdatedEvent>().listen((event) {
+      _loadConversation();
+    });
+    _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) {
+      _loadConversation();
+    });
+    _deleteMessageSubscription = _eventBus.on<DeleteMessageEvent>().listen((event) {
+      _loadConversation();
+    });
     _clearConveratonUnreadSubscription = _eventBus.on<ClearConversationUnreadEvent>().listen((event) {
       _loadConversation();
     });
-    _clearConveratonsUnreadSubscription = _eventBus.on<ClearConversationsUnreadEvent>().listen((event) => _loadConversation());
+    _clearConveratonsUnreadSubscription = _eventBus.on<ClearConversationsUnreadEvent>().listen((event) {
+      _loadConversation();
+    });
+    _SendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
+      _loadConversation();
+    });
     _loadConversation();
   }
 
   void _loadConversation() {
+    debugPrint("load conversation");
     Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((value){
       int unreadCount = 0;
       value.forEach((element) {
@@ -95,13 +109,14 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
 
   @override
   void dispose() {
-    _connectionStatusSubscription?.cancel();
-    _receiveMessageSubscription?.cancel();
-    _userSettingUpdatedSubscription?.cancel();
-    _recallMessageSubscription?.cancel();
-    _deleteMessageSubscription?.cancel();
-    _clearConveratonUnreadSubscription?.cancel();
-    _clearConveratonsUnreadSubscription?.cancel();
+    _connectionStatusSubscription.cancel();
+    _receiveMessageSubscription.cancel();
+    _userSettingUpdatedSubscription.cancel();
+    _recallMessageSubscription.cancel();
+    _deleteMessageSubscription.cancel();
+    _clearConveratonUnreadSubscription.cancel();
+    _clearConveratonsUnreadSubscription.cancel();
+    _SendMessageStartSubscription.cancel();
     super.dispose();
   }
 }
