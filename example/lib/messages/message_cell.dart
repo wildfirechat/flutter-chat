@@ -60,6 +60,13 @@ class MessageState extends State<MessageCell> {
     }
   }
 
+
+  @override
+  void dispose() {
+    super.dispose();
+    _cellBuilder.dispose();
+  }
+
   void onTaped(MessageModel model) {
     widget.cellTapedCallback(model);
   }

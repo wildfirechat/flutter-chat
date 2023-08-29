@@ -14,6 +14,10 @@ class ImageCellBuilder extends PortraitCellBuilder {
 
   @override
   Widget getContentAres() {
-    return Image.network(imageMessageContent.remoteUrl!);
+    if(imageMessageContent.remoteUrl != null) {
+      return Image.network(imageMessageContent.remoteUrl!);
+    } else {
+      return Container();
+    }
   }
 }

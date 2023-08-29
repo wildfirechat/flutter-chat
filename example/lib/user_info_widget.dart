@@ -67,6 +67,13 @@ class _UserInfoState extends State<UserInfoWidget> {
     loadUserInfo();
   }
 
+
+  @override
+  void dispose() {
+    super.dispose();
+    _userInfoUpdatedSubscription.cancel();
+  }
+
   void loadUserInfo() {
     Imclient.getUserInfo(widget.userId, groupId: widget.inGroupId, refresh: true).then((value) => {
       setState((){

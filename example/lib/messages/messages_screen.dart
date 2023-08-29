@@ -2,8 +2,12 @@ import 'dart:async';
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
+import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
@@ -261,7 +265,28 @@ class _State extends State<MessagesScreen> {
             print(text);
           },), ),
           IconButton(icon: Icon(Icons.emoji_emotions), onPressed: null),
-          IconButton(icon: Icon(Icons.add_circle_outline_rounded), onPressed: null),
+          IconButton(icon: Icon(Icons.add_circle_outline_rounded), onPressed: () {
+              var picker = ImagePicker();
+              picker.pickImage(source: ImageSource.gallery).then((value) {
+                ImageMessageContent imgCont = ImageMessageContent();
+                imgCont.localPath = value?.path;
+                Imclient.sendMediaMessage(widget.conversation, imgCont,
+                    successCallback: (int messageUid, int timestamp){
+                      debugPrint("send success $messageUid");
+                    }, errorCallback: (int errorCode) {
+                      debugPrint("send failure $errorCode");
+                    }, progressCallback: (int uploaded, int total) {
+                      debugPrint("send progress $uploaded/$total");
+                    }, uploadedCallback: (String remoteUrl) {
+                      debugPrint("send uploaded $remoteUrl");
+                    }).then((message) {
+                      if(message.messageId! > 0) {
+                        _appendMessage([message], front: true);
+                      }
+                });
+              });
+              }
+            ),
           IconButton(icon: Icon(Icons.camera_enhance_rounded), onPressed: (){
             if(widget.conversation.conversationType == ConversationType.Single) {
               Rtckit.startSingleCall(widget.conversation.target, true);

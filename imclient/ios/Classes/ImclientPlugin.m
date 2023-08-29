@@ -428,11 +428,18 @@ ImclientPlugin *gIMClientInstance;
     NSArray<NSString *> *toUsers = dict[@"toUsers"];
     int expireDuration = [dict[@"expireDuration"] intValue];
     
-    WFCCMessage *message = [[WFCCIMService sharedWFCIMService] send:[self conversationFromDict:convDict] content:[self contentFromDict:contDict] toUsers:toUsers expireDuration:expireDuration success:^(long long messageUid, long long timestamp) {
-        [self.channel invokeMethod:@"onSendMessageSuccess" arguments:@{@"requestId":@(requestId), @"messageUid":@(messageUid), @"timestamp":@(timestamp)}];
+    NSMutableArray *idArray = [[NSMutableArray alloc] init];
+    WFCCMessage *message = [[WFCCIMService sharedWFCIMService] sendMedia:[self conversationFromDict:convDict] content:[self contentFromDict:contDict] toUsers:toUsers expireDuration:expireDuration success:^(long long messageUid, long long timestamp) {
+        [self.channel invokeMethod:@"onSendMessageSuccess" arguments:@{@"requestId":@(requestId), @"messageId":[idArray firstObject], @"messageUid":@(messageUid), @"timestamp":@(timestamp)}];
+    } progress:^(long uploaded, long total) {
+        [self.channel invokeMethod:@"onSendMediaMessageProgress" arguments:@{@"requestId":@(requestId), @"messageId":[idArray firstObject], @"uploaded":@(uploaded), @"total":@(total)}];
+    } mediaUploaded:^(NSString *remoteUrl) {
+        [self.channel invokeMethod:@"onSendMediaMessageUploaded" arguments:@{@"requestId":@(requestId), @"messageId":[idArray firstObject], @"remoteUrl":remoteUrl}];
     } error:^(int error_code) {
-        [self callbackOperationFailure:requestId errorCode:error_code];
+        [self.channel invokeMethod:@"onSendMessageFailure" arguments:@{@"requestId":@(requestId), @"messageId":[idArray firstObject], @"errorCode":@(error_code)}];
     }];
+    
+    [idArray addObject:@(message.messageId)];
     result([message toJsonObj]);
 }
 
@@ -449,7 +456,7 @@ ImclientPlugin *gIMClientInstance;
     }
     
     BOOL exist = [[WFCCIMService sharedWFCIMService] sendSavedMessage:msg expireDuration:expireDuration success:^(long long messageUid, long long timestamp) {
-        [self.channel invokeMethod:@"onSendMessageSuccess" arguments:@{@"requestId":@(requestId), @"messageUid":@(messageUid), @"timestamp":@(timestamp)}];
+        [self.channel invokeMethod:@"onSendMessageSuccess" arguments:@{@"requestId":@(requestId), @"messageId":@(messageId), @"messageUid":@(messageUid), @"timestamp":@(timestamp)}];
     } error:^(int error_code) {
         [self callbackOperationFailure:requestId errorCode:error_code];
     }];
@@ -488,9 +495,9 @@ ImclientPlugin *gIMClientInstance;
     NSData *mediaData = binaryData.data;
     
     [[WFCCIMService sharedWFCIMService] uploadMedia:fileName mediaData:mediaData mediaType:(WFCCMediaType)mediaType success:^(NSString *remoteUrl) {
-        [self.channel invokeMethod:@"onSendMediaMessageUploaded" arguments:@{@"requestId":@(requestId), @"remoteUrl":remoteUrl}];
+        [self.channel invokeMethod:@"onUploadMediaUploaded" arguments:@{@"requestId":@(requestId), @"remoteUrl":remoteUrl}];
     } progress:^(long uploaded, long total) {
-        [self.channel invokeMethod:@"onSendMediaMessageProgress" arguments:@{@"requestId":@(requestId), @"uploaded":@(uploaded), @"total":@(total)}];
+        [self.channel invokeMethod:@"onUploadMediaProgress" arguments:@{@"requestId":@(requestId), @"uploaded":@(uploaded), @"total":@(total)}];
     } error:^(int error_code) {
         [self callbackOperationFailure:requestId errorCode:error_code];
     }];

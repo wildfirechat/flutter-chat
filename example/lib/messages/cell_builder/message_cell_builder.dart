@@ -1,5 +1,9 @@
+import 'dart:async';
+
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:imclient/imclient.dart';
 
 import '../../utilities.dart';
 import '../message_cell.dart';
@@ -9,7 +13,21 @@ abstract class MessageCellBuilder {
   MessageModel model;
   MessageState state;
 
-  MessageCellBuilder(this.state, this.model);
+  final EventBus _eventBus = Imclient.IMEventBus;
+  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
+
+  MessageCellBuilder(this.state, this.model) {
+    _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
+        for(var value in event.userInfos) {
+            if(value.userId == model.message.fromUser) {
+              setState(() {
+
+              });
+              break;
+            }
+        }
+    });
+  }
 
   Widget build(BuildContext context) {
     return Padding(
@@ -21,6 +39,10 @@ abstract class MessageCellBuilder {
         ],
       ),
     );
+  }
+
+  void dispose() {
+    _userInfoUpdatedSubscription.cancel();
   }
 
   Widget getContent(BuildContext context);
