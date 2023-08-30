@@ -121,6 +121,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  extended_text_field:
+    dependency: "direct main"
+    description:
+      name: extended_text_field
+      sha256: e93248bb9b04a3e6c5e88a6a96e1c08cc765097657ab25aabe409e06a4f6760a
+      url: "https://pub.dev"
+    source: hosted
+    version: "12.0.1"
+  extended_text_library:
+    dependency: "direct main"
+    description:
+      name: extended_text_library
+      sha256: c06fbd8e3b6eedadf50cd6c109bbbd80921a6c43e4422d3b4ec9d4cb36ce4555
+      url: "https://pub.dev"
+    source: hosted
+    version: "11.0.2"
   fake_async:
     dependency: transitive
     description:
@@ -645,4 +661,4 @@ packages:
     version: "6.1.0"
 sdks:
   dart: ">=3.0.0 <4.0.0"
-  flutter: ">=3.3.0"
+  flutter: ">=3.10.0"
