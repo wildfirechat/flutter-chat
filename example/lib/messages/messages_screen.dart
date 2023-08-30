@@ -50,7 +50,7 @@ class _State extends State<MessagesScreen> {
 
   TextEditingController textEditingController = TextEditingController();
 
-  MessageTitle messageTitle = MessageTitle("消息");
+  GlobalKey<MessageTitleState> titleGlobalKey = GlobalKey();
 
   Timer? _typingTimer;
   final Map<String, int> _typingUserTime = {};
@@ -58,6 +58,7 @@ class _State extends State<MessagesScreen> {
 
   @override
   void initState() {
+
     Imclient.getMessages(widget.conversation, 0, 10).then((value) {
       if(value != null && value.isNotEmpty) {
         _appendMessage(value);
@@ -81,7 +82,7 @@ class _State extends State<MessagesScreen> {
           } else if(userInfo!.displayName != null) {
             title = userInfo!.displayName!;
           }
-          messageTitle.updateTitle(title);
+          titleGlobalKey.currentState!.updateTitle(title);
         }
       });
     } else if(widget.conversation.conversationType == ConversationType.Group) {
@@ -93,7 +94,7 @@ class _State extends State<MessagesScreen> {
           } else if(groupInfo!.name != null) {
             title = groupInfo!.name!;
           }
-          messageTitle.updateTitle(title);
+          titleGlobalKey.currentState!.updateTitle(title);
         }
       });
     }
@@ -130,7 +131,7 @@ class _State extends State<MessagesScreen> {
     if(widget.conversation.conversationType == ConversationType.Single) {
       int? time = _typingUserTime[widget.conversation.target];
       if(time != null && now - time < 6000) {
-        messageTitle.updateTitle('对方正在输入${_getTypingDot(now)}');
+        titleGlobalKey.currentState!.updateTitle('对方正在输入${_getTypingDot(now)}');
         return true;
       }
     } else {
@@ -144,19 +145,19 @@ class _State extends State<MessagesScreen> {
         }
       }
       if(typingUserCount > 1) {
-        messageTitle.updateTitle('$typingUserCount人正在输入${_getTypingDot(now)}');
+        titleGlobalKey.currentState!.updateTitle('$typingUserCount人正在输入${_getTypingDot(now)}');
         return true;
       } else if(typingUserCount == 1) {
         Imclient.getUserInfo(lastTypingUser!, groupId: widget.conversation.target).then((value) {
           if(value != null) {
-            messageTitle.updateTitle('${value.displayName!} 正在输入${_getTypingDot(now)}');
+            titleGlobalKey.currentState!.updateTitle('${value.displayName!} 正在输入${_getTypingDot(now)}');
           }
         });
         return true;
       }
     }
 
-    messageTitle.updateTitle(title);
+    titleGlobalKey.currentState!.updateTitle(title);
     return false;
   }
 
@@ -311,7 +312,7 @@ class _State extends State<MessagesScreen> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 232, 232, 232),
       appBar: AppBar(
-        title: messageTitle,
+        title: MessageTitle(title, key: titleGlobalKey,),
       ),
       body: SafeArea(
         child: Column(
