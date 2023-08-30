@@ -9,12 +9,14 @@ import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/text_message_content.dart';
+import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:rtckit/rtckit.dart';
+import 'package:wfc_example/messages/message_appbar_title.dart';
 
 import 'message_cell.dart';
 import 'message_model.dart';
@@ -48,6 +50,12 @@ class _State extends State<MessagesScreen> {
 
   TextEditingController textEditingController = TextEditingController();
 
+  MessageTitle messageTitle = MessageTitle("消息");
+
+  Timer? _typingTimer;
+  final Map<String, int> _typingUserTime = {};
+  int _sendTypingTime = 0;
+
   @override
   void initState() {
     Imclient.getMessages(widget.conversation, 0, 10).then((value) {
@@ -55,7 +63,6 @@ class _State extends State<MessagesScreen> {
         _appendMessage(value);
       }
     });
-
 
     _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
       if(!event.hasMore) {
@@ -67,29 +74,27 @@ class _State extends State<MessagesScreen> {
 
     if(widget.conversation.conversationType == ConversationType.Single) {
       Imclient.getUserInfo(widget.conversation.target, refresh: true).then((value){
-        setState(() {
-          userInfo = value;
-          if(userInfo != null) {
-            if (userInfo!.friendAlias != null && userInfo!.friendAlias!.isNotEmpty) {
-              title = userInfo!.friendAlias!;
-            } else if(userInfo!.displayName != null) {
-              title = userInfo!.displayName!;
-            }
+        userInfo = value;
+        if(userInfo != null) {
+          if (userInfo!.friendAlias != null && userInfo!.friendAlias!.isNotEmpty) {
+            title = userInfo!.friendAlias!;
+          } else if(userInfo!.displayName != null) {
+            title = userInfo!.displayName!;
           }
-        });
+          messageTitle.updateTitle(title);
+        }
       });
     } else if(widget.conversation.conversationType == ConversationType.Group) {
       Imclient.getGroupInfo(widget.conversation.target, refresh: true).then((value) {
-        setState(() {
-          groupInfo = value;
-          if(groupInfo != null) {
-            if(groupInfo!.remark != null && groupInfo!.remark!.isNotEmpty) {
-              title = groupInfo!.remark!;
-            } else if(groupInfo!.name != null) {
-              title = groupInfo!.name!;
-            }
+        groupInfo = value;
+        if(groupInfo != null) {
+          if(groupInfo!.remark != null && groupInfo!.remark!.isNotEmpty) {
+            title = groupInfo!.remark!;
+          } else if(groupInfo!.name != null) {
+            title = groupInfo!.name!;
           }
-        });
+          messageTitle.updateTitle(title);
+        }
       });
     }
   }
@@ -98,6 +103,68 @@ class _State extends State<MessagesScreen> {
   void dispose() {
     super.dispose();
     _receiveMessageSubscription?.cancel();
+    _stopTypingTimer();
+  }
+
+  void _startTypingTimer () {
+    _typingTimer = Timer.periodic(const Duration(milliseconds: 300), (timer) {
+      bool isUserTyping = _updateTypingStatus();
+      if(!isUserTyping && _typingUserTime.isNotEmpty) {
+        _typingUserTime.clear();
+        _stopTypingTimer();
+      }
+    });
+  }
+
+  String _getTypingDot(int time) {
+    int dotCount = (time/1000).toInt()%4;
+    String ret = '';
+    for(int i = 0; i < dotCount; i++) {
+      ret = '$ret.';
+    }
+    return ret;
+  }
+
+  bool _updateTypingStatus() {
+    int now = DateTime.now().millisecondsSinceEpoch;
+    if(widget.conversation.conversationType == ConversationType.Single) {
+      int? time = _typingUserTime[widget.conversation.target];
+      if(time != null && now - time < 6000) {
+        messageTitle.updateTitle('对方正在输入${_getTypingDot(now)}');
+        return true;
+      }
+    } else {
+      int typingUserCount = 0;
+      String? lastTypingUser;
+      for(String userId in _typingUserTime.keys) {
+        int time = _typingUserTime[userId]!;
+        if(now - time < 6000) {
+          typingUserCount++;
+          lastTypingUser = userId;
+        }
+      }
+      if(typingUserCount > 1) {
+        messageTitle.updateTitle('$typingUserCount人正在输入${_getTypingDot(now)}');
+        return true;
+      } else if(typingUserCount == 1) {
+        Imclient.getUserInfo(lastTypingUser!, groupId: widget.conversation.target).then((value) {
+          if(value != null) {
+            messageTitle.updateTitle('${value.displayName!} 正在输入${_getTypingDot(now)}');
+          }
+        });
+        return true;
+      }
+    }
+
+    messageTitle.updateTitle(title);
+    return false;
+  }
+
+  void _stopTypingTimer() {
+    if(_typingTimer != null) {
+      _typingTimer!.cancel();
+      _typingTimer = null;
+    }
   }
 
   void _appendMessage(List<Message> messages, {bool front = false}) {
@@ -107,12 +174,28 @@ class _State extends State<MessagesScreen> {
         if(element.conversation != widget.conversation) {
           continue;
         }
+
+        if(element.content is TypingMessageContent) {
+          if(element.conversation == widget.conversation) {
+            TypingMessageContent typing = element
+                .content as TypingMessageContent;
+              if(element.conversation.conversationType == ConversationType.Single || element.conversation.conversationType == ConversationType.Group) {
+                _typingUserTime[element.fromUser] = element.serverTime;
+                _startTypingTimer();
+              }
+          }
+
+          continue;
+        }
+
         if(element.messageId == 0) {
           continue;
         }
 
         if(element.status == MessageStatus.Message_Status_AllMentioned || element.status == MessageStatus.Message_Status_Mentioned || element.status == MessageStatus.Message_Status_Unread) {
           haveNewMsg = true;
+          _typingUserTime.remove(element.fromUser);
+          _updateTypingStatus();
         }
 
         MessageModel model = MessageModel(element, showTimeLabel: false);
@@ -220,6 +303,7 @@ class _State extends State<MessagesScreen> {
 
   void onReadedTaped(MessageModel model) {
     debugPrint("on taped readed");
+
   }
 
   @override
@@ -227,7 +311,7 @@ class _State extends State<MessagesScreen> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 232, 232, 232),
       appBar: AppBar(
-        title: Text(title),
+        title: messageTitle,
       ),
       body: SafeArea(
         child: Column(
@@ -256,6 +340,17 @@ class _State extends State<MessagesScreen> {
     );
   }
 
+  void _sendTyping() {
+    _sendTypingTime = DateTime.now().second;
+    TypingMessageContent typingMessageContent = TypingMessageContent();
+    typingMessageContent.type = TypingType.Typing_TEXT;
+    Imclient.sendMessage(widget.conversation, typingMessageContent, successCallback: (messageUid, timestamp) {
+
+    }, errorCallback: (errorCode) {
+
+    });
+  }
+
   Widget _getInputBar() {
     return SizedBox(
       height: 100,
@@ -274,8 +369,11 @@ class _State extends State<MessagesScreen> {
               }
               textEditingController.clear();
             });
+            _sendTypingTime = 0;
           }, onChanged: (text) {
-            print(text);
+            if(DateTime.now().second - _sendTypingTime > 12 && text.isNotEmpty) {
+              _sendTyping();
+            }
           },), ),
           IconButton(icon: Icon(Icons.emoji_emotions), onPressed: null),
           IconButton(icon: Icon(Icons.file_copy_rounded), onPressed: () {
