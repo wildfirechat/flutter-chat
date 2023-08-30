@@ -547,6 +547,7 @@ ImclientPlugin *gIMClientInstance;
     } else {
         [[WFCCIMService sharedWFCIMService] clearMessages:[self conversationFromDict:convDict]];
     }
+    result(@(YES));
 }
 
 - (void)clearRemoteConversationMessage:(NSDictionary *)dict result:(FlutterResult)result {
