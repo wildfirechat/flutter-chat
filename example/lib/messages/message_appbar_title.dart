@@ -2,26 +2,20 @@ import 'package:flutter/material.dart';
 
 class MessageTitle extends StatefulWidget {
   MessageTitle(this.title, {Key? key}) : super(key: key);
-  final MessageTitleState _state = MessageTitleState();
+
   String title;
 
   @override
-  State<StatefulWidget> createState() {
-    return _state;
-  }
+  State<StatefulWidget> createState() => MessageTitleState();
 
-  void updateTitle(String title) {
-    this.title = title;
-    _state.updateTitle();
-  }
 }
 
 class MessageTitleState extends State<MessageTitle> {
   bool disposed = true;
-  void updateTitle() {
+  void updateTitle(String title) {
     if(!disposed) {
       setState(() {
-
+        widget.title = title;
       });
     }
   }
