@@ -8,6 +8,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
+import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
@@ -16,6 +17,7 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:rtckit/rtckit.dart';
+import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import 'package:wfc_example/messages/message_appbar_title.dart';
 
 import 'message_cell.dart';
@@ -48,17 +50,18 @@ class _State extends State<MessagesScreen> {
   ChannelInfo? channelInfo;
   List<GroupMember>? groupMembers;
 
-  TextEditingController textEditingController = TextEditingController();
-
   GlobalKey<MessageTitleState> titleGlobalKey = GlobalKey();
+  GlobalKey<MessageInputBarState> _inputBarGlobalKey = GlobalKey();
 
   Timer? _typingTimer;
   final Map<String, int> _typingUserTime = {};
   int _sendTypingTime = 0;
 
+  late MessageInputBar _inputBar;
+
   @override
   void initState() {
-
+    _inputBar = MessageInputBar(widget.conversation, (text) => _onSendButtonTyped(text), (text) => _onInputBarTextChanged(text), (imagePath) => _onPickImage(imagePath), (filePath, size) => _onPickFile(filePath, size), () => _onPressCallBtn(), key: _inputBarGlobalKey,);
     Imclient.getMessages(widget.conversation, 0, 10).then((value) {
       if(value != null && value.isNotEmpty) {
         _appendMessage(value);
@@ -98,6 +101,54 @@ class _State extends State<MessagesScreen> {
         }
       });
     }
+  }
+
+  void _onSendButtonTyped(String text) {
+    TextMessageContent txt = TextMessageContent(text);
+    _sendMessage(txt);
+    _sendTypingTime = 0;
+  }
+
+  void _onInputBarTextChanged(String text) {
+    if(DateTime.now().second - _sendTypingTime > 12 && text.isNotEmpty) {
+      _sendTyping();
+    }
+  }
+
+  void _onPickImage(String imagePath) {
+    ImageMessageContent imgCont = ImageMessageContent();
+    imgCont.localPath = imagePath;
+    _sendMessage(imgCont);
+  }
+
+  void _onPickFile(String filePath, int size) {
+    FileMessageContent fileCnt = FileMessageContent();
+    fileCnt.name = filePath;
+    fileCnt.size = size;
+    _sendMessage(fileCnt);
+  }
+
+  void _onPressCallBtn() {
+    if(widget.conversation.conversationType == ConversationType.Single) {
+      Rtckit.startSingleCall(widget.conversation.target, true);
+    } else if(widget.conversation.conversationType == ConversationType.Group) {
+      //Select participants first;
+      // List<String> participants = List();
+      // Future<List<GroupMember>> members = Imclient.getGroupMembers(widget.conversation.target);
+      // Rtckit.startMultiCall(widget.conversation.target, ["nl0qmws2k"], true);
+    }
+  }
+
+  void _sendMessage(MessageContent messageContent) {
+    Imclient.sendMessage(widget.conversation, messageContent, successCallback: (int messageUid, int timestamp) {
+
+    }, errorCallback: (int errorCode) {
+
+    }).then((message) {
+      if(message.messageId! > 0) {
+        _appendMessage([message], front: true);
+      }
+    });
   }
 
   @override
@@ -318,21 +369,26 @@ class _State extends State<MessagesScreen> {
         child: Column(
           children: [
             Flexible(
-                child: NotificationListener(
-                  onNotification: notificationFunction,
-                  child: ListView.builder(
-                  reverse: true,
-                  itemBuilder: (BuildContext context, int index) => MessageCell(
-                          models[index],
-                          (model)=> onTapedCell(model),
-                          (model)=>onDoubleTapedCell(model),
-                          (model)=>onPortraitTaped(model),
-                          (model)=>onPortraitLongTaped(model),
-                          (model)=>onResendTaped(model),
-                          (model)=>onReadedTaped(model),
+                child: GestureDetector(
+                  child: NotificationListener(
+                    onNotification: notificationFunction,
+                    child: ListView.builder(
+                      reverse: true,
+                      itemBuilder: (BuildContext context, int index) => MessageCell(
+                        models[index],
+                            (model)=> onTapedCell(model),
+                            (model)=>onDoubleTapedCell(model),
+                            (model)=>onPortraitTaped(model),
+                            (model)=>onPortraitLongTaped(model),
+                            (model)=>onResendTaped(model),
+                            (model)=>onReadedTaped(model),
+                      ),
+                      itemCount: models.length,),
                   ),
-                  itemCount: models.length,),
-              ),
+                  onTap: () {
+                    _inputBarGlobalKey.currentState!.resetStatus();
+                  },
+                ),
             ),
             _getInputBar(),
           ],
@@ -353,89 +409,6 @@ class _State extends State<MessagesScreen> {
   }
 
   Widget _getInputBar() {
-    return SizedBox(
-      height: 100,
-      child: Row(
-        children: [
-          IconButton(icon: Icon(Icons.record_voice_over), onPressed: null),
-          Expanded(child: TextField(controller: textEditingController,onSubmitted: (text){
-            TextMessageContent txt = TextMessageContent(text);
-            Imclient.sendMessage(widget.conversation, txt, successCallback: (int messageUid, int timestamp){
-              print("scuccess");
-            }, errorCallback: (int errorCode) {
-              print("send failure!");
-            }).then((value) {
-              if(value != null) {
-                _appendMessage([value], front: true);
-              }
-              textEditingController.clear();
-            });
-            _sendTypingTime = 0;
-          }, onChanged: (text) {
-            if(DateTime.now().second - _sendTypingTime > 12 && text.isNotEmpty) {
-              _sendTyping();
-            }
-          },), ),
-          IconButton(icon: Icon(Icons.emoji_emotions), onPressed: null),
-          IconButton(icon: Icon(Icons.file_copy_rounded), onPressed: () {
-            FilePicker.platform.pickFiles().then((value) {
-              if(value != null && value.files.isNotEmpty) {
-                String path = value.files.first.name;
-                int size = value.files.first.size;
-
-                FileMessageContent fileCnt = FileMessageContent();
-                fileCnt.name = path;
-                fileCnt.size = size;
-                Imclient.sendMediaMessage(widget.conversation, fileCnt, successCallback: (int messageUid, int timestamp) {
-
-                }, errorCallback: (int errorCode) {
-
-                }, progressCallback: (int uploaded, int total) {
-
-                }, uploadedCallback: (String remoteUrl) {
-
-                }).then((message) {
-                  if(message.messageId! > 0) {
-                    _appendMessage([message], front: true);
-                  }
-                });
-              }
-            });
-          }),
-          IconButton(icon: Icon(Icons.add_circle_outline_rounded), onPressed: () {
-              var picker = ImagePicker();
-              picker.pickImage(source: ImageSource.gallery).then((value) {
-                ImageMessageContent imgCont = ImageMessageContent();
-                imgCont.localPath = value?.path;
-                Imclient.sendMediaMessage(widget.conversation, imgCont,
-                    successCallback: (int messageUid, int timestamp){
-                      debugPrint("send success $messageUid");
-                    }, errorCallback: (int errorCode) {
-                      debugPrint("send failure $errorCode");
-                    }, progressCallback: (int uploaded, int total) {
-                      debugPrint("send progress $uploaded/$total");
-                    }, uploadedCallback: (String remoteUrl) {
-                      debugPrint("send uploaded $remoteUrl");
-                    }).then((message) {
-                      if(message.messageId! > 0) {
-                        _appendMessage([message], front: true);
-                      }
-                });
-              });
-              }
-            ),
-          IconButton(icon: Icon(Icons.camera_enhance_rounded), onPressed: (){
-            if(widget.conversation.conversationType == ConversationType.Single) {
-              Rtckit.startSingleCall(widget.conversation.target, true);
-            } else if(widget.conversation.conversationType == ConversationType.Group) {
-              //Select participants first;
-              // List<String> participants = List();
-              // Future<List<GroupMember>> members = Imclient.getGroupMembers(widget.conversation.target);
-              Rtckit.startMultiCall(widget.conversation.target, ["nl0qmws2k"], true);
-            }
-          }),
-        ],
-      ),
-    );
+    return _inputBar;
   }
 }
