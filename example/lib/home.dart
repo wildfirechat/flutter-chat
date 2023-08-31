@@ -5,9 +5,10 @@
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:wfc_example/contact/search_user.dart';
 import 'package:wfc_example/settings.dart';
 
-import 'contact_list_widget.dart';
+import 'contact/contact_list_widget.dart';
 import 'conversation_list_widget.dart';
 import 'discovery.dart';
 
@@ -82,7 +83,7 @@ class HomeTabBarState extends State<HomeTabBar> {
     return appBarTitles[curIndex];
   }
 
-  void _onTapSearchButton() {
+  void _onTapSearchButton(BuildContext context) {
 
   }
 
@@ -91,7 +92,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   }
 
   void _addFriend() {
-
+    showSearch(context: context, delegate: SearchUserDelegate());
   }
 
   void _scanQrCode() {
@@ -111,7 +112,7 @@ class HomeTabBarState extends State<HomeTabBar> {
             centerTitle: false,
             actions: [
               GestureDetector(
-                onTap: _onTapSearchButton,
+                onTap: () => _onTapSearchButton(context),
                 child: const Icon(Icons.search_rounded),
               ),
               const Padding(padding: EdgeInsets.only(left: 8)),
