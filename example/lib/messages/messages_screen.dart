@@ -61,7 +61,14 @@ class _State extends State<MessagesScreen> {
 
   @override
   void initState() {
-    _inputBar = MessageInputBar(widget.conversation, (text) => _onSendButtonTyped(text), (text) => _onInputBarTextChanged(text), (imagePath) => _onPickImage(imagePath), (filePath, size) => _onPickFile(filePath, size), () => _onPressCallBtn(), key: _inputBarGlobalKey,);
+    _inputBar = MessageInputBar(widget.conversation,
+      sendButtonTapedCallback: (text) => _onSendButtonTyped(text),
+      textChangedCallback: (text) => _onInputBarTextChanged(text),
+      pickerImageCallback:(imagePath) => _onPickImage(imagePath),
+      pickerFileCallback:(filePath, size) => _onPickFile(filePath, size),
+      pressCallBtnCallback:() => _onPressCallBtn(),
+      key: _inputBarGlobalKey,
+    );
     Imclient.getMessages(widget.conversation, 0, 10).then((value) {
       if(value != null && value.isNotEmpty) {
         _appendMessage(value);
@@ -130,7 +137,7 @@ class _State extends State<MessagesScreen> {
 
   void _onPressCallBtn() {
     if(widget.conversation.conversationType == ConversationType.Single) {
-      Rtckit.startSingleCall(widget.conversation.target, true);
+      Rtckit.startSingleCall(widget.conversation.target, false);
     } else if(widget.conversation.conversationType == ConversationType.Group) {
       //Select participants first;
       // List<String> participants = List();
