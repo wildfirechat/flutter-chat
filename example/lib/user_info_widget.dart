@@ -8,6 +8,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:wfc_example/config.dart';
+import 'package:wfc_example/contact/invite_friend.dart';
 
 import 'messages/messages_screen.dart';
 
@@ -36,7 +37,7 @@ class _UserInfoState extends State<UserInfoWidget> {
   final List strangerModelList = [
     //标题，key，是否带有section，是否居中，是否标红
     ['更多信息', 'more', true, false, false],
-    ['添加好友', 'message', true, true, false],
+    ['添加好友', 'friend', true, true, false],
   ];
 
   List? modelList;
@@ -181,6 +182,11 @@ class _UserInfoState extends State<UserInfoWidget> {
           );
         } else if(key == "voip") {
           Rtckit.startSingleCall(widget.userId, false);
+        } else if(key == "friend") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => InviteFriendPage(widget.userId)),
+          );
         } else {
           Fluttertoast.showToast(msg: "方法没有实现");
           print("on tap item $index");
