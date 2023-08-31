@@ -64,14 +64,14 @@ class HomeTabBarState extends State<HomeTabBar> {
       ];
   }
 
-  TextStyle getTabTextStyle(int curIndex) {//设置tabbar 选中和未选中的状态文本
+  TextStyle getTabTextStyle(int curIndex) {
     if (curIndex == _tabIndex) {
       return tabTextStyleSelected;
     }
     return tabTextStyleNormal;
   }
 
-  Image getTabIcon(int curIndex) {//设置tabbar选中和未选中的状态图标
+  Image getTabIcon(int curIndex) {
     if (curIndex == _tabIndex) {
       return tabImages[curIndex][1];
     }
@@ -82,6 +82,22 @@ class HomeTabBarState extends State<HomeTabBar> {
     return appBarTitles[curIndex];
   }
 
+  void _onTapSearchButton() {
+
+  }
+
+  void _startChat() {
+
+  }
+
+  void _addFriend() {
+
+  }
+
+  void _scanQrCode() {
+
+  }
+
   @override
   Widget build(BuildContext context) {
     _body = IndexedStack(
@@ -90,9 +106,41 @@ class HomeTabBarState extends State<HomeTabBar> {
     );
     return Scaffold(//布局结构
         appBar: AppBar(//选中每一项的标题和图标设置
-            title: Text(appBarTitles[_tabIndex],
-                style: const TextStyle(color: Colors.white)),
-            iconTheme: const IconThemeData(color: Colors.white)
+            title: Text(appBarTitles[_tabIndex], style: const TextStyle(color: Colors.white)),
+            iconTheme: const IconThemeData(color: Colors.white),
+            centerTitle: false,
+            actions: [
+              GestureDetector(
+                onTap: _onTapSearchButton,
+                child: const Icon(Icons.search_rounded),
+              ),
+              const Padding(padding: EdgeInsets.only(left: 8)),
+              PopupMenuButton<String>(
+                  icon: const Icon(Icons.add_circle_outline_rounded),
+                  offset: const Offset(10, 60),
+                  itemBuilder: (context) {
+                    return [
+                      const PopupMenuItem(value: "chat",child: ListTile(leading: Icon(Icons.chat_bubble_rounded), title: Text("发起聊天"),),),
+                      const PopupMenuItem(value: "add",child: ListTile(leading: Icon(Icons.contact_phone_rounded), title: Text("添加好友"),),),
+                      const PopupMenuItem(value: "scan",child: ListTile(leading: Icon(Icons.qr_code_scanner_rounded), title: Text("扫描二维码"),),),
+                    ];
+                  },
+                onSelected: (value) {
+                    switch(value) {
+                      case "chat":
+                        _startChat();
+                        break;
+                      case "add":
+                        _addFriend();
+                        break;
+                      case "scan":
+                        _scanQrCode();
+                        break;
+                    }
+                },
+              ),
+              const Padding(padding: EdgeInsets.only(left: 16)),
+            ],
         ),
         body: _body,
         bottomNavigationBar: CupertinoTabBar(//
