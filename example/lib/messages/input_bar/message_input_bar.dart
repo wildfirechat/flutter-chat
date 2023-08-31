@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:wfc_example/messages/input_bar/emoj_board.dart';
+import 'package:wfc_example/messages/input_bar/emoji_board.dart';
 import 'package:wfc_example/messages/input_bar/plugin_board.dart';
 
 enum ChatInputBarStatus {
@@ -16,14 +16,14 @@ typedef OnSendButtonTapedCallback = void Function(String text);
 typedef OnTextChangedCallback = void Function(String text);
 
 class MessageInputBar extends StatefulWidget {
-  MessageInputBar(this._conversation, this._sendButtonTapedCallback, this._textChangedCallback, this._pickerImageCallback, this._pickerFileCallback, this._pressCallBtnCallback, {ChatInputBarStatus chatInputBarStatus = ChatInputBarStatus.keyboardStatus, Key? key}) : _chatInputBarStatus = chatInputBarStatus, super(key: key);
+  MessageInputBar(this._conversation, {required this.sendButtonTapedCallback, required this.textChangedCallback, required this.pickerImageCallback, required this.pickerFileCallback, required this.pressCallBtnCallback, ChatInputBarStatus chatInputBarStatus = ChatInputBarStatus.keyboardStatus, Key? key}) : _chatInputBarStatus = chatInputBarStatus, super(key: key);
   Conversation _conversation;
   ChatInputBarStatus _chatInputBarStatus;
-  final OnSendButtonTapedCallback _sendButtonTapedCallback;
-  final OnTextChangedCallback _textChangedCallback;
-  final OnPickerImageCallback _pickerImageCallback;
-  final OnPickerFileCallback _pickerFileCallback;
-  final OnPressCallBtnCallback _pressCallBtnCallback;
+  final OnSendButtonTapedCallback sendButtonTapedCallback;
+  final OnTextChangedCallback textChangedCallback;
+  final OnPickerImageCallback pickerImageCallback;
+  final OnPickerFileCallback pickerFileCallback;
+  final OnPressCallBtnCallback pressCallBtnCallback;
 
   @override
   State<StatefulWidget> createState() => MessageInputBarState();
@@ -31,6 +31,7 @@ class MessageInputBar extends StatefulWidget {
 
 class MessageInputBarState extends State<MessageInputBar> {
   final TextEditingController _textEditingController = TextEditingController();
+  final List<String> emojis = ['😊','😨','😍','😳','😎','😭','😌','😵','😴','😢','😅','😡','😜','😀','😲','😟','😤','😞','😫','😣','😈','😉','😯','😕','😰','😋','😝','😓','😃','😂','😘','😒','😏','😶','😱','😖','😩','😔','😑','😚','😪','😇','🙊','👊','👎','☝','✌','😬','😷','🙈','👌','👏','✊','💪','😆','☺','🙉','👍','🙏','✋','☀','☕','⛄','📚','🎁','🎉','🍦','☁','❄','⚡','💰','🎂','🎓','🍖','☔','⛅','✏','💩','🎄','🍷','🎤','🏀','🀄','💣','📢','🌏','🍫','🎲','🏂','💡','💤','🚫','🌻','🍻','🎵','🏡','💢','📞','🚿','🍚','👪','👼','💊','🔫','🌹','🐶','💄','👫','👽','💋','🌙','🍉','🐷','💔','👻','👿','💍','🌲','🐴','👑','🔥','⭐','⚽','🕖','⏰','😁','🚀','⏳','🏡'];
 
   late TextField _textField;
   late OutlinedButton _recordButton;
@@ -47,7 +48,7 @@ class MessageInputBarState extends State<MessageInputBar> {
         setState(() {
 
         });
-        widget._textChangedCallback(text);
+        widget.textChangedCallback(text);
       },
     );
     _focusNode.requestFocus();
@@ -94,13 +95,18 @@ class MessageInputBarState extends State<MessageInputBar> {
             ],
           ),
         ),
-        widget._chatInputBarStatus == ChatInputBarStatus.emojiStatus? EmojBoard():Container(),
-        widget._chatInputBarStatus == ChatInputBarStatus.pluginStatus? PluginBoard(widget._pickerImageCallback, widget._pickerFileCallback, widget._pressCallBtnCallback):Container(),
+        widget._chatInputBarStatus == ChatInputBarStatus.emojiStatus? EmojiBoard(emojis, pickerEmojiCallback: _onPickEmoji, delEmojiCallback: _onDelEmoji,):Container(),
+        widget._chatInputBarStatus == ChatInputBarStatus.pluginStatus? PluginBoard(widget.pickerImageCallback, widget.pickerFileCallback, widget.pressCallBtnCallback):Container(),
       ],
     );
   }
 
   void resetStatus() {
+    if(widget._chatInputBarStatus == ChatInputBarStatus.pluginStatus || widget._chatInputBarStatus == ChatInputBarStatus.emojiStatus) {
+      setState(() {
+        widget._chatInputBarStatus = ChatInputBarStatus.keyboardStatus;
+      });
+    }
     _focusNode.unfocus();
   }
 
@@ -122,7 +128,7 @@ class MessageInputBarState extends State<MessageInputBar> {
 
   void _onSendButton() {
     if(_textEditingController.value.text.isNotEmpty) {
-      widget._sendButtonTapedCallback(_textEditingController.value.text);
+      widget.sendButtonTapedCallback(_textEditingController.value.text);
       _textEditingController.clear();
     }
   }
@@ -156,5 +162,84 @@ class MessageInputBarState extends State<MessageInputBar> {
       }
       widget._chatInputBarStatus = ChatInputBarStatus.keyboardStatus;
     });
+  }
+
+  void _insertText(String myText) {
+    final text = _textEditingController.text;
+    final textSelection = _textEditingController.selection;
+    final newText = text.replaceRange(
+      textSelection.start,
+      textSelection.end,
+      myText,
+    );
+    final myTextLength = myText.length;
+
+    setState(() {
+      _textEditingController.text = newText;
+      _textEditingController.selection = textSelection.copyWith(
+        baseOffset: textSelection.start + myTextLength,
+        extentOffset: textSelection.start + myTextLength,
+      );
+    });
+  }
+
+  void _backspace() {
+    final text = _textEditingController.text;
+    final textSelection = _textEditingController.selection;
+    final selectionLength = textSelection.end - textSelection.start;
+
+    // There is a selection.
+    if (selectionLength > 0) {
+      final newText = text.replaceRange(
+        textSelection.start,
+        textSelection.end,
+        '',
+      );
+      setState(() {
+        _textEditingController.text = newText;
+        _textEditingController.selection = textSelection.copyWith(
+          baseOffset: textSelection.start,
+          extentOffset: textSelection.start,
+        );
+      });
+      return;
+    }
+
+    // The cursor is at the beginning.
+    if (textSelection.start == 0) {
+      return;
+    }
+
+    // Delete the previous character
+    int charSize = 1;
+    if(textSelection.start > 1) {
+      String sub = text.substring(textSelection.start-2, textSelection.start);
+      if(emojis.contains(sub)) {
+        charSize = 2;
+      }
+    }
+
+    int newStart = textSelection.start - charSize;
+    int newEnd = textSelection.start;
+    final newText = text.replaceRange(
+      newStart,
+      newEnd,
+      '',
+    );
+    setState(() {
+      _textEditingController.text = newText;
+      _textEditingController.selection = textSelection.copyWith(
+        baseOffset: newStart,
+        extentOffset: newStart,
+      );
+    });
+  }
+
+  void _onPickEmoji(String emoji) {
+    _insertText(emoji);
+  }
+
+  void _onDelEmoji() {
+    _backspace();
   }
 }

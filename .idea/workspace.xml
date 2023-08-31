@@ -5,20 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/example/assets/images/input/album.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/input/call.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/input/camera.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/input/card.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/input/file.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/input/location.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/lib/messages/input_bar/emoj_board.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/lib/messages/input_bar/plugin_board.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/assets/images/input/del_emoji.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/messages/input_bar/emoji_board.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/input_bar/emoj_board.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,14 +118,14 @@
           <option name="timeStamp" value="28" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/input_bar/plugin_board.dart</url>
-          <line>74</line>
-          <option name="timeStamp" value="37" />
+          <url>file://$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart</url>
+          <line>73</line>
+          <option name="timeStamp" value="42" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>131</line>
-          <option name="timeStamp" value="38" />
+          <url>file://$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart</url>
+          <line>50</line>
+          <option name="timeStamp" value="43" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
