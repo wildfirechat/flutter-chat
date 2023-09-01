@@ -2124,6 +2124,11 @@ class ImclientPlatform extends PlatformInterface {
     return ret;
   }
 
+  @override
+  Future<bool> clearFriendRequest(int direction, beforeTime) async {
+    return await methodChannel.invokeMethod("clearFriendRequest", {"direction":direction, "beforeTime":beforeTime});
+  }
+
   ///删除好友
   @override
   void deleteFriend(

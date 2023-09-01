@@ -903,6 +903,12 @@ class Imclient {
     return ImclientPlatform.instance.clearUnreadFriendRequestStatus();
   }
 
+  ///清除未读好友请求
+  ///direction 0是收，1是发。
+  static Future<bool> clearFriendRequest(int direction, {int beforeTime = 0}) async {
+    return ImclientPlatform.instance.clearFriendRequest(direction, beforeTime);
+  }
+
   ///删除好友
   static void deleteFriend(
       String userId,
