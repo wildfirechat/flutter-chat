@@ -48,7 +48,8 @@ class CallAddParticipantsNotificationContent extends NotificationMessageContent 
       if(map['audioOnly'] != null) {
         audioOnly = map['audioOnly'] == 1 ? true : false;
       }
-      if(map['autoAnswer']) {
+      
+      if(map['autoAnswer'] != null) {
         autoAnswer = map['autoAnswer'];
       }
       clientId = map['clientId'];
