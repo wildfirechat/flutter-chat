@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:wfc_example/messages/input_bar/emoji_board.dart';
@@ -33,13 +34,15 @@ class MessageInputBarState extends State<MessageInputBar> {
   final TextEditingController _textEditingController = TextEditingController();
   final List<String> emojis = ['😊','😨','😍','😳','😎','😭','😌','😵','😴','😢','😅','😡','😜','😀','😲','😟','😤','😞','😫','😣','😈','😉','😯','😕','😰','😋','😝','😓','😃','😂','😘','😒','😏','😶','😱','😖','😩','😔','😑','😚','😪','😇','🙊','👊','👎','☝','✌','😬','😷','🙈','👌','👏','✊','💪','😆','☺','🙉','👍','🙏','✋','☀','☕','⛄','📚','🎁','🎉','🍦','☁','❄','⚡','💰','🎂','🎓','🍖','☔','⛅','✏','💩','🎄','🍷','🎤','🏀','🀄','💣','📢','🌏','🍫','🎲','🏂','💡','💤','🚫','🌻','🍻','🎵','🏡','💢','📞','🚿','🍚','👪','👼','💊','🔫','🌹','🐶','💄','👫','👽','💋','🌙','🍉','🐷','💔','👻','👿','💍','🌲','🐴','👑','🔥','⭐','⚽','🕖','⏰','😁','🚀','⏳','🏡'];
 
-  late TextField _textField;
+  late CupertinoTextField _textField;
   late OutlinedButton _recordButton;
   final FocusNode _focusNode = FocusNode();
 
   @override
   void initState() {
-    _textField = TextField(
+    _textField = CupertinoTextField(
+      maxLines: 3,
+      minLines: 1,
       controller: _textEditingController,
       focusNode: _focusNode,
       onSubmitted: (text){
@@ -83,10 +86,11 @@ class MessageInputBarState extends State<MessageInputBar> {
             ),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               widget._chatInputBarStatus == ChatInputBarStatus.recordStatus ? IconButton(icon: const Icon(Icons.keyboard_alt_rounded), onPressed: _onKeyboardButton) :  IconButton(icon: const Icon(Icons.record_voice_over_rounded), onPressed: _onVoiceButton),
               Expanded(
-                child: widget._chatInputBarStatus == ChatInputBarStatus.recordStatus?_recordButton:_textField,
+                child: widget._chatInputBarStatus == ChatInputBarStatus.recordStatus?_recordButton:Padding(padding: EdgeInsets.fromLTRB(0, 5, 0, 5), child: _textField,),
               ),
               IconButton(icon: const Icon(Icons.emoji_emotions), onPressed: _onEmojButton),
               _textEditingController.value.text.isNotEmpty && widget._chatInputBarStatus != ChatInputBarStatus.recordStatus && widget._chatInputBarStatus != ChatInputBarStatus.pluginStatus?

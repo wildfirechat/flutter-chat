@@ -18,6 +18,9 @@ class NotificationCellBuilder extends MessageCellBuilder {
 
   @override
   Widget getContent(BuildContext context) {
-    return Text(digest, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12),);
+    return Container(
+      padding: EdgeInsets.fromLTRB(60, 0, 60, 0),
+      child: Text(digest, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12),),
+    );
   }
 }
