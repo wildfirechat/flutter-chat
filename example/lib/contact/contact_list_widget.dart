@@ -5,6 +5,7 @@ import 'package:imclient/model/user_info.dart';
 import 'dart:ui';
 
 import 'package:wfc_example/config.dart';
+import 'package:wfc_example/contact/friend_request_page.dart';
 import 'package:wfc_example/user_info_widget.dart';
 
 class ContactListWidget extends StatefulWidget {
@@ -58,11 +59,20 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   Widget _fixRow(BuildContext context, int index) {
     String imagePaht = fixModelList[index][0];
     String title = fixModelList[index][1];
+    String key = fixModelList[index][2];
     return GestureDetector(
       onTap: () {
-        Fluttertoast.showToast(msg: "方法没有实现");
-        print("on tap item $index");
+        if(key == "new_friend") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => FriendRequestPage()),
+          );
+        } else {
+          Fluttertoast.showToast(msg: "方法没有实现");
+          print("on tap item $index");
+        }
       },
+
       child: Column(
         children: <Widget>[
           Container(

@@ -79,10 +79,10 @@ class MessageInputBarState extends State<MessageInputBar> {
         Container(
           decoration: const BoxDecoration(
             border: Border(
-              top: BorderSide(width: 1, color: Color(0xFFA1A1A1)),
-              left: BorderSide(width: 1, color: Color(0xFFA1A1A1)),
-              right: BorderSide(width: 1, color: Color(0xFFA1A1A1)),
-              bottom: BorderSide(width: 1, color: Color(0xFFA1A1A1)),
+              top: BorderSide(width: 1, color: Color(0xFFDDDDDD)),
+              left: BorderSide(width: 1, color: Color(0xFFDDDDDD)),
+              right: BorderSide(width: 1, color: Color(0xFFDDDDDD)),
+              bottom: BorderSide(width: 1, color: Color(0xFFDDDDDD)),
             ),
           ),
           child: Row(
