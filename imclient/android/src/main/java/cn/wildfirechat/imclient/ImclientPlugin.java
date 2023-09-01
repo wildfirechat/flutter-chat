@@ -1110,6 +1110,13 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void clearUnreadFriendRequestStatus(@NonNull MethodCall call, @NonNull Result result) {
         ChatManager.Instance().clearUnreadFriendRequestStatus();
+        result.success(true);
+    }
+
+    private void clearFriendRequest(@NonNull MethodCall call, @NonNull Result result) {
+        int direction = call.argument("direction");
+        long beforeTime = getLongPara(call, "beforeTime");
+        result.success(ChatManager.Instance().clearFriendRequest(direction==1, beforeTime));
     }
 
     private void deleteFriend(@NonNull MethodCall call, @NonNull Result result) {
