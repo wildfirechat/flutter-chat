@@ -736,7 +736,7 @@ ImclientPlugin *gIMClientInstance;
 - (void)clearFriendRequest:(NSDictionary *)dict result:(FlutterResult)result {
     int direction = [dict[@"direction"] intValue];
     long long beforeTime = [dict[@"beforeTime"] longLongValue];
-    int ret = [[WFCCIMService sharedWFCIMService] clearFriendRequest:direction beforeTime:beforeTime];
+    BOOL ret = [[WFCCIMService sharedWFCIMService] clearFriendRequest:direction beforeTime:beforeTime];
     result(@(ret));
 }
 
