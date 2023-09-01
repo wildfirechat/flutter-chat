@@ -2,6 +2,7 @@
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/message/call_start_message_content.dart';
+import 'package:imclient/message/notification/call_add_participants_notificiation_content.dart';
 import 'package:imclient/model/friend.dart';
 import 'package:imclient/model/user_online_state.dart';
 
@@ -423,6 +424,7 @@ class Imclient {
     registerMessageContent(tipNotificationContentMeta);
 
     registerMessageContent(callStartContentMeta);
+    registerMessageContent(callAddParticipantsNotificationContentMeta);
 
     registerMessageContent(cardContentMeta);
     registerMessageContent(compositeContentMeta);
