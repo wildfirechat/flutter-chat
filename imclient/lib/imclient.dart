@@ -286,6 +286,10 @@ class SendMessageFailureEvent {
   SendMessageFailureEvent(this.messageId, this.errorCode);
 }
 
+abstract class DefaultPortraitProvider {
+
+}
+
 class Imclient {
   static EventBus get IMEventBus {
     return ImclientPlatform.instance.IMEventBus;

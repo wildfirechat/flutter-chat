@@ -263,6 +263,7 @@ class ConversationListItemState extends State<ConversationListItem> {
                               Text(
                                 '$convTitle',
                                 style: const TextStyle(fontSize: 15.0),
+                                maxLines: 1,
                               ),
                               Container(
                                 height: 2,
