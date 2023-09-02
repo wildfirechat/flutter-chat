@@ -133,7 +133,9 @@ class MessageInputBarState extends State<MessageInputBar> {
   void _onSendButton() {
     if(_textEditingController.value.text.isNotEmpty) {
       widget.sendButtonTapedCallback(_textEditingController.value.text);
-      _textEditingController.clear();
+      setState(() {
+        _textEditingController.clear();
+      });
     }
   }
 

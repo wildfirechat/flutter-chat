@@ -5,12 +5,19 @@
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:imclient/imclient.dart';
+import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/group_info.dart';
+import 'package:imclient/model/user_info.dart';
+import 'package:wfc_example/contact/contact_select_page.dart';
 import 'package:wfc_example/contact/search_user.dart';
 import 'package:wfc_example/settings.dart';
 
 import 'contact/contact_list_widget.dart';
 import 'conversation_list_widget.dart';
 import 'discovery.dart';
+import 'messages/messages_screen.dart';
 
 class HomeTabBar extends StatefulWidget {
   const HomeTabBar({Key? key}) : super(key: key);
@@ -87,8 +94,73 @@ class HomeTabBarState extends State<HomeTabBar> {
 
   }
 
-  void _startChat() {
+  void _dismissProcessingDialog(BuildContext context) {
+    Navigator.of(context).pop();
+  }
 
+  void _showProcessingDialog(BuildContext context, String title) {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // 阻止用户点击外部关闭对话框
+      builder: (context) {
+        return AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(title),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _startChat() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ContactSelectPage((context, members) async {
+        if(members.isEmpty) {
+          Fluttertoast.showToast(msg: "请选择一位或者多位好友发起聊天");
+        } else if(members.length == 1) {
+          Conversation conversation = Conversation(conversationType: ConversationType.Single, target: members[0]);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
+          );
+        } else {
+          _showProcessingDialog(context, "群组创建中...");
+
+          List<UserInfo> userInfos = await Imclient.getUserInfos(members);
+          UserInfo? creator = await Imclient.getUserInfo(Imclient.currentUserId);
+          String groupName = creator!.displayName!;
+          for(var user in userInfos) {
+            if(user.displayName != null) {
+              if('$groupName,${user.displayName}'.length > 24) {
+                groupName = '$groupName等';
+                break;
+              } else {
+                groupName = '$groupName,${user.displayName}';
+              }
+            }
+          }
+
+          Imclient.createGroup(null, groupName, null, GroupType.Restricted.index, members, (strValue) {
+            _dismissProcessingDialog(context);
+            Conversation conversation = Conversation(conversationType: ConversationType.Group, target: strValue);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
+            );
+
+          }, (errorCode) {
+            _dismissProcessingDialog(context);
+            Fluttertoast.showToast(msg: '创建失败：$errorCode');
+          });
+        }
+      })),
+    );
   }
 
   void _addFriend() {
