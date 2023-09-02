@@ -250,7 +250,11 @@ class ConversationListItemState extends State<ConversationListItem> {
                   badge.Badge(
                     showBadge: conversationInfo.unreadCount.unread > 0,
                     badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
-                    child: portrait == null ? Image.asset(localPortrait!, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
+                    child: SizedBox(
+                      width: 40,
+                      height: 40,
+                      child: portrait == null ? Image.asset(localPortrait!, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
+                    )
                   ),
                   Expanded(
                       child: Container(

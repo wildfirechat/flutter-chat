@@ -287,7 +287,8 @@ class SendMessageFailureEvent {
 }
 
 abstract class DefaultPortraitProvider {
-
+  String userDefaultPortrait(UserInfo userInfo);
+  String groupDefaultPortrait(GroupInfo groupInfo, List<UserInfo> userInfos);
 }
 
 class Imclient {
@@ -373,6 +374,10 @@ class Imclient {
   ///Http 添加header，可以添加多个
   static Future<void> addHttpHeader(String header, String value) async {
     return ImclientPlatform.instance.addHttpHeader(header, value);
+  }
+
+  static void setDefaultPortraitProvider(DefaultPortraitProvider provider) {
+    ImclientPlatform.setDefaultPortraitProvider(provider);
   }
 
   ///设置代理

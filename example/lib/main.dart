@@ -13,6 +13,7 @@ import 'package:rtckit/rtckit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
+import 'default_portrait_provider.dart';
 import 'home.dart';
 import 'login_screen.dart';
 
@@ -46,6 +47,9 @@ class _MyAppState extends State<MyApp> {
         Rtckit.addICEServer(iceServer[0], iceServer[1], iceServer[2]);
       }
     }
+
+    Imclient.setDefaultPortraitProvider(WFPortraitProvider());
+
     Imclient.init((int status) {
       print(status);
       if (status == kConnectionStatusSecretKeyMismatch ||
