@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:event_bus/event_bus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/file_message_content.dart';
@@ -20,6 +21,7 @@ import 'package:rtckit/rtckit.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import 'package:wfc_example/messages/message_appbar_title.dart';
 
+import '../contact/contact_select_page.dart';
 import 'message_cell.dart';
 import 'message_model.dart';
 
@@ -136,14 +138,62 @@ class _State extends State<MessagesScreen> {
   }
 
   void _onPressCallBtn() {
-    if(widget.conversation.conversationType == ConversationType.Single) {
-      Rtckit.startSingleCall(widget.conversation.target, false);
-    } else if(widget.conversation.conversationType == ConversationType.Group) {
-      //Select participants first;
-      // List<String> participants = List();
-      // Future<List<GroupMember>> members = Imclient.getGroupMembers(widget.conversation.target);
-      // Rtckit.startMultiCall(widget.conversation.target, ["nl0qmws2k"], true);
+    if(widget.conversation.conversationType != ConversationType.Single && widget.conversation.conversationType != ConversationType.Group) {
+      return;
     }
+
+    final double centerX = MediaQuery.of(context).size.width / 2;
+    final double centerY = MediaQuery.of(context).size.height / 2;
+
+    // 计算菜单位置
+    const double menuWidth = 150.0; // 菜单的宽度
+    const double menuHeight = 100.0; // 菜单的高度
+    final double left = centerX - (menuWidth / 2) - 36;
+    final double top = centerY - (menuHeight / 2) - 24;
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(left, top, left + menuWidth, top + menuHeight),
+      items: <PopupMenuEntry<String>>[
+        const PopupMenuItem<String>(
+          value: 'voice',
+          child: SizedBox(width: menuWidth, child: Text('音频通话'),),
+        ),
+        const PopupMenuItem<String>(
+          value: 'video',
+          child: SizedBox(width: menuWidth, child: Text('视频通话'),),
+        ),
+      ],
+    ).then((value) {
+      bool isAudioOnly = value == 'voice';
+
+      if(widget.conversation.conversationType == ConversationType.Single) {
+        Rtckit.startSingleCall(widget.conversation.target, isAudioOnly);
+      } else if(widget.conversation.conversationType == ConversationType.Group) {
+        Imclient.getGroupMembers(widget.conversation.target).then((groupMembers) {
+          List<String> members = [];
+          for(var gm in groupMembers) {
+            members.add(gm.memberId);
+          }
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ContactSelectPage((context, members) async {
+              if(members.isEmpty) {
+                Fluttertoast.showToast(msg: "请选择一位或者多位成员发起通话");
+              } else {
+                Future.delayed(const Duration(seconds: 1)).then((value) => Navigator.pop(context));
+                Rtckit.startMultiCall(widget.conversation.target, members, isAudioOnly);
+              }
+            },
+              maxSelected: 4,
+              candidates: members,
+              disabledCheckedUsers: [Imclient.currentUserId],
+            )),
+          );
+        });
+      }
+    });
   }
 
   void _sendMessage(MessageContent messageContent) {

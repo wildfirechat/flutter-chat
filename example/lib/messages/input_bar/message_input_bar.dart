@@ -90,7 +90,7 @@ class MessageInputBarState extends State<MessageInputBar> {
             children: [
               widget._chatInputBarStatus == ChatInputBarStatus.recordStatus ? IconButton(icon: const Icon(Icons.keyboard_alt_rounded), onPressed: _onKeyboardButton) :  IconButton(icon: const Icon(Icons.record_voice_over_rounded), onPressed: _onVoiceButton),
               Expanded(
-                child: widget._chatInputBarStatus == ChatInputBarStatus.recordStatus?_recordButton:Padding(padding: EdgeInsets.fromLTRB(0, 5, 0, 5), child: _textField,),
+                child: widget._chatInputBarStatus == ChatInputBarStatus.recordStatus?_recordButton:Padding(padding: EdgeInsets.fromLTRB(0, 5, 5, 5), child: _textField,),
               ),
               IconButton(icon: const Icon(Icons.emoji_emotions), onPressed: _onEmojButton),
               _textEditingController.value.text.isNotEmpty && widget._chatInputBarStatus != ChatInputBarStatus.recordStatus && widget._chatInputBarStatus != ChatInputBarStatus.pluginStatus?
