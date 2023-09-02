@@ -1302,10 +1302,11 @@ class Imclient {
 
   ///设置是否群组隐藏用户名
   static void setHiddenGroupMemberName(
+      String groupId,
       bool isHidden,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
-    ImclientPlatform.instance.setHiddenGroupMemberName(isHidden, successCallback, errorCallback);
+    ImclientPlatform.instance.setHiddenGroupMemberName(groupId, isHidden, successCallback, errorCallback);
   }
 
   static void getMyGroups(
