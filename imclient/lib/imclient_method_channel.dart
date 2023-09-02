@@ -209,6 +209,12 @@ class ImclientPlatform extends PlatformInterface {
     return Tools.convertDynamicList(await methodChannel.invokeMethod('getLogFilesPath'));
   }
 
+  static setDefaultPortraitProvider(DefaultPortraitProvider provider) {
+    defaultPortraitProvider = provider;
+  }
+
+  static DefaultPortraitProvider? defaultPortraitProvider;
+
   @override
   void init(
       ConnectionStatusChangedCallback connectionStatusChangedCallback,
@@ -305,7 +311,7 @@ class ImclientPlatform extends PlatformInterface {
           List<dynamic> groups = args['groups'];
           List<GroupInfo> data = [];
           for (var element in groups) {
-            GroupInfo? groupInfo = _convertProtoGroupInfo(element);
+            GroupInfo? groupInfo = await _convertProtoGroupInfo(element);
             if(groupInfo != null) {
               data.add(groupInfo);
             }
@@ -885,24 +891,24 @@ class ImclientPlatform extends PlatformInterface {
     return list;
   }
 
-  static List<GroupSearchInfo> _convertProtoGroupSearchInfos(
-      List<dynamic> maps) {
+  static Future<List<GroupSearchInfo>> _convertProtoGroupSearchInfos(
+      List<dynamic> maps) async {
     if (maps.isEmpty) {
       return [];
     }
 
     List<GroupSearchInfo> infos = [];
     for (var element in maps) {
-      infos.add(_convertProtoGroupSearchInfo(element));
+      infos.add(await _convertProtoGroupSearchInfo(element));
     }
 
     return infos;
   }
 
-  static GroupSearchInfo _convertProtoGroupSearchInfo(
-      Map<dynamic, dynamic> map) {
+  static Future<GroupSearchInfo> _convertProtoGroupSearchInfo (
+      Map<dynamic, dynamic> map) async {
     GroupSearchInfo groupSearchInfo = GroupSearchInfo();
-    groupSearchInfo.groupInfo = _convertProtoGroupInfo(map['groupInfo']);
+    groupSearchInfo.groupInfo = await _convertProtoGroupInfo(map['groupInfo']);
     groupSearchInfo.marchType = GroupSearchResultType.values[map['marchType']];
     groupSearchInfo.marchedMemberNames = map['marchedMemberNames'];
 
@@ -1001,7 +1007,7 @@ class ImclientPlatform extends PlatformInterface {
     return report;
   }
 
-  static GroupInfo? _convertProtoGroupInfo(Map<dynamic, dynamic>? map) {
+  static Future<GroupInfo?> _convertProtoGroupInfo(Map<dynamic, dynamic>? map) async {
     if (map == null || map['target'] == null) return null;
 
     GroupInfo groupInfo = GroupInfo();
@@ -1022,6 +1028,19 @@ class ImclientPlatform extends PlatformInterface {
       groupInfo.historyMessage = map['historyMessage'];
     }
     if (map['updateDt'] != null) groupInfo.updateDt = map['updateDt'];
+
+    if(defaultPortraitProvider != null && (groupInfo.portrait == null || groupInfo.portrait!.isEmpty)) {
+      List<GroupMember> members = await Imclient.getGroupMembersByCount(groupInfo.target, 9);
+      List<String> userIds = [];
+      for(var gm in members) {
+        userIds.add(gm.memberId);
+      }
+      List<UserInfo> useInfos = await Imclient.getUserInfos(userIds, groupId: groupInfo.target);
+      if(useInfos.length == members.length) {
+        groupInfo.portrait = defaultPortraitProvider!.groupDefaultPortrait(groupInfo, useInfos);
+      }
+    }
+
     return groupInfo;
   }
 
@@ -1082,6 +1101,10 @@ class ImclientPlatform extends PlatformInterface {
     if (map['updateDt'] != null) userInfo.updateDt = map['updateDt'];
     if (map['type'] != null) userInfo.type = map['type'];
     if (map['deleted'] != null) userInfo.deleted = map['deleted'];
+    if(defaultPortraitProvider != null && (userInfo.portrait == null || userInfo.portrait!.isEmpty)) {
+      userInfo.portrait = defaultPortraitProvider!.userDefaultPortrait(userInfo);
+    }
+
     return userInfo;
   }
 
