@@ -2854,6 +2854,7 @@ class ImclientPlatform extends PlatformInterface {
   ///设置是否群组隐藏用户名
   @override
   void setHiddenGroupMemberName(
+      String groupId,
       bool isHidden,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
@@ -2861,7 +2862,7 @@ class ImclientPlatform extends PlatformInterface {
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
     methodChannel.invokeMethod("setHiddenGroupMemberName",
-        {"requestId": requestId, "isHidden": isHidden});
+        {"requestId": requestId, "groupId":groupId, "isHidden": isHidden});
   }
 
 
