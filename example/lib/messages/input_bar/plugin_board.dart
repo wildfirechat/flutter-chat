@@ -24,8 +24,8 @@ class PluginBoard extends StatelessWidget {
 
   final List<_PluginItem> _line1 = [
     _PluginItem('assets/images/input/album.png', "相册", "album"),
-    _PluginItem('assets/images/input/camera.png', "拍摄", "camera"),
     _PluginItem('assets/images/input/call.png', "通话", "call"),
+    _PluginItem('assets/images/input/camera.png', "拍摄", "camera"),
     _PluginItem('assets/images/input/location.png', "位置", "location"),
   ];
   final List<_PluginItem> _line2 = [

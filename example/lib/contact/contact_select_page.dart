@@ -15,8 +15,12 @@ import '../messages/messages_screen.dart';
 typedef OnSelectMembersCallback = void Function(BuildContext context, List<String> selectedMembers);
 
 class ContactSelectPage extends StatefulWidget {
-  ContactSelectPage(this.callback, {Key? key}) : super(key: key);
+  ContactSelectPage(this.callback, {this.maxSelected = 0, this.candidates, this.disabledCheckedUsers, this.disabledUncheckedUsers, Key? key}) : super(key: key);
   OnSelectMembersCallback callback;
+  int maxSelected;
+  List<String>? candidates;
+  List<String>? disabledCheckedUsers;
+  List<String>? disabledUncheckedUsers;
 
   @override
   State createState() => _ContactListWidgetState();
@@ -29,14 +33,19 @@ class _ContactListWidgetState extends State<ContactSelectPage> {
   @override
   void initState() {
     super.initState();
-    Imclient.getMyFriendList(refresh: true).then((value){
-      setState(() {
-        if(value != null) {
-          friendList = value;
-          selected = List.generate(friendList.length, (index) => false);
-        }
+    if(widget.candidates == null) {
+      Imclient.getMyFriendList(refresh: true).then((value) {
+        setState(() {
+          if (value != null) {
+            friendList = value;
+            selected = List.generate(friendList.length, (index) => widget.disabledCheckedUsers != null && widget.disabledCheckedUsers!.contains(friendList[index]));
+          }
+        });
       });
-    });
+    } else {
+      friendList = widget.candidates!;
+      selected = List.generate(friendList.length, (index) => widget.disabledCheckedUsers != null && widget.disabledCheckedUsers!.contains(friendList[index]));
+    }
   }
 
   void _onPressedDone(BuildContext context) {
@@ -71,7 +80,7 @@ class _ContactListWidgetState extends State<ContactSelectPage> {
   }
 
   Widget _contactRow(String userId, int index) {
-    return ContactSelectableItem(userId, selected, index);
+    return ContactSelectableItem(userId, selected, index, widget.maxSelected, disabledCheckedUsers: widget.disabledCheckedUsers, disabledUncheckedUsers: widget.disabledUncheckedUsers);
   }
 }
 
@@ -79,8 +88,11 @@ class ContactSelectableItem extends StatefulWidget {
   String userId;
   List<bool> selected;
   int index;
+  int maxSelected;
+  List<String>? disabledCheckedUsers;
+  List<String>? disabledUncheckedUsers;
 
-  ContactSelectableItem(this.userId, this.selected, this.index, {Key? key}) : super(key: key);
+  ContactSelectableItem(this.userId, this.selected, this.index, this.maxSelected, {Key? key, this.disabledCheckedUsers, this.disabledUncheckedUsers}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -90,6 +102,7 @@ class ContactSelectableItem extends StatefulWidget {
 
 class _ContactListItemState extends State<ContactSelectableItem> {
   UserInfo? userInfo;
+  bool isDisabled = false;
 
   _ContactListItemState();
 
@@ -101,6 +114,12 @@ class _ContactListItemState extends State<ContactSelectableItem> {
         userInfo = value;
       });
     });
+    if(widget.disabledUncheckedUsers != null && widget.disabledUncheckedUsers!.contains(widget.userId)) {
+      isDisabled = true;
+    }
+    if(widget.disabledCheckedUsers != null && widget.disabledCheckedUsers!.contains(widget.userId)) {
+      isDisabled = true;
+    }
   }
 
   @override
@@ -118,8 +137,20 @@ class _ContactListItemState extends State<ContactSelectableItem> {
     }
 
     return CheckboxListTile(
+      enabled: !isDisabled,
       value: widget.selected[widget.index],
       onChanged: (bool? value) {
+        if(value! && widget.maxSelected > 0) {
+          int selectedCount = 0;
+          for(var s in widget.selected) {
+            if(s) selectedCount++;
+          }
+          if(widget.maxSelected <= selectedCount) {
+            Fluttertoast.showToast(msg: "超过最大人数限制");
+            return;
+          }
+        }
+
         setState(() {
           widget.selected[widget.index] = value!;
         });
