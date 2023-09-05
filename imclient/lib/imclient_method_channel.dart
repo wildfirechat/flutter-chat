@@ -609,7 +609,7 @@ class ImclientPlatform extends PlatformInterface {
         case 'onOperationStringListSuccess':
           Map<dynamic, dynamic> args = call.arguments;
           int requestId = args['requestId'];
-          List<String> strList = args['strings'];
+          List<String> strList = Tools.convertDynamicList(args['strings']);
           var callback = _operationSuccessCallbackMap[requestId];
           if (callback != null) {
             callback(strList);
