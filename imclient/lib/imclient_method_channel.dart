@@ -452,7 +452,7 @@ class ImclientPlatform extends PlatformInterface {
             }
           }
 
-          var callback = _operationSuccessCallbackMap[requestId];
+          var callback = _sendMediaMessageUploadedCallbackMap[requestId];
           if (callback != null) {
             callback(remoteUrl);
           }
