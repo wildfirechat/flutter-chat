@@ -1204,8 +1204,8 @@ class Imclient {
   }
 
   ///获取用户设置
-  static Future<String> getUserSetting(int scope, String value) async {
-    return ImclientPlatform.instance.getUserSetting(scope, value);
+  static Future<String> getUserSetting(int scope, String key) async {
+    return ImclientPlatform.instance.getUserSetting(scope, key);
   }
 
   ///获取某类用户设置

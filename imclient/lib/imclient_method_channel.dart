@@ -2710,9 +2710,9 @@ class ImclientPlatform extends PlatformInterface {
 
   ///获取用户设置
   @override
-  Future<String> getUserSetting(int scope, String value) async {
+  Future<String> getUserSetting(int scope, String key) async {
     return await methodChannel
-        .invokeMethod("getUserSetting", {"scope": scope, "value": value});
+        .invokeMethod("getUserSetting", {"scope": scope, "key": key});
   }
 
   ///获取某类用户设置
