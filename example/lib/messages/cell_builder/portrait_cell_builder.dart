@@ -98,7 +98,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return GestureDetector(
       child: Container(
         margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-        child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0) : Image.network(portrait!, width: 44.0, height: 44.0),
+        child: SizedBox(width: 40, height: 40, child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0) : Image.network(portrait!, width: 44.0, height: 44.0),),
       ),
       onTap: () => state.onTapedPortrait(model),
       onLongPress: () => state.onLongTapedPortrait(model),
