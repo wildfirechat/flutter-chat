@@ -1911,10 +1911,13 @@ class ImclientPlatform extends PlatformInterface {
   @override
   Future<bool> clearMessages(Conversation conversation,
       {int before = 0}) async {
-    return await methodChannel.invokeMethod("clearMessages", {
+    bool ret = await methodChannel.invokeMethod("clearMessages", {
       "conversation": _convertConversation(conversation),
       "before": before
     });
+
+    _eventBus.fire(ClearMessagesEvent(conversation));
+    return ret;
   }
 
   @override

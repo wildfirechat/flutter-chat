@@ -36,6 +36,7 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
   late StreamSubscription<ClearConversationUnreadEvent> _clearConversationUnreadSubscription;
   late StreamSubscription<ClearConversationsUnreadEvent> _clearConversationsUnreadSubscription;
   late StreamSubscription<SendMessageStartEvent> _sendMessageStartSubscription;
+  late StreamSubscription<ClearMessagesEvent> _clearMessagesSubscription;
 
   final EventBus _eventBus = Imclient.IMEventBus;
 
@@ -69,6 +70,9 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
       _loadConversation();
     });
     _sendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
+      _loadConversation();
+    });
+    _clearMessagesSubscription = _eventBus.on<ClearMessagesEvent>().listen((event) {
       _loadConversation();
     });
     _loadConversation();

@@ -18,6 +18,7 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:rtckit/rtckit.dart';
+import 'package:wfc_example/messages/conversation_settings.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import 'package:wfc_example/messages/message_appbar_title.dart';
 
@@ -39,6 +40,7 @@ class _State extends State<MessagesScreen> {
   List<MessageModel> models = <MessageModel>[];
   final EventBus _eventBus = Imclient.IMEventBus;
   late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
+  late StreamSubscription<ClearMessagesEvent> _clearMessagesSubscription;
 
   bool isLoading = false;
 
@@ -61,6 +63,7 @@ class _State extends State<MessagesScreen> {
 
   late MessageInputBar _inputBar;
 
+
   @override
   void initState() {
     _inputBar = MessageInputBar(widget.conversation,
@@ -71,15 +74,17 @@ class _State extends State<MessagesScreen> {
       pressCallBtnCallback:() => _onPressCallBtn(),
       key: _inputBarGlobalKey,
     );
-    Imclient.getMessages(widget.conversation, 0, 10).then((value) {
-      if(value != null && value.isNotEmpty) {
-        _appendMessage(value);
-      }
-    });
+
+    _reloadMessages();
 
     _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
       if(!event.hasMore) {
         _appendMessage(event.messages, front: true);
+      }
+    });
+    _clearMessagesSubscription = _eventBus.on<ClearMessagesEvent>().listen((event) {
+      if(event.conversation == widget.conversation) {
+        _reloadMessages();
       }
     });
 
@@ -110,6 +115,19 @@ class _State extends State<MessagesScreen> {
         }
       });
     }
+  }
+
+  void _reloadMessages() {
+    models.clear();
+    Imclient.getMessages(widget.conversation, 0, 10).then((value) {
+      if(value != null && value.isNotEmpty) {
+        _appendMessage(value);
+      } else {
+        setState(() {
+
+        });
+      }
+    });
   }
 
   void _onSendButtonTyped(String text) {
@@ -212,6 +230,7 @@ class _State extends State<MessagesScreen> {
   void dispose() {
     super.dispose();
     _receiveMessageSubscription?.cancel();
+    _clearMessagesSubscription?.cancel();
     _stopTypingTimer();
   }
 
@@ -421,6 +440,14 @@ class _State extends State<MessagesScreen> {
       backgroundColor: const Color.fromARGB(255, 232, 232, 232),
       appBar: AppBar(
         title: MessageTitle(title, key: titleGlobalKey,),
+        actions: [
+          IconButton(onPressed: (){
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ConversationSettingPage(widget.conversation)),
+            );
+          }, icon: const Icon(Icons.more_horiz_rounded),)
+        ],
       ),
       body: SafeArea(
         child: Column(
