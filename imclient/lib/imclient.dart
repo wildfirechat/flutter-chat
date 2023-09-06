@@ -235,6 +235,12 @@ class UserOnlineStateUpdatedEvent {
   UserOnlineStateUpdatedEvent(this.onlineInfos);
 }
 
+class ClearMessagesEvent {
+  Conversation conversation;
+
+  ClearMessagesEvent(this.conversation);
+}
+
 class ClearConversationUnreadEvent {
   Conversation conversation;
 
