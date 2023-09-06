@@ -935,9 +935,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         Conversation conversation = conversationFromArgument(call, false);
         long before = getLongPara(call, "before");
         if (before > 0)
-            ChatManager.Instance().clearMessages(conversation);
-        else
             ChatManager.Instance().clearMessages(conversation, before);
+        else
+            ChatManager.Instance().clearMessages(conversation);
         result.success(true);
     }
 
