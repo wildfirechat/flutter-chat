@@ -1795,7 +1795,7 @@ class ImclientPlatform extends PlatformInterface {
     Map<dynamic, dynamic> fm = await methodChannel.invokeMethod('sendMessage', args);
 
     Message message = _convertProtoMessage(fm)!;
-    if(message.messageId! > 0) {
+    if(message.messageId == null || message.messageId! > 0) {
       _sendingMessages[message.messageId!] = message;
       _eventBus.fire(SendMessageStartEvent(message.messageId!));
     }
