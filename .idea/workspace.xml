@@ -5,12 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/example/assets/images/input/del_emoji.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/lib/messages/input_bar/emoji_board.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/card_cell_builder.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/messages/input_bar/emoj_board.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/config.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/config.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/cell_builder/portrait_cell_builder.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/portrait_cell_builder.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/input_bar/plugin_board.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/input_bar/plugin_board.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/message_cell.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/message_cell.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/android/src/main/java/cn/wildfirechat/imclient/ImclientPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/android/src/main/java/cn/wildfirechat/imclient/ImclientPlugin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/ios/Classes/ImclientPlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/Classes/ImclientPlugin.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/lib/model/group_member.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/model/group_member.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -52,6 +59,8 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
@@ -66,9 +75,9 @@
       <recent name="$PROJECT_DIR$/example/lib" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/example/assets/images" />
       <recent name="$PROJECT_DIR$/example/assets/images/input" />
       <recent name="$PROJECT_DIR$/example/assets/images/file_type" />
-      <recent name="$PROJECT_DIR$/example/assets/images" />
     </key>
   </component>
   <component name="RunManager">
@@ -104,11 +113,6 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart</url>
-          <line>808</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart</url>
           <line>455</line>
           <option name="timeStamp" value="21" />
         </line-breakpoint>
@@ -119,13 +123,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart</url>
-          <line>73</line>
-          <option name="timeStamp" value="42" />
+          <line>40</line>
+          <option name="timeStamp" value="43" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart</url>
-          <line>50</line>
-          <option name="timeStamp" value="43" />
+          <url>file://$PROJECT_DIR$/example/lib/messages/message_cell.dart</url>
+          <line>141</line>
+          <option name="timeStamp" value="49" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/example/lib/messages/message_cell.dart</url>
+          <line>145</line>
+          <option name="timeStamp" value="50" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

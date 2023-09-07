@@ -847,7 +847,19 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         long messageUid = getLongPara(call, "messageUid");
         Message msg = ChatManager.Instance().getMessageByUid(messageUid);
         if (msg != null) {
-            ChatManager.Instance().recallMessage(msg, new GeneralVoidCallback(requestId));
+            ChatManager.Instance().recallMessage(msg, new cn.wildfirechat.remote.GeneralCallback() {
+                @Override
+                public void onSuccess() {
+                    callbackBuilder(requestId).success("onOperationVoidSuccess");
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("messageUid", messageUid);
+                    callback2UI("onRecallMessage", data);
+                }
+                @Override
+                public void onFail(int i) {
+                    callbackBuilder(requestId).fail(i);
+                }
+            });
         }
     }
 

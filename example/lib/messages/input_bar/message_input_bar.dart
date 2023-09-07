@@ -17,7 +17,7 @@ typedef OnSendButtonTapedCallback = void Function(String text);
 typedef OnTextChangedCallback = void Function(String text);
 
 class MessageInputBar extends StatefulWidget {
-  MessageInputBar(this._conversation, {required this.sendButtonTapedCallback, required this.textChangedCallback, required this.pickerImageCallback, required this.pickerFileCallback, required this.pressCallBtnCallback, ChatInputBarStatus chatInputBarStatus = ChatInputBarStatus.keyboardStatus, Key? key}) : _chatInputBarStatus = chatInputBarStatus, super(key: key);
+  MessageInputBar(this._conversation, {required this.sendButtonTapedCallback, required this.textChangedCallback, required this.pickerImageCallback, required this.pickerFileCallback, required this.pressCallBtnCallback, required this.pressCardBtnCallback, ChatInputBarStatus chatInputBarStatus = ChatInputBarStatus.keyboardStatus, Key? key}) : _chatInputBarStatus = chatInputBarStatus, super(key: key);
   Conversation _conversation;
   ChatInputBarStatus _chatInputBarStatus;
   final OnSendButtonTapedCallback sendButtonTapedCallback;
@@ -25,6 +25,7 @@ class MessageInputBar extends StatefulWidget {
   final OnPickerImageCallback pickerImageCallback;
   final OnPickerFileCallback pickerFileCallback;
   final OnPressCallBtnCallback pressCallBtnCallback;
+  final OnPressCardBtnCallback pressCardBtnCallback;
 
   @override
   State<StatefulWidget> createState() => MessageInputBarState();
@@ -100,7 +101,7 @@ class MessageInputBarState extends State<MessageInputBar> {
           ),
         ),
         widget._chatInputBarStatus == ChatInputBarStatus.emojiStatus? EmojiBoard(emojis, pickerEmojiCallback: _onPickEmoji, delEmojiCallback: _onDelEmoji,):Container(),
-        widget._chatInputBarStatus == ChatInputBarStatus.pluginStatus? PluginBoard(widget.pickerImageCallback, widget.pickerFileCallback, widget.pressCallBtnCallback):Container(),
+        widget._chatInputBarStatus == ChatInputBarStatus.pluginStatus? PluginBoard(widget.pickerImageCallback, widget.pickerFileCallback, widget.pressCallBtnCallback, widget.pressCardBtnCallback):Container(),
       ],
     );
   }

@@ -121,22 +121,23 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
             children: [
               getSendStatus(),
               Flexible(
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isSendMessage ? Colors.green :  Colors.white,
-                      borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(8),
-                        topLeft: Radius.circular(8),
-                        bottomLeft: Radius.circular(8),
-                        bottomRight: Radius.circular(8),
+                  child: GestureDetector(
+                    child:Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: isSendMessage ? Colors.green :  Colors.white,
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(8),
+                          topLeft: Radius.circular(8),
+                          bottomLeft: Radius.circular(8),
+                          bottomRight: Radius.circular(8),
+                        ),
                       ),
-                    ),
-                    child: GestureDetector(
                       child: getContentAres(context),
-                      onTap: () => state.onTaped(model),
-                      onDoubleTap: () => state.onDoubleTaped(model),
                     ),
+                    onTap: () => state.onTaped(model),
+                    onDoubleTap: () => state.onDoubleTaped(model),
+                    onLongPressStart: (details) => state.onLongPress(details, model),
                   ),
               ),
               getUnplayed(),

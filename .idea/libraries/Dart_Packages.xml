@@ -6,7 +6,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/archive-3.3.6/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/archive-3.3.6/lib" />
             </list>
           </value>
         </entry>
@@ -14,8 +13,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/async-2.11.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/async-2.9.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/async-2.10.0/lib" />
             </list>
           </value>
         </entry>
@@ -30,7 +27,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/boolean_selector-2.1.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/boolean_selector-2.1.0/lib" />
             </list>
           </value>
         </entry>
@@ -59,8 +55,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/characters-1.3.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/characters-1.2.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/characters-1.2.1/lib" />
             </list>
           </value>
         </entry>
@@ -68,7 +62,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/clock-1.1.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/clock-1.1.1/lib" />
             </list>
           </value>
         </entry>
@@ -76,8 +69,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/collection-1.17.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/collection-1.16.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/collection-1.17.0/lib" />
             </list>
           </value>
         </entry>
@@ -85,7 +76,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/convert-3.1.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/convert-3.1.1/lib" />
             </list>
           </value>
         </entry>
@@ -100,7 +90,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/crypto-3.0.2/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/crypto-3.0.2/lib" />
             </list>
           </value>
         </entry>
@@ -115,7 +104,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/event_bus-2.0.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/event_bus-2.0.0/lib" />
             </list>
           </value>
         </entry>
@@ -137,7 +125,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/fake_async-1.3.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/fake_async-1.3.1/lib" />
             </list>
           </value>
         </entry>
@@ -187,7 +174,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_lints-2.0.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/flutter_lints-2.0.1/lib" />
             </list>
           </value>
         </entry>
@@ -237,7 +223,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/image-4.0.15/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/image-4.0.15/lib" />
             </list>
           </value>
         </entry>
@@ -287,8 +272,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/js-0.6.7/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/js-0.6.5/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/js-0.6.5/lib" />
             </list>
           </value>
         </entry>
@@ -296,7 +279,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/lints-2.0.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/lints-2.0.1/lib" />
             </list>
           </value>
         </entry>
@@ -304,8 +286,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/matcher-0.12.15/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/matcher-0.12.12/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/matcher-0.12.13/lib" />
             </list>
           </value>
         </entry>
@@ -313,7 +293,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/material_color_utilities-0.2.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/material_color_utilities-0.1.5/lib" />
             </list>
           </value>
         </entry>
@@ -321,8 +300,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/meta-1.9.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/meta-1.8.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/meta-1.8.0/lib" />
             </list>
           </value>
         </entry>
@@ -337,8 +314,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path-1.8.3/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/path-1.8.2/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path-1.8.2/lib" />
             </list>
           </value>
         </entry>
@@ -395,7 +370,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/petitparser-5.1.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/petitparser-5.1.0/lib" />
             </list>
           </value>
         </entry>
@@ -417,7 +391,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/plugin_platform_interface-2.1.4/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/plugin_platform_interface-2.1.4/lib" />
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/plugin_platform_interface-2.1.3/lib" />
             </list>
           </value>
@@ -426,7 +399,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/pointycastle-3.7.2/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/pointycastle-3.7.2/lib" />
             </list>
           </value>
         </entry>
@@ -504,7 +476,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/source_span-1.9.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/source_span-1.9.0/lib" />
             </list>
           </value>
         </entry>
@@ -526,7 +497,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/stack_trace-1.11.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/stack_trace-1.10.0/lib" />
             </list>
           </value>
         </entry>
@@ -534,7 +504,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/stream_channel-2.1.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/stream_channel-2.1.0/lib" />
             </list>
           </value>
         </entry>
@@ -542,7 +511,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/string_scanner-1.2.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/string_scanner-1.1.1/lib" />
             </list>
           </value>
         </entry>
@@ -557,7 +525,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/term_glyph-1.2.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/term_glyph-1.2.1/lib" />
             </list>
           </value>
         </entry>
@@ -565,8 +532,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/test_api-0.5.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/test_api-0.4.12/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/test_api-0.4.16/lib" />
             </list>
           </value>
         </entry>
@@ -574,7 +539,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/typed_data-1.3.1/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/typed_data-1.3.1/lib" />
             </list>
           </value>
         </entry>
@@ -589,7 +553,6 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/vector_math-2.1.4/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/vector_math-2.1.2/lib" />
             </list>
           </value>
         </entry>
@@ -611,55 +574,21 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/xml-6.1.0/lib" />
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/xml-6.1.0/lib" />
             </list>
           </value>
         </entry>
       </option>
     </properties>
     <CLASSES>
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/archive-3.3.6/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/async-2.9.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/boolean_selector-2.1.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/characters-1.2.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/clock-1.1.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/collection-1.16.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/convert-3.1.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/crypto-3.0.2/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/event_bus-2.0.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/fake_async-1.3.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/flutter_lints-2.0.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/image-4.0.15/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/js-0.6.5/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/lints-2.0.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/matcher-0.12.12/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/material_color_utilities-0.1.5/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/meta-1.8.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/path-1.8.2/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/petitparser-5.1.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/plugin_platform_interface-2.1.4/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/pointycastle-3.7.2/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/source_span-1.9.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/stack_trace-1.10.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/stream_channel-2.1.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/string_scanner-1.1.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/term_glyph-1.2.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/test_api-0.4.12/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/typed_data-1.3.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/vector_math-2.1.2/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dartlang.org/xml-6.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/archive-3.3.6/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/async-2.10.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/async-2.11.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/badges-3.0.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/boolean_selector-2.1.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/cached_network_image-3.2.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/cached_network_image_platform_interface-2.0.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/cached_network_image_web-1.0.2/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/characters-1.2.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/characters-1.3.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/clock-1.1.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/collection-1.17.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/collection-1.17.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/convert-3.1.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/cross_file-0.3.3+4/lib" />
@@ -686,16 +615,12 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/image_picker_ios-0.8.7+2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/image_picker_platform_interface-2.6.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/intl-0.18.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/js-0.6.5/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/js-0.6.7/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/lints-2.0.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/matcher-0.12.13/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/matcher-0.12.15/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/material_color_utilities-0.2.0/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/meta-1.8.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/meta-1.9.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/octo_image-1.0.2/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path-1.8.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path-1.8.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider-2.0.14/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.0.24/lib" />
@@ -727,7 +652,6 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/string_scanner-1.2.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/synchronized-3.0.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/term_glyph-1.2.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/test_api-0.4.16/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/test_api-0.5.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/typed_data-1.3.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/uuid-3.0.7/lib" />

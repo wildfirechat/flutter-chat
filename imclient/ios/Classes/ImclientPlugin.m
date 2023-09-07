@@ -482,6 +482,7 @@ ImclientPlugin *gIMClientInstance;
     
     [[WFCCIMService sharedWFCIMService] recall:msg success:^{
         [self callbackOperationVoidSuccess:requestId];
+        [self.channel invokeMethod:@"onRecallMessage" arguments:@{@"messageUid":@(messageUid)}];
     } error:^(int error_code) {
         [self callbackOperationFailure:requestId errorCode:error_code];
     }];

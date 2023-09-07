@@ -1,6 +1,10 @@
+import 'dart:async';
+
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/call_start_message_content.dart';
+import 'package:imclient/message/card_message_content.dart';
 import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
@@ -12,6 +16,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/utilities.dart';
 import 'cell_builder/call_start_cell_builder.dart';
+import 'cell_builder/card_cell_builder.dart';
 import 'cell_builder/file_cell_builder.dart';
 import 'cell_builder/image_cell_builder.dart';
 import 'cell_builder/message_cell_builder.dart';
@@ -24,6 +29,7 @@ import 'message_model.dart';
 
 typedef OnMessageCellTapedCallback = void Function(MessageModel model);
 typedef OnMessageCellDoubleTapedCallback = void Function(MessageModel model);
+typedef OnMessageCellLongPressedCallback = void Function(MessageModel model, Offset offset);
 typedef OnPortraitTapedCallback = void Function(MessageModel model);
 typedef OnPortraitLongTapedCallback = void Function(MessageModel model);
 typedef OnResendTapedCallback = void Function(MessageModel model);
@@ -33,12 +39,13 @@ class MessageCell extends StatefulWidget {
   final MessageModel model;
   OnMessageCellTapedCallback cellTapedCallback;
   OnMessageCellDoubleTapedCallback cellDoubleTapedCallback;
+  OnMessageCellLongPressedCallback cellLongPressedCallback;
   OnPortraitTapedCallback portraitTapedCallback;
   OnPortraitLongTapedCallback portraitLongTapedCallback;
   OnResendTapedCallback resendTapedCallback;
   OnReadedTapedCallback readedTapedCallback;
 
-  MessageCell(this.model, this.cellTapedCallback, this.cellDoubleTapedCallback, this.portraitTapedCallback, this.portraitLongTapedCallback, this.resendTapedCallback, this.readedTapedCallback):super(key: ObjectKey(model));
+  MessageCell(this.model, this.cellTapedCallback, this.cellDoubleTapedCallback, this.cellLongPressedCallback, this.portraitTapedCallback, this.portraitLongTapedCallback, this.resendTapedCallback, this.readedTapedCallback):super(key: ObjectKey(model));
 
   @override
   State createState() {
@@ -47,11 +54,30 @@ class MessageCell extends StatefulWidget {
 }
 
 class MessageState extends State<MessageCell> {
+  final EventBus _eventBus = Imclient.IMEventBus;
   late MessageCellBuilder _cellBuilder;
+  late StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
   bool disposed = false;
   @override
   void initState() {
     super.initState();
+    _initCellBuilder();
+
+    _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) {
+      if(widget.model.message.messageUid == event.messageUid) {
+        Imclient.getMessageByUid(event.messageUid).then((newMsg) {
+          if(newMsg != null) {
+            setState(() {
+              widget.model.message = newMsg;
+              _initCellBuilder();
+            });
+          }
+        });
+      }
+    });
+  }
+
+  void _initCellBuilder() {
     if(widget.model.message.content is NotificationMessageContent) {
       _cellBuilder = NotificationCellBuilder(this, widget.model);
     } else if(widget.model.message.content is TextMessageContent) {
@@ -64,6 +90,8 @@ class MessageState extends State<MessageCell> {
       _cellBuilder = VoiceCellBuilder(this, widget.model);
     } else if(widget.model.message.content is FileMessageContent) {
       _cellBuilder = FileCellBuilder(this, widget.model);
+    } else if(widget.model.message.content is CardMessageContent) {
+      _cellBuilder = CardCellBuilder(this, widget.model);
     } else {
       _cellBuilder = UnknownCellBuilder(this, widget.model);
     }
@@ -73,8 +101,9 @@ class MessageState extends State<MessageCell> {
   @override
   void dispose() {
     super.dispose();
-    _cellBuilder.dispose();
     disposed = true;
+    _recallMessageSubscription.cancel();
+    _cellBuilder.dispose();
   }
 
   void onTaped(MessageModel model) {
@@ -83,6 +112,10 @@ class MessageState extends State<MessageCell> {
 
   void onDoubleTaped(MessageModel model) {
     widget.cellDoubleTapedCallback(model);
+  }
+
+  void onLongPress(LongPressStartDetails details, MessageModel model) {
+    widget.cellLongPressedCallback(model, details.globalPosition);
   }
 
   void onTapedPortrait(MessageModel model) {
