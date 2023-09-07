@@ -14,13 +14,15 @@ class _PluginItem {
 typedef OnPickerImageCallback = void Function(String imagePath);
 typedef OnPickerFileCallback = void Function(String filePath, int size);
 typedef OnPressCallBtnCallback = void Function();
+typedef OnPressCardBtnCallback = void Function();
 
 class PluginBoard extends StatelessWidget {
-  PluginBoard(this._pickerImageCallback, this._pickerFileCallback, this._pressCallBtnCallback, {Key? key}) : super(key: key);
+  PluginBoard(this._pickerImageCallback, this._pickerFileCallback, this._pressCallBtnCallback, this._pressCardBtnCallback, {Key? key}) : super(key: key);
 
   final OnPickerImageCallback _pickerImageCallback;
   final OnPickerFileCallback _pickerFileCallback;
   final OnPressCallBtnCallback _pressCallBtnCallback;
+  final OnPressCardBtnCallback _pressCardBtnCallback;
 
   final List<_PluginItem> _line1 = [
     _PluginItem('assets/images/input/album.png', "相册", "album"),
@@ -88,6 +90,7 @@ class PluginBoard extends StatelessWidget {
       }
         break;
       case "card":
+        _pressCardBtnCallback();
         break;
     }
   }

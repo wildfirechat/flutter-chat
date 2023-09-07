@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/message/card_message_content.dart';
 import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
@@ -41,6 +42,7 @@ class _State extends State<MessagesScreen> {
   final EventBus _eventBus = Imclient.IMEventBus;
   late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
   late StreamSubscription<ClearMessagesEvent> _clearMessagesSubscription;
+  late StreamSubscription<DeleteMessageEvent> _deleteMessagesSubscription;
 
   bool isLoading = false;
 
@@ -72,6 +74,7 @@ class _State extends State<MessagesScreen> {
       pickerImageCallback:(imagePath) => _onPickImage(imagePath),
       pickerFileCallback:(filePath, size) => _onPickFile(filePath, size),
       pressCallBtnCallback:() => _onPressCallBtn(),
+      pressCardBtnCallback: () => _onPressCardBtn(),
       key: _inputBarGlobalKey,
     );
 
@@ -85,6 +88,16 @@ class _State extends State<MessagesScreen> {
     _clearMessagesSubscription = _eventBus.on<ClearMessagesEvent>().listen((event) {
       if(event.conversation == widget.conversation) {
         _reloadMessages();
+      }
+    });
+    _deleteMessagesSubscription = _eventBus.on<DeleteMessageEvent>().listen((event) {
+      for (var model in models) {
+        if(model.message.messageUid == event.messageUid) {
+          setState(() {
+            models.remove(model);
+          });
+          break;
+        }
       }
     });
 
@@ -214,6 +227,27 @@ class _State extends State<MessagesScreen> {
     });
   }
 
+  void _onPressCardBtn() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ContactSelectPage((context, members) async {
+        if(members.isNotEmpty) {
+          UserInfo? userInfo = await Imclient.getUserInfo(members.first);
+          CardMessageContent cardCnt = CardMessageContent();
+          cardCnt.type = CardType.CardType_User;
+          cardCnt.targetId = members.first;
+          if(userInfo != null) {
+            cardCnt.name = userInfo.name;
+            cardCnt.displayName = userInfo.displayName;
+            cardCnt.portrait = userInfo.portrait;
+          }
+          _sendMessage(cardCnt);
+        }
+        Navigator.pop(context);
+      }, maxSelected: 1,)),
+    );
+  }
+
   void _sendMessage(MessageContent messageContent) {
     Imclient.sendMessage(widget.conversation, messageContent, successCallback: (int messageUid, int timestamp) {
 
@@ -229,8 +263,9 @@ class _State extends State<MessagesScreen> {
   @override
   void dispose() {
     super.dispose();
-    _receiveMessageSubscription?.cancel();
-    _clearMessagesSubscription?.cancel();
+    _receiveMessageSubscription.cancel();
+    _clearMessagesSubscription.cancel();
+    _deleteMessagesSubscription.cancel();
     _stopTypingTimer();
   }
 
@@ -417,6 +452,10 @@ class _State extends State<MessagesScreen> {
     debugPrint("on double taped cell");
   }
 
+  void onLongPressedCell(MessageModel model, Offset postion) {
+    _showPopupMenu(model, postion);
+  }
+
   void onPortraitTaped(MessageModel model) {
     debugPrint("on taped portrait");
   }
@@ -432,6 +471,102 @@ class _State extends State<MessagesScreen> {
   void onReadedTaped(MessageModel model) {
     debugPrint("on taped readed");
 
+  }
+
+  void _showPopupMenu(MessageModel model, Offset position) {
+    List<PopupMenuItem> items = [
+      const PopupMenuItem(
+        value: 'delete',
+        child: Text('删除'),
+      )
+    ];
+
+    if(model.message.content is TextMessageContent) {
+      items.add(
+          const PopupMenuItem(
+            value: 'copy',
+            child: Text('复制'))
+      );
+    }
+
+    items.add(
+        const PopupMenuItem(
+          value: 'forward',
+          child: Text('转发'),
+        )
+    );
+
+    if(model.message.direction == MessageDirection.MessageDirection_Send && model.message.status == MessageStatus.Message_Status_Sent && DateTime.now().millisecondsSinceEpoch - model.message.serverTime < 120 * 1000) {
+      items.add(
+          const PopupMenuItem(
+            value: 'recall',
+            child: Text('撤回'),
+          )
+      );
+    }
+
+    items.addAll([
+      const PopupMenuItem(
+        value: 'multi_select',
+        child: Text('多选'),
+      ),
+      const PopupMenuItem(
+        value: 'quote',
+        child: Text('引用'),
+      ),
+      const PopupMenuItem(
+        value: 'favorite',
+        child: Text('收藏'),
+      )
+    ]);
+
+    showMenu(
+      context: context,
+      position: RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy),
+      items: items,
+    ).then((selected) {
+      if (selected != null) {
+        switch(selected) {
+          case "delete":
+            _deleteMessage(model.message.messageId!);
+            break;
+          case "copy":
+            break;
+          case "forward":
+            break;
+          case "recall":
+            _recallMessage(model.message.messageId!, model.message.messageUid!);
+            break;
+          case "multi_select":
+            break;
+          case "quote":
+            break;
+          case "favorite":
+            break;
+        }
+      }
+    });
+  }
+
+  void _recallMessage(int messageId, int messageUid) {
+    Imclient.recallMessage(messageUid, () {
+
+    }, (errorCode) {
+
+    });
+  }
+
+  void _deleteMessage(int messageId) {
+    Imclient.deleteMessage(messageId).then((value) {
+      setState(() {
+        for (var model in models) {
+          if(model.message.messageId == messageId) {
+            models.remove(model);
+            break;
+          }
+        }
+      });
+    });
   }
 
   @override
@@ -462,6 +597,7 @@ class _State extends State<MessagesScreen> {
                         models[index],
                             (model)=> onTapedCell(model),
                             (model)=>onDoubleTapedCell(model),
+                            (model, offset) => onLongPressedCell(model, offset),
                             (model)=>onPortraitTaped(model),
                             (model)=>onPortraitLongTaped(model),
                             (model)=>onResendTaped(model),

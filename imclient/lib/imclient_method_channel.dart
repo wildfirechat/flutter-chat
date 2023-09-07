@@ -1886,8 +1886,13 @@ class ImclientPlatform extends PlatformInterface {
   ///删除消息
   @override
   Future<bool> deleteMessage(int messageId) async {
-    return await methodChannel
-        .invokeMethod("deleteMessage", {"messageId": messageId});
+    Message? message = await getMessage(messageId);
+    if(message != null) {
+      await methodChannel
+          .invokeMethod("deleteMessage", {"messageId": messageId});
+      _eventBus.fire(DeleteMessageEvent(message!.messageUid!));
+    }
+    return message != null;
   }
 
   @override

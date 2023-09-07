@@ -1,4 +1,4 @@
-enum GroupMemberType { Normal, Manager, Owner, Muted, Allowed }
+enum GroupMemberType { Normal, Manager, Owner, Muted, Deleted, Allowed }
 
 class GroupMember {
   GroupMember(
