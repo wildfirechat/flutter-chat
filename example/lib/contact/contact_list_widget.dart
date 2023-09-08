@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
@@ -16,6 +19,9 @@ class ContactListWidget extends StatefulWidget {
 }
 
 class _ContactListWidgetState extends State<ContactListWidget> {
+  final EventBus _eventBus = Imclient.IMEventBus;
+  late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
+
   List<String> friendList = [];
   List fixModelList = [
     ['assets/images/contact_new_friend.png', '新好友', 'new_friend'],
@@ -27,6 +33,14 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   @override
   void initState() {
     super.initState();
+    _loadFriendList(true);
+
+    _userSettingUpdatedSubscription = _eventBus.on<UserSettingUpdatedEvent>().listen((event) {
+      _loadFriendList(false);
+    });
+  }
+
+  void _loadFriendList(bool refresh) {
     Imclient.getMyFriendList(refresh: true).then((value){
       setState(() {
         if(value != null) {
@@ -50,6 +64,13 @@ class _ContactListWidgetState extends State<ContactListWidget> {
             }
           }),),
     );
+  }
+
+
+  @override
+  void dispose() {
+    super.dispose();
+    _userSettingUpdatedSubscription.cancel();
   }
 
   Widget _contactRow(String userId, bool withSectionHeader, String? sectionTitle) {
@@ -116,6 +137,9 @@ class ContactListItem extends StatefulWidget {
 }
 
 class _ContactListItemState extends State<ContactListItem> {
+  final EventBus _eventBus = Imclient.IMEventBus;
+  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
+
   UserInfo? userInfo;
 
   _ContactListItemState();
@@ -123,6 +147,13 @@ class _ContactListItemState extends State<ContactListItem> {
 
   @override
   void initState() {
+    _loadUserInfo();
+    _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
+      _loadUserInfo();
+    });
+  }
+
+  void _loadUserInfo() {
     Imclient.getUserInfo(widget.userId).then((value) {
       setState(() {
         userInfo = value;
@@ -179,6 +210,13 @@ class _ContactListItemState extends State<ContactListItem> {
         ],
       ),
     );
+  }
+
+
+  @override
+  void dispose() {
+    super.dispose();
+    _userInfoUpdatedSubscription.cancel();
   }
 
   ///
