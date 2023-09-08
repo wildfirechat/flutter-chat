@@ -11,6 +11,7 @@ import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
+import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
@@ -75,6 +76,7 @@ class _State extends State<MessagesScreen> {
       pickerFileCallback:(filePath, size) => _onPickFile(filePath, size),
       pressCallBtnCallback:() => _onPressCallBtn(),
       pressCardBtnCallback: () => _onPressCardBtn(),
+      soundRecordedCallback: (soundPath, duration) => _onSoundRecorded(soundPath, duration),
       key: _inputBarGlobalKey,
     );
 
@@ -246,6 +248,13 @@ class _State extends State<MessagesScreen> {
         Navigator.pop(context);
       }, maxSelected: 1,)),
     );
+  }
+
+  void _onSoundRecorded(String soundPath, int duration) {
+    SoundMessageContent soundMessageContent = SoundMessageContent();
+    soundMessageContent.localPath = soundPath!;
+    soundMessageContent.duration = duration;
+    _sendMessage(soundMessageContent);
   }
 
   void _sendMessage(MessageContent messageContent) {

@@ -1,8 +1,18 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_sound/flutter_sound.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:imclient/imclient.dart';
+import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:wfc_example/messages/input_bar/emoji_board.dart';
 import 'package:wfc_example/messages/input_bar/plugin_board.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:wfc_example/messages/input_bar/record_widget.dart';
 
 enum ChatInputBarStatus {
   keyboardStatus,
@@ -15,9 +25,10 @@ enum ChatInputBarStatus {
 
 typedef OnSendButtonTapedCallback = void Function(String text);
 typedef OnTextChangedCallback = void Function(String text);
+typedef OnSoundRecordedCallback = void Function(String soundPath, int duration);
 
 class MessageInputBar extends StatefulWidget {
-  MessageInputBar(this._conversation, {required this.sendButtonTapedCallback, required this.textChangedCallback, required this.pickerImageCallback, required this.pickerFileCallback, required this.pressCallBtnCallback, required this.pressCardBtnCallback, ChatInputBarStatus chatInputBarStatus = ChatInputBarStatus.keyboardStatus, Key? key}) : _chatInputBarStatus = chatInputBarStatus, super(key: key);
+  MessageInputBar(this._conversation, {required this.sendButtonTapedCallback, required this.textChangedCallback, required this.pickerImageCallback, required this.pickerFileCallback, required this.pressCallBtnCallback, required this.pressCardBtnCallback, required this.soundRecordedCallback, ChatInputBarStatus chatInputBarStatus = ChatInputBarStatus.keyboardStatus, Key? key}) : _chatInputBarStatus = chatInputBarStatus, super(key: key);
   Conversation _conversation;
   ChatInputBarStatus _chatInputBarStatus;
   final OnSendButtonTapedCallback sendButtonTapedCallback;
@@ -26,6 +37,7 @@ class MessageInputBar extends StatefulWidget {
   final OnPickerFileCallback pickerFileCallback;
   final OnPressCallBtnCallback pressCallBtnCallback;
   final OnPressCardBtnCallback pressCardBtnCallback;
+  final OnSoundRecordedCallback soundRecordedCallback;
 
   @override
   State<StatefulWidget> createState() => MessageInputBarState();
@@ -36,7 +48,6 @@ class MessageInputBarState extends State<MessageInputBar> {
   final List<String> emojis = ['😊','😨','😍','😳','😎','😭','😌','😵','😴','😢','😅','😡','😜','😀','😲','😟','😤','😞','😫','😣','😈','😉','😯','😕','😰','😋','😝','😓','😃','😂','😘','😒','😏','😶','😱','😖','😩','😔','😑','😚','😪','😇','🙊','👊','👎','☝','✌','😬','😷','🙈','👌','👏','✊','💪','😆','☺','🙉','👍','🙏','✋','☀','☕','⛄','📚','🎁','🎉','🍦','☁','❄','⚡','💰','🎂','🎓','🍖','☔','⛅','✏','💩','🎄','🍷','🎤','🏀','🀄','💣','📢','🌏','🍫','🎲','🏂','💡','💤','🚫','🌻','🍻','🎵','🏡','💢','📞','🚿','🍚','👪','👼','💊','🔫','🌹','🐶','💄','👫','👽','💋','🌙','🍉','🐷','💔','👻','👿','💍','🌲','🐴','👑','🔥','⭐','⚽','🕖','⏰','😁','🚀','⏳','🏡'];
 
   late CupertinoTextField _textField;
-  late OutlinedButton _recordButton;
   final FocusNode _focusNode = FocusNode();
 
   @override
@@ -67,10 +78,6 @@ class MessageInputBarState extends State<MessageInputBar> {
 
       }
     });
-
-    _recordButton = OutlinedButton(onPressed: (){
-
-    }, child: const Text("按下说话"));
   }
 
   @override
@@ -91,7 +98,8 @@ class MessageInputBarState extends State<MessageInputBar> {
             children: [
               widget._chatInputBarStatus == ChatInputBarStatus.recordStatus ? IconButton(icon: const Icon(Icons.keyboard_alt_rounded), onPressed: _onKeyboardButton) :  IconButton(icon: const Icon(Icons.record_voice_over_rounded), onPressed: _onVoiceButton),
               Expanded(
-                child: widget._chatInputBarStatus == ChatInputBarStatus.recordStatus?_recordButton:Padding(padding: EdgeInsets.fromLTRB(0, 5, 5, 5), child: _textField,),
+                child: widget._chatInputBarStatus == ChatInputBarStatus.recordStatus?
+                RecordWidget(widget.soundRecordedCallback):Padding(padding: const EdgeInsets.fromLTRB(0, 5, 5, 5), child: _textField,),
               ),
               IconButton(icon: const Icon(Icons.emoji_emotions), onPressed: _onEmojButton),
               _textEditingController.value.text.isNotEmpty && widget._chatInputBarStatus != ChatInputBarStatus.recordStatus && widget._chatInputBarStatus != ChatInputBarStatus.pluginStatus?
@@ -104,6 +112,11 @@ class MessageInputBarState extends State<MessageInputBar> {
         widget._chatInputBarStatus == ChatInputBarStatus.pluginStatus? PluginBoard(widget.pickerImageCallback, widget.pickerFileCallback, widget.pressCallBtnCallback, widget.pressCardBtnCallback):Container(),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
   }
 
   void resetStatus() {

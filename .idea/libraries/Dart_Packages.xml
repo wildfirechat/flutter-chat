@@ -184,6 +184,27 @@
             </list>
           </value>
         </entry>
+        <entry key="flutter_sound">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_sound-9.2.13/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="flutter_sound_platform_interface">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_sound_platform_interface-9.2.13/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="flutter_sound_web">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_sound_web-9.2.13/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="flutter_test">
           <value>
             <list>
@@ -282,6 +303,13 @@
             </list>
           </value>
         </entry>
+        <entry key="logger">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/logger-1.4.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="matcher">
           <value>
             <list>
@@ -303,6 +331,13 @@
             </list>
           </value>
         </entry>
+        <entry key="nested">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/nested-1.0.0/lib" />
+            </list>
+          </value>
+        </entry>
         <entry key="octo_image">
           <value>
             <list>
@@ -320,42 +355,42 @@
         <entry key="path_provider">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider-2.0.14/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider-2.1.1/lib" />
             </list>
           </value>
         </entry>
         <entry key="path_provider_android">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.0.24/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.2.0/lib" />
             </list>
           </value>
         </entry>
         <entry key="path_provider_foundation">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_foundation-2.2.1/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_foundation-2.3.1/lib" />
             </list>
           </value>
         </entry>
         <entry key="path_provider_linux">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_linux-2.1.10/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/lib" />
             </list>
           </value>
         </entry>
         <entry key="path_provider_platform_interface">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_platform_interface-2.0.6/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_platform_interface-2.1.1/lib" />
             </list>
           </value>
         </entry>
         <entry key="path_provider_windows">
           <value>
             <list>
-              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_windows-2.1.7/lib" />
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_windows-2.2.1/lib" />
             </list>
           </value>
         </entry>
@@ -363,6 +398,41 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/pedantic-1.11.1/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="permission_handler">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler-10.4.5/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="permission_handler_android">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_android-10.3.6/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="permission_handler_apple">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_apple-9.1.4/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="permission_handler_platform_interface">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_platform_interface-3.11.5/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="permission_handler_windows">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_windows-0.1.3/lib" />
             </list>
           </value>
         </entry>
@@ -406,6 +476,20 @@
           <value>
             <list>
               <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/process-4.2.4/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="provider">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/provider-6.0.5/lib" />
+            </list>
+          </value>
+        </entry>
+        <entry key="recase">
+          <value>
+            <list>
+              <option value="$USER_HOME$/.pub-cache/hosted/pub.dev/recase-4.1.0/lib" />
             </list>
           </value>
         </entry>
@@ -605,6 +689,9 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_cache_manager-3.3.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_lints-2.0.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.9/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_sound-9.2.13/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_sound_platform_interface-9.2.13/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_sound_web-9.2.13/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/fluttertoast-8.2.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/http-0.13.5/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/http_parser-4.0.2/lib" />
@@ -617,18 +704,25 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/intl-0.18.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/js-0.6.7/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/lints-2.0.1/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/logger-1.4.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/matcher-0.12.15/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/material_color_utilities-0.2.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/meta-1.9.1/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/nested-1.0.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/octo_image-1.0.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path-1.8.3/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider-2.0.14/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.0.24/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_foundation-2.2.1/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_linux-2.1.10/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_platform_interface-2.0.6/lib" />
-      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_windows-2.1.7/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider-2.1.1/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_android-2.2.0/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_foundation-2.3.1/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_platform_interface-2.1.1/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/path_provider_windows-2.2.1/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pedantic-1.11.1/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler-10.4.5/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_android-10.3.6/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_apple-9.1.4/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_platform_interface-3.11.5/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/permission_handler_windows-0.1.3/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/petitparser-5.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/photo_view-0.14.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/platform-3.1.0/lib" />
@@ -636,6 +730,8 @@
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/plugin_platform_interface-2.1.4/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/pointycastle-3.7.2/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/process-4.2.4/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/provider-6.0.5/lib" />
+      <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/recase-4.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/rxdart-0.27.7/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/shared_preferences-2.1.0/lib" />
       <root url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/shared_preferences_android-2.1.0/lib" />
