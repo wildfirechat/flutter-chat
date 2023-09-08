@@ -121,6 +121,7 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
     _clearConversationUnreadSubscription.cancel();
     _clearConversationsUnreadSubscription.cancel();
     _sendMessageStartSubscription.cancel();
+    _clearMessagesSubscription.cancel();
     super.dispose();
   }
 }
