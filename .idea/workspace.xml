@@ -5,9 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/example/assets/images/video_msg_cover.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/video_cell_builder.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/contact/contact_list_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/contact/contact_list_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/conversation_list_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/conversation_list_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Podfile.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/input_bar/plugin_board.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/input_bar/plugin_board.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/message_cell.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/message_cell.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -65,8 +73,8 @@
       <recent name="$PROJECT_DIR$/example/lib" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/example/assets/images/input/voice" />
       <recent name="$PROJECT_DIR$/example/assets/images" />
+      <recent name="$PROJECT_DIR$/example/assets/images/input/voice" />
       <recent name="$PROJECT_DIR$/example/assets/images/input" />
       <recent name="$PROJECT_DIR$/example/assets/images/file_type" />
     </key>
@@ -106,11 +114,6 @@
           <url>file://$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart</url>
           <line>1469</line>
           <option name="timeStamp" value="28" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/imclient/lib/imclient.dart</url>
-          <line>881</line>
-          <option name="timeStamp" value="59" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
-import 'package:imclient/message/image_message_content.dart';
+import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 
 class _PluginItem {
   String iconPath;
@@ -15,19 +18,23 @@ typedef OnPickerImageCallback = void Function(String imagePath);
 typedef OnPickerFileCallback = void Function(String filePath, int size);
 typedef OnPressCallBtnCallback = void Function();
 typedef OnPressCardBtnCallback = void Function();
+typedef OnCameraCaptureImageCallback = void Function(String imagePath);
+typedef OnCameraCaptureVideoCallback = void Function(String videoPath, img.Image? thumbnail, int duration);
 
 class PluginBoard extends StatelessWidget {
-  PluginBoard(this._pickerImageCallback, this._pickerFileCallback, this._pressCallBtnCallback, this._pressCardBtnCallback, {Key? key}) : super(key: key);
+  PluginBoard(this._pickerImageCallback, this._pickerFileCallback, this._pressCallBtnCallback, this._pressCardBtnCallback, this._cameraCaptureImageCallback, this._cameraCaptureVideoCallback, {Key? key}) : super(key: key);
 
   final OnPickerImageCallback _pickerImageCallback;
   final OnPickerFileCallback _pickerFileCallback;
   final OnPressCallBtnCallback _pressCallBtnCallback;
   final OnPressCardBtnCallback _pressCardBtnCallback;
+  final OnCameraCaptureImageCallback _cameraCaptureImageCallback;
+  final OnCameraCaptureVideoCallback _cameraCaptureVideoCallback;
 
   final List<_PluginItem> _line1 = [
     _PluginItem('assets/images/input/album.png', "相册", "album"),
-    _PluginItem('assets/images/input/call.png', "通话", "call"),
     _PluginItem('assets/images/input/camera.png', "拍摄", "camera"),
+    _PluginItem('assets/images/input/call.png', "通话", "call"),
     _PluginItem('assets/images/input/location.png', "位置", "location"),
   ];
   final List<_PluginItem> _line2 = [
@@ -43,7 +50,7 @@ class PluginBoard extends StatelessWidget {
     for (var value in line) {
       items.add(Padding(padding: EdgeInsets.only(left: padding)));
       items.add(GestureDetector(
-        onTap: () => _onClickItem(value.key),
+        onTap: () => _onClickItem(context, value.key),
         child: Column(
           children: [
             Padding(padding: EdgeInsets.only(top: padding)),
@@ -60,7 +67,7 @@ class PluginBoard extends StatelessWidget {
     return items;
   }
 
-  void _onClickItem(String key) {
+  void _onClickItem(BuildContext context, String key) {
     switch(key) {
       case "album":{
         var picker = ImagePicker();
@@ -72,14 +79,36 @@ class PluginBoard extends StatelessWidget {
       }
         break;
       case "camera":
+        CameraPicker.pickFromCamera(context,
+            pickerConfig: const CameraPickerConfig(enableRecording: true, resolutionPreset: ResolutionPreset.high)).then((entity) {
+          if(entity != null) {
+            if(entity.type == AssetType.image) {
+              entity.file.then((file) {
+                if(file != null) {
+                  _cameraCaptureImageCallback(file.path);
+                }
+              });
+            } else if(entity.type == AssetType.video) {
+              entity.file.then((file) async {
+                if(file != null) {
+                  Uint8List? thumbData = await entity.thumbnailDataWithSize(const ThumbnailSize.square(120), quality: 30);
+                  img.Image? thumb;
+                  if(thumbData != null) {
+                    thumb = img.decodeJpg((await entity.thumbnailData)!);
+                  }
+                  _cameraCaptureVideoCallback(file.path, thumb, entity.duration);
+                }
+              });
+            }
+          }
+        });
         break;
-      case "call": {
+      case "call":
         _pressCallBtnCallback();
-      }
         break;
       case "location":
         break;
-      case "file": {
+      case "file":
         FilePicker.platform.pickFiles().then((value) {
           if(value != null && value.files.isNotEmpty) {
             String path = value.files.first.name;
@@ -87,7 +116,6 @@ class PluginBoard extends StatelessWidget {
             _pickerFileCallback(path, size);
           }
         });
-      }
         break;
       case "card":
         _pressCardBtnCallback();
