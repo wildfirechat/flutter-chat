@@ -84,6 +84,7 @@ class MessageInputBarState extends State<MessageInputBar> {
 
   @override
   Widget build(BuildContext context) {
+    double iconSize = 32;
     return Column(
       children: [
         Container(
@@ -98,15 +99,15 @@ class MessageInputBarState extends State<MessageInputBar> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              widget._chatInputBarStatus == ChatInputBarStatus.recordStatus ? IconButton(icon: const Icon(Icons.keyboard_alt_rounded), onPressed: _onKeyboardButton) :  IconButton(icon: const Icon(Icons.record_voice_over_rounded), onPressed: _onVoiceButton),
+              widget._chatInputBarStatus == ChatInputBarStatus.recordStatus ? IconButton(icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize,), onPressed: _onKeyboardButton) :  IconButton(icon: Image.asset('assets/images/input/chat_input_bar_voice.png', width: iconSize, height: iconSize,), onPressed: _onVoiceButton),
               Expanded(
                 child: widget._chatInputBarStatus == ChatInputBarStatus.recordStatus?
                 RecordWidget(widget.soundRecordedCallback):Padding(padding: const EdgeInsets.fromLTRB(0, 5, 5, 5), child: _textField,),
               ),
-              IconButton(icon: const Icon(Icons.emoji_emotions), onPressed: _onEmojiButton, padding: EdgeInsets.zero,),
+              widget._chatInputBarStatus == ChatInputBarStatus.emojiStatus ? IconButton(icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize,), onPressed: _onKeyboardButton) : IconButton(icon: Image.asset('assets/images/input/chat_input_bar_emoji.png', width: iconSize, height: iconSize,), onPressed: _onEmojiButton),
               _textEditingController.value.text.isNotEmpty && widget._chatInputBarStatus != ChatInputBarStatus.recordStatus && widget._chatInputBarStatus != ChatInputBarStatus.pluginStatus?
-              IconButton(icon: const Icon(Icons.send), onPressed: _onSendButton) :
-              IconButton(icon: const Icon(Icons.add_circle_outline_rounded), onPressed: _onPluginButton, padding: EdgeInsets.fromLTRB(0, 0, 0, 0),),
+              IconButton(icon: Image.asset('assets/images/input/chat_input_bar_send.png', width: iconSize, height: iconSize,), onPressed: _onSendButton) :
+              IconButton(icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize,), onPressed: _onPluginButton),
             ],
           ),
         ),
