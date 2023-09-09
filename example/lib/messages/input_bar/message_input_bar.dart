@@ -103,7 +103,7 @@ class MessageInputBarState extends State<MessageInputBar> {
                 child: widget._chatInputBarStatus == ChatInputBarStatus.recordStatus?
                 RecordWidget(widget.soundRecordedCallback):Padding(padding: const EdgeInsets.fromLTRB(0, 5, 5, 5), child: _textField,),
               ),
-              IconButton(icon: const Icon(Icons.emoji_emotions), onPressed: _onEmojButton, padding: EdgeInsets.zero,),
+              IconButton(icon: const Icon(Icons.emoji_emotions), onPressed: _onEmojiButton, padding: EdgeInsets.zero,),
               _textEditingController.value.text.isNotEmpty && widget._chatInputBarStatus != ChatInputBarStatus.recordStatus && widget._chatInputBarStatus != ChatInputBarStatus.pluginStatus?
               IconButton(icon: const Icon(Icons.send), onPressed: _onSendButton) :
               IconButton(icon: const Icon(Icons.add_circle_outline_rounded), onPressed: _onPluginButton, padding: EdgeInsets.fromLTRB(0, 0, 0, 0),),
@@ -155,7 +155,7 @@ class MessageInputBarState extends State<MessageInputBar> {
     }
   }
 
-  void _onEmojButton() {
+  void _onEmojiButton() {
     setState(() {
       if(widget._chatInputBarStatus == ChatInputBarStatus.emojiStatus) {
         if(!_focusNode.hasFocus) {
@@ -183,6 +183,17 @@ class MessageInputBarState extends State<MessageInputBar> {
         _focusNode.requestFocus();
       }
       widget._chatInputBarStatus = ChatInputBarStatus.keyboardStatus;
+    });
+  }
+
+  String getDraft() {
+    return _textEditingController.text;
+  }
+
+  void setDrat(String draft) {
+    setState(() {
+      _textEditingController.text = draft;
+      _textEditingController.selection = TextSelection(baseOffset: draft.length, extentOffset: draft.length);
     });
   }
 

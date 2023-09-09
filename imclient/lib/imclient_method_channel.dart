@@ -1369,7 +1369,10 @@ class ImclientPlatform extends PlatformInterface {
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    _operationSuccessCallbackMap[requestId] = successCallback;
+    _operationSuccessCallbackMap[requestId] = () {
+      successCallback();
+      _eventBus.fire(ConversationTopUpdatedEvent(conversation, isTop));
+    };
     _errorCallbackMap[requestId] = errorCallback;
 
     methodChannel.invokeMethod("setConversationTop", {
@@ -1387,7 +1390,10 @@ class ImclientPlatform extends PlatformInterface {
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
-    _operationSuccessCallbackMap[requestId] = successCallback;
+    _operationSuccessCallbackMap[requestId] = () {
+      successCallback();
+      _eventBus.fire(ConversationSilentUpdatedEvent(conversation, isSilent));
+    };
     _errorCallbackMap[requestId] = errorCallback;
 
     methodChannel.invokeMethod("setConversationSilent", {
@@ -1405,6 +1411,7 @@ class ImclientPlatform extends PlatformInterface {
     args['conversation'] = _convertConversation(conversation);
     args['draft'] = draft;
     await methodChannel.invokeMethod("setConversationDraft", args);
+    _eventBus.fire(ConversationDraftUpdatedEvent(conversation, draft));
   }
 
   ///设置会话时间戳

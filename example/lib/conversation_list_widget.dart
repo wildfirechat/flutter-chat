@@ -5,6 +5,7 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/message/message.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
@@ -94,7 +95,6 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,7 +108,18 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
   }
 
   Widget _row(ConversationInfo conversationInfo, int index) {
-    return ConversationListItem(conversationInfo, index, longPressedCallback: _onLongPressed);
+    return ConversationListItem(conversationInfo, index, longPressedCallback: _onLongPressed, conversationPressedCallback: (conversationInfo) {
+      _toChatPage(conversationInfo.conversation);
+    },);
+  }
+
+  void _toChatPage(Conversation conversation) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
+    ).then((value) {
+      _loadConversation();
+    });
   }
 
   void _onLongPressed(ConversationInfo conversationInfo, int index, Offset position) {
@@ -211,12 +222,14 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
 
 
 typedef OnLongPressedCallback = void Function(ConversationInfo conversationInfo, int index, Offset position);
+typedef OnConversationPressedCallback = void Function(ConversationInfo conversationInfo);
 class ConversationListItem extends StatefulWidget {
-  final ConversationInfo conversationInfo;
+  late final ConversationInfo conversationInfo;
   final int index;
   final OnLongPressedCallback longPressedCallback;
+  final OnConversationPressedCallback conversationPressedCallback;
 
-  ConversationListItem(this.conversationInfo, this.index, {required this.longPressedCallback}) : super(key: ValueKey(conversationInfo));
+  ConversationListItem(this.conversationInfo, this.index, {required this.longPressedCallback, required this.conversationPressedCallback}) : super(key: ValueKey(conversationInfo));
 
   @override
   State<StatefulWidget> createState() => ConversationListItemState();
@@ -232,6 +245,11 @@ class ConversationListItemState extends State<ConversationListItem> {
   String? digest = "";
 
   final EventBus _eventBus = Imclient.IMEventBus;
+  late StreamSubscription<ConversationDraftUpdatedEvent> _draftUpdatedSubscription;
+  late StreamSubscription<ConversationSilentUpdatedEvent> _silentUpdatedSubscription;
+  late StreamSubscription<ConversationTopUpdatedEvent> _topUpdatedSubscription;
+  StreamSubscription<SendMessageSuccessEvent>? _sendMsgSuccessSubscription;
+  StreamSubscription<SendMessageFailureEvent>? _sendMsgFailureSubscription;
 
   @override
   void initState() {
@@ -286,6 +304,56 @@ class ConversationListItemState extends State<ConversationListItem> {
         }
       });
     }
+
+    _draftUpdatedSubscription = _eventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
+      if(event.conversation == widget.conversationInfo.conversation) {
+        setState(() {
+          widget.conversationInfo.draft = event.draft;
+        });
+      }
+    });
+    _silentUpdatedSubscription = _eventBus.on<ConversationSilentUpdatedEvent>().listen((event) {
+      if(event.conversation == widget.conversationInfo.conversation) {
+        setState(() {
+          widget.conversationInfo.isSilent = event.silent;
+        });
+      }
+    });
+    _topUpdatedSubscription = _eventBus.on<ConversationTopUpdatedEvent>().listen((event) {
+      if(event.conversation == widget.conversationInfo.conversation) {
+        setState(() {
+          widget.conversationInfo.isTop = event.top;
+        });
+      }
+    });
+    if(widget.conversationInfo.lastMessage != null && widget.conversationInfo.lastMessage!.status == MessageStatus.Message_Status_Sending) {
+      _sendMsgSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
+        if(event.messageId == widget.conversationInfo.lastMessage?.messageId) {
+          setState(() {
+            widget.conversationInfo.lastMessage!.messageUid = event.messageUid;
+            widget.conversationInfo.lastMessage!.serverTime = event.timestamp;
+            widget.conversationInfo.lastMessage!.status = MessageStatus.Message_Status_Sent;
+            _sendMsgSuccessSubscription?.cancel();
+            _sendMsgSuccessSubscription = null;
+            _sendMsgFailureSubscription?.cancel();
+            _sendMsgFailureSubscription = null;
+          });
+        }
+      });
+      _sendMsgFailureSubscription = _eventBus.on<SendMessageFailureEvent>().listen((event) {
+        setState(() {
+          widget.conversationInfo.lastMessage!.status = MessageStatus.Message_Status_Send_Failure;
+          _sendMsgSuccessSubscription?.cancel();
+          _sendMsgSuccessSubscription = null;
+          _sendMsgFailureSubscription?.cancel();
+          _sendMsgFailureSubscription = null;
+        });
+      });
+    }
+  }
+
+  void _updateWhenMsgSent(bool success) {
+
   }
 
   @override
@@ -323,6 +391,8 @@ class ConversationListItemState extends State<ConversationListItem> {
       localPortrait = Config.defaultChannelPortrait;
     }
 
+    bool hasDraft = widget.conversationInfo.draft != null && widget.conversationInfo.draft!.isNotEmpty;
+
     return GestureDetector(
       child: Container(
         color: widget.conversationInfo.isTop > 0 ? CupertinoColors.secondarySystemBackground :  CupertinoColors.systemBackground,
@@ -358,14 +428,18 @@ class ConversationListItemState extends State<ConversationListItem> {
                               Container(
                                 height: 2,
                               ),
-                              Text(
-                                '$digest',
-                                style: const TextStyle(
-                                    fontSize: 12.0,
-                                    color: Color(0xffaaaaaa)),
-                                maxLines: 1,
-                                softWrap: true,
-                              ),
+                              Row(children: [
+                                _getMessageStatusIcon(),
+                                hasDraft?const Text("[草稿]", style: TextStyle(fontSize: 12.0, color: Colors.red),):Container(),
+                                Text(
+                                  hasDraft?widget.conversationInfo.draft!:'$digest',
+                                  style: const TextStyle(
+                                      fontSize: 12.0,
+                                      color: Color(0xffaaaaaa)),
+                                  maxLines: 1,
+                                  softWrap: true,
+                                ),
+                              ],),
                             ],
                           ))),
                   Column(children: [
@@ -395,15 +469,29 @@ class ConversationListItemState extends State<ConversationListItem> {
           ],
         ),
       ),
-      onTap: () => _toChatPage(widget.conversationInfo.conversation),
+      onTap: () => widget.conversationPressedCallback(widget.conversationInfo),
       onLongPressStart: (details) => widget.longPressedCallback(widget.conversationInfo, widget.index, details.globalPosition),
     );
   }
 
-  void _toChatPage(Conversation conversation) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
-    );
+  Widget _getMessageStatusIcon() {
+    if(widget.conversationInfo.lastMessage != null) {
+      if(widget.conversationInfo.lastMessage!.status == MessageStatus.Message_Status_Sending) {
+        return Padding(padding: const EdgeInsets.fromLTRB(0, 0, 4, 0), child: Image.asset("assets/images/conversation_msg_sending.png", width: 16, height: 16,),);
+      } else if(widget.conversationInfo.lastMessage!.status == MessageStatus.Message_Status_Send_Failure) {
+        return Padding(padding: const EdgeInsets.fromLTRB(0, 0, 4, 0), child: Image.asset("assets/images/conversation_msg_failure.png", width: 16, height: 16,),);
+      }
+    }
+
+    return Container();
+  }
+  @override
+  void dispose() {
+    _draftUpdatedSubscription.cancel();
+    _topUpdatedSubscription.cancel();
+    _silentUpdatedSubscription.cancel();
+    _sendMsgSuccessSubscription?.cancel();
+    _sendMsgFailureSubscription?.cancel();
+    super.dispose();
   }
 }

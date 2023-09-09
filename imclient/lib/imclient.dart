@@ -292,6 +292,27 @@ class SendMessageFailureEvent {
   SendMessageFailureEvent(this.messageId, this.errorCode);
 }
 
+class ConversationDraftUpdatedEvent {
+  Conversation conversation;
+  String draft;
+
+  ConversationDraftUpdatedEvent(this.conversation, this.draft);
+}
+
+class ConversationTopUpdatedEvent {
+  Conversation conversation;
+  int top;
+
+  ConversationTopUpdatedEvent(this.conversation, this.top);
+}
+
+class ConversationSilentUpdatedEvent {
+  Conversation conversation;
+  bool silent;
+
+  ConversationSilentUpdatedEvent(this.conversation, this.silent);
+}
+
 abstract class DefaultPortraitProvider {
   String userDefaultPortrait(UserInfo userInfo);
   String groupDefaultPortrait(GroupInfo groupInfo, List<UserInfo> userInfos);

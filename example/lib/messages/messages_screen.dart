@@ -133,6 +133,10 @@ class _State extends State<MessagesScreen> {
         }
       });
     }
+
+    Imclient.getConversationInfo(widget.conversation).then((conversationInfo) {
+      _inputBarGlobalKey.currentState!.setDrat(conversationInfo.draft??"");
+    });
   }
 
   void _reloadMessages() {
@@ -656,5 +660,12 @@ class _State extends State<MessagesScreen> {
 
   Widget _getInputBar() {
     return _inputBar;
+  }
+
+  @override
+  void deactivate() {
+    String draft = _inputBarGlobalKey.currentState!.getDraft();
+    Imclient.setConversationDraft(widget.conversation, draft);
+    super.deactivate();
   }
 }
