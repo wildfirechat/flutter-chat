@@ -4,7 +4,7 @@ import 'package:event_bus/event_bus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:image/image.dart' as img;
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/card_message_content.dart';
 import 'package:imclient/message/file_message_content.dart';
@@ -14,6 +14,7 @@ import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/typing_message_content.dart';
+import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
@@ -76,6 +77,8 @@ class _State extends State<MessagesScreen> {
       pickerFileCallback:(filePath, size) => _onPickFile(filePath, size),
       pressCallBtnCallback:() => _onPressCallBtn(),
       pressCardBtnCallback: () => _onPressCardBtn(),
+      cameraCaptureImageCallback: _cameraCaptureImage,
+      cameraCaptureVideoCallback: _cameraCaptureVideo,
       soundRecordedCallback: (soundPath, duration) => _onSoundRecorded(soundPath, duration),
       key: _inputBarGlobalKey,
     );
@@ -248,6 +251,20 @@ class _State extends State<MessagesScreen> {
         Navigator.pop(context);
       }, maxSelected: 1,)),
     );
+  }
+
+  void _cameraCaptureImage(String imagePath) {
+    ImageMessageContent imgContent = ImageMessageContent();
+    imgContent.localPath = imagePath;
+    _sendMessage(imgContent);
+  }
+
+  void _cameraCaptureVideo(String videoPath, img.Image? thumbnail, int duration) {
+    VideoMessageContent videoContent = VideoMessageContent();
+    videoContent.duration = duration;
+    videoContent.localPath = videoPath;
+    videoContent.thumbnail = thumbnail;
+    _sendMessage(videoContent);
   }
 
   void _onSoundRecorded(String soundPath, int duration) {

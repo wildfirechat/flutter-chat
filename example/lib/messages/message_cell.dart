@@ -11,6 +11,7 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/message/notification/notification_message_content.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
+import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/config.dart';
@@ -24,6 +25,7 @@ import 'cell_builder/notification_cell_builder.dart';
 import 'cell_builder/portrait_cell_builder.dart';
 import 'cell_builder/text_cell_builder.dart';
 import 'cell_builder/unknown_cell_builder.dart';
+import 'cell_builder/video_cell_builder.dart';
 import 'cell_builder/voice_cell_builder.dart';
 import 'message_model.dart';
 
@@ -92,6 +94,8 @@ class MessageState extends State<MessageCell> {
       _cellBuilder = FileCellBuilder(this, widget.model);
     } else if(widget.model.message.content is CardMessageContent) {
       _cellBuilder = CardCellBuilder(this, widget.model);
+    } else if(widget.model.message.content is VideoMessageContent) {
+      _cellBuilder = VideoCellBuilder(this, widget.model);
     } else {
       _cellBuilder = UnknownCellBuilder(this, widget.model);
     }

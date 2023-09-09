@@ -28,7 +28,7 @@ typedef OnTextChangedCallback = void Function(String text);
 typedef OnSoundRecordedCallback = void Function(String soundPath, int duration);
 
 class MessageInputBar extends StatefulWidget {
-  MessageInputBar(this._conversation, {required this.sendButtonTapedCallback, required this.textChangedCallback, required this.pickerImageCallback, required this.pickerFileCallback, required this.pressCallBtnCallback, required this.pressCardBtnCallback, required this.soundRecordedCallback, ChatInputBarStatus chatInputBarStatus = ChatInputBarStatus.keyboardStatus, Key? key}) : _chatInputBarStatus = chatInputBarStatus, super(key: key);
+  MessageInputBar(this._conversation, {required this.sendButtonTapedCallback, required this.textChangedCallback, required this.pickerImageCallback, required this.pickerFileCallback, required this.pressCallBtnCallback, required this.pressCardBtnCallback, required this.cameraCaptureImageCallback, required this.cameraCaptureVideoCallback, required this.soundRecordedCallback, ChatInputBarStatus chatInputBarStatus = ChatInputBarStatus.keyboardStatus, Key? key}) : _chatInputBarStatus = chatInputBarStatus, super(key: key);
   Conversation _conversation;
   ChatInputBarStatus _chatInputBarStatus;
   final OnSendButtonTapedCallback sendButtonTapedCallback;
@@ -37,6 +37,8 @@ class MessageInputBar extends StatefulWidget {
   final OnPickerFileCallback pickerFileCallback;
   final OnPressCallBtnCallback pressCallBtnCallback;
   final OnPressCardBtnCallback pressCardBtnCallback;
+  final OnCameraCaptureImageCallback cameraCaptureImageCallback;
+  final OnCameraCaptureVideoCallback cameraCaptureVideoCallback;
   final OnSoundRecordedCallback soundRecordedCallback;
 
   @override
@@ -101,15 +103,15 @@ class MessageInputBarState extends State<MessageInputBar> {
                 child: widget._chatInputBarStatus == ChatInputBarStatus.recordStatus?
                 RecordWidget(widget.soundRecordedCallback):Padding(padding: const EdgeInsets.fromLTRB(0, 5, 5, 5), child: _textField,),
               ),
-              IconButton(icon: const Icon(Icons.emoji_emotions), onPressed: _onEmojButton),
+              IconButton(icon: const Icon(Icons.emoji_emotions), onPressed: _onEmojButton, padding: EdgeInsets.zero,),
               _textEditingController.value.text.isNotEmpty && widget._chatInputBarStatus != ChatInputBarStatus.recordStatus && widget._chatInputBarStatus != ChatInputBarStatus.pluginStatus?
               IconButton(icon: const Icon(Icons.send), onPressed: _onSendButton) :
-              IconButton(icon: const Icon(Icons.add_circle_outline_rounded), onPressed: _onPluginButton),
+              IconButton(icon: const Icon(Icons.add_circle_outline_rounded), onPressed: _onPluginButton, padding: EdgeInsets.fromLTRB(0, 0, 0, 0),),
             ],
           ),
         ),
         widget._chatInputBarStatus == ChatInputBarStatus.emojiStatus? EmojiBoard(emojis, pickerEmojiCallback: _onPickEmoji, delEmojiCallback: _onDelEmoji,):Container(),
-        widget._chatInputBarStatus == ChatInputBarStatus.pluginStatus? PluginBoard(widget.pickerImageCallback, widget.pickerFileCallback, widget.pressCallBtnCallback, widget.pressCardBtnCallback):Container(),
+        widget._chatInputBarStatus == ChatInputBarStatus.pluginStatus? PluginBoard(widget.pickerImageCallback, widget.pickerFileCallback, widget.pressCallBtnCallback, widget.pressCardBtnCallback, widget.cameraCaptureImageCallback, widget.cameraCaptureVideoCallback):Container(),
       ],
     );
   }

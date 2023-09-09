@@ -55,6 +55,7 @@ dependencies:
   flutter_sound: ^9.2.13
   path_provider: ^2.1.1
   permission_handler: ^10.4.3
+  wechat_camera_picker: ^4.0.1
 
 dev_dependencies:
   flutter_test:
