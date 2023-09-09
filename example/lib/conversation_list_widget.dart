@@ -237,6 +237,7 @@ class ConversationListItem extends StatefulWidget {
 
 class ConversationListItemState extends State<ConversationListItem> {
   UserInfo? userInfo;
+  UserInfo? senderInfo;
   GroupInfo? groupInfo;
   ChannelInfo? channelInfo;
 
@@ -303,6 +304,15 @@ class ConversationListItemState extends State<ConversationListItem> {
           }
         }
       });
+
+      if(widget.conversationInfo.lastMessage!.fromUser != Imclient.currentUserId) {
+        String? groupId = widget.conversationInfo.conversation.conversationType == ConversationType.Group ? widget.conversationInfo.conversation.target : null;
+        Imclient.getUserInfo(widget.conversationInfo.lastMessage!.fromUser, groupId: groupId).then((value) {
+          setState(() {
+            senderInfo = value;
+          });
+        });
+      }
     }
 
     _draftUpdatedSubscription = _eventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
@@ -352,10 +362,6 @@ class ConversationListItemState extends State<ConversationListItem> {
     }
   }
 
-  void _updateWhenMsgSent(bool success) {
-
-  }
-
   @override
   Widget build(BuildContext context) {
     String? portrait;
@@ -392,6 +398,7 @@ class ConversationListItemState extends State<ConversationListItem> {
     }
 
     bool hasDraft = widget.conversationInfo.draft != null && widget.conversationInfo.draft!.isNotEmpty;
+    String? senderName = senderInfo?.getReadableName();
 
     return GestureDetector(
       child: Container(
@@ -431,14 +438,14 @@ class ConversationListItemState extends State<ConversationListItem> {
                               Row(children: [
                                 _getMessageStatusIcon(),
                                 hasDraft?const Text("[草稿]", style: TextStyle(fontSize: 12.0, color: Colors.red),):Container(),
-                                Text(
-                                  hasDraft?widget.conversationInfo.draft!:'$digest',
+                                Expanded(child: Text(
+                                  hasDraft?widget.conversationInfo.draft!:(senderName == null ? '$digest' : '$senderName: $digest'),
                                   style: const TextStyle(
                                       fontSize: 12.0,
                                       color: Color(0xffaaaaaa)),
                                   maxLines: 1,
-                                  softWrap: true,
-                                ),
+                                  overflow: TextOverflow.ellipsis,
+                                )),
                               ],),
                             ],
                           ))),
