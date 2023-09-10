@@ -1265,6 +1265,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String memberExtra = call.argument("memberExtra");
         List<String> groupMembers = call.argument("groupMembers");
         List<Integer> notifyLines = call.argument("notifyLines");
+        if(notifyLines == null) {
+            notifyLines = new ArrayList<>();
+        }
         Map notifyContent = call.argument("notifyContent");
         MessageContent messageContent = messageContentFromMaps(notifyContent);
         ChatManager.Instance().createGroup(groupId, groupName, groupPortrait, GroupInfo.GroupType.type(groupType), groupExtra, groupMembers, memberExtra, notifyLines, messageContent, new GeneralStringCallback(requestId));
