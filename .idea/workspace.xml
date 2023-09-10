@@ -5,22 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/example/assets/images/receive_voice_0.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/receive_voice_1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/receive_voice_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/red_dot.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/send_voice_0.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/send_voice_1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/assets/images/send_voice_2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/lib/messages/video_player_view.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/assets/images/file_type/txt.png" beforeDir="false" afterPath="$PROJECT_DIR$/example/assets/images/file_type/text.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Podfile.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/messages/cell_builder/file_cell_builder.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/file_cell_builder.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/messages/cell_builder/portrait_cell_builder.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/portrait_cell_builder.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/messages/cell_builder/voice_cell_builder.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/cell_builder/voice_cell_builder.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android_client_aars/client-release.aar" beforeDir="false" afterPath="$PROJECT_DIR$/android_client_aars/client-release.aar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.yaml" afterDir="false" />
     </list>

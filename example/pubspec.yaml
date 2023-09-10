@@ -50,8 +50,6 @@ dependencies:
   badges: ^3.0.3
   intl: ^0.18.0
   file_picker: ^5.3.4
-  extended_text_library: ^11.0.2
-  extended_text_field: ^12.0.1
   flutter_sound: ^9.2.13
   path_provider: ^2.1.1
   permission_handler: ^10.4.3
