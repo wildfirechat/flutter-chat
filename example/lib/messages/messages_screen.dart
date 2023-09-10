@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:event_bus/event_bus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart' show Level, Logger;
+import 'package:flutter_sound/flutter_sound.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image/image.dart' as img;
 import 'package:imclient/imclient.dart';
@@ -21,10 +23,13 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:rtckit/rtckit.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:wfc_example/messages/cell_builder/voice_cell_builder.dart';
 import 'package:wfc_example/messages/conversation_settings.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import 'package:wfc_example/messages/message_appbar_title.dart';
 import 'package:wfc_example/messages/picture_overview.dart';
+import 'package:wfc_example/messages/video_player_view.dart';
 
 import '../contact/contact_select_page.dart';
 import 'message_cell.dart';
@@ -69,6 +74,8 @@ class _State extends State<MessagesScreen> {
 
   late MessageInputBar _inputBar;
 
+  int _playingMessageId = 0;
+  final FlutterSoundPlayer _soundPlayer = FlutterSoundPlayer(logLevel: Level.error);
 
   @override
   void initState() {
@@ -299,6 +306,9 @@ class _State extends State<MessagesScreen> {
     _clearMessagesSubscription.cancel();
     _deleteMessagesSubscription.cancel();
     _stopTypingTimer();
+    if(_soundPlayer.isPlaying) {
+      _soundPlayer.stopPlayer();
+    }
   }
 
   void _startTypingTimer () {
@@ -477,7 +487,6 @@ class _State extends State<MessagesScreen> {
   }
 
   void onTapedCell(MessageModel model) {
-    debugPrint("on taped cell");
     if(model.message.content is ImageMessageContent) {
       Imclient.getMessages(widget.conversation, model.message.messageId!+1, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value1) {
         Imclient.getMessages(widget.conversation, model.message.messageId!, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value2) {
@@ -493,7 +502,7 @@ class _State extends State<MessagesScreen> {
           }
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PictureOverview(list, defaultIndex: index, pageToEnd: (fromIndex, tail){
+            MaterialPageRoute(builder: (context) => PictureOverview(list, defaultIndex: index, pageToEnd: (fromIndex, tail) {
               if(tail) {
                 Imclient.getMessages(widget.conversation, fromIndex, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
                   if(value.isNotEmpty) {
@@ -511,7 +520,63 @@ class _State extends State<MessagesScreen> {
           );
         });
       });
+    } else if(model.message.content is VideoMessageContent) {
+      VideoMessageContent videoContent = model.message.content as VideoMessageContent;
+      Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => VideoPlayerView(videoContent.remoteUrl!)));
+    } else if(model.message.content is FileMessageContent) {
+      FileMessageContent fileContent = model.message.content as FileMessageContent;
+      canLaunchUrl(Uri.parse(fileContent.remoteUrl!)).then((value) {
+        if(value) {
+          launchUrl(Uri.parse(fileContent.remoteUrl!));
+        } else {
+          Fluttertoast.showToast(msg: '无法打开');
+        }
+      });
+    } else if(model.message.content is SoundMessageContent) {
+      if(_playingMessageId == model.message.messageId!) {
+        stopPlayVoiceMessage(model);
+      } else {
+        if(_playingMessageId > 0) {
+          for (var value in models) {
+            if(value.message.messageId! == _playingMessageId) {
+              stopPlayVoiceMessage(model);
+              break;
+            }
+          }
+        }
+
+        startPlayVoiceMessage(model);
+      }
     }
+  }
+
+  void stopPlayVoiceMessage(MessageModel model) {
+    if(_soundPlayer.isPlaying) {
+      _soundPlayer.stopPlayer();
+    }
+    _eventBus.fire(
+        VoicePlayStatusChangedEvent(model.message.messageId!, false));
+    _playingMessageId = 0;
+  }
+
+  void startPlayVoiceMessage(MessageModel model) {
+    SoundMessageContent soundContent = model.message
+        .content as SoundMessageContent;
+    if (model.message.direction ==
+        MessageDirection.MessageDirection_Receive &&
+        model.message.status == MessageStatus.Message_Status_Readed) {
+      Imclient.updateMessageStatus(model.message.messageId!, MessageStatus.Message_Status_Played);
+      model.message.status = MessageStatus.Message_Status_Played;
+    }
+    _soundPlayer.openPlayer();
+    _soundPlayer.startPlayer(fromURI: soundContent.remoteUrl!, whenFinished: () {
+      stopPlayVoiceMessage(model);
+    });
+    _eventBus.fire(
+        VoicePlayStatusChangedEvent(model.message.messageId!, true));
+    _playingMessageId = model.message.messageId!;
   }
 
   void onDoubleTapedCell(MessageModel model) {

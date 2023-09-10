@@ -37,7 +37,7 @@ class FileCellBuilder extends PortraitCellBuilder {
             sizeText,
           ],
         ),
-        image,
+        SizedBox(width: 32, height: 32, child: image,),
         padding,
       ],
     );
