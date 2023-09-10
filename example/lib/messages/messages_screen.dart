@@ -24,6 +24,7 @@ import 'package:rtckit/rtckit.dart';
 import 'package:wfc_example/messages/conversation_settings.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import 'package:wfc_example/messages/message_appbar_title.dart';
+import 'package:wfc_example/messages/picture_overview.dart';
 
 import '../contact/contact_select_page.dart';
 import 'message_cell.dart';
@@ -60,6 +61,7 @@ class _State extends State<MessagesScreen> {
 
   GlobalKey<MessageTitleState> titleGlobalKey = GlobalKey();
   GlobalKey<MessageInputBarState> _inputBarGlobalKey = GlobalKey();
+  GlobalKey<PictureOverviewState> _pictureOverviewKey = GlobalKey();
 
   Timer? _typingTimer;
   final Map<String, int> _typingUserTime = {};
@@ -476,6 +478,40 @@ class _State extends State<MessagesScreen> {
 
   void onTapedCell(MessageModel model) {
     debugPrint("on taped cell");
+    if(model.message.content is ImageMessageContent) {
+      Imclient.getMessages(widget.conversation, model.message.messageId!+1, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value1) {
+        Imclient.getMessages(widget.conversation, model.message.messageId!, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value2) {
+          List<Message> list = [];
+          list.addAll(value2);
+          list.addAll(value1);
+          int index = 0;
+          for(int i = 0; i < list.length; i++) {
+            if(list[i].messageId == model.message.messageId) {
+              index = i;
+              break;
+            }
+          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => PictureOverview(list, defaultIndex: index, pageToEnd: (fromIndex, tail){
+              if(tail) {
+                Imclient.getMessages(widget.conversation, fromIndex, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
+                  if(value.isNotEmpty) {
+                    _pictureOverviewKey.currentState!.onLoadMore(value, false);
+                  }
+                });
+              } else {
+                Imclient.getMessages(widget.conversation, fromIndex, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
+                  if(value.isNotEmpty) {
+                    _pictureOverviewKey.currentState!.onLoadMore(value, true);
+                  }
+                });
+              }
+            }, key: _pictureOverviewKey,)),
+          );
+        });
+      });
+    }
   }
 
   void onDoubleTapedCell(MessageModel model) {
