@@ -173,16 +173,20 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   }
 
   Widget getUnplayed() {
-    if(model.message.direction == MessageDirection.MessageDirection_Receive && model.message.status == MessageStatus.Message_Status_Readed && model.message.content is SoundMessageContent) {
-      return Container(
-        margin: const EdgeInsets.only(left: 8),
-        width: 8,
-        height: 8,
-        decoration: const BoxDecoration(
-            color: Colors.red,
-            borderRadius: BorderRadius.all(Radius.circular(8))
-        ),
-      );
+    if(model.message.content is SoundMessageContent) {
+      if (model.message.direction ==
+          MessageDirection.MessageDirection_Receive &&
+          model.message.status == MessageStatus.Message_Status_Readed) {
+        return Container(
+          margin: const EdgeInsets.fromLTRB(8, 0, 0, 8),
+          width: 8,
+          height: 8,
+          decoration: const BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.all(Radius.circular(8))
+          ),
+        );
+      }
     }
     return Container();
   }
