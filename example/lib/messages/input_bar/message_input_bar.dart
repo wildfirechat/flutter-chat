@@ -106,7 +106,7 @@ class MessageInputBarState extends State<MessageInputBar> {
               ),
               widget._chatInputBarStatus == ChatInputBarStatus.emojiStatus ? IconButton(icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize,), onPressed: _onKeyboardButton) : IconButton(icon: Image.asset('assets/images/input/chat_input_bar_emoji.png', width: iconSize, height: iconSize,), onPressed: _onEmojiButton),
               _textEditingController.value.text.isNotEmpty && widget._chatInputBarStatus != ChatInputBarStatus.recordStatus && widget._chatInputBarStatus != ChatInputBarStatus.pluginStatus?
-              IconButton(icon: Image.asset('assets/images/input/chat_input_bar_send.png', width: iconSize, height: iconSize,), onPressed: _onSendButton) :
+              ElevatedButton(onPressed: _onSendButton, child: const Text("发送"),) :
               IconButton(icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize,), onPressed: _onPluginButton),
             ],
           ),
