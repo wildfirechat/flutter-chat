@@ -811,7 +811,7 @@ class ImclientPlatform extends PlatformInterface {
     return conversationInfo;
   }
 
-  List<ConversationSearchInfo> _convertProtoConversationSearchInfos(List<dynamic> maps) {
+  List<ConversationSearchInfo> _convertProtoConversationSearchInfos(List<dynamic> maps, String? keyword) {
     if (maps.isEmpty) {
       return [];
     }
@@ -819,7 +819,9 @@ class ImclientPlatform extends PlatformInterface {
     List<ConversationSearchInfo> infos = [];
     for (int i = 0; i < maps.length; i++) {
       var element = maps[i];
-      infos.add(_convertProtoConversationSearchInfo(element));
+      var info = _convertProtoConversationSearchInfo(element);
+      info.keyword = keyword;
+      infos.add(info);
     }
 
     return infos;
@@ -1347,7 +1349,7 @@ class ImclientPlatform extends PlatformInterface {
 
     List<dynamic> datas = await methodChannel.invokeMethod('searchConversation',
         {'keyword': keyword, 'types': itypes, 'lines': lines});
-    List<ConversationSearchInfo> infos = _convertProtoConversationSearchInfos(datas);
+    List<ConversationSearchInfo> infos = _convertProtoConversationSearchInfos(datas, keyword);
     return infos;
   }
 
