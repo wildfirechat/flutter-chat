@@ -6,9 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android_client_aars/client-release.aar" beforeDir="false" afterPath="$PROJECT_DIR$/android_client_aars/client-release.aar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/assets/images/input/chat_input_bar_send.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/input_bar/message_input_bar.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/pubspec.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,7 +106,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart</url>
-          <line>1476</line>
+          <line>1478</line>
           <option name="timeStamp" value="28" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
