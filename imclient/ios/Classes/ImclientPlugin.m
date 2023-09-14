@@ -1748,7 +1748,9 @@ ImclientPlugin *gIMClientInstance;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onDeleteMessage:) name:kDeleteMessages object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onReceiveMessage:) name:kReceiveMessages object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onMessageReaded:) name:kMessageReaded object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onMessageUpdated:) name:kMessageUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onMessageDelivered:) name:kMessageDelivered object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSendingMessageStatusUpdated:) name:kSendingMessageStatusUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onUserOnlineStateUpdated:) name:kUserOnlineStateUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSecretChatStateChanged:) name:kSecretChatStateUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSecretMessageStartBurning:) name:kSecretMessageStartBurning object:nil];
@@ -1783,7 +1785,6 @@ ImclientPlugin *gIMClientInstance;
         [self.channel invokeMethod:@"onReceiveMessage" arguments:@{@"messages":[msgs subarrayWithRange:NSMakeRange(0, subCount)], @"hasMore":@(more)}];
         msgs = [msgs subarrayWithRange:NSMakeRange(subCount, msgs.count - subCount)];
     }
-    
 }
 
 - (void)onMessageReaded:(NSNotification *)notification {
@@ -1794,6 +1795,23 @@ ImclientPlugin *gIMClientInstance;
 - (void)onMessageDelivered:(NSNotification *)notification {
     NSArray<WFCCDeliveryReport *> *delivereds = notification.object;
     [self.channel invokeMethod:@"onMessageDelivered" arguments:@{@"delivereds":[self convertModelList:delivereds]}];
+}
+
+- (void)onMessageUpdated:(NSNotification *)notification {
+    [self.channel invokeMethod:@"onMessageUpdated" arguments:@{@"messageId":notification.object}];
+}
+
+- (void)onSendingMessageStatusUpdated:(NSNotification *)notification {
+    int status = [notification.userInfo[@"status"] intValue];
+    if(status == Message_Status_Sending) {
+        WFCCMessage *message = notification.userInfo[@"message"];
+        [self.channel invokeMethod:@"onSendMessageStart" arguments:@{@"message":[message toJsonObj]}];
+    } else if(status == Message_Status_Sent) {
+        [self.channel invokeMethod:@"onSendMessageSuccess" arguments:@{@"requestId":@(0), @"messageId":notification.object, @"messageUid":notification.userInfo[@"messageUid"], @"timestamp":notification.userInfo[@"timestamp"]}];
+    } else if(status == Message_Status_Send_Failure) {
+        WFCCMessage *message = notification.userInfo[@"message"];
+        [self.channel invokeMethod:@"onSendMessageFailure" arguments:@{@"requestId":@(0), @"messageId":@(message.messageId), @"errorCode":notification.userInfo[@"errorCode"]}];
+    }
 }
 
 - (void)onConferenceEvent:(NSString *)event {

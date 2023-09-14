@@ -304,6 +304,26 @@ class ImclientPlatform extends PlatformInterface {
           }
           _eventBus.fire(MessageReadedEvent(reports));
           break;
+        case 'onMessageUpdated':
+          Map<dynamic, dynamic> args = call.arguments;
+          int messageId = args['messageId'];
+          _eventBus.fire(MessageUpdatedEvent(messageId));
+          break;
+        case 'onSendMessageStart':
+          Map<dynamic, dynamic> args = call.arguments;
+          Map<dynamic, dynamic> message = args['message'];
+          Message? msg = _convertProtoMessage(message);
+          if(msg != null) {
+            Message? msg2 = _sendingMessages[msg.messageId!];
+            if(msg2 != null) {
+              _eventBus.fire(SendMessageStartEvent(msg2));
+            } else {
+              _sendingMessages[msg.messageId!] = msg;
+              msg.status = MessageStatus.Message_Status_Sent;
+              _eventBus.fire(SendMessageStartEvent(msg));
+            }
+          }
+          break;
         case 'onConferenceEvent':
           break;
         case 'onGroupInfoUpdated':
@@ -417,14 +437,17 @@ class ImclientPlatform extends PlatformInterface {
               message.serverTime = timestamp;
               message.status = MessageStatus.Message_Status_Sent;
               _sendingMessages.remove(messageId);
+
+              if(requestId > 0) {
+                var callback = _sendMessageSuccessCallbackMap[requestId];
+                if (callback != null) {
+                  callback(messageUid, timestamp);
+                }
+                _removeSendMessageCallback(requestId);
+              }
             }
           }
 
-          var callback = _sendMessageSuccessCallbackMap[requestId];
-          if (callback != null) {
-            callback(messageUid, timestamp);
-          }
-          _removeSendMessageCallback(requestId);
           _eventBus.fire(SendMessageSuccessEvent(messageId, messageUid, timestamp));
           break;
         case 'onSendMediaMessageProgress':
@@ -469,14 +492,17 @@ class ImclientPlatform extends PlatformInterface {
             if(message != null) {
               message.status = MessageStatus.Message_Status_Send_Failure;
               _sendingMessages.remove(messageId);
+
+              if(requestId > 0) {
+                var callback = _errorCallbackMap[requestId];
+                if (callback != null) {
+                  callback(errorCode);
+                }
+                _removeAllOperationCallback(requestId);
+              }
             }
           }
 
-          var callback = _errorCallbackMap[requestId];
-          if (callback != null) {
-            callback(errorCode);
-          }
-          _removeAllOperationCallback(requestId);
           _eventBus.fire(SendMessageFailureEvent(messageId, errorCode));
           break;
         case 'onUploadMediaUploaded':
@@ -1804,9 +1830,8 @@ class ImclientPlatform extends PlatformInterface {
     Map<dynamic, dynamic> fm = await methodChannel.invokeMethod('sendMessage', args);
 
     Message message = _convertProtoMessage(fm)!;
-    if(message.messageId == null || message.messageId! > 0) {
+    if(message.messageId != null && message.messageId! > 0) {
       _sendingMessages[message.messageId!] = message;
-      _eventBus.fire(SendMessageStartEvent(message.messageId!));
     }
 
     return message;

@@ -192,6 +192,12 @@ class MessageReadedEvent {
   MessageReadedEvent(this.readedReports);
 }
 
+class MessageUpdatedEvent {
+  int messageId;
+
+  MessageUpdatedEvent(this.messageId);
+}
+
 class GroupInfoUpdatedEvent {
   List<GroupInfo> groupInfos;
 
@@ -257,9 +263,9 @@ class ClearConversationsUnreadEvent {
 class ClearFriendRequestUnreadEvent {}
 
 class SendMessageStartEvent {
-  int messageId;
+  Message message;
 
-  SendMessageStartEvent(this.messageId);
+  SendMessageStartEvent(this.message);
 }
 
 class SendMessageSuccessEvent {
