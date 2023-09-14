@@ -51,6 +51,7 @@ class _State extends State<MessagesScreen> {
   late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
   late StreamSubscription<ClearMessagesEvent> _clearMessagesSubscription;
   late StreamSubscription<DeleteMessageEvent> _deleteMessagesSubscription;
+  late StreamSubscription<SendMessageStartEvent> _startSendMessageSubscription;
 
   bool isLoading = false;
 
@@ -112,6 +113,13 @@ class _State extends State<MessagesScreen> {
           });
           break;
         }
+      }
+    });
+    _startSendMessageSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
+      if(event.message.conversation == widget.conversation) {
+        setState(() {
+          _appendMessage([event.message], front: true);
+        });
       }
     });
 
@@ -292,10 +300,6 @@ class _State extends State<MessagesScreen> {
 
     }, errorCallback: (int errorCode) {
 
-    }).then((message) {
-      if(message.messageId! > 0) {
-        _appendMessage([message], front: true);
-      }
     });
   }
 
@@ -305,6 +309,7 @@ class _State extends State<MessagesScreen> {
     _receiveMessageSubscription.cancel();
     _clearMessagesSubscription.cancel();
     _deleteMessagesSubscription.cancel();
+    _startSendMessageSubscription.cancel();
     _stopTypingTimer();
     if(_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
@@ -331,6 +336,10 @@ class _State extends State<MessagesScreen> {
   }
 
   bool _updateTypingStatus() {
+    if(!mounted) {
+      return false;
+    }
+
     int now = DateTime.now().millisecondsSinceEpoch;
     if(widget.conversation.conversationType == ConversationType.Single) {
       int? time = _typingUserTime[widget.conversation.target];
@@ -373,10 +382,14 @@ class _State extends State<MessagesScreen> {
   }
 
   void _appendMessage(List<Message> messages, {bool front = false}) {
+    debugPrint('received ${messages.length} messages');
     setState(() {
       bool haveNewMsg = false;
       for (var element in messages) {
         if(element.conversation != widget.conversation) {
+          continue;
+        }
+        if(element.messageId == null || element.messageId == 0) {
           continue;
         }
 

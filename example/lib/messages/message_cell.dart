@@ -59,6 +59,7 @@ class MessageState extends State<MessageCell> {
   final EventBus _eventBus = Imclient.IMEventBus;
   late MessageCellBuilder _cellBuilder;
   late StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
+  late StreamSubscription<MessageUpdatedEvent> _updateMessageSubscription;
   bool disposed = false;
   @override
   void initState() {
@@ -71,6 +72,18 @@ class MessageState extends State<MessageCell> {
           if(newMsg != null) {
             setState(() {
               widget.model.message = newMsg;
+              _initCellBuilder();
+            });
+          }
+        });
+      }
+    });
+    _updateMessageSubscription = _eventBus.on<MessageUpdatedEvent>().listen((event) {
+      if(widget.model.message.messageId == event.messageId) {
+        Imclient.getMessage(event.messageId).then((msg) {
+          if (msg != null) {
+            setState(() {
+              widget.model.message = msg;
               _initCellBuilder();
             });
           }
@@ -107,6 +120,7 @@ class MessageState extends State<MessageCell> {
     super.dispose();
     disposed = true;
     _recallMessageSubscription.cancel();
+    _updateMessageSubscription.cancel();
     _cellBuilder.dispose();
   }
 

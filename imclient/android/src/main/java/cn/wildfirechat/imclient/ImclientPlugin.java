@@ -2341,8 +2341,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private static List<Map<String, Object>> convertUserInfoList(List<UserInfo> protoDatas) {
         List output = new ArrayList();
-        for (UserInfo protoData : protoDatas) {
-            output.add(convertUserInfo(protoData));
+        if(protoDatas != null) {
+            for (UserInfo protoData : protoDatas) {
+                output.add(convertUserInfo(protoData));
+            }
         }
         return output;
     }
@@ -2974,8 +2976,41 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                             //ignore traffic statistics
                             break;
 
-                        case "onSendPrepare":
-                        case "onSendSuccess":
+                        case "onMessageUpdate": {
+                            Message message = (Message) args[0];
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("messageId", message.messageId);
+                            callback2UI("onMessageUpdated", data);
+                        }
+                            break;
+
+                        case "onSendPrepare": {
+                            Message message = (Message) args[0];
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("message", convertMessage(message));
+                            callback2UI("onSendMessageStart", data);
+                        }
+                            break;
+                        case "onSendSuccess": {
+                            Message message = (Message) args[0];
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("requestId", 0);
+                            data.put("messageId", message.messageId);
+                            data.put("messageUid", message.messageUid);
+                            data.put("timestamp", message.serverTime);
+                            callback2UI("onSendMessageSuccess", data);
+                        }
+                            break;
+                        case "onSendFail": {
+                            Message message = (Message) args[0];
+                            int errorCode = (int) args[1];
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("requestId", 0);
+                            data.put("messageId", message.messageId);
+                            data.put("errorCode", errorCode);
+                            callback2UI("onSendMessageFailure", data);
+                        }
+                            break;
                         case "onConversationTopUpdate":
                         case "onConversationSilentUpdate":
                         case "onClearMessage":
