@@ -104,6 +104,7 @@ class _MyAppState extends State<MyApp> {
       print(onlineInfos);
     });
 
+    Imclient.startLog();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString("userId") != null && prefs.getString("token") != null) {
       Imclient.connect(

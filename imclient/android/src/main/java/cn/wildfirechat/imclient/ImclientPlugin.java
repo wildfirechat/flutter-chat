@@ -158,17 +158,6 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         }
         isWfcIMClientInitialized = true;
         ChatManager.init(flutterPluginBinding.getApplicationContext(), null);
-        if (!this.isWfcUIKitEnable()) {
-            ChatManager chatManager = ChatManager.Instance();
-            try {
-                chatManager.startLog();
-            } catch (NotInitializedExecption notInitializedExecption) {
-                notInitializedExecption.printStackTrace();
-            }
-        } else {
-            // do nothing, 由 uikit 层去负责初始化
-        }
-
         addWfcListeners();
 
         ProcessLifecycleOwner.get().getLifecycle().addObserver(new LifecycleObserver() {
@@ -236,7 +225,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void initProto(@NonNull MethodCall call, @NonNull Result result) {
-
+        ChatManager.Instance().setSendLogCommand("*#marslog#");
     }
 
     private void isLogined(@NonNull MethodCall call, @NonNull Result result) {
