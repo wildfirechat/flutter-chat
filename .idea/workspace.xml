@@ -4,7 +4,17 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="" />
+    <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Podfile.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentclient/android/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/android/build.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentclient/android/src/main/java/cn/wildfirechat/momentclient/MomentclientPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/android/src/main/java/cn/wildfirechat/momentclient/MomentclientPlugin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/RtckitPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/RtckitPlugin.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -112,11 +122,6 @@
           <option name="timeStamp" value="64" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart</url>
-          <line>133</line>
-          <option name="timeStamp" value="72" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
           <line>299</line>
           <option name="timeStamp" value="77" />
@@ -135,11 +140,6 @@
           <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
           <line>303</line>
           <option name="timeStamp" value="103" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart</url>
-          <line>114</line>
-          <option name="timeStamp" value="114" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart</url>
