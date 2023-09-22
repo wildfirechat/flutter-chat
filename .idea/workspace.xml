@@ -4,52 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/momentclient/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/.metadata" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/CHANGELOG.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/LICENSE" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/analysis_options.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/android/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/android/build.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/android/settings.gradle" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/android/src/main/AndroidManifest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/android/src/main/java/cn/wildfirechat/momentclient/MomentclientPlugin.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/android/src/test/java/cn/wildfirechat/momentclient/MomentclientPluginTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/Assets/.gitkeep" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/Classes/MomentclientPlugin.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/Classes/MomentclientPlugin.m" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/Info.plist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64/WFMomentClient.framework/Headers/WFMClientJsonClient.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64/WFMomentClient.framework/Info.plist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64/WFMomentClient.framework/Modules/module.modulemap" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64/WFMomentClient.framework/WFMomentClient" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64_x86_64-simulator/WFMomentClient.framework/Headers/WFMClientJsonClient.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64_x86_64-simulator/WFMomentClient.framework/Info.plist" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64_x86_64-simulator/WFMomentClient.framework/Modules/module.modulemap" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64_x86_64-simulator/WFMomentClient.framework/WFMomentClient" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64_x86_64-simulator/WFMomentClient.framework/_CodeSignature/CodeResources" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/ios/momentclient.podspec" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/lib/moment_comment_content.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/lib/moment_feed_content.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/lib/momentclient.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/momentclient/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/wfc_flutter_plugins.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/wfc_flutter_plugins.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Podfile.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/conversation_list_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/conversation_list_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/message/message_content.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/message/message_content.dart" afterDir="false" />
-    </list>
+    <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -153,7 +108,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>595</line>
+          <line>528</line>
           <option name="timeStamp" value="64" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
@@ -163,53 +118,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>305</line>
+          <line>299</line>
           <option name="timeStamp" value="77" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>307</line>
-          <option name="timeStamp" value="78" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>309</line>
-          <option name="timeStamp" value="79" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>317</line>
-          <option name="timeStamp" value="80" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>326</line>
-          <option name="timeStamp" value="81" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>316</line>
-          <option name="timeStamp" value="84" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>312</line>
-          <option name="timeStamp" value="87" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>314</line>
-          <option name="timeStamp" value="88" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>329</line>
-          <option name="timeStamp" value="89" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>331</line>
-          <option name="timeStamp" value="90" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart</url>
@@ -223,53 +133,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>365</line>
+          <line>303</line>
           <option name="timeStamp" value="103" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>367</line>
-          <option name="timeStamp" value="104" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>355</line>
-          <option name="timeStamp" value="105" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>356</line>
-          <option name="timeStamp" value="106" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>358</line>
-          <option name="timeStamp" value="108" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>361</line>
-          <option name="timeStamp" value="109" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>343</line>
-          <option name="timeStamp" value="110" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>351</line>
-          <option name="timeStamp" value="111" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>344</line>
-          <option name="timeStamp" value="112" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>346</line>
-          <option name="timeStamp" value="113" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart</url>
@@ -280,11 +145,6 @@
           <url>file://$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart</url>
           <line>441</line>
           <option name="timeStamp" value="115" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>321</line>
-          <option name="timeStamp" value="117" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
