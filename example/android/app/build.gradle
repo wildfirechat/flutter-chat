@@ -57,6 +57,7 @@ android {
         // wfc kit start
         implementation fileTree(dir: "../../../android_uikit_aars", include: ["*.aar"])
         implementation fileTree(dir: "../../../android_client_aars", include: ["*.aar"])
+        implementation fileTree(dir: "../../../android_moment_aars", include: ["*.aar"])
 
         // wfc kit end
     }
