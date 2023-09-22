@@ -50,6 +50,8 @@ PODS:
     - Flutter
   - imclient (0.0.1):
     - Flutter
+  - momentclient (0.0.1):
+    - Flutter
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -84,6 +86,7 @@ DEPENDENCIES:
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - imclient (from `.symlinks/plugins/imclient/ios`)
+  - momentclient (from `.symlinks/plugins/momentclient/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - photo_manager (from `.symlinks/plugins/photo_manager/ios`)
@@ -118,6 +121,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/image_picker_ios/ios"
   imclient:
     :path: ".symlinks/plugins/imclient/ios"
+  momentclient:
+    :path: ".symlinks/plugins/momentclient/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
@@ -147,6 +152,7 @@ SPEC CHECKSUMS:
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   image_picker_ios: 4a8aadfbb6dc30ad5141a2ce3832af9214a705b5
   imclient: f6c1a8cc36cba50958f4d4b27d226c2da3b37ade
+  momentclient: 50a4ec20f7aa37f70bf2abf96f95d3e4d23426d6
   path_provider_foundation: 29f094ae23ebbca9d3d0cec13889cd9060c0e943
   permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
   photo_manager: 4f6810b7dfc4feb03b461ac1a70dacf91fba7604
