@@ -1872,6 +1872,16 @@ class ImclientPlatform extends PlatformInterface {
         {"requestId": requestId, "messageUid": messageUid});
   }
 
+  ///map转换为消息内容
+  MessageContent contentFromMap(Map<dynamic, dynamic> map) {
+    return decodeMessageContent(_convertProtoMessageContent(map));
+  }
+
+  ///map转换为消息
+  Message messageFromMap(Map<dynamic, dynamic> map) {
+    return _convertProtoMessage(map)!;
+  }
+
   ///上传媒体数据
   @override
   void uploadMedia(
