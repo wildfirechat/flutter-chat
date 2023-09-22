@@ -66,7 +66,6 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         try {
             Method method = this.getClass().getDeclaredMethod(call.method, MethodCall.class, Result.class);
             method.invoke(this, call, result);
-            return;
         } catch (NoSuchMethodException e) {
             result.notImplemented();
         } catch (InvocationTargetException e) {
