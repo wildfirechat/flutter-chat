@@ -762,6 +762,16 @@ class Imclient {
     ImclientPlatform.instance.recallMessage(messageUid, successCallback, errorCallback);
   }
 
+  ///map转换为消息内容
+  static MessageContent contentFromMap(Map<dynamic, dynamic> map) {
+    return ImclientPlatform.instance.contentFromMap(map);
+  }
+
+  ///map转换为消息
+  static Message messageFromMap(Map<dynamic, dynamic> map) {
+    return ImclientPlatform.instance.messageFromMap(map);
+  }
+
   ///上传媒体数据
   static void uploadMedia(
       String fileName,

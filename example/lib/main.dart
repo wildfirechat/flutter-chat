@@ -9,6 +9,7 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/read_report.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:imclient/model/user_online_state.dart';
+// import 'package:momentclient/momentclient.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -113,6 +114,12 @@ class _MyAppState extends State<MyApp> {
         isLogined = true;
       });
     }
+
+    // MomentClient.init((comment) {
+    //   debugPrint("receive comment");
+    // }, (feed){
+    //   debugPrint("receive feed");
+    // });
   }
 
   @override

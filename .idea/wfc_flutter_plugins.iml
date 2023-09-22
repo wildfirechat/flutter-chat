@@ -63,6 +63,12 @@
       <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/shared_preferences_foundation/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/shared_preferences_foundation/build" />
       <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/shared_preferences_foundation/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/momentclient/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/momentclient/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/momentclient/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/momentclient/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/momentclient/build" />
+      <excludeFolder url="file://$MODULE_DIR$/example/ios/.symlinks/plugins/momentclient/.pub" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
