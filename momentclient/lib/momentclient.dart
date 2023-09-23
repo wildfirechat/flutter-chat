@@ -131,8 +131,8 @@ class MomentClient {
   }
 
   ///获取评论或提醒消息
-  static Future<List<Message>> getMessages(bool isNew) async {
-    return MethodChannelMomentClient.instance.getMessages(isNew);
+  static Future<List<Message>> getMessages(int fromIndex, bool isNew) async {
+    return MethodChannelMomentClient.instance.getMessages(fromIndex, isNew);
   }
 
   ///获取朋友圈消息未读数量
@@ -146,7 +146,7 @@ class MomentClient {
   }
 
   ///为用户缓存数据
-  static Future<void> storeCache(List<Feed> feeds, String? userId) async {
+  static Future<void> storeCache(List<Feed> feeds, {String? userId}) async {
     return MethodChannelMomentClient.instance.storeCache(feeds, userId);
   }
 
@@ -156,13 +156,13 @@ class MomentClient {
   }
 
   ///获取朋友圈设置
-  static void getUserProfile(String userId, ProfilesSuccessCallback successCallback, FailureCallback failureCallback) {
+  static void getUserProfile(ProfilesSuccessCallback successCallback, FailureCallback failureCallback, {String? userId}) {
     MethodChannelMomentClient.instance.getUserProfile(userId, successCallback, failureCallback);
   }
 
   ///更新朋友圈设置
-  static void updateUserProfile(WFMUpdateUserProfileType updateProfileType, String? strValue, int? intValue, MomentVoidSuccessCallback successCallback, FailureCallback failureCallback) {
-    MethodChannelMomentClient.instance.updateUserProfile(updateProfileType, strValue, intValue, successCallback, failureCallback);
+  static void updateMyProfile(WFMUpdateUserProfileType updateProfileType, String? strValue, int? intValue, MomentVoidSuccessCallback successCallback, FailureCallback failureCallback) {
+    MethodChannelMomentClient.instance.updateMyProfile(updateProfileType, strValue, intValue, successCallback, failureCallback);
   }
 
   ///更新block和black的列表

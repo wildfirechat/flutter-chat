@@ -55,7 +55,7 @@
 
 - (void)getFeeds:(NSDictionary *)dict result:(FlutterResult)result {
     int requestId = [dict[@"requestId"] intValue];
-    int fromIndex = [dict[@"fromIndex"] intValue];
+    int64_t fromIndex = [dict[@"fromIndex"] longLongValue];
     int count = [dict[@"count"] intValue];
     NSString *user = dict[@"user"];
     
@@ -108,8 +108,9 @@
 }
 
 - (void)getMessages:(NSDictionary *)dict result:(FlutterResult)result {
+    int64_t fromIndex = [dict[@"fromIndex"] longLongValue];
     BOOL isNew = [dict[@"isNew"] boolValue];
-    NSArray<NSDictionary *> *messages = [[WFMClientJsonClient sharedService] getMessages:isNew];
+    NSArray<NSDictionary *> *messages = [[WFMClientJsonClient sharedService] getMessages:fromIndex isNew:isNew];
     result(messages);
 }
 
@@ -146,7 +147,7 @@
     }];
 }
 
-- (void)updateUserProfile:(NSDictionary *)dict result:(FlutterResult)result {
+- (void)updateMyProfile:(NSDictionary *)dict result:(FlutterResult)result {
     int requestId = [dict[@"requestId"] intValue];
     int updateProfileType = [dict[@"updateProfileType"] intValue];
     NSString *strValue = dict[@"strValue"];

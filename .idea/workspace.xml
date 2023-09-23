@@ -6,14 +6,17 @@
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Podfile.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android_moment_aars/momentclient-release.aar" beforeDir="false" afterPath="$PROJECT_DIR$/android_moment_aars/momentclient-release.aar" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/momentclient/android/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/android/build.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/momentclient/android/src/main/java/cn/wildfirechat/momentclient/MomentclientPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/android/src/main/java/cn/wildfirechat/momentclient/MomentclientPlugin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/RtckitPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/RtckitPlugin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentclient/ios/Classes/MomentclientPlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/ios/Classes/MomentclientPlugin.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64/WFMomentClient.framework/Headers/WFMClientJsonClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64/WFMomentClient.framework/Headers/WFMClientJsonClient.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64/WFMomentClient.framework/WFMomentClient" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64/WFMomentClient.framework/WFMomentClient" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64_x86_64-simulator/WFMomentClient.framework/Headers/WFMClientJsonClient.h" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64_x86_64-simulator/WFMomentClient.framework/Headers/WFMClientJsonClient.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64_x86_64-simulator/WFMomentClient.framework/WFMomentClient" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64_x86_64-simulator/WFMomentClient.framework/WFMomentClient" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64_x86_64-simulator/WFMomentClient.framework/_CodeSignature/CodeResources" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/ios/WFSDK/WFMomentClient.xcframework/ios-arm64_x86_64-simulator/WFMomentClient.framework/_CodeSignature/CodeResources" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentclient/lib/momentclient.dart" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/lib/momentclient.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,18 +121,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>528</line>
+          <line>529</line>
           <option name="timeStamp" value="64" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>299</line>
-          <option name="timeStamp" value="77" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart</url>
-          <line>58</line>
-          <option name="timeStamp" value="92" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart</url>
@@ -137,14 +130,14 @@
           <option name="timeStamp" value="93" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/messages_screen.dart</url>
-          <line>303</line>
-          <option name="timeStamp" value="103" />
+          <url>file://$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart</url>
+          <line>58</line>
+          <option name="timeStamp" value="118" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/momentclient/lib/momentclient_method_channel.dart</url>
-          <line>441</line>
-          <option name="timeStamp" value="115" />
+          <line>59</line>
+          <option name="timeStamp" value="119" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
