@@ -415,13 +415,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
-  momentclient:
-    dependency: "direct main"
-    description:
-      path: "../momentclient"
-      relative: true
-    source: path
-    version: "0.0.1"
   nested:
     dependency: transitive
     description:
@@ -939,5 +932,5 @@ packages:
     source: hosted
     version: "6.1.0"
 sdks:
-  dart: ">=3.0.6 <4.0.0"
+  dart: ">=3.0.0 <4.0.0"
   flutter: ">=3.10.0"
