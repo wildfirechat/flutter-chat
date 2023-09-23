@@ -6,7 +6,7 @@
 	<dict>
 		<key>Headers/WFMClientJsonClient.h</key>
 		<data>
-		EFaxRqP+6ijmYlO+YUT9NcpqBJo=
+		MCKY4y79YjBIUc1at9yoseF22gM=
 		</data>
 		<key>Headers/WFMComment.h</key>
 		<data>
@@ -38,7 +38,7 @@
 		</data>
 		<key>Headers/WFMomentService.h</key>
 		<data>
-		XwkHYWKhfH74Glf+E8xvr83BN1M=
+		dFIXdksGaCG5Cy8omqAlWqCQ5Ig=
 		</data>
 		<key>Info.plist</key>
 		<data>
@@ -55,11 +55,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			EFaxRqP+6ijmYlO+YUT9NcpqBJo=
+			MCKY4y79YjBIUc1at9yoseF22gM=
 			</data>
 			<key>hash2</key>
 			<data>
-			WTAFJXBU5nEOwiDJTrVxNJZVrqBMb4LtN3dAnCfJp8A=
+			/aJDMMvDWkGsygmbKq00nTecPzIUWYVY8tQiMCA5foU=
 			</data>
 		</dict>
 		<key>Headers/WFMComment.h</key>
@@ -143,11 +143,11 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			XwkHYWKhfH74Glf+E8xvr83BN1M=
+			dFIXdksGaCG5Cy8omqAlWqCQ5Ig=
 			</data>
 			<key>hash2</key>
 			<data>
-			X4rmIbX7cphm+GRtsc8dLWeN/C649CSvOEA8EjtcT30=
+			2ycpjRXCEOdtZQPx7tlsM3NV+IogY0N0sGGlmsrdZbM=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

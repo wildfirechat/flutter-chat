@@ -11,16 +11,18 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import cn.wildfirechat.imclient.ImclientPlugin;
 import cn.wildfirechat.message.Message;
 import cn.wildfirechat.message.core.MessagePayload;
 import cn.wildfirechat.model.Conversation;
@@ -90,8 +92,8 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
   }
 
   private void postFeed(@NonNull MethodCall call, @NonNull Result result) {
-    int requestId = call.argument("requestId");
-    int type = call.argument("type");
+    int requestId = intArg(call, "requestId");
+    int type = intArg(call, "type");
     String text = call.argument("text");
     ArrayList<String> toUsers = call.argument("toUsers");
     ArrayList<String> excludeUsers = call.argument("excludeUsers");
@@ -123,11 +125,11 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
         callbackBuilder(requestId).fail(i);
       }
     });
-    result.success(feed.toJsonObject());
+    result.success(jsonToMap(feed.toJsonObject()));
   }
   private void deleteFeed(@NonNull MethodCall call, @NonNull Result result) {
-    int requestId = call.argument("requestId");
-    long feedId = call.argument("feedId");
+    int requestId = intArg(call, "requestId");
+    long feedId = longArg(call, "feedId");
     MomentClient.getInstance().deleteFeed(null, feedId, new MomentClient.GeneralCallback() {
       @Override
       public void onSuccess() {
@@ -140,17 +142,18 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
       }
     });
   }
+
   private void getFeeds(@NonNull MethodCall call, @NonNull Result result) {
-    int requestId = call.argument("requestId");
-    long fromIndex = call.argument("fromIndex");
-    int count = call.argument("count");
+    int requestId = intArg(call, "requestId");
+    long fromIndex = longArg(call, "fromIndex");
+    int count = intArg(call, "count");
     String user = call.argument("user");
     MomentClient.getInstance().getFeeds(fromIndex, count, user, new MomentClient.GetFeedsCallback() {
       @Override
       public void onSuccess(List<Feed> list) {
-        List<JSONObject> out = new ArrayList<>();
+        List<Object> out = new ArrayList<>();
         for (Feed feed : list) {
-          out.add(feed.toJsonObject());
+          out.add(jsonToMap(feed.toJsonObject()));
         }
         callbackBuilder(requestId).put("feeds", out).success("getFeedsSuccess");
       }
@@ -162,12 +165,12 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
     });
   }
   private void getFeed(@NonNull MethodCall call, @NonNull Result result) {
-    int requestId = call.argument("requestId");
-    long feedId = call.argument("feedId");
+    int requestId = intArg(call, "requestId");
+    long feedId = longArg(call, "feedId");
     MomentClient.getInstance().getFeed(feedId, new MomentClient.GetFeedCallback() {
       @Override
       public void onSuccess(Feed feed) {
-        callbackBuilder(requestId).put("feed", feed.toJsonObject()).success("getFeedSuccess");
+        callbackBuilder(requestId).put("feed", jsonToMap(feed.toJsonObject())).success("getFeedSuccess");
       }
 
       @Override
@@ -177,10 +180,10 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
     });
   }
   private void postComment(@NonNull MethodCall call, @NonNull Result result) {
-    int requestId = call.argument("requestId");
-    int type = call.argument("type");
-    long feedId = Long.parseLong(call.argument("feedId"));
-    long replyCommentId = Long.parseLong(call.argument("replyCommentId"));
+    int requestId = intArg(call, "requestId");
+    int type = intArg(call, "type");
+    long feedId = longArg(call, "feedId");
+    long replyCommentId = longArg(call, "replyCommentId");
     String text = call.argument("text");
     String replyTo = call.argument("replyTo");
     String extra = call.argument("extra");
@@ -196,12 +199,12 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
         callbackBuilder(requestId).fail(i);
       }
     });
-    result.success(comment.toJsonObject());
+    result.success(jsonToMap(comment.toJsonObject()));
   }
   private void deleteComment(@NonNull MethodCall call, @NonNull Result result) {
-    int requestId = call.argument("requestId");
-    long feedId = call.argument("feedId");
-    long commentId = call.argument("commentId");
+    int requestId = intArg(call, "requestId");
+    long feedId = longArg(call, "feedId");
+    long commentId = longArg(call, "commentId");
     MomentClient.getInstance().deleteComment(null, feedId, commentId, new MomentClient.GeneralCallback() {
       @Override
       public void onSuccess() {
@@ -243,19 +246,19 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
   private void restoreCache(@NonNull MethodCall call, @NonNull Result result) {
     String userId = call.argument("callId");
     List<Feed> feeds = MomentClient.getInstance().restoreCache(userId);
-    List<JSONObject> js = new ArrayList<>();
+    List<Object> js = new ArrayList<>();
     for (Feed feed : feeds) {
-      js.add(feed.toJsonObject());
+      js.add(jsonToMap(feed.toJsonObject()));
     }
-    result.success(feeds);
+    result.success(js);
   }
   private void getUserProfile(@NonNull MethodCall call, @NonNull Result result) {
-    int requestId = call.argument("requestId");
+    int requestId = intArg(call, "requestId");
     String userId = call.argument("userId");
     MomentClient.getInstance().getUserProfile(userId, new MomentClient.UserProfileCallback() {
       @Override
       public void onSuccess(Profile profile) {
-        callbackBuilder(requestId).put("profile", profile.toJsonObject()).success("getProfileSuccess");
+        callbackBuilder(requestId).put("profile", jsonToMap(profile.toJsonObject())).success("getProfileSuccess");
       }
 
       @Override
@@ -265,11 +268,11 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
     });
   }
 
-  private void updateUserProfile(@NonNull MethodCall call, @NonNull Result result) {
-    int requestId = call.argument("requestId");
-    int updateProfileType = call.argument("updateProfileType");
+  private void updateMyProfile(@NonNull MethodCall call, @NonNull Result result) {
+    int requestId = intArg(call, "requestId");
+    int updateProfileType = intArg(call, "updateProfileType");
     String strValue = call.argument("strValue");
-    int intValue = call.argument("intValue");
+    int intValue = intArg(call, "intValue");
     MomentClient.getInstance().updateUserProfile(updateProfileType, strValue, intValue, new MomentClient.GeneralCallback() {
       @Override
       public void onSuccess() {
@@ -283,7 +286,7 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
     });
   }
   private void updateBlackOrBlockList(@NonNull MethodCall call, @NonNull Result result) {
-    int requestId = call.argument("requestId");
+    int requestId = intArg(call, "requestId");
     boolean isBlock = call.argument("isBlock");
     ArrayList<String> addList = call.argument("addList");
     ArrayList<String> removeList = call.argument("removeList");
@@ -375,7 +378,32 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
     });
 
   }
-  
+
+  private static Object jsonToMap(Object object) {
+    if(object instanceof JSONArray) {
+      JSONArray arr = (JSONArray) object;
+      List<Object> result = new ArrayList();
+      for (int i = 0; i < arr.length(); i++) {
+        Object o = arr.opt(i);
+        result.add(jsonToMap(o));
+      }
+      return result;
+    } else if(object instanceof JSONObject) {
+      JSONObject jsonObject = (JSONObject)object;
+      Map<String, Object> map = new HashMap<>();
+      Iterator<String> keys = jsonObject.keys();
+      while (keys.hasNext()) {
+        String key = keys.next();
+        Object value = jsonObject.opt(key);
+        Object map2 = jsonToMap(value);
+        map.put(key, map2);
+      }
+      return map;
+    } else {
+      return object;
+    }
+  }
+
   private static FeedEntry feedEntryFromMap(Map map) {
     FeedEntry entry = new FeedEntry();
     entry.mediaUrl = (String) map.get("m");
@@ -465,5 +493,54 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
       output.add(a);
     }
     return output;
+  }
+
+  private int intArg(MethodCall call, String key) {
+    Object object = call.argument(key);
+    if(object == null) {
+      return 0;
+    }
+    if(object instanceof Integer) {
+      return (Integer)object;
+    }
+    if(object instanceof Long) {
+      long l = (Long)object;
+      return (int)l;
+    }
+    if(object instanceof Float) {
+      float f = (Float)object;
+      return (int)f;
+    }
+    if(object instanceof Double) {
+      double d = (Double)object;
+      return (int)d;
+    }
+
+    return 0;
+  }
+
+  private long longArg(MethodCall call, String key) {
+    Object object = call.argument(key);
+    if(object == null) {
+      return 0;
+    }
+    if(object instanceof Integer) {
+      int i = (Integer)object;
+      return i;
+    }
+    if(object instanceof Long) {
+      long l = (Long)object;
+      return l;
+    }
+    if(object instanceof Float) {
+      float f = (Float)object;
+      return (long) f;
+    }
+    if(object instanceof Double) {
+      double d = (Double)object;
+      return (long)d;
+    }
+
+    return 0;
   }
 }

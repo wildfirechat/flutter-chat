@@ -269,8 +269,8 @@ class MethodChannelMomentClient extends PlatformInterface {
     methodChannel.invokeMethod('deleteComment', {'requestId':requestId, 'commentId':commentId, 'feedId':feedId});
   }
 
-  Future<List<Message>> getMessages(bool isNew) async {
-    List list = await methodChannel.invokeMethod('getMessages', {"isNew":isNew});
+  Future<List<Message>> getMessages(int fromIndex, bool isNew) async {
+    List list = await methodChannel.invokeMethod('getMessages', {"isNew":isNew, "fromIndex":fromIndex});
     List<Message> ms = [];
     for (var value in list) {
       if(value is Map) {
@@ -305,14 +305,14 @@ class MethodChannelMomentClient extends PlatformInterface {
     return _feedListFromMap(list);
   }
 
-  void getUserProfile(String userId, ProfilesSuccessCallback successCallback, FailureCallback failureCallback) {
+  void getUserProfile(String? userId, ProfilesSuccessCallback successCallback, FailureCallback failureCallback) {
     int requestId = _requestId++;
     _profilesSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = failureCallback;
     methodChannel.invokeMethod('getUserProfile', {'requestId':requestId, 'userId':userId});
   }
 
-  void updateUserProfile(WFMUpdateUserProfileType updateProfileType, String? strValue, int? intValue, MomentVoidSuccessCallback successCallback, FailureCallback failureCallback) {
+  void updateMyProfile(WFMUpdateUserProfileType updateProfileType, String? strValue, int? intValue, MomentVoidSuccessCallback successCallback, FailureCallback failureCallback) {
     int requestId = _requestId++;
     _voidSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = failureCallback;
@@ -323,7 +323,7 @@ class MethodChannelMomentClient extends PlatformInterface {
     if(intValue != null) {
       args['intValue'] = intValue;
     }
-    methodChannel.invokeMethod('updateUserProfile', args);
+    methodChannel.invokeMethod('updateMyProfile', args);
   }
 
   void updateBlackOrBlockList(bool isBlock, List<String>? addList, List<String>? removeList, MomentVoidSuccessCallback successCallback, FailureCallback failureCallback) {
@@ -363,7 +363,11 @@ class MethodChannelMomentClient extends PlatformInterface {
   Feed _feedFromMap(Map<dynamic, dynamic> map) {
     Feed feed = Feed();
     feed.feedId = map["feedId"];
-    feed.sender = map["sender"];
+    if(map["sender"] != null) {
+      feed.sender = map["sender"];
+    } else {
+      feed.sender = Imclient.currentUserId;
+    }
     feed.type = WFMContentType.values[map["type"]];
     feed.text = map["text"];
     if(map["medias"] != null) {
