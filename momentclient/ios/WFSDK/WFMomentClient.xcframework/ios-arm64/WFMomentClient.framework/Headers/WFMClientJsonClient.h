@@ -65,7 +65,7 @@ extern NSString *kClearUnreadComments;
                success:(void(^)(void))successBlock
                  error:(void(^)(int error_code))errorBlock;
 
-- (NSArray<NSDictionary *> *)getMessages:(BOOL)isNew;
+- (NSArray<NSDictionary *> *)getMessages:(long long)fromIndex isNew:(BOOL)isNew;
 
 - (int)getUnreadCount;
 - (void)clearUnreadStatus;
