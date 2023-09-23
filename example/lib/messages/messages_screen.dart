@@ -22,7 +22,6 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
-import 'package:momentclient/momentclient.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/messages/cell_builder/voice_cell_builder.dart';

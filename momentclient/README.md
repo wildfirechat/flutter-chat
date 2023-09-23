@@ -18,7 +18,8 @@ momentclient:
 ```
     implementation fileTree(dir: "../../../android_moment_aars", include: ["*.aar"])
 ```
-3. 在example项目中初始化imclient的地方，初始化朋友圈，代码如下:
+3. 在example目录下执行```flutter pub get```，如果有iOS平台，进入到```example/ios```，执行```pod install```。
+4. 在example项目中初始化imclient的地方，初始化朋友圈，代码如下:
 ```
   //初始化IM
   Imclient.init(...);
