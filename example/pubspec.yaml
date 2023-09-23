@@ -37,8 +37,8 @@ dependencies:
     path: ../rtckit/
 
 
-  momentclient:
-    path: ../momentclient/
+#  momentclient:
+#    path: ../momentclient/
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

@@ -114,12 +114,12 @@ class _MyAppState extends State<MyApp> {
         isLogined = true;
       });
     }
-
-    MomentClient.init((comment) {
-      debugPrint("receive comment");
-    }, (feed){
-      debugPrint("receive feed");
-    });
+    //
+    // MomentClient.init((comment) {
+    //   debugPrint("receive comment");
+    // }, (feed){
+    //   debugPrint("receive feed");
+    // });
   }
 
   @override
