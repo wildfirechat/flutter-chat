@@ -53,6 +53,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
                 Application application = (Application) context;
                 Config.ICE_SERVERS = null;
                 WfcUIKit.getWfcUIKit().init(application);
+                WfcUIKit.getWfcUIKit().setEnableNativeNotification(false);
                 setupWFCDirs(application);
                 break;
             } else {
