@@ -372,11 +372,7 @@ class ImclientPlatform extends PlatformInterface {
           break;
         case 'onFriendListUpdated':
           Map<dynamic, dynamic> args = call.arguments;
-          List<dynamic> friendIdList = args['friends'];
-          List<String> friends = [];
-          for (var element in friendIdList) {
-            friends.add(element);
-          }
+          List<String> friends = Tools.convertDynamicList(args['friends']);
           if (_friendListUpdatedCallback != null) {
             _friendListUpdatedCallback!(friends);
           }
@@ -384,7 +380,7 @@ class ImclientPlatform extends PlatformInterface {
           break;
         case 'onFriendRequestUpdated':
           Map<dynamic, dynamic> args = call.arguments;
-          final friendRequestList = (args['requests'] as List).cast<String>();
+          final friendRequestList = Tools.convertDynamicList(args['requests']);
           if (_friendRequestListUpdatedCallback != null) {
             _friendRequestListUpdatedCallback!(friendRequestList);
           }
@@ -769,7 +765,7 @@ class ImclientPlatform extends PlatformInterface {
     msg.conversation = _convertProtoConversation(map['conversation']);
     msg.fromUser = map['sender'];
     if(map['toUsers'] != null) {
-      msg.toUsers = (map['toUsers'] as List).cast<String>();
+      msg.toUsers = Tools.convertDynamicList(map['toUsers']);
     }
     msg.content =
         decodeMessageContent(_convertProtoMessageContent(map['content']));
@@ -938,7 +934,7 @@ class ImclientPlatform extends PlatformInterface {
     GroupSearchInfo groupSearchInfo = GroupSearchInfo();
     groupSearchInfo.groupInfo = await _convertProtoGroupInfo(map['groupInfo']);
     groupSearchInfo.marchType = GroupSearchResultType.values[map['marchType']];
-    groupSearchInfo.marchedMemberNames = map['marchedMemberNames'];
+    groupSearchInfo.marchedMemberNames = Tools.convertDynamicList(map['marchedMemberNames']);
 
     return groupSearchInfo;
   }
@@ -1235,7 +1231,7 @@ class ImclientPlatform extends PlatformInterface {
   static ChatroomMemberInfo _convertProtoChatroomMemberInfo(
       Map<dynamic, dynamic> map) {
     ChatroomMemberInfo chatroomInfo = ChatroomMemberInfo();
-    chatroomInfo.members = map['members'];
+    chatroomInfo.members = Tools.convertDynamicList(map['members']);
     if (map['memberCount'] != null) {
       chatroomInfo.memberCount = map['memberCount'];
     }
