@@ -108,7 +108,8 @@ ImclientPlugin *gIMClientInstance;
 
 - (void)setDeviceToken:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *deviceToken = dict[@"deviceToken"];
-    [[WFCCNetworkService sharedInstance] setDeviceToken:deviceToken];
+    int pushType = [dict[@"pushType"] intValue];
+    [[WFCCNetworkService sharedInstance] setDeviceToken:deviceToken pushType:pushType];
     result(nil);
 }
 
@@ -1679,9 +1680,6 @@ ImclientPlugin *gIMClientInstance;
     result(@([[WFCCIMService sharedWFCIMService] isEnableUserOnlineState]));
 }
 
-+ (void)setDeviceToken:(NSString *)deviceToken {
-    [[WFCCNetworkService sharedInstance] setDeviceToken:deviceToken];
-}
 
 #pragma mark - tools
 - (void)callbackOperationStringSuccess:(int)requestId strValue:(NSString *)strValue  {
