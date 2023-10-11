@@ -8,6 +8,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/general_settings.dart';
+import 'package:wfc_example/settings/message_notification_settings.dart';
 
 import 'config.dart';
 
@@ -65,6 +66,11 @@ class SettingsTab extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => GeneralSettings()),
+          );
+        } else if(key == "message_notification") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MessageNotificationSettings()),
           );
         } else {
           Fluttertoast.showToast(msg: "方法没有实现");
