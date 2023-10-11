@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:imclient/model/conversation.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/discovery/chatroom_list.dart';
+import 'package:wfc_example/messages/messages_screen.dart';
+
+import 'channel_list.dart';
 
 class DiscoveryTab extends StatelessWidget {
   DiscoveryTab({Key? key}) : super(key: key);
@@ -40,6 +45,21 @@ class DiscoveryTab extends StatelessWidget {
           context,
           MaterialPageRoute(builder: (context) => ChatroomList()),
         );
+      } else if(key == 'robot') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => MessagesScreen(Conversation(conversationType: ConversationType.Single, target: 'FireRobot'))),
+        );
+      } else if(key == 'channel') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ChannelList()),
+        );
+      } else if(key == "devdocs") {
+        var url = 'https://docs.wildfirechat.cn';
+        canLaunch(url).then((value) {
+          launch(url);
+        });
       } else {
         Fluttertoast.showToast(msg: "方法没有实现");
         print("on tap item $index");

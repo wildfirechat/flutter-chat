@@ -1436,9 +1436,14 @@ ImclientPlugin *gIMClientInstance;
     }];
 }
 
-- (void)getListenedChannels:(NSDictionary *)dict result:(FlutterResult)result {
-    NSArray *channels = [[WFCCIMService sharedWFCIMService] getListenedChannels];
-    result(channels);
+- (void)getRemoteListenedChannels:(NSDictionary *)dict result:(FlutterResult)result {
+    int requestId = [dict[@"requestId"] intValue];
+    
+    [[WFCCIMService sharedWFCIMService] getRemoteListenedChannels:^(NSArray<NSString *> *channelIds) {
+        [self.channel invokeMethod:@"onOperationStringListSuccess" arguments:@{@"requestId":@(requestId), @"strings":channelIds}];
+    } error:^(int errorCode) {
+        [self callbackOperationFailure:requestId errorCode:errorCode];
+    }];
 }
 
 - (void)destroyChannel:(NSDictionary *)dict result:(FlutterResult)result {

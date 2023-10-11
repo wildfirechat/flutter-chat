@@ -3153,9 +3153,12 @@ class ImclientPlatform extends PlatformInterface {
 
   ///获取我订阅的频道
   @override
-  Future<List<String>?> getListenedChannels() async {
-    return Tools.convertDynamicList(
-        await methodChannel.invokeMethod("getListenedChannels"));
+  void getRemoteListenedChannels(OperationSuccessStringListCallback successCallback, OperationFailureCallback errorCallback) async {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    methodChannel.invokeMethod("getRemoteListenedChannels",
+        {"requestId": requestId});
   }
 
   ///销毁频道

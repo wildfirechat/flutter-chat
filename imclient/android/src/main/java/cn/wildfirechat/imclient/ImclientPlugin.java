@@ -63,6 +63,7 @@ import cn.wildfirechat.model.UserOnlineState;
 import cn.wildfirechat.remote.ChatManager;
 import cn.wildfirechat.remote.GeneralCallback;
 import cn.wildfirechat.remote.GeneralCallback2;
+import cn.wildfirechat.remote.GeneralCallback3;
 import cn.wildfirechat.remote.GetAuthorizedMediaUrlCallback;
 import cn.wildfirechat.remote.GetChatRoomInfoCallback;
 import cn.wildfirechat.remote.GetChatRoomMembersInfoCallback;
@@ -1790,8 +1791,19 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().listenChannel(channelId, listen, new GeneralVoidCallback(requestId));
     }
 
-    private void getListenedChannels(@NonNull MethodCall call, @NonNull Result result) {
-        result.success(ChatManager.Instance().getListenedChannels());
+    private void getRemoteListenedChannels(@NonNull MethodCall call, @NonNull Result result) {
+        int requestId = call.argument("requestId");
+        ChatManager.Instance().getRemoteListenedChannels(new GeneralCallback3() {
+            @Override
+            public void onSuccess(List<String> list) {
+                callbackBuilder(requestId).put("strings", list).success("onOperationStringListSuccess");
+            }
+
+            @Override
+            public void onFail(int i) {
+                callbackFailure(requestId, i);
+            }
+        });
     }
 
     private void destroyChannel(@NonNull MethodCall call, @NonNull Result result) {
