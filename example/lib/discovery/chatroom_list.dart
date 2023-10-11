@@ -3,7 +3,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/chatroom_info.dart';
 import 'package:imclient/model/conversation.dart';
 
-import 'messages/messages_screen.dart';
+import '../messages/messages_screen.dart';
 
 class ChatroomList extends StatelessWidget {
   final List modelList = ['chatroom1', 'chatroom2', 'chatroom3'];

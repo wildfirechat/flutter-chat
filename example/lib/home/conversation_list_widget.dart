@@ -14,8 +14,8 @@ import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/utilities.dart';
 
-import 'cache.dart';
-import 'messages/messages_screen.dart';
+import '../cache.dart';
+import '../messages/messages_screen.dart';
 
 // ignore: must_be_immutable
 class ConversationListWidget extends StatefulWidget {

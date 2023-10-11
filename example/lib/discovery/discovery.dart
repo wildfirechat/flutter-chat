@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:wfc_example/chatroom_list.dart';
+import 'package:wfc_example/discovery/chatroom_list.dart';
 
 class DiscoveryTab extends StatelessWidget {
   DiscoveryTab({Key? key}) : super(key: key);
