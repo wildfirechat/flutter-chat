@@ -15,7 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
 import 'default_portrait_provider.dart';
-import 'home.dart';
+import 'home/home.dart';
 import 'login_screen.dart';
 
 void main() {

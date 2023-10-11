@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_server.dart';
 import 'config.dart';
-import 'home.dart';
+import 'home/home.dart';
 
 class LoginScreen extends StatefulWidget {
   @override

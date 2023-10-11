@@ -12,12 +12,12 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/contact/contact_select_page.dart';
 import 'package:wfc_example/contact/search_user.dart';
-import 'package:wfc_example/settings.dart';
+import 'package:wfc_example/settings/settings.dart';
 
-import 'contact/contact_list_widget.dart';
+import '../contact/contact_list_widget.dart';
 import 'conversation_list_widget.dart';
-import 'discovery.dart';
-import 'messages/messages_screen.dart';
+import '../discovery/discovery.dart';
+import '../messages/messages_screen.dart';
 
 class HomeTabBar extends StatefulWidget {
   const HomeTabBar({Key? key}) : super(key: key);

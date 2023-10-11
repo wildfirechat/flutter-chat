@@ -7,10 +7,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/user_info.dart';
-import 'package:wfc_example/general_settings.dart';
+import 'package:wfc_example/settings/general_settings.dart';
 import 'package:wfc_example/settings/message_notification_settings.dart';
 
-import 'config.dart';
+import '../config.dart';
 
 class SettingsTab extends StatelessWidget {
 
