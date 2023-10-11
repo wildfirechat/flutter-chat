@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:event_bus/event_bus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:imclient/message/notification/tip_notificiation_content.dart';
 import 'package:logger/logger.dart' show Level, Logger;
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -149,6 +150,20 @@ class _State extends State<MessagesScreen> {
           titleGlobalKey.currentState!.updateTitle(title);
         }
       });
+    } else if(widget.conversation.conversationType == ConversationType.Chatroom) {
+      Imclient.joinChatroom(widget.conversation.target, () {
+        Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
+          if(userInfo != null) {
+            TipNotificationContent tip = TipNotificationContent();
+            tip.tip = '欢迎 ${userInfo.displayName} 加入聊天室';
+            _sendMessage(tip);
+          }
+        });
+      }, (errorCode) {
+        Fluttertoast.showToast(msg: "网络错误！加入聊天室失败!");
+        Navigator.pop(context);
+      });
+      noMoreLocalHistoryMsg = true;
     }
 
     Imclient.getConversationInfo(widget.conversation).then((conversationInfo) {
@@ -313,6 +328,17 @@ class _State extends State<MessagesScreen> {
     _stopTypingTimer();
     if(_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
+    }
+    if(widget.conversation.conversationType == ConversationType.Chatroom) {
+      Imclient.quitChatroom(widget.conversation.target, () {
+        Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
+          if(userInfo != null) {
+            TipNotificationContent tip = TipNotificationContent();
+            tip.tip = '${userInfo.displayName} 离开了聊天室';
+            _sendMessage(tip);
+          }
+        });
+      }, (errorCode) { });
     }
   }
 
@@ -715,18 +741,22 @@ class _State extends State<MessagesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    List<Widget> actions = [];
+    if(widget.conversation.conversationType != ConversationType.Chatroom) {
+      actions = [
+        IconButton(onPressed: (){
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ConversationSettingPage(widget.conversation)),
+          );
+        }, icon: const Icon(Icons.more_horiz_rounded),)
+      ];
+    }
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 232, 232, 232),
       appBar: AppBar(
         title: MessageTitle(title, key: titleGlobalKey,),
-        actions: [
-          IconButton(onPressed: (){
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ConversationSettingPage(widget.conversation)),
-            );
-          }, icon: const Icon(Icons.more_horiz_rounded),)
-        ],
+        actions: actions,
       ),
       body: SafeArea(
         child: Column(
