@@ -3142,7 +3142,7 @@ class ImclientPlatform extends PlatformInterface {
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
     methodChannel.invokeMethod("listenChannel",
-        {"requestId": requestId, "channelId": channelId, "isListen": isListen});
+        {"requestId": requestId, "channelId": channelId, "listen": isListen});
   }
 
   ///获取我的频道
