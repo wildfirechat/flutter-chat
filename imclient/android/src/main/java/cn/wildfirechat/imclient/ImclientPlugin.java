@@ -1812,6 +1812,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().destoryChannel(channelId, new GeneralVoidCallback(requestId));
     }
 
+    private void getMyChannels(@NonNull MethodCall call, @NonNull Result result) {
+        result.success(ChatManager.Instance().getMyChannels());
+    }
+
     private void getOnlineInfos(@NonNull MethodCall call, @NonNull Result result) {
         List<PCOnlineInfo> list = ChatManager.Instance().getPCOnlineInfos();
         result.success(convertOnlineInfoList(list));

@@ -1456,6 +1456,11 @@ ImclientPlugin *gIMClientInstance;
     }];
 }
 
+- (void)getMyChannels:(NSDictionary *)dict result:(FlutterResult)result {
+    NSArray<NSString *> *myChannels = [[WFCCIMService sharedWFCIMService] getMyChannels];
+    result(myChannels);
+}
+
 - (void)getOnlineInfos:(NSDictionary *)dict result:(FlutterResult)result {
     NSArray<WFCCPCOnlineInfo *> *infos = [[WFCCIMService sharedWFCIMService] getPCOnlineInfos];
     result([self convertModelList:infos]);
