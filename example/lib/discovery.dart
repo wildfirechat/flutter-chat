@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:wfc_example/chatroom_list.dart';
 
 class DiscoveryTab extends StatelessWidget {
   DiscoveryTab({Key? key}) : super(key: key);
@@ -24,6 +25,7 @@ class DiscoveryTab extends StatelessWidget {
   Widget _buildRow(BuildContext context, int index) {
     Image image = Image.asset(modelList[index][0], width: 20.0, height: 20.0);
     String title = modelList[index][1];
+    String key = modelList[index][2];
     return GestureDetector(child: Column(children: [
       Container(margin: const EdgeInsets.fromLTRB(10, 10, 5, 10), height: 36, child: Row(children: [image, Expanded(child: Container(margin: EdgeInsets.only(left: 15), child: Text(title),))],),),
       Container(
@@ -33,8 +35,15 @@ class DiscoveryTab extends StatelessWidget {
       ),
     ],),
     onTap: () {
-      Fluttertoast.showToast(msg: "方法没有实现");
-      print("on tap item $index");
+      if(key == 'chatroom') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ChatroomList()),
+        );
+      } else {
+        Fluttertoast.showToast(msg: "方法没有实现");
+        print("on tap item $index");
+      }
     },);
   }
 
