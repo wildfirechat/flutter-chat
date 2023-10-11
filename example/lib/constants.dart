@@ -1,0 +1,29 @@
+
+//UserSettingScope
+  const int kUserSettingConversationSilent = 1;
+  const int kUserSettingGlobalSilent = 2;
+  const int kUserSettingConversationTop = 3;
+  const int kUserSettingHiddenNotificationDetail = 4;
+  const int kUserSettinGroupHideNickname = 5;
+  const int kUserSettingFavouriteGroup = 6;
+  const int kUserSettingConversationSync = 7;
+  const int kUserSettingMyChannels = 8;
+  const int kUserSettingListenedChannels = 9;
+  const int kUserSettingPCOnline = 10;
+  const int kUserSettingConversationReaded = 11;
+  const int kUserSettingWebOnline = 12;
+  const int kUserSettingDisableRecipt = 13;
+  const int kUserSettingFavouriteUser = 14;
+  const int kUserSettingMuteWhenPCOnline = 15;
+  const int kUserSettingLinesReaded = 16;
+  const int kUserSettingNoDisturbing = 17;
+  const int kUserSettingConversationClearMessage = 18;
+  const int kUserSettingConversationDraft = 19;
+  const int kUserSettingDisableSyncDraft = 20;
+  const int kUserSettingVoipSilent = 21;
+  const int kUserSettingPttReserved = 22;
+  const int kUserSettingCustomState = 23;
+  const int kUserSettingDisableSecretChat = 24;
+  const int kUserSettingPttSilent = 25;
+  const int kUserSettingGroupRemark = 26;
+  const int kUserSettingCustomBegin = 1000;
