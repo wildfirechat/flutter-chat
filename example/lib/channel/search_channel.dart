@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/user_info_widget.dart';
 
 import '../config.dart';
+import '../channel/channel_info_widget.dart';
 
-class SearchUserDelegate extends SearchDelegate<String> {
-  SearchUserDelegate() : super(searchFieldLabel: "请输入电话号码或者账户");
+class SearchChannelDelegate extends SearchDelegate<String> {
+  SearchChannelDelegate() : super(searchFieldLabel: "请输入频道名称");
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -35,18 +37,19 @@ class SearchUserDelegate extends SearchDelegate<String> {
     );
   }
 
-  Future<List<UserInfo>> searchUsersInServer() async {
+  Future<List<ChannelInfo>> searchChannelsInServer() async {
     if(query.isEmpty) {
       return [];
     }
 
-    List<UserInfo> us = [];
+    List<ChannelInfo> us = [];
     bool finish = false;
-    Imclient.searchUser(query, SearchUserType.SearchUserType_Name_Mobile.index, 0, (userInfos) {
-        us = userInfos!;
-        finish = true;
+
+    Imclient.searchChannel(query, (channelInfos) {
+      us = channelInfos;
+      finish = true;
     }, (errorCode) {
-        finish = true;
+      finish = true;
     });
 
     while(!finish) {
@@ -55,43 +58,45 @@ class SearchUserDelegate extends SearchDelegate<String> {
     return us;
   }
 
-  late List<UserInfo> searchedUsers;
+  late List<ChannelInfo> searchedChannels;
+
 
   Widget _buildRow(BuildContext context, int index) {
-    UserInfo userInfo = searchedUsers[index];
+    ChannelInfo channelInfo = searchedChannels[index];
     return GestureDetector(
       child: SizedBox(
         height: 48,
         child: Row(
           children: [
-            Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (userInfo.portrait == null || userInfo.portrait!.isEmpty)?Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0):Image.network(userInfo.portrait!, width: 40, height: 40,),),),
-            Text(userInfo.displayName!),
+            Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (channelInfo.portrait == null || channelInfo.portrait!.isEmpty)?Image.asset(Config.defaultChannelPortrait, width: 40.0, height: 40.0):Image.network(channelInfo.portrait!, width: 40, height: 40,),),),
+            Text(channelInfo.name!),
+            Expanded(child: Container()),
           ],
         ),
       ),
-      onTap: () => _toUserInfoView(context, userInfo),
+      onTap: () => _toChannelInfoView(context, channelInfo),
     );
   }
 
-  void _toUserInfoView(BuildContext context, UserInfo userInfo) {
+  void _toChannelInfoView(BuildContext context, ChannelInfo channelInfo) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => UserInfoWidget(userInfo.userId)),
+      MaterialPageRoute(builder: (context) => ChannelInfoWidget(channelInfo)),
     );
   }
   
   @override
   Widget buildResults(BuildContext context) {
-    return FutureBuilder<List<UserInfo>>(
-        future: searchUsersInServer(),
+    return FutureBuilder<List<ChannelInfo>>(
+        future: searchChannelsInServer(),
         builder: (context, snapshot) {
           if(snapshot.connectionState == ConnectionState.done) {
             if(snapshot.data!.isEmpty) {
-              return const Center(child: Text("没有找到呀，是不是输入的电话号码或者账户不对？"),);
+              return const Center(child: Text("没有找到呀，是不是输入的频道名称不对？"),);
             } else {
-              searchedUsers = snapshot.data!;
+              searchedChannels = snapshot.data!;
               return ListView.builder(
-                itemCount: searchedUsers.length,
+                itemCount: searchedChannels.length,
                 itemBuilder: (context, index) => _buildRow(context, index),
               );
             }
@@ -108,7 +113,7 @@ class SearchUserDelegate extends SearchDelegate<String> {
     } else {
       return Container(
         margin: const EdgeInsets.all(16),
-        child: const Text("搜索用户添加好友！"),
+        child: const Text("搜索频道！"),
       );
     }
   }

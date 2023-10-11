@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/discovery/chatroom_list.dart';
 import 'package:wfc_example/messages/messages_screen.dart';
 
-import 'channel_list.dart';
+import '../channel/channel_list.dart';
 
 class DiscoveryTab extends StatelessWidget {
   DiscoveryTab({Key? key}) : super(key: key);

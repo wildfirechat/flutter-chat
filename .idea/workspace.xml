@@ -5,13 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/example/lib/discovery/channel_list.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/channel/channel_info_widget.dart" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/example/lib/channel/search_channel.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/contact/search_user.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/contact/search_user.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/discovery/channel_list.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/channel/channel_list.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/lib/discovery/discovery.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/discovery/discovery.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/messages_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/android/src/main/java/cn/wildfirechat/imclient/ImclientPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/android/src/main/java/cn/wildfirechat/imclient/ImclientPlugin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/Classes/ImclientPlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/Classes/ImclientPlugin.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -51,32 +50,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/rain/Workspace/wfc_flutter_plugins/momentclient/lib&quot;,
-    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "cidr.known.project.marker": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "io.flutter.reload.alreadyRun": "true",
+    "last_opened_file_path": "/Users/rain/Workspace/wfc_flutter_plugins/example/lib/discovery",
+    "show.migrate.to.gradle.popup": "false"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/example/lib/discovery" />
       <recent name="$PROJECT_DIR$/momentclient/lib" />
       <recent name="$PROJECT_DIR$/imclient/lib/message" />
       <recent name="$PROJECT_DIR$/example/lib/messages/cell_builder" />
       <recent name="$PROJECT_DIR$/example/lib" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/example/lib/channel" />
       <recent name="$PROJECT_DIR$/example/lib/settings" />
       <recent name="$PROJECT_DIR$/example/lib/home" />
       <recent name="$PROJECT_DIR$/example/lib/discovery" />
       <recent name="$PROJECT_DIR$/momentclient/lib" />
-      <recent name="$PROJECT_DIR$/example/assets/images" />
     </key>
   </component>
   <component name="RunManager">
@@ -186,11 +186,19 @@
           <option name="timeStamp" value="135" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/discovery/channel_list.dart</url>
-          <line>53</line>
+          <url>file://$PROJECT_DIR$/example/lib/channel/channel_list.dart</url>
+          <line>54</line>
           <option name="timeStamp" value="138" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/example/lib/channel/channel_info_widget.dart</url>
+          <line>122</line>
+          <option name="timeStamp" value="144" />
+        </line-breakpoint>
       </breakpoints>
+      <default-breakpoints>
+        <breakpoint type="dart-exception" />
+      </default-breakpoints>
     </breakpoint-manager>
   </component>
 </project>

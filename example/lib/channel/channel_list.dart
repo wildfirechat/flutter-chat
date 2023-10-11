@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:wfc_example/channel/search_channel.dart';
 import 'package:wfc_example/config.dart';
 
 import '../messages/messages_screen.dart';
@@ -42,7 +43,7 @@ class ChannelListState extends State<ChannelList> {
   }
 
   void _searchChannel() {
-
+    showSearch(context: context, delegate: SearchChannelDelegate());
   }
 
   Widget _buildRow(BuildContext context, int index) {
