@@ -164,6 +164,13 @@ class _State extends State<MessagesScreen> {
         Navigator.pop(context);
       });
       noMoreLocalHistoryMsg = true;
+    } else if(widget.conversation.conversationType == ConversationType.Channel) {
+      Imclient.getChannelInfo(widget.conversation.target, refresh: true).then((channelInfo) {
+        if(channelInfo != null && channelInfo!.name != null) {
+          title = channelInfo!.name!;
+          titleGlobalKey.currentState!.updateTitle(title);
+        }
+      });
     }
 
     Imclient.getConversationInfo(widget.conversation).then((conversationInfo) {

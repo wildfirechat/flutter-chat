@@ -1491,8 +1491,8 @@ class Imclient {
   }
 
   ///获取我订阅的频道
-  static Future<List<String>?> getListenedChannels() async {
-    return ImclientPlatform.instance.getListenedChannels();
+  static void getRemoteListenedChannels(OperationSuccessStringListCallback successCallback, OperationFailureCallback errorCallback) async {
+    ImclientPlatform.instance.getRemoteListenedChannels(successCallback, errorCallback);
   }
 
   ///销毁频道
