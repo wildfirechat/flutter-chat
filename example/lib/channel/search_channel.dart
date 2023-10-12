@@ -64,16 +64,19 @@ class SearchChannelDelegate extends SearchDelegate<String> {
   Widget _buildRow(BuildContext context, int index) {
     ChannelInfo channelInfo = searchedChannels[index];
     return GestureDetector(
-      child: SizedBox(
-        height: 48,
-        child: Row(
+      child: Column(children: [
+        Row(
           children: [
             Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (channelInfo.portrait == null || channelInfo.portrait!.isEmpty)?Image.asset(Config.defaultChannelPortrait, width: 40.0, height: 40.0):Image.network(channelInfo.portrait!, width: 40, height: 40,),),),
-            Text(channelInfo.name!),
-            Expanded(child: Container()),
+            Expanded(child: Container(child: Text(channelInfo.name!),)),
           ],
         ),
-      ),
+        Container(
+          margin: const EdgeInsets.fromLTRB(12.0, 4.0, 12.0, 4.0),
+          height: 1,
+          color: const Color(0xffebebeb),
+        ),
+      ],),
       onTap: () => _toChannelInfoView(context, channelInfo),
     );
   }

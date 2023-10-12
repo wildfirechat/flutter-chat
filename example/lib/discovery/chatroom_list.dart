@@ -59,7 +59,7 @@ class ChatroomItemState extends State<ChatroomItem> {
       child: Padding(padding: const EdgeInsets.all(8), child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text((chatroomInfo == null || chatroomInfo!.title == null)?"聊天室":chatroomInfo!.title!, style: const TextStyle(fontSize: 16),),
+          Row(children: [Expanded(child: Container(child: Text((chatroomInfo == null || chatroomInfo!.title == null)?"聊天室":chatroomInfo!.title!, style: const TextStyle(fontSize: 16),),))],),
           Container(
             margin: const EdgeInsets.fromLTRB(12.0, 4.0, 12.0, 4.0),
             height: 1,

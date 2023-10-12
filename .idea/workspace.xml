@@ -5,13 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/example/lib/channel/channel_info_widget.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/example/lib/channel/search_channel.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/contact/search_user.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/contact/search_user.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/discovery/channel_list.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/channel/channel_list.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/discovery/discovery.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/discovery/discovery.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/channel/channel_list.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/channel/channel_list.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/channel/search_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/channel/search_channel.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/discovery/chatroom_list.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/discovery/chatroom_list.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/messages/conversation_settings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/conversation_settings.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,19 +48,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "cidr.known.project.marker": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "io.flutter.reload.alreadyRun": "true",
-    "last_opened_file_path": "/Users/rain/Workspace/wfc_flutter_plugins/example/lib/discovery",
-    "show.migrate.to.gradle.popup": "false"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/rain/Workspace/wfc_flutter_plugins/example/lib/discovery&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/example/lib/discovery" />
@@ -136,26 +134,6 @@
           <option name="timeStamp" value="119" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/settings/message_notification_settings.dart</url>
-          <line>167</line>
-          <option name="timeStamp" value="121" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/settings/message_notification_settings.dart</url>
-          <line>165</line>
-          <option name="timeStamp" value="122" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/settings/message_notification_settings.dart</url>
-          <line>164</line>
-          <option name="timeStamp" value="123" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/settings/message_notification_settings.dart</url>
-          <line>135</line>
-          <option name="timeStamp" value="125" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/example/lib/contact/invite_friend.dart</url>
           <line>57</line>
           <option name="timeStamp" value="127" />
@@ -176,24 +154,29 @@
           <option name="timeStamp" value="130" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/settings/message_notification_settings.dart</url>
-          <line>143</line>
-          <option name="timeStamp" value="133" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/settings/message_notification_settings.dart</url>
-          <line>142</line>
-          <option name="timeStamp" value="135" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/channel/channel_list.dart</url>
-          <line>54</line>
-          <option name="timeStamp" value="138" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/example/lib/channel/channel_info_widget.dart</url>
           <line>122</line>
           <option name="timeStamp" value="144" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/example/lib/settings/message_notification_settings.dart</url>
+          <line>153</line>
+          <option name="timeStamp" value="148" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/example/lib/settings/message_notification_settings.dart</url>
+          <line>155</line>
+          <option name="timeStamp" value="149" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/example/lib/messages/conversation_settings.dart</url>
+          <line>106</line>
+          <option name="timeStamp" value="156" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/example/lib/messages/conversation_settings.dart</url>
+          <line>109</line>
+          <option name="timeStamp" value="157" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

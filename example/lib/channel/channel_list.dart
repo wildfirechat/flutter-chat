@@ -107,9 +107,9 @@ class ChannelItemState extends State<ChannelItem> {
   Widget build(BuildContext context) {
     return Padding(padding: const EdgeInsets.all(8), child: Column(children: [
       Row(children: [
-        SizedBox(width: 48, height: 48, child: channelInfo == null || channelInfo!.portrait == null ? Image.asset(Config.defaultChannelPortrait) : Image.network(channelInfo!.portrait!),),
+        SizedBox(width: 40, height: 40, child: channelInfo == null || channelInfo!.portrait == null ? Image.asset(Config.defaultChannelPortrait) : Image.network(channelInfo!.portrait!),),
         const Padding(padding: EdgeInsets.all(8)),
-        Text(channelInfo == null || channelInfo!.name == null ? '频道<${widget.channelId}>' : channelInfo!.name!),
+        Expanded(child: Text(channelInfo == null || channelInfo!.name == null ? '频道<${widget.channelId}>' : channelInfo!.name!)),
       ],),
       Container(
         margin: const EdgeInsets.fromLTRB(12.0, 4.0, 12.0, 4.0),
