@@ -86,26 +86,30 @@ class MessageNotificationSettingItemState extends State<MessageNotificationSetti
   }
 
   void loadData() {
-    Imclient.getUserSetting(scope, "").then((value)  {
-      setState(() {
-        isEnabled = !(value == null || value.isEmpty || value == '0');
-        if(revertValue) {
-          isEnabled = !isEnabled;
-        }
-
-        if(widget.settingKey == 'no_disturb') {
+    if(widget.settingKey == 'no_disturb') {
+      Imclient.getNoDisturbingTimes((first, second) {
+        setState(() {
+          startTime = first;
+          endTime = second;
+          isEnabled = first != second;
+        });
+      }, (errorCode) {
+        setState(() {
+          isEnabled = false;
           startTime = 0;
           endTime = 0;
-          if(isEnabled) {
-            List<String> values = value.split("|");
-            if(values.length == 2) {
-              startTime = int.parse(values[0]);
-              endTime = int.parse(values[1]);
-            }
-          }
-        }
+        });
       });
-    });
+    } else {
+      Imclient.getUserSetting(scope, "").then((value)  {
+        setState(() {
+          isEnabled = !(value == null || value.isEmpty || value == '0');
+          if(revertValue) {
+            isEnabled = !isEnabled;
+          }
+        });
+      });
+    }
   }
 
   String _formatTimeDuration(int startTime, int endTime) {
@@ -146,15 +150,16 @@ class MessageNotificationSettingItemState extends State<MessageNotificationSetti
                  //东八区的时差是8个小时
                  startTime = 21*60 - 8*60;
                  endTime = 7*60 - 8*60;
-                 Imclient.setUserSetting(scope, "", '$startTime|$endTime', () {
+                 Imclient.setNoDisturbingTimes(startTime, endTime, () {
                    Fluttertoast.showToast(msg: "设置成功");
                  }, (errorCode) {
                    Fluttertoast.showToast(msg: "网络错误");
+                   loadData();
                  });
                } else {
                  startTime = 0;
                  endTime = 0;
-                 Imclient.setUserSetting(scope, "", "", () {
+                 Imclient.clearNoDisturbingTimes(() {
                    Fluttertoast.showToast(msg: "设置成功");
                  }, (errorCode) {
                    Fluttertoast.showToast(msg: "网络错误");
