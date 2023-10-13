@@ -6,10 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/channel/channel_list.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/channel/channel_list.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/channel/search_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/channel/search_channel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/discovery/chatroom_list.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/discovery/chatroom_list.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/example/lib/messages/conversation_settings.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/messages/conversation_settings.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -167,16 +163,6 @@
           <url>file://$PROJECT_DIR$/example/lib/settings/message_notification_settings.dart</url>
           <line>155</line>
           <option name="timeStamp" value="149" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/conversation_settings.dart</url>
-          <line>106</line>
-          <option name="timeStamp" value="156" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="Dart">
-          <url>file://$PROJECT_DIR$/example/lib/messages/conversation_settings.dart</url>
-          <line>109</line>
-          <option name="timeStamp" value="157" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
