@@ -6,14 +6,14 @@ import 'package:imclient/imclient.dart';
 import 'config.dart';
 
 typedef AppServerErrorCallback = Function(String msg);
-typedef AppServerLoginSuccessCallback = Function(String userId, String token, bool isNewUser);
+typedef AppServerLoginSuccessCallback = Function(String userId, String token, bool isNewUser, String? authToken);
 
-typedef _appServerHTTPCallback = Function(String response);
+typedef AppServerHTTPCallback = Function(String response, String? authToken);
 class AppServer {
 
   static void sendCode(String phoneNum, Function successCallback, AppServerErrorCallback errorCallback) {
     String jsonStr = json.encode({'mobile':phoneNum});
-    postJson('/send_code', jsonStr, (response) {
+    postJson('/send_code', jsonStr, (response, authToken) {
       Map<dynamic, dynamic> map = json.decode(response);
       if(map['code'] == 0) {
         successCallback();
@@ -25,7 +25,7 @@ class AppServer {
 
   static void login(String phoneNum, String smsCode, AppServerLoginSuccessCallback successCallback, AppServerErrorCallback errorCallback) async {
     String jsonStr = json.encode({'mobile':phoneNum, 'code':smsCode, 'clientId':await Imclient.clientId, 'platform': 2});
-    postJson('/login', jsonStr, (response) {
+    postJson('/login', jsonStr, (response, authToken) {
 
       Map<dynamic, dynamic> map = json.decode(response);
       if(map['code'] == 0) {
@@ -33,14 +33,14 @@ class AppServer {
         String userId = result['userId'];
         String token = result['token'];
         bool newUser = result['register'];
-        successCallback(userId, token, newUser);
+        successCallback(userId, token, newUser, authToken);
       } else {
         errorCallback(map['message'] ?? '网络错误');
       }
     }, errorCallback);
   }
 
-  static void postJson(String request, String json, _appServerHTTPCallback successCallback, AppServerErrorCallback errorCallback) async {
+  static void postJson(String request, String json, AppServerHTTPCallback successCallback, AppServerErrorCallback errorCallback) async {
     var url = Config.APP_Server_Address + request;
 
     // print(json);
@@ -53,7 +53,7 @@ class AppServer {
     if(response.statusCode != 200) {
       errorCallback(response.body);
     } else {
-      successCallback(response.body);
+      successCallback(response.body, response.headers['authtoken']);
     }
   }
 }

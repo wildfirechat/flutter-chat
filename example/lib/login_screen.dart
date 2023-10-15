@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
+import 'package:rtckit/rtckit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_server.dart';
@@ -105,8 +106,10 @@ class LoginScreenState extends State<LoginScreen> {
                 String phoneNum = phoneFieldController.value.text;
                 String code = codeFieldController.value.text;
                 if(phoneNum != null && code != null) {
-                  AppServer.login(
-                      phoneNum, code, (userId, token, isNewUser) {
+                  AppServer.login(phoneNum, code, (userId, token, isNewUser, authToken) {
+                    if(authToken != null) {
+                      Rtckit.setupAppServer(Config.APP_Server_Address, authToken!);
+                    }
                     Imclient.connect(Config.IM_Host, userId, token);
                     Navigator.replace(context, oldRoute: ModalRoute.of(context)!,
                         newRoute: MaterialPageRoute(builder: (context) => const HomeTabBar()));

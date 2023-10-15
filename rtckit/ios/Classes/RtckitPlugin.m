@@ -2,7 +2,7 @@
 #import <WFAVEngineKit/WFAVEngineKit.h>
 #import <WFChatUIKit/WFCUVideoViewController.h>
 #import <WFChatUIKit/WFCUMultiVideoViewController.h>
-
+#import "AppService.h"
 
 @interface RtckitPlugin () <WFAVEngineDelegate>
 @property(nonatomic, strong)FlutterMethodChannel* channel;
@@ -21,6 +21,7 @@
   [registrar addMethodCallDelegate:instance channel:channel];
   [WFAVEngineKit notRegisterVoipPushService];
   [WFAVEngineKit sharedEngineKit].delegate = instance;
+  [WFCUConfigManager globalManager].appServiceProvider = [AppService sharedAppService];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -37,11 +38,30 @@
     result(nil);
 }
 
+-(void) getMaxVideoCallCount:(NSDictionary *)dict result:(FlutterResult)result {
+    result(@([WFAVEngineKit sharedEngineKit].maxVideoCallCount));
+}
+
+-(void) getMaxAudioCallCount:(NSDictionary *)dict result:(FlutterResult)result {
+    result(@([WFAVEngineKit sharedEngineKit].maxAudioCallCount));
+}
+
+-(void) seMaxVideoCallCount:(NSDictionary *)dict result:(FlutterResult)result {
+    [WFAVEngineKit sharedEngineKit].maxVideoCallCount = [dict[@"count"] intValue];
+    result(nil);
+}
+
+-(void) seMaxAudioCallCount:(NSDictionary *)dict result:(FlutterResult)result {
+    [WFAVEngineKit sharedEngineKit].maxVideoCallCount = [dict[@"count"] intValue];
+    result(nil);
+}
+
 - (void)addICEServer:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *url = dict[@"url"];
     NSString *name = dict[@"name"];
     NSString *password = dict[@"password"];
     [[WFAVEngineKit sharedEngineKit] addIceServer:url userName:name password:password];
+    result(nil);
 }
 
 - (void)startSingleCall:(NSDictionary *)dict result:(FlutterResult)result {
@@ -54,6 +74,7 @@
         WFCUVideoViewController *videoVC = [[WFCUVideoViewController alloc] initWithTargets:@[userId] conversation:obj audioOnly:audioOnly];
         [[WFAVEngineKit sharedEngineKit] presentViewController:videoVC];
     });
+    result(nil);
 }
 
 - (void)startMultiCall:(NSDictionary *)dict result:(FlutterResult)result {
@@ -68,7 +89,109 @@
         UIViewController *videoVC = [[WFCUMultiVideoViewController alloc] initWithTargets:participants conversation:obj audioOnly:audioOnly];
         [[WFAVEngineKit sharedEngineKit] presentViewController:videoVC];
     });
+    result(nil);
 }
+
+- (void)setupAppServer:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *appServerAddress = dict[@"appServerAddress"];
+    NSString *authToken = dict[@"authToken"];
+    [[AppService sharedAppService] setServerAddress:appServerAddress];
+    [[AppService sharedAppService] setAppAuthToken:authToken];
+    result(nil);
+}
+
+- (void)showConferenceInfo:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *conferenceId = dict[@"conferenceId"];
+    NSString *password = dict[@"password"];
+    WFZConferenceInfoViewController *vc = [[WFZConferenceInfoViewController alloc] init];
+    vc.conferenceId = conferenceId;
+    vc.password = password;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[WFAVEngineKit sharedEngineKit] presentViewController:vc];
+    });
+    result(nil);
+}
+
+- (void)showConferencePortal:(NSDictionary *)dict result:(FlutterResult)result {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        WFZHomeViewController *vc = [[WFZHomeViewController alloc] init];
+        vc.isPresent = YES;
+        UINavigationController *nv = [[UINavigationController alloc] initWithRootViewController:vc];
+        nv.modalPresentationStyle = UIModalPresentationFullScreen;
+        [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:nv animated:YES completion:nil];
+    });
+    result(nil);
+}
+
+- (void)isSupportMultiCall:(NSDictionary *)dict result:(FlutterResult)result {
+    result(@(YES));
+}
+
+- (void)isSupportConference:(NSDictionary *)dict result:(FlutterResult)result {
+    result(@([WFAVEngineKit sharedEngineKit].supportConference));
+}
+
+- (void)setVideoProfile:(NSDictionary *)dict result:(FlutterResult)result {
+    int profile = [dict[@"profile"] intValue];
+    BOOL swapWidthHeight = [dict[@"swapWidthHeight"] boolValue];
+    [[WFAVEngineKit sharedEngineKit] setVideoProfile:profile swapWidthHeight:swapWidthHeight];
+    result(nil);
+}
+
+- (void)currentCallSession:(NSDictionary *)dict result:(FlutterResult)result {
+    WFAVCallSession *session = [WFAVEngineKit sharedEngineKit].currentSession;
+    if(!session || session.state == kWFAVEngineStateIdle) {
+        result(nil);
+        return;
+    }
+    NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
+    dictionary[@"callId"] = session.callId;
+    if(session.initiator.length) {
+        dictionary[@"initiator"] = session.initiator;
+    }
+    if(session.inviter.length) {
+        dictionary[@"inviter"] = session.inviter;
+    }
+    dictionary[@"state"] = @(session.state);
+    dictionary[@"startTime"] = @(session.startTime);
+    dictionary[@"connectedTime"] = @(session.connectedTime);
+    dictionary[@"endTime"] = @(session.endTime);
+    if(session.conversation) {
+        dictionary[@"conversation"] = session.conversationJson;
+    }
+    dictionary[@"audioOnly"] = @(session.audioOnly);
+    dictionary[@"endReason"] = @(session.endReason);
+    dictionary[@"conference"] = @(session.conference);
+    dictionary[@"audience"] = @(session.audience);
+    dictionary[@"advanced"] = @(session.advanced);
+    dictionary[@"multiCall"] = @(session.multiCall);
+    result(dictionary);
+}
+
+- (void)answerCall:(NSDictionary *)dict result:(FlutterResult)result {
+    BOOL audioOnly = [dict[@"audioOnly"] boolValue];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        WFAVCallSession *session = [WFAVEngineKit sharedEngineKit].currentSession;
+        if(session.state == kWFAVEngineStateIncomming) {
+            [session answerCall:audioOnly callExtra:nil];
+        };
+    });
+    result(nil);
+}
+
+- (void)endCall:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        WFAVCallSession *session = [WFAVEngineKit sharedEngineKit].currentSession;
+        if([session.callId isEqualToString:callId]) {
+            [session endCall];
+        }
+    });
+    result(nil);
+}
+
+
 #pragma mark - WFAVEngineDelegate
 - (void)didReceiveCall:(WFAVCallSession *_Nonnull)session {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{

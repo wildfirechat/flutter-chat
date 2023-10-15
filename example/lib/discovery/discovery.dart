@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:rtckit/rtckit.dart';
+import 'package:rtckit/rtckit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/discovery/chatroom_list.dart';
 import 'package:wfc_example/messages/messages_screen.dart';
@@ -15,6 +17,7 @@ class DiscoveryTab extends StatelessWidget {
     ['assets/images/discover_robot.png', '机器人', 'robot'],
     ['assets/images/discover_channel.png', '频道', 'channel'],
     ['assets/images/discover_devdocs.png', '开发文档', 'devdocs'],
+    ['assets/images/discover_conference.png', '会议', 'conference'],
   ];
 
   @override
@@ -60,6 +63,15 @@ class DiscoveryTab extends StatelessWidget {
         canLaunch(url).then((value) {
           launch(url);
         });
+      } else if(key == 'conference') {
+        Rtckit.isSupportConference().then((support) {
+          if(support) {
+            Rtckit.showConferencePortal();
+          } else {
+            Fluttertoast.showToast(msg: "不支持会议模式!");
+          }
+        });
+
       } else {
         Fluttertoast.showToast(msg: "方法没有实现");
         print("on tap item $index");
