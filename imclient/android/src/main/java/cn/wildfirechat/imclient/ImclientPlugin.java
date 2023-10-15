@@ -1092,7 +1092,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void getOutgoingFriendRequest(@NonNull MethodCall call, @NonNull Result result) {
-        result.success(convertProtoFriendRequestList(ChatManager.Instance().getFriendRequest(true)));
+        result.success(convertProtoFriendRequestList(ChatManager.Instance().getFriendRequest(false)));
     }
 
     private void getFriendRequest(@NonNull MethodCall call, @NonNull Result result) {
