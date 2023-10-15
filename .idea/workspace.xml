@@ -5,7 +5,39 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/example/assets/images/discover_conference.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/AppService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/LoginResult.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/PCSession.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/ios/Classes/AFNetworking/AFHTTPSessionManager.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/ios/Classes/AFNetworking/AFNetworkReachabilityManager.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/ios/Classes/AFNetworking/AFNetworking.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/ios/Classes/AFNetworking/AFSecurityPolicy.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/ios/Classes/AFNetworking/AFURLRequestSerialization.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/ios/Classes/AFNetworking/AFURLResponseSerialization.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/ios/Classes/AFNetworking/AFURLSessionManager.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/ios/Classes/AppService.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/ios/Classes/AppService.m" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android_client_aars/client-release.aar" beforeDir="false" afterPath="$PROJECT_DIR$/android_client_aars/client-release.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android_client_aars/mars-core-release.aar" beforeDir="false" afterPath="$PROJECT_DIR$/android_client_aars/mars-core-release.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android_uikit_aars/avenginekit.aar" beforeDir="false" afterPath="$PROJECT_DIR$/android_uikit_aars/avenginekit.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android_uikit_aars/uikit-release.aar" beforeDir="false" afterPath="$PROJECT_DIR$/android_uikit_aars/uikit-release.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/app_server.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/app_server.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/discovery/discovery.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/discovery/discovery.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/login_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/login_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/RtckitPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/RtckitPlugin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/ios/Classes/RtckitPlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/ios/Classes/RtckitPlugin.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64/WFAVEngineKit.framework/Headers/WFAVEngineKit.h" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64/WFAVEngineKit.framework/Headers/WFAVEngineKit.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64/WFAVEngineKit.framework/Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64/WFAVEngineKit.framework/Info.plist" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64/WFAVEngineKit.framework/WFAVEngineKit" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64/WFAVEngineKit.framework/WFAVEngineKit" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64_x86_64-simulator/WFAVEngineKit.framework/Headers/WFAVEngineKit.h" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64_x86_64-simulator/WFAVEngineKit.framework/Headers/WFAVEngineKit.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64_x86_64-simulator/WFAVEngineKit.framework/Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64_x86_64-simulator/WFAVEngineKit.framework/Info.plist" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64_x86_64-simulator/WFAVEngineKit.framework/WFAVEngineKit" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64_x86_64-simulator/WFAVEngineKit.framework/WFAVEngineKit" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64_x86_64-simulator/WFAVEngineKit.framework/_CodeSignature/CodeResources" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/ios/WFSDK/WFAVEngineKit.xcframework/ios-arm64_x86_64-simulator/WFAVEngineKit.framework/_CodeSignature/CodeResources" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/rtckit.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/rtckit_method_channel.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,11 +98,11 @@
       <recent name="$PROJECT_DIR$/example/lib" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/example/assets/images" />
       <recent name="$PROJECT_DIR$/example/lib/channel" />
       <recent name="$PROJECT_DIR$/example/lib/settings" />
       <recent name="$PROJECT_DIR$/example/lib/home" />
       <recent name="$PROJECT_DIR$/example/lib/discovery" />
-      <recent name="$PROJECT_DIR$/momentclient/lib" />
     </key>
   </component>
   <component name="RunManager">
@@ -163,6 +195,11 @@
           <url>file://$PROJECT_DIR$/example/lib/settings/message_notification_settings.dart</url>
           <line>155</line>
           <option name="timeStamp" value="149" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/example/lib/login_screen.dart</url>
+          <line>109</line>
+          <option name="timeStamp" value="152" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

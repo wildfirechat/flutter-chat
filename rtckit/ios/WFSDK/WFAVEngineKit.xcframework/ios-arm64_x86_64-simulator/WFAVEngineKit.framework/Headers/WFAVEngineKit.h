@@ -617,6 +617,11 @@ typedef NS_ENUM(NSInteger, WFAVVideoType) {
 @property(nonatomic, strong, readonly) WFCCConversation *conversation;
 
 /**
+ 通话所在的会话
+ */
+@property(nonatomic, strong, readonly) NSDictionary *conversationJson;
+
+/**
  是否是语音电话
  */
 @property(nonatomic, assign, getter=isAudioOnly) BOOL audioOnly;
