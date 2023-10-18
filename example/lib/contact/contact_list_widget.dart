@@ -11,6 +11,8 @@ import 'package:wfc_example/config.dart';
 import 'package:wfc_example/contact/friend_request_page.dart';
 import 'package:wfc_example/user_info_widget.dart';
 
+import 'fav_groups.dart';
+
 class ContactListWidget extends StatefulWidget {
   const ContactListWidget({Key? key}) : super(key: key);
 
@@ -88,6 +90,12 @@ class _ContactListWidgetState extends State<ContactListWidget> {
             context,
             MaterialPageRoute(builder: (context) => FriendRequestPage()),
           );
+        } else if(key == "fav_group") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => FavGroupsPage()),
+          );
+        } else if(key == "subscribed_channel") {
         } else {
           Fluttertoast.showToast(msg: "方法没有实现");
           print("on tap item $index");

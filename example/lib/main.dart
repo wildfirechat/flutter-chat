@@ -92,7 +92,7 @@ class _MyAppState extends State<MyApp> {
     }, groupMemberUpdatedCallback: (String groupId, List<GroupMember> members) {
       print("on group ${groupId} member updated $members");
     }, userInfoUpdatedCallback: (List<UserInfo> userInfos) {
-      print("on UserInfo updated $userInfos");
+      userInfos.forEach((element) => debugPrint('on ${element.userId} user info updated'));
     }, channelInfoUpdatedCallback: (List<ChannelInfo> channelInfos) {
       print("on ChannelInfo updated $channelInfos");
     }, userSettingsUpdatedCallback: () {
