@@ -1027,7 +1027,7 @@ class ImclientPlatform extends PlatformInterface {
     ReadReport report = ReadReport();
     report.conversation = _convertProtoConversation(map['conversation']);
     report.userId = map['userId'];
-    report.readDt = map['readDt'];
+    report.readDt = map['timestamp'];
     return report;
   }
 

@@ -2272,7 +2272,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
         map.put("conversation", convertConversation(protoData.conversation));
         map.put("userId", protoData.userId);
-        map.put("readDt", protoData.readDt);
+        map.put("timestamp", protoData.readDt);
         return map;
     }
 
