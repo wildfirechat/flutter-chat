@@ -9,16 +9,32 @@ import 'package:wfc_example/messages/messages_screen.dart';
 
 import '../channel/channel_list.dart';
 
-class DiscoveryTab extends StatelessWidget {
+class DiscoveryTab extends StatefulWidget {
   DiscoveryTab({Key? key}) : super(key: key);
 
+  @override
+  State<StatefulWidget> createState() => DiscoveryState();
+
+}
+
+class DiscoveryState extends State<DiscoveryTab> {
   List modelList = [
     ['assets/images/discover_chatroom.png', '聊天室', 'chatroom'],
     ['assets/images/discover_robot.png', '机器人', 'robot'],
     ['assets/images/discover_channel.png', '频道', 'channel'],
     ['assets/images/discover_devdocs.png', '开发文档', 'devdocs'],
-    ['assets/images/discover_conference.png', '会议', 'conference'],
   ];
+
+  @override
+  void initState() {
+    Rtckit.isSupportConference().then((support) {
+      if(support) {
+        setState(() {
+          modelList.add(['assets/images/discover_conference.png', '会议', 'conference']);
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,41 +58,33 @@ class DiscoveryTab extends StatelessWidget {
         color: const Color(0xdbdbdbdb),
       ),
     ],),
-    onTap: () {
-      if(key == 'chatroom') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ChatroomList()),
-        );
-      } else if(key == 'robot') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => MessagesScreen(Conversation(conversationType: ConversationType.Single, target: 'FireRobot'))),
-        );
-      } else if(key == 'channel') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ChannelList()),
-        );
-      } else if(key == "devdocs") {
-        var url = 'https://docs.wildfirechat.cn';
-        canLaunch(url).then((value) {
-          launch(url);
-        });
-      } else if(key == 'conference') {
-        Rtckit.isSupportConference().then((support) {
-          if(support) {
-            Rtckit.showConferencePortal();
-          } else {
-            Fluttertoast.showToast(msg: "不支持会议模式!");
-          }
-        });
-
-      } else {
-        Fluttertoast.showToast(msg: "方法没有实现");
-        print("on tap item $index");
-      }
-    },);
+      onTap: () {
+        if(key == 'chatroom') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChatroomList()),
+          );
+        } else if(key == 'robot') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MessagesScreen(Conversation(conversationType: ConversationType.Single, target: 'FireRobot'))),
+          );
+        } else if(key == 'channel') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChannelList()),
+          );
+        } else if(key == "devdocs") {
+          var url = 'https://docs.wildfirechat.cn';
+          canLaunch(url).then((value) {
+            launch(url);
+          });
+        } else if(key == 'conference') {
+          Rtckit.showConferencePortal();
+        } else {
+          Fluttertoast.showToast(msg: "方法没有实现");
+          print("on tap item $index");
+        }
+      },);
   }
-
 }

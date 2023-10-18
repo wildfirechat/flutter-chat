@@ -1708,7 +1708,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().getChatRoomInfo(chatroomId, updateDt, new GetChatRoomInfoCallback() {
             @Override
             public void onSuccess(ChatRoomInfo chatRoomInfo) {
-                callbackBuilder(requestId).put("chatroomInfo", convertChatroomInfo(chatRoomInfo));
+                callbackBuilder(requestId).put("chatroomInfo", convertChatroomInfo(chatRoomInfo)).success("onGetChatroomInfoResult");
             }
 
             @Override
@@ -1726,7 +1726,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().getChatRoomMembersInfo(chatroomId, maxCount, new GetChatRoomMembersInfoCallback() {
             @Override
             public void onSuccess(ChatRoomMembersInfo chatRoomMembersInfo) {
-                callbackBuilder(requestId).put("chatroomMemberInfo", convertChatroomMemberInfo(chatRoomMembersInfo));
+                callbackBuilder(requestId).put("chatroomMemberInfo", convertChatroomMemberInfo(chatRoomMembersInfo)).success("onGetChatroomMemberInfoResult");
             }
 
             @Override
@@ -1768,7 +1768,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().searchChannel(keyword, new SearchChannelCallback() {
             @Override
             public void onSuccess(List<ChannelInfo> list) {
-                callbackBuilder(requestId).put("channelInfo", convertChannelInfoList(list));
+                callbackBuilder(requestId).put("channelInfos", convertChannelInfoList(list)).success("onSearchChannelResult");
             }
 
             @Override
@@ -1849,7 +1849,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().getConversationFileRecords(conversation, userId, beforeMessageUid, FileRecordOrder.type(order), count, new GetFileRecordCallback() {
             @Override
             public void onSuccess(List<FileRecord> list) {
-                callbackBuilder(requestId).put("files", convertFileRecordList(list));
+                callbackBuilder(requestId).put("files", convertFileRecordList(list)).success("onFilesResult");
             }
 
             @Override
@@ -1867,7 +1867,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().getMyFileRecords(beforeMessageUid, FileRecordOrder.type(order), count, new GetFileRecordCallback() {
             @Override
             public void onSuccess(List<FileRecord> list) {
-                callbackBuilder(requestId).put("files", convertFileRecordList(list));
+                callbackBuilder(requestId).put("files", convertFileRecordList(list)).success("onFilesResult");
             }
 
             @Override
@@ -1895,7 +1895,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().searchFileRecords(keyword, conversation, userId, beforeMessageUid, FileRecordOrder.type(order), count, new GetFileRecordCallback() {
             @Override
             public void onSuccess(List<FileRecord> list) {
-                callbackBuilder(requestId).put("files", convertFileRecordList(list));
+                callbackBuilder(requestId).put("files", convertFileRecordList(list)).success("onFilesResult");
             }
 
             @Override
@@ -1915,7 +1915,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().searchMyFileRecords(keyword, beforeMessageUid, FileRecordOrder.type(order), count, new GetFileRecordCallback() {
             @Override
             public void onSuccess(List<FileRecord> list) {
-                callbackBuilder(requestId).put("files", convertFileRecordList(list));
+                callbackBuilder(requestId).put("files", convertFileRecordList(list)).success("onFilesResult");
             }
 
             @Override
@@ -2376,6 +2376,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             map.put("portrait", protoData.portrait);
         if (!TextUtils.isEmpty(protoData.owner))
             map.put("owner", protoData.owner);
+        if (!TextUtils.isEmpty(protoData.remark))
+            map.put("remark", protoData.remark);
         map.put("memberCount", protoData.memberCount);
         map.put("mute", protoData.mute);
         map.put("joinType", protoData.joinType);
@@ -2383,6 +2385,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         map.put("searchable", protoData.searchable);
         map.put("historyMessage", protoData.historyMessage);
         map.put("updateDt", protoData.updateDt);
+        map.put("maxMemberCount", protoData.maxMemberCount);
+        map.put("superGroup", protoData.superGroup);
         return map;
     }
 
@@ -2587,11 +2591,12 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private Map<String, Object> convertChatroomInfo(ChatRoomInfo protoData) {
         Map<String, Object> map = new HashMap<>();
+        map.put("chatroomId", protoData.chatRoomId);
         map.put("title", protoData.title);
         map.put("desc", protoData.desc);
         map.put("portrait", protoData.portrait);
         map.put("extra", protoData.extra);
-        map.put("state", protoData.state);
+        map.put("state", protoData.state.getValue());
         map.put("memberCount", protoData.memberCount);
         map.put("createDt", protoData.createDt);
         map.put("updateDt", protoData.updateDt);

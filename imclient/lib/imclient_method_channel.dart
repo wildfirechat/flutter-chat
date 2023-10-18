@@ -933,7 +933,7 @@ class ImclientPlatform extends PlatformInterface {
       Map<dynamic, dynamic> map) async {
     GroupSearchInfo groupSearchInfo = GroupSearchInfo();
     groupSearchInfo.groupInfo = await _convertProtoGroupInfo(map['groupInfo']);
-    groupSearchInfo.marchType = GroupSearchResultType.values[map['marchType']];
+    groupSearchInfo.marchType = map['marchType'];
     groupSearchInfo.marchedMemberNames = Tools.convertDynamicList(map['marchedMemberNames']);
 
     return groupSearchInfo;
@@ -1043,6 +1043,7 @@ class ImclientPlatform extends PlatformInterface {
     groupInfo.portrait = map['portrait'];
     groupInfo.owner = map['owner'];
     if (map['memberCount'] != null) groupInfo.memberCount = map['memberCount'];
+    if (map['maxMemberCount'] != null) groupInfo.maxMemberCount = map['maxMemberCount'];
     if (map['mute'] != null) groupInfo.mute = map['mute'];
 
     if (map['joinType'] != null) groupInfo.joinType = map['joinType'];
@@ -1191,7 +1192,7 @@ class ImclientPlatform extends PlatformInterface {
     chatroomInfo.extra = map['extra'];
     chatroomInfo.portrait = map['portrait'];
     chatroomInfo.title = map['title'];
-    if (map['status'] != null) {
+    if (map['state'] != null) {
       chatroomInfo.state = ChatroomState.values[map['state']];
     }
     if (map['memberCount'] != null) {

@@ -93,6 +93,7 @@ class SettingProfile extends StatefulWidget {
 class SettingProfileState extends State<SettingProfile> {
   UserInfo? userInfo;
   late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
+  late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
   final EventBus _eventBus = Imclient.IMEventBus;
 
 
@@ -107,6 +108,11 @@ class SettingProfileState extends State<SettingProfile> {
         }
       }
     });
+    _connectionStatusSubscription = _eventBus.on<ConnectionStatusChangedEvent>().listen((event) {
+      if(event.connectionStatus == kConnectionStatusConnected) {
+        loadUserInfo();
+      }
+    });
   }
 
 
@@ -114,13 +120,14 @@ class SettingProfileState extends State<SettingProfile> {
   void dispose() {
     super.dispose();
     _userInfoUpdatedSubscription.cancel();
+    _connectionStatusSubscription.cancel();
   }
 
   void loadUserInfo() {
-    Imclient.getUserInfo(Imclient.currentUserId).then((ui) => {
+    Imclient.getUserInfo(Imclient.currentUserId).then((ui) {
       setState((){
         userInfo = ui;
-      })
+      });
     });
   }
 
