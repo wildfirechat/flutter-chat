@@ -449,6 +449,18 @@ class _State extends State<MessagesScreen> {
           _updateTypingStatus();
         }
 
+        bool duplicated = false;
+        for(var m in models) {
+          if(m.message.messageId != null && m.message.messageId == element.messageId) {
+            m.message = element;
+            duplicated = true;
+            break;
+          }
+        }
+        if(duplicated) {
+          continue;
+        }
+
         MessageModel model = MessageModel(element, showTimeLabel: false);
         if(front) {
           models.insert(0, model);
