@@ -314,11 +314,11 @@ class ImclientPlatform extends PlatformInterface {
           Map<dynamic, dynamic> message = args['message'];
           Message? msg = _convertProtoMessage(message);
           if(msg != null) {
-            Message? msg2 = _sendingMessages[msg.messageId!];
+            Message? msg2 = _sendingMessages[msg.messageId];
             if(msg2 != null) {
               _eventBus.fire(SendMessageStartEvent(msg2));
             } else {
-              _sendingMessages[msg.messageId!] = msg;
+              _sendingMessages[msg.messageId] = msg;
               msg.status = MessageStatus.Message_Status_Sent;
               _eventBus.fire(SendMessageStartEvent(msg));
             }
@@ -1827,8 +1827,8 @@ class ImclientPlatform extends PlatformInterface {
     Map<dynamic, dynamic> fm = await methodChannel.invokeMethod('sendMessage', args);
 
     Message message = _convertProtoMessage(fm)!;
-    if(message.messageId != null && message.messageId! > 0) {
-      _sendingMessages[message.messageId!] = message;
+    if(message.messageId > 0) {
+      _sendingMessages[message.messageId] = message;
     }
 
     return message;

@@ -32,7 +32,7 @@ class VoiceCellBuilder extends PortraitCellBuilder {
 
   VoiceCellBuilder(MessageState state, MessageModel model) : super(state, model) {
     soundMessageContent = model.message.content as SoundMessageContent;
-    messageId = model.message.messageId!;
+    messageId = model.message.messageId;
     _playEventSubscription = _eventBus.on<VoicePlayStatusChangedEvent>().listen((event) {
       if(event.messageId == messageId) {
         if (_playing != event.start) {
