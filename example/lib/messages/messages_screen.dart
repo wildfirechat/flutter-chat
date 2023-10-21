@@ -422,7 +422,7 @@ class _State extends State<MessagesScreen> {
         if(element.conversation != widget.conversation) {
           continue;
         }
-        if(element.messageId == null || element.messageId == 0) {
+        if(element.messageId == 0) {
           continue;
         }
 
@@ -451,7 +451,7 @@ class _State extends State<MessagesScreen> {
 
         bool duplicated = false;
         for(var m in models) {
-          if(m.message.messageId != null && m.message.messageId == element.messageId) {
+          if(m.message.messageId == element.messageId) {
             m.message = element;
             duplicated = true;
             break;
@@ -546,8 +546,8 @@ class _State extends State<MessagesScreen> {
 
   void onTapedCell(MessageModel model) {
     if(model.message.content is ImageMessageContent) {
-      Imclient.getMessages(widget.conversation, model.message.messageId!+1, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value1) {
-        Imclient.getMessages(widget.conversation, model.message.messageId!, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value2) {
+      Imclient.getMessages(widget.conversation, model.message.messageId+1, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value1) {
+        Imclient.getMessages(widget.conversation, model.message.messageId, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value2) {
           List<Message> list = [];
           list.addAll(value2);
           list.addAll(value1);
@@ -593,12 +593,12 @@ class _State extends State<MessagesScreen> {
         }
       });
     } else if(model.message.content is SoundMessageContent) {
-      if(_playingMessageId == model.message.messageId!) {
+      if(_playingMessageId == model.message.messageId) {
         stopPlayVoiceMessage(model);
       } else {
         if(_playingMessageId > 0) {
           for (var value in models) {
-            if(value.message.messageId! == _playingMessageId) {
+            if(value.message.messageId == _playingMessageId) {
               stopPlayVoiceMessage(model);
               break;
             }
@@ -615,7 +615,7 @@ class _State extends State<MessagesScreen> {
       _soundPlayer.stopPlayer();
     }
     _eventBus.fire(
-        VoicePlayStatusChangedEvent(model.message.messageId!, false));
+        VoicePlayStatusChangedEvent(model.message.messageId, false));
     _playingMessageId = 0;
   }
 
@@ -625,7 +625,7 @@ class _State extends State<MessagesScreen> {
     if (model.message.direction ==
         MessageDirection.MessageDirection_Receive &&
         model.message.status == MessageStatus.Message_Status_Readed) {
-      Imclient.updateMessageStatus(model.message.messageId!, MessageStatus.Message_Status_Played);
+      Imclient.updateMessageStatus(model.message.messageId, MessageStatus.Message_Status_Played);
       model.message.status = MessageStatus.Message_Status_Played;
     }
     _soundPlayer.openPlayer();
@@ -633,8 +633,8 @@ class _State extends State<MessagesScreen> {
       stopPlayVoiceMessage(model);
     });
     _eventBus.fire(
-        VoicePlayStatusChangedEvent(model.message.messageId!, true));
-    _playingMessageId = model.message.messageId!;
+        VoicePlayStatusChangedEvent(model.message.messageId, true));
+    _playingMessageId = model.message.messageId;
   }
 
   void onDoubleTapedCell(MessageModel model) {
@@ -717,14 +717,14 @@ class _State extends State<MessagesScreen> {
       if (selected != null) {
         switch(selected) {
           case "delete":
-            _deleteMessage(model.message.messageId!);
+            _deleteMessage(model.message.messageId);
             break;
           case "copy":
             break;
           case "forward":
             break;
           case "recall":
-            _recallMessage(model.message.messageId!, model.message.messageUid!);
+            _recallMessage(model.message.messageId, model.message.messageUid!);
             break;
           case "multi_select":
             break;

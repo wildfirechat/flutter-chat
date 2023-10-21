@@ -69,9 +69,9 @@ class PictureOverviewState extends State<PictureOverview> {
                     if (widget.pageToEnd != null) {
                       Message message = widget.imageItems[index];
                       if(index == 0) {
-                        widget.pageToEnd!(message.messageId!, false);
+                        widget.pageToEnd!(message.messageId, false);
                       } else if(index == widget.imageItems.length -1) {
-                        widget.pageToEnd!(message.messageId!, true);
+                        widget.pageToEnd!(message.messageId, true);
                       }
                     }
                   }))),

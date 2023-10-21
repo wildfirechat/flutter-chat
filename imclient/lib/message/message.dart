@@ -32,7 +32,7 @@ enum MessageDirection { MessageDirection_Send, MessageDirection_Receive }
 
 class Message {
   Message({this.messageId = 0, this.messageUid = 0});
-  int? messageId;
+  int messageId;
   int? messageUid;
   late Conversation conversation;
   late String fromUser;
