@@ -56,8 +56,10 @@ master分支为新版本，之前旧版本在v1分支。请尽快升级到新版
         // 将path_to_android_xxx_aars 替换成实际路径，可以使用相对路径，但一定要保证路径是正确的；路径不对的话，会报 ClassNotFoundException
         // wfc dep start
 
-        implementation fileTree(dir: "${path_to_android_uikit_aars}", include: ["*.aar"])
+        // 根据实际需要，引入aar
+
         implementation fileTree(dir: "${path_to_android_client_aars}", include: ["*.aar"])
+        implementation fileTree(dir: "${path_to_android_uikit_aars}", include: ["*.aar"])
         //implementation fileTree(dir: "${path_to_android_moment_aars}", include: ["*.aar"])
         //implementation fileTree(dir: "${path_android_ptt_aars}", include: ["*.aar"])
 
