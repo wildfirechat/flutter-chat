@@ -48,8 +48,13 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
   private static MethodChannel channel;
   private static Handler handler;
 
+  private static boolean initialized = false;
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+    if (initialized){
+      return;
+    }
+    initialized = true;
     channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "momentclient");
     channel.setMethodCallHandler(this);
     handler = new Handler(Looper.getMainLooper());
