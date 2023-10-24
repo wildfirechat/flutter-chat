@@ -147,17 +147,17 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         }
         return false;
     }
-
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-        Log.d(TAG, "onAttachedToEngine");
-        channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "imclient");
-        channel.setMethodCallHandler(this);
-
         if (isWfcIMClientInitialized) {
             return;
         }
+        Log.d(TAG, "onAttachedToEngine");
+
         isWfcIMClientInitialized = true;
+
+        channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "imclient");
+        channel.setMethodCallHandler(this);
         ChatManager.init(flutterPluginBinding.getApplicationContext(), null);
         addWfcListeners();
 

@@ -44,19 +44,20 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     private static MethodChannel channel;
     private static Context gContent;
     private static Activity gActivity;
-
     private static boolean isWfcUIKitInitialized = false;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
-        channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "rtckit");
-        channel.setMethodCallHandler(this);
-        gContent = flutterPluginBinding.getApplicationContext();
         if (isWfcUIKitInitialized) {
             return;
         }
-        isWfcUIKitInitialized = true;
         Log.e("RtckitPlugin", "isSupportMoment " + WfcUIKit.getWfcUIKit().isSupportMoment());
+
+        isWfcUIKitInitialized = true;
+
+        channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "rtckit");
+        channel.setMethodCallHandler(this);
+        gContent = flutterPluginBinding.getApplicationContext();
         Context context = gContent;
         while (context != null) {
             if (context instanceof Application) {
