@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:imclient/message/message.dart';
 
 class MessageModel {
@@ -16,6 +17,9 @@ class MessageModel {
   double readRate;
   bool selecting;
   bool selected;
+
+  //带缩略图的消息的缓存
+  ui.Image? uiImage;
 
   MessageModel(
   this.message,

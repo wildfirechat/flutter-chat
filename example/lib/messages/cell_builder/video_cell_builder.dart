@@ -17,14 +17,20 @@ class VideoCellBuilder extends PortraitCellBuilder {
   VideoCellBuilder(MessageState state, MessageModel model) : super(state, model) {
     videoMessageContent = model.message.content as VideoMessageContent;
     if(videoMessageContent.thumbnail != null) {
-      ui.instantiateImageCodec(image.encodePng(videoMessageContent.thumbnail!))
-          .then((codec) {
-        codec.getNextFrame().then((frameInfo) {
-          setState(() {
-            uiImage = frameInfo.image;
+      if(model.uiImage != null) {
+        uiImage = model.uiImage;
+      } else {
+        ui.instantiateImageCodec(
+            image.encodePng(videoMessageContent.thumbnail!))
+            .then((codec) {
+          codec.getNextFrame().then((frameInfo) {
+            setState(() {
+              uiImage = frameInfo.image;
+              model.uiImage = uiImage;
+            });
           });
         });
-      });
+      }
     }
   }
 
