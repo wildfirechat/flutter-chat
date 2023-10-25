@@ -16,14 +16,20 @@ class ImageCellBuilder extends PortraitCellBuilder {
   ImageCellBuilder(MessageState state, MessageModel model) : super(state, model) {
     imageMessageContent = model.message.content as ImageMessageContent;
     if(imageMessageContent.thumbnail != null) {
-      ui.instantiateImageCodec(image.encodePng(imageMessageContent.thumbnail!))
-          .then((codec) {
-        codec.getNextFrame().then((frameInfo) {
-          setState(() {
-            uiImage = frameInfo.image;
+      if(model.uiImage != null) {
+        uiImage = model.uiImage!;
+      } else {
+        ui.instantiateImageCodec(
+            image.encodePng(imageMessageContent.thumbnail!))
+            .then((codec) {
+          codec.getNextFrame().then((frameInfo) {
+            setState(() {
+              uiImage = frameInfo.image;
+              model.uiImage = frameInfo.image;
+            });
           });
         });
-      });
+      }
     }
   }
 
