@@ -147,17 +147,20 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         }
         return false;
     }
+
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        Log.d(TAG, "onAttachedToEngine");
+        if (channel == null) {
+            channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "imclient");
+            channel.setMethodCallHandler(this);
+        }
+
         if (isWfcIMClientInitialized) {
             return;
         }
-        Log.d(TAG, "onAttachedToEngine");
-
         isWfcIMClientInitialized = true;
 
-        channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "imclient");
-        channel.setMethodCallHandler(this);
         ChatManager.init(flutterPluginBinding.getApplicationContext(), null);
         addWfcListeners();
 
@@ -177,8 +180,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         Log.d(TAG, "onDetachedFromEngine");
-        channel.setMethodCallHandler(null);
-        channel = null;
+        if (channel != null) {
+            channel.setMethodCallHandler(null);
+            channel = null;
+        }
     }
 
     private List<Conversation.ConversationType> conversationTypesFromArgument(@NonNull MethodCall call) {
@@ -845,6 +850,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                     data.put("messageUid", messageUid);
                     callback2UI("onRecallMessage", data);
                 }
+
                 @Override
                 public void onFail(int i) {
                     callbackBuilder(requestId).fail(i);
@@ -859,20 +865,20 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         int mediaType = call.argument("mediaType");
         byte[] mediaData = call.argument("mediaData");
 
-        ChatManager.Instance().uploadMedia2(fileName, mediaData, mediaType, new UploadMediaCallback(){
+        ChatManager.Instance().uploadMedia2(fileName, mediaData, mediaType, new UploadMediaCallback() {
             @Override
             public void onSuccess(String s) {
                 callbackBuilder(requestId)
-                        .put("remoteUrl", s)
-                        .success("onUploadMediaUploaded");
+                    .put("remoteUrl", s)
+                    .success("onUploadMediaUploaded");
             }
 
             @Override
             public void onProgress(long l, long l1) {
                 callbackBuilder(requestId)
-                        .put("uploaded", l)
-                        .put("total", l1)
-                        .success("onUploadMediaProgress");
+                    .put("uploaded", l)
+                    .put("total", l1)
+                    .success("onUploadMediaProgress");
             }
 
             @Override
@@ -1118,7 +1124,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     private void clearFriendRequest(@NonNull MethodCall call, @NonNull Result result) {
         int direction = call.argument("direction");
         long beforeTime = getLongPara(call, "beforeTime");
-        result.success(ChatManager.Instance().clearFriendRequest(direction==1, beforeTime));
+        result.success(ChatManager.Instance().clearFriendRequest(direction == 1, beforeTime));
     }
 
     private void deleteFriend(@NonNull MethodCall call, @NonNull Result result) {
@@ -1255,10 +1261,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String memberExtra = call.argument("memberExtra");
         List<String> groupMembers = call.argument("groupMembers");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -1272,10 +1278,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String extra = call.argument("extra");
         List<String> groupMembers = call.argument("groupMembers");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -1289,10 +1295,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String groupId = call.argument("groupId");
         List<String> groupMembers = call.argument("groupMembers");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -1305,10 +1311,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         int requestId = call.argument("requestId");
         String groupId = call.argument("groupId");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -1321,10 +1327,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         int requestId = call.argument("requestId");
         String groupId = call.argument("groupId");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -1339,10 +1345,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         int modifyType = call.argument("modifyType");
         String value = call.argument("value");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -1356,10 +1362,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String groupId = call.argument("groupId");
         String newAlias = call.argument("newAlias");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -1374,10 +1380,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String memberId = call.argument("memberId");
         String newAlias = call.argument("newAlias");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -1391,10 +1397,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String groupId = call.argument("groupId");
         String newOwner = call.argument("newOwner");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -1409,10 +1415,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         boolean isSet = call.argument("isSet");
         List<String> memberIds = call.argument("memberIds");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -1427,10 +1433,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         boolean isSet = call.argument("isSet");
         List<String> memberIds = call.argument("memberIds");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -1445,10 +1451,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         boolean isSet = call.argument("isSet");
         List<String> memberIds = call.argument("memberIds");
         List<Integer> notifyLines = call.argument("notifyLines");
-        if(notifyLines == null) {
+        if (notifyLines == null) {
             notifyLines = new ArrayList<>();
         }
-        if(notifyLines.isEmpty()) {
+        if (notifyLines.isEmpty()) {
             notifyLines.add(0);
         }
         Map notifyContent = call.argument("notifyContent");
@@ -2346,7 +2352,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private static List<Map<String, Object>> convertUserInfoList(List<UserInfo> protoDatas) {
         List output = new ArrayList();
-        if(protoDatas != null) {
+        if (protoDatas != null) {
             for (UserInfo protoData : protoDatas) {
                 output.add(convertUserInfo(protoData));
             }
@@ -2992,7 +2998,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                             data.put("messageId", message.messageId);
                             callback2UI("onMessageUpdated", data);
                         }
-                            break;
+                        break;
 
                         case "onSendPrepare": {
                             Message message = (Message) args[0];
@@ -3000,7 +3006,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                             data.put("message", convertMessage(message));
                             callback2UI("onSendMessageStart", data);
                         }
-                            break;
+                        break;
                         case "onSendSuccess": {
                             Message message = (Message) args[0];
                             Map<String, Object> data = new HashMap<>();
@@ -3010,7 +3016,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                             data.put("timestamp", message.serverTime);
                             callback2UI("onSendMessageSuccess", data);
                         }
-                            break;
+                        break;
                         case "onSendFail": {
                             Message message = (Message) args[0];
                             int errorCode = (int) args[1];
@@ -3020,7 +3026,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                             data.put("errorCode", errorCode);
                             callback2UI("onSendMessageFailure", data);
                         }
-                            break;
+                        break;
                         case "onConversationTopUpdate":
                         case "onConversationSilentUpdate":
                         case "onClearMessage":

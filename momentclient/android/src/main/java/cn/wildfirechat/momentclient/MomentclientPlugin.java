@@ -51,12 +51,14 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
   private static boolean initialized = false;
   @Override
   public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+      if (channel == null){
+          channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "momentclient");
+          channel.setMethodCallHandler(this);
+      }
     if (initialized){
       return;
     }
     initialized = true;
-    channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "momentclient");
-    channel.setMethodCallHandler(this);
     handler = new Handler(Looper.getMainLooper());
     MomentClient.getInstance().init(flutterPluginBinding.getApplicationContext());
     MomentClient.getInstance().setMomentMessageReceiveListener(new OnReceiveFeedMessageListener() {
@@ -92,8 +94,10 @@ public class MomentclientPlugin implements FlutterPlugin, MethodCallHandler {
 
   @Override
   public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-    channel.setMethodCallHandler(null);
-    channel = null;
+      if (channel != null){
+          channel.setMethodCallHandler(null);
+          channel = null;
+      }
   }
 
   private void postFeed(@NonNull MethodCall call, @NonNull Result result) {

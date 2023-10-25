@@ -48,15 +48,16 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
+        if (channel == null) {
+            channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "rtckit");
+            channel.setMethodCallHandler(this);
+        }
         if (isWfcUIKitInitialized) {
             return;
         }
         Log.e("RtckitPlugin", "isSupportMoment " + WfcUIKit.getWfcUIKit().isSupportMoment());
 
         isWfcUIKitInitialized = true;
-
-        channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "rtckit");
-        channel.setMethodCallHandler(this);
         gContent = flutterPluginBinding.getApplicationContext();
         Context context = gContent;
         while (context != null) {
@@ -96,17 +97,21 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     private void getMaxVideoCallCount(@NonNull MethodCall call, @NonNull Result result) {
         result.success(AVEngineKit.MAX_VIDEO_PARTICIPANT_COUNT);
     }
+
     private void getMaxAudioCallCount(@NonNull MethodCall call, @NonNull Result result) {
         result.success(AVEngineKit.MAX_AUDIO_PARTICIPANT_COUNT);
     }
+
     private void seMaxVideoCallCount(@NonNull MethodCall call, @NonNull Result result) {
         AVEngineKit.MAX_VIDEO_PARTICIPANT_COUNT = call.argument("count");
         result.success(null);
     }
+
     private void seMaxAudioCallCount(@NonNull MethodCall call, @NonNull Result result) {
         AVEngineKit.MAX_AUDIO_PARTICIPANT_COUNT = call.argument("count");
         result.success(null);
     }
+
     private void addICEServer(@NonNull MethodCall call, @NonNull Result result) {
         String url = call.argument("url");
         String name = call.argument("name");
@@ -145,10 +150,11 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         String host = HttpUrl.parse(appServerAddress).url().getHost();
         SharedPreferences sp = gContent.getSharedPreferences("WFC_OK_HTTP_COOKIES", Context.MODE_PRIVATE);
         sp.edit()
-                .putString("appServer", appServerAddress)
-                .putString("authToken:" + host, authToken).apply();
+            .putString("appServer", appServerAddress)
+            .putString("authToken:" + host, authToken).apply();
         result.success(null);
     }
+
     private void showConferenceInfo(@NonNull MethodCall call, @NonNull Result result) {
         String conferenceId = call.argument("conferenceId");
         String password = call.argument("password");
@@ -158,23 +164,28 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         gContent.startActivity(intent);
         result.success(null);
     }
+
     private void showConferencePortal(@NonNull MethodCall call, @NonNull Result result) {
         Intent intent = new Intent(gContent, ConferencePortalActivity.class);
         gContent.startActivity(intent);
         result.success(null);
     }
+
     private void isSupportMultiCall(@NonNull MethodCall call, @NonNull Result result) {
         result.success(true);
     }
+
     private void isSupportConference(@NonNull MethodCall call, @NonNull Result result) {
         result.success(AVEngineKit.isSupportConference());
     }
+
     private void setVideoProfile(@NonNull MethodCall call, @NonNull Result result) {
         int profile = call.argument("profile");
         boolean swapWidthHeight = call.argument("swapWidthHeight");
         AVEngineKit.Instance().setVideoProfile(profile, swapWidthHeight);
         result.success(null);
     }
+
     private void currentCallSession(@NonNull MethodCall call, @NonNull Result result) {
         AVEngineKit.CallSession callSession = AVEngineKit.Instance().getCurrentSession();
         if (callSession == null) {
@@ -189,7 +200,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         obj.put("startTime", callSession.getStartTime());
         obj.put("connectedTime", callSession.getConnectedTime());
         obj.put("endTime", callSession.getEndTime());
-        if(callSession.getConversation() != null) {
+        if (callSession.getConversation() != null) {
             Map<String, Object> convJson = new HashMap<>();
             convJson.put("type", callSession.getConversation().type.getValue());
             convJson.put("target", callSession.getConversation().target);
@@ -204,6 +215,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
 //        obj.put("multiCall", callSession.getParticipantIds().size() > 1);
         result.success(obj);
     }
+
     private void answerCall(@NonNull MethodCall call, @NonNull Result result) {
         boolean audioOnly = call.argument("audioOnly");
         AVEngineKit.CallSession callSession = AVEngineKit.Instance().getCurrentSession();
@@ -228,7 +240,10 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-        channel.setMethodCallHandler(null);
+        if (channel != null) {
+            channel.setMethodCallHandler(null);
+            channel = null;
+        }
     }
 
     private void setupWFCDirs(Application application) {
