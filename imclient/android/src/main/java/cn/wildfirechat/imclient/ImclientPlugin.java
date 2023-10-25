@@ -184,6 +184,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             channel.setMethodCallHandler(null);
             channel = null;
         }
+        ChatManager.Instance().disconnect(false, false);
     }
 
     private List<Conversation.ConversationType> conversationTypesFromArgument(@NonNull MethodCall call) {
