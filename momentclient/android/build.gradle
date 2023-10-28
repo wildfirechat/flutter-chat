@@ -34,8 +34,8 @@ android {
     }
 
     dependencies {
-        compileOnly fileTree(dir: "../../android_moment_aars", include: ["*.aar"])
-        compileOnly fileTree(dir: "../../android_client_aars", include: ["*.aar"])
+        compileOnly fileTree(dir: "android_moment_aars", include: ["*.aar"])
+        compileOnly fileTree(dir: "../../imclient/android/android_client_aars", include: ["*.aar"])
         def lifecycle_version = '2.0.0-beta01'
         implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
 
