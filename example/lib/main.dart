@@ -41,7 +41,23 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initIMClient() async {
-    Rtckit.init();
+    Rtckit.init(
+        didReceiveCallCallback: (callSession) {
+          //收到来电通知，原生代码会自动弹出来电界面。如果在后台，这里要弹出本地通知，本地通知带上震铃声。
+          debugPrint('didReceiveCallCallback: ${callSession.callId}');
+        },
+        shouldStartRingCallback: (incoming) {
+          //原生代码通知上层播放铃声。如果在后台就开始震动，如果在前台就播放铃声。这样做的原因是有些系统限制后台播放声音。
+          debugPrint('shouldStartRingCallback: $incoming');
+        },
+        shouldStopRingCallback: () {
+          //原生代码通知上层停止铃声和震动。
+          debugPrint('shouldStopRingCallback');
+        },
+        didEndCallCallback: (reason, duration) {
+          //原生代码通知上层通话结束。
+          debugPrint('didEndCallCallback: $reason, $duration');
+        });
     if (Config.ICE_SERVERS != null){
       for (int i = 0; i < Config.ICE_SERVERS.length; i ++){
         var iceServer = Config.ICE_SERVERS[i];

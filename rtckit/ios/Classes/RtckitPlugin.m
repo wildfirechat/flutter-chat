@@ -8,7 +8,7 @@
 @property(nonatomic, strong)FlutterMethodChannel* channel;
 
 @property(nonatomic, strong) AVAudioPlayer *audioPlayer;
-@property(nonatomic, strong) UILocalNotification *localCallNotification;
+//@property(nonatomic, strong) UILocalNotification *localCallNotification;
 @end
 
 @implementation RtckitPlugin
@@ -207,20 +207,18 @@
         }
         
         [[WFAVEngineKit sharedEngineKit] presentViewController:videoVC];
-        if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-            if(self.localCallNotification) {
-                [[UIApplication sharedApplication] scheduleLocalNotification:self.localCallNotification];
-            }
-            self.localCallNotification = [[UILocalNotification alloc] init];
-            self.localCallNotification.alertBody = @"来电话了";
-            self.localCallNotification.soundName = @"ring.caf";
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[UIApplication sharedApplication] scheduleLocalNotification:self.localCallNotification];
-            });
-        } else {
-            self.localCallNotification = nil;
-        }
+//        if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+//            self.localCallNotification = [[UILocalNotification alloc] init];
+//            self.localCallNotification.alertBody = @"来电话了";
+//            self.localCallNotification.soundName = @"ring.caf";
+//            
+//            dispatch_async(dispatch_get_main_queue(), ^{
+//                [[UIApplication sharedApplication] scheduleLocalNotification:self.localCallNotification];
+//            });
+//        } else {
+//            self.localCallNotification = nil;
+//        }
+        [self.channel invokeMethod:@"didReceiveCallCallback" arguments:@{@"callId":[WFAVEngineKit sharedEngineKit].currentSession.callId}];
     });
 }
 
@@ -250,6 +248,7 @@
                     [self.audioPlayer play];
                 }
             }
+            [self.channel invokeMethod:@"shouldStartRingCallback" arguments:@{@"incoming":@(isIncoming)}];
         }
     });
 }
@@ -268,34 +267,35 @@ void systemAudioCallback (SystemSoundID soundID, void* clientData) {
     if (self.audioPlayer) {
         [self.audioPlayer stop];
         self.audioPlayer = nil;
-        [[AVAudioSession sharedInstance] setActive:NO withOptions:AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation error:nil];
     }
+    [self.channel invokeMethod:@"shouldStopRingCallback" arguments:nil];
 }
 
 - (void)didCallEnded:(WFAVCallEndReason) reason duration:(int)callDuration {
     dispatch_async(dispatch_get_main_queue(), ^{
-        if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-            if(self.localCallNotification) {
-                [[UIApplication sharedApplication] cancelLocalNotification:self.localCallNotification];
-                self.localCallNotification = nil;
-            }
-            
-            if(reason == kWFAVCallEndReasonTimeout || (reason == kWFAVCallEndReasonRemoteHangup && callDuration == 0)) {
-                UILocalNotification *callEndNotification = [[UILocalNotification alloc] init];
-                if(reason == kWFAVCallEndReasonTimeout) {
-                    callEndNotification.alertBody = @"来电未接听";
-                } else {
-                    callEndNotification.alertBody = @"来电已取消";
-                }
-                if (@available(iOS 8.2, *)) {
-                    self.localCallNotification.alertTitle = @"网络通话";
-                }
-                
-                //应该播放挂断的声音
-    //            self.localCallNotification.soundName = @"ring.caf";
-                [[UIApplication sharedApplication] scheduleLocalNotification:callEndNotification];
-            }
-        }
+//        if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+//            if(self.localCallNotification) {
+//                [[UIApplication sharedApplication] cancelLocalNotification:self.localCallNotification];
+//                self.localCallNotification = nil;
+//            }
+//            
+//            if(reason == kWFAVCallEndReasonTimeout || (reason == kWFAVCallEndReasonRemoteHangup && callDuration == 0)) {
+//                UILocalNotification *callEndNotification = [[UILocalNotification alloc] init];
+//                if(reason == kWFAVCallEndReasonTimeout) {
+//                    callEndNotification.alertBody = @"来电未接听";
+//                } else {
+//                    callEndNotification.alertBody = @"来电已取消";
+//                }
+//                if (@available(iOS 8.2, *)) {
+//                    self.localCallNotification.alertTitle = @"网络通话";
+//                }
+//                
+//                //应该播放挂断的声音
+//    //            self.localCallNotification.soundName = @"ring.caf";
+//                [[UIApplication sharedApplication] scheduleLocalNotification:callEndNotification];
+//            }
+//        }
+        [self.channel invokeMethod:@"didEndCallCallback" arguments:@{@"reason":@(reason), @"duration":@(callDuration)}];
     });
 }
 

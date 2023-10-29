@@ -32,8 +32,53 @@ class RtckitPlatform extends PlatformInterface {
   @visibleForTesting
   final methodChannel = const MethodChannel('rtckit');
 
-  Future<void> initProto() async {
+  static DidReceiveCallCallback? _didReceiveCallCallback;
+  static ShouldStartRingCallback? _shouldStartRingCallback;
+  static ShouldStopRingCallback? _shouldStopRingCallback;
+  static DidEndCallCallback? _didEndCallCallback;
+
+  Future<void> initProto(DidReceiveCallCallback? didReceiveCallCallback, ShouldStartRingCallback? shouldStartRingCallback, ShouldStopRingCallback? shouldStopRingCallback, DidEndCallCallback? didEndCallCallback) async {
+    _didReceiveCallCallback = didReceiveCallCallback;
+    _shouldStartRingCallback = shouldStartRingCallback;
+    _shouldStopRingCallback = shouldStopRingCallback;
+    _didEndCallCallback = didEndCallCallback;
+
     methodChannel.invokeMethod<String>('initProto');
+
+    methodChannel.setMethodCallHandler((MethodCall call) async {
+      switch (call.method) {
+        case 'didReceiveCallCallback':
+          if(_didReceiveCallCallback != null) {
+            Map<dynamic, dynamic> args = call.arguments;
+            String callId = args['callId'];
+            _didReceiveCallCallback!(CallSession(callId));
+          }
+          break;
+        case 'shouldStartRingCallback':
+          if(_shouldStartRingCallback != null) {
+            Map<dynamic, dynamic> args = call.arguments;
+            bool incoming = args['incoming'];
+            _shouldStartRingCallback!(incoming);
+          }
+          break;
+        case 'shouldStopRingCallback':
+          if(_shouldStopRingCallback != null) {
+            _shouldStopRingCallback!();
+          }
+          break;
+        case 'didEndCallCallback':
+          if(_didEndCallCallback != null) {
+            Map<dynamic, dynamic> args = call.arguments;
+            int reason = args['reason'];
+            int duration = args['duration'];
+            _didEndCallCallback!(reason, duration);
+          }
+          break;
+        default:
+          debugPrint("Unknown event '${call.method}'");
+          break;
+      }
+    });
   }
 
   Future<int> get maxVideoCallCount async {
