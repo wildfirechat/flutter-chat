@@ -2073,7 +2073,6 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                 }
             }
         });
-
     }
 
     private int[] convertIntegerList(List<Integer> ints) {

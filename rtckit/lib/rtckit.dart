@@ -10,9 +10,14 @@ class CallSession {
   CallSession(this.callId);
 }
 
+typedef DidReceiveCallCallback = void Function(CallSession callSession);
+typedef ShouldStartRingCallback = void Function(bool incomming);
+typedef ShouldStopRingCallback = void Function();
+typedef DidEndCallCallback = void Function(int reason, int duration);
+
 class Rtckit {
-  static void init() {
-    RtckitPlatform.instance.initProto();
+  static void init({DidReceiveCallCallback? didReceiveCallCallback, ShouldStartRingCallback? shouldStartRingCallback, ShouldStopRingCallback? shouldStopRingCallback, DidEndCallCallback? didEndCallCallback}) {
+    RtckitPlatform.instance.initProto(didReceiveCallCallback, shouldStartRingCallback, shouldStopRingCallback, didEndCallCallback);
   }
 
   static Future<int> get maxVideoCallCount async {

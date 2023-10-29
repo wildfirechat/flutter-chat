@@ -5,9 +5,12 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.json.JSONObject;
 
@@ -35,13 +38,14 @@ import okhttp3.HttpUrl;
 /**
  * RtckitPlugin
  */
-public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware {
+public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityAware, AVEngineKit.AVEngineCallback {
     private static final String TAG = "WFCUIKit";
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
     /// This local reference serves to register the plugin with the Flutter Engine and unregister it
     /// when the Flutter Engine is detached from the Activity
     private static MethodChannel channel;
+    private static Handler handler;
     private static Context gContent;
     private static Activity gActivity;
     private static boolean isWfcUIKitInitialized = false;
@@ -51,6 +55,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         if (channel == null) {
             channel = new MethodChannel(flutterPluginBinding.getBinaryMessenger(), "rtckit");
             channel.setMethodCallHandler(this);
+            handler = new Handler(Looper.getMainLooper());
         }
         if (isWfcUIKitInitialized) {
             return;
@@ -67,6 +72,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
                 WfcUIKit.getWfcUIKit().init(application);
                 WfcUIKit.getWfcUIKit().setAppServiceProvider(AppService.Instance());
                 WfcUIKit.getWfcUIKit().setEnableNativeNotification(false);
+                WfcUIKit.getWfcUIKit().setAvEngineCallback(this);
                 setupWFCDirs(application);
                 break;
             } else {
@@ -271,5 +277,50 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     @Override
     public void onDetachedFromActivity() {
 
+    }
+
+    private static void callback2UI(@NonNull final String method, @Nullable final Object arguments) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (channel != null) {
+                    try {
+                        channel.invokeMethod(method, arguments);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Callback failure!!!");
+                        e.printStackTrace();
+                    }
+                } else {
+                    Log.e(TAG, "Unable callback to UI, because engine is deattached");
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onReceiveCall(AVEngineKit.CallSession callSession) {
+        Map data = new HashMap();
+        data.put("callId", callSession.getCallId());
+        callback2UI("didReceiveCallCallback", data);
+    }
+
+    @Override
+    public void shouldStartRing(boolean incoming) {
+        Map data = new HashMap();
+        data.put("incoming", incoming);
+        callback2UI("shouldStartRingCallback", data);
+    }
+
+    @Override
+    public void shouldSopRing() {
+        Map data = new HashMap();
+        callback2UI("shouldStopRingCallback", data);
+    }
+
+    @Override
+    public void didCallEnded(AVEngineKit.CallEndReason callEndReason, int duration) {
+        Map data = new HashMap();
+        data.put("reason", callEndReason.ordinal());
+        callback2UI("didEndCallCallback", data);
     }
 }
