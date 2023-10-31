@@ -81,6 +81,7 @@ import cn.wildfirechat.remote.SearchUserCallback;
 import cn.wildfirechat.remote.SendMessageCallback;
 import cn.wildfirechat.remote.StringListCallback;
 import cn.wildfirechat.remote.UploadMediaCallback;
+import cn.wildfirechat.remote.UserSettingScope;
 import cn.wildfirechat.remote.WatchOnlineStateCallback;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
@@ -1616,7 +1617,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void isHiddenGroupMemberName(@NonNull MethodCall call, @NonNull Result result) {
         String groupId = call.argument("groupId");
-        result.success(ChatManager.Instance().isHiddenGroupMemberName(groupId));
+        String value = ChatManager.Instance().getUserSetting(UserSettingScope.GroupHideNickname, groupId);
+        result.success("1".equals(value));
     }
 
     private void setHiddenGroupMemberName(@NonNull MethodCall call, @NonNull Result result) {
