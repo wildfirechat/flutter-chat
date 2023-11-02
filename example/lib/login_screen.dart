@@ -106,10 +106,7 @@ class LoginScreenState extends State<LoginScreen> {
                 String phoneNum = phoneFieldController.value.text;
                 String code = codeFieldController.value.text;
                 if(phoneNum != null && code != null) {
-                  AppServer.login(phoneNum, code, (userId, token, isNewUser, authToken) {
-                    if(authToken != null) {
-                      Rtckit.setupAppServer(Config.APP_Server_Address, authToken!);
-                    }
+                  AppServer.login(phoneNum, code, (userId, token, isNewUser) {
                     Imclient.connect(Config.IM_Host, userId, token);
                     Navigator.replace(context, oldRoute: ModalRoute.of(context)!,
                         newRoute: MaterialPageRoute(builder: (context) => const HomeTabBar()));

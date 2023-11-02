@@ -1,13 +1,393 @@
-
-import 'dart:ffi';
-
+import 'package:flutter/material.dart';
+import 'package:imclient/model/conversation.dart';
 import 'package:rtckit/rtckit_method_channel.dart';
 
 
-class CallSession {
+//CallSession状态
+const int kWFAVEngineStateIdle = 0;
+const int kWFAVEngineStateOutgoing = 1;
+const int kWFAVEngineStateIncoming = 2;
+const int kWFAVEngineStateConnecting = 3;
+const int kWFAVEngineStateConnected = 4;
+
+//通话结束原因
+///未知错误
+const int kWFAVCallEndReasonUnknown = 0;
+///忙线
+const int kWFAVCallEndReasonBusy = 1;
+///链路错误
+const int kWFAVCallEndReasonSignalError = 2;
+///用户挂断
+const int kWFAVCallEndReasonHangup = 3;
+///媒体错误
+const int kWFAVCallEndReasonMediaError = 4;
+///对方挂断
+const int kWFAVCallEndReasonRemoteHangup = 5;
+///摄像头错误
+const int kWFAVCallEndReasonOpenCameraFailure = 6;
+///未接听
+const int kWFAVCallEndReasonTimeout = 7;
+///被其它端接听
+const int kWFAVCallEndReasonAcceptByOtherClient = 8;
+///所有人都离开
+const int kWFAVCallEndReasonAllLeft = 9;
+///对方忙线中
+const int kWFAVCallEndReasonRemoteBusy = 10;
+///对方未接听
+const int kWFAVCallEndReasonRemoteTimeout = 11;
+///对方网络错误
+const int kWFAVCallEndReasonRemoteNetworkError = 12;
+///通话/会议被销毁
+const int kWFAVCallEndReasonRoomDestroyed = 13;
+///通话/会议不存在
+const int kWFAVCallEndReasonRoomNotExist = 14;
+///通话/会议人数已满
+const int kWFAVCallEndReasonRoomParticipantsFull = 15;
+///被其他事件打断
+const int kWFAVCallEndReasonInterrupted = 16;
+///对方被其他事件打断
+const int kWFAVCallEndReasonRemoteInterrupted = 17;
+
+//摄像头位置
+const int kWFAVCameraPositionUnknown = 0;
+const int kWFAVCameraPositionFront = 1;
+const int kWFAVCameraPositionBack = 2;
+
+//视频属性  分辨率(宽x高), 帧率(fps),码率(kbps)。超过720P还需要看设备支持不支持。
+/// kWFAVVideoProfile120P:       160x120,    15, 120
+const int kWFAVVideoProfile120P       = 0 ;
+/// kWFAVVideoProfile120P_3:     120x120,    15, 100
+const int kWFAVVideoProfile120P_3     = 2 ;
+/// kWFAVVideoProfile180P:       320x180,    15, 280
+const int kWFAVVideoProfile180P       = 10;
+/// kWFAVVideoProfile180P_3:     180x180,    15, 200
+const int kWFAVVideoProfile180P_3     = 12;
+/// kWFAVVideoProfile180P_4:     240x180,    15, 240
+const int kWFAVVideoProfile180P_4     = 13;
+/// kWFAVVideoProfile240P:       320x240,    15, 360
+const int kWFAVVideoProfile240P       = 20;
+/// kWFAVVideoProfile240P_3:     240x240,    15, 280
+const int kWFAVVideoProfile240P_3     = 22;
+/// kWFAVVideoProfile240P_4:     424x240,    15, 400
+const int kWFAVVideoProfile240P_4     = 23;
+/// kWFAVVideoProfile360P:       640x360,    15, 800
+const int kWFAVVideoProfile360P       = 30;
+/// kWFAVVideoProfile360P_3:     360x360,    15, 520
+const int kWFAVVideoProfile360P_3     = 32;
+/// kWFAVVideoProfile360P_4:     640x360,    30, 1200
+const int kWFAVVideoProfile360P_4     = 33;
+/// kWFAVVideoProfile360P_6:     360x360,    30, 780
+const int kWFAVVideoProfile360P_6     = 35;
+/// kWFAVVideoProfile360P_7:     480x360,    15, 1000
+const int kWFAVVideoProfile360P_7     = 36;
+/// kWFAVVideoProfile360P_8:     480x360,    30, 1500
+const int kWFAVVideoProfile360P_8     = 37;
+/// kWFAVVideoProfile480P:       640x480,    15, 1000
+const int kWFAVVideoProfile480P       = 40;
+/// kWFAVVideoProfile480P_3:     480x480,    15, 800
+const int kWFAVVideoProfile480P_3     = 42;
+/// kWFAVVideoProfile480P_4:     640x480,    30, 1500
+const int kWFAVVideoProfile480P_4     = 43;
+/// kWFAVVideoProfile480P_6:     480x480,    30, 1200
+const int kWFAVVideoProfile480P_6     = 45;
+/// kWFAVVideoProfile480P_8:     848x480,    15, 1200
+const int kWFAVVideoProfile480P_8     = 47;
+/// kWFAVVideoProfile480P_9:     848x480,    30, 1800
+const int kWFAVVideoProfile480P_9     = 48;
+/// kWFAVVideoProfile720P:       1280x720,   15, 2400
+const int kWFAVVideoProfile720P       = 50;
+/// kWFAVVideoProfile720P_3:     1280x720,   30, 3699
+const int kWFAVVideoProfile720P_3     = 52;
+/// kWFAVVideoProfile720P_5:     960x720,    15, 1920
+const int kWFAVVideoProfile720P_5     = 54;
+/// kWFAVVideoProfile720P_6:     960x720,    30, 2880
+const int kWFAVVideoProfile720P_6     = 55;
+/// kWFAVVideoProfile1080P: 1920x1080, 15, 4160
+const int kWFAVVideoProfile1080P      = 56;
+/// kWFAVVideoProfile1080P_3: 1920x1080, 30, 6240
+const int kWFAVVideoProfile1080P_3    = 57;
+/// kWFAVVideoProfile2K: 2540x1440, 15, 6240
+const int kWFAVVideoProfile2K         = 58;
+/// kWFAVVideoProfile2K_3: 2540x1440, 30, 8320
+const int kWFAVVideoProfile2K_3       = 59;
+/// kWFAVVideoProfile4K: 3840x2160, 15, 12480
+const int kWFAVVideoProfile4K         = 60;
+/// kWFAVVideoProfile4K_3: 3840x2160, 30, 18720
+const int kWFAVVideoProfile4K_3       = 61;
+const int kWFAVVideoProfileDefault    = kWFAVVideoProfile360P;
+
+
+const int kWFAVVideoTypeNone = 0;
+const int kWFAVVideoTypeBigStream = 1;
+const int kWFAVVideoTypeSmallStream = 2;
+
+// @interface WFAVParticipantProfile : NSObject
+// @property(nonatomic, strong, readonly)NSString *userId;
+// @property(nonatomic, assign, readonly)long long startTime;
+// @property(nonatomic, assign, readonly)WFAVEngineState state;
+// @property(nonatomic, assign, readonly)BOOL videoMuted;
+// @property(nonatomic, assign, readonly)BOOL audioMuted;
+// @property(nonatomic, assign, readonly)BOOL audience;
+// @property(nonatomic, assign, readonly)BOOL screeSharing;
+// //兼容专业版，实际无意义
+// @property(nonatomic, strong, readonly)NSString * _Nullable callExtra;
+// //兼容专业版，实际无意义
+// @property(nonatomic, assign, readonly)WFAVVideoType videoType;
+// @end
+
+class ParticipantProfile {
+  final String userId;
+  final int startTime;
+  final int state;
+  final bool videoMuted;
+  final bool audioMuted;
+  final bool audience;
+  final bool screenSharing;
+  final int videoType;
+
+  ParticipantProfile(this.userId, this.startTime, this.state, this.videoMuted,
+      this.audioMuted, this.audience, this.screenSharing, this.videoType);
+}
+class CallSession implements CallSessionCallback {
   String callId;
+  late int state;
+  String? inviter;
+  late bool audioOnly;
+  int? endReason;
+  Conversation? conversation;
+  late bool multiCall;
+  late bool audience;
+  int? endTime;
+  late bool conference;
+  late bool advanced;
+  String? initiator;
+  int? connectedTime;
+  late int startTime;
+
+  CallSessionCallback? _callback;
 
   CallSession(this.callId);
+
+  void setCallSessionCallback(CallSessionCallback? callback) {
+    _callback = callback;
+    Rtckit._setCallSessionCallback(callId, this);
+  }
+
+  void setLocalVideoView(int viewId) async {
+    return Rtckit._setLocalVideoView(callId, viewId);
+  }
+
+  void setRemoteVideoView(String userId, bool screenSharing, int viewId) async {
+    return Rtckit._setRemoteVideoView(callId, userId, screenSharing, viewId);
+  }
+
+  void startPreview() {
+    Rtckit._startPreview(callId);
+  }
+
+  Future<List<String>> get participantIds async {
+    return Rtckit._getParticipantIds(callId);
+  }
+
+  Future<List<ParticipantProfile>> get participantProfiles async {
+    return Rtckit._getParticipantProfiles(callId);
+  }
+
+  Future<void> answerCall(bool audioOnly) async {
+    return Rtckit._answerCall(callId, audioOnly);
+  }
+
+  Future<void> endCall() async {
+    return Rtckit._endCall(callId);
+  }
+
+  Future<void> muteAudio(bool muted) async {
+    return Rtckit._muteAudio(callId, muted);
+  }
+
+  Future<void> enableSpeaker(bool speaker) async {
+    return Rtckit._enableSpeaker(callId, speaker);
+  }
+
+  Future<void> muteVideo(bool muted) async {
+    return Rtckit._muteVideo(callId, muted);
+  }
+
+  Future<void> switchCamera() async {
+    return Rtckit._switchCamera(callId);
+  }
+
+  Future<int> get cameraPosition async {
+    return Rtckit._getCameraPosition(callId);
+  }
+
+  Future<bool> get isBluetoothSpeaker async {
+    return Rtckit._isBluetoothSpeaker(callId);
+  }
+
+  Future<bool> get isHeadsetPluggedIn async {
+    return Rtckit._isHeadsetPluggedIn(callId);
+  }
+
+  @override
+  void didCallEndWithReason(int reason) {
+    endReason = reason;
+    if(_callback != null) {
+      _callback!.didCallEndWithReason(reason);
+    }
+  }
+
+  @override
+  void didChangeInitiator(String initiator) {
+    this.initiator = initiator;
+    if(_callback != null) {
+      _callback!.didChangeInitiator(initiator);
+    }
+  }
+
+  @override
+  void didChangeMode(bool isAudioOnly) {
+    audioOnly = isAudioOnly;
+    if(_callback != null) {
+      _callback!.didChangeMode(isAudioOnly);
+    }
+  }
+
+  @override
+  void didChangeState(int state) {
+    this.state = state;
+    if(_callback != null) {
+      _callback!.didChangeState(state);
+    }
+  }
+
+  @override
+  void didCreateLocalVideoTrack() {
+    if(_callback != null) {
+      _callback!.didCreateLocalVideoTrack();
+    }
+  }
+
+  @override
+  void didError(String error) {
+    if(_callback != null) {
+      _callback!.didError(error);
+    }
+  }
+
+  @override
+  void didGetStats() {
+    if(_callback != null) {
+      _callback!.didGetStats();
+    }
+  }
+
+  @override
+  void didParticipantConnected(String userId, bool screenSharing) {
+    if(_callback != null) {
+      _callback!.didParticipantConnected(userId, screenSharing);
+    }
+  }
+
+  @override
+  void didParticipantJoined(String userId, bool screenSharing) {
+    if(_callback != null) {
+      _callback!.didParticipantJoined(userId, screenSharing);
+    }
+  }
+
+  @override
+  void didParticipantLeft(String userId, bool screenSharing, int reason) {
+    if(_callback != null) {
+      _callback!.didParticipantLeft(userId, screenSharing, reason);
+    }
+  }
+
+  @override
+  void didReceiveRemoteVideoTrack(String userId, bool screenSharing) {
+    if(_callback != null) {
+      _callback!.didReceiveRemoteVideoTrack(userId, screenSharing);
+    }
+  }
+
+  @override
+  void didVideoMuted(String userId, bool videoMuted) {
+    if(_callback != null) {
+      _callback!.didVideoMuted(userId, videoMuted);
+    }
+  }
+
+  @override
+  void didChangeAudioRoute() {
+    if(_callback != null) {
+      _callback!.didChangeAudioRoute();
+    }
+  }
+
+  @override
+  void didChangeType(String userId, bool audience) {
+    if(_callback != null) {
+      _callback!.didChangeType(userId, audience);
+    }
+  }
+
+  @override
+  void didMuteStateChanged(List<String> userIds) {
+    if(_callback != null) {
+      _callback!.didMuteStateChanged(userIds);
+    }
+  }
+
+  @override
+  void didRemoteMediaLost(String userId, String media, bool uplink, int lostPackage, bool screenSharing) {
+    if(_callback != null) {
+      _callback!.didRemoteMediaLost(userId, media, uplink, lostPackage, screenSharing);
+    }
+  }
+
+  @override
+  void didReportAudioVolume(String userId, int volume) {
+    if(_callback != null) {
+      _callback!.didReportAudioVolume(userId, volume);
+    }
+  }
+
+  @override
+  void didMediaLost(String media, int lostPackage, bool screenSharing) {
+    if(_callback != null) {
+      _callback!.didMediaLost(media, lostPackage, screenSharing);
+    }
+  }
+
+  @override
+  void onScreenSharingFailure() {
+    if(_callback != null) {
+      _callback!.onScreenSharingFailure();
+    }
+  }
+}
+
+abstract class CallSessionCallback {
+  void didCallEndWithReason(int reason) {}
+  void didChangeInitiator(String initiator) {}
+  void didChangeMode(bool isAudioOnly) {}
+  void didChangeState(int state) {}
+  void didCreateLocalVideoTrack() {}
+  void didError(String error) {}
+  void didGetStats() {}
+  void didParticipantConnected(String userId, bool screenSharing) {}
+  void didParticipantJoined(String userId, bool screenSharing) {}
+  void didParticipantLeft(String userId, bool screenSharing, int reason) {}
+  void didReceiveRemoteVideoTrack(String userId, bool screenSharing) {}
+  void didVideoMuted(String userId, bool videoMuted) {}
+
+  void didReportAudioVolume(String userId, int volume) {}
+  void didChangeType(String userId, bool audience) {}
+  void didChangeAudioRoute() {}
+  void didMuteStateChanged(List<String> userIds);
+  void didMediaLost(String media, int lostPackage, bool screenSharing) {}
+  void didRemoteMediaLost(String userId, String media, bool uplink, int lostPackage, bool screenSharing) {}
+  void onScreenSharingFailure() {}
 }
 
 typedef DidReceiveCallCallback = void Function(CallSession callSession);
@@ -40,24 +420,12 @@ class Rtckit {
     return RtckitPlatform.instance.addICEServer(url, name, password);
   }
 
-  static Future<void> startSingleCall(String userId, bool audioOnly) async {
+  static Future<CallSession?> startSingleCall(String userId, bool audioOnly) async {
       return RtckitPlatform.instance.startSingleCall(userId, audioOnly);
   }
 
-  static Future<void> startMultiCall(String groupId, List<String> participants, bool audioOnly) async {
+  static Future<CallSession?> startMultiCall(String groupId, List<String> participants, bool audioOnly) async {
     return RtckitPlatform.instance.startMultiCall(groupId, participants, audioOnly);
-  }
-
-  static Future<void> setupAppServer(String appServerAddress, String authToken) async {
-    return RtckitPlatform.instance.setupAppServer(appServerAddress, authToken);
-  }
-
-  static Future<void> showConferenceInfo(String conferenceId, String? password) async {
-    return RtckitPlatform.instance.showConferenceInfo(conferenceId, password);
-  }
-
-  static Future<void> showConferencePortal() async {
-    return RtckitPlatform.instance.showConferencePortal();
   }
 
   static Future<bool> isSupportMultiCall() async {
@@ -106,11 +474,63 @@ class Rtckit {
     return RtckitPlatform.instance.currentCallSession();
   }
 
-  static Future<void> answerCall(bool audioOnly) async {
-    return RtckitPlatform.instance.answerCall(audioOnly);
+  static Future<void> _setLocalVideoView(String callId, int viewId) async {
+    return RtckitPlatform.instance.setLocalVideoView(callId, viewId);
   }
 
-  static Future<void> endCall(String callId) async {
+  static Future<void> _setRemoteVideoView(String callId, String userId, bool screenSharing, int viewId) async {
+    return RtckitPlatform.instance.setRemoteVideoView(callId, userId, screenSharing, viewId);
+  }
+
+  static Future<void> _startPreview(String callId) async {
+    return RtckitPlatform.instance.startPreview(callId);
+  }
+
+  static Future<void> _answerCall(String callId, bool audioOnly) async {
+    return RtckitPlatform.instance.answerCall(callId, audioOnly);
+  }
+
+  static Future<void> _endCall(String callId) async {
     return RtckitPlatform.instance.endCall(callId);
+  }
+
+  static Future<void> _muteAudio(String callId, bool muted) async {
+    return RtckitPlatform.instance.muteAudio(callId, muted);
+  }
+
+  static Future<void> _enableSpeaker(String callId, bool speaker) async {
+    return RtckitPlatform.instance.enableSpeaker(callId, speaker);
+  }
+
+  static Future<void> _muteVideo(String callId, bool muted) async {
+    return RtckitPlatform.instance.muteVideo(callId, muted);
+  }
+
+  static Future<void> _switchCamera(String callId) async {
+    return RtckitPlatform.instance.switchCamera(callId);
+  }
+
+  static Future<int> _getCameraPosition(String callId) async {
+    return RtckitPlatform.instance.getCameraPosition(callId);
+  }
+
+  static Future<bool> _isBluetoothSpeaker(String callId) async {
+    return RtckitPlatform.instance.isBluetoothSpeaker(callId);
+  }
+
+  static Future<bool> _isHeadsetPluggedIn(String callId) async {
+    return RtckitPlatform.instance.isHeadsetPluggedIn(callId);
+  }
+
+  static Future<List<String>> _getParticipantIds(String callId) async {
+    return RtckitPlatform.instance.getParticipantIds(callId);
+  }
+
+  static Future<List<ParticipantProfile>> _getParticipantProfiles(String callId) async {
+    return RtckitPlatform.instance.getParticipantProfiles(callId);
+  }
+
+  static void _setCallSessionCallback(String callId, CallSessionCallback? callback) {
+    RtckitPlatform.instance.setCallSessionCallback(callId, callback);
   }
 }

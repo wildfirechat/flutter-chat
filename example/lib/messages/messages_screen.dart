@@ -24,6 +24,7 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:rtckit/rtckit.dart';
+import 'package:rtckit/single_voice_call.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/messages/cell_builder/voice_cell_builder.dart';
 import 'package:wfc_example/messages/conversation_settings.dart';
@@ -247,7 +248,8 @@ class _State extends State<MessagesScreen> {
       bool isAudioOnly = value == 'voice';
 
       if(widget.conversation.conversationType == ConversationType.Single) {
-        Rtckit.startSingleCall(widget.conversation.target, isAudioOnly);
+        SingleVideoCallView callView = SingleVideoCallView(userId:widget.conversation.target, audioOnly:isAudioOnly);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
       } else if(widget.conversation.conversationType == ConversationType.Group) {
         Imclient.getGroupMembers(widget.conversation.target).then((groupMembers) {
           List<String> members = [];

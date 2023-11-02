@@ -7,6 +7,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:rtckit/rtckit.dart';
+import 'package:rtckit/single_voice_call.dart';
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/contact/invite_friend.dart';
 
@@ -181,7 +182,8 @@ class _UserInfoState extends State<UserInfoWidget> {
             MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
           );
         } else if(key == "voip") {
-          Rtckit.startSingleCall(widget.userId, false);
+          SingleVideoCallView callView = SingleVideoCallView(userId:widget.userId, audioOnly:false);
+          Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
         } else if(key == "friend") {
           Navigator.push(
             context,
