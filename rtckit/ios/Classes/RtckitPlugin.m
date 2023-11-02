@@ -8,17 +8,19 @@
 @property(nonatomic, strong)WFAVCallSession *callSession;
 @property(nonatomic, strong)FlutterMethodChannel* channel;
 @property(nonatomic, weak)NSMutableDictionary<NSString*, WFCallSessionDelegater*>* delegaters;
+@property(nonatomic, weak)NSMutableDictionary<NSNumber*, FLNativeView*>* videoViews;
 
-- (instancetype)initWithSession:(WFAVCallSession *)callSession channel:(FlutterMethodChannel *)channel delegaters:(NSMutableDictionary<NSString*, WFCallSessionDelegater*> *)delegaters;
+- (instancetype)initWithSession:(WFAVCallSession *)callSession channel:(FlutterMethodChannel *)channel delegaters:(NSMutableDictionary<NSString*, WFCallSessionDelegater*> *)delegaters videoViews:(NSMutableDictionary<NSNumber*, FLNativeView*> *)videoViews;
 @end
 
 @implementation WFCallSessionDelegater
-- (instancetype)initWithSession:(WFAVCallSession *)callSession channel:(FlutterMethodChannel *)channel delegaters:(NSMutableDictionary<NSString*, WFCallSessionDelegater*> *)delegaters {
+- (instancetype)initWithSession:(WFAVCallSession *)callSession channel:(FlutterMethodChannel *)channel delegaters:(NSMutableDictionary<NSString*, WFCallSessionDelegater*> *)delegaters videoViews:(NSMutableDictionary<NSNumber*, FLNativeView*> *)videoViews {
     self = [super init];
     if(self) {
         self.callSession = callSession;
         self.channel = channel;
         self.delegaters = delegaters;
+        self.videoViews = videoViews;
         if(callSession) {
             [self.delegaters setValue:self forKey:callSession.callId];
         }
@@ -34,6 +36,10 @@
 - (void)didCallEndWithReason:(WFAVCallEndReason)reason {
     [self.delegaters removeObjectForKey:self.callSession.callId];
     [self.channel invokeMethod:@"didCallEndWithReason" arguments:@{@"callId":self.callSession.callId, @"reason":@(reason)}];
+    if([[WFAVEngineKit sharedEngineKit].currentSession.callId isEqualToString:self.callSession.callId]) {
+        [self.delegaters removeAllObjects];
+        [self.videoViews removeAllObjects];
+    }
 }
 
 - (void)didChangeInitiator:(NSString * _Nullable)initiator { 
@@ -192,7 +198,7 @@
     Class cls = NSClassFromString(@"WFCCConversation");
     id obj = [cls performSelector:@selector(singleConversation:) withObject:userId];
     
-    WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:nil channel:self.channel delegaters:self.delegaters];
+    WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:nil channel:self.channel delegaters:self.delegaters videoViews:self.videoViews];
     WFAVCallSession *callSession = [[WFAVEngineKit sharedEngineKit] startCall:@[userId] audioOnly:audioOnly callExtra:nil conversation:obj sessionDelegate:delegater];
     delegater.callSession = callSession;
     result([self callSession2Dict:callSession]);
@@ -206,7 +212,7 @@
     id obj = [cls performSelector:@selector(groupConversation:) withObject:groupId];
     
     
-    WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:nil channel:self.channel delegaters:self.delegaters];
+    WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:nil channel:self.channel delegaters:self.delegaters videoViews:self.videoViews];
     WFAVCallSession *callSession = [[WFAVEngineKit sharedEngineKit] startCall:participants audioOnly:audioOnly callExtra:nil conversation:obj sessionDelegate:delegater];
     delegater.callSession = callSession;
     result([self callSession2Dict:callSession]);
@@ -254,10 +260,14 @@
     }
     dictionary[@"audioOnly"] = @(session.audioOnly);
     dictionary[@"endReason"] = @(session.endReason);
+    dictionary[@"speaker"] = @(session.speaker);
+    dictionary[@"videoMuted"] = @(session.videoMuted);
+    dictionary[@"audioMuted"] = @(session.audioMuted);
     dictionary[@"conference"] = @(session.conference);
     dictionary[@"audience"] = @(session.audience);
     dictionary[@"advanced"] = @(session.advanced);
     dictionary[@"multiCall"] = @(session.multiCall);
+    
     return dictionary;
 }
 
@@ -393,7 +403,7 @@
             return;
         }
         
-        WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:session channel:self.channel delegaters:self.delegaters];
+        WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:session channel:self.channel delegaters:self.delegaters videoViews:self.videoViews];
         session.delegate = delegater;
         
         [self.channel invokeMethod:@"didReceiveCallCallback" arguments:@{@"callSession":[self callSession2Dict:session]}];

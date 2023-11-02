@@ -92,7 +92,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     } else {
       return Positioned(top: 64,
         left: 16,
-        child: SizedBox(width: 240, height: 160, child: smallVideoView),);
+        child: SizedBox(width: 120, height: 180, child: smallVideoView),);
     }
   }
 
@@ -118,6 +118,17 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   }
 
   List<Widget> _controlRowBottom1(BuildContext context) {
+    if(!widget.callSession!.audioOnly) {
+      if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
+        return [];
+      } else if(widget.callSession!.state == kWFAVEngineStateIncoming) {
+        //1 downgrade to voice call
+        return [_blankControl(context), _blankControl(context), _downgrade2VoiceControl(context)];
+      } else {
+        //1 downgrade to voice call
+        return [_switchCameraControl(context), _blankControl(context), _downgrade2VoiceControl(context)];
+      }
+    }
     return [];
   }
 
@@ -130,13 +141,21 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         //2 button, hangup, accept
         return [_hangupControl(context), _acceptControl(context)];
       } else {
-        //3 smic, hangup, speaker
+        //3 mic, hangup, speaker
         return [_audioMuteControl(context), _hangupControl(context), _speakerControl(context)];
       }
     } else {
-
+      if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
+        //3 button, mic, hangup, switch camera
+        return [_audioMuteControl(context), _hangupControl(context), _switchCameraControl(context)];
+      } else if(widget.callSession!.state == kWFAVEngineStateIncoming) {
+        //2 button, hangup， accept
+        return [_hangupControl(context), _acceptControl(context)];
+      } else {
+        //3 mic, hangup, switch camera
+        return [_audioMuteControl(context), _hangupControl(context), _videoMuteControl(context)];
+      }
     }
-    return [_hangupControl(context)];
   }
 
   Widget _acceptControl(BuildContext context) {
@@ -176,10 +195,46 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         GestureDetector(
           child: const Icon(Icons.mic_none_rounded),
           onTap: () {
+            widget.callSession!.muteAudio(!widget.callSession!.audioMuted);
+            setState(() {
 
+            });
           },
         ),
-        const Text('挂断'),
+        const Text('麦克风'),
+      ],
+    ),);
+  }
+
+  Widget _videoMuteControl(BuildContext context) {
+    return Expanded(child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        GestureDetector(
+          child: const Icon(Icons.camera_alt_rounded),
+          onTap: () {
+            widget.callSession!.muteVideo(!widget.callSession!.videoMuted);
+            setState(() {
+
+            });
+          },
+        ),
+        const Text('麦克风'),
+      ],
+    ),);
+  }
+
+  Widget _switchCameraControl(BuildContext context) {
+    return Expanded(child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        GestureDetector(
+          child: const Icon(Icons.camera_alt_rounded),
+          onTap: () {
+            widget.callSession!.switchCamera();
+          },
+        ),
+        const Text('翻转'),
       ],
     ),);
   }
@@ -191,10 +246,32 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         GestureDetector(
           child: const Icon(Icons.volume_mute_rounded),
           onTap: () {
+            widget.callSession!.enableSpeaker(!widget.callSession!.speaker);
+            setState(() {
+
+            });
+          },
+        ),
+        const Text('扬声器'),
+      ],
+    ),);
+  }
+
+  Widget _blankControl(BuildContext context) {
+    return Expanded(child: Container(),);
+  }
+
+  Widget _downgrade2VoiceControl(BuildContext context) {
+    return Expanded(child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        GestureDetector(
+          child: const Icon(Icons.switch_access_shortcut_rounded),
+          onTap: () {
 
           },
         ),
-        const Text('挂断'),
+        const Text('转为语音'),
       ],
     ),);
   }
@@ -210,7 +287,6 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
           ],
         ),
         Expanded(child: Container()),
-
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: _controlRowBottom1(context),
@@ -225,13 +301,15 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   }
 
   void updateVideoView() {
-    if(localVideoCreated && smallVideoViewId != null) {
-      widget.callSession!.setLocalVideoView(smallVideoViewId!);
-    }
+    setState(() {
+      if(localVideoCreated && smallVideoViewId != null) {
+        widget.callSession!.setLocalVideoView(smallVideoViewId!);
+      }
 
-    if(remoteVideoCreated && bigVideoViewId != null) {
-      widget.callSession!.setRemoteVideoView(widget.userId!, false, bigVideoViewId!);
-    }
+      if(remoteVideoCreated && bigVideoViewId != null) {
+        widget.callSession!.setRemoteVideoView(widget.userId!, false, bigVideoViewId!);
+      }
+    });
   }
 
   @override

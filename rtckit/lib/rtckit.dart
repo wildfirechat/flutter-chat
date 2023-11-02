@@ -155,6 +155,9 @@ class CallSession implements CallSessionCallback {
   late bool audioOnly;
   int? endReason;
   Conversation? conversation;
+  late bool speaker;
+  late bool videoMuted;
+  late bool audioMuted;
   late bool multiCall;
   late bool audience;
   int? endTime;
@@ -202,14 +205,17 @@ class CallSession implements CallSessionCallback {
   }
 
   Future<void> muteAudio(bool muted) async {
+    audioMuted = muted;
     return Rtckit._muteAudio(callId, muted);
   }
 
   Future<void> enableSpeaker(bool speaker) async {
+    this.speaker = speaker;
     return Rtckit._enableSpeaker(callId, speaker);
   }
 
   Future<void> muteVideo(bool muted) async {
+    videoMuted = muted;
     return Rtckit._muteVideo(callId, muted);
   }
 

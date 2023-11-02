@@ -339,6 +339,9 @@ class RtckitPlatform extends PlatformInterface {
     session.advanced = map['advanced'];
     session.initiator = map['initiator'];
     session.startTime = map['startTime'];
+    session.speaker = map['speaker'];
+    session.audioMuted = map['audioMuted'];
+    session.videoMuted = map['videoMuted'];
     return session;
   }
 
@@ -383,7 +386,7 @@ class RtckitPlatform extends PlatformInterface {
   }
 
   Future<void> switchCamera(String callId) async {
-    return await methodChannel.invokeMethod("endCall", {'callId':callId});
+    return await methodChannel.invokeMethod("switchCamera", {'callId':callId});
   }
 
   Future<int> getCameraPosition(String callId) async {
