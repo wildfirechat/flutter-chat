@@ -57,4 +57,7 @@
   return _view;
 }
 
+- (void)dealloc {
+    NSLog(@"rtc view dealloc");
+}
 @end
