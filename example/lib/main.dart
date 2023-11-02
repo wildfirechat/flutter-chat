@@ -11,6 +11,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:imclient/model/user_online_state.dart';
 // import 'package:momentclient/momentclient.dart';
 import 'package:rtckit/rtckit.dart';
+import 'package:rtckit/single_voice_call.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
@@ -45,6 +46,9 @@ class _MyAppState extends State<MyApp> {
         didReceiveCallCallback: (callSession) {
           //收到来电通知，原生代码会自动弹出来电界面。如果在后台，这里要弹出本地通知，本地通知带上震铃声。
           debugPrint('didReceiveCallCallback: ${callSession.callId}');
+          SingleVideoCallView callView = SingleVideoCallView(callSession: callSession);
+          // Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
+          navKey.currentState!.push(MaterialPageRoute(builder: (context) => callView));
         },
         shouldStartRingCallback: (incoming) {
           //原生代码通知上层播放铃声。如果在后台就开始震动，如果在前台就播放铃声。这样做的原因是有些系统限制后台播放声音。

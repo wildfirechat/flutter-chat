@@ -80,7 +80,7 @@ class DiscoveryState extends State<DiscoveryTab> {
             launch(url);
           });
         } else if(key == 'conference') {
-          Rtckit.showConferencePortal();
+
         } else {
           Fluttertoast.showToast(msg: "方法没有实现");
           print("on tap item $index");

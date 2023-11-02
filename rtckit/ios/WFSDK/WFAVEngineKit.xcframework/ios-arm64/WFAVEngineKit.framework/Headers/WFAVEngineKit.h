@@ -310,12 +310,6 @@ typedef NS_ENUM(NSInteger, WFAVCameraPosition) {
 
 @optional
 /**
- 通话状态统计的回调。已经废弃，请使用didGetStats:ofUser:isScreensharing
-
- @param stats 统计信息
- */
-- (void)didGetStats:(NSArray *_Nonnull)stats;
-/**
 语音音量报告
 
 @param volume 音量

@@ -1,6 +1,0 @@
-framework module WFChatUIKit {
-  umbrella header "WFChatUIKit.h"
-  export *
-
-  module * { export * }
-}

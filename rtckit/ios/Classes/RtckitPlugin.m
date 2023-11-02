@@ -1,27 +1,149 @@
 #import "RtckitPlugin.h"
+#import <Flutter/Flutter.h>
+#import "FLNativeView.h"
 #import <WFAVEngineKit/WFAVEngineKit.h>
-#import <WFChatUIKit/WFCUVideoViewController.h>
-#import <WFChatUIKit/WFCUMultiVideoViewController.h>
-#import "AppService.h"
+
+
+@interface WFCallSessionDelegater : NSObject<WFAVCallSessionDelegate>
+@property(nonatomic, strong)WFAVCallSession *callSession;
+@property(nonatomic, strong)FlutterMethodChannel* channel;
+@property(nonatomic, weak)NSMutableDictionary<NSString*, WFCallSessionDelegater*>* delegaters;
+
+- (instancetype)initWithSession:(WFAVCallSession *)callSession channel:(FlutterMethodChannel *)channel delegaters:(NSMutableDictionary<NSString*, WFCallSessionDelegater*> *)delegaters;
+@end
+
+@implementation WFCallSessionDelegater
+- (instancetype)initWithSession:(WFAVCallSession *)callSession channel:(FlutterMethodChannel *)channel delegaters:(NSMutableDictionary<NSString*, WFCallSessionDelegater*> *)delegaters {
+    self = [super init];
+    if(self) {
+        self.callSession = callSession;
+        self.channel = channel;
+        self.delegaters = delegaters;
+        if(callSession) {
+            [self.delegaters setValue:self forKey:callSession.callId];
+        }
+    }
+    return self;
+}
+
+-(void)setCallSession:(WFAVCallSession *)callSession {
+    _callSession = callSession;
+    [self.delegaters setValue:self forKey:callSession.callId];
+}
+
+- (void)didCallEndWithReason:(WFAVCallEndReason)reason {
+    [self.delegaters removeObjectForKey:self.callSession.callId];
+    [self.channel invokeMethod:@"didCallEndWithReason" arguments:@{@"callId":self.callSession.callId, @"reason":@(reason)}];
+}
+
+- (void)didChangeInitiator:(NSString * _Nullable)initiator { 
+    [self.channel invokeMethod:@"didChangeInitiator" arguments:@{@"callId":self.callSession.callId, @"initiator":initiator}];
+}
+
+- (void)didChangeMode:(BOOL)isAudioOnly { 
+    [self.channel invokeMethod:@"didChangeMode" arguments:@{@"callId":self.callSession.callId, @"isAudioOnly":@(isAudioOnly)}];
+}
+
+- (void)didChangeState:(WFAVEngineState)state { 
+    if(self.callSession) {
+        [self.channel invokeMethod:@"didChangeState" arguments:@{@"callId":self.callSession.callId, @"state":@(state)}];
+    }
+}
+
+- (void)didCreateLocalVideoTrack:(RTCVideoTrack * _Nonnull)localVideoTrack { 
+    [self.channel invokeMethod:@"didCreateLocalVideoTrack" arguments:@{@"callId":self.callSession.callId}];
+}
+
+- (void)didError:(NSError * _Nonnull)error { 
+    [self.channel invokeMethod:@"didError" arguments:@{@"callId":self.callSession.callId, @"error":error.localizedDescription}];
+}
+
+- (void)didGetStats:(NSArray * _Nonnull)stats { 
+//    [self.channel invokeMethod:@"didGetStats" arguments:@{@"callId":self.callSession.callId}];
+}
+
+- (void)didParticipantConnected:(NSString * _Nonnull)userId screenSharing:(BOOL)screenSharing { 
+    [self.channel invokeMethod:@"didParticipantConnected" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"screenSharing":@(screenSharing)}];
+}
+
+- (void)didParticipantJoined:(NSString * _Nonnull)userId screenSharing:(BOOL)screenSharing { 
+    [self.channel invokeMethod:@"didParticipantJoined" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"screenSharing":@(screenSharing)}];
+}
+
+- (void)didParticipantLeft:(NSString * _Nonnull)userId screenSharing:(BOOL)screenSharing withReason:(WFAVCallEndReason)reason { 
+    [self.channel invokeMethod:@"didParticipantLeft" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"screenSharing":@(screenSharing), @"reason":@(reason)}];
+}
+
+- (void)didReceiveRemoteVideoTrack:(RTCVideoTrack * _Nonnull)remoteVideoTrack fromUser:(NSString * _Nonnull)userId screenSharing:(BOOL)screenSharing { 
+    [self.channel invokeMethod:@"didReceiveRemoteVideoTrack" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"screenSharing":@(screenSharing)}];
+}
+
+- (void)didVideoMuted:(BOOL)videoMuted fromUser:(NSString * _Nonnull)userId { 
+    [self.channel invokeMethod:@"didVideoMuted" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"videoMuted":@(videoMuted)}];
+}
+
+- (void)didReportAudioVolume:(NSInteger)volume ofUser:(NSString *_Nonnull)userId {
+    [self.channel invokeMethod:@"didReportAudioVolume" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"volume":@(volume)}];
+}
+
+- (void)didChangeType:(BOOL)audience ofUser:(NSString *_Nonnull)userId {
+    [self.channel invokeMethod:@"didChangeType" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"audience":@(audience)}];
+}
+
+- (void)didChangeAudioRoute {
+    [self.channel invokeMethod:@"didChangeAudioRoute" arguments:@{@"callId":self.callSession.callId}];
+}
+
+- (void)didMuteStateChanged:(NSArray<NSString *> *_Nonnull)userIds {
+    [self.channel invokeMethod:@"didMuteStateChanged" arguments:@{@"callId":self.callSession.callId, @"userIds":userIds}];
+}
+
+- (void)didMedia:(NSString *_Nullable)media lostPackage:(int)lostPackage screenSharing:(BOOL)screenSharing {
+    [self.channel invokeMethod:@"didMediaLost" arguments:@{@"callId":self.callSession.callId, @"media":media, @"lostPackage":@(lostPackage), @"screenSharing":@(screenSharing)}];
+}
+
+- (void)didMedia:(NSString *_Nullable)media lostPackage:(int)lostPackage uplink:(BOOL)uplink ofUser:(NSString *_Nonnull)userId screenSharing:(BOOL)screenSharing {
+    [self.channel invokeMethod:@"didRemoteMediaLost" arguments:@{@"callId":self.callSession.callId, @"media":media, @"userId":userId, @"lostPackage":@(lostPackage), @"uplink":@(uplink), @"screenSharing":@(screenSharing)}];
+}
+
+- (void)onScreenSharingFailure {
+    [self.channel invokeMethod:@"onScreenSharingFailure" arguments:@{@"callId":self.callSession.callId}];
+}
+
+//- (RTCVideoFrame *_Nonnull)didCaptureVideoFrame:(RTCVideoFrame *_Nonnull)frame screenSharing:(BOOL)isScreenSharing {
+//    
+//}
+
+//- (void)didGetStats:(NSArray<RTCLegacyStatsReport *> *_Nonnull)stats ofUser:(NSString *_Nonnull)userId screenSharing:(BOOL)screenSharing {
+//    [self.channel invokeMethod:@"didVideoMuted" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"videoMuted":@(videoMuted)}];
+//}
+@end
+
 
 @interface RtckitPlugin () <WFAVEngineDelegate>
 @property(nonatomic, strong)FlutterMethodChannel* channel;
 
-@property(nonatomic, strong) AVAudioPlayer *audioPlayer;
-//@property(nonatomic, strong) UILocalNotification *localCallNotification;
+@property(nonatomic, strong)NSMutableDictionary<NSString*, WFCallSessionDelegater*>* delegaters;
+
+@property(nonatomic, strong)NSMutableDictionary<NSNumber*, FLNativeView*>* videoViews;
 @end
+
 
 @implementation RtckitPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  FlutterMethodChannel* channel = [FlutterMethodChannel
-      methodChannelWithName:@"rtckit"
-            binaryMessenger:[registrar messenger]];
-  RtckitPlugin* instance = [[RtckitPlugin alloc] init];
+    FlutterMethodChannel* channel = [FlutterMethodChannel
+                                     methodChannelWithName:@"rtckit"
+                                     binaryMessenger:[registrar messenger]];
+    RtckitPlugin* instance = [[RtckitPlugin alloc] init];
     instance.channel = channel;
-  [registrar addMethodCallDelegate:instance channel:channel];
-  [WFAVEngineKit notRegisterVoipPushService];
-  [WFAVEngineKit sharedEngineKit].delegate = instance;
-  [WFCUConfigManager globalManager].appServiceProvider = [AppService sharedAppService];
+    [registrar addMethodCallDelegate:instance channel:channel];
+    [WFAVEngineKit notRegisterVoipPushService];
+    [WFAVEngineKit sharedEngineKit].delegate = instance;
+    instance.delegaters = [[NSMutableDictionary alloc] init];
+    instance.videoViews = [[NSMutableDictionary alloc] init];
+    
+    FLNativeViewFactory* factory = [[FLNativeViewFactory alloc] initWithMessenger:registrar.messenger maps:instance.videoViews];
+    [registrar registerViewFactory:factory withId:@"<platform-view-type>"];
 }
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
@@ -67,62 +189,29 @@
 - (void)startSingleCall:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *userId = dict[@"userId"];
     BOOL audioOnly = [dict[@"audioOnly"] boolValue];
+    Class cls = NSClassFromString(@"WFCCConversation");
+    id obj = [cls performSelector:@selector(singleConversation:) withObject:userId];
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        Class cls = NSClassFromString(@"WFCCConversation");
-        id obj = [cls performSelector:@selector(singleConversation:) withObject:userId];
-        WFCUVideoViewController *videoVC = [[WFCUVideoViewController alloc] initWithTargets:@[userId] conversation:obj audioOnly:audioOnly];
-        [[WFAVEngineKit sharedEngineKit] presentViewController:videoVC];
-    });
-    result(nil);
+    WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:nil channel:self.channel delegaters:self.delegaters];
+    WFAVCallSession *callSession = [[WFAVEngineKit sharedEngineKit] startCall:@[userId] audioOnly:audioOnly callExtra:nil conversation:obj sessionDelegate:delegater];
+    delegater.callSession = callSession;
+    result([self callSession2Dict:callSession]);
 }
 
 - (void)startMultiCall:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *groupId = dict[@"groupId"];
     NSArray<NSString *> *participants = dict[@"participants"];
     BOOL audioOnly = [dict[@"audioOnly"] boolValue];
+    Class cls = NSClassFromString(@"WFCCConversation");
+    id obj = [cls performSelector:@selector(groupConversation:) withObject:groupId];
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        Class cls = NSClassFromString(@"WFCCConversation");
-        id obj = [cls performSelector:@selector(groupConversation:) withObject:groupId];
-        
-        UIViewController *videoVC = [[WFCUMultiVideoViewController alloc] initWithTargets:participants conversation:obj audioOnly:audioOnly];
-        [[WFAVEngineKit sharedEngineKit] presentViewController:videoVC];
-    });
-    result(nil);
-}
-
-- (void)setupAppServer:(NSDictionary *)dict result:(FlutterResult)result {
-    NSString *appServerAddress = dict[@"appServerAddress"];
-    NSString *authToken = dict[@"authToken"];
-    [[AppService sharedAppService] setServerAddress:appServerAddress];
-    [[AppService sharedAppService] setAppAuthToken:authToken];
-    result(nil);
-}
-
-- (void)showConferenceInfo:(NSDictionary *)dict result:(FlutterResult)result {
-    NSString *conferenceId = dict[@"conferenceId"];
-    NSString *password = dict[@"password"];
-    WFZConferenceInfoViewController *vc = [[WFZConferenceInfoViewController alloc] init];
-    vc.conferenceId = conferenceId;
-    vc.password = password;
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[WFAVEngineKit sharedEngineKit] presentViewController:vc];
-    });
-    result(nil);
+    WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:nil channel:self.channel delegaters:self.delegaters];
+    WFAVCallSession *callSession = [[WFAVEngineKit sharedEngineKit] startCall:participants audioOnly:audioOnly callExtra:nil conversation:obj sessionDelegate:delegater];
+    delegater.callSession = callSession;
+    result([self callSession2Dict:callSession]);
 }
 
-- (void)showConferencePortal:(NSDictionary *)dict result:(FlutterResult)result {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        WFZHomeViewController *vc = [[WFZHomeViewController alloc] init];
-        vc.isPresent = YES;
-        UINavigationController *nv = [[UINavigationController alloc] initWithRootViewController:vc];
-        nv.modalPresentationStyle = UIModalPresentationFullScreen;
-        [[UIApplication sharedApplication].keyWindow.rootViewController presentViewController:nv animated:YES completion:nil];
-    });
-    result(nil);
-}
 
 - (void)isSupportMultiCall:(NSDictionary *)dict result:(FlutterResult)result {
     result(@(YES));
@@ -141,9 +230,12 @@
 
 - (void)currentCallSession:(NSDictionary *)dict result:(FlutterResult)result {
     WFAVCallSession *session = [WFAVEngineKit sharedEngineKit].currentSession;
+    result([self callSession2Dict:session]);
+}
+
+- (NSDictionary *)callSession2Dict:(WFAVCallSession *)session {
     if(!session || session.state == kWFAVEngineStateIdle) {
-        result(nil);
-        return;
+        return nil;
     }
     NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
     dictionary[@"callId"] = session.callId;
@@ -166,31 +258,133 @@
     dictionary[@"audience"] = @(session.audience);
     dictionary[@"advanced"] = @(session.advanced);
     dictionary[@"multiCall"] = @(session.multiCall);
-    result(dictionary);
+    return dictionary;
+}
+
+- (void)setLocalVideoView:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    int viewId = [dict[@"viewId"] intValue];
+    FLNativeView* view = self.videoViews[@(viewId)];
+    if(view) {
+        UIView *container = view.view;
+        [[WFAVEngineKit sharedEngineKit].currentSession setupLocalVideoView:container scalingType:kWFAVVideoScalingTypeAspectFit];
+    }
+    
+    result(nil);
+}
+
+- (void)setRemoteVideoView:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    NSString *userId = dict[@"userId"];
+    BOOL screenSharing = [dict[@"screenSharing"] boolValue];
+    int viewId = [dict[@"viewId"] intValue];
+    FLNativeView* view = self.videoViews[@(viewId)];
+    if(view) {
+        UIView *container = view.view;
+        NSLog(@"the frame is (%f,%f,%f,%f)", container.frame.origin.x, container.frame.origin.y, container.frame.size.width, container.frame.size.height);
+        [[WFAVEngineKit sharedEngineKit].currentSession setupRemoteVideoView:container scalingType:kWFAVVideoScalingTypeAspectFit forUser:userId screenSharing:screenSharing];
+    }
+    
+    result(nil);
+}
+
+- (void)startPreview:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    [[WFAVEngineKit sharedEngineKit] startVideoPreview];
+    result(nil);
 }
 
 - (void)answerCall:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
     BOOL audioOnly = [dict[@"audioOnly"] boolValue];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        WFAVCallSession *session = [WFAVEngineKit sharedEngineKit].currentSession;
-        if(session.state == kWFAVEngineStateIncomming) {
-            [session answerCall:audioOnly callExtra:nil];
-        };
-    });
+    WFAVCallSession *session = [WFAVEngineKit sharedEngineKit].currentSession;
+    if(session.state == kWFAVEngineStateIncomming) {
+        [session answerCall:audioOnly callExtra:nil];
+    };
     result(nil);
 }
 
 - (void)endCall:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *callId = dict[@"callId"];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        WFAVCallSession *session = [WFAVEngineKit sharedEngineKit].currentSession;
-        if([session.callId isEqualToString:callId]) {
-            [session endCall];
-        }
-    });
+    WFAVCallSession *session = [WFAVEngineKit sharedEngineKit].currentSession;
+    if([session.callId isEqualToString:callId]) {
+        [session endCall];
+    }
     result(nil);
 }
 
+- (void)muteAudio:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    BOOL muted = [dict[@"muted"] boolValue];
+    [[WFAVEngineKit sharedEngineKit].currentSession muteAudio:muted];
+    result(nil);
+}
+
+- (void)enableSpeaker:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    BOOL speaker = [dict[@"speaker"] boolValue];
+    [[WFAVEngineKit sharedEngineKit].currentSession enableSpeaker:speaker];
+    result(nil);
+}
+
+- (void)muteVideo:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    BOOL muted = [dict[@"muted"] boolValue];
+    [[WFAVEngineKit sharedEngineKit].currentSession muteVideo:muted];
+    result(nil);
+}
+
+- (void)switchCamera:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    [[WFAVEngineKit sharedEngineKit].currentSession switchCamera];
+    result(nil);
+}
+
+- (void)getCameraPosition:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    result(@([WFAVEngineKit sharedEngineKit].currentSession.cameraPosition));
+}
+
+- (void)isBluetoothSpeaker:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    result(@([WFAVEngineKit sharedEngineKit].currentSession.isBluetoothSpeaker));
+}
+
+- (void)isHeadsetPluggedIn:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    result(@([WFAVEngineKit sharedEngineKit].currentSession.isHeadsetPluggedIn));
+}
+
+- (void)getParticipantIds:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    result([WFAVEngineKit sharedEngineKit].currentSession.participantIds);
+}
+
+- (void)getParticipantProfiles:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    NSArray<WFAVParticipantProfile *> *profiles = [WFAVEngineKit sharedEngineKit].currentSession.participants;
+    NSMutableArray<NSDictionary *> *dicts = [[NSMutableArray alloc] init];
+    [profiles enumerateObjectsUsingBlock:^(WFAVParticipantProfile * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [dicts addObject:[self profile2Dict:obj]];
+    }];
+    result(dicts);
+}
+
+- (NSDictionary *)profile2Dict:(WFAVParticipantProfile *)profile {
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    
+    dict[@"userId"] = profile.userId;
+    dict[@"startTime"] = @(profile.startTime);
+    dict[@"state"] = @(profile.state);
+    dict[@"videoMuted"] = @(profile.videoMuted);
+    dict[@"audioMuted"] = @(profile.audioMuted);
+    dict[@"audience"] = @(profile.audience);
+    dict[@"screeSharing"] = @(profile.screeSharing);
+    dict[@"callExtra"] = profile.callExtra;
+    dict[@"videoType"] = @(profile.videoType);
+    
+    return dict;
+}
 
 #pragma mark - WFAVEngineDelegate
 - (void)didReceiveCall:(WFAVCallSession *_Nonnull)session {
@@ -199,102 +393,27 @@
             return;
         }
         
-        UIViewController *videoVC;
-        if (session.isMultiCall) {
-            videoVC = [[WFCUMultiVideoViewController alloc] initWithSession:session];
-        } else {
-            videoVC = [[WFCUVideoViewController alloc] initWithSession:session];
-        }
+        WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:session channel:self.channel delegaters:self.delegaters];
+        session.delegate = delegater;
         
-        [[WFAVEngineKit sharedEngineKit] presentViewController:videoVC];
-//        if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-//            self.localCallNotification = [[UILocalNotification alloc] init];
-//            self.localCallNotification.alertBody = @"来电话了";
-//            self.localCallNotification.soundName = @"ring.caf";
-//            
-//            dispatch_async(dispatch_get_main_queue(), ^{
-//                [[UIApplication sharedApplication] scheduleLocalNotification:self.localCallNotification];
-//            });
-//        } else {
-//            self.localCallNotification = nil;
-//        }
-        [self.channel invokeMethod:@"didReceiveCallCallback" arguments:@{@"callId":[WFAVEngineKit sharedEngineKit].currentSession.callId}];
+        [self.channel invokeMethod:@"didReceiveCallCallback" arguments:@{@"callSession":[self callSession2Dict:session]}];
     });
 }
 
 - (void)shouldStartRing:(BOOL)isIncoming {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if ([WFAVEngineKit sharedEngineKit].currentSession.state == kWFAVEngineStateIncomming || [WFAVEngineKit sharedEngineKit].currentSession.state == kWFAVEngineStateOutgoing) {
-            if([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-                AudioServicesAddSystemSoundCompletion(kSystemSoundID_Vibrate, NULL, NULL, systemAudioCallback, NULL);
-                AudioServicesPlaySystemSound (kSystemSoundID_Vibrate);
-            } else {
-                AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-                //默认情况按静音或者锁屏键会静音
-                [audioSession setCategory:AVAudioSessionCategorySoloAmbient error:nil];
-                [audioSession setActive:YES error:nil];
-                
-                if (self.audioPlayer) {
-                    [self shouldStopRing];
-                }
-                
-                NSURL *url = [[NSBundle mainBundle] URLForResource:@"ring" withExtension:@"caf"];
-                NSError *error = nil;
-                self.audioPlayer = [[AVAudioPlayer alloc] initWithContentsOfURL:url error:&error];
-                if (!error) {
-                    self.audioPlayer.numberOfLoops = -1;
-                    self.audioPlayer.volume = 1.0;
-                    [self.audioPlayer prepareToPlay];
-                    [self.audioPlayer play];
-                }
-            }
             [self.channel invokeMethod:@"shouldStartRingCallback" arguments:@{@"incoming":@(isIncoming)}];
         }
     });
 }
 
-void systemAudioCallback (SystemSoundID soundID, void* clientData) {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-            if ([WFAVEngineKit sharedEngineKit].currentSession.state == kWFAVEngineStateIncomming) {
-                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
-            }
-        }
-    });
-}
-
 - (void)shouldStopRing {
-    if (self.audioPlayer) {
-        [self.audioPlayer stop];
-        self.audioPlayer = nil;
-    }
     [self.channel invokeMethod:@"shouldStopRingCallback" arguments:nil];
 }
 
 - (void)didCallEnded:(WFAVCallEndReason) reason duration:(int)callDuration {
     dispatch_async(dispatch_get_main_queue(), ^{
-//        if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-//            if(self.localCallNotification) {
-//                [[UIApplication sharedApplication] cancelLocalNotification:self.localCallNotification];
-//                self.localCallNotification = nil;
-//            }
-//            
-//            if(reason == kWFAVCallEndReasonTimeout || (reason == kWFAVCallEndReasonRemoteHangup && callDuration == 0)) {
-//                UILocalNotification *callEndNotification = [[UILocalNotification alloc] init];
-//                if(reason == kWFAVCallEndReasonTimeout) {
-//                    callEndNotification.alertBody = @"来电未接听";
-//                } else {
-//                    callEndNotification.alertBody = @"来电已取消";
-//                }
-//                if (@available(iOS 8.2, *)) {
-//                    self.localCallNotification.alertTitle = @"网络通话";
-//                }
-//                
-//                //应该播放挂断的声音
-//    //            self.localCallNotification.soundName = @"ring.caf";
-//                [[UIApplication sharedApplication] scheduleLocalNotification:callEndNotification];
-//            }
-//        }
         [self.channel invokeMethod:@"didEndCallCallback" arguments:@{@"reason":@(reason), @"duration":@(callDuration)}];
     });
 }
