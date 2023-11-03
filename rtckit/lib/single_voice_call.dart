@@ -82,7 +82,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     if(widget.callSession!.audioOnly) {
       return Container();
     } else {
-      return bigVideoView;
+      return Container(child: bigVideoView,);
     }
   }
 

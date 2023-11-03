@@ -204,7 +204,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         }
         obj.put("audioOnly", callSession.isAudioOnly());
         obj.put("endReason", callSession.getEndReason().ordinal());
-        if(AVEngineKit.Instance().getAVAudioManager() != null) {
+        if(callSession.getState() == AVEngineKit.CallState.Connected && AVEngineKit.Instance().getAVAudioManager() != null) {
             obj.put("speaker", AVEngineKit.Instance().getAVAudioManager().getSelectedAudioDevice() == AVAudioManager.AudioDevice.SPEAKER_PHONE);
         } else {
             obj.put("speaker", !callSession.isAudioOnly());
