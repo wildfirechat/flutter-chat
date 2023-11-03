@@ -101,20 +101,39 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     // Pass parameters to the platform side.
     final Map<String, dynamic> creationParams = <String, dynamic>{};
 
-    return UiKitView(
-      viewType: viewType,
-      layoutDirection: TextDirection.ltr,
-      creationParams: creationParams,
-      creationParamsCodec: const StandardMessageCodec(),
-      onPlatformViewCreated: (viewId) {
-        if(big) {
-          bigVideoViewId = viewId;
-        } else {
-          smallVideoViewId = viewId;
-        }
-        updateVideoView();
-      },
-    );
+    if(defaultTargetPlatform == TargetPlatform.android) {
+      return AndroidView(
+        viewType: viewType,
+        layoutDirection: TextDirection.ltr,
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+        onPlatformViewCreated: (viewId) {
+          if (big) {
+            bigVideoViewId = viewId;
+          } else {
+            smallVideoViewId = viewId;
+          }
+          updateVideoView();
+        },
+      );
+    } else if(defaultTargetPlatform == TargetPlatform.iOS) {
+      return UiKitView(
+        viewType: viewType,
+        layoutDirection: TextDirection.ltr,
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+        onPlatformViewCreated: (viewId) {
+          if (big) {
+            bigVideoViewId = viewId;
+          } else {
+            smallVideoViewId = viewId;
+          }
+          updateVideoView();
+        },
+      );
+    }
+
+    return Container();
   }
 
   List<Widget> _controlRowBottom1(BuildContext context) {

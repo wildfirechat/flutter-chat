@@ -143,10 +143,9 @@ class ParticipantProfile {
   final bool audioMuted;
   final bool audience;
   final bool screenSharing;
-  final int videoType;
 
   ParticipantProfile(this.userId, this.startTime, this.state, this.videoMuted,
-      this.audioMuted, this.audience, this.screenSharing, this.videoType);
+      this.audioMuted, this.audience, this.screenSharing);
 }
 class CallSession implements CallSessionCallback {
   String callId;

@@ -3,27 +3,31 @@ package cn.wildfirechat.rtckit;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.json.JSONObject;
+import org.webrtc.RendererCommon;
+import org.webrtc.StatsReport;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import cn.wildfire.chat.kit.Config;
-import cn.wildfire.chat.kit.voip.conference.ConferenceInfoActivity;
-import cn.wildfire.chat.kit.voip.conference.ConferencePortalActivity;
+import cn.wildfirechat.avenginekit.AVAudioManager;
 import cn.wildfirechat.avenginekit.AVEngineKit;
+import cn.wildfirechat.model.Conversation;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -31,9 +35,6 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-
-import cn.wildfire.chat.kit.WfcUIKit;
-import okhttp3.HttpUrl;
 
 /**
  * RtckitPlugin
@@ -50,6 +51,9 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     private static Activity gActivity;
     private static boolean isWfcUIKitInitialized = false;
 
+    private static Map<String, CallSessionDelegator> delegators = new HashMap<>();
+    private static Map<Integer, NativeView> videoViews = new HashMap<>();
+
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
         if (channel == null) {
@@ -60,7 +64,6 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         if (isWfcUIKitInitialized) {
             return;
         }
-        Log.e("RtckitPlugin", "isSupportMoment " + WfcUIKit.getWfcUIKit().isSupportMoment());
 
         isWfcUIKitInitialized = true;
         gContent = flutterPluginBinding.getApplicationContext();
@@ -68,17 +71,18 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         while (context != null) {
             if (context instanceof Application) {
                 Application application = (Application) context;
-                Config.ICE_SERVERS = null;
-                WfcUIKit.getWfcUIKit().init(application);
-                WfcUIKit.getWfcUIKit().setAppServiceProvider(AppService.Instance());
-                WfcUIKit.getWfcUIKit().setEnableNativeNotification(false);
-                WfcUIKit.getWfcUIKit().setAvEngineCallback(this);
-                setupWFCDirs(application);
+                AVEngineKit.init(application, this);
+                AVEngineKit.Instance().setVideoProfile(30, false);
+                AVEngineKit.SCREEN_SHARING_REPLACE_MODE = true;
                 break;
             } else {
                 context = context.getApplicationContext();
             }
         }
+
+        flutterPluginBinding
+                .getPlatformViewRegistry()
+                .registerViewFactory("<platform-view-type>", new NativeViewFactory(videoViews));
     }
 
     @Override
@@ -129,52 +133,30 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     private void startSingleCall(@NonNull MethodCall call, @NonNull Result result) {
         String userId = call.argument("userId");
         boolean audioOnly = call.argument("audioOnly");
-        if (gActivity != null) {
-            WfcUIKit.singleCall(gActivity, userId, audioOnly);
-        } else {
-            WfcUIKit.singleCall(gContent, userId, audioOnly);
+        Conversation conversation = new Conversation(Conversation.ConversationType.Single, userId);
+
+        CallSessionDelegator callSessionDelegator = new CallSessionDelegator(null);
+        AVEngineKit.CallSession callSession = AVEngineKit.Instance().startCall(conversation, Arrays.asList(userId), audioOnly, callSessionDelegator);
+        if(callSession != null) {
+            callSessionDelegator.callSession = callSession;
+            delegators.put(callSession.getCallId(), callSessionDelegator);
         }
-        result.success(null);
+        result.success(callSession2Map(callSession));
     }
 
     private void startMultiCall(@NonNull MethodCall call, @NonNull Result result) {
         String groupId = call.argument("groupId");
         List<String> participants = call.argument("participants");
         boolean audioOnly = call.argument("audioOnly");
-        if (gActivity != null) {
-            WfcUIKit.multiCall(gActivity, groupId, participants, audioOnly);
-        } else {
-            WfcUIKit.multiCall(gContent, groupId, participants, audioOnly);
+        Conversation conversation = new Conversation(Conversation.ConversationType.Group, groupId);
+
+        CallSessionDelegator callSessionDelegator = new CallSessionDelegator(null);
+        AVEngineKit.CallSession callSession = AVEngineKit.Instance().startCall(conversation, participants, audioOnly, callSessionDelegator);
+        if(callSession != null) {
+            callSessionDelegator.callSession = callSession;
+            delegators.put(callSession.getCallId(), callSessionDelegator);
         }
-        result.success(null);
-    }
-
-    private void setupAppServer(@NonNull MethodCall call, @NonNull Result result) {
-        String appServerAddress = call.argument("appServerAddress");
-        String authToken = call.argument("authToken");
-        AppService.APP_SERVER_ADDRESS = appServerAddress;
-        String host = HttpUrl.parse(appServerAddress).url().getHost();
-        SharedPreferences sp = gContent.getSharedPreferences("WFC_OK_HTTP_COOKIES", Context.MODE_PRIVATE);
-        sp.edit()
-            .putString("appServer", appServerAddress)
-            .putString("authToken:" + host, authToken).apply();
-        result.success(null);
-    }
-
-    private void showConferenceInfo(@NonNull MethodCall call, @NonNull Result result) {
-        String conferenceId = call.argument("conferenceId");
-        String password = call.argument("password");
-        Intent intent = new Intent(gContent, ConferenceInfoActivity.class);
-        intent.putExtra("conferenceId", conferenceId);
-        intent.putExtra("password", password);
-        gContent.startActivity(intent);
-        result.success(null);
-    }
-
-    private void showConferencePortal(@NonNull MethodCall call, @NonNull Result result) {
-        Intent intent = new Intent(gContent, ConferencePortalActivity.class);
-        gContent.startActivity(intent);
-        result.success(null);
+        result.success(callSession2Map(callSession));
     }
 
     private void isSupportMultiCall(@NonNull MethodCall call, @NonNull Result result) {
@@ -194,14 +176,21 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
 
     private void currentCallSession(@NonNull MethodCall call, @NonNull Result result) {
         AVEngineKit.CallSession callSession = AVEngineKit.Instance().getCurrentSession();
+        result.success(callSession2Map(callSession));
+    }
+
+    private Map<String, Object> callSession2Map(AVEngineKit.CallSession callSession) {
         if (callSession == null) {
-            result.success(null);
-            return;
+            return null;
         }
         Map<String, Object> obj = new HashMap<>();
         obj.put("callId", callSession.getCallId());
-        obj.put("initiator", callSession.getInitiator());
-        obj.put("inviter", callSession.getInviter());
+        if(!TextUtils.isEmpty(callSession.getInitiator())) {
+            obj.put("initiator", callSession.getInitiator());
+        }
+        if(!TextUtils.isEmpty(callSession.getInviter())) {
+            obj.put("inviter", callSession.getInviter());
+        }
         obj.put("state", callSession.getState().ordinal());
         obj.put("startTime", callSession.getStartTime());
         obj.put("connectedTime", callSession.getConnectedTime());
@@ -215,24 +204,65 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         }
         obj.put("audioOnly", callSession.isAudioOnly());
         obj.put("endReason", callSession.getEndReason().ordinal());
+        if(AVEngineKit.Instance().getAVAudioManager() != null) {
+            obj.put("speaker", AVEngineKit.Instance().getAVAudioManager().getSelectedAudioDevice() == AVAudioManager.AudioDevice.SPEAKER_PHONE);
+        } else {
+            obj.put("speaker", !callSession.isAudioOnly());
+        }
+        obj.put("videoMuted", callSession.videoMuted);
+        obj.put("audioMuted", callSession.audioMuted);
         obj.put("conference", callSession.isConference());
         obj.put("audience", callSession.isAudience());
         obj.put("advanced", callSession.isAdvanced());
-//        obj.put("multiCall", callSession.getParticipantIds().size() > 1);
-        result.success(obj);
+        obj.put("multiCall", callSession.getParticipantIds().size() > 1);
+        return obj;
+    }
+
+    private void setLocalVideoView(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        int viewId = call.argument("viewId");
+        NativeView view = videoViews.get(viewId);
+        if(view != null) {
+            View container = view.getView();
+            if(container instanceof FrameLayout) {
+                FrameLayout layout = (FrameLayout) container;
+                AVEngineKit.Instance().getCurrentSession().setupLocalVideoView(layout, RendererCommon.ScalingType.SCALE_ASPECT_FIT);
+            }
+        }
+    }
+    private void setRemoteVideoView(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        String userId = call.argument("userId");
+        boolean screenSharing = call.argument("screenSharing");
+        int viewId = call.argument("viewId");
+        NativeView view = videoViews.get(viewId);
+        if(view != null) {
+            View container = view.getView();
+            if(container instanceof FrameLayout) {
+                FrameLayout layout = (FrameLayout) container;
+                AVEngineKit.Instance().getCurrentSession().setupRemoteVideoView(userId, screenSharing, layout, RendererCommon.ScalingType.SCALE_ASPECT_FIT);
+            }
+        }
+    }
+
+    private void startPreview(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        AVEngineKit.Instance().getCurrentSession().startPreview();
+        result.success(null);
     }
 
     private void answerCall(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
         boolean audioOnly = call.argument("audioOnly");
         AVEngineKit.CallSession callSession = AVEngineKit.Instance().getCurrentSession();
         if (callSession != null && callSession.getState() == AVEngineKit.CallState.Incoming) {
             callSession.answerCall(audioOnly);
         }
+        result.success(null);
     }
 
     private void endCall(@NonNull MethodCall call, @NonNull Result result) {
         String callId = call.argument("callId");
-        Log.e(TAG, "endCall " + callId);
         AVEngineKit.CallSession callSession = AVEngineKit.Instance().getCurrentSession();
         if (callSession == null) {
             Log.d(TAG, "endCall session is null");
@@ -242,6 +272,92 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         if (callSession != null && callSession.getState() != AVEngineKit.CallState.Idle && callSession.getCallId().equals(callId)) {
             callSession.endCall();
         }
+        result.success(null);
+    }
+
+    private void muteAudio(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        boolean muted = call.argument("muted");
+        AVEngineKit.Instance().getCurrentSession().muteAudio(muted);
+        result.success(null);
+    }
+
+    private void enableSpeaker(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        boolean muted = call.argument("muted");
+        AVAudioManager audioManager = AVEngineKit.Instance().getAVAudioManager();
+        AVAudioManager.AudioDevice currentAudioDevice = audioManager.getSelectedAudioDevice();
+        if(currentAudioDevice != AVAudioManager.AudioDevice.WIRED_HEADSET && currentAudioDevice != AVAudioManager.AudioDevice.BLUETOOTH){
+            if(currentAudioDevice == AVAudioManager.AudioDevice.SPEAKER_PHONE){
+                audioManager.selectAudioDevice(AVAudioManager.AudioDevice.EARPIECE);
+            } else {
+                audioManager.selectAudioDevice(AVAudioManager.AudioDevice.SPEAKER_PHONE);
+            }
+        }
+        result.success(null);
+    }
+
+    private void muteVideo(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        boolean muted = call.argument("muted");
+        AVEngineKit.Instance().getCurrentSession().muteVideo(muted);
+        result.success(null);
+    }
+
+    private void switchCamera(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        AVEngineKit.Instance().getCurrentSession().switchCamera();
+        result.success(null);
+    }
+
+    private void getCameraPosition(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        //Todo
+        result.success(0);
+    }
+
+    private void isBluetoothSpeaker(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        AVAudioManager audioManager = AVEngineKit.Instance().getAVAudioManager();
+        AVAudioManager.AudioDevice currentAudioDevice = audioManager.getSelectedAudioDevice();
+        result.success(currentAudioDevice == AVAudioManager.AudioDevice.BLUETOOTH);
+    }
+
+    private void isHeadsetPluggedIn(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        AVAudioManager audioManager = AVEngineKit.Instance().getAVAudioManager();
+        AVAudioManager.AudioDevice currentAudioDevice = audioManager.getSelectedAudioDevice();
+        result.success(currentAudioDevice == AVAudioManager.AudioDevice.WIRED_HEADSET);
+    }
+
+    private void getParticipantIds(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        result.success(AVEngineKit.Instance().getCurrentSession().getParticipantIds());
+    }
+
+    private void getParticipantProfiles(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        List<Map<String, Object>> list = new ArrayList<>();
+        if(AVEngineKit.Instance().getCurrentSession().getParticipantProfiles() != null) {
+            for (AVEngineKit.ParticipantProfile participantProfile : AVEngineKit.Instance().getCurrentSession().getParticipantProfiles()) {
+                list.add(profile2Dict(participantProfile));
+            }
+        }
+        result.success(list);
+    }
+
+    private Map<String, Object> profile2Dict(AVEngineKit.ParticipantProfile profile) {
+        Map<String, Object> dict = new HashMap<>();
+        
+        dict.put("userId", profile.getUserId());
+        dict.put("startTime", profile.getStartTime());
+        dict.put("state", profile.getState().ordinal());
+        dict.put("videoMuted", profile.isVideoMuted());
+        dict.put("audioMuted", profile.isAudioMuted());
+        dict.put("audience", profile.isAudience());
+        dict.put("screeSharing", profile.isScreenSharing());
+        dict.put("callExtra", "");
+        return dict;
     }
 
     @Override
@@ -250,13 +366,6 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
             channel.setMethodCallHandler(null);
             channel = null;
         }
-    }
-
-    private void setupWFCDirs(Application application) {
-        Config.VIDEO_SAVE_DIR = application.getDir("video", Context.MODE_PRIVATE).getAbsolutePath();
-        Config.AUDIO_SAVE_DIR = application.getDir("audio", Context.MODE_PRIVATE).getAbsolutePath();
-        Config.PHOTO_SAVE_DIR = application.getDir("photo", Context.MODE_PRIVATE).getAbsolutePath();
-        Config.FILE_SAVE_DIR = application.getDir("file", Context.MODE_PRIVATE).getAbsolutePath();
     }
 
     @Override
@@ -299,8 +408,12 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
 
     @Override
     public void onReceiveCall(AVEngineKit.CallSession callSession) {
+        CallSessionDelegator delegator = new CallSessionDelegator(callSession);
+        callSession.setCallback(delegator);
+        delegators.put(callSession.getCallId(), delegator);
+
         Map data = new HashMap();
-        data.put("callId", callSession.getCallId());
+        data.put("callSession", callSession2Map(callSession));
         callback2UI("didReceiveCallCallback", data);
     }
 
@@ -312,7 +425,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     }
 
     @Override
-    public void shouldSopRing() {
+    public void shouldStopRing() {
         Map data = new HashMap();
         callback2UI("shouldStopRingCallback", data);
     }
@@ -322,5 +435,217 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         Map data = new HashMap();
         data.put("reason", callEndReason.ordinal());
         callback2UI("didEndCallCallback", data);
+    }
+
+    private class CallSessionDelegator implements AVEngineKit.CallSessionCallback {
+        public AVEngineKit.CallSession callSession;
+
+        public CallSessionDelegator(AVEngineKit.CallSession callSession) {
+            this.callSession = callSession;
+        }
+
+        @Override
+        public void didCallEndWithReason(AVEngineKit.CallEndReason callEndReason) {
+            if(callSession == null)
+                return;
+            RtckitPlugin.delegators.remove(callSession.getCallId());
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("reason", callEndReason.ordinal());
+            RtckitPlugin.callback2UI("didCallEndWithReason", data);
+        }
+
+        @Override
+        public void didChangeState(AVEngineKit.CallState callState) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("state", callState.ordinal());
+            RtckitPlugin.callback2UI("didChangeState", data);
+        }
+
+        @Override
+        public void didParticipantJoined(String s, boolean b) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("userId", s);
+            data.put("screenSharing", b);
+            RtckitPlugin.callback2UI("didParticipantJoined", data);
+        }
+
+        @Override
+        public void didParticipantConnected(String s, boolean b) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("userId", s);
+            data.put("screenSharing", b);
+            RtckitPlugin.callback2UI("didParticipantConnected", data);
+        }
+
+        @Override
+        public void didParticipantLeft(String s, AVEngineKit.CallEndReason callEndReason, boolean b) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("userId", s);
+            data.put("screenSharing", b);
+            data.put("reason", callEndReason.ordinal());
+            RtckitPlugin.callback2UI("didParticipantLeft", data);
+        }
+
+        @Override
+        public void didChangeMode(boolean b) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("isAudioOnly", b);
+            RtckitPlugin.callback2UI("didChangeMode", data);
+        }
+
+        @Override
+        public void didChangeInitiator(String s) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("initiator", s);
+            RtckitPlugin.callback2UI("didChangeInitiator", data);
+        }
+
+        @Override
+        public void didCreateLocalVideoTrack() {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            RtckitPlugin.callback2UI("didCreateLocalVideoTrack", data);
+        }
+
+        @Override
+        public void didReceiveRemoteVideoTrack(String s, boolean b) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("userId", s);
+            data.put("screenSharing", b);
+            RtckitPlugin.callback2UI("didReceiveRemoteVideoTrack", data);
+        }
+
+        @Override
+        public void didRemoveRemoteVideoTrack(String s) {
+            if(callSession == null)
+                return;
+//            Map data = new HashMap();
+//            data.put("callId", callSession.getCallId());
+//            data.put("reason", callEndReason.ordinal());
+//            RtckitPlugin.callback2UI("didRemoveRemoteVideoTrack", data);
+        }
+
+        @Override
+        public void didError(String s) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("error", s);
+            RtckitPlugin.callback2UI("didError", data);
+        }
+
+        @Override
+        public void didGetStats(StatsReport[] statsReports) {
+            if(callSession == null)
+                return;
+//            Map data = new HashMap();
+//            data.put("callId", callSession.getCallId());
+//            data.put("reason", callEndReason.ordinal());
+//            RtckitPlugin.callback2UI("didGetStats", data);
+        }
+
+        @Override
+        public void didVideoMuted(String s, boolean b) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("userId", s);
+            data.put("screenSharing", b);
+            RtckitPlugin.callback2UI("didVideoMuted", data);
+        }
+
+        @Override
+        public void didReportAudioVolume(String s, int i) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("userId", s);
+            data.put("volume", i);
+            RtckitPlugin.callback2UI("didReportAudioVolume", data);
+        }
+
+        @Override
+        public void didAudioDeviceChanged(AVAudioManager.AudioDevice audioDevice) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            RtckitPlugin.callback2UI("didChangeAudioRoute", data);
+        }
+
+        @Override
+        public void didChangeType(String s, boolean b, boolean b1) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("userId", s);
+            data.put("audience", b);
+            data.put("screenSharing", b1);
+            RtckitPlugin.callback2UI("didChangeType", data);
+        }
+
+        @Override
+        public void didMuteStateChanged(List<String> list) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("userIds", list);
+            RtckitPlugin.callback2UI("didMuteStateChanged", data);
+        }
+
+        @Override
+        public void didMediaLostPacket(String s, int i, boolean b) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("media", s);
+            data.put("lostPackage", i);
+            data.put("screenSharing", b);
+            RtckitPlugin.callback2UI("didMediaLost", data);
+        }
+
+        @Override
+        public void didMediaLostPacket(String s, String s1, int i, boolean b, boolean b1) {
+            if(callSession == null)
+                return;
+            Map data = new HashMap();
+            data.put("callId", callSession.getCallId());
+            data.put("userId", s);
+            data.put("media", s1);
+            data.put("lostPackage", i);
+            data.put("uplink", b);
+            data.put("screenSharing", b1);
+            RtckitPlugin.callback2UI("didRemoteMediaLost", data);
+        }
     }
 }

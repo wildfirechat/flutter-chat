@@ -416,7 +416,7 @@ class RtckitPlatform extends PlatformInterface {
       if(value is Map) {
         Map m = value;
         pps.add(ParticipantProfile(m["userId"], m["startTime"], m["state"], m["videoMuted"],
-            m["audioMuted"], m["audience"], m["screenSharing"], m["videoType"]));
+            m["audioMuted"], m["audience"], m["screenSharing"]));
       }
     }
     return pps;
