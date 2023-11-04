@@ -314,6 +314,15 @@
     result(nil);
 }
 
+- (void)changeToAudioOnly:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    WFAVCallSession *session = [WFAVEngineKit sharedEngineKit].currentSession;
+    if(session.state == kWFAVEngineStateConnected) {
+        [session setAudioOnly:YES];
+    };
+    result(nil);
+}
+
 - (void)endCall:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *callId = dict[@"callId"];
     WFAVCallSession *session = [WFAVEngineKit sharedEngineKit].currentSession;

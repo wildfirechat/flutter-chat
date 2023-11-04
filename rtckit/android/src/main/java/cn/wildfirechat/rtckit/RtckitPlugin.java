@@ -261,6 +261,15 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         result.success(null);
     }
 
+    private void changeToAudioOnly(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        AVEngineKit.CallSession callSession = AVEngineKit.Instance().getCurrentSession();
+        if (callSession != null && callSession.getState() == AVEngineKit.CallState.Connected) {
+            callSession.setAudioOnly(true);
+        }
+        result.success(null);
+    }
+
     private void endCall(@NonNull MethodCall call, @NonNull Result result) {
         String callId = call.argument("callId");
         AVEngineKit.CallSession callSession = AVEngineKit.Instance().getCurrentSession();

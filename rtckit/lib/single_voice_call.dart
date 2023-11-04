@@ -5,6 +5,9 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:rtckit/rtckit.dart';
+import 'package:imclient/model/user_info.dart';
+import 'package:imclient/imclient.dart';
+import 'call_state_view.dart';
 
 class SingleVideoCallView extends StatefulWidget {
   String? userId;
@@ -17,7 +20,7 @@ class SingleVideoCallView extends StatefulWidget {
 }
 
 class SingleVideoCallState extends State<SingleVideoCallView> implements CallSessionCallback {
-  final Color backgroupColor = Colors.blueAccent;
+  final Color backgroundColor = Colors.blue;
   late Widget bigVideoView;
   late Widget smallVideoView;
 
@@ -26,6 +29,9 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   bool localVideoCreated = false;
   bool remoteVideoCreated = false;
+  GlobalKey<CallStateViewState> stateGlobalKey = GlobalKey();
+
+  UserInfo? userInfo;
 
   @override
   void initState() {
@@ -37,6 +43,12 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
       if(!widget.audioOnly!) {
         createVideoView();
+      } else {
+        Imclient.getUserInfo(widget.userId!).then((value) {
+          setState(() {
+            userInfo = value;
+          });
+        });
       }
       Rtckit.startSingleCall(widget.userId!, widget.audioOnly!).then((value) {
         if (value == null) {
@@ -51,7 +63,15 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       });
     } else {
       widget.userId = widget.callSession?.conversation!.target;
-      createVideoView();
+      if(!widget.callSession!.audioOnly) {
+        createVideoView();
+      } else {
+        Imclient.getUserInfo(widget.callSession!.inviter!).then((value) {
+          setState(() {
+            userInfo = value;
+          });
+        });
+      }
       widget.callSession?.setCallSessionCallback(this);
     }
   }
@@ -70,7 +90,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   Widget callView(BuildContext context) {
     return Container(
-      color: backgroupColor,
+      color: backgroundColor,
       child: Stack(
       children: [
         //底视图，如果是视频就是大的视频流，如果是音频就是背景颜色
@@ -89,16 +109,49 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       return Container();
     } else {
       return Container(
-        color: backgroupColor,
+        color: backgroundColor,
         child: bigVideoView,
       );
     }
   }
 
+  Widget userPortraitAndName(BuildContext context) {
+    if(userInfo != null) {
+      return Center(
+        heightFactor: 5,
+        child: Column(
+          mainAxisSize:MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
+              child: SizedBox(width: 100,
+                height: 100,
+                child: userInfo!.portrait == null
+                    ? Image.asset(
+                    Rtckit.defaultUserPortrait, width: 100.0, height: 100.0)
+                    : Image.network(
+                    userInfo!.portrait!, width: 100.0, height: 100.0),
+              ),
+            ),
+            const Padding(padding: EdgeInsets.all(8)),
+            Center(child: Text(userInfo!.displayName!, style: const TextStyle(color: Colors.white),),)
+          ],
+        ),
+      );
+    } else {
+      return Container();
+    }
+  }
+
   Widget previewOrPortraitView(BuildContext context) {
     if(widget.callSession!.audioOnly) {
-      return Container();
+      return userPortraitAndName(context);
     } else {
+      if(widget.callSession!.state == kWFAVEngineStateIncoming) {
+        return userPortraitAndName(context);
+      } else if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
+        return userPortraitAndName(context);
+      }
       return Positioned(top: 64,
         left: 16,
         child: SizedBox(width: 120, height: 180, child: smallVideoView),);
@@ -208,12 +261,13 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         GestureDetector(
-          child: const Icon(Icons.call_rounded),
+          child: const Image(image:AssetImage('assets/images/rtckit/call_answer.png', package: 'rtckit'), width: 48, height: 48,),
           onTap: () {
             widget.callSession!.answerCall(false);
           },
         ),
-        const Text('接听'),
+        const Padding(padding: EdgeInsets.only(top: 8)),
+        const Text('接听', style: TextStyle(color: Colors.white),),
       ],
     ),);
   }
@@ -223,22 +277,24 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         GestureDetector(
-          child: const Icon(Icons.call_end_rounded),
+          child: const Image(image:AssetImage('assets/images/rtckit/call_hangup.png', package: 'rtckit'), width: 48, height: 48,),
           onTap: () {
             widget.callSession!.endCall();
           },
         ),
-        const Text('挂断'),
+        const Padding(padding: EdgeInsets.only(top: 8)),
+        const Text('挂断', style: TextStyle(color: Colors.white),),
       ],
     ),);
   }
 
   Widget _audioMuteControl(BuildContext context) {
+    String path = widget.callSession!.audioMuted?'assets/images/rtckit/call_voice_mute_hover.png':'assets/images/rtckit/call_voice_mute.png';
     return Expanded(child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         GestureDetector(
-          child: const Icon(Icons.mic_none_rounded),
+          child: Image(image:AssetImage(path, package: 'rtckit'), width: 48, height: 48,),
           onTap: () {
             widget.callSession!.muteAudio(!widget.callSession!.audioMuted);
             setState(() {
@@ -246,17 +302,19 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
             });
           },
         ),
-        const Text('麦克风'),
+        const Padding(padding: EdgeInsets.only(top: 8)),
+        const Text('麦克风', style: TextStyle(color: Colors.white),),
       ],
     ),);
   }
 
   Widget _videoMuteControl(BuildContext context) {
+    String path = widget.callSession!.videoMuted?'assets/images/rtckit/call_video_disable.png':'assets/images/rtckit/call_video_enable.png';
     return Expanded(child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         GestureDetector(
-          child: const Icon(Icons.camera_alt_rounded),
+          child: Image(image:AssetImage(path, package: 'rtckit'), width: 48, height: 48,),
           onTap: () {
             widget.callSession!.muteVideo(!widget.callSession!.videoMuted);
             setState(() {
@@ -264,7 +322,8 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
             });
           },
         ),
-        const Text('麦克风'),
+        const Padding(padding: EdgeInsets.only(top: 8)),
+        const Text('摄像头', style: TextStyle(color: Colors.white),),
       ],
     ),);
   }
@@ -274,22 +333,24 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         GestureDetector(
-          child: const Icon(Icons.camera_alt_rounded),
+          child: const Image(image:AssetImage('assets/images/rtckit/call_camera_switch.png', package: 'rtckit'), width: 48, height: 48,),
           onTap: () {
             widget.callSession!.switchCamera();
           },
         ),
-        const Text('翻转'),
+        const Padding(padding: EdgeInsets.only(top: 8)),
+        const Text('翻转', style: TextStyle(color: Colors.white),),
       ],
     ),);
   }
 
   Widget _speakerControl(BuildContext context) {
+    String path = widget.callSession!.speaker?'assets/images/rtckit/call_speaker_hover.png':'assets/images/rtckit/call_speaker.png';
     return Expanded(child: Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         GestureDetector(
-          child: const Icon(Icons.volume_mute_rounded),
+          child: Image(image:AssetImage(path, package: 'rtckit'), width: 48, height: 48,),
           onTap: () {
             widget.callSession!.enableSpeaker(!widget.callSession!.speaker);
             setState(() {
@@ -297,7 +358,8 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
             });
           },
         ),
-        const Text('扬声器'),
+        const Padding(padding: EdgeInsets.only(top: 8)),
+        const Text('扬声器', style: TextStyle(color: Colors.white),),
       ],
     ),);
   }
@@ -311,12 +373,23 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         GestureDetector(
-          child: const Icon(Icons.switch_access_shortcut_rounded),
+          child: const Image(image:AssetImage('assets/images/rtckit/call_to_voice.png', package: 'rtckit'), width: 48, height: 48,),
           onTap: () {
+            if(widget.callSession!.state == kWFAVEngineStateIncoming) {
+              widget.callSession!.answerCall(true);
+              setState(() {
 
+              });
+            } else if(widget.callSession!.state == kWFAVEngineStateConnected) {
+              widget.callSession!.changeToAudioOnly();
+              setState(() {
+
+              });
+            }
           },
         ),
-        const Text('转为语音'),
+        const Padding(padding: EdgeInsets.only(top: 8)),
+        Text(widget.callSession!.state == kWFAVEngineStateIncoming ? '语音接听' : '转为语音', style: const TextStyle(color: Colors.white),),
       ],
     ),);
   }
@@ -324,13 +397,12 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   Widget controlView(BuildContext context) {
     return Column(
       children: [
+        const Row(children: [
+          //"assets/images/conversation_msg_sending.png"
+          Padding(padding: EdgeInsets.fromLTRB(24, 60, 0, 0), child: Image(image:AssetImage('assets/images/rtckit/call_minimize.png', package: 'rtckit'), width: 24, height: 24,),)
+        ],),
         const Padding(padding: EdgeInsets.all(20)),
-        const Stack(
-          children: [
-            Padding(padding: EdgeInsets.fromLTRB(20, 0, 0, 0), child: Icon(Icons.close_fullscreen_rounded),),
-            Center(child: Text("time..."),),
-          ],
-        ),
+        Center(child: CallStateView(widget.callSession!.state, key: stateGlobalKey,),),
         Expanded(child: Container()),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -347,13 +419,21 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   }
 
   void updateVideoView() {
-      if(localVideoCreated && smallVideoViewId != null) {
-        widget.callSession!.setLocalVideoView(smallVideoViewId!);
-      }
+    if(!widget.callSession!.audioOnly) {
+      if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
+        if(localVideoCreated && bigVideoViewId != null) {
+          widget.callSession!.setLocalVideoView(bigVideoViewId!);
+        }
+      } else {
+        if(localVideoCreated && smallVideoViewId != null) {
+          widget.callSession!.setLocalVideoView(smallVideoViewId!);
+        }
 
-      if(remoteVideoCreated && bigVideoViewId != null) {
-        widget.callSession!.setRemoteVideoView(widget.userId!, false, bigVideoViewId!);
+        if(remoteVideoCreated && bigVideoViewId != null) {
+          widget.callSession!.setRemoteVideoView(widget.userId!, false, bigVideoViewId!);
+        }
       }
+    }
   }
 
   @override
@@ -375,6 +455,10 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   @override
   void didChangeState(int state) {
+    if(stateGlobalKey.currentState != null) {
+      stateGlobalKey.currentState!.updateCallStateView(state);
+    }
+    updateVideoView();
     setState(() {
 
     });

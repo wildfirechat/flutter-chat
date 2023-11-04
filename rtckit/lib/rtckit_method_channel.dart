@@ -369,6 +369,10 @@ class RtckitPlatform extends PlatformInterface {
     return await methodChannel.invokeMethod("answerCall", {'callId':callId, 'audioOnly':audioOnly});
   }
 
+  Future<void> changeToAudioOnly(String callId) async {
+    return await methodChannel.invokeMethod("changeToAudioOnly", {'callId':callId});
+  }
+
   Future<void> endCall(String callId) async {
     return await methodChannel.invokeMethod("endCall", {'callId':callId});
   }
