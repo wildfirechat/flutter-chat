@@ -121,19 +121,6 @@ const int kWFAVVideoTypeNone = 0;
 const int kWFAVVideoTypeBigStream = 1;
 const int kWFAVVideoTypeSmallStream = 2;
 
-// @interface WFAVParticipantProfile : NSObject
-// @property(nonatomic, strong, readonly)NSString *userId;
-// @property(nonatomic, assign, readonly)long long startTime;
-// @property(nonatomic, assign, readonly)WFAVEngineState state;
-// @property(nonatomic, assign, readonly)BOOL videoMuted;
-// @property(nonatomic, assign, readonly)BOOL audioMuted;
-// @property(nonatomic, assign, readonly)BOOL audience;
-// @property(nonatomic, assign, readonly)BOOL screeSharing;
-// //兼容专业版，实际无意义
-// @property(nonatomic, strong, readonly)NSString * _Nullable callExtra;
-// //兼容专业版，实际无意义
-// @property(nonatomic, assign, readonly)WFAVVideoType videoType;
-// @end
 
 class ParticipantProfile {
   final String userId;
@@ -147,6 +134,7 @@ class ParticipantProfile {
   ParticipantProfile(this.userId, this.startTime, this.state, this.videoMuted,
       this.audioMuted, this.audience, this.screenSharing);
 }
+
 class CallSession implements CallSessionCallback {
   String callId;
   late int state;
@@ -196,7 +184,16 @@ class CallSession implements CallSessionCallback {
   }
 
   Future<void> answerCall(bool audioOnly) async {
+    this.audioOnly = this.audioOnly || audioOnly;
     return Rtckit._answerCall(callId, audioOnly);
+  }
+
+  Future<void> changeToAudioOnly() async {
+    if(!audioOnly && state == kWFAVEngineStateConnected) {
+      audioOnly = true;
+      return Rtckit._changeToAudioOnly(callId);
+    }
+    return;
   }
 
   Future<void> endCall() async {
@@ -401,6 +398,8 @@ typedef ShouldStopRingCallback = void Function();
 typedef DidEndCallCallback = void Function(int reason, int duration);
 
 class Rtckit {
+  static String defaultUserPortrait = 'assets/images/user_avatar_default.png';
+
   static void init({DidReceiveCallCallback? didReceiveCallCallback, ShouldStartRingCallback? shouldStartRingCallback, ShouldStopRingCallback? shouldStopRingCallback, DidEndCallCallback? didEndCallCallback}) {
     RtckitPlatform.instance.initProto(didReceiveCallCallback, shouldStartRingCallback, shouldStopRingCallback, didEndCallCallback);
   }
@@ -493,6 +492,10 @@ class Rtckit {
 
   static Future<void> _answerCall(String callId, bool audioOnly) async {
     return RtckitPlatform.instance.answerCall(callId, audioOnly);
+  }
+
+  static Future<void> _changeToAudioOnly(String callId) async {
+    return RtckitPlatform.instance.changeToAudioOnly(callId);
   }
 
   static Future<void> _endCall(String callId) async {

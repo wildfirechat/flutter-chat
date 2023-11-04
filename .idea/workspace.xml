@@ -5,9 +5,31 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_answer.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_answer_hover.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_camera_switch.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_camera_switch_hover.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_hangup.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_hangup_hover.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_minimize.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_speaker.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_speaker_bluetooth.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_speaker_headset.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_speaker_hover.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_to_voice.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_to_voice_hover.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_video_disable.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_video_enable.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_voice_mute.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_voice_mute_hover.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rtckit/lib/call_state_view.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/RtckitPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/RtckitPlugin.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/ios/Classes/RtckitPlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/ios/Classes/RtckitPlugin.m" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/rtckit.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/rtckit_method_channel.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rtckit/lib/single_voice_call.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/single_voice_call.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,11 +90,11 @@
       <recent name="$PROJECT_DIR$/example/lib" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/rtckit/assets/images/rtckit" />
       <recent name="$PROJECT_DIR$/example/assets/images" />
       <recent name="$PROJECT_DIR$/example/lib/channel" />
       <recent name="$PROJECT_DIR$/example/lib/settings" />
       <recent name="$PROJECT_DIR$/example/lib/home" />
-      <recent name="$PROJECT_DIR$/example/lib/discovery" />
     </key>
   </component>
   <component name="RunManager">
