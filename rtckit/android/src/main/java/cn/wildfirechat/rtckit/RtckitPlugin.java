@@ -51,8 +51,8 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     private static Activity gActivity;
     private static boolean isWfcUIKitInitialized = false;
 
-    private static Map<String, CallSessionDelegator> delegators = new HashMap<>();
-    private static Map<Integer, NativeView> videoViews = new HashMap<>();
+    public static Map<String, CallSessionDelegator> delegators = new HashMap<>();
+    public static Map<Integer, NativeView> videoViews = new HashMap<>();
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {

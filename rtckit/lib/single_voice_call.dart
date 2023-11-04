@@ -1,5 +1,7 @@
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:rtckit/rtckit.dart';
@@ -15,6 +17,7 @@ class SingleVideoCallView extends StatefulWidget {
 }
 
 class SingleVideoCallState extends State<SingleVideoCallView> implements CallSessionCallback {
+  final Color backgroupColor = Colors.blueAccent;
   late Widget bigVideoView;
   late Widget smallVideoView;
 
@@ -66,7 +69,9 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   }
 
   Widget callView(BuildContext context) {
-    return Stack(
+    return Container(
+      color: backgroupColor,
+      child: Stack(
       children: [
         //底视图，如果是视频就是大的视频流，如果是音频就是背景颜色
         backgroundCallView(context),
@@ -75,6 +80,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         //控制视图，挂断静音等等
         controlView(context),
       ],
+      ),
     );
   }
 
@@ -82,7 +88,10 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     if(widget.callSession!.audioOnly) {
       return Container();
     } else {
-      return Container(child: bigVideoView,);
+      return Container(
+        color: backgroupColor,
+        child: bigVideoView,
+      );
     }
   }
 
@@ -102,18 +111,35 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     final Map<String, dynamic> creationParams = <String, dynamic>{};
 
     if(defaultTargetPlatform == TargetPlatform.android) {
-      return AndroidView(
+      return PlatformViewLink(
         viewType: viewType,
-        layoutDirection: TextDirection.ltr,
-        creationParams: creationParams,
-        creationParamsCodec: const StandardMessageCodec(),
-        onPlatformViewCreated: (viewId) {
+        surfaceFactory: (context, controller) {
+          return AndroidViewSurface(
+            controller: controller as AndroidViewController,
+            gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+            hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+          );
+        },
+        onCreatePlatformView: (params) {
           if (big) {
-            bigVideoViewId = viewId;
+            bigVideoViewId = params.id;
           } else {
-            smallVideoViewId = viewId;
+            smallVideoViewId = params.id;
           }
           updateVideoView();
+
+          return PlatformViewsService.initExpensiveAndroidView(
+            id: params.id,
+            viewType: viewType,
+            layoutDirection: TextDirection.ltr,
+            creationParams: creationParams,
+            creationParamsCodec: const StandardMessageCodec(),
+            onFocus: () {
+              params.onFocusChanged(true);
+            },
+          )
+            ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
+            ..create();
         },
       );
     } else if(defaultTargetPlatform == TargetPlatform.iOS) {
@@ -142,7 +168,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         return [];
       } else if(widget.callSession!.state == kWFAVEngineStateIncoming) {
         //1 downgrade to voice call
-        return [_blankControl(context), _blankControl(context), _downgrade2VoiceControl(context)];
+        return [_blankControl(context), _downgrade2VoiceControl(context)];
       } else {
         //1 downgrade to voice call
         return [_switchCameraControl(context), _blankControl(context), _downgrade2VoiceControl(context)];
@@ -310,6 +336,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
           mainAxisAlignment: MainAxisAlignment.center,
           children: _controlRowBottom1(context),
         ),
+        const Padding(padding: EdgeInsets.all(20)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: _controlRowBottom2(context),
@@ -320,7 +347,6 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   }
 
   void updateVideoView() {
-    setState(() {
       if(localVideoCreated && smallVideoViewId != null) {
         widget.callSession!.setLocalVideoView(smallVideoViewId!);
       }
@@ -328,7 +354,6 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       if(remoteVideoCreated && bigVideoViewId != null) {
         widget.callSession!.setRemoteVideoView(widget.userId!, false, bigVideoViewId!);
       }
-    });
   }
 
   @override
@@ -343,7 +368,9 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   @override
   void didChangeMode(bool isAudioOnly) {
-    // TODO: implement didChangeMode
+    setState(() {
+
+    });
   }
 
   @override
