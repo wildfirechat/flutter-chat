@@ -15,7 +15,7 @@ class _PluginItem {
 }
 
 typedef OnPickerImageCallback = void Function(String imagePath);
-typedef OnPickerFileCallback = void Function(String filePath, int size);
+typedef OnPickerFileCallback = void Function(String filePath, String name, int size);
 typedef OnPressCallBtnCallback = void Function();
 typedef OnPressCardBtnCallback = void Function();
 typedef OnCameraCaptureImageCallback = void Function(String imagePath);
@@ -111,9 +111,10 @@ class PluginBoard extends StatelessWidget {
       case "file":
         FilePicker.platform.pickFiles().then((value) {
           if(value != null && value.files.isNotEmpty) {
-            String path = value.files.first.name;
+            String path = value.files.first.path!;
+            String name = value.files.first.name;
             int size = value.files.first.size;
-            _pickerFileCallback(path, size);
+            _pickerFileCallback(path, name, size);
           }
         });
         break;
