@@ -2199,8 +2199,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
         map.put("sender", protoData.sender);
         map.put("conversation", convertConversation(protoData.conversation));
-        if (protoData.messageId > 0)
-            map.put("messageId", protoData.messageId);
+        map.put("messageId", protoData.messageId);
         if (protoData.messageUid > 0)
             map.put("messageUid", protoData.messageUid);
         if (protoData.serverTime > 0)
