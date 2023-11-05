@@ -86,7 +86,7 @@ class _State extends State<MessagesScreen> {
       sendButtonTapedCallback: (text) => _onSendButtonTyped(text),
       textChangedCallback: (text) => _onInputBarTextChanged(text),
       pickerImageCallback:(imagePath) => _onPickImage(imagePath),
-      pickerFileCallback:(filePath, size) => _onPickFile(filePath, size),
+      pickerFileCallback:(filePath, name, size) => _onPickFile(filePath, name, size),
       pressCallBtnCallback:() => _onPressCallBtn(),
       pressCardBtnCallback: () => _onPressCardBtn(),
       cameraCaptureImageCallback: _cameraCaptureImage,
@@ -210,10 +210,11 @@ class _State extends State<MessagesScreen> {
     _sendMessage(imgCont);
   }
 
-  void _onPickFile(String filePath, int size) {
+  void _onPickFile(String filePath, String name, int size) {
     FileMessageContent fileCnt = FileMessageContent();
-    fileCnt.name = filePath;
+    fileCnt.name = name;
     fileCnt.size = size;
+    fileCnt.localPath = filePath;
     _sendMessage(fileCnt);
   }
 
