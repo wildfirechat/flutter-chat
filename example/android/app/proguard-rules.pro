@@ -93,6 +93,10 @@
   *;
 }
 
+-keepclassmembers class cn.wildfirechat.remote.** {
+   public *;
+}
+
 -keep class cn.wildfirechat.rtckit.** {*;}
 -keepclassmembers class cn.wildfirechat.rtckit.** {
   *;
