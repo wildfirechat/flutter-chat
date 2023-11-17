@@ -39,7 +39,6 @@ android {
         compileOnly fileTree(dir: "android_uikit_aars", include: ["*.aar"])
         compileOnly fileTree(dir: "../../imclient/android/android_client_aars", include: ["*.aar"])
 
-        implementation 'com.jakewharton:butterknife:10.2.1'
         //implementation 'q.rorbin:badgeview:1.1.3'
 
         implementation 'com.lqr.adapter:library:1.0.2'
