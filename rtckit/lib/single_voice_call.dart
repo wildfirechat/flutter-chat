@@ -43,12 +43,6 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
       if(!widget.audioOnly!) {
         createVideoView();
-      } else {
-        Imclient.getUserInfo(widget.userId!).then((value) {
-          setState(() {
-            userInfo = value;
-          });
-        });
       }
       Rtckit.startSingleCall(widget.userId!, widget.audioOnly!).then((value) {
         if (value == null) {
@@ -65,15 +59,15 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       widget.userId = widget.callSession?.conversation!.target;
       if(!widget.callSession!.audioOnly) {
         createVideoView();
-      } else {
-        Imclient.getUserInfo(widget.callSession!.inviter!).then((value) {
-          setState(() {
-            userInfo = value;
-          });
-        });
       }
       widget.callSession?.setCallSessionCallback(this);
     }
+
+    Imclient.getUserInfo(widget.userId!).then((value) {
+      setState(() {
+        userInfo = value;
+      });
+    });
   }
 
   void createVideoView() {
@@ -117,27 +111,45 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   Widget userPortraitAndName(BuildContext context) {
     if(userInfo != null) {
-      return Center(
-        heightFactor: 5,
-        child: Column(
-          mainAxisSize:MainAxisSize.min,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
-              child: SizedBox(width: 100,
-                height: 100,
-                child: userInfo!.portrait == null
-                    ? Image.asset(
-                    Rtckit.defaultUserPortrait, width: 100.0, height: 100.0)
-                    : Image.network(
-                    userInfo!.portrait!, width: 100.0, height: 100.0),
-              ),
+      return Padding(padding: EdgeInsets.only(top: 80), child: Column(
+        mainAxisSize:MainAxisSize.min,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
+            child: SizedBox(width: 100,
+              height: 100,
+              child: userInfo!.portrait == null
+                  ? Image.asset(
+                  Rtckit.defaultUserPortrait, width: 100.0, height: 100.0)
+                  : Image.network(
+                  userInfo!.portrait!, width: 100.0, height: 100.0),
             ),
-            const Padding(padding: EdgeInsets.all(8)),
-            Center(child: Text(userInfo!.displayName!, style: const TextStyle(color: Colors.white),),)
-          ],
-        ),
-      );
+          ),
+          const Padding(padding: EdgeInsets.all(8)),
+          Center(child: Text(userInfo!.displayName!, style: const TextStyle(color: Colors.white),),)
+        ],
+      ),);
+      // return Center(
+      //   heightFactor: 5,
+      //   child: Column(
+      //     mainAxisSize:MainAxisSize.min,
+      //     children: [
+      //       ClipRRect(
+      //         borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
+      //         child: SizedBox(width: 100,
+      //           height: 100,
+      //           child: userInfo!.portrait == null
+      //               ? Image.asset(
+      //               Rtckit.defaultUserPortrait, width: 100.0, height: 100.0)
+      //               : Image.network(
+      //               userInfo!.portrait!, width: 100.0, height: 100.0),
+      //         ),
+      //       ),
+      //       const Padding(padding: EdgeInsets.all(8)),
+      //       Center(child: Text(userInfo!.displayName!, style: const TextStyle(color: Colors.white),),)
+      //     ],
+      //   ),
+      // );
     } else {
       return Container();
     }
@@ -409,8 +421,9 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
           }, child: const Image(image:AssetImage('assets/images/rtckit/call_camera_switch.png', package: 'rtckit'), width: 24, height: 24,),),)
         ],):Container(),
         const Padding(padding: EdgeInsets.all(20)),
-        Center(child: CallStateView(widget.callSession!.state, key: stateGlobalKey,),),
         Expanded(child: Container()),
+        Center(child: CallStateView(widget.callSession!.state, key: stateGlobalKey,),),
+        const Padding(padding: EdgeInsets.all(20)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: _controlRowBottom1(context),
