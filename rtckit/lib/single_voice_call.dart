@@ -224,7 +224,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         return [_blankControl(context), _downgrade2VoiceControl(context)];
       } else {
         //1 downgrade to voice call
-        return [_switchCameraControl(context), _blankControl(context), _downgrade2VoiceControl(context)];
+        return [_blankControl(context), _blankControl(context), _downgrade2VoiceControl(context)];
       }
     }
     return [];
@@ -397,10 +397,17 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   Widget controlView(BuildContext context) {
     return Column(
       children: [
-        const Row(children: [
+        (widget.callSession!.state == kWFAVEngineStateConnecting || widget.callSession!.state == kWFAVEngineStateConnected) ?
+        Row(children: [
           //"assets/images/conversation_msg_sending.png"
-          Padding(padding: EdgeInsets.fromLTRB(24, 60, 0, 0), child: Image(image:AssetImage('assets/images/rtckit/call_minimize.png', package: 'rtckit'), width: 24, height: 24,),)
-        ],),
+          Padding(padding: const EdgeInsets.fromLTRB(24, 60, 0, 0), child: GestureDetector(onTap: () {
+            //最小化
+          }, child: const Image(image:AssetImage('assets/images/rtckit/call_minimize.png', package: 'rtckit'), width: 24, height: 24,),),),
+          Expanded(child: Container()),
+          (widget.callSession == null || widget.callSession!.audioOnly) ? Container() : Padding(padding: const EdgeInsets.fromLTRB(0, 60, 24, 0), child: GestureDetector(onTap: () {
+            widget.callSession!.switchCamera();
+          }, child: const Image(image:AssetImage('assets/images/rtckit/call_camera_switch.png', package: 'rtckit'), width: 24, height: 24,),),)
+        ],):Container(),
         const Padding(padding: EdgeInsets.all(20)),
         Center(child: CallStateView(widget.callSession!.state, key: stateGlobalKey,),),
         Expanded(child: Container()),
@@ -419,6 +426,9 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   }
 
   void updateVideoView() {
+    if(widget.callSession?.state == kWFAVEngineStateIdle) {
+      return;
+    }
     if(!widget.callSession!.audioOnly) {
       if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
         if(localVideoCreated && bigVideoViewId != null) {
