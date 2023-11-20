@@ -599,9 +599,12 @@ class ImclientPlatform extends PlatformInterface {
           Map<dynamic, dynamic> data = args['groupInfo'];
           var callback = _operationSuccessCallbackMap[requestId];
           if (callback != null) {
-            callback(_convertProtoGroupInfo(data));
+            _convertProtoGroupInfo(data).then((value) {
+              callback(value);
+              _removeOperationCallback(requestId);
+            });
           }
-          _removeOperationCallback(requestId);
+
           break;
         case 'onOperationStringSuccess':
           Map<dynamic, dynamic> args = call.arguments;
@@ -918,7 +921,7 @@ class ImclientPlatform extends PlatformInterface {
   static Future<List<GroupSearchInfo>> _convertProtoGroupSearchInfos(
       List<dynamic> maps) async {
     if (maps.isEmpty) {
-      return [];
+      return Future.value([]);
     }
 
     List<GroupSearchInfo> infos = [];
@@ -926,7 +929,7 @@ class ImclientPlatform extends PlatformInterface {
       infos.add(await _convertProtoGroupSearchInfo(element));
     }
 
-    return infos;
+    return Future.value(infos);
   }
 
   static Future<GroupSearchInfo> _convertProtoGroupSearchInfo (
@@ -936,7 +939,7 @@ class ImclientPlatform extends PlatformInterface {
     groupSearchInfo.marchType = map['marchType'];
     groupSearchInfo.marchedMemberNames = Tools.convertDynamicList(map['marchedMemberNames']);
 
-    return groupSearchInfo;
+    return Future.value(groupSearchInfo);
   }
 
   static UnreadCount _convertProtoUnreadCount(Map<dynamic, dynamic>? map) {
@@ -1065,8 +1068,7 @@ class ImclientPlatform extends PlatformInterface {
         groupInfo.portrait = defaultPortraitProvider!.groupDefaultPortrait(groupInfo, useInfos);
       }
     }
-
-    return groupInfo;
+    return Future.value(groupInfo);
   }
 
   static GroupMember? _convertProtoGroupMember(Map<dynamic, dynamic>? map) {
