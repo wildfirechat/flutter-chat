@@ -16,6 +16,7 @@ A new Flutter project.
   s.source_files = 'Classes/**/*'
   s.vendored_frameworks = 'WFSDK/*.xcframework'
   s.public_header_files = 'Classes/**/*.h'
+  s.resource = 'WFSDK/foreman.mp4'
   s.dependency 'Flutter'
   s.platform = :ios, '10.0'
 
