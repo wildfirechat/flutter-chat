@@ -231,165 +231,190 @@ class CallSession implements CallSessionCallback {
     return Rtckit._isHeadsetPluggedIn(callId);
   }
 
+  void _syncData(CallSession session) {
+    state = session.state;
+    inviter = session.inviter;
+    audioOnly = session.audioOnly;
+    endReason = session.endReason;
+    speaker = session.speaker;
+    videoMuted = session.videoMuted;
+    audioMuted = session.audioMuted;
+    audience = session.audience;
+    endTime = session.endTime;
+    initiator = session.initiator;
+    connectedTime = session.connectedTime;
+    startTime = session.startTime;
+  }
+
   @override
-  void didCallEndWithReason(int reason) {
+  void didCallEndWithReason(CallSession session, int reason) {
+    _syncData(session);
     endReason = reason;
     if(_callback != null) {
-      _callback!.didCallEndWithReason(reason);
+      _callback!.didCallEndWithReason(this, reason);
     }
   }
 
   @override
-  void didChangeInitiator(String initiator) {
+  void didChangeInitiator(CallSession session, String initiator) {
+    _syncData(session);
     this.initiator = initiator;
     if(_callback != null) {
-      _callback!.didChangeInitiator(initiator);
+      _callback!.didChangeInitiator(this, initiator);
     }
   }
 
   @override
-  void didChangeMode(bool isAudioOnly) {
+  void didChangeMode(CallSession session, bool isAudioOnly) {
+    _syncData(session);
     audioOnly = isAudioOnly;
     if(_callback != null) {
-      _callback!.didChangeMode(isAudioOnly);
+      _callback!.didChangeMode(this, isAudioOnly);
     }
   }
 
   @override
-  void didChangeState(int state) {
+  void didChangeState(CallSession session, int state) {
+    _syncData(session);
     this.state = state;
-    if(_callback != null) {
-      _callback!.didChangeState(state);
+    if (_callback != null) {
+      _callback!.didChangeState(this, state);
     }
   }
 
   @override
-  void didCreateLocalVideoTrack() {
+  void didCreateLocalVideoTrack(CallSession session) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didCreateLocalVideoTrack();
+      _callback!.didCreateLocalVideoTrack(this);
     }
   }
 
   @override
-  void didError(String error) {
+  void didError(CallSession session, String error) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didError(error);
+      _callback!.didError(this, error);
     }
   }
 
   @override
-  void didGetStats() {
+  void didGetStats(CallSession session) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didGetStats();
+      _callback!.didGetStats(this);
     }
   }
 
   @override
-  void didParticipantConnected(String userId, bool screenSharing) {
+  void didParticipantConnected(CallSession session, String userId, bool screenSharing) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didParticipantConnected(userId, screenSharing);
+      _callback!.didParticipantConnected(this, userId, screenSharing);
     }
   }
 
   @override
-  void didParticipantJoined(String userId, bool screenSharing) {
+  void didParticipantJoined(CallSession session, String userId, bool screenSharing) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didParticipantJoined(userId, screenSharing);
+      _callback!.didParticipantJoined(this, userId, screenSharing);
     }
   }
 
   @override
-  void didParticipantLeft(String userId, bool screenSharing, int reason) {
+  void didParticipantLeft(CallSession session, String userId, bool screenSharing, int reason) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didParticipantLeft(userId, screenSharing, reason);
+      _callback!.didParticipantLeft(this, userId, screenSharing, reason);
     }
   }
 
   @override
-  void didReceiveRemoteVideoTrack(String userId, bool screenSharing) {
+  void didReceiveRemoteVideoTrack(CallSession session, String userId, bool screenSharing) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didReceiveRemoteVideoTrack(userId, screenSharing);
+      _callback!.didReceiveRemoteVideoTrack(this, userId, screenSharing);
     }
   }
 
   @override
-  void didVideoMuted(String userId, bool videoMuted) {
+  void didVideoMuted(CallSession session, String userId, bool videoMuted) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didVideoMuted(userId, videoMuted);
+      _callback!.didVideoMuted(this, userId, videoMuted);
     }
   }
 
   @override
-  void didChangeAudioRoute() {
+  void didChangeAudioRoute(CallSession session) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didChangeAudioRoute();
+      _callback!.didChangeAudioRoute(this);
     }
   }
 
   @override
-  void didChangeType(String userId, bool audience) {
+  void didChangeType(CallSession session, String userId, bool audience) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didChangeType(userId, audience);
+      _callback!.didChangeType(this, userId, audience);
     }
   }
 
   @override
-  void didMuteStateChanged(List<String> userIds) {
+  void didMuteStateChanged(CallSession session, List<String> userIds) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didMuteStateChanged(userIds);
+      _callback!.didMuteStateChanged(this, userIds);
     }
   }
 
   @override
-  void didRemoteMediaLost(String userId, String media, bool uplink, int lostPackage, bool screenSharing) {
+  void didRemoteMediaLost(CallSession session, String userId, String media, bool uplink, int lostPackage, bool screenSharing) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didRemoteMediaLost(userId, media, uplink, lostPackage, screenSharing);
+      _callback!.didRemoteMediaLost(this, userId, media, uplink, lostPackage, screenSharing);
     }
   }
 
   @override
-  void didReportAudioVolume(String userId, int volume) {
+  void didReportAudioVolume(CallSession session, String userId, int volume) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didReportAudioVolume(userId, volume);
+      _callback!.didReportAudioVolume(this, userId, volume);
     }
   }
 
   @override
-  void didMediaLost(String media, int lostPackage, bool screenSharing) {
+  void didMediaLost(CallSession session, String media, int lostPackage, bool screenSharing) {
+    _syncData(session);
     if(_callback != null) {
-      _callback!.didMediaLost(media, lostPackage, screenSharing);
-    }
-  }
-
-  @override
-  void onScreenSharingFailure() {
-    if(_callback != null) {
-      _callback!.onScreenSharingFailure();
+      _callback!.didMediaLost(this, media, lostPackage, screenSharing);
     }
   }
 }
 
 abstract class CallSessionCallback {
-  void didCallEndWithReason(int reason) {}
-  void didChangeInitiator(String initiator) {}
-  void didChangeMode(bool isAudioOnly) {}
-  void didChangeState(int state) {}
-  void didCreateLocalVideoTrack() {}
-  void didError(String error) {}
-  void didGetStats() {}
-  void didParticipantConnected(String userId, bool screenSharing) {}
-  void didParticipantJoined(String userId, bool screenSharing) {}
-  void didParticipantLeft(String userId, bool screenSharing, int reason) {}
-  void didReceiveRemoteVideoTrack(String userId, bool screenSharing) {}
-  void didVideoMuted(String userId, bool videoMuted) {}
+  void didCallEndWithReason(CallSession session, int reason) {}
+  void didChangeInitiator(CallSession session, String initiator) {}
+  void didChangeMode(CallSession session, bool isAudioOnly) {}
+  void didChangeState(CallSession session, int state) {}
+  void didCreateLocalVideoTrack(CallSession session) {}
+  void didError(CallSession session, String error) {}
+  void didGetStats(CallSession session) {}
+  void didParticipantConnected(CallSession session, String userId, bool screenSharing) {}
+  void didParticipantJoined(CallSession session, String userId, bool screenSharing) {}
+  void didParticipantLeft(CallSession session, String userId, bool screenSharing, int reason) {}
+  void didReceiveRemoteVideoTrack(CallSession session, String userId, bool screenSharing) {}
+  void didVideoMuted(CallSession session, String userId, bool videoMuted) {}
 
-  void didReportAudioVolume(String userId, int volume) {}
-  void didChangeType(String userId, bool audience) {}
-  void didChangeAudioRoute() {}
-  void didMuteStateChanged(List<String> userIds);
-  void didMediaLost(String media, int lostPackage, bool screenSharing) {}
-  void didRemoteMediaLost(String userId, String media, bool uplink, int lostPackage, bool screenSharing) {}
-  void onScreenSharingFailure() {}
+  void didReportAudioVolume(CallSession session, String userId, int volume) {}
+  void didChangeType(CallSession session, String userId, bool audience) {}
+  void didChangeAudioRoute(CallSession session) {}
+  void didMuteStateChanged(CallSession session, List<String> userIds);
+  void didMediaLost(CallSession session, String media, int lostPackage, bool screenSharing) {}
+  void didRemoteMediaLost(CallSession session, String userId, String media, bool uplink, int lostPackage, bool screenSharing) {}
 }
 
 typedef DidReceiveCallCallback = void Function(CallSession callSession);

@@ -88,7 +88,7 @@ class RtckitPlatform extends PlatformInterface {
           int reason = args['reason'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didCallEndWithReason(reason);
+            callback.didCallEndWithReason(sessionFromMap(args['session'])!, reason);
           }
           break;
         case 'didChangeInitiator':
@@ -97,7 +97,7 @@ class RtckitPlatform extends PlatformInterface {
           String initiator = args['initiator'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didChangeInitiator(initiator);
+            callback.didChangeInitiator(sessionFromMap(args['session'])!, initiator);
           }
           break;
         case 'didChangeMode':
@@ -106,7 +106,7 @@ class RtckitPlatform extends PlatformInterface {
           bool isAudioOnly = args['isAudioOnly'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didChangeMode(isAudioOnly);
+            callback.didChangeMode(sessionFromMap(args['session'])!, isAudioOnly);
           }
           break;
         case 'didChangeState':
@@ -115,7 +115,7 @@ class RtckitPlatform extends PlatformInterface {
           int state = args['state'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didChangeState(state);
+            callback.didChangeState(sessionFromMap(args['session'])!, state);
           }
           break;
         case 'didCreateLocalVideoTrack':
@@ -123,7 +123,7 @@ class RtckitPlatform extends PlatformInterface {
           String callId = args['callId'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didCreateLocalVideoTrack();
+            callback.didCreateLocalVideoTrack(sessionFromMap(args['session'])!);
           }
           break;
         case 'didError':
@@ -132,7 +132,7 @@ class RtckitPlatform extends PlatformInterface {
           String error = args['error'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didError(error);
+            callback.didError(sessionFromMap(args['session'])!, error);
           }
           break;
         case 'didGetStats':
@@ -140,7 +140,7 @@ class RtckitPlatform extends PlatformInterface {
           String callId = args['callId'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didGetStats();
+            callback.didGetStats(sessionFromMap(args['session'])!);
           }
           break;
         case 'didParticipantConnected':
@@ -150,7 +150,7 @@ class RtckitPlatform extends PlatformInterface {
           bool screenSharing = args['screenSharing'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didParticipantConnected(userId, screenSharing);
+            callback.didParticipantConnected(sessionFromMap(args['session'])!, userId, screenSharing);
           }
           break;
         case 'didParticipantJoined':
@@ -160,7 +160,7 @@ class RtckitPlatform extends PlatformInterface {
           bool screenSharing = args['screenSharing'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didParticipantJoined(userId, screenSharing);
+            callback.didParticipantJoined(sessionFromMap(args['session'])!, userId, screenSharing);
           }
           break;
         case 'didParticipantLeft':
@@ -171,7 +171,7 @@ class RtckitPlatform extends PlatformInterface {
           int reason = args['reason'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didParticipantLeft(userId, screenSharing, reason);
+            callback.didParticipantLeft(sessionFromMap(args['session'])!, userId, screenSharing, reason);
           }
           break;
         case 'didReceiveRemoteVideoTrack':
@@ -181,7 +181,7 @@ class RtckitPlatform extends PlatformInterface {
           bool screenSharing = args['screenSharing'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didReceiveRemoteVideoTrack(userId, screenSharing);
+            callback.didReceiveRemoteVideoTrack(sessionFromMap(args['session'])!, userId, screenSharing);
           }
           break;
         case 'didVideoMuted':
@@ -191,7 +191,7 @@ class RtckitPlatform extends PlatformInterface {
           bool videoMuted = args['videoMuted'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didVideoMuted(userId, videoMuted);
+            callback.didVideoMuted(sessionFromMap(args['session'])!, userId, videoMuted);
           }
           break;
         case 'didReportAudioVolume':
@@ -201,7 +201,7 @@ class RtckitPlatform extends PlatformInterface {
           int volume = args['volume'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didReportAudioVolume(userId, volume);
+            callback.didReportAudioVolume(sessionFromMap(args['session'])!, userId, volume);
           }
           break;
         case 'didChangeType':
@@ -211,7 +211,7 @@ class RtckitPlatform extends PlatformInterface {
           bool audience = args['audience'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didChangeType(userId, audience);
+            callback.didChangeType(sessionFromMap(args['session'])!, userId, audience);
           }
           break;
         case 'didChangeAudioRoute':
@@ -219,7 +219,7 @@ class RtckitPlatform extends PlatformInterface {
           String callId = args['callId'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didChangeAudioRoute();
+            callback.didChangeAudioRoute(sessionFromMap(args['session'])!);
           }
           break;
         case 'didMuteStateChanged':
@@ -228,7 +228,7 @@ class RtckitPlatform extends PlatformInterface {
           List<String> userIds = args['userIds'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didMuteStateChanged(userIds);
+            callback.didMuteStateChanged(sessionFromMap(args['session'])!, userIds);
           }
           break;
         case 'didMediaLost':
@@ -239,7 +239,7 @@ class RtckitPlatform extends PlatformInterface {
           bool screenSharing = args['screenSharing'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didMediaLost(media, lostPackage, screenSharing);
+            callback.didMediaLost(sessionFromMap(args['session'])!, media, lostPackage, screenSharing);
           }
           break;
         case 'didRemoteMediaLost':
@@ -252,18 +252,9 @@ class RtckitPlatform extends PlatformInterface {
           bool screenSharing = args['screenSharing'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didRemoteMediaLost(userId, media, uplink, lostPackage, screenSharing);
+            callback.didRemoteMediaLost(sessionFromMap(args['session'])!, userId, media, uplink, lostPackage, screenSharing);
           }
           break;
-        case 'onScreenSharingFailure':
-          Map<dynamic, dynamic> args = call.arguments;
-          String callId = args['callId'];
-          CallSessionCallback? callback = _callSessionCallbacks[callId];
-          if(callback != null) {
-            callback.onScreenSharingFailure();
-          }
-          break;
-
         default:
           debugPrint("Unknown event '${call.method}'");
           break;

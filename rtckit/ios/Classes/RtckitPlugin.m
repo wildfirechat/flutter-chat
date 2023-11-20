@@ -35,7 +35,7 @@
 
 - (void)didCallEndWithReason:(WFAVCallEndReason)reason {
     [self.delegaters removeObjectForKey:self.callSession.callId];
-    [self.channel invokeMethod:@"didCallEndWithReason" arguments:@{@"callId":self.callSession.callId, @"reason":@(reason)}];
+    [self.channel invokeMethod:@"didCallEndWithReason" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"reason":@(reason)}];
     if([[WFAVEngineKit sharedEngineKit].currentSession.callId isEqualToString:self.callSession.callId]) {
         [self.delegaters removeAllObjects];
         [self.videoViews removeAllObjects];
@@ -43,77 +43,77 @@
 }
 
 - (void)didChangeInitiator:(NSString * _Nullable)initiator { 
-    [self.channel invokeMethod:@"didChangeInitiator" arguments:@{@"callId":self.callSession.callId, @"initiator":initiator}];
+    [self.channel invokeMethod:@"didChangeInitiator" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"initiator":initiator}];
 }
 
 - (void)didChangeMode:(BOOL)isAudioOnly { 
-    [self.channel invokeMethod:@"didChangeMode" arguments:@{@"callId":self.callSession.callId, @"isAudioOnly":@(isAudioOnly)}];
+    [self.channel invokeMethod:@"didChangeMode" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"isAudioOnly":@(isAudioOnly)}];
 }
 
 - (void)didChangeState:(WFAVEngineState)state { 
     if(self.callSession) {
-        [self.channel invokeMethod:@"didChangeState" arguments:@{@"callId":self.callSession.callId, @"state":@(state)}];
+        [self.channel invokeMethod:@"didChangeState" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"state":@(state)}];
     }
 }
 
 - (void)didCreateLocalVideoTrack:(RTCVideoTrack * _Nonnull)localVideoTrack { 
-    [self.channel invokeMethod:@"didCreateLocalVideoTrack" arguments:@{@"callId":self.callSession.callId}];
+    [self.channel invokeMethod:@"didCreateLocalVideoTrack" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession]}];
 }
 
 - (void)didError:(NSError * _Nonnull)error { 
-    [self.channel invokeMethod:@"didError" arguments:@{@"callId":self.callSession.callId, @"error":error.localizedDescription}];
+    [self.channel invokeMethod:@"didError" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"error":error.localizedDescription}];
 }
 
 - (void)didGetStats:(NSArray * _Nonnull)stats { 
-//    [self.channel invokeMethod:@"didGetStats" arguments:@{@"callId":self.callSession.callId}];
+//    [self.channel invokeMethod:@"didGetStats" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession]}];
 }
 
 - (void)didParticipantConnected:(NSString * _Nonnull)userId screenSharing:(BOOL)screenSharing { 
-    [self.channel invokeMethod:@"didParticipantConnected" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"screenSharing":@(screenSharing)}];
+    [self.channel invokeMethod:@"didParticipantConnected" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"userId":userId, @"screenSharing":@(screenSharing)}];
 }
 
 - (void)didParticipantJoined:(NSString * _Nonnull)userId screenSharing:(BOOL)screenSharing { 
-    [self.channel invokeMethod:@"didParticipantJoined" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"screenSharing":@(screenSharing)}];
+    [self.channel invokeMethod:@"didParticipantJoined" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"userId":userId, @"screenSharing":@(screenSharing)}];
 }
 
 - (void)didParticipantLeft:(NSString * _Nonnull)userId screenSharing:(BOOL)screenSharing withReason:(WFAVCallEndReason)reason { 
-    [self.channel invokeMethod:@"didParticipantLeft" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"screenSharing":@(screenSharing), @"reason":@(reason)}];
+    [self.channel invokeMethod:@"didParticipantLeft" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"userId":userId, @"screenSharing":@(screenSharing), @"reason":@(reason)}];
 }
 
 - (void)didReceiveRemoteVideoTrack:(RTCVideoTrack * _Nonnull)remoteVideoTrack fromUser:(NSString * _Nonnull)userId screenSharing:(BOOL)screenSharing { 
-    [self.channel invokeMethod:@"didReceiveRemoteVideoTrack" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"screenSharing":@(screenSharing)}];
+    [self.channel invokeMethod:@"didReceiveRemoteVideoTrack" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"userId":userId, @"screenSharing":@(screenSharing)}];
 }
 
 - (void)didVideoMuted:(BOOL)videoMuted fromUser:(NSString * _Nonnull)userId { 
-    [self.channel invokeMethod:@"didVideoMuted" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"videoMuted":@(videoMuted)}];
+    [self.channel invokeMethod:@"didVideoMuted" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"userId":userId, @"videoMuted":@(videoMuted)}];
 }
 
 - (void)didReportAudioVolume:(NSInteger)volume ofUser:(NSString *_Nonnull)userId {
-    [self.channel invokeMethod:@"didReportAudioVolume" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"volume":@(volume)}];
+    [self.channel invokeMethod:@"didReportAudioVolume" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"userId":userId, @"volume":@(volume)}];
 }
 
 - (void)didChangeType:(BOOL)audience ofUser:(NSString *_Nonnull)userId {
-    [self.channel invokeMethod:@"didChangeType" arguments:@{@"callId":self.callSession.callId, @"userId":userId, @"audience":@(audience)}];
+    [self.channel invokeMethod:@"didChangeType" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"userId":userId, @"audience":@(audience)}];
 }
 
 - (void)didChangeAudioRoute {
-    [self.channel invokeMethod:@"didChangeAudioRoute" arguments:@{@"callId":self.callSession.callId}];
+    [self.channel invokeMethod:@"didChangeAudioRoute" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession]}];
 }
 
 - (void)didMuteStateChanged:(NSArray<NSString *> *_Nonnull)userIds {
-    [self.channel invokeMethod:@"didMuteStateChanged" arguments:@{@"callId":self.callSession.callId, @"userIds":userIds}];
+    [self.channel invokeMethod:@"didMuteStateChanged" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"userIds":userIds}];
 }
 
 - (void)didMedia:(NSString *_Nullable)media lostPackage:(int)lostPackage screenSharing:(BOOL)screenSharing {
-    [self.channel invokeMethod:@"didMediaLost" arguments:@{@"callId":self.callSession.callId, @"media":media, @"lostPackage":@(lostPackage), @"screenSharing":@(screenSharing)}];
+    [self.channel invokeMethod:@"didMediaLost" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"media":media, @"lostPackage":@(lostPackage), @"screenSharing":@(screenSharing)}];
 }
 
 - (void)didMedia:(NSString *_Nullable)media lostPackage:(int)lostPackage uplink:(BOOL)uplink ofUser:(NSString *_Nonnull)userId screenSharing:(BOOL)screenSharing {
-    [self.channel invokeMethod:@"didRemoteMediaLost" arguments:@{@"callId":self.callSession.callId, @"media":media, @"userId":userId, @"lostPackage":@(lostPackage), @"uplink":@(uplink), @"screenSharing":@(screenSharing)}];
+    [self.channel invokeMethod:@"didRemoteMediaLost" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"media":media, @"userId":userId, @"lostPackage":@(lostPackage), @"uplink":@(uplink), @"screenSharing":@(screenSharing)}];
 }
 
 - (void)onScreenSharingFailure {
-    [self.channel invokeMethod:@"onScreenSharingFailure" arguments:@{@"callId":self.callSession.callId}];
+
 }
 
 //- (RTCVideoFrame *_Nonnull)didCaptureVideoFrame:(RTCVideoFrame *_Nonnull)frame screenSharing:(BOOL)isScreenSharing {
@@ -201,7 +201,7 @@
     WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:nil channel:self.channel delegaters:self.delegaters videoViews:self.videoViews];
     WFAVCallSession *callSession = [[WFAVEngineKit sharedEngineKit] startCall:@[userId] audioOnly:audioOnly callExtra:nil conversation:obj sessionDelegate:delegater];
     delegater.callSession = callSession;
-    result([self callSession2Dict:callSession]);
+    result([RtckitPlugin callSession2Dict:callSession]);
 }
 
 - (void)startMultiCall:(NSDictionary *)dict result:(FlutterResult)result {
@@ -215,7 +215,7 @@
     WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:nil channel:self.channel delegaters:self.delegaters videoViews:self.videoViews];
     WFAVCallSession *callSession = [[WFAVEngineKit sharedEngineKit] startCall:participants audioOnly:audioOnly callExtra:nil conversation:obj sessionDelegate:delegater];
     delegater.callSession = callSession;
-    result([self callSession2Dict:callSession]);
+    result([RtckitPlugin callSession2Dict:callSession]);
 }
 
 
@@ -236,11 +236,11 @@
 
 - (void)currentCallSession:(NSDictionary *)dict result:(FlutterResult)result {
     WFAVCallSession *session = [WFAVEngineKit sharedEngineKit].currentSession;
-    result([self callSession2Dict:session]);
+    result([RtckitPlugin callSession2Dict:session]);
 }
 
-- (NSDictionary *)callSession2Dict:(WFAVCallSession *)session {
-    if(!session || session.state == kWFAVEngineStateIdle) {
++ (NSDictionary *)callSession2Dict:(WFAVCallSession *)session {
+    if(!session) {
         return nil;
     }
     NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
@@ -415,7 +415,7 @@
         WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:session channel:self.channel delegaters:self.delegaters videoViews:self.videoViews];
         session.delegate = delegater;
         
-        [self.channel invokeMethod:@"didReceiveCallCallback" arguments:@{@"callSession":[self callSession2Dict:session]}];
+        [self.channel invokeMethod:@"didReceiveCallCallback" arguments:@{@"callSession":[RtckitPlugin callSession2Dict:session]}];
     });
 }
 

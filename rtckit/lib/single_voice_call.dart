@@ -1,4 +1,6 @@
 
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -32,6 +34,8 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   GlobalKey<CallStateViewState> stateGlobalKey = GlobalKey();
 
   UserInfo? userInfo;
+
+  OverlayEntry? overlayEntry;
 
   @override
   void initState() {
@@ -129,27 +133,6 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
           Center(child: Text(userInfo!.displayName!, style: const TextStyle(color: Colors.white),),)
         ],
       ),);
-      // return Center(
-      //   heightFactor: 5,
-      //   child: Column(
-      //     mainAxisSize:MainAxisSize.min,
-      //     children: [
-      //       ClipRRect(
-      //         borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
-      //         child: SizedBox(width: 100,
-      //           height: 100,
-      //           child: userInfo!.portrait == null
-      //               ? Image.asset(
-      //               Rtckit.defaultUserPortrait, width: 100.0, height: 100.0)
-      //               : Image.network(
-      //               userInfo!.portrait!, width: 100.0, height: 100.0),
-      //         ),
-      //       ),
-      //       const Padding(padding: EdgeInsets.all(8)),
-      //       Center(child: Text(userInfo!.displayName!, style: const TextStyle(color: Colors.white),),)
-      //     ],
-      //   ),
-      // );
     } else {
       return Container();
     }
@@ -411,9 +394,9 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       children: [
         (widget.callSession!.state == kWFAVEngineStateConnecting || widget.callSession!.state == kWFAVEngineStateConnected) ?
         Row(children: [
-          //"assets/images/conversation_msg_sending.png"
           Padding(padding: const EdgeInsets.fromLTRB(24, 60, 0, 0), child: GestureDetector(onTap: () {
-            //最小化
+            showFloatingButton();
+            Navigator.pop(context);
           }, child: const Image(image:AssetImage('assets/images/rtckit/call_minimize.png', package: 'rtckit'), width: 24, height: 24,),),),
           Expanded(child: Container()),
           (widget.callSession == null || widget.callSession!.audioOnly) ? Container() : Padding(padding: const EdgeInsets.fromLTRB(0, 60, 24, 0), child: GestureDetector(onTap: () {
@@ -422,7 +405,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         ],):Container(),
         const Padding(padding: EdgeInsets.all(20)),
         Expanded(child: Container()),
-        Center(child: CallStateView(widget.callSession!.state, key: stateGlobalKey,),),
+        Center(child: CallStateView(widget.callSession!.state, widget.callSession!, key: stateGlobalKey,),),
         const Padding(padding: EdgeInsets.all(20)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -459,25 +442,84 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     }
   }
 
-  @override
-  void didCallEndWithReason(int reason) {
-    Navigator.pop(context);
+  Offset startOffset = const Offset(0, 0);
+  Offset endOffset = const Offset(0, 0);
+
+  Offset position = const Offset(10, 120);
+  void showFloatingButton() {
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: position.dy + (endOffset.dy - startOffset.dy),
+        right: position.dx - (endOffset.dx - startOffset.dx),
+        child: GestureDetector(
+          onLongPressStart: (LongPressStartDetails details) {
+            startOffset = details.globalPosition;
+            endOffset = details.globalPosition;
+          },
+          onLongPressEnd: (LongPressEndDetails details){
+            position = Offset(position.dx - (endOffset.dx - startOffset.dx), position.dy + (endOffset.dy - startOffset.dy));
+            startOffset = const Offset(0, 0);
+            endOffset = const Offset(0, 0);
+            overlayEntry?.markNeedsBuild();
+          },
+          onLongPressMoveUpdate: (LongPressMoveUpdateDetails details) {
+            endOffset = details.globalPosition;
+            overlayEntry?.markNeedsBuild();
+          },
+          onTap: () {
+            hideFloatingButton();
+            SingleVideoCallView callView = SingleVideoCallView(callSession: widget.callSession!,);
+            Navigator.push(context, MaterialPageRoute(builder: (context) => callView));},
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.blue,
+              borderRadius: BorderRadius.circular(10.0), // 圆角半径
+            ),
+            child: Column(
+            children: [
+              const Padding(padding: EdgeInsets.fromLTRB(30, 20, 30, 0)),
+              const Icon(Icons.call_rounded),
+              const Padding(padding: EdgeInsets.only(top: 20)),
+              Row(children: [Center(child: CallStateView(widget.callSession!.state, widget.callSession!),)],),
+              const Padding(padding: EdgeInsets.only(top: 10)),
+            ],),
+          ),),
+      ),
+    );
+
+    Overlay.of(context).insert(overlayEntry!);
+  }
+
+  void hideFloatingButton() {
+    if(overlayEntry != null) {
+      overlayEntry!.remove();
+      overlayEntry = null;
+    }
   }
 
   @override
-  void didChangeInitiator(String initiator) {
+  void didCallEndWithReason(CallSession session, int reason) {
+    if(overlayEntry != null) {
+      hideFloatingButton();
+    } else {
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  void didChangeInitiator(CallSession session, String initiator) {
     // TODO: implement didChangeInitiator
   }
 
   @override
-  void didChangeMode(bool isAudioOnly) {
+  void didChangeMode(CallSession session, bool isAudioOnly) {
     setState(() {
 
     });
   }
 
   @override
-  void didChangeState(int state) {
+  void didChangeState(CallSession session, int state) {
     if(stateGlobalKey.currentState != null) {
       stateGlobalKey.currentState!.updateCallStateView(state);
     }
@@ -488,79 +530,74 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   }
 
   @override
-  void didCreateLocalVideoTrack() {
+  void didCreateLocalVideoTrack(CallSession session) {
     localVideoCreated = true;
     updateVideoView();
   }
 
   @override
-  void didError(String error) {
+  void didError(CallSession session, String error) {
     // TODO: implement didError
   }
 
   @override
-  void didGetStats() {
+  void didGetStats(CallSession session) {
     // TODO: implement didGetStats
   }
 
   @override
-  void didParticipantConnected(String userId, bool screenSharing) {
+  void didParticipantConnected(CallSession session, String userId, bool screenSharing) {
     // TODO: implement didParticipantConnected
   }
 
   @override
-  void didParticipantJoined(String userId, bool screenSharing) {
+  void didParticipantJoined(CallSession session, String userId, bool screenSharing) {
     // TODO: implement didParticipantJoined
   }
 
   @override
-  void didParticipantLeft(String userId, bool screenSharing, int reason) {
+  void didParticipantLeft(CallSession session, String userId, bool screenSharing, int reason) {
     // TODO: implement didParticipantLeft
   }
 
   @override
-  void didReceiveRemoteVideoTrack(String userId, bool screenSharing) {
+  void didReceiveRemoteVideoTrack(CallSession session, String userId, bool screenSharing) {
     remoteVideoCreated = true;
     updateVideoView();
   }
 
   @override
-  void didVideoMuted(String userId, bool videoMuted) {
+  void didVideoMuted(CallSession session, String userId, bool videoMuted) {
     // TODO: implement didVideoMuted
   }
 
   @override
-  void didChangeAudioRoute() {
+  void didChangeAudioRoute(CallSession session) {
     // TODO: implement didChangeAudioRoute
   }
 
   @override
-  void didChangeType(String userId, bool audience) {
+  void didChangeType(CallSession session, String userId, bool audience) {
     // TODO: implement didChangeType
   }
 
   @override
-  void didMediaLost(String media, int lostPackage, bool screenSharing) {
+  void didMediaLost(CallSession session, String media, int lostPackage, bool screenSharing) {
     // TODO: implement didMediaLost
   }
 
   @override
-  void didMuteStateChanged(List<String> userIds) {
+  void didMuteStateChanged(CallSession session, List<String> userIds) {
     // TODO: implement didMuteStateChanged
   }
 
   @override
-  void didRemoteMediaLost(String userId, String media, bool uplink, int lostPackage, bool screenSharing) {
+  void didRemoteMediaLost(CallSession session, String userId, String media, bool uplink, int lostPackage, bool screenSharing) {
     // TODO: implement didRemoteMediaLost
   }
 
   @override
-  void didReportAudioVolume(String userId, int volume) {
+  void didReportAudioVolume(CallSession session, String userId, int volume) {
     // TODO: implement didReportAudioVolume
-  }
-
-  @override
-  void onScreenSharingFailure() {
-    // TODO: implement onScreenSharingFailure
   }
 }
