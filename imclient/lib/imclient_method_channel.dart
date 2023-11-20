@@ -2127,7 +2127,7 @@ class ImclientPlatform extends PlatformInterface {
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
     methodChannel.invokeMethod(
-        "getUserInfoAsync", {"requestId": requestId, "userId": userId});
+        "getUserInfoAsync", {"requestId": requestId, "userId": userId, "refresh":refresh});
   }
 
   ///是否是好友
