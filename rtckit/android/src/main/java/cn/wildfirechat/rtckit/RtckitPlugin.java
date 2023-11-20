@@ -449,6 +449,24 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     private class CallSessionDelegator implements AVEngineKit.CallSessionCallback {
         public AVEngineKit.CallSession callSession;
 
+        private class CallbackBuilder {
+            String event;
+            Map data = new HashMap();
+            CallbackBuilder(String event) {
+                this.event = event;
+                data.put("callId", callSession.getCallId());
+                data.put("session", callSession2Map(callSession));
+            }
+            CallbackBuilder put(String key, Object value) {
+                data.put(key, value);
+                return this;
+            }
+
+            void callback() {
+                RtckitPlugin.callback2UI(event, data);
+            }
+        }
+
         public CallSessionDelegator(AVEngineKit.CallSession callSession) {
             this.callSession = callSession;
         }
@@ -458,94 +476,63 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
             if(callSession == null)
                 return;
             RtckitPlugin.delegators.remove(callSession.getCallId());
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("reason", callEndReason.ordinal());
-            RtckitPlugin.callback2UI("didCallEndWithReason", data);
+            new CallbackBuilder("didCallEndWithReason").put("reason", callEndReason.ordinal()).callback();
         }
 
         @Override
         public void didChangeState(AVEngineKit.CallState callState) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("state", callState.ordinal());
-            RtckitPlugin.callback2UI("didChangeState", data);
+            new CallbackBuilder("didChangeState").put("state", callState.ordinal()).callback();
         }
 
         @Override
         public void didParticipantJoined(String s, boolean b) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("userId", s);
-            data.put("screenSharing", b);
-            RtckitPlugin.callback2UI("didParticipantJoined", data);
+            new CallbackBuilder("didParticipantJoined").put("userId", s).put("screenSharing", b).callback();
         }
 
         @Override
         public void didParticipantConnected(String s, boolean b) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("userId", s);
-            data.put("screenSharing", b);
-            RtckitPlugin.callback2UI("didParticipantConnected", data);
+            new CallbackBuilder("didParticipantConnected").put("userId", s).put("screenSharing", b).callback();
         }
 
         @Override
         public void didParticipantLeft(String s, AVEngineKit.CallEndReason callEndReason, boolean b) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("userId", s);
-            data.put("screenSharing", b);
-            data.put("reason", callEndReason.ordinal());
-            RtckitPlugin.callback2UI("didParticipantLeft", data);
+            new CallbackBuilder("didParticipantLeft").put("userId", s).put("screenSharing", b).put("reason", callEndReason.ordinal()).callback();
         }
 
         @Override
         public void didChangeMode(boolean b) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("isAudioOnly", b);
-            RtckitPlugin.callback2UI("didChangeMode", data);
+            new CallbackBuilder("didChangeMode").put("isAudioOnly", b).callback();
         }
 
         @Override
         public void didChangeInitiator(String s) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("initiator", s);
-            RtckitPlugin.callback2UI("didChangeInitiator", data);
+            new CallbackBuilder("didChangeInitiator").put("initiator", s).callback();
         }
 
         @Override
         public void didCreateLocalVideoTrack() {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            RtckitPlugin.callback2UI("didCreateLocalVideoTrack", data);
+            new CallbackBuilder("didCreateLocalVideoTrack").callback();
         }
 
         @Override
         public void didReceiveRemoteVideoTrack(String s, boolean b) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("userId", s);
-            data.put("screenSharing", b);
-            RtckitPlugin.callback2UI("didReceiveRemoteVideoTrack", data);
+            new CallbackBuilder("didReceiveRemoteVideoTrack").put("userId", s).put("screenSharing", b).callback();
         }
 
         @Override
@@ -562,10 +549,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         public void didError(String s) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("error", s);
-            RtckitPlugin.callback2UI("didError", data);
+            new CallbackBuilder("didError").put("error", s).callback();
         }
 
         @Override
@@ -582,79 +566,49 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         public void didVideoMuted(String s, boolean b) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("userId", s);
-            data.put("screenSharing", b);
-            RtckitPlugin.callback2UI("didVideoMuted", data);
+            new CallbackBuilder("didVideoMuted").put("userId", s).put("screenSharing", b).callback();
         }
 
         @Override
         public void didReportAudioVolume(String s, int i) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("userId", s);
-            data.put("volume", i);
-            RtckitPlugin.callback2UI("didReportAudioVolume", data);
+            new CallbackBuilder("didReportAudioVolume").put("userId", s).put("volume", i).callback();
         }
 
         @Override
         public void didAudioDeviceChanged(AVAudioManager.AudioDevice audioDevice) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            RtckitPlugin.callback2UI("didChangeAudioRoute", data);
+            new CallbackBuilder("didAudioDeviceChanged").callback();
         }
 
         @Override
         public void didChangeType(String s, boolean b, boolean b1) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("userId", s);
-            data.put("audience", b);
-            data.put("screenSharing", b1);
-            RtckitPlugin.callback2UI("didChangeType", data);
+            new CallbackBuilder("didChangeType").put("userId", s).put("screenSharing", b1).put("audience", b).callback();
         }
 
         @Override
         public void didMuteStateChanged(List<String> list) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("userIds", list);
-            RtckitPlugin.callback2UI("didMuteStateChanged", data);
+            new CallbackBuilder("didMuteStateChanged").put("userIds", list).callback();
         }
 
         @Override
         public void didMediaLostPacket(String s, int i, boolean b) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("media", s);
-            data.put("lostPackage", i);
-            data.put("screenSharing", b);
-            RtckitPlugin.callback2UI("didMediaLost", data);
+            new CallbackBuilder("didMediaLost").put("media", s).put("screenSharing", b).put("lostPackage", i).callback();
         }
 
         @Override
         public void didMediaLostPacket(String s, String s1, int i, boolean b, boolean b1) {
             if(callSession == null)
                 return;
-            Map data = new HashMap();
-            data.put("callId", callSession.getCallId());
-            data.put("userId", s);
-            data.put("media", s1);
-            data.put("lostPackage", i);
-            data.put("uplink", b);
-            data.put("screenSharing", b1);
-            RtckitPlugin.callback2UI("didRemoteMediaLost", data);
+            new CallbackBuilder("didRemoteMediaLost").put("userId", s).put("media", s1).put("lostPackage", i).put("screenSharing", b1).put("uplink", b).callback();
         }
     }
 }
