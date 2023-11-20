@@ -28,7 +28,7 @@ class CallStateViewState extends State<CallStateView> {
       setCallStoped();
       _stateText = '';
     } else if(state == kWFAVEngineStateIncoming) {
-      _stateText = '邀请您通话';
+      _stateText = '对方正在邀请您通话';
     } else if(state == kWFAVEngineStateOutgoing) {
       _stateText = '等待对方接受邀请';
     }
