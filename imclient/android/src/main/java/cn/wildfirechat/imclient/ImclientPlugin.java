@@ -1087,7 +1087,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().getUserInfo(userId, refresh, new GetUserInfoCallback() {
             @Override
             public void onSuccess(UserInfo userInfo) {
-                callbackBuilder(requestId).put("user", convertUserInfo(userInfo)).success("onSearchUserResult");
+                callbackBuilder(requestId).put("user", convertUserInfo(userInfo)).success("getUserInfoAsyncCallback");
             }
 
             @Override
