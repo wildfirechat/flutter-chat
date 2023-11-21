@@ -29,8 +29,8 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   int? bigVideoViewId;
   int? smallVideoViewId;
 
-  bool localVideoCreated = false;
-  bool remoteVideoCreated = false;
+  bool localVideoCreated = true;
+  bool remoteVideoCreated = true;
   GlobalKey<CallStateViewState> stateGlobalKey = GlobalKey();
 
   UserInfo? userInfo;
@@ -96,20 +96,28 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         //预览图或头像，如果是视频通话，就是预览，如果是音频就是头像
         previewOrPortraitView(context),
         //控制视图，挂断静音等等
-        controlView(context),
+        hideControl ? Container() : controlView(context),
       ],
       ),
     );
   }
 
+  bool hideControl = false;
   Widget backgroundCallView(BuildContext context) {
     if(widget.callSession!.audioOnly) {
       return Container();
     } else {
-      return Container(
-        color: backgroundColor,
-        child: bigVideoView,
-      );
+      return GestureDetector(
+        onDoubleTap: () {
+          if(widget.callSession!.state == kWFAVEngineStateConnected && !widget.callSession!.audioOnly) {
+            hideControl = !hideControl;
+            setState(() {});
+          }
+        },
+        child:Container(
+          color: backgroundColor,
+          child: bigVideoView,
+        ),);
     }
   }
 
@@ -138,6 +146,9 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     }
   }
 
+  Offset previewStartOffset = const Offset(0, 0);
+  Offset previewEndOffset = const Offset(0, 0);
+  Offset previewPosition = const Offset(16, 96);
   Widget previewOrPortraitView(BuildContext context) {
     if(widget.callSession!.audioOnly) {
       return userPortraitAndName(context);
@@ -147,9 +158,31 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       } else if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
         return userPortraitAndName(context);
       }
-      return Positioned(top: 64,
-        left: 16,
-        child: SizedBox(width: 120, height: 180, child: smallVideoView),);
+      return Positioned(top: previewPosition.dy + (previewEndOffset.dy - previewStartOffset.dy),
+        left: previewPosition.dx + (previewEndOffset.dx - previewStartOffset.dx),
+        child: GestureDetector(
+          onDoubleTap: () {
+            swapPreview = !swapPreview;
+            updateVideoView();
+          },
+          onLongPressStart: (details) {
+            previewStartOffset = previewEndOffset = details.globalPosition;
+          },
+          onLongPressMoveUpdate: (details) {
+            previewEndOffset = details.globalPosition;
+            setState(() {
+
+            });
+          },
+          onLongPressEnd: (details) {
+            previewPosition = Offset(previewPosition.dx + (previewEndOffset.dx - previewStartOffset.dx), previewPosition.dy + (previewEndOffset.dy - previewStartOffset.dy));
+            previewStartOffset = const Offset(0, 0);
+            previewEndOffset = const Offset(0, 0);
+            setState(() {
+
+            });
+          },
+          child: SizedBox(width: 120, height: 180, child: smallVideoView),),);
     }
   }
 
@@ -421,6 +454,8 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     );
   }
 
+  bool swapPreview = false;
+
   void updateVideoView() {
     if(widget.callSession?.state == kWFAVEngineStateIdle) {
       return;
@@ -431,39 +466,45 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
           widget.callSession!.setLocalVideoView(bigVideoViewId!);
         }
       } else {
-        if(localVideoCreated && smallVideoViewId != null) {
-          widget.callSession!.setLocalVideoView(smallVideoViewId!);
+        int? localViewId = smallVideoViewId;
+        int? remoteViewId = bigVideoViewId;
+        if(swapPreview) {
+          localViewId = bigVideoViewId;
+          remoteViewId = smallVideoViewId;
         }
 
-        if(remoteVideoCreated && bigVideoViewId != null) {
-          widget.callSession!.setRemoteVideoView(widget.userId!, false, bigVideoViewId!);
+        if(localVideoCreated && localViewId != null) {
+          widget.callSession!.setLocalVideoView(localViewId!);
+        }
+
+        if(remoteVideoCreated && remoteViewId != null) {
+          widget.callSession!.setRemoteVideoView(widget.userId!, false, remoteViewId!);
         }
       }
     }
   }
 
-  Offset startOffset = const Offset(0, 0);
-  Offset endOffset = const Offset(0, 0);
-
-  Offset position = const Offset(10, 120);
+  Offset floatingStartOffset = const Offset(0, 0);
+  Offset floatingEndOffset = const Offset(0, 0);
+  Offset floatingPosition = const Offset(10, 120);
   void showFloatingButton() {
     overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
-        top: position.dy + (endOffset.dy - startOffset.dy),
-        right: position.dx - (endOffset.dx - startOffset.dx),
+        top: floatingPosition.dy + (floatingEndOffset.dy - floatingStartOffset.dy),
+        right: floatingPosition.dx - (floatingEndOffset.dx - floatingStartOffset.dx),
         child: GestureDetector(
           onLongPressStart: (LongPressStartDetails details) {
-            startOffset = details.globalPosition;
-            endOffset = details.globalPosition;
+            floatingStartOffset = details.globalPosition;
+            floatingEndOffset = details.globalPosition;
           },
           onLongPressEnd: (LongPressEndDetails details){
-            position = Offset(position.dx - (endOffset.dx - startOffset.dx), position.dy + (endOffset.dy - startOffset.dy));
-            startOffset = const Offset(0, 0);
-            endOffset = const Offset(0, 0);
+            floatingPosition = Offset(floatingPosition.dx - (floatingEndOffset.dx - floatingStartOffset.dx), floatingPosition.dy + (floatingEndOffset.dy - floatingStartOffset.dy));
+            floatingStartOffset = const Offset(0, 0);
+            floatingEndOffset = const Offset(0, 0);
             overlayEntry?.markNeedsBuild();
           },
           onLongPressMoveUpdate: (LongPressMoveUpdateDetails details) {
-            endOffset = details.globalPosition;
+            floatingEndOffset = details.globalPosition;
             overlayEntry?.markNeedsBuild();
           },
           onTap: () {

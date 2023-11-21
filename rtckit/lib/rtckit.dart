@@ -380,7 +380,6 @@ class CallSession implements CallSessionCallback {
 
   @override
   void didReportAudioVolume(CallSession session, String userId, int volume) {
-    _syncData(session);
     if(_callback != null) {
       _callback!.didReportAudioVolume(this, userId, volume);
     }
