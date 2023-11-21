@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import io.flutter.plugin.platform.PlatformView;
 import java.util.Map;
 
-class NativeView implements PlatformView {
+public class NativeView implements PlatformView {
     @NonNull private final FrameLayout frameLayout;
 
     NativeView(@NonNull Context context, int id, @Nullable Map<String, Object> creationParams) {

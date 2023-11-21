@@ -14,6 +14,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.webrtc.Logging;
 import org.webrtc.RendererCommon;
 import org.webrtc.StatsReport;
 
@@ -24,10 +25,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import cn.wildfirechat.avenginekit.AVAudioManager;
 import cn.wildfirechat.avenginekit.AVEngineKit;
 import cn.wildfirechat.model.Conversation;
+import cn.wildfirechat.remote.ChatManager;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
@@ -179,6 +182,9 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         result.success(callSession2Map(callSession));
     }
 
+    private boolean isMainThread() {
+        return Looper.myLooper() == Looper.getMainLooper();
+    }
     private Map<String, Object> callSession2Map(AVEngineKit.CallSession callSession) {
         if (callSession == null) {
             return null;
@@ -204,8 +210,22 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         }
         obj.put("audioOnly", callSession.isAudioOnly());
         obj.put("endReason", callSession.getEndReason().ordinal());
+
         if(callSession.getState() == AVEngineKit.CallState.Connected && AVEngineKit.Instance().getAVAudioManager() != null) {
-            obj.put("speaker", AVEngineKit.Instance().getAVAudioManager().getSelectedAudioDevice() == AVAudioManager.AudioDevice.SPEAKER_PHONE);
+            final boolean[] speaker = {false};
+            if(isMainThread()) {
+                speaker[0] = AVEngineKit.Instance().getAVAudioManager().getSelectedAudioDevice() == AVAudioManager.AudioDevice.SPEAKER_PHONE;
+            } else {
+                CountDownLatch countDownLatch = new CountDownLatch(1);
+                ChatManager.Instance().getMainHandler().post(() -> {
+                    speaker[0] = AVEngineKit.Instance().getAVAudioManager().getSelectedAudioDevice() == AVAudioManager.AudioDevice.SPEAKER_PHONE;
+                    countDownLatch.countDown();
+                });
+                try {
+                    countDownLatch.await();
+                } catch (InterruptedException e) {}
+            }
+            obj.put("speaker", speaker[0]);
         } else {
             obj.put("speaker", !callSession.isAudioOnly());
         }
@@ -293,15 +313,11 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
 
     private void enableSpeaker(@NonNull MethodCall call, @NonNull Result result) {
         String callId = call.argument("callId");
-        boolean muted = call.argument("muted");
+        boolean speaker = call.argument("speaker");
         AVAudioManager audioManager = AVEngineKit.Instance().getAVAudioManager();
         AVAudioManager.AudioDevice currentAudioDevice = audioManager.getSelectedAudioDevice();
         if(currentAudioDevice != AVAudioManager.AudioDevice.WIRED_HEADSET && currentAudioDevice != AVAudioManager.AudioDevice.BLUETOOTH){
-            if(currentAudioDevice == AVAudioManager.AudioDevice.SPEAKER_PHONE){
-                audioManager.selectAudioDevice(AVAudioManager.AudioDevice.EARPIECE);
-            } else {
-                audioManager.selectAudioDevice(AVAudioManager.AudioDevice.SPEAKER_PHONE);
-            }
+            audioManager.selectAudioDevice(speaker?AVAudioManager.AudioDevice.SPEAKER_PHONE:AVAudioManager.AudioDevice.EARPIECE);
         }
         result.success(null);
     }

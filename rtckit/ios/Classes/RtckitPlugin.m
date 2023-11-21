@@ -291,7 +291,6 @@
     FLNativeView* view = self.videoViews[@(viewId)];
     if(view) {
         UIView *container = view.view;
-        NSLog(@"the frame is (%f,%f,%f,%f)", container.frame.origin.x, container.frame.origin.y, container.frame.size.width, container.frame.size.height);
         [[WFAVEngineKit sharedEngineKit].currentSession setupRemoteVideoView:container scalingType:kWFAVVideoScalingTypeAspectFit forUser:userId screenSharing:screenSharing];
     }
     
