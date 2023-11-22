@@ -183,6 +183,14 @@ class CallSession implements CallSessionCallback {
     return Rtckit._getParticipantProfiles(callId);
   }
 
+  Future<List<ParticipantProfile>> get allProfiles async {
+    return Rtckit._getAllProfiles(callId);
+  }
+
+  Future<ParticipantProfile> get myProfiles async {
+    return Rtckit._getMyProfiles(callId);
+  }
+
   Future<void> answerCall(bool audioOnly) async {
     this.audioOnly = this.audioOnly || audioOnly;
     return Rtckit._answerCall(callId, audioOnly);
@@ -231,6 +239,10 @@ class CallSession implements CallSessionCallback {
     return Rtckit._isHeadsetPluggedIn(callId);
   }
 
+  Future<void> inviteNewParticipants(List<String> participants) async {
+    return Rtckit._inviteNewParticipants(callId, participants);
+  }
+
   void _syncData(CallSession session) {
     state = session.state;
     inviter = session.inviter;
@@ -256,7 +268,7 @@ class CallSession implements CallSessionCallback {
   }
 
   @override
-  void didChangeInitiator(CallSession session, String initiator) {
+  void didChangeInitiator(CallSession session, String? initiator) {
     _syncData(session);
     this.initiator = initiator;
     if(_callback != null) {
@@ -396,7 +408,7 @@ class CallSession implements CallSessionCallback {
 
 abstract class CallSessionCallback {
   void didCallEndWithReason(CallSession session, int reason) {}
-  void didChangeInitiator(CallSession session, String initiator) {}
+  void didChangeInitiator(CallSession session, String? initiator) {}
   void didChangeMode(CallSession session, bool isAudioOnly) {}
   void didChangeState(CallSession session, int state) {}
   void didCreateLocalVideoTrack(CallSession session) {}
@@ -421,8 +433,11 @@ typedef ShouldStartRingCallback = void Function(bool incomming);
 typedef ShouldStopRingCallback = void Function();
 typedef DidEndCallCallback = void Function(int reason, int duration);
 
+typedef SelectMembersDelegate = void Function(BuildContext context, List<String> candidates, List<String>? disabledCheckedUsers, List<String>? disabledUncheckedUsers, int maxSelected, void Function(List<String> selectedMembers) callback);
+
 class Rtckit {
   static String defaultUserPortrait = 'assets/images/user_avatar_default.png';
+  static SelectMembersDelegate? selectMembersDelegate;
 
   static void init({DidReceiveCallCallback? didReceiveCallCallback, ShouldStartRingCallback? shouldStartRingCallback, ShouldStopRingCallback? shouldStopRingCallback, DidEndCallCallback? didEndCallCallback}) {
     RtckitPlatform.instance.initProto(didReceiveCallCallback, shouldStartRingCallback, shouldStopRingCallback, didEndCallCallback);
@@ -554,12 +569,24 @@ class Rtckit {
     return RtckitPlatform.instance.isHeadsetPluggedIn(callId);
   }
 
+  static Future<void> _inviteNewParticipants(String callId, List<String> participants) async {
+    return RtckitPlatform.instance.inviteNewParticipants(callId, participants);
+  }
+
   static Future<List<String>> _getParticipantIds(String callId) async {
     return RtckitPlatform.instance.getParticipantIds(callId);
   }
 
   static Future<List<ParticipantProfile>> _getParticipantProfiles(String callId) async {
     return RtckitPlatform.instance.getParticipantProfiles(callId);
+  }
+
+  static Future<List<ParticipantProfile>> _getAllProfiles(String callId) async {
+    return RtckitPlatform.instance.getAllProfiles(callId);
+  }
+
+  static Future<ParticipantProfile> _getMyProfiles(String callId) async {
+    return RtckitPlatform.instance.getMyProfiles(callId);
   }
 
   static void _setCallSessionCallback(String callId, CallSessionCallback? callback) {

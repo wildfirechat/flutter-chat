@@ -99,6 +99,7 @@ class SettingProfileState extends State<SettingProfile> {
 
   @override
   void initState() {
+    super.initState();
     loadUserInfo();
     _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
       for(UserInfo userInfo in event.userInfos) {

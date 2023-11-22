@@ -58,6 +58,7 @@ class MessageNotificationSettingItemState extends State<MessageNotificationSetti
 
   @override
   void initState() {
+    super.initState();
     switch(widget.settingKey) {
       case 'new_msg_notification':
         scope = kUserSettingGlobalSilent;

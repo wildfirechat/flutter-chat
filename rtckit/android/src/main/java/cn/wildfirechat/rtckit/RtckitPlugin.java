@@ -363,12 +363,48 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     private void getParticipantProfiles(@NonNull MethodCall call, @NonNull Result result) {
         String callId = call.argument("callId");
         List<Map<String, Object>> list = new ArrayList<>();
-        if(AVEngineKit.Instance().getCurrentSession().getParticipantProfiles() != null) {
-            for (AVEngineKit.ParticipantProfile participantProfile : AVEngineKit.Instance().getCurrentSession().getParticipantProfiles()) {
-                list.add(profile2Dict(participantProfile));
+        if(AVEngineKit.Instance().getCurrentSession() != null) {
+            if (AVEngineKit.Instance().getCurrentSession().getParticipantProfiles() != null) {
+                for (AVEngineKit.ParticipantProfile participantProfile : AVEngineKit.Instance().getCurrentSession().getParticipantProfiles()) {
+                    list.add(profile2Dict(participantProfile));
+                }
             }
         }
         result.success(list);
+    }
+
+    private void getAllProfiles(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        List<Map<String, Object>> list = new ArrayList<>();
+
+        if(AVEngineKit.Instance().getCurrentSession() != null) {
+            list.add(profile2Dict(AVEngineKit.Instance().getCurrentSession().getMyProfile()));
+            if (AVEngineKit.Instance().getCurrentSession().getParticipantProfiles() != null) {
+                for (AVEngineKit.ParticipantProfile participantProfile : AVEngineKit.Instance().getCurrentSession().getParticipantProfiles()) {
+                    list.add(profile2Dict(participantProfile));
+                }
+            }
+        }
+        result.success(list);
+    }
+
+    private void getMyProfiles(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+
+        if(AVEngineKit.Instance().getCurrentSession() != null) {
+            result.success(profile2Dict(AVEngineKit.Instance().getCurrentSession().getMyProfile()));
+        }
+        result.success(null);
+    }
+
+    private void inviteNewParticipants(@NonNull MethodCall call, @NonNull Result result) {
+        String callId = call.argument("callId");
+        List<String> participants = call.argument("participants");
+
+        if(AVEngineKit.Instance().getCurrentSession() != null) {
+            AVEngineKit.Instance().getCurrentSession().inviteNewParticipants(participants);
+        }
+        result.success(null);
     }
 
     private Map<String, Object> profile2Dict(AVEngineKit.ParticipantProfile profile) {
@@ -534,7 +570,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         public void didChangeInitiator(String s) {
             if(callSession == null)
                 return;
-            new CallbackBuilder("didChangeInitiator").put("initiator", s).callback();
+            new CallbackBuilder("didChangeInitiator").callback();
         }
 
         @Override

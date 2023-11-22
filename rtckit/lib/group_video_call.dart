@@ -1,39 +1,34 @@
-
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:imclient/model/group_info.dart';
 import 'package:rtckit/rtckit.dart';
-import 'package:imclient/model/user_info.dart';
 import 'package:imclient/imclient.dart';
+import 'package:rtckit/video_view.dart';
 import 'call_state_view.dart';
 
-class SingleVideoCallView extends StatefulWidget {
-  String? userId;
-  bool? audioOnly;
+class GroupVideoCallView extends StatefulWidget {
+  String? groupId;
+  List<String>? participants;
+  List<ParticipantProfile>? profiles;
   CallSession? callSession;
-  SingleVideoCallView({this.callSession, this.userId, this.audioOnly=false, Key? key}) : super(key: key);
+  GroupVideoCallView({this.callSession, this.groupId, this.participants, Key? key}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => SingleVideoCallState();
+  State<StatefulWidget> createState() => GroupVideoCallState();
 }
 
-class SingleVideoCallState extends State<SingleVideoCallView> implements CallSessionCallback {
+class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessionCallback {
   final Color backgroundColor = Colors.blue;
-  late Widget bigVideoView;
-  late Widget smallVideoView;
 
-  int? bigVideoViewId;
-  int? smallVideoViewId;
+  Map<String, GlobalKey<VideoViewState>> rtcViewStateMap = {};
+  Map<String, Widget> rtcViewMap = {};
 
-  bool localVideoCreated = true;
-  bool remoteVideoCreated = true;
   GlobalKey<CallStateViewState> stateGlobalKey = GlobalKey();
 
-  UserInfo? userInfo;
+  GroupInfo? groupInfo;
 
   OverlayEntry? overlayEntry;
 
@@ -41,19 +36,17 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   void initState() {
     super.initState();
     if(widget.callSession == null) {
-      if(widget.userId == null) {
+      if(widget.groupId == null && (widget.participants == null || widget.participants!.isEmpty)) {
         Navigator.pop(context);
         return;
       }
 
-      if(!widget.audioOnly!) {
-        createVideoView();
-      }
-      Rtckit.startSingleCall(widget.userId!, widget.audioOnly!).then((value) {
+      Rtckit.startMultiCall(widget.groupId!, widget.participants!, false).then((value) {
         if (value == null) {
           Navigator.pop(context);
         } else {
           setState(() {
+            loadProfiles();
             widget.callSession = value;
             widget.callSession?.setCallSessionCallback(this);
             widget.callSession?.startPreview();
@@ -61,23 +54,47 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         }
       });
     } else {
-      widget.userId = widget.callSession?.conversation!.target;
-      if(!widget.callSession!.audioOnly) {
-        createVideoView();
-      }
+      widget.groupId = widget.callSession?.conversation!.target;
+      widget.callSession!.participantIds.then((value) {
+        setState(() {
+          loadProfiles();
+        });
+      });
+
       widget.callSession?.setCallSessionCallback(this);
     }
 
-    Imclient.getUserInfo(widget.userId!).then((value) {
+    Imclient.getGroupInfo(widget.groupId!).then((value) {
       setState(() {
-        userInfo = value;
+        groupInfo = value;
       });
     });
   }
 
+  void loadProfiles() {
+    if(widget.callSession != null) {
+      widget.callSession!.allProfiles.then((value) {
+        setState(() {
+          widget.profiles = value;
+          createVideoView();
+          updateVideoView();
+        });
+      });
+    }
+  }
+
   void createVideoView() {
-    bigVideoView = createNativeVideoView(context, true);
-    smallVideoView = createNativeVideoView(context, false);
+    if(widget.profiles != null) {
+      for (ParticipantProfile profile in widget.profiles!) {
+        String userId = profile.userId;
+        if(!rtcViewMap.containsKey(userId)) {
+          GlobalKey<VideoViewState> state = GlobalKey();
+          Widget rtcView = VideoView(widget.callSession!, profile, key: state);
+          rtcViewMap[userId] = rtcView;
+          rtcViewStateMap[userId] = state;
+        }
+      }
+    }
   }
 
   @override
@@ -92,10 +109,8 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       color: backgroundColor,
       child: Stack(
       children: [
-        //底视图，如果是视频就是大的视频流，如果是音频就是背景颜色
+        //成员视频排列界面
         backgroundCallView(context),
-        //预览图或头像，如果是视频通话，就是预览，如果是音频就是头像
-        previewOrPortraitView(context),
         //控制视图，挂断静音等等
         hideControl ? Container() : controlView(context),
       ],
@@ -105,25 +120,44 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   bool hideControl = false;
   Widget backgroundCallView(BuildContext context) {
-    if(widget.callSession!.audioOnly) {
-      return Container();
-    } else {
-      return GestureDetector(
-        onDoubleTap: () {
-          if(widget.callSession!.state == kWFAVEngineStateConnected && !widget.callSession!.audioOnly) {
-            hideControl = !hideControl;
-            setState(() {});
-          }
-        },
-        child:Container(
+    return GestureDetector(
+      onDoubleTap: () {
+        if(widget.callSession!.state == kWFAVEngineStateConnected) {
+          hideControl = !hideControl;
+          setState(() {});
+        }
+      },
+      child:Container(
+        decoration: BoxDecoration(
           color: backgroundColor,
-          child: bigVideoView,
-        ),);
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+        child: _getParticipantsView(),
+      ),);
+  }
+
+  Widget _getParticipantsView() {
+    int count = rtcViewMap.length;
+    if(count < 2) {
+      return const Center(child: Text("Loading..."),);
     }
+    int columns = count > 5 ? 3 : 2;
+
+    List<String> keysList = rtcViewMap.keys.toList();
+    return GridView.builder(
+        itemCount: count,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: columns, crossAxisSpacing: 0, mainAxisSpacing: 0, childAspectRatio: 1.0),
+        itemBuilder: (context, index) {
+          if(index < count) {
+            return rtcViewMap[keysList[index]];
+          } else {
+            return Container();
+          }
+        });
   }
 
   Widget userPortraitAndName(BuildContext context) {
-    if(userInfo != null) {
+    if(groupInfo != null) {
       return Padding(padding: EdgeInsets.only(top: 80), child: Column(
         mainAxisSize:MainAxisSize.min,
         children: [
@@ -131,15 +165,15 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
             borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
             child: SizedBox(width: 100,
               height: 100,
-              child: userInfo!.portrait == null
+              child: groupInfo!.portrait == null
                   ? Image.asset(
                   Rtckit.defaultUserPortrait, width: 100.0, height: 100.0)
                   : Image.network(
-                  userInfo!.portrait!, width: 100.0, height: 100.0),
+                  groupInfo!.portrait!, width: 100.0, height: 100.0),
             ),
           ),
           const Padding(padding: EdgeInsets.all(8)),
-          Center(child: Text(userInfo!.displayName!, style: const TextStyle(color: Colors.white),),)
+          Center(child: Text(groupInfo!.name!, style: const TextStyle(color: Colors.white),),)
         ],
       ),);
     } else {
@@ -147,141 +181,28 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     }
   }
 
-  Offset previewStartOffset = const Offset(0, 0);
-  Offset previewEndOffset = const Offset(0, 0);
-  Offset previewPosition = const Offset(16, 96);
-  Widget previewOrPortraitView(BuildContext context) {
-    if(widget.callSession!.audioOnly) {
-      return userPortraitAndName(context);
-    } else {
-      if(widget.callSession!.state == kWFAVEngineStateIncoming) {
-        return userPortraitAndName(context);
-      } else if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
-        return userPortraitAndName(context);
-      }
-      return Positioned(top: previewPosition.dy + (previewEndOffset.dy - previewStartOffset.dy),
-        left: previewPosition.dx + (previewEndOffset.dx - previewStartOffset.dx),
-        child: GestureDetector(
-          onDoubleTap: () {
-            swapPreview = !swapPreview;
-            updateVideoView();
-          },
-          onLongPressStart: (details) {
-            previewStartOffset = previewEndOffset = details.globalPosition;
-          },
-          onLongPressMoveUpdate: (details) {
-            previewEndOffset = details.globalPosition;
-            setState(() {
-
-            });
-          },
-          onLongPressEnd: (details) {
-            previewPosition = Offset(previewPosition.dx + (previewEndOffset.dx - previewStartOffset.dx), previewPosition.dy + (previewEndOffset.dy - previewStartOffset.dy));
-            previewStartOffset = const Offset(0, 0);
-            previewEndOffset = const Offset(0, 0);
-            setState(() {
-
-            });
-          },
-          child: SizedBox(width: 120, height: 180, child: smallVideoView),),);
-    }
-  }
-
-  Widget createNativeVideoView(BuildContext context, bool big) {
-    const String viewType = '<platform-view-type>';
-    // Pass parameters to the platform side.
-    final Map<String, dynamic> creationParams = <String, dynamic>{};
-
-    if(defaultTargetPlatform == TargetPlatform.android) {
-      return PlatformViewLink(
-        viewType: viewType,
-        surfaceFactory: (context, controller) {
-          return AndroidViewSurface(
-            controller: controller as AndroidViewController,
-            gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
-            hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-          );
-        },
-        onCreatePlatformView: (params) {
-          if (big) {
-            bigVideoViewId = params.id;
-          } else {
-            smallVideoViewId = params.id;
-          }
-          updateVideoView();
-
-          return PlatformViewsService.initExpensiveAndroidView(
-            id: params.id,
-            viewType: viewType,
-            layoutDirection: TextDirection.ltr,
-            creationParams: creationParams,
-            creationParamsCodec: const StandardMessageCodec(),
-            onFocus: () {
-              params.onFocusChanged(true);
-            },
-          )
-            ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
-            ..create();
-        },
-      );
-    } else if(defaultTargetPlatform == TargetPlatform.iOS) {
-      return UiKitView(
-        viewType: viewType,
-        layoutDirection: TextDirection.ltr,
-        creationParams: creationParams,
-        creationParamsCodec: const StandardMessageCodec(),
-        onPlatformViewCreated: (viewId) {
-          if (big) {
-            bigVideoViewId = viewId;
-          } else {
-            smallVideoViewId = viewId;
-          }
-          updateVideoView();
-        },
-      );
-    }
-
-    return Container();
-  }
-
   List<Widget> _controlRowBottom1(BuildContext context) {
-    if(!widget.callSession!.audioOnly) {
-      if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
-        return [];
-      } else if(widget.callSession!.state == kWFAVEngineStateIncoming) {
-        //1 downgrade to voice call
-        return [_blankControl(context), _downgrade2VoiceControl(context)];
-      } else {
-        //1 downgrade to voice call
-        return [_blankControl(context), _blankControl(context), _downgrade2VoiceControl(context)];
-      }
+    if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
+      return [_audioMuteControl(context), _speakerControl(context), _videoMuteControl(context)];
+    } else if(widget.callSession!.state == kWFAVEngineStateIncoming) {
+      //1 downgrade to voice call
+      return [];
+    } else {
+      //1 downgrade to voice call
+      return [_audioMuteControl(context), _speakerControl(context), _videoMuteControl(context)];
     }
-    return [];
   }
 
   List<Widget> _controlRowBottom2(BuildContext context) {
-    if(widget.callSession!.audioOnly) {
-      if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
-        //3 button, mic, hangup, speaker
-        return [_audioMuteControl(context), _hangupControl(context), _speakerControl(context)];
-      } else if(widget.callSession!.state == kWFAVEngineStateIncoming) {
-        //2 button, hangup, accept
-        return [_hangupControl(context), _acceptControl(context)];
-      } else {
-        //3 mic, hangup, speaker
-        return [_audioMuteControl(context), _hangupControl(context), _speakerControl(context)];
-      }
+    if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
+      //3 button, mic, hangup, switch camera
+      return [_hangupControl(context)];
+    } else if(widget.callSession!.state == kWFAVEngineStateIncoming) {
+      //2 button, hangup， accept
+      return [_hangupControl(context), _acceptControl(context)];
     } else {
-      if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
-        //3 button, mic, hangup, switch camera
-        return [_audioMuteControl(context), _hangupControl(context), _switchCameraControl(context)];
-      } else if(widget.callSession!.state == kWFAVEngineStateIncoming) {
-        //2 button, hangup， accept
-        return [_hangupControl(context), _acceptControl(context)];
-      } else {
-        //3 mic, hangup, switch camera
-        return [_audioMuteControl(context), _hangupControl(context), _videoMuteControl(context)];
-      }
+      //3 mic, hangup, switch camera
+      return [_hangupControl(context)];
     }
   }
 
@@ -397,32 +318,6 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     return Expanded(child: Container(),);
   }
 
-  Widget _downgrade2VoiceControl(BuildContext context) {
-    return Expanded(child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        GestureDetector(
-          child: const Image(image:AssetImage('assets/images/rtckit/call_to_voice.png', package: 'rtckit'), width: 48, height: 48,),
-          onTap: () {
-            if(widget.callSession!.state == kWFAVEngineStateIncoming) {
-              widget.callSession!.answerCall(true);
-              setState(() {
-
-              });
-            } else if(widget.callSession!.state == kWFAVEngineStateConnected) {
-              widget.callSession!.changeToAudioOnly();
-              setState(() {
-
-              });
-            }
-          },
-        ),
-        const Padding(padding: EdgeInsets.only(top: 8)),
-        Text(widget.callSession!.state == kWFAVEngineStateIncoming ? '语音接听' : '转为语音', style: const TextStyle(color: Colors.white),),
-      ],
-    ),);
-  }
-
   Widget controlView(BuildContext context) {
     return Column(
       children: [
@@ -433,24 +328,41 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
             Navigator.pop(context);
           }, child: const Image(image:AssetImage('assets/images/rtckit/call_minimize.png', package: 'rtckit'), width: 24, height: 24,),),),
           Expanded(child: Container()),
-          (widget.callSession == null || widget.callSession!.audioOnly) ? Container() : Padding(padding: const EdgeInsets.fromLTRB(0, 60, 24, 0), child: GestureDetector(onTap: () {
-            widget.callSession!.switchCamera();
-          }, child: const Image(image:AssetImage('assets/images/rtckit/call_camera_switch.png', package: 'rtckit'), width: 24, height: 24,),),)
+          widget.callSession == null ? Container() : Padding(padding: const EdgeInsets.fromLTRB(0, 60, 24, 0), child: GestureDetector(onTap: () {
+            Imclient.getGroupMembers(widget.groupId!).then((groupMembers) {
+              List<String> members = [];
+              for(var gm in groupMembers) {
+                members.add(gm.memberId);
+              }
+
+              List<String> inCallMembers = [];
+              widget.profiles!.forEach((element) { inCallMembers.add(element.userId);});
+
+              if(Rtckit.selectMembersDelegate != null) {
+                Rtckit.selectMembersDelegate!(context, members, inCallMembers, null, 4, (selected) {
+                  Navigator.pop(context);
+                  if(selected.isNotEmpty) {
+                    widget.callSession!.inviteNewParticipants(selected);
+                  }
+                });
+              }
+            });
+          }, child: const Image(image:AssetImage('assets/images/rtckit/call_plus.png', package: 'rtckit'), width: 24, height: 24,),),)
         ],):Container(),
-        const Padding(padding: EdgeInsets.all(20)),
+        const Padding(padding: EdgeInsets.all(16)),
         Expanded(child: Container()),
         Center(child: CallStateView(widget.callSession!.state, widget.callSession!, key: stateGlobalKey,),),
-        const Padding(padding: EdgeInsets.all(20)),
+        const Padding(padding: EdgeInsets.all(16)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: _controlRowBottom1(context),
         ),
-        const Padding(padding: EdgeInsets.all(20)),
+        const Padding(padding: EdgeInsets.all(16)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: _controlRowBottom2(context),
         ),
-        const Padding(padding: EdgeInsets.all(40))
+        const Padding(padding: EdgeInsets.all(16))
       ],
     );
   }
@@ -461,26 +373,11 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     if(widget.callSession?.state == kWFAVEngineStateIdle) {
       return;
     }
-    if(!widget.callSession!.audioOnly) {
-      if(widget.callSession!.state == kWFAVEngineStateOutgoing) {
-        if(localVideoCreated && bigVideoViewId != null) {
-          widget.callSession!.setLocalVideoView(bigVideoViewId!);
-        }
-      } else {
-        int? localViewId = smallVideoViewId;
-        int? remoteViewId = bigVideoViewId;
-        if(swapPreview) {
-          localViewId = bigVideoViewId;
-          remoteViewId = smallVideoViewId;
-        }
 
-        if(localVideoCreated && localViewId != null) {
-          widget.callSession!.setLocalVideoView(localViewId!);
-        }
-
-        if(remoteVideoCreated && remoteViewId != null) {
-          widget.callSession!.setRemoteVideoView(widget.userId!, false, remoteViewId!);
-        }
+    for(ParticipantProfile profile in widget.profiles!) {
+      GlobalKey<VideoViewState>? state = rtcViewStateMap[profile.userId];
+      if(state != null && state.currentState != null) {
+        state.currentState!.updateProfile(profile);
       }
     }
   }
@@ -510,7 +407,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
           },
           onTap: () {
             hideFloatingButton();
-            SingleVideoCallView callView = SingleVideoCallView(callSession: widget.callSession!,);
+            GroupVideoCallView callView = GroupVideoCallView(callSession: widget.callSession!,);
             Navigator.push(context, MaterialPageRoute(builder: (context) => callView));},
           child: Container(
             decoration: BoxDecoration(
@@ -551,13 +448,12 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   @override
   void didChangeInitiator(CallSession session, String? initiator) {
     // TODO: implement didChangeInitiator
+    loadProfiles();
   }
 
   @override
   void didChangeMode(CallSession session, bool isAudioOnly) {
-    setState(() {
-
-    });
+    loadProfiles();
   }
 
   @override
@@ -565,16 +461,12 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
     if(stateGlobalKey.currentState != null) {
       stateGlobalKey.currentState!.updateCallStateView(state);
     }
-    updateVideoView();
-    setState(() {
-
-    });
+    loadProfiles();
   }
 
   @override
   void didCreateLocalVideoTrack(CallSession session) {
-    localVideoCreated = true;
-    updateVideoView();
+    loadProfiles();
   }
 
   @override
@@ -589,28 +481,27 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   @override
   void didParticipantConnected(CallSession session, String userId, bool screenSharing) {
-    // TODO: implement didParticipantConnected
+    loadProfiles();
   }
 
   @override
   void didParticipantJoined(CallSession session, String userId, bool screenSharing) {
-    // TODO: implement didParticipantJoined
+    loadProfiles();
   }
 
   @override
   void didParticipantLeft(CallSession session, String userId, bool screenSharing, int reason) {
-    // TODO: implement didParticipantLeft
+    loadProfiles();
   }
 
   @override
   void didReceiveRemoteVideoTrack(CallSession session, String userId, bool screenSharing) {
-    remoteVideoCreated = true;
-    updateVideoView();
+    loadProfiles();
   }
 
   @override
   void didVideoMuted(CallSession session, String userId, bool videoMuted) {
-    // TODO: implement didVideoMuted
+    loadProfiles();
   }
 
   @override
@@ -620,7 +511,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   @override
   void didChangeType(CallSession session, String userId, bool audience) {
-    // TODO: implement didChangeType
+    loadProfiles();
   }
 
   @override
@@ -630,7 +521,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   @override
   void didMuteStateChanged(CallSession session, List<String> userIds) {
-    // TODO: implement didMuteStateChanged
+    loadProfiles();
   }
 
   @override

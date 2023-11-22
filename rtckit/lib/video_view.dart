@@ -1,0 +1,119 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
+import 'package:imclient/imclient.dart';
+import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/user_info.dart';
+import 'package:rtckit/rtckit.dart';
+
+class VideoView extends StatefulWidget {
+  CallSession callSession;
+  ParticipantProfile profile;
+
+  VideoView(this.callSession, this.profile, {Key? key}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => VideoViewState();
+}
+
+class VideoViewState extends State<VideoView> {
+  late Widget rtcView;
+  int? rtcViewId;
+  UserInfo? userInfo;
+
+
+  @override
+  void initState() {
+    super.initState();
+    rtcView = _createNativeVideoView(context, widget.profile.userId);
+
+    String? groupId;
+    if(widget.callSession.conversation != null && widget.callSession!.conversation!.conversationType == ConversationType.Group) {
+      groupId = widget.callSession.conversation!.target;
+    }
+    Imclient.getUserInfo(widget.profile.userId, groupId: groupId).then((value) {
+      setState(() {
+        userInfo = value;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if(widget.profile.state == kWFAVEngineStateConnected && !widget.profile.videoMuted) {
+      return rtcView;
+    } else {
+      return (userInfo == null || userInfo!.portrait == null) ? Image.asset(Rtckit.defaultUserPortrait) : Image.network(userInfo!.portrait!);
+    }
+  }
+
+  void updateProfile(ParticipantProfile profile) {
+    widget.profile = profile;
+    setState(() {
+
+    });
+  }
+
+  Widget _createNativeVideoView(BuildContext context, String userId) {
+    const String viewType = '<platform-view-type>';
+    // Pass parameters to the platform side.
+    final Map<String, dynamic> creationParams = <String, dynamic>{};
+
+    Widget? widget;
+    if(defaultTargetPlatform == TargetPlatform.android) {
+      widget = PlatformViewLink(
+        viewType: viewType,
+        surfaceFactory: (context, controller) {
+          return AndroidViewSurface(
+            controller: controller as AndroidViewController,
+            gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+            hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+          );
+        },
+        onCreatePlatformView: (params) {
+          rtcViewId = params.id;
+          _setupVideoView();
+          return PlatformViewsService.initExpensiveAndroidView(
+            id: params.id,
+            viewType: viewType,
+            layoutDirection: TextDirection.ltr,
+            creationParams: creationParams,
+            creationParamsCodec: const StandardMessageCodec(),
+            onFocus: () {
+              params.onFocusChanged(true);
+            },
+          )
+            ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
+            ..create();
+        },
+      );
+      return widget;
+    } else if(defaultTargetPlatform == TargetPlatform.iOS) {
+      widget = UiKitView(
+        viewType: viewType,
+        layoutDirection: TextDirection.ltr,
+        creationParams: creationParams,
+        creationParamsCodec: const StandardMessageCodec(),
+        onPlatformViewCreated: (viewId) {
+          rtcViewId = viewId;
+          _setupVideoView();
+        },
+      );
+      return widget;
+    }
+
+    return Container();
+  }
+
+  void _setupVideoView() {
+    if(rtcViewId != null) {
+      if(widget.profile.userId == Imclient.currentUserId) {
+        widget.callSession.setLocalVideoView(rtcViewId!);
+      } else {
+        widget.callSession.setRemoteVideoView(widget.profile.userId, widget.profile.screenSharing, rtcViewId!);
+      }
+    }
+  }
+}

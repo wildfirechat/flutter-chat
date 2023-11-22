@@ -109,6 +109,7 @@ class _ContactListItemState extends State<ContactSelectableItem> {
 
   @override
   void initState() {
+    super.initState();
     Imclient.getUserInfo(widget.userId).then((value) {
       setState(() {
         userInfo = value;

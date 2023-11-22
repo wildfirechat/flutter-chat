@@ -54,6 +54,7 @@ class MessageInputBarState extends State<MessageInputBar> {
 
   @override
   void initState() {
+    super.initState();
     _textField = CupertinoTextField(
       maxLines: 3,
       minLines: 1,

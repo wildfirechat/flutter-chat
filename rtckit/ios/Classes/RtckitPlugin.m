@@ -43,7 +43,7 @@
 }
 
 - (void)didChangeInitiator:(NSString * _Nullable)initiator { 
-    [self.channel invokeMethod:@"didChangeInitiator" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession], @"initiator":initiator}];
+    [self.channel invokeMethod:@"didChangeInitiator" arguments:@{@"callId":self.callSession.callId, @"session":[RtckitPlugin callSession2Dict:self.callSession]}];
 }
 
 - (void)didChangeMode:(BOOL)isAudioOnly { 
@@ -277,6 +277,7 @@
     FLNativeView* view = self.videoViews[@(viewId)];
     if(view) {
         UIView *container = view.view;
+        container.clipsToBounds = YES;
         [[WFAVEngineKit sharedEngineKit].currentSession setupLocalVideoView:container scalingType:kWFAVVideoScalingTypeAspectFit];
     }
     
@@ -291,6 +292,7 @@
     FLNativeView* view = self.videoViews[@(viewId)];
     if(view) {
         UIView *container = view.view;
+        container.clipsToBounds = YES;
         [[WFAVEngineKit sharedEngineKit].currentSession setupRemoteVideoView:container scalingType:kWFAVVideoScalingTypeAspectFit forUser:userId screenSharing:screenSharing];
     }
     
@@ -388,6 +390,32 @@
     result(dicts);
 }
 
+- (void)getAllProfiles:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    
+    NSMutableArray<NSDictionary *> *dicts = [[NSMutableArray alloc] init];
+    [dicts addObject:[self profile2Dict:[WFAVEngineKit sharedEngineKit].currentSession.myProfile]];
+    
+    NSArray<WFAVParticipantProfile *> *profiles = [WFAVEngineKit sharedEngineKit].currentSession.participants;
+    [profiles enumerateObjectsUsingBlock:^(WFAVParticipantProfile * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        [dicts addObject:[self profile2Dict:obj]];
+    }];
+    
+    result(dicts);
+}
+
+- (void)getMyProfiles:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    result([self profile2Dict:[WFAVEngineKit sharedEngineKit].currentSession.myProfile]);
+}
+
+- (void)inviteNewParticipants:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *callId = dict[@"callId"];
+    NSArray<NSString *> *participants = dict[@"participants"];
+    [[WFAVEngineKit sharedEngineKit].currentSession inviteNewParticipants:participants];
+    result(nil);
+}
+
 - (NSDictionary *)profile2Dict:(WFAVParticipantProfile *)profile {
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     
@@ -397,7 +425,7 @@
     dict[@"videoMuted"] = @(profile.videoMuted);
     dict[@"audioMuted"] = @(profile.audioMuted);
     dict[@"audience"] = @(profile.audience);
-    dict[@"screeSharing"] = @(profile.screeSharing);
+    dict[@"screenSharing"] = @(profile.screeSharing);
     dict[@"callExtra"] = profile.callExtra;
     dict[@"videoType"] = @(profile.videoType);
     

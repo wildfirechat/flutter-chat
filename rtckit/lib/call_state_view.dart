@@ -35,6 +35,7 @@ class CallStateViewState extends State<CallStateView> {
 
   @override
   void initState() {
+    super.initState();
     updateCallStateView(widget.state);
 
     _timer ??= Timer.periodic(const Duration(seconds: 1), (timer) {

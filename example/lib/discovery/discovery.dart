@@ -27,6 +27,7 @@ class DiscoveryState extends State<DiscoveryTab> {
 
   @override
   void initState() {
+    super.initState();
     Rtckit.isSupportConference().then((support) {
       if(support) {
         setState(() {
