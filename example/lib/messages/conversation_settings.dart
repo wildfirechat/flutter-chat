@@ -135,6 +135,7 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
 
   @override
   void initState() {
+    super.initState();
     _loadData();
   }
 

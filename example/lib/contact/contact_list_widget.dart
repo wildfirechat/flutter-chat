@@ -155,6 +155,7 @@ class _ContactListItemState extends State<ContactListItem> {
 
   @override
   void initState() {
+    super.initState();
     _loadUserInfo();
     _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
       _loadUserInfo();

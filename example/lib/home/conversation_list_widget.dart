@@ -52,7 +52,12 @@ class ConversationListWidgetState extends State<ConversationListWidget> {
 
     _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
       if(!event.hasMore) {
-        _loadConversation();
+        for(Message msg in event.messages) {
+          if(msg.messageId > 0) {
+            _loadConversation();
+            break;
+          }
+        }
       }
     });
     _userSettingUpdatedSubscription = _eventBus.on<UserSettingUpdatedEvent>().listen((event) {
@@ -254,6 +259,7 @@ class ConversationListItemState extends State<ConversationListItem> {
 
   @override
   void initState() {
+    super.initState();
     if(widget.conversationInfo.conversation.conversationType == ConversationType.Single) {
       userInfo = Cache.getUserInfo(widget.conversationInfo.conversation.target);
       Imclient.getUserInfo(widget.conversationInfo.conversation.target).then((value) {

@@ -20,6 +20,7 @@ class FriendRequestPageState extends State<FriendRequestPage> {
 
   @override
   void initState() {
+    super.initState();
     Imclient.clearUnreadFriendRequestStatus();
     _loadFriendRequestAndUserInfos();
   }

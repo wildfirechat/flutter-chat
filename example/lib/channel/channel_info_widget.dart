@@ -18,6 +18,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
 
   @override
   void initState() {
+    super.initState();
     Imclient.isListenedChannel(widget.channelInfo.channelId).then((value) {
       setState(() {
         isLoading = false;

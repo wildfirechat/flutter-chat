@@ -94,10 +94,10 @@ class RtckitPlatform extends PlatformInterface {
         case 'didChangeInitiator':
           Map<dynamic, dynamic> args = call.arguments;
           String callId = args['callId'];
-          String initiator = args['initiator'];
           CallSessionCallback? callback = _callSessionCallbacks[callId];
           if(callback != null) {
-            callback.didChangeInitiator(sessionFromMap(args['session'])!, initiator);
+            CallSession session = sessionFromMap(args['session'])!;
+            callback.didChangeInitiator(session, session.inviter);
           }
           break;
         case 'didChangeMode':
@@ -396,8 +396,19 @@ class RtckitPlatform extends PlatformInterface {
     return await methodChannel.invokeMethod("isHeadsetPluggedIn", {'callId':callId});
   }
 
+  Future<void> inviteNewParticipants(String callId, List<String> participants) async {
+    return await methodChannel.invokeMethod("inviteNewParticipants", {'callId':callId, 'participants':participants});
+  }
+
   Future<List<String>> getParticipantIds(String callId) async {
-    return await methodChannel.invokeMethod("getParticipantIds", {'callId':callId});
+    List<Object?> list = await methodChannel.invokeMethod("getParticipantIds", {'callId':callId});
+    List<String> result = [];
+    for (var value in list) {
+      if(value is String) {
+        result.add(value);
+      }
+    }
+    return result;
   }
 
   Future<List<ParticipantProfile>> getParticipantProfiles(String callId) async {
@@ -405,16 +416,28 @@ class RtckitPlatform extends PlatformInterface {
     return _convertProtoParticipantProfiles(mapList);
   }
 
+  Future<List<ParticipantProfile>> getAllProfiles(String callId) async {
+    List<dynamic> mapList = await methodChannel.invokeMethod("getAllProfiles", {'callId':callId});
+    return _convertProtoParticipantProfiles(mapList);
+  }
+
+  Future<ParticipantProfile> getMyProfiles(String callId) async {
+    dynamic map = await methodChannel.invokeMethod("getMyProfiles", {'callId':callId});
+    return _convertProtoParticipantProfile(map);
+  }
+
   List<ParticipantProfile> _convertProtoParticipantProfiles(List<dynamic> mapList) {
     List<ParticipantProfile> pps = [];
     for (var value in mapList) {
-      if(value is Map) {
-        Map m = value;
-        pps.add(ParticipantProfile(m["userId"], m["startTime"], m["state"], m["videoMuted"],
-            m["audioMuted"], m["audience"], m["screenSharing"]));
-      }
+      pps.add(_convertProtoParticipantProfile(value));
     }
     return pps;
+  }
+
+  ParticipantProfile _convertProtoParticipantProfile(dynamic map) {
+    Map m = map;
+    return ParticipantProfile(m["userId"], m["startTime"], m["state"], m["videoMuted"],
+        m["audioMuted"], m["audience"], m["screenSharing"]);
   }
 
   Conversation? _convertProtoConversation(Map<dynamic, dynamic>? map) {

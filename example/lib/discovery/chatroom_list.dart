@@ -44,6 +44,7 @@ class ChatroomItemState extends State<ChatroomItem> {
 
   @override
   void initState() {
+    super.initState();
     Imclient.getChatroomInfo(widget.chatroomId, 0, (ci) {
       setState(() {
         chatroomInfo = ci;

@@ -60,6 +60,7 @@ class ChannelListState extends State<ChannelList> {
 
   @override
   void initState() {
+    super.initState();
     Imclient.getRemoteListenedChannels((strValues) {
       setState(() {
         channelIds = strValues;
@@ -86,6 +87,7 @@ class ChannelItemState extends State<ChannelItem> {
 
   @override
   void initState() {
+    super.initState();
     _channelInfoUpdateSubscription = Imclient.IMEventBus.on<ChannelInfoUpdateEvent>().listen((event) {
       for (var channel in event.channelInfos) {
         if(channel.channelId == widget.channelId) {

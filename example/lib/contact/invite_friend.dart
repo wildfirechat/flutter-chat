@@ -17,7 +17,7 @@ class InviteFriendPageState extends State<InviteFriendPage> {
 
   @override
   void initState() {
-
+    super.initState();
   }
 
   @override

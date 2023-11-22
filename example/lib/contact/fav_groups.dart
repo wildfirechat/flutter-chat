@@ -16,6 +16,7 @@ class FavGroupsPageState extends State<FavGroupsPage> {
 
   @override
   void initState() {
+    super.initState();
     Imclient.getFavGroups().then((groupIds) {
       if(groupIds != null) {
         setState(() {
