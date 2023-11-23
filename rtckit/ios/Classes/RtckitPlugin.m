@@ -278,6 +278,10 @@
     if(view) {
         UIView *container = view.view;
         container.clipsToBounds = YES;
+        CGRect frame = container.frame;
+        if(frame.size.width == 0 || frame.size.height == 0) {
+            NSLog(@"严重问题！设置view的大小为0，这样视频就无法显示。一般出现这个问题的原因是view创建后还没有布局，请在布局之后再调用setLocalVideoView接口。");
+        }
         [[WFAVEngineKit sharedEngineKit].currentSession setupLocalVideoView:container scalingType:kWFAVVideoScalingTypeAspectFit];
     }
     
@@ -293,6 +297,10 @@
     if(view) {
         UIView *container = view.view;
         container.clipsToBounds = YES;
+        CGRect frame = container.frame;
+        if(frame.size.width == 0 || frame.size.height == 0) {
+            NSLog(@"严重问题！设置view的大小为0，这样视频就无法显示。一般出现这个问题的原因是view创建后还没有布局，请在布局之后再调用setRemoteVideoView接口。");
+        }
         [[WFAVEngineKit sharedEngineKit].currentSession setupRemoteVideoView:container scalingType:kWFAVVideoScalingTypeAspectFit forUser:userId screenSharing:screenSharing];
     }
     

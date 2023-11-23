@@ -85,8 +85,10 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
 
   void createVideoView() {
     if(widget.profiles != null) {
+      List<String> currentUsers = [];
       for (ParticipantProfile profile in widget.profiles!) {
         String userId = profile.userId;
+        currentUsers.add(userId);
         if(!rtcViewMap.containsKey(userId)) {
           GlobalKey<VideoViewState> state = GlobalKey();
           Widget rtcView = VideoView(widget.callSession!, profile, key: state);
@@ -94,6 +96,14 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
           rtcViewStateMap[userId] = state;
         }
       }
+
+      rtcViewMap.removeWhere((key, value) {
+        if(!currentUsers.contains(key)) {
+          rtcViewStateMap.remove(key);
+          return true;
+        }
+        return false;
+      });
     }
   }
 
@@ -339,7 +349,7 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
               widget.profiles!.forEach((element) { inCallMembers.add(element.userId);});
 
               if(Rtckit.selectMembersDelegate != null) {
-                Rtckit.selectMembersDelegate!(context, members, inCallMembers, null, 4, (selected) {
+                Rtckit.selectMembersDelegate!(context, members, inCallMembers, null, Rtckit.maxAudioCallCount, (selected) {
                   Navigator.pop(context);
                   if(selected.isNotEmpty) {
                     widget.callSession!.inviteNewParticipants(selected);

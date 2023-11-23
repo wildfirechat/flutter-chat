@@ -208,7 +208,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
           } else {
             smallVideoViewId = params.id;
           }
-          updateVideoView();
+          Future.delayed(const Duration(milliseconds: 100), updateVideoView);
 
           return PlatformViewsService.initExpensiveAndroidView(
             id: params.id,
@@ -236,7 +236,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
           } else {
             smallVideoViewId = viewId;
           }
-          updateVideoView();
+          Future.delayed(const Duration(milliseconds: 100), updateVideoView);
         },
       );
     }

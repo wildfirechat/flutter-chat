@@ -40,6 +40,9 @@ class RtckitPlatform extends PlatformInterface {
   static DidEndCallCallback? _didEndCallCallback;
   static Map<String, CallSessionCallback> _callSessionCallbacks = {};
 
+  static int _maxAudioCallCount = 9;
+  static int _maxVideoCallCount = 4;
+
   Future<void> initProto(DidReceiveCallCallback? didReceiveCallCallback, ShouldStartRingCallback? shouldStartRingCallback, ShouldStopRingCallback? shouldStopRingCallback, DidEndCallCallback? didEndCallCallback) async {
     _didReceiveCallCallback = didReceiveCallCallback;
     _shouldStartRingCallback = shouldStartRingCallback;
@@ -47,6 +50,8 @@ class RtckitPlatform extends PlatformInterface {
     _didEndCallCallback = didEndCallCallback;
 
     methodChannel.invokeMethod<String>('initProto');
+    methodChannel.invokeMethod("maxAudioCallCount").then((value) => _maxAudioCallCount = value);
+    methodChannel.invokeMethod("maxVideoCallCount").then((value) => _maxVideoCallCount = value);
 
     methodChannel.setMethodCallHandler((MethodCall call) async {
       switch (call.method) {
@@ -262,19 +267,21 @@ class RtckitPlatform extends PlatformInterface {
     });
   }
 
-  Future<int> get maxVideoCallCount async {
-    return await methodChannel.invokeMethod("maxVideoCallCount");
+  int get maxVideoCallCount {
+    return _maxVideoCallCount;
   }
 
-  Future<int> get maxAudioCallCount async {
-    return await methodChannel.invokeMethod("maxAudioCallCount");
+  int get maxAudioCallCount {
+    return _maxAudioCallCount;
   }
 
   Future<void> seMaxVideoCallCount(int count) async {
+    _maxVideoCallCount = count;
     return await methodChannel.invokeMethod("seMaxVideoCallCount", {'count':count});
   }
 
   Future<void> seMaxAudioCallCount(int count) async {
+    _maxAudioCallCount = count;
     return await methodChannel.invokeMethod("seMaxAudioCallCount", {'count':count});
   }
 
