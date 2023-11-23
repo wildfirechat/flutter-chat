@@ -443,11 +443,11 @@ class Rtckit {
     RtckitPlatform.instance.initProto(didReceiveCallCallback, shouldStartRingCallback, shouldStopRingCallback, didEndCallCallback);
   }
 
-  static Future<int> get maxVideoCallCount async {
+  static int get maxVideoCallCount {
     return RtckitPlatform.instance.maxVideoCallCount;
   }
 
-  static Future<int> get maxAudioCallCount async {
+  static int get maxAudioCallCount {
     return RtckitPlatform.instance.maxAudioCallCount;
   }
 

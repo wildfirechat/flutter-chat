@@ -42,7 +42,7 @@ class VideoViewState extends State<VideoView> {
 
   @override
   Widget build(BuildContext context) {
-    if(widget.profile.state == kWFAVEngineStateConnected && !widget.profile.videoMuted) {
+    if((widget.profile.state == kWFAVEngineStateConnected || widget.profile.state == kWFAVEngineStateOutgoing) && !widget.profile.videoMuted) {
       return rtcView;
     } else {
       return (userInfo == null || userInfo!.portrait == null) ? Image.asset(Rtckit.defaultUserPortrait) : Image.network(userInfo!.portrait!);
@@ -74,7 +74,7 @@ class VideoViewState extends State<VideoView> {
         },
         onCreatePlatformView: (params) {
           rtcViewId = params.id;
-          _setupVideoView();
+          Future.delayed(const Duration(milliseconds: 100), _setupVideoView);
           return PlatformViewsService.initExpensiveAndroidView(
             id: params.id,
             viewType: viewType,
@@ -98,7 +98,7 @@ class VideoViewState extends State<VideoView> {
         creationParamsCodec: const StandardMessageCodec(),
         onPlatformViewCreated: (viewId) {
           rtcViewId = viewId;
-          _setupVideoView();
+          Future.delayed(const Duration(milliseconds: 100), _setupVideoView);
         },
       );
       return widget;

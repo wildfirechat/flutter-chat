@@ -277,7 +277,7 @@ class _State extends State<MessagesScreen> {
               );
             }
           },
-            maxSelected: 9,
+            maxSelected: Rtckit.maxAudioCallCount,
             candidates: members,
             disabledCheckedUsers: [Imclient.currentUserId],
           )),
