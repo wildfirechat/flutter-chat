@@ -416,7 +416,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         dict.put("videoMuted", profile.isVideoMuted());
         dict.put("audioMuted", profile.isAudioMuted());
         dict.put("audience", profile.isAudience());
-        dict.put("screeSharing", profile.isScreenSharing());
+        dict.put("screenSharing", profile.isScreenSharing());
         dict.put("callExtra", "");
         return dict;
     }
