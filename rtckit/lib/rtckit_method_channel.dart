@@ -50,8 +50,8 @@ class RtckitPlatform extends PlatformInterface {
     _didEndCallCallback = didEndCallCallback;
 
     methodChannel.invokeMethod<String>('initProto');
-    methodChannel.invokeMethod("maxAudioCallCount").then((value) => _maxAudioCallCount = value);
-    methodChannel.invokeMethod("maxVideoCallCount").then((value) => _maxVideoCallCount = value);
+    methodChannel.invokeMethod("getMaxAudioCallCount").then((value) => _maxAudioCallCount = value);
+    methodChannel.invokeMethod("getMaxVideoCallCount").then((value) => _maxVideoCallCount = value);
 
     methodChannel.setMethodCallHandler((MethodCall call) async {
       switch (call.method) {
