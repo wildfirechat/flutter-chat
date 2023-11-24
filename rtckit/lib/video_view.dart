@@ -49,7 +49,7 @@ class VideoViewState extends State<VideoView> {
             bottom: 8,
             left: 8,
             child: Image(image:AssetImage('assets/images/rtckit/call_voice_mute_small.png', package: 'rtckit'), width: 24, height: 24,)) : Container(),
-        (widget.profile.userId == Imclient.currentUserId && !widget.profile.videoMuted)?  Positioned(
+        (widget.profile.userId == Imclient.currentUserId && !widget.profile.videoMuted && (widget.callSession.state == kWFAVEngineStateConnected || widget.callSession.state == kWFAVEngineStateOutgoing))?  Positioned(
             bottom: 8,
             right: 8,
             child: GestureDetector(
@@ -122,7 +122,7 @@ class VideoViewState extends State<VideoView> {
         creationParamsCodec: const StandardMessageCodec(),
         onPlatformViewCreated: (viewId) {
           rtcViewId = viewId;
-          Future.delayed(const Duration(milliseconds: 100), _setupVideoView);
+          Future.delayed(const Duration(milliseconds: 150), _setupVideoView);
         },
       );
       return widget;
