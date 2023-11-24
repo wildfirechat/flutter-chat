@@ -260,6 +260,7 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
             setState(() {
 
             });
+            loadProfiles();
           },
         ),
         const Padding(padding: EdgeInsets.only(top: 8)),

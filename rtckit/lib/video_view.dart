@@ -42,10 +42,34 @@ class VideoViewState extends State<VideoView> {
 
   @override
   Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        _callView(context),
+        (widget.profile.userId == Imclient.currentUserId && widget.profile.audioMuted)?  const Positioned(
+            bottom: 8,
+            left: 8,
+            child: Image(image:AssetImage('assets/images/rtckit/call_voice_mute_small.png', package: 'rtckit'), width: 24, height: 24,)) : Container(),
+        (widget.profile.userId == Imclient.currentUserId && !widget.profile.videoMuted)?  Positioned(
+            bottom: 8,
+            right: 8,
+            child: GestureDetector(
+              onTap: () {
+                widget.callSession.switchCamera();
+              },
+              child: const Image(image:AssetImage('assets/images/rtckit/call_camera_switch.png', package: 'rtckit'), width: 24, height: 24,),
+            )) : Container(),
+      ],
+    );
+  }
+
+  Widget _callView(BuildContext context) {
     if((widget.profile.state == kWFAVEngineStateConnected || widget.profile.state == kWFAVEngineStateOutgoing) && !widget.profile.videoMuted) {
       return rtcView;
     } else {
-      return (userInfo == null || userInfo!.portrait == null) ? Image.asset(Rtckit.defaultUserPortrait) : Image.network(userInfo!.portrait!);
+      return Container(
+        constraints: const BoxConstraints.expand(),
+        child: (userInfo == null || userInfo!.portrait == null) ? Image.asset(Rtckit.defaultUserPortrait) : Image.network(userInfo!.portrait!),
+      );
     }
   }
 
