@@ -106,7 +106,7 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
       setState(() {});
     });
   }
-  
+
   void createVideoView() {
     if(widget.profiles != null) {
       List<String> currentUsers = [];
