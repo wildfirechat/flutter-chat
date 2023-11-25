@@ -4,6 +4,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/model/group_info.dart';
+import 'package:imclient/model/user_info.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:imclient/imclient.dart';
 import 'package:rtckit/video_view.dart';
@@ -28,7 +29,7 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
 
   GlobalKey<CallStateViewState> stateGlobalKey = GlobalKey();
 
-  GroupInfo? groupInfo;
+  UserInfo? initiator;
 
   OverlayEntry? overlayEntry;
 
@@ -50,6 +51,11 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
             widget.callSession = value;
             widget.callSession?.setCallSessionCallback(this);
             widget.callSession?.startPreview();
+            Imclient.getUserInfo(widget.callSession!.initiator!, groupId: widget.groupId!).then((value) {
+              setState(() {
+                initiator = value;
+              });
+            });
           });
         }
       });
@@ -62,27 +68,45 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
       });
 
       widget.callSession?.setCallSessionCallback(this);
-    }
 
-    Imclient.getGroupInfo(widget.groupId!).then((value) {
-      setState(() {
-        groupInfo = value;
+      Imclient.getUserInfo(widget.callSession!.initiator!, groupId: widget.groupId!).then((value) {
+        setState(() {
+          initiator = value;
+        });
       });
-    });
+    }
   }
 
   void loadProfiles() {
-    if(widget.callSession != null) {
+    if(widget.callSession?.state != kWFAVEngineStateIdle) {
       widget.callSession!.allProfiles.then((value) {
         setState(() {
           widget.profiles = value;
           createVideoView();
           updateVideoView();
         });
+        if(widget.callSession?.state == kWFAVEngineStateIncoming) {
+          loadParticipantsUserInfos();
+        }
       });
     }
   }
 
+  Map<String, UserInfo> userInfoCache = {};
+
+  void loadParticipantsUserInfos() {
+    List<String> userIds = [];
+    widget.profiles?.forEach((element) {
+      userIds.add(element.userId);
+    });
+    Imclient.getUserInfos(userIds, groupId: widget.groupId).then((userInfos) {
+      for (var userInfo in userInfos) {
+        userInfoCache[userInfo.userId] = userInfo;
+      }
+      setState(() {});
+    });
+  }
+  
   void createVideoView() {
     if(widget.profiles != null) {
       List<String> currentUsers = [];
@@ -110,11 +134,18 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: widget.callSession == null?const Center(child: Text("Loading...")):callView(context),
+      backgroundColor: backgroundColor,
+      body: SafeArea(
+        child: widget.callSession == null?const Center(child: Text("Loading...")):callView(context),
+      )
     );
   }
 
   Widget callView(BuildContext context) {
+    if(widget.callSession!.state == kWFAVEngineStateIncoming) {
+      return _incommingCallView(context);
+    }
+
     return Container(
       color: backgroundColor,
       child: Stack(
@@ -128,6 +159,51 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
     );
   }
 
+  Widget _incommingCallView(BuildContext context) {
+    int itemCount = widget.profiles == null ? 0 : widget.profiles!.length;
+    if(itemCount == 0) {
+      return Container();
+    }
+    double imageWidth = 48;
+    double itemWidth = imageWidth + 8;
+    int lineCount = itemCount>4?4:itemCount;
+    double gridWidth = (itemCount > lineCount ? lineCount : itemCount) * itemWidth - 8;
+    double gridHeight = (((itemCount-1) ~/lineCount + 1)) * itemWidth;
+    return Column(
+      children: [
+        const Padding(padding: EdgeInsets.only(top: 20)),
+        Column(children: [
+          Center(child: userPortraitAndName(context),),
+          const Center(child: Text("邀请你加入多人通话"),),
+        ],),
+        Expanded(child: Container()),
+        Column(children: [
+          const Center(child: Text("参与通话的有："),),
+          const Padding(padding: EdgeInsets.only(top: 16)),
+          Center(child: SizedBox(width: gridWidth, height: gridHeight, child:
+            GridView.builder(
+                itemCount: lineCount,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: lineCount, mainAxisSpacing: 8, crossAxisSpacing: 8),
+                itemBuilder: (BuildContext context, int index) {
+                  ParticipantProfile profile = widget.profiles![index];
+                  UserInfo? useInfo = userInfoCache[profile.userId];
+                  return Container(
+                    child: useInfo?.portrait == null ? Image.asset(
+                        Rtckit.defaultUserPortrait)
+                        : Image.network(useInfo!.portrait!),
+                  );
+                }),),),
+        ],),
+        Expanded(child: Container()),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: _controlRowBottom2(context),
+        ),
+        const Padding(padding: EdgeInsets.only(top: 20)),
+      ],
+    );
+  }
+
   bool hideControl = false;
   Widget backgroundCallView(BuildContext context) {
     return GestureDetector(
@@ -138,10 +214,6 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
         }
       },
       child:Container(
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(10.0),
-        ),
         child: _getParticipantsView(),
       ),);
   }
@@ -167,7 +239,6 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
   }
 
   Widget userPortraitAndName(BuildContext context) {
-    if(groupInfo != null) {
       return Padding(padding: EdgeInsets.only(top: 80), child: Column(
         mainAxisSize:MainAxisSize.min,
         children: [
@@ -175,20 +246,17 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
             borderRadius: BorderRadius.circular(10.0), // 设置圆角半径
             child: SizedBox(width: 100,
               height: 100,
-              child: groupInfo!.portrait == null
+              child: initiator?.portrait == null
                   ? Image.asset(
                   Rtckit.defaultUserPortrait, width: 100.0, height: 100.0)
                   : Image.network(
-                  groupInfo!.portrait!, width: 100.0, height: 100.0),
+                  initiator!.portrait!, width: 100.0, height: 100.0),
             ),
           ),
           const Padding(padding: EdgeInsets.all(8)),
-          Center(child: Text(groupInfo!.name!, style: const TextStyle(color: Colors.white),),)
+          Center(child: Text(initiator == null ? "" : initiator!.name!, style: const TextStyle(color: Colors.white),),)
         ],
       ),);
-    } else {
-      return Container();
-    }
   }
 
   List<Widget> _controlRowBottom1(BuildContext context) {
@@ -334,12 +402,12 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
       children: [
         (widget.callSession!.state == kWFAVEngineStateConnecting || widget.callSession!.state == kWFAVEngineStateConnected) ?
         Row(children: [
-          Padding(padding: const EdgeInsets.fromLTRB(24, 60, 0, 0), child: GestureDetector(onTap: () {
+          Padding(padding: const EdgeInsets.fromLTRB(24, 8, 0, 0), child: GestureDetector(onTap: () {
             showFloatingButton();
             Navigator.pop(context);
           }, child: const Image(image:AssetImage('assets/images/rtckit/call_minimize.png', package: 'rtckit'), width: 24, height: 24,),),),
           Expanded(child: Container()),
-          widget.callSession == null ? Container() : Padding(padding: const EdgeInsets.fromLTRB(0, 60, 24, 0), child: GestureDetector(onTap: () {
+          widget.callSession == null ? Container() : Padding(padding: const EdgeInsets.fromLTRB(0, 8, 24, 0), child: GestureDetector(onTap: () {
             Imclient.getGroupMembers(widget.groupId!).then((groupMembers) {
               List<String> members = [];
               for(var gm in groupMembers) {
