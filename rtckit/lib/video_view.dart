@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +24,9 @@ class VideoViewState extends State<VideoView> {
   late Widget rtcView;
   int? rtcViewId;
   UserInfo? userInfo;
-
+  Timer? _timer;
+  int dotPos = 0;
+  List<Widget> waitAnis = [];
 
   @override
   void initState() {
@@ -38,6 +42,10 @@ class VideoViewState extends State<VideoView> {
         userInfo = value;
       });
     });
+
+    for(int i = 0; i < 3; i++) {
+      waitAnis.add(Image(image:AssetImage('assets/images/rtckit/call_waiting_ani$i.png', package: 'rtckit'), width: 50, height: 50,));
+    }
   }
 
   @override
@@ -45,6 +53,7 @@ class VideoViewState extends State<VideoView> {
     return Stack(
       children: [
         _callView(context),
+        _stateView(context),
         (widget.profile.userId == Imclient.currentUserId && widget.profile.audioMuted)?  const Positioned(
             bottom: 8,
             left: 8,
@@ -60,6 +69,29 @@ class VideoViewState extends State<VideoView> {
             )) : Container(),
       ],
     );
+  }
+
+  Widget _stateView(BuildContext context) {
+    if(widget.profile.state == kWFAVEngineStateIncoming) {
+      Future.delayed(const Duration(microseconds: 1), _startTimer);
+      return Center(child: waitAnis[dotPos],);
+    } else {
+      Future.delayed(const Duration(microseconds: 1), _stopTimer);
+      return Container();
+    }
+  }
+
+  void _startTimer() {
+    _timer ??= Timer.periodic(const Duration(seconds: 1), (timer) {
+        setState(() {
+          dotPos = (dotPos + 1) % 3;
+        });
+      });
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
   }
 
   Widget _callView(BuildContext context) {
