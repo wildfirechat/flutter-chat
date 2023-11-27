@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:event_bus/event_bus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/message/notification/tip_notificiation_content.dart';
 import 'package:logger/logger.dart' show Level, Logger;
 import 'package:flutter_sound/flutter_sound.dart';
@@ -617,6 +618,14 @@ class _State extends State<MessagesScreen> {
         }
 
         startPlayVoiceMessage(model);
+      }
+    } else if(model.message.content is CallStartMessageContent) {
+      CallStartMessageContent callContent = model.message.content as CallStartMessageContent;
+      if(model.message.conversation.conversationType == ConversationType.Single) {
+        SingleVideoCallView callView = SingleVideoCallView(userId:widget.conversation.target, audioOnly:callContent.audioOnly);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
+      } else if(model.message.conversation.conversationType == ConversationType.Group) {
+        _onPressCallBtn();
       }
     }
   }

@@ -94,6 +94,13 @@ class VideoViewState extends State<VideoView> {
     _timer = null;
   }
 
+
+  @override
+  void dispose() {
+    super.dispose();
+    _stopTimer();
+  }
+
   Widget _callView(BuildContext context) {
     if((widget.profile.state == kWFAVEngineStateConnected || widget.profile.state == kWFAVEngineStateOutgoing) && !widget.profile.videoMuted) {
       return rtcView;
