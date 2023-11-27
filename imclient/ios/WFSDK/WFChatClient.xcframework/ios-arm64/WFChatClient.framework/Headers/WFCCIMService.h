@@ -157,16 +157,20 @@ typedef NS_ENUM(NSInteger, UserSettingScope) {
 /**
  搜索用户类型
 
- - SearchUserType_General: 模糊搜索diaplayName，精确匹配name和电话
- - SearchUserType_Name_Mobile: 精确匹配name和电话
+ - SearchUserType_General: 模糊搜索diaplayName，精确匹配name或电话或用户ID
+ - SearchUserType_Name_Mobile: 精确匹配name或电话
  - SearchUserType_Name: 精确匹配name
  - SearchUserType_Mobile: 精确匹配电话
+ - SearchUserType_UserId: 精确匹配用户ID
+ - SearchUserType_Name_Mobile_UserId: 精确匹配name或电话或用户ID
  */
 typedef NS_ENUM(NSInteger, WFCCSearchUserType) {
     SearchUserType_General,
     SearchUserType_Name_Mobile,
     SearchUserType_Name,
     SearchUserType_Mobile,
+    SearchUserType_UserId,
+    SearchUserType_Name_Mobile_UserId
 };
 
 /**
@@ -174,12 +178,14 @@ typedef NS_ENUM(NSInteger, WFCCSearchUserType) {
 
  - DisableSearch_DisplayName_Mask: 第1位是是否禁止搜索昵称
  - DisableSearch_Name_Mask: 第2位是否禁止搜索账户
- - DisableSearch_Mobile_Mask: 精确第3位是否禁止搜索电话号码name
+ - DisableSearch_Mobile_Mask: 第3位是否禁止搜索电话号码
+ - DisableSearch_UserId_Mask: 第4位是否禁止搜索用户ID
  */
 typedef NS_ENUM(NSInteger, WFCCDisableSearchMask) {
     DisableSearch_DisplayName_Mask = 1,
     DisableSearch_Name_Mask = 2,
     DisableSearch_Mobile_Mask = 4,
+    DisableSearch_UserId_Mask = 8,
 };
 
 
@@ -1106,7 +1112,7 @@ typedef NS_ENUM(NSInteger, WFCCFileRecordOrder) {
          error:(void(^)(int error_code))errorBlock;
 
 /**
- 上传媒体(图片、语音、文件等)
+ 上传媒体(图片、语音、文件等)数据
  
  @param fileName 文件名，可为空
  @param mediaData 媒体信息
@@ -1121,6 +1127,21 @@ typedef NS_ENUM(NSInteger, WFCCFileRecordOrder) {
             success:(void(^)(NSString *remoteUrl))successBlock
            progress:(void(^)(long uploaded, long total))progressBlock
               error:(void(^)(int error_code))errorBlock;
+
+/**
+ 上传媒体(图片、语音、文件等)文件
+ 
+ @param filePath 文件名，可为空
+ @param mediaType 媒体类型
+ @param successBlock 成功的回调
+ @param progressBlock 上传进度的回调，注意仅当媒体内容大于300K才会有回调
+ @param errorBlock 失败的回调
+ */
+- (void)uploadMediaFile:(NSString *)filePath
+              mediaType:(WFCCMediaType)mediaType
+                success:(void(^)(NSString *remoteUrl))successBlock
+               progress:(void(^)(long uploaded, long total))progressBlock
+                  error:(void(^)(int error_code))errorBlock;
 
 /**
  同步上传媒体(图片、语音、文件等)，成功或者失败之后才会返回
