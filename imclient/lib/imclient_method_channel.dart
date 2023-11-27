@@ -1901,6 +1901,24 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   @override
+  void uploadMediaFile(
+      String filePath,
+      int mediaType,
+      OperationSuccessStringCallback successCallback,
+      SendMediaMessageProgressCallback progressCallback,
+      OperationFailureCallback errorCallback) {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    _sendMediaMessageProgressCallbackMap[requestId] = progressCallback;
+    methodChannel.invokeMethod("uploadMediaFile", {
+      "requestId": requestId,
+      "filePath": filePath,
+      "mediaType": mediaType
+    });
+  }
+
+  @override
   void getMediaUploadUrl(
       String fileName,
       int mediaType,

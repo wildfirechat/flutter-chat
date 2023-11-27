@@ -783,6 +783,16 @@ class Imclient {
     ImclientPlatform.instance.uploadMedia(fileName, mediaData, mediaType, successCallback, progressCallback, errorCallback);
   }
 
+  ///上传媒体文件
+  static void uploadMediaFile(
+      String filePath,
+      int mediaType,
+      OperationSuccessStringCallback successCallback,
+      SendMediaMessageProgressCallback progressCallback,
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.uploadMediaFile(filePath, mediaType, successCallback, progressCallback, errorCallback);
+  }
+
   ///获取上传地址，仅支持大文件上传功能时可用
   static void getMediaUploadUrl(
       String fileName,

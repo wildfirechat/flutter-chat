@@ -162,7 +162,6 @@ class MessageContent {
     payload.mentionedTargets = mentionedTargets;
     payload.extra = extra;
     payload.contentType = meta.type;
-    payload.mentionedType = 0;
     payload.mediaType = MediaType.Media_Type_GENERAL;
     return payload;
   }

@@ -32,10 +32,10 @@ enum ModifyChannelInfoType {
 }
 
 enum SearchUserType {
-  ///模糊搜索diaplayName，精确匹配name和电话
+  ///模糊搜索diaplayName，精确匹配name或电话或用户ID
   SearchUserType_General,
 
-  ///精确匹配name和电话
+  ///精确匹配name或电话
   SearchUserType_Name_Mobile,
 
   ///精确匹配name
@@ -43,6 +43,12 @@ enum SearchUserType {
 
   ///精确匹配电话
   SearchUserType_Mobile,
+
+  ///精确匹配用户ID
+  SearchUserType_UserId,
+
+  ///精确匹配name或电话或用户ID
+  SearchUserType_Name_Mobile_UserId,
 }
 
 enum PlatformType {

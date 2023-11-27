@@ -495,6 +495,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     public void didCallEnded(AVEngineKit.CallEndReason callEndReason, int duration) {
         Map data = new HashMap();
         data.put("reason", callEndReason.ordinal());
+        data.put("duration", duration);
         callback2UI("didEndCallCallback", data);
     }
 

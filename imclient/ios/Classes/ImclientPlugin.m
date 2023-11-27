@@ -505,6 +505,20 @@ ImclientPlugin *gIMClientInstance;
     }];
 }
 
+- (void)uploadMediaFile:(NSDictionary *)dict result:(FlutterResult)result {
+    int requestId = [dict[@"requestId"] intValue];
+    NSString *filePath = dict[@"filePath"];
+    int mediaType = [dict[@"mediaType"] intValue];
+
+    [[WFCCIMService sharedWFCIMService] uploadMediaFile:filePath mediaType:(WFCCMediaType)mediaType success:^(NSString *remoteUrl) {
+        [self.channel invokeMethod:@"onUploadMediaUploaded" arguments:@{@"requestId":@(requestId), @"remoteUrl":remoteUrl}];
+    } progress:^(long uploaded, long total) {
+        [self.channel invokeMethod:@"onUploadMediaProgress" arguments:@{@"requestId":@(requestId), @"uploaded":@(uploaded), @"total":@(total)}];
+    } error:^(int error_code) {
+        [self callbackOperationFailure:requestId errorCode:error_code];
+    }];
+}
+
 - (void)getMediaUploadUrl:(NSDictionary *)dict result:(FlutterResult)result {
     int requestId = [dict[@"requestId"] intValue];
     NSString *fileName = dict[@"fileName"];
