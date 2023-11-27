@@ -15,6 +15,7 @@ import 'package:rtckit/group_video_call.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:rtckit/single_voice_call.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wfc_example/splash.dart';
 
 import 'config.dart';
 import 'contact/contact_select_page.dart';
@@ -36,7 +37,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final navKey = GlobalKey<NavigatorState>();
 
-  bool isLogined = false;
+  bool? isLogined;
 
   @override
   void initState() {
@@ -172,7 +173,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: navKey,
-      home: isLogined ? const HomeTabBar() : LoginScreen(),
+      home: isLogined == null ? const SplashScreen() : (isLogined! ? const HomeTabBar() : LoginScreen()),
     );
   }
 }
