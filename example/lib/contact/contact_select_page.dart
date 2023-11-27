@@ -61,12 +61,28 @@ class _ContactListWidgetState extends State<ContactSelectPage> {
 
   @override
   Widget build(BuildContext context) {
+    late String text;
+    int selectCount = 0;
+    for (var value in selected) {
+      if(value) {
+        selectCount++;
+      }
+    }
+    int disabledSelectedCount = 0;
+    if(widget.disabledCheckedUsers != null) {
+      disabledSelectedCount = widget.disabledCheckedUsers!.length;
+    }
+    if(selectCount- disabledSelectedCount > 0) {
+      text = '完成($selectCount/${widget.maxSelected < selected.length ? widget.maxSelected : selected.length})';
+    } else {
+      text = '取消';
+    }
     return Scaffold(
       appBar: AppBar(
         actions: [
           GestureDetector(
             onTap: ()=>_onPressedDone(context),
-            child: Padding(padding: EdgeInsets.fromLTRB(8, 16, 16, 8), child: Text("完成", style: TextStyle(fontSize: 18),),),
+            child: Padding(padding: const EdgeInsets.fromLTRB(8, 16, 16, 8), child: Text(text, style: TextStyle(fontSize: 18),),),
           )
         ],
       ),
@@ -80,7 +96,9 @@ class _ContactListWidgetState extends State<ContactSelectPage> {
   }
 
   Widget _contactRow(String userId, int index) {
-    return ContactSelectableItem(userId, selected, index, widget.maxSelected, disabledCheckedUsers: widget.disabledCheckedUsers, disabledUncheckedUsers: widget.disabledUncheckedUsers);
+    return ContactSelectableItem(userId, selected, index, widget.maxSelected, () {
+      setState(() {});
+    }, disabledCheckedUsers: widget.disabledCheckedUsers, disabledUncheckedUsers: widget.disabledUncheckedUsers);
   }
 }
 
@@ -91,8 +109,9 @@ class ContactSelectableItem extends StatefulWidget {
   int maxSelected;
   List<String>? disabledCheckedUsers;
   List<String>? disabledUncheckedUsers;
+  void Function() onUpdate;
 
-  ContactSelectableItem(this.userId, this.selected, this.index, this.maxSelected, {Key? key, this.disabledCheckedUsers, this.disabledUncheckedUsers}) : super(key: key);
+  ContactSelectableItem(this.userId, this.selected, this.index, this.maxSelected, this.onUpdate, {Key? key, this.disabledCheckedUsers, this.disabledUncheckedUsers}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -155,6 +174,7 @@ class _ContactListItemState extends State<ContactSelectableItem> {
         setState(() {
           widget.selected[widget.index] = value!;
         });
+        widget.onUpdate();
       },
       title: Column(
         children: <Widget>[

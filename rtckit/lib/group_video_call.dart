@@ -78,7 +78,7 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
   }
 
   void loadProfiles() {
-    if(widget.callSession?.state != kWFAVEngineStateIdle) {
+    if(widget.callSession != null && widget.callSession!.state != kWFAVEngineStateIdle) {
       widget.callSession!.allProfiles.then((value) {
         setState(() {
           widget.profiles = value;

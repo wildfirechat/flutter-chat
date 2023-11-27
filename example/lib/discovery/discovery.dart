@@ -28,13 +28,13 @@ class DiscoveryState extends State<DiscoveryTab> {
   @override
   void initState() {
     super.initState();
-    Rtckit.isSupportConference().then((support) {
-      if(support) {
-        setState(() {
-          modelList.add(['assets/images/discover_conference.png', '会议', 'conference']);
-        });
-      }
-    });
+    // Rtckit.isSupportConference().then((support) {
+    //   if(support) {
+    //     setState(() {
+    //       modelList.add(['assets/images/discover_conference.png', '会议', 'conference']);
+    //     });
+    //   }
+    // });
   }
 
   @override
