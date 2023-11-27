@@ -102,14 +102,15 @@ class VideoViewState extends State<VideoView> {
   }
 
   Widget _callView(BuildContext context) {
-    if((widget.profile.state == kWFAVEngineStateConnected || widget.profile.state == kWFAVEngineStateOutgoing) && !widget.profile.videoMuted) {
-      return rtcView;
-    } else {
-      return Container(
-        constraints: const BoxConstraints.expand(),
-        child: (userInfo == null || userInfo!.portrait == null) ? Image.asset(Rtckit.defaultUserPortrait) : Image.network(userInfo!.portrait!),
-      );
-    }
+    return Stack(
+      children: [
+        Container(
+          constraints: const BoxConstraints.expand(),
+          child: (userInfo == null || userInfo!.portrait == null) ? Image.asset(Rtckit.defaultUserPortrait) : Image.network(userInfo!.portrait!),
+        ),
+        ((widget.profile.state == kWFAVEngineStateConnected || widget.profile.state == kWFAVEngineStateOutgoing) && !widget.profile.videoMuted)?rtcView:Container()
+      ],
+    );
   }
 
   void updateProfile(ParticipantProfile profile) {

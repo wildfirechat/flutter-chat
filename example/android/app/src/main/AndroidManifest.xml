@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="cn.wildfirechat.wfc_example">
    <application
-        android:label="wfc_example"
+        android:label="野火IM"
         android:name="${applicationName}"
         tools:replace="android:icon, android:label"
         android:icon="@mipmap/ic_launcher">

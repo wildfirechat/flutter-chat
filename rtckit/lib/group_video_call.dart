@@ -254,7 +254,7 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
             ),
           ),
           const Padding(padding: EdgeInsets.all(8)),
-          Center(child: Text(initiator == null ? "" : initiator!.name!, style: const TextStyle(color: Colors.white),),)
+          Center(child: Text(initiator == null ? "" : initiator!.displayName!, style: const TextStyle(color: Colors.white),),)
         ],
       ),);
   }
