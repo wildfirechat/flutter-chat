@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/channel_info.dart';
@@ -43,6 +45,12 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _initIMClient();
+    SystemChannels.lifecycle.setMessageHandler((message) async {
+      if(message == "AppLifecycleState.inactive") {
+        debugPrint("goto background");
+        updateAppBadge();
+      }
+    });
   }
 
   Future<void> _initIMClient() async {
@@ -157,8 +165,16 @@ class _MyAppState extends State<MyApp> {
     if (prefs.getString("userId") != null && prefs.getString("token") != null) {
       Imclient.connect(
           Config.IM_Host, prefs.getString("userId")!, prefs.getString("token")!);
-      setState(() {
-        isLogined = true;
+      Future.delayed(const Duration(seconds: 1), () {
+        setState(() {
+          isLogined = true;
+        });
+      });
+    } else {
+      Future.delayed(const Duration(seconds: 1), () {
+        setState(() {
+          isLogined = false;
+        });
       });
     }
     //
@@ -167,6 +183,29 @@ class _MyAppState extends State<MyApp> {
     // }, (feed){
     //   debugPrint("receive feed");
     // });
+  }
+
+  void updateAppBadge() {
+    Imclient.isLogined.then((isLogined) {
+      if(isLogined) {
+        Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((value){
+          int unreadCount = 0;
+          for (var element in value) {
+            if(!element.isSilent) {
+              unreadCount += element.unreadCount.unread;
+            }
+          }
+          Imclient.getUnreadFriendRequestStatus().then((unreadFriendRequest) {
+            unreadCount += unreadFriendRequest;
+            try {
+              FlutterDynamicIcon.setApplicationIconBadgeNumber(unreadCount);
+            } catch (e) {
+              debugPrint('unsupport app icon badge number platform');
+            }
+          });
+        });
+      }
+    });
   }
 
   @override

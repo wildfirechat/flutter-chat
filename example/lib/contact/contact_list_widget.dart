@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:badges/badges.dart' as badge;
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -14,7 +15,9 @@ import 'package:wfc_example/user_info_widget.dart';
 import 'fav_groups.dart';
 
 class ContactListWidget extends StatefulWidget {
-  const ContactListWidget({Key? key}) : super(key: key);
+  void Function(int unreadCount)? unreadCountCallback;
+
+  ContactListWidget({Key? key, this.unreadCountCallback}) : super(key: key);
 
   @override
   State createState() => _ContactListWidgetState();
@@ -23,6 +26,8 @@ class ContactListWidget extends StatefulWidget {
 class _ContactListWidgetState extends State<ContactListWidget> {
   final EventBus _eventBus = Imclient.IMEventBus;
   late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
+  late StreamSubscription<FriendRequestUpdateEvent> _friendRequestUpdatedSubscription;
+  late StreamSubscription<FriendUpdateEvent> _friendUpdatedSubscription;
 
   List<String> friendList = [];
   List fixModelList = [
@@ -30,18 +35,36 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     ['assets/images/contact_fav_group.png', '收藏群组', 'fav_group'],
     ['assets/images/contact_subscribed_channel.png', '订阅频道', 'subscribed_channel'],
   ];
+  int unreadFriendRequestCount = 0;
 
 
   @override
   void initState() {
     super.initState();
     _loadFriendList(true);
+    _loadNewFriendRequestCount();
 
     _userSettingUpdatedSubscription = _eventBus.on<UserSettingUpdatedEvent>().listen((event) {
       _loadFriendList(false);
     });
+    _friendRequestUpdatedSubscription = _eventBus.on<FriendRequestUpdateEvent>().listen((event) {
+      _loadNewFriendRequestCount();
+    });
+    _friendUpdatedSubscription = _eventBus.on<FriendUpdateEvent>().listen((event) {
+      _loadFriendList(false);
+    });
   }
 
+  void _loadNewFriendRequestCount() {
+    Imclient.getUnreadFriendRequestStatus().then((value) {
+      if(widget.unreadCountCallback != null) {
+        widget.unreadCountCallback!(value);
+      }
+      setState(() {
+        unreadFriendRequestCount = value;
+      });
+    });
+  }
   void _loadFriendList(bool refresh) {
     Imclient.getMyFriendList(refresh: true).then((value){
       setState(() {
@@ -73,6 +96,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   void dispose() {
     super.dispose();
     _userSettingUpdatedSubscription.cancel();
+    _friendRequestUpdatedSubscription.cancel();
+    _friendUpdatedSubscription.cancel();
   }
 
   Widget _contactRow(String userId, bool withSectionHeader, String? sectionTitle) {
@@ -109,6 +134,12 @@ class _ContactListWidgetState extends State<ContactListWidget> {
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
+                key == 'new_friend'?
+                badge.Badge(
+                    showBadge: unreadFriendRequestCount > 0,
+                    badgeContent: Text('$unreadFriendRequestCount'),
+                    child: Image.asset(imagePaht, width: 40.0, height: 40.0)
+                ) :
                 Image.asset(imagePaht, width: 40.0, height: 40.0),
                 Container(margin: const EdgeInsets.only(left: 16),),
                 Expanded(

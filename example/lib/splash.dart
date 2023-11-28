@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    FlutterDynamicIcon.getApplicationIconBadgeNumber().then((value) {
+      try {
+        FlutterDynamicIcon.setApplicationIconBadgeNumber(value);
+      } catch (e) {
+
+      }
+    });
     return SafeArea(
         child: Container(
           color: Colors.white,
