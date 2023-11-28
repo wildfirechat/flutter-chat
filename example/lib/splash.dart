@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 
@@ -6,13 +7,18 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FlutterDynamicIcon.getApplicationIconBadgeNumber().then((value) {
-      try {
-        FlutterDynamicIcon.setApplicationIconBadgeNumber(value);
-      } catch (e) {
+    //第一次启动时设置应用badge，触发弹出是否允许通知提示，允许后可以在应用进入到后台时设置badge。
+    //只有iOS平台支持，android平台不支持。如果有其他支持android平台badge，请提issue给我们添加。
+    if(defaultTargetPlatform == TargetPlatform.iOS) {
+      FlutterDynamicIcon.getApplicationIconBadgeNumber().then((value) {
+        try {
+          FlutterDynamicIcon.setApplicationIconBadgeNumber(value);
+        } catch (e) {
+          debugPrint("not support badge number");
+        }
+      });
+    }
 
-      }
-    });
     return SafeArea(
         child: Container(
           color: Colors.white,
