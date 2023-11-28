@@ -60,6 +60,7 @@ dependencies:
   wechat_camera_picker: ^4.0.1
   video_player: ^2.7.1
   url_launcher: ^6.1.14
+  flutter_dynamic_icon: ^2.1.0
 
 dev_dependencies:
   flutter_test:

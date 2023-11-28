@@ -222,6 +222,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.3.0"
+  flutter_dynamic_icon:
+    dependency: "direct main"
+    description:
+      name: flutter_dynamic_icon
+      sha256: "25dd26c9f0920e331ebabc471c4bf4842ab0a9128a12e4d4c6c3e4029b8dfd8f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   flutter_lints:
     dependency: "direct dev"
     description:

@@ -5,31 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_answer.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_answer_hover.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_camera_switch.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_camera_switch_hover.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_hangup.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_hangup_hover.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_minimize.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_speaker.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_speaker_bluetooth.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_speaker_headset.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_speaker_hover.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_to_voice.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_to_voice_hover.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_video_disable.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_video_enable.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_voice_mute.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/assets/images/rtckit/call_voice_mute_hover.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/rtckit/lib/call_state_view.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/RtckitPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/android/src/main/java/cn/wildfirechat/rtckit/RtckitPlugin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/ios/Classes/RtckitPlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/ios/Classes/RtckitPlugin.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/rtckit.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/lib/rtckit_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/rtckit_method_channel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/lib/single_voice_call.dart" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/lib/single_voice_call.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Podfile.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/contact/contact_list_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/contact/contact_list_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/home/home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/home/home.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/splash.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/splash.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,8 +74,8 @@
       <recent name="$PROJECT_DIR$/example/lib" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/rtckit/assets/images/rtckit" />
       <recent name="$PROJECT_DIR$/example/assets/images" />
+      <recent name="$PROJECT_DIR$/rtckit/assets/images/rtckit" />
       <recent name="$PROJECT_DIR$/example/lib/channel" />
       <recent name="$PROJECT_DIR$/example/lib/settings" />
       <recent name="$PROJECT_DIR$/example/lib/home" />
@@ -130,7 +114,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart</url>
-          <line>1479</line>
+          <line>1481</line>
           <option name="timeStamp" value="28" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
@@ -190,13 +174,28 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart</url>
-          <line>692</line>
+          <line>695</line>
           <option name="timeStamp" value="165" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="Dart">
           <url>file://$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart</url>
-          <line>3043</line>
+          <line>3063</line>
           <option name="timeStamp" value="167" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/rtckit/lib/group_video_call.dart</url>
+          <line>163</line>
+          <option name="timeStamp" value="173" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/example/lib/contact/contact_list_widget.dart</url>
+          <line>53</line>
+          <option name="timeStamp" value="177" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="Dart">
+          <url>file://$PROJECT_DIR$/example/lib/contact/contact_list_widget.dart</url>
+          <line>71</line>
+          <option name="timeStamp" value="178" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>

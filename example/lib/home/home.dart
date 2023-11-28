@@ -5,6 +5,7 @@
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
@@ -38,7 +39,8 @@ class HomeTabBarState extends State<HomeTabBar> {
   var _body;
   var pages;
 
-  int unreadCount = 0;
+  int unreadMessageCount = 0;
+  int unreadFriendRequestCount = 0;
 
   Image getTabImage(path) {
     return Image.asset(path, width: 20.0, height: 20.0);
@@ -49,9 +51,13 @@ class HomeTabBarState extends State<HomeTabBar> {
     super.initState();
     pages = <Widget>[ConversationListWidget((int count) {
       setState(() {
-        unreadCount = count;
+        unreadMessageCount = count;
       });
-    },), ContactListWidget(), DiscoveryTab(), SettingsTab()];
+    },), ContactListWidget(unreadCountCallback: (count) {
+      setState(() {
+        unreadFriendRequestCount = count;
+      });
+    },), DiscoveryTab(), SettingsTab()];
     tabImages ??= [
         [
           getTabImage('assets/images/tabbar_chat.png'),
@@ -220,13 +226,17 @@ class HomeTabBarState extends State<HomeTabBar> {
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
                 icon: badge.Badge(
-                  badgeContent: Text('$unreadCount'),
-                  showBadge: unreadCount > 0,
+                  badgeContent: Text('$unreadMessageCount'),
+                  showBadge: unreadMessageCount > 0,
                   child: getTabIcon(0),
                 ),
                 label: getTabTitle(0)),
             BottomNavigationBarItem(
-                icon: getTabIcon(1),
+                icon: badge.Badge(
+                  badgeContent: Text('$unreadFriendRequestCount'),
+                  showBadge: unreadFriendRequestCount > 0,
+                  child: getTabIcon(1),
+                ),
                 label: getTabTitle(1)),
             BottomNavigationBarItem(
                 icon: getTabIcon(2),
