@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
@@ -186,26 +187,33 @@ class _MyAppState extends State<MyApp> {
   }
 
   void updateAppBadge() {
-    Imclient.isLogined.then((isLogined) {
-      if(isLogined) {
-        Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((value){
-          int unreadCount = 0;
-          for (var element in value) {
-            if(!element.isSilent) {
-              unreadCount += element.unreadCount.unread;
+    //只有iOS平台支持，android平台不支持。如果有其他支持android平台badge，请提issue给我们添加。
+    if(defaultTargetPlatform == TargetPlatform.iOS) {
+      Imclient.isLogined.then((isLogined) {
+        if (isLogined) {
+          Imclient.getConversationInfos([
+            ConversationType.Single,
+            ConversationType.Group,
+            ConversationType.Channel
+          ], [0]).then((value) {
+            int unreadCount = 0;
+            for (var element in value) {
+              if (!element.isSilent) {
+                unreadCount += element.unreadCount.unread;
+              }
             }
-          }
-          Imclient.getUnreadFriendRequestStatus().then((unreadFriendRequest) {
-            unreadCount += unreadFriendRequest;
-            try {
-              FlutterDynamicIcon.setApplicationIconBadgeNumber(unreadCount);
-            } catch (e) {
-              debugPrint('unsupport app icon badge number platform');
-            }
+            Imclient.getUnreadFriendRequestStatus().then((unreadFriendRequest) {
+              unreadCount += unreadFriendRequest;
+              try {
+                FlutterDynamicIcon.setApplicationIconBadgeNumber(unreadCount);
+              } catch (e) {
+                debugPrint('unsupport app icon badge number platform');
+              }
+            });
           });
-        });
-      }
-    });
+        }
+      });
+    }
   }
 
   @override
