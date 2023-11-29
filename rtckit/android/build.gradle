@@ -36,7 +36,7 @@ android {
     }
 
     dependencies {
-        compileOnly fileTree(dir: "android_uikit_aars", include: ["*.aar"])
+        compileOnly fileTree(dir: "android_avclient_aars", include: ["*.aar"])
         compileOnly fileTree(dir: "../../imclient/android/android_client_aars", include: ["*.aar"])
 
         //implementation 'q.rorbin:badgeview:1.1.3'
