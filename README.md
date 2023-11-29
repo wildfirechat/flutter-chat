@@ -23,10 +23,6 @@
 
 野火Flutter插件，包含即时通讯插件和实时音视频插件。
 
-## V1版本
-
-master分支为新版本，之前旧版本在v1分支。请尽快升级到新版本。
-
 ## 运行
 
 进入到项目工程目录下，依次执行下述命令：
@@ -59,7 +55,7 @@ master分支为新版本，之前旧版本在v1分支。请尽快升级到新版
         // 根据实际需要，引入aar
 
         implementation fileTree(dir: "${path_to_android_client_aars}", include: ["*.aar"])
-        implementation fileTree(dir: "${path_to_android_uikit_aars}", include: ["*.aar"])
+        implementation fileTree(dir: "${path_to_android_avclient_aars}", include: ["*.aar"])
         //implementation fileTree(dir: "${path_to_android_moment_aars}", include: ["*.aar"])
         //implementation fileTree(dir: "${path_android_ptt_aars}", include: ["*.aar"])
 
@@ -82,7 +78,7 @@ master分支为新版本，之前旧版本在v1分支。请尽快升级到新版
 
 ## 升级插件注意事项
 
-1. 升级插件时，一定要记得同步升级`android_client_aars`等`aars`目录
+1. 升级插件时，一定要记得同步升级`android_client_aars`和`android_avclient_aars`等`aars`目录
 
 ## SDK的使用
 
@@ -110,7 +106,7 @@ Imclient.init(...);
 ```
 var clientId = await Imclient.clientId;
 // 调用应用服务去IM服务获取token，需要使用从SDK内获取的clientId。得到token后调用connect函数。
-Imclient.connect(Config.IM_Host, userId, token);
+Imclient.connect(IM_Host, userId, token);
 ```
 
 ### 获取会话列表
@@ -156,13 +152,15 @@ Imclient.getGroupInfo(groupId, refresh:false);
 ### 发起单人音视频通话
 
 ```
-Rtckit.startSingleCall(userid, audioOnly);
+SingleVideoCallView callView = SingleVideoCallView(userId:userId, audioOnly:false);
+Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
 ```
 
 ### 发起多人音视频通话
 
 ```
-Rtckit.startMultiCall(groupid, participants, audioOnly);
+GroupVideoCallView callView = GroupVideoCallView(groupId: groupId, participants: members);
+Navigator.push(context, MaterialPageRoute(builder: (context) => callView),);
 ```
 
 ## 推送
@@ -183,8 +181,6 @@ Rtckit.startMultiCall(groupid, participants, audioOnly);
 Imclient.setDeviceToken(pushType, deviceToken);
 ```
 
-在iOS平台，pushType是无效参数，可以为任意值；在Android平台pushType为选取的推送平台。
-
 ### 4 服务端推送开发
 
 下载[野火推送服务](https://gitee.com/wfchat/push_server)，在此基础上进行二次开发。推送服务会收到IM服务的推送请求，推送请求中有这个pushType和deviceToken及要推送的内容，推送服务根据这些信息找到对应厂商进行推送。
@@ -194,8 +190,17 @@ Imclient.setDeviceToken(pushType, deviceToken);
 实际上可以选用任意一个或者多个推送服务商，这里给出一个使用个推的介绍。
 [对接个推](https://gitee.com/wfchat/wfc_flutter_plugins/issues/I6P16V?from=project-issue)
 
+## 音视频的历史问题
+野火在flutter项目上的音视频的实现有2个方案：
+1. 方案1：使用原生UI，就是把android平台和ios平台的音视频SDK和UI代码全都集成到flutter项目中。这种方案的问题是引入的无关代码太多，且原生UI无法修改，跟flutter互通也很不方便，不利于二次开发。
+2. 方案2：是使用原生的音视频SDK，但UI层使用dart语言编写，UI和SDK使用flutter插件的方式沟通。这种方案引入的SDK比较小，且修改方便，有利于大家做自定义。
+
+我们在2023.11.29日起，正式采用方案2，同时方案1保留在```uikit```分支。已经使用方案1的用户可以继续使用```uikit```的分支，如果有需求可以切换到```master```分支去，以后我们的开发重点将会放到```master```分支上去。
+
 ## 一些知识要点
 
 1. 获取token的过程一定是先从客户端获取clientId，然后应用服务使用clientId和userId参数获取token，返回给当前客户端使用。即token是和客户端绑定的，该token仅能在当前客户端使用。
 2. 获取用户/群组/频道信息时，都是直接返回本地数据，如果本地没有会返回null且去服务器更新，更新成功后会有eventbus通知。编写UI代码时需要考虑到获取信息为空的可能，并做好监听，以便信息更新能更新UI。
 3. 展示消息是分批获取的，先获取最新的一部分，然后列表滚动式再加载下一批，以此类推。
+4. 免费版本音视频需要用到turn服务，上线前请部署自己的turn服务，野火提供开发的带宽比较小无法支持商用。
+5. IM服务init时可以传入各种事件的回调，另外基本上每个事件都会同时触发EventBus事件通知，当需要某个通知时也可以用EventBus事件，所有事件定义在```imclient.dart```文件中，比如```ConnectionStatusChangedEvent```是连接状态变化事件。其他事件可以在这附近找到。
