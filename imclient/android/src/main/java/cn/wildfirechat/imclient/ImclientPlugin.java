@@ -1082,9 +1082,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     private void getUserInfoAsync(@NonNull MethodCall call, @NonNull Result result) {
         final int requestId = call.argument("requestId");
         String userId = call.argument("userId");
+        String groupId = call.argument("groupId");
         boolean refresh = call.argument("refresh");
 
-        ChatManager.Instance().getUserInfo(userId, refresh, new GetUserInfoCallback() {
+        ChatManager.Instance().getUserInfo(userId, groupId, refresh, new GetUserInfoCallback() {
             @Override
             public void onSuccess(UserInfo userInfo) {
                 callbackBuilder(requestId).put("user", convertUserInfo(userInfo)).success("getUserInfoAsyncCallback");

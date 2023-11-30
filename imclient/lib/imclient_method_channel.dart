@@ -2124,12 +2124,15 @@ class ImclientPlatform extends PlatformInterface {
       String userId,
       OperationSuccessUserInfoCallback successCallback,
       OperationFailureCallback errorCallback,
-      {bool refresh = false}) {
+      {String? groupId, bool refresh = false}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
-    methodChannel.invokeMethod(
-        "getUserInfoAsync", {"requestId": requestId, "userId": userId, "refresh":refresh});
+    Map args = {"requestId": requestId, "userId": userId, "refresh":refresh};
+    if(groupId != null) {
+      args["groupId"] = groupId;
+    }
+    methodChannel.invokeMethod("getUserInfoAsync", args);
   }
 
   ///是否是好友

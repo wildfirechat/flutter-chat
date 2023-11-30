@@ -905,8 +905,8 @@ class Imclient {
       String userId,
       OperationSuccessUserInfoCallback successCallback,
       OperationFailureCallback errorCallback,
-      {bool refresh = false}) {
-    ImclientPlatform.instance.getUserInfoAsync(userId, successCallback, errorCallback, refresh: refresh);
+      {String? groupId, bool refresh = false}) {
+    ImclientPlatform.instance.getUserInfoAsync(userId, successCallback, errorCallback, refresh: refresh, groupId: groupId);
   }
 
   ///是否是好友
