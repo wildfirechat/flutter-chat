@@ -672,9 +672,10 @@ ImclientPlugin *gIMClientInstance;
 - (void)getUserInfoAsync:(NSDictionary *)dict result:(FlutterResult)result {
     int requestId = [dict[@"requestId"] intValue];
     NSString *userId = dict[@"userId"];
+    NSString *groupId = dict[@"groupId"];
     BOOL refresh = [dict[@"refresh"] boolValue];
     
-    [[WFCCIMService sharedWFCIMService] getUserInfo:userId refresh:refresh success:^(WFCCUserInfo *userInfo) {
+    [[WFCCIMService sharedWFCIMService] getUserInfo:userId groupId:groupId refresh:refresh success:^(WFCCUserInfo *userInfo) {
         [self.channel invokeMethod:@"getUserInfoAsyncCallback" arguments:@{@"requestId":@(requestId), @"user":[userInfo toJsonObj]}];
     } error:^(int errorCode) {
         [self callbackOperationFailure:requestId errorCode:errorCode];
