@@ -197,6 +197,36 @@ Imclient.setDeviceToken(pushType, deviceToken);
 
 我们在2023.11.29日起，正式采用方案2，同时方案1保留在```native-rtc-ui```分支。已经使用方案1的用户可以继续使用```native-rtc-ui```的分支，如果有需求可以切换到```master```分支去，以后我们的开发重点将会放到```master```分支上去。
 
+## 截图
+会话列表
+
+<img alt="会话列表" height="640" src="./screenshots/conversation_list.png" width="295"/>
+
+消息界面
+
+<img alt="消息界面" height="640" src="./screenshots/message_screen.png" width="295"/>
+
+联系人列表
+
+<img alt="联系人列表" height="640" src="./screenshots/contacts.png" width="295"/>
+
+发现界面
+
+<img alt="发现界面" height="640" src="./screenshots/discover.png" width="295"/>
+
+设置界面
+
+<img alt="设置界面" height="640" src="./screenshots/settings.png" width="295"/>
+
+单人视频通话
+
+<img alt="单人视频通话" height="640" src="./screenshots/video_call_1v1.png" width="295"/>
+
+多人视频通话
+
+<img alt="多人视频通话" height="640" src="./screenshots/video_call_multi.png" width="295"/>
+
+
 ## 一些知识要点
 
 1. 获取token的过程一定是先从客户端获取clientId，然后应用服务使用clientId和userId参数获取token，返回给当前客户端使用。即token是和客户端绑定的，该token仅能在当前客户端使用。
