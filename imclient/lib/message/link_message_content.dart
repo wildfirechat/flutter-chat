@@ -34,9 +34,15 @@ class LinkMessageContent extends MediaMessageContent {
     if(payload.binaryContent != null) {
       Map<dynamic, dynamic> map = json.decode(
           utf8.decode(payload.binaryContent!));
-      contentDigest = map['d'];
-      url = map['u'];
-      thumbnailUrl = map['t'];
+      if(map.containsKey('d')) {
+        contentDigest = map['d'];
+      }
+      if(map.containsKey('u')) {
+        url = map['u'];
+      }
+      if(map.containsKey('t')) {
+        thumbnailUrl = map['t'];
+      }
     } else {
       url = "";
       contentDigest = "";
