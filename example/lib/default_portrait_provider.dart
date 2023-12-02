@@ -13,7 +13,7 @@ class WFPortraitProvider extends DefaultPortraitProvider {
     } else {
       List<Map<String, String>> reqMembers = [];
       for (var userInfo in userInfos) {
-        if(userInfo.portrait != null && userInfo.portrait!.isNotEmpty) {
+        if(userInfo.portrait != null && userInfo.portrait!.isNotEmpty && !userInfo.portrait!.contains("avatar?name=")) {
           reqMembers.add({"avatarUrl":userInfo.portrait!});
         } else {
           reqMembers.add({"name":userInfo.displayName!});

@@ -1085,7 +1085,9 @@ class ImclientPlatform extends PlatformInterface {
     groupMember.groupId = map['groupId'];
     groupMember.memberId = map['memberId'];
     groupMember.alias = map['alias'];
+    if(groupMember.alias == '') groupMember.alias = null;
     groupMember.extra = map['extra'];
+    if(groupMember.extra == '') groupMember.extra = null;
 
     if (map['updateDt'] != null) groupMember.updateDt = map['updateDt'];
     if (map['createDt'] != null) groupMember.createDt = map['createDt'];
@@ -1117,14 +1119,23 @@ class ImclientPlatform extends PlatformInterface {
     userInfo.displayName = map['displayName'];
     if (map['gender'] != null) userInfo.gender = map['gender'];
     userInfo.portrait = map['portrait'];
+    if(userInfo.portrait == '') userInfo.portrait = null;
     userInfo.mobile = map['mobile'];
+    if(userInfo.mobile == '') userInfo.mobile = null;
     userInfo.email = map['email'];
+    if(userInfo.email == '') userInfo.email = null;
     userInfo.address = map['address'];
+    if(userInfo.address == '') userInfo.address = null;
     userInfo.company = map['company'];
+    if(userInfo.company == '') userInfo.company = null;
     userInfo.social = map['social'];
+    if(userInfo.social == '') userInfo.social = null;
     userInfo.extra = map['extra'];
+    if(userInfo.extra == '') userInfo.extra = null;
     userInfo.friendAlias = map['friendAlias'];
+    if(userInfo.friendAlias == '') userInfo.friendAlias = null;
     userInfo.groupAlias = map['groupAlias'];
+    if(userInfo.groupAlias == '') userInfo.groupAlias = null;
     if (map['updateDt'] != null) userInfo.updateDt = map['updateDt'];
     if (map['type'] != null) userInfo.type = map['type'];
     if (map['deleted'] != null) userInfo.deleted = map['deleted'];
@@ -2395,7 +2406,7 @@ class ImclientPlatform extends PlatformInterface {
   @override
   Future<GroupMember?> getGroupMember(
       String groupId, String memberId) async {
-    Map<dynamic, dynamic> datas = await methodChannel.invokeMethod(
+    Map<dynamic, dynamic>? datas = await methodChannel.invokeMethod(
         "getGroupMember", {"groupId": groupId, "memberId": memberId});
     return _convertProtoGroupMember(datas);
   }

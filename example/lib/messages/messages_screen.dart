@@ -36,6 +36,7 @@ import 'package:wfc_example/messages/picture_overview.dart';
 import 'package:wfc_example/messages/video_player_view.dart';
 
 import '../contact/contact_select_page.dart';
+import '../user_info_widget.dart';
 import 'message_cell.dart';
 import 'message_model.dart';
 
@@ -667,6 +668,10 @@ class _State extends State<MessagesScreen> {
 
   void onPortraitTaped(MessageModel model) {
     debugPrint("on taped portrait");
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => UserInfoWidget(model.message.fromUser)),
+    );
   }
 
   void onPortraitLongTaped(MessageModel model) {

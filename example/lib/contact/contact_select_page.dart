@@ -73,7 +73,11 @@ class _ContactListWidgetState extends State<ContactSelectPage> {
       disabledSelectedCount = widget.disabledCheckedUsers!.length;
     }
     if(selectCount- disabledSelectedCount > 0) {
-      text = '完成($selectCount/${widget.maxSelected < selected.length ? widget.maxSelected : selected.length})';
+      if(widget.maxSelected == 0) {
+        text = '完成($selectCount)';
+      } else {
+        text = '完成($selectCount/${widget.maxSelected < selected.length ? widget.maxSelected : selected.length})';
+      }
     } else {
       text = '取消';
     }
