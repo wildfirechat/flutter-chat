@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
@@ -7,6 +10,13 @@ import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:wfc_example/config.dart';
+import 'package:wfc_example/messages/messages_screen.dart';
+
+import '../contact/contact_select_page.dart';
+import '../user_info_widget.dart';
+import 'conversation_setting_all_members_view.dart';
+import 'conversation_setting_members_view.dart';
 
 class ConversationSettingPage extends StatefulWidget {
   ConversationSettingPage(this.conversation, {Key? key}) : super(key: key);
@@ -30,7 +40,7 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
       modelList = [
         //title, has section, key, center, right arrow
         ['成员列表', false, "member_list", false, false],
-        ['查找聊天内容', false, 'search', false, true],
+        ['查找聊天内容', true, 'search', false, true],
         ['会话文件', false, 'files', false, true],
 
         ['消息免打扰', true, 'mute', false, false],
@@ -66,7 +76,7 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
           modelList = [
             //title, has section, key, center, right arrow
             ['成员列表', false, 'member_list', false, false],
-            ['群聊名称', false, 'group_name', false, true],
+            ['群聊名称', true, 'group_name', false, true],
             ['群二维码', false, 'group_qrcode', false, true],
             ['群公告', false, 'group_announcement', false, true],
             ['群备注', false, 'group_remark', false, true],
@@ -133,11 +143,34 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
     });
   }
 
+  late StreamSubscription<GroupMembersUpdatedEvent> _groupMembersUpdatedSubscription;
+  late StreamSubscription<GroupInfoUpdatedEvent> _groupInfoUpdatedSubscription;
+  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
+  final EventBus _eventBus = Imclient.IMEventBus;
+
+  ConversationSettingMembersWidget? conversationSettingMembersWidget;
+
   @override
   void initState() {
     super.initState();
+
+    // if(widget.conversation.conversationType == ConversationType.Single) {
+    //   _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
+    //
+    //   });
+    // } else if(widget.conversation.conversationType == ConversationType.Group) {
+    //   _groupInfoUpdatedSubscription = _eventBus.on<GroupInfoUpdatedEvent>().listen((event) {
+    //
+    //   });
+    //   _groupMembersUpdatedSubscription = _eventBus.on<GroupMembersUpdatedEvent>().listen((event) {
+    //     setState(() {
+    //       debugPrint("update here");
+    //     });
+    //   });
+    // }
     _loadData();
   }
+
 
   void _loadData() {
     Imclient.getConversationInfo(widget.conversation).then((conv) {
@@ -177,16 +210,34 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
     bool center = modelList[index][3];
     bool arrow = modelList[index][4];
 
+    conversationSettingMembersWidget ??= ConversationSettingMembersWidget(widget.conversation,
+        onItemClicked:(userId) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => UserInfoWidget(userId)),
+          );
+        },
+        onPlusItemClicked:_onPlusItemClicked,
+        onMinusItemClicked:_onMinusItemClicked,
+        onShowMoreClicked: (groupMembers, hasPlus, hasMinus) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => GroupAllMembersWidget(widget.conversation.target, groupMembers, hasPlus, hasMinus)),
+          );
+        },
+      );
+
     return GestureDetector(child: Column(children: [
       Container(
         height: hasSection?18:0,
         width: View.of(context).physicalSize.width,
         color: const Color(0xffebebeb),
       ),
+      key == 'member_list'?conversationSettingMembersWidget!:
       Container(
         margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
         height: 36,
-        child: center?Center(child: Text(title, style: const TextStyle(color: Colors.red),)):Row(children: [Text(title), Expanded(child: Container()), _rowRight(key), arrow?const Icon(Icons.chevron_right):Container()],),
+        child: (center?Center(child: Text(title, style: const TextStyle(color: Colors.red),)):Row(children: [Text(title), Expanded(child: Container()), _rowRight(key), arrow?const Icon(Icons.chevron_right):Container()],)),
       ),
       Container(
         margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
@@ -203,6 +254,94 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
           Fluttertoast.showToast(msg: "方法没有实现");
         }
       },);
+  }
+
+  void _onMinusItemClicked() {
+    Imclient.getGroupMembers(widget.conversation.target).then((value) {
+      if(value.isNotEmpty) {
+        List<String> memberIds = [];
+        for (var value1 in value) {
+          memberIds.add(value1.memberId);
+        }
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) =>
+              ContactSelectPage((context, members) async {
+                if(members.isEmpty) {
+                  Navigator.pop(context);
+                } else {
+                  Imclient.kickoffGroupMembers(
+                      widget.conversation.target, members, () {
+                    Navigator.pop(context);
+                    Future.delayed(const Duration(milliseconds: 100), (){
+                      setState(() {
+
+                      });
+                    });
+                  }, (
+                      errorCode) {});
+                }
+              }, disabledUncheckedUsers: [Imclient.currentUserId],
+                candidates: memberIds,
+              )),
+        );
+
+      }
+    });
+  }
+  void _onPlusItemClicked() {
+    if(widget.conversation.conversationType == ConversationType.Group) {
+      Imclient.getGroupMembers(widget.conversation.target).then((value) {
+        if (value.isNotEmpty) {
+          List<String> memberIds = [];
+          for (var value1 in value) {
+            memberIds.add(value1.memberId);
+          }
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) =>
+                ContactSelectPage((context, members) async {
+                  if(members.isEmpty) {
+                    Navigator.pop(context);
+                    return;
+                  }
+                  Imclient.addGroupMembers(
+                      widget.conversation.target, members, () {
+                    Navigator.pop(context);
+                    Future.delayed(const Duration(milliseconds: 100), (){
+                      setState(() {
+
+                      });
+                    });
+                  }, (errorCode) {
+                    Fluttertoast.showToast(msg: "网络错误");
+                  });
+                }, disabledUncheckedUsers: memberIds
+                )),
+          );
+        }
+      }
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ContactSelectPage((context, members) async {
+          Navigator.pop(context);
+          if(members.isNotEmpty) {
+            Imclient.createGroup(null, null, null, 2, members, (strValue) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => MessagesScreen(Conversation(conversationType: ConversationType.Group, target: strValue))),
+              );
+            }, (errorCode) {
+              Fluttertoast.showToast(msg: "网络错误");
+            });
+          }
+        },
+          disabledCheckedUsers: [widget.conversation.target],
+        )),
+      );
+    }
   }
 
   Widget _rowRight(String key) {

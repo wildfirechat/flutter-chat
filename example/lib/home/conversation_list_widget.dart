@@ -382,6 +382,7 @@ class ConversationListItemState extends State<ConversationListItem> {
       }
       localPortrait = Config.defaultUserPortrait;
     } else if(widget.conversationInfo.conversation.conversationType == ConversationType.Group) {
+      convTitle = '群聊';
       if(groupInfo != null) {
         if(groupInfo!.portrait != null && groupInfo!.portrait!.isNotEmpty) {
           portrait = groupInfo!.portrait!;
@@ -389,8 +390,6 @@ class ConversationListItemState extends State<ConversationListItem> {
         if(groupInfo!.name != null && groupInfo!.name!.isNotEmpty) {
           convTitle = groupInfo!.name!;
         }
-      } else {
-        convTitle = '群聊';
       }
       localPortrait = Config.defaultGroupPortrait;
     } else if(widget.conversationInfo.conversation.conversationType == ConversationType.Channel) {
