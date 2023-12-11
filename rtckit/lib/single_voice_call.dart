@@ -61,6 +61,11 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         }
       });
     } else {
+      if(widget.callSession!.state == kWFAVEngineStateIdle) {
+        Navigator.pop(context);
+        return;
+      }
+
       widget.userId = widget.callSession?.conversation!.target;
       if(!widget.callSession!.audioOnly) {
         createVideoView();

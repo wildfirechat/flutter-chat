@@ -60,6 +60,11 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
         }
       });
     } else {
+      if(widget.callSession!.state == kWFAVEngineStateIdle) {
+        Navigator.pop(context);
+        return;
+      }
+
       widget.groupId = widget.callSession?.conversation!.target;
       widget.callSession!.participantIds.then((value) {
         setState(() {
