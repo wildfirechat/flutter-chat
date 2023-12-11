@@ -57,19 +57,26 @@ class _MyAppState extends State<MyApp> {
   Future<void> _initIMClient() async {
     Rtckit.init(
         didReceiveCallCallback: (callSession) {
-          //收到来电通知，原生代码会自动弹出来电界面。如果在后台，这里要弹出本地通知，本地通知带上震铃声。
-          debugPrint('didReceiveCallCallback: ${callSession.callId}');
-          if(callSession.conversation!.conversationType == ConversationType.Single) {
-            SingleVideoCallView callView = SingleVideoCallView(
-                callSession: callSession);
-            navKey.currentState!.push(
-                MaterialPageRoute(builder: (context) => callView));
-          } else if(callSession.conversation!.conversationType == ConversationType.Group) {
-            GroupVideoCallView callView = GroupVideoCallView(
-                callSession: callSession);
-            navKey.currentState!.push(
-                MaterialPageRoute(builder: (context) => callView));
-          }
+          //收到来电请求后，延迟100毫秒，判断是否来电已经结束，解决离线时先拨打再挂掉的问题。
+          Future.delayed(const Duration(milliseconds: 100), () {
+            //收到来电通知，原生代码会自动弹出来电界面。如果在后台，这里要弹出本地通知，本地通知带上震铃声。
+            debugPrint('didReceiveCallCallback: ${callSession.callId}');
+            Rtckit.currentCallSession().then((cs) {
+              if(cs != null && cs.state == kWFAVEngineStateIncoming) {
+                if(cs.conversation!.conversationType == ConversationType.Single) {
+                  SingleVideoCallView callView = SingleVideoCallView(
+                      callSession: cs);
+                  navKey.currentState!.push(
+                      MaterialPageRoute(builder: (context) => callView));
+                } else if(cs.conversation!.conversationType == ConversationType.Group) {
+                  GroupVideoCallView callView = GroupVideoCallView(
+                      callSession: cs);
+                  navKey.currentState!.push(
+                      MaterialPageRoute(builder: (context) => callView));
+                }
+              }
+            });
+          });
         },
         shouldStartRingCallback: (incoming) {
           //原生代码通知上层播放铃声。如果在后台就开始震动，如果在前台就播放铃声。这样做的原因是有些系统限制后台播放声音。
