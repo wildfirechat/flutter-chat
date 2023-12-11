@@ -227,65 +227,71 @@ class _State extends State<MessagesScreen> {
       return;
     }
 
-    if(widget.conversation.conversationType == ConversationType.Single) {
-      final double centerX = MediaQuery.of(context).size.width / 2;
-      final double centerY = MediaQuery.of(context).size.height / 2;
+    Rtckit.currentCallSession().then((currentSession) {
+      if(currentSession == null || currentSession.state == kWFAVEngineStateIdle) {
+        if(widget.conversation.conversationType == ConversationType.Single) {
+          final double centerX = MediaQuery.of(context).size.width / 2;
+          final double centerY = MediaQuery.of(context).size.height / 2;
 
-      // 计算菜单位置
-      const double menuWidth = 150.0; // 菜单的宽度
-      const double menuHeight = 100.0; // 菜单的高度
-      final double left = centerX - (menuWidth / 2) - 36;
-      final double top = centerY - (menuHeight / 2) - 24;
+          // 计算菜单位置
+          const double menuWidth = 150.0; // 菜单的宽度
+          const double menuHeight = 100.0; // 菜单的高度
+          final double left = centerX - (menuWidth / 2) - 36;
+          final double top = centerY - (menuHeight / 2) - 24;
 
-      showMenu(
-        context: context,
-        position: RelativeRect.fromLTRB(left, top, left + menuWidth, top + menuHeight),
-        items: <PopupMenuEntry<String>>[
-          const PopupMenuItem<String>(
-            value: 'voice',
-            child: SizedBox(width: menuWidth, child: Text('音频通话'),),
-          ),
-          const PopupMenuItem<String>(
-            value: 'video',
-            child: SizedBox(width: menuWidth, child: Text('视频通话'),),
-          ),
-        ],
-      ).then((value) {
-        if(value == null) {
-          return;
-        }
-
-        bool isAudioOnly = value == 'voice';
-        SingleVideoCallView callView = SingleVideoCallView(userId:widget.conversation.target, audioOnly:isAudioOnly);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
-      });
-    } else if(widget.conversation.conversationType == ConversationType.Group) {
-      Imclient.getGroupMembers(widget.conversation.target).then((groupMembers) {
-        List<String> members = [];
-        for(var gm in groupMembers) {
-          members.add(gm.memberId);
-        }
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ContactSelectPage((context, members) async {
-            if(members.isEmpty) {
-              Fluttertoast.showToast(msg: "请选择一位或者多位成员发起通话");
-            } else {
-              GroupVideoCallView callView = GroupVideoCallView(groupId: widget.conversation.target, participants: members);
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => callView),
-              );
+          showMenu(
+            context: context,
+            position: RelativeRect.fromLTRB(left, top, left + menuWidth, top + menuHeight),
+            items: <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'voice',
+                child: SizedBox(width: menuWidth, child: Text('音频通话'),),
+              ),
+              const PopupMenuItem<String>(
+                value: 'video',
+                child: SizedBox(width: menuWidth, child: Text('视频通话'),),
+              ),
+            ],
+          ).then((value) {
+            if(value == null) {
+              return;
             }
-          },
-            maxSelected: Rtckit.maxAudioCallCount,
-            candidates: members,
-            disabledCheckedUsers: [Imclient.currentUserId],
-          )),
-        );
-      });
-    }
+
+            bool isAudioOnly = value == 'voice';
+            SingleVideoCallView callView = SingleVideoCallView(userId:widget.conversation.target, audioOnly:isAudioOnly);
+            Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
+          });
+        } else if(widget.conversation.conversationType == ConversationType.Group) {
+          Imclient.getGroupMembers(widget.conversation.target).then((groupMembers) {
+            List<String> members = [];
+            for(var gm in groupMembers) {
+              members.add(gm.memberId);
+            }
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ContactSelectPage((context, members) async {
+                if(members.isEmpty) {
+                  Fluttertoast.showToast(msg: "请选择一位或者多位成员发起通话");
+                } else {
+                  GroupVideoCallView callView = GroupVideoCallView(groupId: widget.conversation.target, participants: members);
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => callView),
+                  );
+                }
+              },
+                maxSelected: Rtckit.maxAudioCallCount,
+                candidates: members,
+                disabledCheckedUsers: [Imclient.currentUserId],
+              )),
+            );
+          });
+        }
+      } else {
+        Fluttertoast.showToast(msg: "正在通话中，无法再次发起！");
+      }
+    });
   }
 
   void _onPressCardBtn() {
