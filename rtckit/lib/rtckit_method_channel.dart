@@ -315,7 +315,7 @@ class RtckitPlatform extends PlatformInterface {
   }
 
   Future<CallSession?> currentCallSession() async {
-    Map<dynamic, dynamic> map = await methodChannel.invokeMethod('currentCallSession');
+    Map<dynamic, dynamic>? map = await methodChannel.invokeMethod('currentCallSession');
     return sessionFromMap(map);
   }
 
