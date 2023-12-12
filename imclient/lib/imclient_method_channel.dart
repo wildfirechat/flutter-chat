@@ -2623,6 +2623,7 @@ class ImclientPlatform extends PlatformInterface {
     Map<String, dynamic> args = {
       "requestId": requestId,
       "groupId": groupId,
+      "memberId": memberId,
       "newAlias": newAlias
     };
 
