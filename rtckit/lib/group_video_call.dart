@@ -1,7 +1,3 @@
-import 'package:flutter/foundation.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
@@ -244,7 +240,7 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
   }
 
   Widget userPortraitAndName(BuildContext context) {
-      return Padding(padding: EdgeInsets.only(top: 80), child: Column(
+      return Padding(padding: const EdgeInsets.only(top: 80), child: Column(
         mainAxisSize:MainAxisSize.min,
         children: [
           ClipRRect(

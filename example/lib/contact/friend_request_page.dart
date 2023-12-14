@@ -82,13 +82,13 @@ class FriendRequestPageState extends State<FriendRequestPage> {
       padding: const EdgeInsets.all(8),
       child: Row(
         children: [
-          (userInfo == null || userInfo!.portrait == null || userInfo!.portrait!.isEmpty) ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(userInfo!.portrait!, width: 40, height: 40,),
+          (userInfo == null || userInfo.portrait == null || userInfo.portrait!.isEmpty) ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(userInfo.portrait!, width: 40, height: 40,),
           const Padding(padding: EdgeInsets.all(8)),
           Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(userInfo != null?userInfo!.getReadableName():"<${request.target}>"),
+                  Text(userInfo != null?userInfo.getReadableName():"<${request.target}>"),
                   Text(request.reason??""),
                 ],
               ),

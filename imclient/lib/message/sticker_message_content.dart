@@ -7,7 +7,7 @@ import 'message.dart';
 import 'message_content.dart';
 // ignore: non_constant_identifier_names
 MessageContent StickerMessageContentCreator() {
-  return new StickerMessageContent();
+  return StickerMessageContent();
 }
 
 const stickerContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_STICKER,

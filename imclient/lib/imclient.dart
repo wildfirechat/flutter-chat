@@ -41,7 +41,6 @@ import 'message/sound_message_content.dart';
 import 'message/sticker_message_content.dart';
 import 'message/text_message_content.dart';
 import 'message/typing_message_content.dart';
-import 'message/unknown_message_content.dart';
 import 'message/video_message_content.dart';
 import 'model/channel_info.dart';
 import 'model/chatroom_info.dart';

@@ -141,7 +141,9 @@ class MethodChannelMomentClient extends PlatformInterface {
           }
           break;
         default:
-          print("Unknown event:${call.method}");
+          if (kDebugMode) {
+            print("Unknown event:${call.method}");
+          }
           //should not be here!
           break;
       }

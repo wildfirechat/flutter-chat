@@ -92,99 +92,81 @@ class ImclientPlatform extends PlatformInterface {
   late String userId;
 
   // ignore: non_constant_identifier_names
-  @override
   EventBus get IMEventBus {
     return _eventBus;
   }
 
   ///客户端ID，客户端的唯一标示。获取IM Token时必须带上正确的客户端ID，否则会无法连接成功。
-  @override
   Future<String> get clientId async {
     return await methodChannel.invokeMethod('getClientId');
   }
 
   ///客户端是否调用过connect
-  @override
   Future<bool> get isLogined async {
     return await methodChannel.invokeMethod('isLogined');
   }
 
   ///连接状态
-  @override
   Future<int> get connectionStatus async {
     return await methodChannel.invokeMethod('connectionStatus');
   }
 
   ///当前用户ID
-  @override
   String get currentUserId {
     return userId;
   }
 
   ///当前服务器与客户端时间的差值，单位是毫秒，只能是初略估计，不精确。
-  @override
   Future<int> get serverDeltaTime async {
     return await methodChannel.invokeMethod('serverDeltaTime');
   }
 
   ///开启协议栈日志
-  @override
   Future<void> startLog() async {
     await methodChannel.invokeMethod('startLog');
   }
 
   ///结束协议栈日志
-  @override
   Future<void> stopLog() async {
     await methodChannel.invokeMethod('stopLog');
   }
 
-  @override
   Future<void> setSendLogCommand(String sendLogCmd) async {
     await methodChannel.invokeMethod('setSendLogCommand', {"cmd":sendLogCmd});
   }
 
-  @override
   Future<void> useSM4() async {
     await methodChannel.invokeMethod('useSM4');
   }
 
-  @override
   Future<void> setLiteMode(bool liteMode) async {
     return methodChannel.invokeMethod('setLiteMode', {"liteMode":liteMode});
   }
 
-  @override
   Future<void> setDeviceToken(int pushType, String deviceToken) async {
     return methodChannel.invokeMethod('setDeviceToken', {"pushType":pushType, "deviceToken":deviceToken});
   }
 
-  @override
   Future<void> setVoipDeviceToken(String voipToken) async {
     return methodChannel.invokeMethod('setVoipDeviceToken', {"voipToken":voipToken});
   }
 
-  @override
   Future<void> setBackupAddressStrategy(int strategy) async {
     return methodChannel.invokeMethod('setBackupAddressStrategy', {"strategy":strategy});
   }
 
-  @override
   Future<void> setBackupAddress(String host, int port) async {
     return methodChannel.invokeMethod('setBackupAddress', {"host":host, "port":port});
   }
 
-  @override
   Future<void> setProtoUserAgent(String agent) async {
     return methodChannel.invokeMethod('setProtoUserAgent', {"agent":agent});
   }
 
-  @override
   Future<void> addHttpHeader(String header, String value) async {
     return methodChannel.invokeMethod('addHttpHeader', {"header":header, "value":value});
   }
 
-  @override
   Future<void> setProxyInfo(String host, String ip, int port, {String? userName, String? password}) async {
     Map<String, dynamic> args = {"host":host, "ip":ip, "port":port, "userName":userName, "password":password};
 
@@ -198,13 +180,11 @@ class ImclientPlatform extends PlatformInterface {
     return methodChannel.invokeMethod('setProxyInfo', args);
   }
 
-  @override
   Future<String> get protoRevision async {
     return await methodChannel.invokeMethod('getProtoRevision');
   }
 
   ///获取协议栈日志文件路径
-  @override
   Future<List<String>> get logFilesPath async {
     return Tools.convertDynamicList(await methodChannel.invokeMethod('getLogFilesPath'));
   }
@@ -215,7 +195,6 @@ class ImclientPlatform extends PlatformInterface {
 
   static DefaultPortraitProvider? defaultPortraitProvider;
 
-  @override
   void init(
       ConnectionStatusChangedCallback connectionStatusChangedCallback,
       ReceiveMessageCallback receiveMessageCallback,
@@ -713,7 +692,9 @@ class ImclientPlatform extends PlatformInterface {
           _removeAllOperationCallback(requestId);
           break;
         default:
-          print("Unknown event:${call.method}");
+          if (kDebugMode) {
+            print("Unknown event:${call.method}");
+          }
           //should not be here!
           break;
       }
@@ -741,7 +722,6 @@ class ImclientPlatform extends PlatformInterface {
     _operationSuccessCallbackMap.remove(requestId);
   }
 
-  @override
   void registerMessage(MessageContentMeta contentMeta) {
     _contentMetaMap[contentMeta.type] = contentMeta;
     Map<String, dynamic> map = {};
@@ -1301,7 +1281,6 @@ class ImclientPlatform extends PlatformInterface {
     return list;
   }
 
-  @override
   MessageContent decodeMessageContent(MessagePayload payload) {
     MessageContentMeta? meta = _contentMetaMap[payload.contentType];
     MessageContent content;
@@ -1314,7 +1293,9 @@ class ImclientPlatform extends PlatformInterface {
     try {
       content.decode(payload);
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
       content = UnknownMessageContent();
       content.decode(payload);
     }
@@ -1326,7 +1307,6 @@ class ImclientPlatform extends PlatformInterface {
 
   /// 连接IM服务。调用连接之后才可以调用获取数据接口。连接状态会通过连接状态回调返回。
   /// [host]为IM服务域名或IP，必须im.example.com或114.144.114.144，不带http头和端口。
-  @override
   Future<int> connect(String host, String userId, String token) async {
     this.userId = userId;
     int lastConnectTime = await methodChannel.invokeMethod('connect', {'host':host, 'userId':userId, 'token':token});
@@ -1336,14 +1316,12 @@ class ImclientPlatform extends PlatformInterface {
   ///断开IM服务连接。
   /// * disablePush 是否继续接受推送。
   /// * clearSession 是否清除session
-  @override
   Future<void> disconnect(
       {bool disablePush = false, bool clearSession = false}) async {
     await methodChannel.invokeMethod('disconnect', {'disablePush':disablePush, 'clearSession':clearSession});
   }
 
   ///获取会话列表
-  @override
   Future<List<ConversationInfo>> getConversationInfos(
       List<ConversationType> types, List<int> lines) async {
     List<int> itypes = [];
@@ -1361,7 +1339,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取会话信息
-  @override
   Future<ConversationInfo> getConversationInfo(
       Conversation conversation) async {
     var args = _convertConversation(conversation);
@@ -1372,7 +1349,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///搜索会话信息
-  @override
   Future<List<ConversationSearchInfo>> searchConversation(
       String keyword, List<ConversationType> types, List<int> lines) async {
     List<int> itypes = [];
@@ -1390,7 +1366,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///移除会话
-  @override
   Future<void> removeConversation(
       Conversation conversation, bool clearMessage) async {
     Map<String, dynamic> args = {};
@@ -1400,7 +1375,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置/取消会话置顶
-  @override
   void setConversationTop(
       Conversation conversation,
       int isTop,
@@ -1421,7 +1395,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置/取消会话免到扰
-  @override
   void setConversationSilent(
       Conversation conversation,
       bool isSilent,
@@ -1442,7 +1415,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///保存草稿
-  @override
   Future<void> setConversationDraft(
       Conversation conversation, String draft) async {
     Map<String, dynamic> args = {};
@@ -1453,7 +1425,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置会话时间戳
-  @override
   Future<void> setConversationTimestamp(
       Conversation conversation, int timestamp) async {
     Map<String, dynamic> args = {};
@@ -1463,7 +1434,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置会话中第一个未读消息ID
-  @override
   Future<int> getFirstUnreadMessageId(Conversation conversation) async {
     int msgId = await methodChannel.invokeMethod("getFirstUnreadMessageId",
         {"conversation": _convertConversation(conversation)});
@@ -1471,7 +1441,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置会话未读状态
-  @override
   Future<UnreadCount> getConversationUnreadCount(
       Conversation conversation) async {
     Map<dynamic, dynamic> datas = await methodChannel.invokeMethod(
@@ -1481,7 +1450,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置某些类型会话未读状态
-  @override
   Future<UnreadCount> getConversationsUnreadCount(
       List<ConversationType> types, List<int> lines) async {
     List<int> itypes = [];
@@ -1498,7 +1466,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///清除一个会话的未读状态
-  @override
   Future<bool> clearConversationUnreadStatus(
       Conversation conversation) async {
     bool ret = await methodChannel.invokeMethod('clearConversationUnreadStatus',
@@ -1510,7 +1477,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///清除某些类型会话的未读状态
-  @override
   Future<bool> clearConversationsUnreadStatus(
       List<ConversationType> types, List<int> lines) async {
     List<int> itypes = [];
@@ -1530,7 +1496,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///清除一个会话的未读状态
-  @override
   Future<bool> clearConversationUnreadStatusBeforeMessage(
       Conversation conversation, int messageId) async {
     bool ret = await methodChannel.invokeMethod('clearConversationUnreadStatus',
@@ -1542,18 +1507,15 @@ class ImclientPlatform extends PlatformInterface {
   }
 
 
-  @override
   Future<bool> clearMessageUnreadStatus(int messageId) async {
     return await methodChannel.invokeMethod('clearMessageUnreadStatus', {"messageId":messageId});
   }
 
-  @override
   Future<bool> markAsUnRead(Conversation conversation, bool sync) async {
     return await methodChannel.invokeMethod('markAsUnRead', {'conversation': _convertConversation(conversation), "sync":sync});
   }
   
   ///获取会话的已读状态
-  @override
   Future<Map<String, int>> getConversationRead(
       Conversation conversation) async {
     Map<dynamic, dynamic> datas = await methodChannel.invokeMethod(
@@ -1567,7 +1529,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取会话的消息送达状态
-  @override
   Future<Map<String, int>> getMessageDelivery(
       Conversation conversation) async {
     Map<dynamic, dynamic> datas = await methodChannel.invokeMethod(
@@ -1581,7 +1542,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取会话的消息列表
-  @override
   Future<List<Message>> getMessages(
       Conversation conversation, int fromIndex, int count,
       {List<int>? contentTypes, String? withUser}) async {
@@ -1602,7 +1562,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///根据消息状态获取会话的消息列表
-  @override
   Future<List<Message>> getMessagesByStatus(Conversation conversation,
       int fromIndex, int count, List<MessageStatus>? messageStatus,
       {String? withUser}) async {
@@ -1626,7 +1585,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取某些类型会话的消息列表
-  @override
   Future<List<Message>> getConversationsMessages(
       List<ConversationType> types, List<int> lines, int fromIndex, int count,
       {List<int>? contentTypes, String? withUser}) async {
@@ -1657,7 +1615,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///根据消息状态获取某些类型会话的消息列表
-  @override
   Future<List<Message>> getConversationsMessageByStatus(
       List<ConversationType> types,
       List<int> lines,
@@ -1691,7 +1648,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取远端历史消息
-  @override
   void getRemoteMessages(
       Conversation conversation,
       int beforeMessageUid,
@@ -1716,7 +1672,6 @@ class ImclientPlatform extends PlatformInterface {
     methodChannel.invokeMethod("getRemoteMessages", args);
   }
 
-  @override
   void getRemoteMessage(
       int messageUid,
       OperationSuccessMessageCallback successCallback,
@@ -1729,7 +1684,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///根据消息Id获取消息
-  @override
   Future<Message?> getMessage(int messageId) async {
     Map<dynamic, dynamic> datas = await methodChannel
         .invokeMethod("getMessage", {"messageId": messageId});
@@ -1737,7 +1691,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///根据消息Uid获取消息
-  @override
   Future<Message?> getMessageByUid(int messageUid) async {
     Map<dynamic, dynamic> datas = await methodChannel
         .invokeMethod("getMessageByUid", {"messageUid": messageUid});
@@ -1745,7 +1698,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///搜索某个会话内消息
-  @override
   Future<List<Message>> searchMessages(Conversation conversation,
       String keyword, bool order, int limit, int offset) async {
     List<dynamic> datas = await methodChannel.invokeMethod("searchMessages", {
@@ -1759,7 +1711,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///搜索某些类会话内消息
-  @override
   Future<List<Message>> searchConversationsMessages(
       List<ConversationType> types,
       List<int> lines,
@@ -1807,7 +1758,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///发送媒体类型消息
-  @override
   Future<Message> sendMediaMessage(
       Conversation conversation, MessageContent content,
       {List<String>? toUsers,
@@ -1848,7 +1798,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///发送已保存消息
-  @override
   Future<bool> sendSavedMessage(int messageId,
       {int expireDuration = 0,
         required SendMessageSuccessCallback successCallback,
@@ -1864,13 +1813,11 @@ class ImclientPlatform extends PlatformInterface {
     });
   }
 
-  @override
   Future<bool> cancelSendingMessage(int messageId) async {
     return await methodChannel.invokeMethod("cancelSendingMessage", {"messageId": messageId});
   }
 
   ///撤回消息
-  @override
   void recallMessage(
       int messageUid,
       OperationSuccessVoidCallback successCallback,
@@ -1893,7 +1840,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///上传媒体数据
-  @override
   void uploadMedia(
       String fileName,
       Uint8List mediaData,
@@ -1913,7 +1859,6 @@ class ImclientPlatform extends PlatformInterface {
     });
   }
 
-  @override
   void uploadMediaFile(
       String filePath,
       int mediaType,
@@ -1931,7 +1876,6 @@ class ImclientPlatform extends PlatformInterface {
     });
   }
 
-  @override
   void getMediaUploadUrl(
       String fileName,
       int mediaType,
@@ -1950,13 +1894,11 @@ class ImclientPlatform extends PlatformInterface {
     });
   }
 
-  @override
   Future<bool> isSupportBigFilesUpload() async {
     return await methodChannel.invokeMethod("isSupportBigFilesUpload");
   }
 
   ///删除消息
-  @override
   Future<bool> deleteMessage(int messageId) async {
     Message? message = await getMessage(messageId);
     if(message != null) {
@@ -1967,12 +1909,10 @@ class ImclientPlatform extends PlatformInterface {
     return message != null;
   }
 
-  @override
   Future<bool> batchDeleteMessages(List<int> messageUids) async {
     return await methodChannel.invokeMethod("batchDeleteMessages", {"messageUids":messageUids});
   }
 
-  @override
   void deleteRemoteMessage(
       int messageUid,
       OperationSuccessVoidCallback successCallback,
@@ -1985,7 +1925,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///清空会话内消息
-  @override
   Future<bool> clearMessages(Conversation conversation,
       {int before = 0}) async {
     bool ret = await methodChannel.invokeMethod("clearMessages", {
@@ -1997,7 +1936,6 @@ class ImclientPlatform extends PlatformInterface {
     return ret;
   }
 
-  @override
   void clearRemoteConversationMessage(Conversation conversation,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
@@ -2012,20 +1950,17 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置消息已经播放
-  @override
   Future<void> setMediaMessagePlayed(int messageId) async {
     await methodChannel.invokeMethod(
         "setMediaMessagePlayed", {"messageId": messageId});
   }
 
-  @override
   Future<bool> setMessageLocalExtra(int messageId, String localExtra) async {
     return await methodChannel.invokeMethod(
         "setMessageLocalExtra", {"messageId": messageId, "localExtra":localExtra});
   }
 
   ///插入消息
-  @override
   Future<Message> insertMessage(Conversation conversation, String sender,
       MessageContent content, int status, int serverTime, {List<String>? toUsers}) async {
     Map<dynamic, dynamic> datas = await methodChannel.invokeMethod("insertMessage", {
@@ -2039,7 +1974,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///更新消息内容
-  @override
   Future<void> updateMessage(
       int messageId, MessageContent content) async {
     await methodChannel.invokeMethod("updateMessage", {
@@ -2048,7 +1982,6 @@ class ImclientPlatform extends PlatformInterface {
     });
   }
 
-  @override
   void updateRemoteMessageContent(
       int messageUid, MessageContent content, bool distribute, bool updateLocal,
       OperationSuccessVoidCallback successCallback,
@@ -2067,7 +2000,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///更新消息状态
-  @override
   Future<void> updateMessageStatus(
       int messageId, MessageStatus status) async {
     await methodChannel.invokeMethod("updateMessageStatus",
@@ -2075,14 +2007,12 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取会话内消息数量
-  @override
   Future<int> getMessageCount(Conversation conversation) async {
     return await methodChannel.invokeMethod("getMessageCount",
         {'conversation': _convertConversation(conversation)});
   }
 
   ///获取用户信息
-  @override
   Future<UserInfo?> getUserInfo(String userId,
       {String? groupId, bool refresh = false}) async {
     var args = {"userId": userId, "refresh": refresh};
@@ -2096,7 +2026,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///批量获取用户信息
-  @override
   Future<List<UserInfo>> getUserInfos(List<String> userIds,
       {String? groupId}) async {
     var args = {};
@@ -2110,7 +2039,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///搜索用户
-  @override
   void searchUser(
       String keyword,
       int searchType,
@@ -2130,7 +2058,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///异步获取用户信息
-  @override
   void getUserInfoAsync(
       String userId,
       OperationSuccessUserInfoCallback successCallback,
@@ -2147,13 +2074,11 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///是否是好友
-  @override
   Future<bool> isMyFriend(String userId) async {
     return await methodChannel.invokeMethod("isMyFriend", {"userId": userId});
   }
 
   ///获取好友列表
-  @override
   Future<List<String>> getMyFriendList({bool refresh = false}) async {
     List<dynamic>? datas =
     await methodChannel.invokeMethod("getMyFriendList", {"refresh": refresh});
@@ -2161,14 +2086,12 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///搜索好友
-  @override
   Future<List<UserInfo>> searchFriends(String keyword) async {
     List<dynamic> datas =
     await methodChannel.invokeMethod("searchFriends", {"keyword": keyword});
     return _convertProtoUserInfos(datas);
   }
 
-  @override
   Future<List<Friend>> getFriends(bool refresh) async {
     List<dynamic> datas =
     await methodChannel.invokeMethod("getFriends", {"refresh": refresh});
@@ -2176,7 +2099,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///搜索群组
-  @override
   Future<List<GroupSearchInfo>> searchGroups(String keyword) async {
     List<dynamic> datas =
     await methodChannel.invokeMethod("searchGroups", {"keyword": keyword});
@@ -2184,7 +2106,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取收到的好友请求列表
-  @override
   Future<List<FriendRequest>> getIncommingFriendRequest() async {
     List<dynamic> datas =
     await methodChannel.invokeMethod("getIncommingFriendRequest");
@@ -2192,7 +2113,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取发出去的好友请求列表
-  @override
   Future<List<FriendRequest>> getOutgoingFriendRequest() async {
     List<dynamic> datas =
     await methodChannel.invokeMethod("getOutgoingFriendRequest");
@@ -2200,7 +2120,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取某个用户相关的好友请求
-  @override
   Future<FriendRequest?> getFriendRequest(
       String userId, FriendRequestDirection direction) async {
     Map<dynamic, dynamic>? data = await methodChannel.invokeMethod(
@@ -2209,19 +2128,16 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///同步远程好友请求信息
-  @override
   Future<void> loadFriendRequestFromRemote() async {
     await methodChannel.invokeMethod("loadFriendRequestFromRemote");
   }
 
   ///获取未读好友请求数
-  @override
   Future<int> getUnreadFriendRequestStatus() async {
     return await methodChannel.invokeMethod("getUnreadFriendRequestStatus");
   }
 
   ///清除未读好友请求计数
-  @override
   Future<bool> clearUnreadFriendRequestStatus() async {
     bool ret = await methodChannel.invokeMethod("clearUnreadFriendRequestStatus");
     if (ret) {
@@ -2230,13 +2146,12 @@ class ImclientPlatform extends PlatformInterface {
     return ret;
   }
 
-  @override
+
   Future<bool> clearFriendRequest(int direction, beforeTime) async {
     return await methodChannel.invokeMethod("clearFriendRequest", {"direction":direction, "beforeTime":beforeTime});
   }
 
   ///删除好友
-  @override
   void deleteFriend(
       String userId,
       OperationSuccessVoidCallback successCallback,
@@ -2249,7 +2164,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///发送好友请求
-  @override
   void sendFriendRequest(
       String userId,
       String reason,
@@ -2263,7 +2177,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///处理好友请求
-  @override
   void handleFriendRequest(
       String userId,
       bool accept,
@@ -2282,13 +2195,11 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取好友备注名
-  @override
   Future<String?> getFriendAlias(String userId) async {
     return await methodChannel.invokeMethod("getFriendAlias", {"userId": userId});
   }
 
   ///设置好友备注名
-  @override
   void setFriendAlias(
       String friendId,
       String? alias,
@@ -2302,7 +2213,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取好友extra信息
-  @override
   Future<String> getFriendExtra(String userId) async {
     String data =
     await methodChannel.invokeMethod("getFriendExtra", {"userId": userId});
@@ -2310,7 +2220,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///是否是黑名单用户
-  @override
   Future<bool> isBlackListed(String userId) async {
     bool data =
     await methodChannel.invokeMethod("isBlackListed", {"userId": userId});
@@ -2318,7 +2227,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取黑名单列表
-  @override
   Future<List<String>> getBlackList({bool refresh = false}) async {
     List<dynamic>? datas =
     await methodChannel.invokeMethod("getBlackList", {"refresh": refresh});
@@ -2326,7 +2234,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置/取消用户黑名单
-  @override
   void setBlackList(
       String userId,
       bool isBlackListed,
@@ -2343,7 +2250,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取群成员列表
-  @override
   Future<List<GroupMember>> getGroupMembers(String groupId,
       {bool refresh = false}) async {
     List<dynamic> datas = await methodChannel.invokeMethod(
@@ -2351,7 +2257,6 @@ class ImclientPlatform extends PlatformInterface {
     return _convertProtoGroupMembers(datas);
   }
 
-  @override
   Future<List<GroupMember>> getGroupMembersByCount(String groupId, int count) async {
     List<dynamic> datas = await methodChannel.invokeMethod(
         "getGroupMembersByCount", {"groupId": groupId, "count": count});
@@ -2359,7 +2264,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///根据群成员类型获取群成员列表
-  @override
   Future<List<GroupMember>> getGroupMembersByTypes(
       String groupId, GroupMemberType memberType) async {
     List<dynamic> datas = await methodChannel.invokeMethod("getGroupMembersByTypes",
@@ -2368,7 +2272,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///异步获取群成员列表
-  @override
   void getGroupMembersAsync(String groupId,
       {bool refresh = false,
         required OperationSuccessGroupMembersCallback successCallback,
@@ -2381,7 +2284,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取群信息
-  @override
   Future<GroupInfo?> getGroupInfo(String groupId,
       {bool refresh = false}) async {
     Map<dynamic, dynamic>? datas = await methodChannel
@@ -2390,7 +2292,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///异步获取群信息
-  @override
   void getGroupInfoAsync(String groupId,
       {bool refresh = false,
         required OperationSuccessGroupInfoCallback successCallback,
@@ -2403,7 +2304,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取单个群成员信息
-  @override
   Future<GroupMember?> getGroupMember(
       String groupId, String memberId) async {
     Map<dynamic, dynamic>? datas = await methodChannel.invokeMethod(
@@ -2412,7 +2312,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///创建群组，groupId可以为空。
-  @override
   void createGroup(
       String? groupId,
       String? groupName,
@@ -2451,7 +2350,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///添加群成员
-  @override
   void addGroupMembers(
       String groupId,
       List<String> members,
@@ -2478,7 +2376,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///移除群成员
-  @override
   void kickoffGroupMembers(
       String groupId,
       List<String> members,
@@ -2504,7 +2401,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///退出群组
-  @override
   void quitGroup(
       String groupId,
       OperationSuccessVoidCallback successCallback,
@@ -2528,7 +2424,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///解散群组
-  @override
   void dismissGroup(
       String groupId,
       OperationSuccessVoidCallback successCallback,
@@ -2552,7 +2447,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///修改群组信息
-  @override
   void modifyGroupInfo(
       String groupId,
       ModifyGroupInfoType modifyType,
@@ -2582,7 +2476,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///修改自己的群名片
-  @override
   void modifyGroupAlias(
       String groupId,
       String newAlias,
@@ -2608,7 +2501,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///修改群成员的群名片
-  @override
   void modifyGroupMemberAlias(
       String groupId,
       String memberId,
@@ -2636,7 +2528,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///转移群组
-  @override
   void transferGroup(
       String groupId,
       String newOwner,
@@ -2661,7 +2552,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置/取消群管理员
-  @override
   void setGroupManager(
       String groupId,
       bool isSet,
@@ -2689,7 +2579,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///禁言/取消禁言群成员
-  @override
   void muteGroupMember(
       String groupId,
       bool isSet,
@@ -2717,7 +2606,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置/取消群白名单
-  @override
   void allowGroupMember(
       String groupId,
       bool isSet,
@@ -2744,12 +2632,10 @@ class ImclientPlatform extends PlatformInterface {
     methodChannel.invokeMethod("allowGroupMember", args);
   }
 
-  @override
   Future<String> getGroupRemark(String groupId) async {
     return await methodChannel.invokeMethod("getGroupRemark", {"groupId":groupId});
   }
 
-  @override
   void setGroupRemark(String groupId, String remark,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
@@ -2764,19 +2650,16 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取收藏群组列表
-  @override
   Future<List<String>?> getFavGroups() async {
     return Tools.convertDynamicList(await methodChannel.invokeMethod("getFavGroups"));
   }
 
   ///是否收藏群组
-  @override
   Future<bool> isFavGroup(String groupId) async {
     return await methodChannel.invokeMethod("isFavGroup", {"groupId": groupId});
   }
 
   ///设置/取消收藏群组
-  @override
   void setFavGroup(
       String groupId,
       bool isFav,
@@ -2790,20 +2673,17 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取用户设置
-  @override
   Future<String> getUserSetting(int scope, String key) async {
     return await methodChannel
         .invokeMethod("getUserSetting", {"scope": scope, "key": key});
   }
 
   ///获取某类用户设置
-  @override
   Future<Map<String, String>> getUserSettings(int scope) async {
     return await methodChannel.invokeMethod("getUserSettings", {"scope": scope});
   }
 
   ///设置用户设置
-  @override
   void setUserSetting(
       int scope,
       String key,
@@ -2818,7 +2698,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///修改当前用户信息
-  @override
   void modifyMyInfo(
       Map<ModifyMyInfoType, String> values,
       OperationSuccessVoidCallback successCallback,
@@ -2837,13 +2716,11 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///是否全局静音
-  @override
   Future<bool> isGlobalSilent() async {
     return await methodChannel.invokeMethod("isGlobalSilent");
   }
 
   ///设置/取消全局静音
-  @override
   void setGlobalSilent(
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
@@ -2855,12 +2732,10 @@ class ImclientPlatform extends PlatformInterface {
         "setGlobalSilent", {"requestId": requestId, "isSilent": isSilent});
   }
 
-  @override
   Future<bool> isVoipNotificationSilent() async {
     return await methodChannel.invokeMethod("isVoipNotificationSilent");
   }
 
-  @override
   void setVoipNotificationSilent(
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
@@ -2872,12 +2747,10 @@ class ImclientPlatform extends PlatformInterface {
         "setVoipNotificationSilent", {"requestId": requestId, "isSilent": isSilent});
   }
 
-  @override
   Future<bool> isEnableSyncDraft() async {
     return await methodChannel.invokeMethod("isEnableSyncDraft");
   }
 
-  @override
   void setEnableSyncDraft(
       bool enable,
       OperationSuccessVoidCallback successCallback,
@@ -2890,7 +2763,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取免打扰时间段
-  @override
   void getNoDisturbingTimes(
       OperationSuccessIntPairCallback successCallback,
       OperationFailureCallback errorCallback) {
@@ -2902,7 +2774,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///设置免打扰时间段
-  @override
   void setNoDisturbingTimes(
       int startMins,
       int endMins,
@@ -2916,7 +2787,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///取消免打扰时间段
-  @override
   void clearNoDisturbingTimes(
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
@@ -2927,19 +2797,16 @@ class ImclientPlatform extends PlatformInterface {
         .invokeMethod("clearNoDisturbingTimes", {"requestId": requestId});
   }
 
-  @override
   Future<bool> isNoDisturbing() async {
     return await methodChannel.invokeMethod("isNoDisturbing");
   }
 
   ///是否推送隐藏详情
-  @override
   Future<bool> isHiddenNotificationDetail() async {
     return await methodChannel.invokeMethod("isHiddenNotificationDetail");
   }
 
   ///设置推送隐藏详情
-  @override
   void setHiddenNotificationDetail(
       bool isHidden,
       OperationSuccessVoidCallback successCallback,
@@ -2952,14 +2819,12 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///是否群组隐藏用户名
-  @override
   Future<bool> isHiddenGroupMemberName(String groupId) async {
     return await methodChannel
         .invokeMethod("isHiddenGroupMemberName", {"groupId": groupId});
   }
 
   ///设置是否群组隐藏用户名
-  @override
   void setHiddenGroupMemberName(
       String groupId,
       bool isHidden,
@@ -2972,8 +2837,6 @@ class ImclientPlatform extends PlatformInterface {
         {"requestId": requestId, "groupId":groupId, "isHidden": isHidden});
   }
 
-
-  @override
   void getMyGroups(
       OperationSuccessStringListCallback successCallback,
       OperationFailureCallback errorCallback) {
@@ -2984,7 +2847,6 @@ class ImclientPlatform extends PlatformInterface {
         {"requestId": requestId});
   }
 
-  @override
   void getCommonGroups(String userId,
       OperationSuccessStringListCallback successCallback,
       OperationFailureCallback errorCallback) {
@@ -2996,13 +2858,11 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///当前用户是否启用回执功能
-  @override
   Future<bool> isUserEnableReceipt() async {
     return await methodChannel.invokeMethod("isUserEnableReceipt");
   }
 
   ///设置当前用户是否启用回执功能，仅当服务支持回执功能有效
-  @override
   void setUserEnableReceipt(
       bool isEnable,
       OperationSuccessVoidCallback successCallback,
@@ -3015,19 +2875,16 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取收藏好友列表
-  @override
   Future<List<String>?> getFavUsers() async {
     return Tools.convertDynamicList(await methodChannel.invokeMethod("getFavUsers"));
   }
 
   ///是否是收藏用户
-  @override
   Future<bool> isFavUser(String userId) async {
     return await methodChannel.invokeMethod("isFavUser", {"userId": userId});
   }
 
   ///设置收藏用户
-  @override
   void setFavUser(
       String userId,
       bool isFav,
@@ -3041,7 +2898,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///加入聊天室
-  @override
   void joinChatroom(
       String chatroomId,
       OperationSuccessVoidCallback successCallback,
@@ -3054,7 +2910,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///退出聊天室
-  @override
   void quitChatroom(
       String chatroomId,
       OperationSuccessVoidCallback successCallback,
@@ -3067,7 +2922,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取聊天室信息
-  @override
   void getChatroomInfo(
       String chatroomId,
       int updateDt,
@@ -3084,7 +2938,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取聊天室成员信息
-  @override
   void getChatroomMemberInfo(
       String chatroomId,
       OperationSuccessChatroomMemberInfoCallback successCallback,
@@ -3097,7 +2950,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///创建频道
-  @override
   void createChannel(
       String channelName,
       String channelPortrait,
@@ -3120,7 +2972,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取频道信息
-  @override
   Future<ChannelInfo?> getChannelInfo(String channelId,
       {bool refresh = false}) async {
     Map<dynamic, dynamic>? data = await methodChannel.invokeMethod(
@@ -3129,7 +2980,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///修改频道信息
-  @override
   void modifyChannelInfo(
       String channelId,
       ModifyChannelInfoType modifyType,
@@ -3148,7 +2998,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///搜索频道
-  @override
   void searchChannel(
       String keyword,
       OperationSuccessChannelInfosCallback successCallback,
@@ -3161,14 +3010,12 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///是否是已订阅频道
-  @override
   Future<bool> isListenedChannel(String channelId) async {
     return await methodChannel
         .invokeMethod("isListenedChannel", {"channelId": channelId});
   }
 
   ///订阅/取消订阅频道
-  @override
   void listenChannel(
       String channelId,
       bool isListen,
@@ -3182,13 +3029,11 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取我的频道
-  @override
   Future<List<String>?> getMyChannels() async {
     return Tools.convertDynamicList(await methodChannel.invokeMethod("getMyChannels"));
   }
 
   ///获取我订阅的频道
-  @override
   void getRemoteListenedChannels(OperationSuccessStringListCallback successCallback, OperationFailureCallback errorCallback) async {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
@@ -3198,7 +3043,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///销毁频道
-  @override
   void destroyChannel(
       String channelId,
       OperationSuccessVoidCallback successCallback,
@@ -3211,14 +3055,12 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取PC端在线状态
-  @override
   Future<List<PCOnlineInfo>> getOnlineInfos() async {
     List<dynamic> datas = await methodChannel.invokeMethod("getOnlineInfos");
     return _convertProtoOnlineInfos(datas);
   }
 
   ///踢掉PC客户端
-  @override
   void kickoffPCClient(
       String clientId,
       OperationSuccessVoidCallback successCallback,
@@ -3231,13 +3073,11 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///是否设置当PC在线时停止手机通知
-  @override
   Future<bool> isMuteNotificationWhenPcOnline() async {
     return await methodChannel.invokeMethod("isMuteNotificationWhenPcOnline");
   }
 
   ///设置/取消设置当PC在线时停止手机通知
-  @override
   void muteNotificationWhenPcOnline(
       bool isMute,
       OperationSuccessVoidCallback successCallback,
@@ -3249,7 +3089,6 @@ class ImclientPlatform extends PlatformInterface {
         {"requestId": requestId, "isMute": isMute});
   }
 
-  @override
   Future<UserOnlineState?> getUserOnlineState(String userId) async {
     Map<dynamic, dynamic>? map = await methodChannel.invokeMethod("getUserOnlineState", {"userId": userId});
     if(map == null) {
@@ -3259,7 +3098,6 @@ class ImclientPlatform extends PlatformInterface {
     }
   }
 
-  @override
   Future<CustomState> getMyCustomState() async {
     Map<dynamic, dynamic> map =  await methodChannel.invokeMethod("getMyCustomState");
     CustomState cs = CustomState(map['state']);
@@ -3267,7 +3105,6 @@ class ImclientPlatform extends PlatformInterface {
     return cs;
   }
 
-  @override
   void setMyCustomState(
       int customState, String? customText,
       OperationSuccessVoidCallback successCallback,
@@ -3282,7 +3119,6 @@ class ImclientPlatform extends PlatformInterface {
     methodChannel.invokeMethod("setMyCustomState", args);
   }
 
-  @override
   void watchOnlineState(
       ConversationType conversationType, List<String> targets, int watchDuration,
       OperationSuccessWatchUserOnlineCallback successCallback,
@@ -3294,7 +3130,6 @@ class ImclientPlatform extends PlatformInterface {
         {"requestId": requestId, "conversationType": conversationType.index, "targets":targets, "watchDuration":watchDuration});
   }
 
-  @override
   void unwatchOnlineState(
       ConversationType conversationType, List<String> targets,
       OperationSuccessVoidCallback successCallback,
@@ -3306,13 +3141,11 @@ class ImclientPlatform extends PlatformInterface {
         {"requestId": requestId, "conversationType": conversationType.index, "targets":targets});
   }
 
-  @override
   Future<bool> isEnableUserOnlineState() async {
     return await methodChannel.invokeMethod("isEnableUserOnlineState");
   }
 
   ///获取会话文件记录
-  @override
   void getConversationFiles(
       int beforeMessageUid,
       int count,
@@ -3342,7 +3175,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取我的文件记录
-  @override
   void getMyFiles(
       int beforeMessageUid,
       int count,
@@ -3359,7 +3191,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///删除文件记录
-  @override
   void deleteFileRecord(
       int messageUid,
       int count,
@@ -3373,7 +3204,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///搜索文件记录
-  @override
   void searchFiles(
       String keyword,
       int beforeMessageUid,
@@ -3411,7 +3241,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///搜索我的文件记录
-  @override
   void searchMyFiles(
       String keyword,
       int beforeMessageUid,
@@ -3428,7 +3257,6 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///获取经过授权的媒体路径
-  @override
   void getAuthorizedMediaUrl(
       String mediaPath,
       int messageUid,
@@ -3446,7 +3274,6 @@ class ImclientPlatform extends PlatformInterface {
     });
   }
 
-  @override
   void getAuthCode(
       String applicationId,
       int type,
@@ -3464,7 +3291,6 @@ class ImclientPlatform extends PlatformInterface {
     });
   }
 
-  @override
   void configApplication(
       String applicationId,
       int type,
@@ -3487,41 +3313,34 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ///转换amr数据为wav数据，仅在iOS平台有效
-  @override
   Future<Uint8List> getWavData(String amrPath) async {
     return await methodChannel.invokeMethod("getWavData", {"amrPath": amrPath});
   }
 
   ///开启协议栈数据库事物，仅当数据迁移功能使用
-  @override
   Future<bool> beginTransaction() async {
     return await methodChannel.invokeMethod("beginTransaction");
   }
 
   ///提交协议栈数据库事物，仅当数据迁移功能使用
-  @override
   Future<bool> commitTransaction() async {
     return await methodChannel.invokeMethod("commitTransaction");
   }
 
-  @override
   Future<bool> rollbackTransaction() async {
     return await methodChannel.invokeMethod("rollbackTransaction");
   }
 
   ///是否是专业版
-  @override
   Future<bool> isCommercialServer() async {
     return await methodChannel.invokeMethod("isCommercialServer");
   }
 
   ///服务是否支持消息回执
-  @override
   Future<bool> isReceiptEnabled() async {
     return await methodChannel.invokeMethod("isReceiptEnabled");
   }
-
-  @override
+  
   Future<bool> isGlobalDisableSyncDraft() async {
     return await methodChannel.invokeMethod("isGlobalDisableSyncDraft");
   }

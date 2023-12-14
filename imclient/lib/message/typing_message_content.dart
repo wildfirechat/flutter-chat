@@ -5,7 +5,7 @@ import 'message.dart';
 import 'message_content.dart';
 
 MessageContent TypingMessageContentCreator() {
-  return new TypingMessageContent();
+  return TypingMessageContent();
 }
 
 const typingContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_TYPING,

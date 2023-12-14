@@ -86,8 +86,8 @@ class CallStartMessageContent extends MediaMessageContent {
     payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode({
       'c': connectTime??0,
       'e': endTime??0,
-      's': status??0,
-      'ty': type??0,
+      's': status,
+      'ty': type,
       'a' : audioOnly,
       'ts': targetIds??[]
     })));

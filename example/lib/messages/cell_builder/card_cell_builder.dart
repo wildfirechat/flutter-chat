@@ -1,14 +1,9 @@
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/card_message_content.dart';
-import 'package:imclient/message/file_message_content.dart';
-import 'package:imclient/message/sound_message_content.dart';
-import 'package:imclient/message/text_message_content.dart';
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
-import 'package:wfc_example/utilities.dart';
 
 import '../message_cell.dart';
 import '../message_model.dart';

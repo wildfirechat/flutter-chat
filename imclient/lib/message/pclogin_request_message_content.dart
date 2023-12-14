@@ -9,7 +9,7 @@ import 'message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent PCLoginRequestMessageContentCreator() {
-  return new PCLoginRequestMessageContent();
+  return PCLoginRequestMessageContent();
 }
 
 const pcLoginContentMeta = MessageContentMeta(MESSAGE_PC_LOGIN_REQUSET,

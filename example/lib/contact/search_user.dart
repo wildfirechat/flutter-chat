@@ -112,9 +112,4 @@ class SearchUserDelegate extends SearchDelegate<String> {
       );
     }
   }
-
-  @override
-  ThemeData appBarTheme(BuildContext context) {
-    return super.appBarTheme(context);
-  }
 }

@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:badges/badges.dart' as badge;
 import 'package:event_bus/event_bus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
-import 'dart:ui';
 
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/contact/friend_request_page.dart';
@@ -113,7 +113,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
         if(key == "new_friend") {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => FriendRequestPage()),
+            MaterialPageRoute(builder: (context) => const FriendRequestPage()),
           );
         } else if(key == "fav_group") {
           Navigator.push(
@@ -123,7 +123,9 @@ class _ContactListWidgetState extends State<ContactListWidget> {
         } else if(key == "subscribed_channel") {
         } else {
           Fluttertoast.showToast(msg: "方法没有实现");
-          print("on tap item $index");
+          if (kDebugMode) {
+            print("on tap item $index");
+          }
         }
       },
 
@@ -158,7 +160,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
           ),
         ],
       ),
-    );;
+    );
   }
 }
 

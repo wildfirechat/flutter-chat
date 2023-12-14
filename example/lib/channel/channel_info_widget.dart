@@ -90,9 +90,9 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     } else if(index == 4) {
       return GestureDetector(
         child: Column(children: [
-          Container(
+          const SizedBox(
             height: 36,
-            child: const Center(child: Text("清空历史消息", style: TextStyle(color: Colors.red, fontSize: 16),)),
+            child: Center(child: Text("清空历史消息", style: TextStyle(color: Colors.red, fontSize: 16),)),
           ),
           Container(
             margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
@@ -105,7 +105,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     } else if(index == 5) {
       return GestureDetector(
         child: Column(children: [
-          Container(
+          SizedBox(
             height: 36,
             child: Center(child: Text(isListened?"取消订阅":"订阅频道", style: const TextStyle(color: Colors.red, fontSize: 16),)),
           ),

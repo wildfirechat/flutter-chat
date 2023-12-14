@@ -11,6 +11,8 @@ import 'package:wfc_example/config.dart';
 import '../messages/messages_screen.dart';
 
 class ChannelList extends StatefulWidget {
+  const ChannelList({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => ChannelListState();
 }

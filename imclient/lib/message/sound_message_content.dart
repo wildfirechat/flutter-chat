@@ -8,7 +8,7 @@ import 'message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent SoundMessageContentCreator() {
-  return new SoundMessageContent();
+  return SoundMessageContent();
 }
 
 const soundContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_SOUND,

@@ -11,7 +11,7 @@ import '../notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent ChangeGroupNameNotificationContentCreator() {
-  return new ChangeGroupNameNotificationContent();
+  return ChangeGroupNameNotificationContent();
 }
 
 const changeGroupNameNotificationContentMeta = MessageContentMeta(
