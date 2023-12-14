@@ -4,7 +4,7 @@ import 'message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent PTextMessageContentCreator() {
-  return new PTextMessageContent();
+  return PTextMessageContent();
 }
 
 const ptextContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_P_TEXT,

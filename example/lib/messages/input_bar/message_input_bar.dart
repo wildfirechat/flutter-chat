@@ -1,17 +1,9 @@
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:imclient/imclient.dart';
-import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:wfc_example/messages/input_bar/emoji_board.dart';
 import 'package:wfc_example/messages/input_bar/plugin_board.dart';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:wfc_example/messages/input_bar/record_widget.dart';
 
 enum ChatInputBarStatus {

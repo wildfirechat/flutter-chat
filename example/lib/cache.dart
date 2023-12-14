@@ -6,10 +6,10 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 
 class Cache {
- static Map<String, UserInfo> _userInfoCache = Map();
- static Map<String, GroupInfo> _groupInfoCache = Map();
- static Map<String, ChannelInfo> _channelInfoCache = Map();
- static Map<Conversation, String> _convDigestCache = Map();
+ static final Map<String, UserInfo> _userInfoCache = {};
+ static final Map<String, GroupInfo> _groupInfoCache = {};
+ static final Map<String, ChannelInfo> _channelInfoCache = {};
+ static final Map<Conversation, String> _convDigestCache = {};
 
  static UserInfo? getUserInfo(String userId, {String? groupId}) {
    if(groupId == null) {

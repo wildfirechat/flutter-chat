@@ -115,7 +115,9 @@ class _MyAppState extends State<MyApp> {
     Imclient.setDefaultPortraitProvider(WFPortraitProvider());
 
     Imclient.init((int status) {
-      print(status);
+      if (kDebugMode) {
+        print(status);
+      }
       if (status == kConnectionStatusSecretKeyMismatch ||
           status == kConnectionStatusTokenIncorrect ||
           status == kConnectionStatusRejected ||
@@ -141,31 +143,57 @@ class _MyAppState extends State<MyApp> {
         );
       }
     }, (List<Message> messages, bool hasMore) {
-      print(messages);
+      if (kDebugMode) {
+        print(messages);
+      }
     }, (messageUid) {
-      print('recall message ${messageUid}');
+      if (kDebugMode) {
+        print('recall message ${messageUid}');
+      }
     }, (messageUid) {
-      print('delete message ${messageUid}');
+      if (kDebugMode) {
+        print('delete message ${messageUid}');
+      }
     }, messageDeliveriedCallback: (Map<String, int> deliveryMap) {
-      print('on message deliveried $deliveryMap');
+      if (kDebugMode) {
+        print('on message deliveried $deliveryMap');
+      }
     }, messageReadedCallback: (List<ReadReport> readReports) {
-      print("on message readed $readReports");
+      if (kDebugMode) {
+        print("on message readed $readReports");
+      }
     }, groupInfoUpdatedCallback: (List<GroupInfo> groupInfos) {
-      print("on groupInfo updated $groupInfos");
+      if (kDebugMode) {
+        print("on groupInfo updated $groupInfos");
+      }
     }, groupMemberUpdatedCallback: (String groupId, List<GroupMember> members) {
-      print("on group ${groupId} member updated $members");
+      if (kDebugMode) {
+        print("on group ${groupId} member updated $members");
+      }
     }, userInfoUpdatedCallback: (List<UserInfo> userInfos) {
-      userInfos.forEach((element) => debugPrint('on ${element.userId} user info updated'));
+      for (var element in userInfos) {
+        debugPrint('on ${element.userId} user info updated');
+      }
     }, channelInfoUpdatedCallback: (List<ChannelInfo> channelInfos) {
-      print("on ChannelInfo updated $channelInfos");
+      if (kDebugMode) {
+        print("on ChannelInfo updated $channelInfos");
+      }
     }, userSettingsUpdatedCallback: () {
-      print("on user settings updated");
+      if (kDebugMode) {
+        print("on user settings updated");
+      }
     }, friendListUpdatedCallback: (List<String> newFriendIds) {
-      print("on friend list updated $newFriendIds");
+      if (kDebugMode) {
+        print("on friend list updated $newFriendIds");
+      }
     }, friendRequestListUpdatedCallback: (List<String> newFriendRequests) {
-      print("on friend request updated $newFriendRequests");
+      if (kDebugMode) {
+        print("on friend request updated $newFriendRequests");
+      }
     }, onlineEventCallback: (List<UserOnlineState> onlineInfos) {
-      print(onlineInfos);
+      if (kDebugMode) {
+        print(onlineInfos);
+      }
     });
 
     Imclient.startLog();

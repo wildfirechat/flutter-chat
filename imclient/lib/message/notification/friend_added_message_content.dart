@@ -13,6 +13,7 @@ const friendAddedContentMeta = MessageContentMeta(MESSAGE_FRIEND_ADDED_NOTIFICAT
     MessageFlag.PERSIST, FriendAddedMessageContentCreator);
 
 class FriendAddedMessageContent extends NotificationMessageContent {
+
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);

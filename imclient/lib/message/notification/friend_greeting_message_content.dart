@@ -6,7 +6,7 @@ import 'notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent FriendGreetingMessageContentCreator() {
-  return new FriendGreetingMessageContent();
+  return FriendGreetingMessageContent();
 }
 
 const friendGreetingContentMeta = MessageContentMeta(MESSAGE_FRIEND_GREETING,

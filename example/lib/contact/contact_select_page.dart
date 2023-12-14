@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
-import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
-import 'dart:ui';
 
 import 'package:wfc_example/config.dart';
-import 'package:wfc_example/contact/friend_request_page.dart';
-import 'package:wfc_example/user_info_widget.dart';
 
-import '../messages/messages_screen.dart';
 
 
 typedef OnSelectMembersCallback = void Function(BuildContext context, List<String> selectedMembers);
@@ -86,7 +81,7 @@ class _ContactListWidgetState extends State<ContactSelectPage> {
         actions: [
           GestureDetector(
             onTap: ()=>_onPressedDone(context),
-            child: Padding(padding: const EdgeInsets.fromLTRB(8, 16, 16, 8), child: Text(text, style: TextStyle(fontSize: 18),),),
+            child: Padding(padding: const EdgeInsets.fromLTRB(8, 16, 16, 8), child: Text(text, style: const TextStyle(fontSize: 18),),),
           )
         ],
       ),
@@ -176,7 +171,7 @@ class _ContactListItemState extends State<ContactSelectableItem> {
         }
 
         setState(() {
-          widget.selected[widget.index] = value!;
+          widget.selected[widget.index] = value;
         });
         widget.onUpdate();
       },

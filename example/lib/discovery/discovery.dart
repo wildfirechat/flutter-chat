@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:rtckit/rtckit.dart';
-import 'package:rtckit/rtckit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/discovery/chatroom_list.dart';
 import 'package:wfc_example/messages/messages_screen.dart';
@@ -52,7 +50,7 @@ class DiscoveryState extends State<DiscoveryTab> {
     String title = modelList[index][1];
     String key = modelList[index][2];
     return GestureDetector(child: Column(children: [
-      Container(margin: const EdgeInsets.fromLTRB(10, 10, 5, 10), height: 36, child: Row(children: [image, Expanded(child: Container(margin: EdgeInsets.only(left: 15), child: Text(title),))],),),
+      Container(margin: const EdgeInsets.fromLTRB(10, 10, 5, 10), height: 36, child: Row(children: [image, Expanded(child: Container(margin: const EdgeInsets.only(left: 15), child: Text(title),))],),),
       Container(
         margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
         height: 0.5,
@@ -73,7 +71,7 @@ class DiscoveryState extends State<DiscoveryTab> {
         } else if(key == 'channel') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ChannelList()),
+            MaterialPageRoute(builder: (context) => const ChannelList()),
           );
         } else if(key == "devdocs") {
           var url = 'https://docs.wildfirechat.cn';

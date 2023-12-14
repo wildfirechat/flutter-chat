@@ -68,7 +68,7 @@ class SearchChannelDelegate extends SearchDelegate<String> {
         Row(
           children: [
             Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (channelInfo.portrait == null || channelInfo.portrait!.isEmpty)?Image.asset(Config.defaultChannelPortrait, width: 40.0, height: 40.0):Image.network(channelInfo.portrait!, width: 40, height: 40,),),),
-            Expanded(child: Container(child: Text(channelInfo.name!),)),
+            Expanded(child: Text(channelInfo.name!)),
           ],
         ),
         Container(
@@ -119,10 +119,5 @@ class SearchChannelDelegate extends SearchDelegate<String> {
         child: const Text("搜索频道！"),
       );
     }
-  }
-
-  @override
-  ThemeData appBarTheme(BuildContext context) {
-    return super.appBarTheme(context);
   }
 }

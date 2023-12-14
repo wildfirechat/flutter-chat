@@ -32,8 +32,8 @@ class InviteFriendPageState extends State<InviteFriendPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(padding: EdgeInsets.fromLTRB(16, 16, 16, 8), child: Text("请填入申请理由，等待对方同意"),),
-            Padding(padding: EdgeInsets.fromLTRB(16, 0, 16, 8), child: CupertinoTextField(
+            const Padding(padding: EdgeInsets.fromLTRB(16, 16, 16, 8), child: Text("请填入申请理由，等待对方同意"),),
+            Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), child: CupertinoTextField(
               placeholder: '请输入理由',
               controller: fieldController,
               clearButtonMode: OverlayVisibilityMode.editing,

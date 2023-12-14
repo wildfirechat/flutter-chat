@@ -8,7 +8,7 @@ import 'message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent FileMessageContentCreator() {
-  return new FileMessageContent();
+  return FileMessageContent();
 }
 
 const fileContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_FILE,

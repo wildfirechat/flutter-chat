@@ -12,7 +12,7 @@ import 'notification_message_content.dart';
 
 // ignore: non_constant_identifier_names
 MessageContent RecallNotificationContentCreator() {
-  return new RecallNotificationContent();
+  return RecallNotificationContent();
 }
 
 const recallNotificationContentMeta = MessageContentMeta(

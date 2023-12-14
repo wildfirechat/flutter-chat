@@ -129,7 +129,7 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   Widget userPortraitAndName(BuildContext context) {
     if(userInfo != null) {
-      return Padding(padding: EdgeInsets.only(top: 80), child: Column(
+      return Padding(padding: const EdgeInsets.only(top: 80), child: Column(
         mainAxisSize:MainAxisSize.min,
         children: [
           ClipRRect(

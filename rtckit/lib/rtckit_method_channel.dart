@@ -38,7 +38,7 @@ class RtckitPlatform extends PlatformInterface {
   static ShouldStartRingCallback? _shouldStartRingCallback;
   static ShouldStopRingCallback? _shouldStopRingCallback;
   static DidEndCallCallback? _didEndCallCallback;
-  static Map<String, CallSessionCallback> _callSessionCallbacks = {};
+  static final Map<String, CallSessionCallback> _callSessionCallbacks = {};
 
   static int _maxAudioCallCount = 9;
   static int _maxVideoCallCount = 4;
