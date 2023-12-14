@@ -61,8 +61,8 @@ android {
 
         implementation 'com.tencent.map.geolocation:TencentLocationSdk-openplatform:7.2.6'
         implementation 'io.kvh:amr:1.1.1'
-        implementation 'com.squareup.okhttp3:okhttp:3.11.0'
-        implementation 'com.squareup.okio:okio:1.14.0'
+        implementation 'com.squareup.okhttp3:okhttp:4.11.0'
+        implementation 'com.squareup.okio:okio:3.2.0'
         implementation 'com.tbuonomo.andrui:viewpagerdotsindicator:2.1.2'
         implementation 'cn.aigestudio.wheelpicker:WheelPicker:1.1.3'
 
