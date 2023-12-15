@@ -19,9 +19,19 @@
 | [push_server](https://github.com/wildfirechat/push_server)   | [push_server](https://gitee.com/wfchat/push_server)   | 推送服务器                                                          |                         |
 | [docs](https://github.com/wildfirechat/docs)                 | [docs](https://gitee.com/wfchat/docs)                 | 野火IM相关文档，包含设计、概念、开发、使用说明，[在线查看](https://docs.wildfirechat.cn/) |                         |  |
 
+## 技术交流
+
+1. 如果大家发现bug，请在GitHub或码云提issue；如果有需求也请给我们提issue。
+2. 其他问题，请到[野火IM论坛](http://bbs.wildfirechat.cn/)进行交流学习
+3. 关注我们的公众号。我们有新版本发布或者有重大更新会通过公众号通知大家，另外我们也会不定期的发布一些关于野火IM的技术介绍。
+
+<img src="http://static.wildfirechat.cn/wx_wfc_qrcode.jpg" width = 50% height = 50% />
+
+我们有核心研发工程师轮流值班处理issue和论坛，会及时处理的，疑难Bug的修改和新需求的开发我们也会尽快解决。
+
 # WFC Flutter Plugins
 
-野火Flutter插件，包含即时通讯插件和实时音视频插件。
+野火Flutter插件，包含即时通讯插件和实时音视频插件，包含Flutter Demo。
 
 ## 运行
 
@@ -50,10 +60,9 @@
       dependencies {
 
         // 将path_to_android_xxx_aars 替换成实际路径，可以使用相对路径，但一定要保证路径是正确的；路径不对的话，会报 ClassNotFoundException
+        // moment 对应的是朋友圈SDK，ptt对应的是对接SDK。仅当购买或者试用这两个功能的用户打开这两个包的引入。
+
         // wfc dep start
-
-        // 根据实际需要，引入aar
-
         implementation fileTree(dir: "${path_to_android_client_aars}", include: ["*.aar"])
         implementation fileTree(dir: "${path_to_android_avclient_aars}", include: ["*.aar"])
         //implementation fileTree(dir: "${path_to_android_moment_aars}", include: ["*.aar"])
@@ -79,6 +88,9 @@
 ## 升级插件注意事项
 
 1. 升级插件时，一定要记得同步升级`android_client_aars`和`android_avclient_aars`等`aars`目录
+
+## Flutter版本的兼容问题
+暂时不支持Flutter 3.16版本，3.13版本及之前的稳定版本都支持。我们稍后会升级来兼容3.16版本。
 
 ## SDK的使用
 
