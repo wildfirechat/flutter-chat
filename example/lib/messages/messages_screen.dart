@@ -113,7 +113,7 @@ class _State extends State<MessagesScreen> {
     });
     _deleteMessagesSubscription = _eventBus.on<DeleteMessageEvent>().listen((event) {
       for (var model in models) {
-        if(model.message.messageUid == event.messageUid) {
+        if((event.messageUid != null && model.message.messageUid == event.messageUid) || model.message.messageId == event.messageId) {
           setState(() {
             models.remove(model);
           });
@@ -686,6 +686,7 @@ class _State extends State<MessagesScreen> {
 
   void onResendTaped(MessageModel model) {
     debugPrint("on taped resend");
+    Imclient.sendSavedMessage(model.message.messageId, successCallback: (l,ll){}, errorCallback: (errorCode) {});
   }
 
   void onReadedTaped(MessageModel model) {

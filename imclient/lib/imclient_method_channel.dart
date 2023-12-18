@@ -255,7 +255,7 @@ class ImclientPlatform extends PlatformInterface {
           Map<dynamic, dynamic> args = call.arguments;
           int messageUid = args['messageUid'];
           _deleteMessageCallback(messageUid);
-          _eventBus.fire(DeleteMessageEvent(messageUid));
+          _eventBus.fire(DeleteMessageEvent(messageUid: messageUid));
           break;
         case 'onMessageDelivered':
           Map<dynamic, dynamic> args = call.arguments;
@@ -1908,7 +1908,7 @@ class ImclientPlatform extends PlatformInterface {
     if(message != null) {
       await methodChannel
           .invokeMethod("deleteMessage", {"messageId": messageId});
-      _eventBus.fire(DeleteMessageEvent(message!.messageUid!));
+      _eventBus.fire(DeleteMessageEvent(messageId: messageId, messageUid: message.messageUid));
     }
     return message != null;
   }
