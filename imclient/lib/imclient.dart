@@ -174,9 +174,10 @@ class RecallMessageEvent {
 }
 
 class DeleteMessageEvent {
-  int messageUid;
+  int? messageUid;
+  int? messageId;
 
-  DeleteMessageEvent(this.messageUid);
+  DeleteMessageEvent({this.messageId, this.messageUid});
 }
 
 class MessageDeliveriedEvent {

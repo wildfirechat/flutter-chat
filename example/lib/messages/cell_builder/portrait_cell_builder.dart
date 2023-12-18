@@ -48,9 +48,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
 
     _sendSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
       if(event.messageId > 0 && event.messageId == model.message.messageId) {
-        if(model.message.status == MessageStatus.Message_Status_Sending) {
-          model.message.status = MessageStatus.Message_Status_Sent;
-        }
+        model.message.status = MessageStatus.Message_Status_Sent;
         setState(() { });
       }
     });
