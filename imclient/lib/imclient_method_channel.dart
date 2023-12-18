@@ -1443,7 +1443,7 @@ class ImclientPlatform extends PlatformInterface {
   ///设置会话未读状态
   Future<UnreadCount> getConversationUnreadCount(
       Conversation conversation) async {
-    Map<dynamic, dynamic> datas = await methodChannel.invokeMethod(
+    Map<dynamic, dynamic>? datas = await methodChannel.invokeMethod(
         'getConversationUnreadCount',
         {'conversation': _convertConversation(conversation)});
     return _convertProtoUnreadCount(datas);
@@ -1460,7 +1460,7 @@ class ImclientPlatform extends PlatformInterface {
       lines = [0];
     }
 
-    Map<dynamic, dynamic> datas = await methodChannel.invokeMethod(
+    Map<dynamic, dynamic>? datas = await methodChannel.invokeMethod(
         'getConversationsUnreadCount', {'types': itypes, 'lines': lines});
     return _convertProtoUnreadCount(datas);
   }
@@ -1518,26 +1518,30 @@ class ImclientPlatform extends PlatformInterface {
   ///获取会话的已读状态
   Future<Map<String, int>> getConversationRead(
       Conversation conversation) async {
-    Map<dynamic, dynamic> datas = await methodChannel.invokeMethod(
+    Map<dynamic, dynamic>? datas = await methodChannel.invokeMethod(
         'getConversationRead',
         {'conversation': _convertConversation(conversation)});
     Map<String, int> map = {};
-    datas.forEach((key, value) {
-      map.putIfAbsent(key, () => value);
-    });
+    if(datas != null) {
+      datas.forEach((key, value) {
+        map.putIfAbsent(key, () => value);
+      });
+    }
     return map;
   }
 
   ///获取会话的消息送达状态
   Future<Map<String, int>> getMessageDelivery(
       Conversation conversation) async {
-    Map<dynamic, dynamic> datas = await methodChannel.invokeMethod(
+    Map<dynamic, dynamic>? datas = await methodChannel.invokeMethod(
         'getMessageDelivery',
         {'conversation': _convertConversation(conversation)});
     Map<String, int> map = {};
-    datas.forEach((key, value) {
-      map.putIfAbsent(key, () => value);
-    });
+    if(datas != null) {
+      datas.forEach((key, value) {
+        map.putIfAbsent(key, () => value);
+      });
+    }
     return map;
   }
 
@@ -1685,14 +1689,14 @@ class ImclientPlatform extends PlatformInterface {
 
   ///根据消息Id获取消息
   Future<Message?> getMessage(int messageId) async {
-    Map<dynamic, dynamic> datas = await methodChannel
+    Map<dynamic, dynamic>? datas = await methodChannel
         .invokeMethod("getMessage", {"messageId": messageId});
     return _convertProtoMessage(datas);
   }
 
   ///根据消息Uid获取消息
   Future<Message?> getMessageByUid(int messageUid) async {
-    Map<dynamic, dynamic> datas = await methodChannel
+    Map<dynamic, dynamic>? datas = await methodChannel
         .invokeMethod("getMessageByUid", {"messageUid": messageUid});
     return _convertProtoMessage(datas);
   }
