@@ -6,7 +6,7 @@ Flutter平台朋友圈是基于原生朋友圈SDK进行包装的，支持android
 
 只有使用专业版IM服务且使用mongodb，且客户端使用定制的朋友圈SDK才可以正常使用朋友圈功能。
 
-替换朋友圈SDK的方法：android平台把得到的SDK替换到[android_moment_aars](../android_moment_aars)目录的SDK；iOS平台替换到[WFSDK](ios/WFSDK)目录下的SDK。iOS平台需要额外处理，删除掉SDK内除了```WFMClientJsonClient.h```以外的所有头文件。
+替换朋友圈SDK的方法：android平台把得到的SDK替换到[android_moment_aars](../android_moment_aars)目录的SDK；iOS平台替换到[WFSDK](ios/WFSDK)目录下的SDK。***iOS平台需要额外处理，删除掉SDK内除了```WFMClientJsonClient.h```以外的所有头文件***。
 
 ## 开启朋友圈功能
 1. 在example项目的pubspec.yaml文件中，打开下面的注释:
