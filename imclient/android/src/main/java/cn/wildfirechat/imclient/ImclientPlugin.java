@@ -979,6 +979,13 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         result.success(true);
     }
 
+    private void clearMessagesKeepLatest(@NonNull MethodCall call, @NonNull Result result) {
+        Conversation conversation = conversationFromArgument(call, false);
+        int keepCount = call.argument("keepCount");
+        ChatManager.Instance().clearMessagesKeepLatest(conversation, keepCount);
+        result.success(true);
+    }
+
     private void clearRemoteConversationMessage(@NonNull MethodCall call, @NonNull Result result) {
         Conversation conversation = conversationFromArgument(call, false);
         long messageUid = getLongPara(call, "messageUid");
@@ -2024,6 +2031,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void isReceiptEnabled(@NonNull MethodCall call, @NonNull Result result) {
         result.success(ChatManager.Instance().isReceiptEnabled());
+    }
+
+    private void isGroupReceiptEnabled(@NonNull MethodCall call, @NonNull Result result) {
+        result.success(ChatManager.Instance().isGroupReceiptEnabled());
     }
 
     private void isGlobalDisableSyncDraft(@NonNull MethodCall call, @NonNull Result result) {

@@ -149,7 +149,7 @@ SPEC CHECKSUMS:
   flutter_dynamic_icon: fb0cd2f84c817c1a0ddbbc383fbebec3cd5e88d8
   flutter_sound: c60effa2a350fb977885f0db2fbc4c1ad5160900
   flutter_sound_core: 26c10e5832e76aaacfae252d8925232281c486ae
-  fluttertoast: eb263d302cc92e04176c053d2385237e9f43fad0
+  fluttertoast: 48c57db1b71b0ce9e6bba9f31c940ff4b001293c
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   image_picker_ios: 4a8aadfbb6dc30ad5141a2ce3832af9214a705b5
   imclient: f6c1a8cc36cba50958f4d4b27d226c2da3b37ade
@@ -167,4 +167,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: c81fb3b9656ce02f4bb4f87bc9edf31ba14f8d8e
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.14.3
