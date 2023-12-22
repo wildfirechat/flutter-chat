@@ -1940,6 +1940,17 @@ class ImclientPlatform extends PlatformInterface {
     return ret;
   }
 
+  ///清空会话内消息
+  Future<bool> clearMessagesKeepLatest(Conversation conversation, int keepCount) async {
+    bool ret = await methodChannel.invokeMethod("clearMessagesKeepLatest", {
+      "conversation": _convertConversation(conversation),
+      "keepCount": keepCount
+    });
+
+    _eventBus.fire(ClearMessagesEvent(conversation));
+    return ret;
+  }
+
   void clearRemoteConversationMessage(Conversation conversation,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
@@ -3344,7 +3355,11 @@ class ImclientPlatform extends PlatformInterface {
   Future<bool> isReceiptEnabled() async {
     return await methodChannel.invokeMethod("isReceiptEnabled");
   }
-  
+
+  Future<bool> isGroupReceiptEnabled() async {
+    return await methodChannel.invokeMethod("isGroupReceiptEnabled");
+  }
+
   Future<bool> isGlobalDisableSyncDraft() async {
     return await methodChannel.invokeMethod("isGlobalDisableSyncDraft");
   }

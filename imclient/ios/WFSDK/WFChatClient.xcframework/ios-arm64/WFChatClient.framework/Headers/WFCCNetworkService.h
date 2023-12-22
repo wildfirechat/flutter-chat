@@ -110,13 +110,23 @@ typedef NS_ENUM(NSInteger, ConnectionStatus) {
 @protocol ConnectToServerDelegate <NSObject>
 
 /**
- 成功连到某个服务的回调
+ 开始连接到服务器的回调
 
  @param host  服务Host
  @param ip       服务ip
  @param port   服务端口
  */
 - (void)onConnectToServer:(NSString *)host ip:(NSString *)ip port:(int)port;
+
+/**
+ 成功连接到服务器的回调
+
+ @param host  服务Host
+ @param ip       服务ip
+ @param port   服务端口
+ @param mainNw  是否是主网
+ */
+- (void)onConnected:(NSString *)host ip:(NSString *)ip port:(int)port mainNw:(BOOL)mainNw;
 
 @end
 
@@ -298,6 +308,11 @@ typedef NS_ENUM(NSInteger, ConnectionStatus) {
  服务器时间与本地时间的差值
  */
 @property(nonatomic, assign, readonly)long long serverDeltaTime;
+
+/**
+ 当前服务是否连接到了主网络
+ */
+@property (nonatomic, assign, readonly)BOOL connectedToMainNetwork;
 
 /**
  发送日志命令

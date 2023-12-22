@@ -566,6 +566,13 @@ ImclientPlugin *gIMClientInstance;
     result(@(YES));
 }
 
+- (void)clearMessagesKeepLatest:(NSDictionary *)dict result:(FlutterResult)result {
+    NSDictionary *convDict = dict[@"conversation"];
+    int keepCount = [dict[@"keepCount"] intValue];
+    [[WFCCIMService sharedWFCIMService] clearMessages:[self conversationFromDict:convDict] keepLatest:keepCount];
+    result(@(YES));
+}
+
 - (void)clearRemoteConversationMessage:(NSDictionary *)dict result:(FlutterResult)result {
     int requestId = [dict[@"requestId"] intValue];
     NSDictionary *convDict = dict[@"conversation"];
@@ -1642,6 +1649,11 @@ ImclientPlugin *gIMClientInstance;
 
 - (void)isReceiptEnabled:(NSDictionary *)dict result:(FlutterResult)result {
     BOOL ret = [[WFCCIMService sharedWFCIMService] isReceiptEnabled];
+    result(@(ret));
+}
+
+- (void)isGroupReceiptEnabled:(NSDictionary *)dict result:(FlutterResult)result {
+    BOOL ret = [[WFCCIMService sharedWFCIMService] isGroupReceiptEnabled];
     result(@(ret));
 }
 

@@ -831,6 +831,11 @@ class Imclient {
     return ImclientPlatform.instance.clearMessages(conversation, before: before);
   }
 
+  ///清空会话内消息保留最近指定条数的消息
+  static Future<bool> clearMessagesKeepLatest(Conversation conversation, int keepCount) async {
+    return ImclientPlatform.instance.clearMessagesKeepLatest(conversation, keepCount);
+  }
+
   ///清除服务器端会话消息
   static void clearRemoteConversationMessage(Conversation conversation,
       OperationSuccessVoidCallback successCallback,
@@ -1688,6 +1693,11 @@ class Imclient {
   ///服务是否支持消息回执
   static Future<bool> isReceiptEnabled() async {
     return ImclientPlatform.instance.isReceiptEnabled();
+  }
+
+  ///服务是否支持群组消息回执
+  static Future<bool> isGroupReceiptEnabled() async {
+    return ImclientPlatform.instance.isGroupReceiptEnabled();
   }
 
   static Future<bool> isGlobalDisableSyncDraft() async {
