@@ -604,7 +604,7 @@ ImclientPlugin *gIMClientInstance;
     NSArray<NSString *> *toUsers = dict[@"toUsers"];
 
     WFCCMessage *msg = [[WFCCIMService sharedWFCIMService] insert:[self conversationFromDict:conversation] sender:self.userId content:[self contentFromDict:content] status:(WFCCMessageStatus)status notify:NO toUsers:toUsers serverTime:serverTime];
-    result(@(msg.messageId));
+    result([msg toJsonObj]);
 }
 
 - (void)updateMessage:(NSDictionary *)dict result:(FlutterResult)result {
