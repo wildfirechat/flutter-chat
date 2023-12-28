@@ -1012,13 +1012,17 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         int status = call.argument("status");
         long serverTime = getLongPara(call, "serverTime");
         List<String> toUsers = call.argument("toUsers");
+        String sender = call.argument("sender");
+        if(TextUtils.isEmpty(sender)) {
+            sender = ChatManager.Instance().getUserId();
+        }
 
         String[] tos = null;
         if (toUsers != null) {
             tos = toUsers.toArray(new String[0]);
         }
 
-        Message msg = ChatManager.Instance().insertMessage(conversation, ChatManager.Instance().getUserId(), messageContent, MessageStatus.status(status), false, tos, serverTime);
+        Message msg = ChatManager.Instance().insertMessage(conversation, sender, messageContent, MessageStatus.status(status), false, tos, serverTime);
         result.success(convertMessage(msg));
     }
 
