@@ -45,6 +45,7 @@ ImclientPlugin *gIMClientInstance;
     NSString *host = dict[@"host"];
     NSString *userId = dict[@"userId"];
     NSString *token = dict[@"token"];
+    self.userId = userId;
     [[WFCCNetworkService sharedInstance] setServerAddress:host];
     int64_t lastConnectTime = [[WFCCNetworkService sharedInstance] connect:userId token:token];
     result(@(lastConnectTime));
@@ -602,8 +603,12 @@ ImclientPlugin *gIMClientInstance;
     int status = [dict[@"status"] intValue];
     long long serverTime = [dict[@"serverTime"] longLongValue];
     NSArray<NSString *> *toUsers = dict[@"toUsers"];
+    NSString *sender = dict[@"sender"];
+    if(!sender.length) {
+        sender = self.userId;
+    }
 
-    WFCCMessage *msg = [[WFCCIMService sharedWFCIMService] insert:[self conversationFromDict:conversation] sender:self.userId content:[self contentFromDict:content] status:(WFCCMessageStatus)status notify:NO toUsers:toUsers serverTime:serverTime];
+    WFCCMessage *msg = [[WFCCIMService sharedWFCIMService] insert:[self conversationFromDict:conversation] sender:sender content:[self contentFromDict:content] status:(WFCCMessageStatus)status notify:NO toUsers:toUsers serverTime:serverTime];
     result([msg toJsonObj]);
 }
 
