@@ -622,7 +622,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().getRemoteMessage(messageUid, new GetOneRemoteMessageCallback() {
             @Override
             public void onSuccess(Message message) {
-                callbackBuilder(requestId).put("messages", convertMessage(message)).success("onMessageCallback");
+                callbackBuilder(requestId).put("message", convertMessage(message)).success("onMessageCallback");
             }
 
             @Override
