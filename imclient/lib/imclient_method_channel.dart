@@ -1684,7 +1684,7 @@ class ImclientPlatform extends PlatformInterface {
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
 
-    methodChannel.invokeMethod("getRemoteMessage", {"messageUid":messageUid});
+    methodChannel.invokeMethod("getRemoteMessage", {"requestId": requestId, "messageUid":messageUid});
   }
 
   ///根据消息Id获取消息
