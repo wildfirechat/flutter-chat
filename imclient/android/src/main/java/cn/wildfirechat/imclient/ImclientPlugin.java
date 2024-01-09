@@ -889,7 +889,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             }
         });
     }
-    
+
     private void uploadMediaFile(@NonNull MethodCall call, @NonNull Result result) {
         int requestId = call.argument("requestId");
         String filePath = call.argument("filePath");
@@ -988,7 +988,6 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void clearRemoteConversationMessage(@NonNull MethodCall call, @NonNull Result result) {
         Conversation conversation = conversationFromArgument(call, false);
-        long messageUid = getLongPara(call, "messageUid");
         final int requestId = call.argument("requestId");
         ChatManager.Instance().clearRemoteConversationMessage(conversation, new GeneralVoidCallback(requestId));
     }
