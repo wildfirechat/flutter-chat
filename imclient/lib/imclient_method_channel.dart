@@ -3168,6 +3168,7 @@ class ImclientPlatform extends PlatformInterface {
   ///获取会话文件记录
   void getConversationFiles(
       int beforeMessageUid,
+      FileRecordOrder order,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
@@ -3180,6 +3181,7 @@ class ImclientPlatform extends PlatformInterface {
     Map<String, dynamic> args = {
       "requestId": requestId,
       "beforeMessageUid": beforeMessageUid,
+      "order": order.index,
       "count": count
     };
 
@@ -3197,6 +3199,7 @@ class ImclientPlatform extends PlatformInterface {
   ///获取我的文件记录
   void getMyFiles(
       int beforeMessageUid,
+      FileRecordOrder order,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback) {
@@ -3206,6 +3209,7 @@ class ImclientPlatform extends PlatformInterface {
     methodChannel.invokeMethod("getMyFiles", {
       "requestId": requestId,
       "beforeMessageUid": beforeMessageUid,
+      "order": order.index,
       "count": count
     });
   }
@@ -3213,7 +3217,6 @@ class ImclientPlatform extends PlatformInterface {
   ///删除文件记录
   void deleteFileRecord(
       int messageUid,
-      int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
@@ -3227,6 +3230,7 @@ class ImclientPlatform extends PlatformInterface {
   void searchFiles(
       String keyword,
       int beforeMessageUid,
+      FileRecordOrder order,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
@@ -3239,6 +3243,7 @@ class ImclientPlatform extends PlatformInterface {
       "requestId": requestId,
       "keyword": keyword,
       "beforeMessageUid": beforeMessageUid,
+      "order": order.index,
       "count": count,
     };
 
@@ -3264,6 +3269,7 @@ class ImclientPlatform extends PlatformInterface {
   void searchMyFiles(
       String keyword,
       int beforeMessageUid,
+      FileRecordOrder order,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback) {
@@ -3272,6 +3278,7 @@ class ImclientPlatform extends PlatformInterface {
       "requestId": requestId,
       "keyword": keyword,
       "beforeMessageUid": beforeMessageUid,
+      "order": order.index,
       "count": count
     });
   }

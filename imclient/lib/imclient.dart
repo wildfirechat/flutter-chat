@@ -111,6 +111,12 @@ typedef OperationSuccessStringListCallback = void Function(List<String> strValue
 
 typedef GetUploadUrlSuccessCallback = void Function(String uploadUrl, String downloadUrl, String backupUploadUrl, int type);
 
+enum FileRecordOrder {
+TIME_DESC,
+TIME_ASC,
+SIZE_DESC,
+SIZE_ASC,
+}
 
 /// 客户端和服务器之间的时间差值过大
 /// 出现此错误时需要校准时间
@@ -1586,52 +1592,55 @@ class Imclient {
   ///获取会话文件记录
   static void getConversationFiles(
       int beforeMessageUid,
+      FileRecordOrder order,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
       {Conversation? conversation,
         String? fromUser}) {
-    ImclientPlatform.instance.getConversationFiles(beforeMessageUid, count, successCallback, errorCallback, conversation: conversation, fromUser: fromUser);
+    ImclientPlatform.instance.getConversationFiles(beforeMessageUid, order, count, successCallback, errorCallback, conversation: conversation, fromUser: fromUser);
   }
 
   ///获取我的文件记录
   static void getMyFiles(
       int beforeMessageUid,
+      FileRecordOrder order,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback) {
-    ImclientPlatform.instance.getMyFiles(beforeMessageUid, count, successCallback, errorCallback);
+    ImclientPlatform.instance.getMyFiles(beforeMessageUid, order, count, successCallback, errorCallback);
   }
 
   ///删除文件记录
   static void deleteFileRecord(
       int messageUid,
-      int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback) {
-    ImclientPlatform.instance.deleteFileRecord(messageUid, count, successCallback, errorCallback);
+    ImclientPlatform.instance.deleteFileRecord(messageUid, successCallback, errorCallback);
   }
 
   ///搜索文件记录
   static void searchFiles(
       String keyword,
       int beforeMessageUid,
+      FileRecordOrder order,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback,
       {Conversation? conversation,
         String? fromUser}) {
-    ImclientPlatform.instance.searchFiles(keyword, beforeMessageUid, count, successCallback, errorCallback, conversation: conversation, fromUser: fromUser);
+    ImclientPlatform.instance.searchFiles(keyword, beforeMessageUid, order, count, successCallback, errorCallback, conversation: conversation, fromUser: fromUser);
   }
 
   ///搜索我的文件记录
   static void searchMyFiles(
       String keyword,
       int beforeMessageUid,
+      FileRecordOrder order,
       int count,
       OperationSuccessFilesCallback successCallback,
       OperationFailureCallback errorCallback) {
-    ImclientPlatform.instance.searchMyFiles(keyword, beforeMessageUid, count, successCallback, errorCallback);
+    ImclientPlatform.instance.searchMyFiles(keyword, beforeMessageUid, order, count, successCallback, errorCallback);
   }
 
   ///获取经过授权的媒体路径
