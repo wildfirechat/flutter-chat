@@ -605,7 +605,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().getRemoteMessages(conversation, contentTypes, beforeMessageUid, count, new GetRemoteMessageCallback() {
             @Override
             public void onSuccess(List<Message> list) {
-                callbackBuilder(requestId).put("messages", convertMessageList(list, true)).success("onMessagesCallback");
+                callbackBuilder(requestId).put("messages", convertMessageList(list, false)).success("onMessagesCallback");
             }
 
             @Override
