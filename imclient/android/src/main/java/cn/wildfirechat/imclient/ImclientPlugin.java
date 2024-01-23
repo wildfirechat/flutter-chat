@@ -1268,6 +1268,12 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         result.success(convertGroupInfo(ChatManager.Instance().getGroupInfo(groupId, refresh)));
     }
 
+    private void getGroupInfos(@NonNull MethodCall call, @NonNull Result result) {
+        List<String> groupIds = call.argument("groupIds");
+        boolean refresh = call.argument("refresh");
+        result.success(convertGroupInfoList(ChatManager.Instance().getGroupInfos(groupIds, refresh)));
+    }
+
     private void getGroupInfoAsync(@NonNull MethodCall call, @NonNull Result result) {
         final int requestId = call.argument("requestId");
         String groupId = call.argument("groupId");

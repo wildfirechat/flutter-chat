@@ -1078,6 +1078,12 @@ class Imclient {
     return ImclientPlatform.instance.getGroupInfo(groupId, refresh: refresh);
   }
 
+  ///批量获取群信息
+  static Future<List<GroupInfo>> getGroupInfos(List<String> groupIds,
+      {bool refresh = false}) async {
+    return ImclientPlatform.instance.getGroupInfos(groupIds, refresh: refresh);
+  }
+
   ///异步获取群信息
   static void getGroupInfoAsync(String groupId,
       {bool refresh = false,
