@@ -902,6 +902,13 @@ ImclientPlugin *gIMClientInstance;
     result([groupInfo toJsonObj]);
 }
 
+- (void)getGroupInfos:(NSDictionary *)dict result:(FlutterResult)result {
+    NSArray<NSString *> *groupIds = dict[@"groupIds"];
+    BOOL refresh = [dict[@"refresh"] boolValue];
+    NSArray<WFCCGroupInfo *> *groupInfos = [[WFCCIMService sharedWFCIMService] getGroupInfos:groupIds refresh:refresh];
+    result([self convertModelList:groupInfos]);
+}
+
 - (void)getGroupInfoAsync:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *groupId = dict[@"groupId"];
     int requestId = [dict[@"requestId"] intValue];

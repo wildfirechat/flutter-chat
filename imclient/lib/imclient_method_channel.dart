@@ -2311,6 +2311,22 @@ class ImclientPlatform extends PlatformInterface {
     return _convertProtoGroupInfo(datas);
   }
 
+  ///批量获取群信息
+  Future<List<GroupInfo>> getGroupInfos(List<String> groupIds,
+      {bool refresh = false}) async {
+    List<dynamic> groups = await methodChannel
+        .invokeMethod("getGroupInfos", {"groupIds": groupIds, "refresh": refresh});
+
+    List<GroupInfo> data = [];
+    for (var element in groups) {
+      GroupInfo? groupInfo = await _convertProtoGroupInfo(element);
+      if(groupInfo != null) {
+        data.add(groupInfo);
+      }
+    }
+    return data;
+  }
+
   ///异步获取群信息
   void getGroupInfoAsync(String groupId,
       {bool refresh = false,
