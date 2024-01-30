@@ -234,6 +234,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void initProto(@NonNull MethodCall call, @NonNull Result result) {
         ChatManager.Instance().setSendLogCommand("*#marslog#");
+        ChatManager.Instance().useRawMsg();
     }
 
     private void isLogined(@NonNull MethodCall call, @NonNull Result result) {
