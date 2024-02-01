@@ -753,6 +753,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                 msg.messageId = l;
                 msg.serverTime = l1;
                 result.success(convertMessage(msg));
+                callbackBuilder(requestId).put("messageId", idArray[0]).put("message", convertMessage(msg)).success("onSendMessageStart");
             }
 
             @Override
@@ -767,11 +768,11 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         });
     }
 
-    public CallbackBuilder callbackBuilder(int requestId) {
+    protected CallbackBuilder callbackBuilder(int requestId) {
         return new CallbackBuilder(requestId);
     }
 
-    private class CallbackBuilder {
+    protected class CallbackBuilder {
         Map args = new HashMap();
         int requestId;
 
@@ -823,12 +824,24 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
                 @Override
                 public void onFail(int i) {
-                    callbackBuilder(requestId).fail(i);
+                    callbackBuilder(requestId).put("errorCode", i).success("onSendMessageFailure");
                 }
 
                 @Override
                 public void onPrepare(long l, long l1) {
+                    msg.messageId = l;
+                    msg.serverTime = l1;
+                    callbackBuilder(requestId).put("messageId", messageId).put("message", convertMessage(msg)).success("onSendMessageStart");
+                }
 
+                @Override
+                public void onProgress(long uploaded, long total) {
+                    callbackBuilder(requestId).put("messageId", messageId).put("uploaded", uploaded).put("total", total).success("onSendMediaMessageProgress");
+                }
+
+                @Override
+                public void onMediaUpload(String remoteUrl) {
+                    callbackBuilder(requestId).put("messageId", messageId).put("remoteUrl", remoteUrl).success("onSendMediaMessageUploaded");
                 }
             });
         }
@@ -3048,34 +3061,6 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                             Map<String, Object> data = new HashMap<>();
                             data.put("messageId", message.messageId);
                             callback2UI("onMessageUpdated", data);
-                        }
-                        break;
-
-                        case "onSendPrepare": {
-                            Message message = (Message) args[0];
-                            Map<String, Object> data = new HashMap<>();
-                            data.put("message", convertMessage(message));
-                            callback2UI("onSendMessageStart", data);
-                        }
-                        break;
-                        case "onSendSuccess": {
-                            Message message = (Message) args[0];
-                            Map<String, Object> data = new HashMap<>();
-                            data.put("requestId", 0);
-                            data.put("messageId", message.messageId);
-                            data.put("messageUid", message.messageUid);
-                            data.put("timestamp", message.serverTime);
-                            callback2UI("onSendMessageSuccess", data);
-                        }
-                        break;
-                        case "onSendFail": {
-                            Message message = (Message) args[0];
-                            int errorCode = (int) args[1];
-                            Map<String, Object> data = new HashMap<>();
-                            data.put("requestId", 0);
-                            data.put("messageId", message.messageId);
-                            data.put("errorCode", errorCode);
-                            callback2UI("onSendMessageFailure", data);
                         }
                         break;
                         case "onConversationTopUpdate":
