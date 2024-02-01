@@ -442,6 +442,11 @@ ImclientPlugin *gIMClientInstance;
     }];
     
     [idArray addObject:@(message.messageId)];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.channel invokeMethod:@"onSendMessageStart" arguments:@{@"requestId":@(requestId), @"message":[message toJsonObj]}];
+    });
+    
     result([message toJsonObj]);
 }
 
@@ -460,7 +465,7 @@ ImclientPlugin *gIMClientInstance;
     BOOL exist = [[WFCCIMService sharedWFCIMService] sendSavedMessage:msg expireDuration:expireDuration success:^(long long messageUid, long long timestamp) {
         [self.channel invokeMethod:@"onSendMessageSuccess" arguments:@{@"requestId":@(requestId), @"messageId":@(messageId), @"messageUid":@(messageUid), @"timestamp":@(timestamp)}];
     } error:^(int error_code) {
-        [self callbackOperationFailure:requestId errorCode:error_code];
+        [self.channel invokeMethod:@"onSendMessageFailure" arguments:@{@"requestId":@(requestId), @"messageId":@(messageId), @"errorCode":@(error_code)}];
     }];
     result(@(exist));
 }
@@ -1849,16 +1854,7 @@ ImclientPlugin *gIMClientInstance;
 }
 
 - (void)onSendingMessageStatusUpdated:(NSNotification *)notification {
-    int status = [notification.userInfo[@"status"] intValue];
-    if(status == Message_Status_Sending) {
-        WFCCMessage *message = notification.userInfo[@"message"];
-        [self.channel invokeMethod:@"onSendMessageStart" arguments:@{@"message":[message toJsonObj]}];
-    } else if(status == Message_Status_Sent) {
-        [self.channel invokeMethod:@"onSendMessageSuccess" arguments:@{@"requestId":@(0), @"messageId":notification.object, @"messageUid":notification.userInfo[@"messageUid"], @"timestamp":notification.userInfo[@"timestamp"]}];
-    } else if(status == Message_Status_Send_Failure) {
-        WFCCMessage *message = notification.userInfo[@"message"];
-        [self.channel invokeMethod:@"onSendMessageFailure" arguments:@{@"requestId":@(0), @"messageId":@(message.messageId), @"errorCode":notification.userInfo[@"errorCode"]}];
-    }
+
 }
 
 - (void)onConferenceEvent:(NSString *)event {

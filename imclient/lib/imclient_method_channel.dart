@@ -290,14 +290,16 @@ class ImclientPlatform extends PlatformInterface {
           break;
         case 'onSendMessageStart':
           Map<dynamic, dynamic> args = call.arguments;
+          int requestId = args['requestId'];
           Map<dynamic, dynamic> message = args['message'];
           Message? msg = _convertProtoMessage(message);
           if(msg != null) {
-            Message? msg2 = _sendingMessages[msg.messageId];
+            Message? msg2 = _sendingMessages[requestId];
             if(msg2 != null) {
+              msg2.status = MessageStatus.Message_Status_Sent;
               _eventBus.fire(SendMessageStartEvent(msg2));
             } else {
-              _sendingMessages[msg.messageId] = msg;
+              _sendingMessages[requestId] = msg;
               msg.status = MessageStatus.Message_Status_Sent;
               _eventBus.fire(SendMessageStartEvent(msg));
             }
@@ -405,13 +407,12 @@ class ImclientPlatform extends PlatformInterface {
           int messageId = args['messageId'];
           int messageUid = args['messageUid'];
           int timestamp = args['timestamp'];
-          if(messageId > 0) {
-            Message? message = _sendingMessages[messageId];
+            Message? message = _sendingMessages[requestId];
             if(message != null) {
               message.messageUid = messageUid;
               message.serverTime = timestamp;
               message.status = MessageStatus.Message_Status_Sent;
-              _sendingMessages.remove(messageId);
+              _sendingMessages.remove(requestId);
 
               if(requestId > 0) {
                 var callback = _sendMessageSuccessCallbackMap[requestId];
@@ -421,7 +422,6 @@ class ImclientPlatform extends PlatformInterface {
                 _removeSendMessageCallback(requestId);
               }
             }
-          }
 
           _eventBus.fire(SendMessageSuccessEvent(messageId, messageUid, timestamp));
           break;
@@ -443,7 +443,7 @@ class ImclientPlatform extends PlatformInterface {
           int messageId = args['messageId'];
           String remoteUrl = args['remoteUrl'];
           if(messageId > 0) {
-            Message? message = _sendingMessages[messageId];
+            Message? message = _sendingMessages[requestId];
             if(message != null && message.content is MediaMessageContent) {
               MediaMessageContent mediaCnt = message.content as MediaMessageContent;
               mediaCnt.remoteUrl = remoteUrl;
@@ -463,10 +463,10 @@ class ImclientPlatform extends PlatformInterface {
           int errorCode = args['errorCode'];
 
           if(messageId > 0) {
-            Message? message = _sendingMessages[messageId];
+            Message? message = _sendingMessages[requestId];
             if(message != null) {
               message.status = MessageStatus.Message_Status_Send_Failure;
-              _sendingMessages.remove(messageId);
+              _sendingMessages.remove(requestId);
 
               if(requestId > 0) {
                 var callback = _errorCallbackMap[requestId];
@@ -1794,9 +1794,7 @@ class ImclientPlatform extends PlatformInterface {
     Map<dynamic, dynamic> fm = await methodChannel.invokeMethod('sendMessage', args);
 
     Message message = _convertProtoMessage(fm)!;
-    if(message.messageId > 0) {
-      _sendingMessages[message.messageId] = message;
-    }
+    _sendingMessages[requestId] = message;
 
     return message;
   }
