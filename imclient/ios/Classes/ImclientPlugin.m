@@ -1854,7 +1854,19 @@ ImclientPlugin *gIMClientInstance;
 }
 
 - (void)onSendingMessageStatusUpdated:(NSNotification *)notification {
-
+    WFCCMessageStatus newStatus = (WFCCMessageStatus)[[notification.userInfo objectForKey:@"status"] integerValue];
+    WFCCMessage *message = [notification.userInfo objectForKey:@"message"];
+    if(![message.content isKindOfClass:[WFCCCallStartMessageContent class]] && ![message.content isKindOfClass:[WFCCCallAddParticipantMessageContent class]]) {
+        return;
+    }
+    
+    if(newStatus == Message_Status_Sending) {
+        [self.channel invokeMethod:@"onSendMessageStart" arguments:@{@"requestId":@(0), @"message":[message toJsonObj]}];
+    } else if(newStatus == Message_Status_Sent) {
+        [self.channel invokeMethod:@"onSendMessageSuccess" arguments:@{@"requestId":@(0), @"messageId":@(message.messageId), @"messageUid":@(message.messageUid), @"timestamp":@(message.serverTime)}];
+    } else if(newStatus == Message_Status_Send_Failure) {
+        [self.channel invokeMethod:@"onSendMessageFailure" arguments:@{@"requestId":@(0), @"messageId":@(message.messageId), @"errorCode":[notification.userInfo objectForKey:@"errorCode"]}];
+    }
 }
 
 - (void)onConferenceEvent:(NSString *)event {

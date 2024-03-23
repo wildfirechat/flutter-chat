@@ -29,6 +29,8 @@ import java.util.regex.Pattern;
 
 import cn.wildfirechat.client.ConnectionStatus;
 import cn.wildfirechat.client.NotInitializedExecption;
+import cn.wildfirechat.message.AddParticipantsMessageContent;
+import cn.wildfirechat.message.CallStartMessageContent;
 import cn.wildfirechat.message.Message;
 import cn.wildfirechat.message.MessageContent;
 import cn.wildfirechat.message.MessageContentMediaType;
@@ -3061,6 +3063,17 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                             Map<String, Object> data = new HashMap<>();
                             data.put("messageId", message.messageId);
                             callback2UI("onMessageUpdated", data);
+                        }
+                        break;
+                        case "onSendPrepare": {
+                            Message message = (Message) args[0];
+                            if(message.content instanceof CallStartMessageContent || message.content instanceof AddParticipantsMessageContent) {
+                                Map<String, Object> data = new HashMap<>();
+                                data.put("requestId", 0);
+                                data.put("messageId", message.messageId);
+                                data.put("message", convertMessage(message));
+                                callback2UI("onSendMessageStart", data);
+                            }
                         }
                         break;
                         case "onConversationTopUpdate":

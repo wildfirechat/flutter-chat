@@ -296,11 +296,13 @@ class ImclientPlatform extends PlatformInterface {
           if(msg != null) {
             Message? msg2 = _sendingMessages[requestId];
             if(msg2 != null) {
-              msg2.status = MessageStatus.Message_Status_Sent;
+              msg2.status = MessageStatus.Message_Status_Sending;
               _eventBus.fire(SendMessageStartEvent(msg2));
             } else {
-              _sendingMessages[requestId] = msg;
-              msg.status = MessageStatus.Message_Status_Sent;
+              if(requestId>0) {
+                _sendingMessages[requestId] = msg;
+              }
+              msg.status = MessageStatus.Message_Status_Sending;
               _eventBus.fire(SendMessageStartEvent(msg));
             }
           }
