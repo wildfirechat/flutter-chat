@@ -20,6 +20,8 @@ dependencies:
     path: ../imclient/
 
   plugin_platform_interface: ^2.0.2
+  permission_handler: ^10.2.0
+  fluttertoast: ^8.2.1
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:rtckit/rtckit.dart';
@@ -38,21 +39,35 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
         return;
       }
 
-      Rtckit.startMultiCall(widget.groupId!, widget.participants!, false).then((value) {
-        if (value == null) {
-          Navigator.pop(context);
+      Rtckit.requestPermissions(true).then((value) => {
+        if(value) {
+          Rtckit.requestPermissions(false).then((value1) => {
+            if(value1) {
+              Rtckit.startMultiCall(widget.groupId!, widget.participants!, false).then((value) {
+                if (value == null) {
+                  Navigator.pop(context);
+                } else {
+                  setState(() {
+                    loadProfiles();
+                    widget.callSession = value;
+                    widget.callSession?.setCallSessionCallback(this);
+                    widget.callSession?.startPreview();
+                    Imclient.getUserInfo(widget.callSession!.initiator!, groupId: widget.groupId!).then((value) {
+                      setState(() {
+                        initiator = value;
+                      });
+                    });
+                  });
+                }
+              })
+            } else {
+              Fluttertoast.showToast(msg: "没有摄像头权限！"),
+              Navigator.pop(context)
+            }
+          })
         } else {
-          setState(() {
-            loadProfiles();
-            widget.callSession = value;
-            widget.callSession?.setCallSessionCallback(this);
-            widget.callSession?.startPreview();
-            Imclient.getUserInfo(widget.callSession!.initiator!, groupId: widget.groupId!).then((value) {
-              setState(() {
-                initiator = value;
-              });
-            });
-          });
+          Fluttertoast.showToast(msg: "没有麦克风权限！"),
+          Navigator.pop(context)
         }
       });
     } else {
@@ -141,7 +156,9 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
           showFloatingButton();
           return true;
         },
-        child: widget.callSession == null?const Center(child: Text("Loading...")):callView(context),
+        child: SafeArea(
+          child: widget.callSession == null?const Center(child: Text("Loading...")):callView(context),
+        )
       ),
     );
   }

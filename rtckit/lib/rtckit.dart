@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:rtckit/rtckit_method_channel.dart';
 
 
@@ -464,7 +465,7 @@ class Rtckit {
   }
 
   static Future<CallSession?> startSingleCall(String userId, bool audioOnly) async {
-      return RtckitPlatform.instance.startSingleCall(userId, audioOnly);
+    return RtckitPlatform.instance.startSingleCall(userId, audioOnly);
   }
 
   static Future<CallSession?> startMultiCall(String groupId, List<String> participants, bool audioOnly) async {
@@ -477,6 +478,18 @@ class Rtckit {
 
   static Future<bool> isSupportConference() async {
     return RtckitPlatform.instance.isSupportConference();
+  }
+
+  static Future<bool> requestPermissions(bool audio) async {
+    if(audio) {
+      // 请求录音权限
+      var microphoneStatus = await Permission.microphone.request();
+      return microphoneStatus == PermissionStatus.granted;
+    }
+
+    // 请求相机权限
+    var cameraStatus = await Permission.camera.request();
+    return cameraStatus == PermissionStatus.granted;
   }
 /*
 视频属性 (Profile) 定义
