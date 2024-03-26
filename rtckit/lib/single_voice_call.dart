@@ -6,6 +6,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:imclient/imclient.dart';
@@ -46,18 +47,23 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         return;
       }
 
-      if(!widget.audioOnly!) {
-        createVideoView();
-      }
-      Rtckit.startSingleCall(widget.userId!, widget.audioOnly!).then((value) {
-        if (value == null) {
-          Navigator.pop(context);
+      Rtckit.requestPermissions(true).then((value) => {
+        if(value) {
+          if(!widget.audioOnly!) {
+            Rtckit.requestPermissions(false).then((value1) => {
+              if(value1) {
+                startCall()
+              } else {
+                Fluttertoast.showToast(msg: "没有摄像头权限！"),
+                Navigator.pop(context)
+              }
+            })
+          } else {
+            startCall()
+          }
         } else {
-          setState(() {
-            widget.callSession = value;
-            widget.callSession?.setCallSessionCallback(this);
-            widget.callSession?.startPreview();
-          });
+          Fluttertoast.showToast(msg: "没有麦克风权限！"),
+          Navigator.pop(context)
         }
       });
     } else {
@@ -77,6 +83,24 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
       setState(() {
         userInfo = value;
       });
+    });
+  }
+
+  void startCall() {
+    if(!widget.audioOnly!) {
+      createVideoView();
+    }
+
+    Rtckit.startSingleCall(widget.userId!, widget.audioOnly!).then((value) {
+      if (value == null) {
+        Navigator.pop(context);
+      } else {
+        setState(() {
+          widget.callSession = value;
+          widget.callSession?.setCallSessionCallback(this);
+          widget.callSession?.startPreview();
+        });
+      }
     });
   }
 
