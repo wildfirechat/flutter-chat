@@ -88,7 +88,13 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: widget.callSession == null?const Center(child: Text("Loading...")):callView(context),
+      body: WillPopScope(
+        onWillPop: () async {
+          showFloatingButton();
+          return true;
+        },
+        child: widget.callSession == null?const Center(child: Text("Loading...")):callView(context),
+      ),
     );
   }
 

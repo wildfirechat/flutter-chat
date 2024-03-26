@@ -136,9 +136,13 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      body: SafeArea(
+      body: WillPopScope(
+        onWillPop: () async {
+          showFloatingButton();
+          return true;
+        },
         child: widget.callSession == null?const Center(child: Text("Loading...")):callView(context),
-      )
+      ),
     );
   }
 
