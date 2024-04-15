@@ -1037,6 +1037,8 @@ class ImclientPlatform extends PlatformInterface {
     if (map['historyMessage'] != null) {
       groupInfo.historyMessage = map['historyMessage'];
     }
+    if (map['superGroup'] != null) groupInfo.superGroup = map['superGroup'];
+    if (map['deleted'] != null) groupInfo.deleted = map['deleted'];
     if (map['updateDt'] != null) groupInfo.updateDt = map['updateDt'];
 
     if(defaultPortraitProvider != null && (groupInfo.portrait == null || groupInfo.portrait!.isEmpty)) {
