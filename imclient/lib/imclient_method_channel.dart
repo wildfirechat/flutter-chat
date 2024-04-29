@@ -1039,6 +1039,7 @@ class ImclientPlatform extends PlatformInterface {
     }
     if (map['superGroup'] != null) groupInfo.superGroup = map['superGroup'];
     if (map['deleted'] != null) groupInfo.deleted = map['deleted'];
+    if (map['memberDt'] != null) groupInfo.memberDt = map['memberDt'];
     if (map['updateDt'] != null) groupInfo.updateDt = map['updateDt'];
 
     if(defaultPortraitProvider != null && (groupInfo.portrait == null || groupInfo.portrait!.isEmpty)) {
@@ -2459,6 +2460,32 @@ class ImclientPlatform extends PlatformInterface {
     }
 
     methodChannel.invokeMethod("quitGroup", args);
+  }
+
+
+  ///退出群组
+  void quitGroupEx(
+      String groupId,
+      bool keepMessage,
+      OperationSuccessVoidCallback successCallback,
+      OperationFailureCallback errorCallback,
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    Map<String, dynamic> args = {
+      "requestId": requestId,
+      "keepMessage" : keepMessage,
+      "groupId": groupId
+    };
+
+    args['notifyLines'] = notifyLines??[0];
+    if (notifyContent != null) {
+      args['notifyContent'] = _convertMessageContent(notifyContent);
+    }
+
+    methodChannel.invokeMethod("quitGroupEx", args);
   }
 
   ///解散群组

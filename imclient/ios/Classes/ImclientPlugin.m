@@ -994,6 +994,20 @@ ImclientPlugin *gIMClientInstance;
     }];
 }
 
+- (void)quitGroupEx:(NSDictionary *)dict result:(FlutterResult)result {
+    int requestId = [dict[@"requestId"] intValue];
+    BOOL keepMessage = [dict[@"keepMessage"] boolValue];
+    NSString *groupId = dict[@"groupId"];
+    NSArray *notifyLines = dict[@"notifyLines"];
+    NSDictionary *notifyContent = dict[@"notifyContent"];
+    
+    [[WFCCIMService sharedWFCIMService] quitGroup:groupId keepMessage:keepMessage notifyLines:notifyLines notifyContent:[self contentFromDict:notifyContent] success:^{
+        [self callbackOperationVoidSuccess:requestId];
+    } error:^(int error_code) {
+        [self callbackOperationFailure:requestId errorCode:error_code];
+    }];
+}
+
 - (void)dismissGroup:(NSDictionary *)dict result:(FlutterResult)result {
     int requestId = [dict[@"requestId"] intValue];
     NSString *groupId = dict[@"groupId"];

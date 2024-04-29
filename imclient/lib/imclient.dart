@@ -1144,6 +1144,17 @@ class Imclient {
     ImclientPlatform.instance.quitGroup(groupId, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
   }
 
+  ///退出群组
+  static void quitGroupEx(
+      String groupId,
+      bool keepMessage,
+      OperationSuccessVoidCallback successCallback,
+      OperationFailureCallback errorCallback,
+      {List<int>? notifyLines,
+        MessageContent? notifyContent}) {
+    ImclientPlatform.instance.quitGroupEx(groupId, keepMessage, successCallback, errorCallback, notifyLines: notifyLines, notifyContent: notifyContent);
+  }
+
   ///解散群组
   static void dismissGroup(
       String groupId,
