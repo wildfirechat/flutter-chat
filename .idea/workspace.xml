@@ -5,25 +5,18 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="82574ba3-cf72-44f9-86ac-0c8111d21a51" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/Flutter/AppFrameworkInfo.plist" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Flutter/AppFrameworkInfo.plist" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/Podfile" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Podfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/example/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Podfile.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/android/android_client_aars/client-release.aar" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/android/android_client_aars/client-release.aar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/android/android_client_aars/mars-core-release.aar" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/android/android_client_aars/mars-core-release.aar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/android/src/main/java/cn/wildfirechat/imclient/ImclientPlugin.java" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/android/src/main/java/cn/wildfirechat/imclient/ImclientPlugin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/Classes/ImclientPlugin.m" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/Classes/ImclientPlugin.m" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/Info.plist" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64/WFChatClient.framework/Headers/WFCCIMService.h" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64/WFChatClient.framework/Headers/WFCCIMService.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64/WFChatClient.framework/Headers/WFCCNetworkService.h" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64/WFChatClient.framework/Headers/WFCCNetworkService.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64/WFChatClient.framework/Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64/WFChatClient.framework/Info.plist" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64/WFChatClient.framework/WFChatClient" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64/WFChatClient.framework/WFChatClient" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64_x86_64-simulator/WFChatClient.framework/Headers/WFCCIMService.h" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64_x86_64-simulator/WFChatClient.framework/Headers/WFCCIMService.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64_x86_64-simulator/WFChatClient.framework/Headers/WFCCNetworkService.h" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64_x86_64-simulator/WFChatClient.framework/Headers/WFCCNetworkService.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64_x86_64-simulator/WFChatClient.framework/Info.plist" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64_x86_64-simulator/WFChatClient.framework/Info.plist" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64_x86_64-simulator/WFChatClient.framework/WFChatClient" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64_x86_64-simulator/WFChatClient.framework/WFChatClient" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64_x86_64-simulator/WFChatClient.framework/_CodeSignature/CodeResources" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/ios/WFSDK/WFChatClient.xcframework/ios-arm64_x86_64-simulator/WFChatClient.framework/_CodeSignature/CodeResources" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/lib/imclient_method_channel.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/rtckit/android/android_avclient_aars/avenginekit.aar" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/android/android_avclient_aars/avenginekit.aar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/Runner.xcodeproj/project.pbxproj" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Runner.xcodeproj/project.pbxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Runner.xcodeproj/xcshareddata/xcschemes/Runner.xcscheme" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/lib/home/home.dart" beforeDir="false" afterPath="$PROJECT_DIR$/example/lib/home/home.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/imclient/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/imclient/pubspec.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rtckit/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/rtckit/pubspec.yaml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

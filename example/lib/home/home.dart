@@ -185,8 +185,7 @@ class HomeTabBarState extends State<HomeTabBar> {
     );
     return Scaffold(//布局结构
         appBar: AppBar(//选中每一项的标题和图标设置
-            title: Text(appBarTitles[_tabIndex], style: const TextStyle(color: Colors.white)),
-            iconTheme: const IconThemeData(color: Colors.white),
+            title: Text(appBarTitles[_tabIndex]),
             centerTitle: false,
             actions: [
               GestureDetector(
