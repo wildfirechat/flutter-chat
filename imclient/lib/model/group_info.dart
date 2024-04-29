@@ -12,6 +12,7 @@ class GroupInfo {
       this.maxMemberCount = 0,
       this.superGroup = 0,
       this.deleted = 0,
+      this.memberDt = 0,
       this.updateDt = 0});
   late String target;
   GroupType type;
@@ -29,5 +30,6 @@ class GroupInfo {
   int maxMemberCount;
   int superGroup;
   int deleted;
+  int memberDt;
   int updateDt;
 }

@@ -1386,6 +1386,23 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         ChatManager.Instance().quitGroup(groupId, notifyLines, messageContent, new GeneralVoidCallback(requestId));
     }
 
+    private void quitGroupEx(@NonNull MethodCall call, @NonNull Result result) {
+        int requestId = call.argument("requestId");
+        boolean keepMessage = call.argument("keepMessage");
+        String groupId = call.argument("groupId");
+        List<Integer> notifyLines = call.argument("notifyLines");
+        if (notifyLines == null) {
+            notifyLines = new ArrayList<>();
+        }
+        if (notifyLines.isEmpty()) {
+            notifyLines.add(0);
+        }
+        Map notifyContent = call.argument("notifyContent");
+        MessageContent messageContent = messageContentFromMaps(notifyContent);
+
+        ChatManager.Instance().quitGroup(groupId, keepMessage, notifyLines, messageContent, new GeneralVoidCallback(requestId));
+    }
+
     private void dismissGroup(@NonNull MethodCall call, @NonNull Result result) {
         int requestId = call.argument("requestId");
         String groupId = call.argument("groupId");
@@ -2456,9 +2473,11 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         map.put("privateChat", protoData.privateChat);
         map.put("searchable", protoData.searchable);
         map.put("historyMessage", protoData.historyMessage);
+        map.put("memberDt", protoData.memberDt);
         map.put("updateDt", protoData.updateDt);
         map.put("maxMemberCount", protoData.maxMemberCount);
         map.put("superGroup", protoData.superGroup);
+        map.put("deleted", protoData.deleted);
         return map;
     }
 
