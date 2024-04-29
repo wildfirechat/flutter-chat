@@ -89,9 +89,6 @@
 
 1. 升级插件时，一定要记得同步升级`android_client_aars`和`android_avclient_aars`等`aars`目录
 
-## Flutter版本的兼容问题
-暂时不支持Flutter 3.16版本，3.13版本及之前的稳定版本都支持。我们稍后会升级来兼容3.16版本。
-
 ## SDK的使用
 
 ### 基础知识
