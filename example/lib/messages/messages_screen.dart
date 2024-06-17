@@ -565,10 +565,11 @@ class _State extends State<MessagesScreen> {
 
   void onTapedCell(MessageModel model) {
     if(model.message.content is ImageMessageContent) {
-      Imclient.getMessages(widget.conversation, model.message.messageId+1, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value1) {
+      Imclient.getMessages(widget.conversation, model.message.messageId, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value1) {
         Imclient.getMessages(widget.conversation, model.message.messageId, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value2) {
           List<Message> list = [];
           list.addAll(value2);
+          list.add(model.message);
           list.addAll(value1);
           int index = 0;
           for(int i = 0; i < list.length; i++) {
