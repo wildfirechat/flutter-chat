@@ -84,6 +84,11 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
       });
 
       widget.callSession?.setCallSessionCallback(this);
+      widget.callSession?.reloadSession((CallSession session){
+        setState(() {
+          widget.callSession = session;
+        });
+      });
 
       Imclient.getUserInfo(widget.callSession!.initiator!, groupId: widget.groupId!).then((value) {
         setState(() {
@@ -559,10 +564,15 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
 
   @override
   void didChangeState(CallSession session, int state) {
-    if(stateGlobalKey.currentState != null) {
-      stateGlobalKey.currentState!.updateCallStateView(state);
-    }
-    loadProfiles();
+    setState(() {
+      if(widget.callSession != null && widget.callSession?.callId == session.callId) {
+        widget.callSession = session;
+        if(stateGlobalKey.currentState != null) {
+          stateGlobalKey.currentState!.updateCallStateView(state);
+        }
+        loadProfiles();
+      }
+    });
   }
 
   @override

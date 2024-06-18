@@ -206,6 +206,13 @@ Imclient.setDeviceToken(pushType, deviceToken);
 
 我们在2023.11.29日起，正式采用方案2，同时方案1保留在```native-rtc-ui```分支。已经使用方案1的用户可以继续使用```native-rtc-ui```的分支，如果有需求可以切换到```master```分支去，以后我们的开发重点将会放到```master```分支上去。
 
+## iOS平台使用Callkit
+在国外是可以使用callkit的，需要使用callkit时，推送服务需要配置启用callkit。另外客户端这边也需要做一些处理来支持callkit，首先代码中搜索
+```dart
+Rtckit.enableCallkit()
+```
+把这句话的注释打开。另外打开iOS工程，在应用的依赖库中添加```CallKit.framework```和```PushKit.framework```，另外在项目的```Signing & Capabilities```中添加```Background Modes```中添加```Audio, AirPlay, and Picture in Picture```, ```Voice over IP```和```Remote Notification```（如果找不到请百度一下）。
+
 ## 截图
 会话列表
 

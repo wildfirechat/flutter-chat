@@ -125,6 +125,11 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         result.success(null);
     }
 
+    private void enableCallkit(@NonNull MethodCall call, @NonNull Result result) {
+        //only ios support
+        result.success(null);
+    }
+    
     private void addICEServer(@NonNull MethodCall call, @NonNull Result result) {
         String url = call.argument("url");
         String name = call.argument("name");

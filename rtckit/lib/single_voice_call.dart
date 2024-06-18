@@ -77,6 +77,11 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         createVideoView();
       }
       widget.callSession?.setCallSessionCallback(this);
+      widget.callSession?.reloadSession((CallSession session){
+        setState(() {
+          widget.callSession = session;
+        });
+      });
     }
 
     Imclient.getUserInfo(widget.userId!).then((value) {
@@ -597,12 +602,14 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   @override
   void didChangeState(CallSession session, int state) {
-    if(stateGlobalKey.currentState != null) {
-      stateGlobalKey.currentState!.updateCallStateView(state);
-    }
-    updateVideoView();
     setState(() {
-
+      if(widget.callSession != null && widget.callSession?.callId == session.callId) {
+        widget.callSession = session;
+        if(stateGlobalKey.currentState != null) {
+          stateGlobalKey.currentState!.updateCallStateView(state);
+        }
+        updateVideoView();
+      }
     });
   }
 

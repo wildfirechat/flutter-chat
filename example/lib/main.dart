@@ -62,7 +62,7 @@ class _MyAppState extends State<MyApp> {
             //收到来电通知，原生代码会自动弹出来电界面。如果在后台，这里要弹出本地通知，本地通知带上震铃声。
             debugPrint('didReceiveCallCallback: ${callSession.callId}');
             Rtckit.currentCallSession().then((cs) {
-              if(cs != null && cs.state == kWFAVEngineStateIncoming) {
+              if(cs != null && cs.state != kWFAVEngineStateIdle) {
                 if(cs.conversation!.conversationType == ConversationType.Single) {
                   SingleVideoCallView callView = SingleVideoCallView(
                       callSession: cs);
@@ -90,6 +90,7 @@ class _MyAppState extends State<MyApp> {
           //原生代码通知上层通话结束。
           debugPrint('didEndCallCallback: $reason, $duration');
         });
+    //Rtckit.enableCallkit();
     if (Config.ICE_SERVERS != null){
       for (int i = 0; i < Config.ICE_SERVERS.length; i ++){
         var iceServer = Config.ICE_SERVERS[i];
