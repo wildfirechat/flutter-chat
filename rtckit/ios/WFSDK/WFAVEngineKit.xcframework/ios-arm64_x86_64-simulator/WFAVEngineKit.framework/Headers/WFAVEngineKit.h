@@ -532,6 +532,22 @@ typedef NS_ENUM(NSInteger, WFAVCameraPosition) {
  取消通话界面
  */
 - (void)dismissViewController:(UIViewController *)viewController;
+
+/**
+ 当使用callkit时，需要注册当前音视频通话的UUID，这样音视频SDK才可以判断是否跟其他电话是否冲突
+ 
+ @param callId 野火通话ID。
+ @param callUUID call UUID
+ */
+- (void)registerCall:(NSString *_Nonnull)callId uuid:(NSUUID *_Nonnull)callUUID;
+
+/**
+ 获取用户显示名称。实现方法是调用im sdk获取用户信息并返回用户昵称。为了解决某些平台音视频插件无法添加IM依赖的问题 。
+ 
+ @param userId 用户ID
+ @return 返回用户显示名称
+ */
+- (NSString *_Nullable)getUserDisplayName:(NSString *_Nonnull)userId;
 @end
 
 /*!
