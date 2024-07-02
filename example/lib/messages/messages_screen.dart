@@ -337,10 +337,14 @@ class _State extends State<MessagesScreen> {
   }
 
   void _sendMessage(MessageContent messageContent) {
-    Imclient.sendMessage(widget.conversation, messageContent, successCallback: (int messageUid, int timestamp) {
+    Imclient.sendMediaMessage(widget.conversation, messageContent, successCallback: (int messageUid, int timestamp) {
 
     }, errorCallback: (int errorCode) {
 
+    }, progressCallback: (int uploaded, int total) {
+      debugPrint("progressCallback:$uploaded,$total");
+    }, uploadedCallback: (String remoteUrl) {
+      debugPrint("uploadedCallback:$remoteUrl");
     });
   }
 
