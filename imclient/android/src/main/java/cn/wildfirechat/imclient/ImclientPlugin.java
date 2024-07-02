@@ -3099,6 +3099,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                         case "onConversationSilentUpdate":
                         case "onClearMessage":
                         case "onProgress":
+                        case "onMediaUpload":
+                        case "onSendSuccess":
                             //ignore these event
                             break;
                         default: {
