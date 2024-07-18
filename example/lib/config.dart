@@ -11,14 +11,14 @@ class Config {
   /// <br>
   /// 单人版和多人版音视频必须部署turn服务。高级版不需要部署stun/turn服务。
   /// <p>
-  /// !!! 我们提供的服务仅供用户测试和体验，为了保证测试可用，我们会不定期的更改密码. !!!
+  /// !!! 我们提供的服务能力有限，总体带宽仅3Mbps，只能用于用户测试和体验，为了保证测试可用，我们会不定期的更改密码. !!!
   /// <br>
-  /// <strong>上线商用时，请更换为自己部署的turn 服务</strong>
+  /// <strong>上线时请一定要切换成你们自己的服务。可以购买腾讯云或者阿里云的轻量服务器，价格很便宜，可以避免影响到您的用户体验。</strong>
   /// <br>
   static final ICE_SERVERS/*请仔细阅读上面的注释*/ =[
   // 数组元素定义
   /*{"turn server uri", "userName", "password"}*/
-  ["turn:turn.wildfirechat.net:3478", "wfchat", "wfchat1"]
+  ["turn:turn.wildfirechat.net:3478", "wfchat", "wfchat123"]
   ];
 
   static const String defaultUserPortrait = 'assets/images/user_avatar_default.png';
