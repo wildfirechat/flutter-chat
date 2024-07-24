@@ -73,6 +73,8 @@ class ImclientPlatform extends PlatformInterface {
   static ChannelInfoUpdatedCallback? _channelInfoUpdatedCallback;
   static OnlineEventCallback? _onlineEventCallback;
 
+  static bool _initialized = false;
+
 
   static int _requestId = 0;
   static final Map<int, SendMessageSuccessCallback> _sendMessageSuccessCallbackMap =
@@ -227,6 +229,7 @@ class ImclientPlatform extends PlatformInterface {
 
 
     methodChannel.invokeMethod<Void>('initProto');
+    _initialized = true;
 
     methodChannel.setMethodCallHandler((MethodCall call) async {
       switch (call.method) {
@@ -1313,6 +1316,9 @@ class ImclientPlatform extends PlatformInterface {
   /// 连接IM服务。调用连接之后才可以调用获取数据接口。连接状态会通过连接状态回调返回。
   /// [host]为IM服务域名或IP，必须im.example.com或114.144.114.144，不带http头和端口。
   Future<int> connect(String host, String userId, String token) async {
+    if(!_initialized) {
+      throw Exception("没有初始化，请在应用启动时，调用imclient的init方法，之后才可以调用connect进行连接。");
+    }
     this.userId = userId;
     int lastConnectTime = await methodChannel.invokeMethod('connect', {'host':host, 'userId':userId, 'token':token});
     return lastConnectTime;
