@@ -1,0 +1,10 @@
+{
+    "module": {
+        "name": "imclient",
+        "type": "har",
+        "deviceTypes": [
+            "default",
+            "tablet"
+        ]
+    }
+}
