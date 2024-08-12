@@ -224,7 +224,7 @@ class _ContactListItemState extends State<ContactListItem> {
         children: <Widget>[
           Container(
             height: widget.withSectionHeader?18:0,
-            width: View.of(context).physicalSize.width/View.of(context).devicePixelRatio,
+            width:PlatformDispatcher.instance.views.first.physicalSize.width/PlatformDispatcher.instance.views.first.devicePixelRatio,
             color: const Color(0xffebebeb),
             child: widget.withSectionHeader && widget.sectionTitle != null ? Text(widget.sectionTitle!): null,
           ),

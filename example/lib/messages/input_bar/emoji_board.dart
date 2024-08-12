@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 
@@ -21,7 +23,7 @@ class EmojiBoardState extends State<EmojiBoard> {
   Widget build(BuildContext context) {
     double boardHeight = 200;
     int lineCount = 8;
-    double screenWidth = View.of(context).physicalSize.width/View.of(context).devicePixelRatio;
+    double screenWidth =PlatformDispatcher.instance.views.first.physicalSize.width/PlatformDispatcher.instance.views.first.devicePixelRatio;
     double textSize = 28;
     double paddingSize = (screenWidth - textSize * lineCount)/lineCount/2;
     int lines = (boardHeight/(textSize+paddingSize*2)).toInt();

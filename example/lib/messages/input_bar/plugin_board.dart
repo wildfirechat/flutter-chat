@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -43,7 +44,7 @@ class PluginBoard extends StatelessWidget {
   ];
 
   List<Widget> _getLineItem(BuildContext context, List<_PluginItem> line) {
-    double width = View.of(context).physicalSize.width/View.of(context).devicePixelRatio;
+    double width =PlatformDispatcher.instance.views.first.physicalSize.width/PlatformDispatcher.instance.views.first.devicePixelRatio;
     double itemWidth = 54;
     double padding = (width - 4*itemWidth)/4/2;
     List<Widget> items = [];
