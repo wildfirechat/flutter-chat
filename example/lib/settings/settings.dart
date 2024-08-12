@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +50,7 @@ class SettingsTab extends StatelessWidget {
     return GestureDetector(child: Column(children: [
       Container(
         height: 18,
-        width: View.of(context).physicalSize.width,
+        width:PlatformDispatcher.instance.views.first.physicalSize.width,
         color: const Color(0xffebebeb),
       ),
       Container(margin: const EdgeInsets.fromLTRB(10, 10, 5, 10), height: 36, child: Row(children: [image, Expanded(child: Container(margin: EdgeInsets.only(left: 15), child: Text(title),))],),),
@@ -154,7 +155,7 @@ class SettingProfileState extends State<SettingProfile> {
                   children: [
                     Text(userInfo!.displayName!, textAlign: TextAlign.left, style: const TextStyle(fontSize: 18),),
                     Container(margin: const EdgeInsets.only(top: 5),),
-                    Container(constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width/View.of(context).devicePixelRatio - 100), child: Text('野火号:${userInfo!.name}', textAlign: TextAlign.left, style: const TextStyle(fontSize: 12, color: Color(0xFF3b3b3b), ), overflow: TextOverflow.ellipsis,),)
+                    Container(constraints: BoxConstraints(maxWidth:PlatformDispatcher.instance.views.first.physicalSize.width/PlatformDispatcher.instance.views.first.devicePixelRatio - 100), child: Text('野火号:${userInfo!.name}', textAlign: TextAlign.left, style: const TextStyle(fontSize: 12, color: Color(0xFF3b3b3b), ), overflow: TextOverflow.ellipsis,),)
                   ],
                 ),
               )

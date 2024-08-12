@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
@@ -194,11 +195,11 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
       ),
     );
   }
-  
+
   Widget _getList() {
     return ListView.builder(
-        itemCount: modelList.length, 
-        itemBuilder: _buildRow 
+        itemCount: modelList.length,
+        itemBuilder: _buildRow
     );
   }
 
@@ -230,7 +231,7 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
     return GestureDetector(child: Column(children: [
       Container(
         height: hasSection?18:0,
-        width: View.of(context).physicalSize.width,
+        width:PlatformDispatcher.instance.views.first.physicalSize.width,
         color: const Color(0xffebebeb),
       ),
       key == 'member_list'?conversationSettingMembersWidget!:

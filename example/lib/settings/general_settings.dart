@@ -1,4 +1,6 @@
 
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
@@ -47,7 +49,7 @@ class GeneralSettings extends StatelessWidget {
     return GestureDetector(child: Column(children: [
       Container(
         height: hasSection?18:0,
-        width: View.of(context).physicalSize.width,
+        width:PlatformDispatcher.instance.views.first.physicalSize.width,
         color: const Color(0xffebebeb),
       ),
       Container(

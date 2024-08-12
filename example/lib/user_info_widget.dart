@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
@@ -118,7 +119,7 @@ class _UserInfoState extends State<UserInfoWidget> {
         nameList.add(Text('备注名:${userInfo!.friendAlias!}', textAlign: TextAlign.left, style: const TextStyle(fontSize: 12),));
         nameList.add(Container(margin: EdgeInsets.only(top: hasAlias?3:6),));
       }
-      nameList.add(Container(constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width/View.of(context).devicePixelRatio - 100), child: Text('野火号:${userInfo!.name}', textAlign: TextAlign.left, style: const TextStyle(fontSize: 12, color: Color(0xFF3b3b3b), ), overflow: TextOverflow.ellipsis,)));
+      nameList.add(Container(constraints: BoxConstraints(maxWidth: PlatformDispatcher.instance.views.first.physicalSize.width/PlatformDispatcher.instance.views.first.devicePixelRatio - 100), child: Text('野火号:${userInfo!.name}', textAlign: TextAlign.left, style: const TextStyle(fontSize: 12, color: Color(0xFF3b3b3b), ), overflow: TextOverflow.ellipsis,)));
 
       return Container(
         height: 80,
@@ -160,7 +161,7 @@ class _UserInfoState extends State<UserInfoWidget> {
     return GestureDetector(child: Column(children: [
       Container(
         height: hasSection?18:0,
-        width: View.of(context).physicalSize.width,
+        width:PlatformDispatcher.instance.views.first.physicalSize.width,
         color: const Color(0xffebebeb),
       ),
       Container(
