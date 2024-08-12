@@ -55,6 +55,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initIMClient() async {
+    /*
     Rtckit.init(
         didReceiveCallCallback: (callSession) {
           //收到来电请求后，延迟100毫秒，判断是否来电已经结束，解决离线时先拨打再挂掉的问题。
@@ -112,10 +113,13 @@ class _MyAppState extends State<MyApp> {
       );
     };
 
+    */
+
     Imclient.setDefaultPortraitProvider(WFPortraitProvider());
 
     Imclient.init((int status) {
       if (kDebugMode) {
+        debugPrint("connectionStatus");
         print(status);
       }
       if (status == kConnectionStatusSecretKeyMismatch ||
@@ -197,8 +201,12 @@ class _MyAppState extends State<MyApp> {
     });
 
     Imclient.startLog();
+    debugPrint("0000000000");
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString("userId") != null && prefs.getString("token") != null) {
+      debugPrint("11111111");
+      debugPrint(prefs.getString("userId"));
+      debugPrint(prefs.getString("token"));
       Imclient.connect(
           Config.IM_Host, prefs.getString("userId")!, prefs.getString("token")!);
       Future.delayed(const Duration(seconds: 1), () {

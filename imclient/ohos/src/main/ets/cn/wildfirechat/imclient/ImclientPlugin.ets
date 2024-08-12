@@ -28,7 +28,7 @@ import {
 import { UIAbility } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { window } from '@kit.ArkUI';
-import { initProto, getClientId, connect, getUserInfo } from './marsWrapper';
+import { initProto, getClientId, connect, getUserInfo, setWfcEventListener, getConversationInfos } from './marsWrapper';
 import json from '@ohos.util.json';
 import map from '@hms.core.map.map';
 
@@ -51,6 +51,18 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         this.channel?.setMethodCallHandler(this)
         this.flutterPluginBinding = binding
         initProto()
+        setWfcEventListener((value: object) => {
+            let args = (value as Record<string, Object>)['args'] as Object[]
+            let event = args[0] as string
+            switch (event) {
+                case 'onConnectionStatusChange':
+                    this._callback2UI('onConnectionStatusChanged', args[1])
+                    break
+                default:
+                    console.log('unknown event', event, args)
+                    break
+            }
+        })
         // binding.getPlatformViewRegistry()
         //     .registerViewFactory(CHANNEL_VIEW_NAME, new QrReaderFactory(binding.getBinaryMessenger()))
     }
@@ -101,8 +113,12 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
             fn?.(call, result)
         } catch (err) {
             Log.e(TAG, 'onMethodCall failed: ' + err);
-            result.error("IMClientPlugin", "onMethodCall failed with err", err);
+            // result.error("IMClientPlugin", "onMethodCall failed with err", err);
         }
+    }
+
+    _initProto(call: MethodCall, result: MethodResult) {
+        // do nothing
     }
 
     _getClientId(call: MethodCall, result: MethodResult) {
@@ -132,9 +148,29 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         result.success(userInfo ? json.parse(userInfo) : null);
     }
 
+    _registerMessage() {
+        // TODO
+    }
+
+    _getConversationInfos(call: MethodCall, result: MethodResult) {
+        let lines = call.argument('lines') as number[]
+        let types = call.argument('types') as number[]
+        let convsStr = getConversationInfos(types, lines)
+        // TODO
+        // FIXME
+        // string[]
+        result.success(convsStr)
+    }
+
+    _callback2UI(method: string, args: object) {
+        this.channel?.invokeMethod(method, args)
+    }
+
     methods: Record<string, Function> = {
+        "initProto": this._initProto,
         "getClientId": this._getClientId,
         "connect": this._connect,
         "getUserInfo": this._getUserInfo,
+        "getConversationInfos": this._getConversationInfos,
     }
 }

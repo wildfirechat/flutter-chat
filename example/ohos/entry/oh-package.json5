@@ -6,6 +6,7 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "imclient": "file:../har/imclient.har"
+    "imclient": "file:../har/imclient.har",
+    "shared_preferences_ohos": "file:../har/shared_preferences_ohos.har"
   }
 }
