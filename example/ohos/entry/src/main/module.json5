@@ -46,8 +46,63 @@
         ]
       }
     ],
-    "requestPermissions": [
-      {"name" :  "ohos.permission.INTERNET"},
-    ]
+      "requestPermissions": [
+          {
+              "name": "ohos.permission.INTERNET",
+              "usedScene": {
+                  "when": "always"
+              }
+          },
+          {
+              "name": "ohos.permission.WRITE_MEDIA",
+              "reason": "$string:reason_write_media",
+              "usedScene": {
+                  "when": "always"
+              }
+          },
+          {
+              "name": "ohos.permission.READ_MEDIA",
+              "reason": "$string:reason_write_media",
+              "usedScene": {
+                  "when": "always"
+              }
+          },
+//          {
+//              "name": "ohos.permission.READ_IMAGEVIDEO",
+//              "reason": "$string:reason_read_image_video",
+//              "usedScene": {
+//                  "when": "inuse"
+//              }
+//          },
+          {
+              "name": "ohos.permission.MICROPHONE",
+              "reason": "$string:reason_microphone",
+              "usedScene": {
+                  "when": "inuse"
+              }
+          },
+          {
+              "name": "ohos.permission.MEDIA_LOCATION",
+              "reason": "$string:reason_media_location",
+              "usedScene": {
+                  "when": "inuse"
+              }
+          },
+//          {
+//              "name": "ohos.permission.SYSTEM_FLOAT_WINDOW",
+//              "reason": "$string:reason_floating_window",
+//              "usedScene": {
+//                  "when": "inuse"
+//              }
+//          },
+//          {
+//              "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
+//              "reason": "$string:reason_floating_window",
+//              "usedScene": {
+//                  "when": "inuse"
+//              }
+//          }
+      ]
+
   }
 }

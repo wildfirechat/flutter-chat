@@ -5,11 +5,15 @@ type SuccessCallback = VoidCallback;
 type FailCallback = (error: number) => void;
 let wfcEventListener: null | ((value: object) => void) = null;
 
-function initProto(): void {
-    console.log('xxxxxxxxxxxxxx initProto')
+function initProto(dbPath: string): void {
+    clientModule.setDBPath(dbPath);
     clientModule.setConnectionStatusListener(genWfcEventListener('onConnectionStatusChange'));
     clientModule.setConnectToServerListener(genWfcEventListener('onConnectToServer'));
-    clientModule.setReceiveMessageListener(genWfcEventListener('onReceiveMessage'), genWfcEventListener('onRecallMessage'), genWfcEventListener('onDeleteMessage'), genWfcEventListener('onMessageDelivered'), genWfcEventListener('onMessageRead'));
+    clientModule.setReceiveMessageListener(genWfcEventListener('onReceiveMessage'),
+        genWfcEventListener('onRecallMessage'),
+        genWfcEventListener('onDeleteMessage'),
+        genWfcEventListener('onMessageDelivered'),
+        genWfcEventListener('onMessageRead'));
     clientModule.setConferenceEventListener(genWfcEventListener('onConferenceEvent'));
     clientModule.setOnlineEventListener(genWfcEventListener('onUserOnlineEvent'));
     clientModule.setUserInfoUpdateListener(genWfcEventListener('onUserInfoUpdate'));
@@ -48,7 +52,7 @@ function disconnect(disablePush: boolean, clearSession: boolean) {
 function addHttpHeader(header: string, value: string) {
     clientModule.addHttpHeader(header, value);
 }
-function addMembers(groupId: string, memberIds: string[], extra: string, notifyLines: number[], notifyContentStr: string, successCB: () => void, failCB: (err: object) => void) {
+function addMembers(groupId: string, memberIds: string[], extra: string, notifyLines: number[], notifyContentStr: string, successCB: () => void, failCB: FailCallback) {
     clientModule.addMembers(memberIds, groupId, extra, notifyLines, notifyContentStr, (_: object)=>{
         successCB();
     }, failCB);
@@ -68,6 +72,11 @@ function getUserInfo(userId: string, fresh: boolean, groupId: string): string {
 function getGroupMembers(groupId: string, fresh: boolean): string {
     return clientModule.getGroupMembers(groupId, fresh);
 }
+
+function getGroupMembersByCount(groupId: string, count: number): string {
+    return clientModule.getGroupMembersByCount(groupId, count);
+}
+
 function getUserInfos(userIds: string[], groupId: string): string {
     return clientModule.getUserInfos(userIds, groupId);
 }
@@ -362,10 +371,8 @@ function sendConferenceRequest(sessionId: string, roomId: string, request: strin
 function sendFriendRequest(userId: string, reason: string, extra: string, successCB: VoidCallback, failCB: FailCallback): void {
     clientModule.sendFriendRequest(userId, reason, extra, voidCallback(successCB), numberCallback(failCB));
 }
-function sendMessage(conversation: string, messagePayload: string, toUsers: string[], expireDuration: number, prepareCB: (value: object) => void, progressCB: (value: object) => void, successCB: (value: object) => void, failCB: FailCallback): void {
-    clientModule.sendMessage(conversation, messagePayload, toUsers, expireDuration, variableParamsToArrayParamCallback(prepareCB), variableParamsToArrayParamCallback(progressCB), (...params: object[])=>{
-        console.log('send message uploaded', ...params);
-    }, variableParamsToArrayParamCallback(successCB), numberCallback(failCB));
+function sendMessage(conversation: string, messagePayload: string, toUsers: string[], expireDuration: number, prepareCB: (value: object) => void, progressCB: (value: object) => void, successCB: (value: object) => void, failCB: FailCallback, mediaUpload:StringCallback) : void {
+    clientModule.sendMessage(conversation, messagePayload, toUsers, expireDuration, variableParamsToArrayParamCallback(prepareCB), variableParamsToArrayParamCallback(progressCB), stringCallback(mediaUpload), variableParamsToArrayParamCallback(successCB), numberCallback(failCB));
 }
 function setBackupAddress(backupHost: string, backupPort: number): void {
     clientModule.setBackupAddress(backupHost, backupPort);
@@ -503,6 +510,7 @@ export { getUserSettings as getUserSettings };
 export { getGroupInfo as getGroupInfo };
 export { getUserInfo as getUserInfo };
 export { getGroupMembers as getGroupMembers };
+export { getGroupMembersByCount as getGroupMembersByCount };
 export { getUserInfos as getUserInfos };
 export { getConversationInfo as getConversationInfo };
 export { getListenedChannels as getListenedChannels };
