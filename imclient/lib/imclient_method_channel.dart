@@ -748,7 +748,7 @@ class ImclientPlatform extends PlatformInterface {
     }
 
     msg.conversation = _convertProtoConversation(map['conversation']);
-    msg.fromUser = map['sender'];
+    msg.fromUser = map.containsKey('sender') ? map['sender'] : map['from'];
     if(map['toUsers'] != null) {
       msg.toUsers = Tools.convertDynamicList(map['toUsers']);
     }
@@ -756,7 +756,7 @@ class ImclientPlatform extends PlatformInterface {
         decodeMessageContent(_convertProtoMessageContent(map['content']));
     msg.direction = MessageDirection.values[map['direction']];
     msg.status = MessageStatus.values[map['status']];
-    msg.serverTime = map['serverTime'];
+    msg.serverTime = map.containsKey('serverTime') ? map['serverTime'] : map['timestamp'];
     msg.localExtra = map['localExtra'];
     return msg;
   }
@@ -778,7 +778,7 @@ class ImclientPlatform extends PlatformInterface {
 
   static Conversation _convertProtoConversation(Map<dynamic, dynamic> map) {
     Conversation conversation = Conversation();
-    conversation.conversationType = ConversationType.values[map['type']];
+    conversation.conversationType = ConversationType.values[map.containsKey('type') ? map['type'] : map['conversationType']];
     conversation.target = map['target'];
     if (map['line'] == null) {
       conversation.line = 0;
@@ -944,6 +944,7 @@ class ImclientPlatform extends PlatformInterface {
     payload.content = map['content'];
     if(map['binaryContent'] != null) {
       payload.binaryContent = base64Decode(map['binaryContent']);
+      payload.binaryContent = payload.binaryContent!.length > 0 ? payload.binaryContent : null;
     }
     payload.localContent = map['localContent'];
     if (map['mentionedType'] != null) {
