@@ -449,8 +449,8 @@ function updateMessageStatus(messageId: number, status: number): void {
 function updateRemoteMessageContent(messageUid: string, messagePayload: string, distribute: boolean, updateLocal: boolean, successCB: VoidCallback, failCB: FailCallback): void {
     clientModule.updateRemoteMessageContent(messageUid, messagePayload, distribute, updateLocal, voidCallback(successCB), numberCallback(failCB));
 }
-function uploadMedia(fileName: string, data: string, mediaType: number, successCB: VoidCallback, failCB: FailCallback, progressCB: (value: object) => void): void {
-    clientModule.uploadMedia(fileName, data, mediaType, voidCallback(successCB), numberCallback(failCB), progressCB);
+function uploadMedia(fileName: string, data: string, mediaType: number, successCB: StringCallback, failCB: FailCallback, progressCB: (value: object) => void): void {
+    clientModule.uploadMedia(fileName, data, mediaType, stringCallback(successCB), numberCallback(failCB), progressCB);
 }
 function getMessage(messageId: number): string {
     return clientModule.getMessage(messageId);
