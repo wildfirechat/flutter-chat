@@ -439,6 +439,478 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
             }, this.__generalFailCallback(requestId))
         }
     }
+    _isLogined = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _connectionStatus = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _serverDeltaTime = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _startLog = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _stopLog = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setSendLogCommand = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _useSM4 = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setLiteMode = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setDeviceToken = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setVoipDeviceToken = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setBackupAddressStrategy = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setBackupAddress = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setProtoUserAgent = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _addHttpHeader = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setProxyInfo = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getProtoRevision = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getLogFilesPath = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _disconnect = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _searchConversation = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _removeConversation = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setConversationTop = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setConversationSilent = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setConversationTimestamp = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getFirstUnreadMessageId = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getConversationUnreadCount = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getConversationsUnreadCount = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _clearConversationsUnreadStatus = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _clearConversationUnreadStatus = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _clearMessageUnreadStatus = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _markAsUnRead = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getConversationRead = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getMessageDelivery = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getMessagesByStatus = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getConversationsMessages = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getConversationsMessageByStatus = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getRemoteMessages = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getRemoteMessage = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getMessage = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getMessageByUid = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _searchMessages = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _searchConversationsMessages = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _sendSavedMessage = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _cancelSendingMessage = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _uploadMedia = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _uploadMediaFile = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getUploadUrl = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _deleteMessage = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _batchDeleteMessages = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _deleteRemoteMessage = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _clearMessagesKeepLatest = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _clearRemoteConversationMessage = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setMediaMessagePlayed = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setMessageLocalExtra = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _insertMessage = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _updateMessage = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _updateRemoteMessageContent = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _updateMessageStatus = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getMessageCount = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _searchUser = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getUserInfoAsync = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _searchFriends = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getFriends = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _searchGroups = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getOutgoingFriendRequest = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getFriendRequest = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _loadFriendRequestFromRemote = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _clearUnreadFriendRequestStatus = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _clearFriendRequest = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _deleteFriend = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _sendFriendRequest = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _handleFriendRequest = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getFriendAlias = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setFriendAlias = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getFriendExtra = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isBlackListed = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getBlackList = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setBlackList = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getGroupMembersByTypes = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getGroupMembersAsync = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getGroupInfos = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getGroupInfoAsync = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _quitGroup = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _quitGroupEx = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _dismissGroup = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _modifyGroupInfo = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _modifyGroupAlias = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _modifyGroupMemberAlias = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _transferGroup = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setGroupManager = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _muteGroupMember = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _allowGroupMember = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getGroupRemark = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setGroupRemark = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setFavGroup = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getUserSetting = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getUserSettings = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setUserSetting = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _modifyMyInfo = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isGlobalSilent = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setGlobalSilent = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isVoipNotificationSilent = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setVoipNotificationSilent = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isEnableSyncDraft = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setEnableSyncDraft = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getNoDisturbingTimes = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setNoDisturbingTimes = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _clearNoDisturbingTimes = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isNoDisturbing = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isHiddenNotificationDetail = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setHiddenNotificationDetail = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setHiddenGroupMemberName = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getMyGroups = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getCommonGroups = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isUserEnableReceipt = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setUserEnableReceipt = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getFavUsers = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isFavUser = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setFavUser = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _joinChatroom = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _quitChatroom = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getChatroomInfo = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getChatroomMemberInfo = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _createChannel = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getChannelInfo = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _modifyChannelInfo = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _searchChannel = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isListenedChannel = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _listenChannel = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getMyChannels = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getRemoteListenedChannels = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _destoryChannel = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getOnlineInfos = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _kickoffPCClient = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isMuteNotificationWhenPcOnline = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _muteNotificationWhenPcOnline = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getUserOnlineState = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getMyCustomState = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _setMyCustomState = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _watchOnlineState = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _unwatchOnlineState = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isEnableUserOnlineState = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getConversationFiles = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getMyFiles = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _deleteFileRecord = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _searchFiles = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _searchMyFiles = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getAuthorizedMediaUrl = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getAuthCode = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _configApplication = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _getWavData = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _beginTransaction = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _commitTransaction = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _rollbackTransaction = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isCommercialServer = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isReceiptEnabled = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isGroupReceiptEnabled = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+    _isGlobalDisableSyncDraft = (call: MethodCall, result: MethodResult) => {
+        // TODO
+    }
+
     methods: Record<string, Function> = {
         "initProto": this._initProto,
         "getClientId": this._getClientId,
@@ -469,6 +941,163 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         "clearMessages": this._clearMessages,
         "isSupportBigFilesUpload": this._isSupportBigFilesUpload,
         "recallMessage": this._recallMessage,
+        "isLogined":this._isLogined,
+        "connectionStatus":this._connectionStatus,
+        "serverDeltaTime":this._serverDeltaTime,
+        "startLog":this._startLog,
+        "stopLog":this._stopLog,
+        "setSendLogCommand":this._setSendLogCommand,
+        "useSM4":this._useSM4,
+        "setLiteMode":this._setLiteMode,
+        "setDeviceToken":this._setDeviceToken,
+        "setVoipDeviceToken":this._setVoipDeviceToken,
+        "setBackupAddressStrategy":this._setBackupAddressStrategy,
+        "setBackupAddress":this._setBackupAddress,
+        "setProtoUserAgent":this._setProtoUserAgent,
+        "addHttpHeader":this._addHttpHeader,
+        "setProxyInfo":this._setProxyInfo,
+        "getProtoRevision":this._getProtoRevision,
+        "getLogFilesPath":this._getLogFilesPath,
+        "disconnect":this._disconnect,
+        "searchConversation":this._searchConversation,
+        "removeConversation":this._removeConversation,
+        "setConversationTop":this._setConversationTop,
+        "setConversationSilent":this._setConversationSilent,
+        "setConversationTimestamp":this._setConversationTimestamp,
+        "getFirstUnreadMessageId":this._getFirstUnreadMessageId,
+        "getConversationUnreadCount":this._getConversationUnreadCount,
+        "getConversationsUnreadCount":this._getConversationsUnreadCount,
+        "clearConversationsUnreadStatus":this._clearConversationsUnreadStatus,
+        "clearConversationUnreadStatus":this._clearConversationUnreadStatus,
+        "clearMessageUnreadStatus":this._clearMessageUnreadStatus,
+        "markAsUnRead":this._markAsUnRead,
+        "getConversationRead":this._getConversationRead,
+        "getMessageDelivery":this._getMessageDelivery,
+        "getMessagesByStatus":this._getMessagesByStatus,
+        "getConversationsMessages":this._getConversationsMessages,
+        "getConversationsMessageByStatus":this._getConversationsMessageByStatus,
+        "getRemoteMessages":this._getRemoteMessages,
+        "getRemoteMessage":this._getRemoteMessage,
+        "getMessage":this._getMessage,
+        "getMessageByUid":this._getMessageByUid,
+        "searchMessages":this._searchMessages,
+        "searchConversationsMessages":this._searchConversationsMessages,
+        "sendSavedMessage":this._sendSavedMessage,
+        "cancelSendingMessage":this._cancelSendingMessage,
+        "uploadMedia":this._uploadMedia,
+        "uploadMediaFile":this._uploadMediaFile,
+        "getUploadUrl":this._getUploadUrl,
+        "deleteMessage":this._deleteMessage,
+        "batchDeleteMessages":this._batchDeleteMessages,
+        "deleteRemoteMessage":this._deleteRemoteMessage,
+        "clearMessagesKeepLatest":this._clearMessagesKeepLatest,
+        "clearRemoteConversationMessage":this._clearRemoteConversationMessage,
+        "setMediaMessagePlayed":this._setMediaMessagePlayed,
+        "setMessageLocalExtra":this._setMessageLocalExtra,
+        "insertMessage":this._insertMessage,
+        "updateMessage":this._updateMessage,
+        "updateRemoteMessageContent":this._updateRemoteMessageContent,
+        "updateMessageStatus":this._updateMessageStatus,
+        "getMessageCount":this._getMessageCount,
+        "searchUser":this._searchUser,
+        "getUserInfoAsync":this._getUserInfoAsync,
+        "searchFriends":this._searchFriends,
+        "getFriends":this._getFriends,
+        "searchGroups":this._searchGroups,
+        "getOutgoingFriendRequest":this._getOutgoingFriendRequest,
+        "getFriendRequest":this._getFriendRequest,
+        "loadFriendRequestFromRemote":this._loadFriendRequestFromRemote,
+        "clearUnreadFriendRequestStatus":this._clearUnreadFriendRequestStatus,
+        "clearFriendRequest":this._clearFriendRequest,
+        "deleteFriend":this._deleteFriend,
+        "sendFriendRequest":this._sendFriendRequest,
+        "handleFriendRequest":this._handleFriendRequest,
+        "getFriendAlias":this._getFriendAlias,
+        "setFriendAlias":this._setFriendAlias,
+        "getFriendExtra":this._getFriendExtra,
+        "isBlackListed":this._isBlackListed,
+        "getBlackList":this._getBlackList,
+        "setBlackList":this._setBlackList,
+        "getGroupMembersByTypes":this._getGroupMembersByTypes,
+        "getGroupMembersAsync":this._getGroupMembersAsync,
+        "getGroupInfos":this._getGroupInfos,
+        "getGroupInfoAsync":this._getGroupInfoAsync,
+        "quitGroup":this._quitGroup,
+        "quitGroupEx":this._quitGroupEx,
+        "dismissGroup":this._dismissGroup,
+        "modifyGroupInfo":this._modifyGroupInfo,
+        "modifyGroupAlias":this._modifyGroupAlias,
+        "modifyGroupMemberAlias":this._modifyGroupMemberAlias,
+        "transferGroup":this._transferGroup,
+        "setGroupManager":this._setGroupManager,
+        "muteGroupMember":this._muteGroupMember,
+        "allowGroupMember":this._allowGroupMember,
+        "getGroupRemark":this._getGroupRemark,
+        "setGroupRemark":this._setGroupRemark,
+        "setFavGroup":this._setFavGroup,
+        "getUserSetting":this._getUserSetting,
+        "getUserSettings":this._getUserSettings,
+        "setUserSetting":this._setUserSetting,
+        "modifyMyInfo":this._modifyMyInfo,
+        "isGlobalSilent":this._isGlobalSilent,
+        "setGlobalSilent":this._setGlobalSilent,
+        "isVoipNotificationSilent":this._isVoipNotificationSilent,
+        "setVoipNotificationSilent":this._setVoipNotificationSilent,
+        "isEnableSyncDraft":this._isEnableSyncDraft,
+        "setEnableSyncDraft":this._setEnableSyncDraft,
+        "getNoDisturbingTimes":this._getNoDisturbingTimes,
+        "setNoDisturbingTimes":this._setNoDisturbingTimes,
+        "clearNoDisturbingTimes":this._clearNoDisturbingTimes,
+        "isNoDisturbing":this._isNoDisturbing,
+        "isHiddenNotificationDetail":this._isHiddenNotificationDetail,
+        "setHiddenNotificationDetail":this._setHiddenNotificationDetail,
+        "setHiddenGroupMemberName":this._setHiddenGroupMemberName,
+        "getMyGroups":this._getMyGroups,
+        "getCommonGroups":this._getCommonGroups,
+        "isUserEnableReceipt":this._isUserEnableReceipt,
+        "setUserEnableReceipt":this._setUserEnableReceipt,
+        "getFavUsers":this._getFavUsers,
+        "isFavUser":this._isFavUser,
+        "setFavUser":this._setFavUser,
+        "joinChatroom":this._joinChatroom,
+        "quitChatroom":this._quitChatroom,
+        "getChatroomInfo":this._getChatroomInfo,
+        "getChatroomMemberInfo":this._getChatroomMemberInfo,
+        "createChannel":this._createChannel,
+        "getChannelInfo":this._getChannelInfo,
+        "modifyChannelInfo":this._modifyChannelInfo,
+        "searchChannel":this._searchChannel,
+        "isListenedChannel":this._isListenedChannel,
+        "listenChannel":this._listenChannel,
+        "getMyChannels":this._getMyChannels,
+        "getRemoteListenedChannels":this._getRemoteListenedChannels,
+        "destoryChannel":this._destoryChannel,
+        "getOnlineInfos":this._getOnlineInfos,
+        "kickoffPCClient":this._kickoffPCClient,
+        "isMuteNotificationWhenPcOnline":this._isMuteNotificationWhenPcOnline,
+        "muteNotificationWhenPcOnline":this._muteNotificationWhenPcOnline,
+        "getUserOnlineState":this._getUserOnlineState,
+        "getMyCustomState":this._getMyCustomState,
+        "setMyCustomState":this._setMyCustomState,
+        "watchOnlineState":this._watchOnlineState,
+        "unwatchOnlineState":this._unwatchOnlineState,
+        "isEnableUserOnlineState":this._isEnableUserOnlineState,
+        "getConversationFiles":this._getConversationFiles,
+        "getMyFiles":this._getMyFiles,
+        "deleteFileRecord":this._deleteFileRecord,
+        "searchFiles":this._searchFiles,
+        "searchMyFiles":this._searchMyFiles,
+        "getAuthorizedMediaUrl":this._getAuthorizedMediaUrl,
+        "getAuthCode":this._getAuthCode,
+        "configApplication":this._configApplication,
+        "getWavData":this._getWavData,
+        "beginTransaction":this._beginTransaction,
+        "commitTransaction":this._commitTransaction,
+        "rollbackTransaction":this._rollbackTransaction,
+        "isCommercialServer":this._isCommercialServer,
+        "isReceiptEnabled":this._isReceiptEnabled,
+        "isGroupReceiptEnabled":this._isGroupReceiptEnabled,
+        "isGlobalDisableSyncDraft":this._isGlobalDisableSyncDraft,
     }
 
     __callback2UI(method: string, args: object) {
