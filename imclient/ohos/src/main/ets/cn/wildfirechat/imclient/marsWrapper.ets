@@ -275,6 +275,9 @@ function isFavUser(userId: string): boolean {
 function isGlobalDisableSyncDraft(): boolean {
     return clientModule.isGlobalDisableSyncDraft() === 1;
 }
+function setDisableSyncDraft(disable: boolean, successCB: VoidCallback, failCB: FailCallback) {
+    clientModule.setUserSetting(20, '', disable ? '1' : '0', successCB, failCB)
+}
 function isGlobalSlient(): boolean {
     return false;
 }
@@ -579,6 +582,7 @@ export { isCommercialServer as isCommercialServer };
 export { isEnableUserOnlineState as isEnableUserOnlineState };
 export { isFavUser as isFavUser };
 export { isGlobalDisableSyncDraft as isGlobalDisableSyncDraft };
+export { setDisableSyncDraft as setDisableSyncDraft };
 export { isGlobalSlient as isGlobalSlient };
 export { isHiddenNotificationDetail as isHiddenNotificationDetail };
 export { isListenedChannel as isListenedChannel };
