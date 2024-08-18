@@ -30,88 +30,151 @@ import { BusinessError } from '@kit.BasicServicesKit';
 import { window } from '@kit.ArkUI';
 import {
     initProto,
+    setWfcEventListener,
     getClientId,
     connect,
-    getUserInfo,
-    getUserInfos,
-    setWfcEventListener,
-    getConversationInfos,
-    registerMessageFlag,
-    getGroupInfo,
-    getMyFriendList,
-    getUnreadFriendRequestStatus,
-    getMessagesV2,
-    getConversationInfo,
-    getIncommingFriendRequest,
-    sendMessage,
-    clearUnreadStatus,
-    setConversationDraft,
-    isMyFriend,
-    getFavGroups,
-    getGroupMembersByCount,
-    createGroup,
-    getUserSetting,
-    getGroupMember,
-    getGroupMembers,
-    addMembers,
-    kickoffMembers,
-    clearMessages,
-    isSupportBigFilesUpload,
-    getMessageByUid,
-    recall,
     getConnectionStatus,
-    getServerDeltaTime,
+    registerMessageFlag,
     useSM4,
-    setDeviceToken,
-    setBackupAddressStrategy,
-    setBackupAddress,
-    setUserAgent,
-    addHttpHeader,
     setProxyInfo,
     disconnect,
-    searchConversation,
-    removeConversation,
-    setConversationTop,
-    setConversationSlient,
-    setConversationTimestamp,
-    getConversationFirstUnreadMessageId,
-    getConversationUnreadCount,
-    getUnreadCount,
+    addHttpHeader,
+    addMembers,
+    getConversationInfos,
+    getUserSettings,
+    getGroupInfo,
+    getUserInfo,
+    getGroupMembers,
+    getGroupMembersByCount,
+    getUserInfos,
+    getConversationInfo,
+    getListenedChannels,
+    getChannelInfo,
+    getMyFriendList,
+    getFavGroups,
+    getFavUsers,
+    getIncommingFriendRequest,
+    getGroupInfos,
+    getUnreadFriendRequestStatus,
+    isFavGroup,
+    getAuthCode,
+    isMyFriend,
+    isReceiptEnabled,
+    watchOnlineState,
+    isSupportBigFilesUpload,
+    isUserReceiptEnabled,
+    allowGroupMember,
+    clearAllNotification,
+    clearAllUnreadStatus,
+    clearMessages,
+    clearMessagesByTime,
+    clearRemoteConversationMessages,
+    clearUnreadFriendRequestStatus,
+    clearUnreadStatus,
+    configApplication,
+    createChannel,
+    createGroup,
+    deleteFileRecord,
+    getMessagesV2,
     getConversationRead,
-    getRemoteMessages,
-    getRemoteMessage,
-    getMessage,
-    searchMessage,
-    searchMessageEx,
-    searchMessageEx2,
-    searchMessageByTypes,
-    searchMessageByTypesAndTimes,
-    uploadMedia,
-    getUploadMediaUrl,
+    deleteFriend,
     deleteMessage,
     deleteRemoteMessage,
-    setMediaMessagePlayed,
-    clearRemoteConversationMessages,
-    setMessageLocalExtra,
-    insertMessage,
-    updateMessage,
-    updateRemoteMessageContent,
-    updateMessageStatus,
-    searchUser,
+    destoryChannel,
+    dismissGroup,
+    getAuthorizedMediaUrl,
+    getBlackList,
+    getChatroomInfo,
+    getChatroomMemberInfo,
+    getConversationFiles,
+    getConversationFirstUnreadMessageId,
+    getConversationUnreadCount,
+    getFriendAlias,
+    getFriendList,
+    getMyFiles,
+    getOutgoingFriendRequest,
+    getRemoteMessage,
+    getRemoteMessages,
+    getServerDeltaTime,
+    getUnreadCount,
+    getUploadMediaUrl,
     getUserInfoEx,
+    getUserMessages,
+    getUserMessagesEx,
+    getUserMessagesExV2,
+    getUserMessagesV2,
+    getUserSetting,
+    handleFriendRequest,
+    insertMessage,
+    isBlackListed,
+    isCommercialServer,
+    isEnableUserOnlineState,
+    isFavUser,
+    isGlobalDisableSyncDraft,
+    isGlobalSlient,
+    isHiddenNotificationDetail,
+    isListenedChannel,
+    joinChatroom,
+    kickoffMembers,
+    listenChannel,
+    loadFriendRequestFromRemote,
+    modifyChannelInfo,
+    modifyGroupAlias,
+    modifyGroupInfo,
+    modifyGroupMemberAlias,
+    modifyGroupMemberExtra,
+    modifyMyInfo,
+    muteGroupMember,
+    quitChatroom,
+    quitGroup,
+    quitGroupEx,
+    recall,
+    removeConversation,
+    searchChannel,
+    searchConversation,
+    searchFiles,
     searchFriends,
     searchGroups,
-    getOutgoingFriendRequest,
-    loadFriendRequestFromRemote,
-    clearUnreadFriendRequestStatus,
-    deleteFriend,
+    searchMessage,
+    searchMessageByTypes,
+    searchMessageByTypesAndTimes,
+    searchMessageEx,
+    searchMessageEx2,
+    searchMyFiles,
+    searchUser,
+    sendConferenceRequest,
     sendFriendRequest,
-    handleFriendRequest,
-    getFriendAlias,
-    setFriendAlias,
-    isBlackListed,
-    getBlackList,
+    sendMessage,
+    setBackupAddress,
+    setBackupAddressStrategy,
     setBlackList,
+    setConversationDraft,
+    setConversationSlient,
+    setConversationTimestamp,
+    setConversationTop,
+    setDeviceToken,
+    setFavGroup,
+    setFavUser,
+    setFriendAlias,
+    setGlobalSlient,
+    setGroupManager,
+    setHiddenNotificationDetail,
+    setLastReceivedMessageUnRead,
+    setMediaMessagePlayed,
+    setMessageLocalExtra,
+    setUserAgent,
+    setUserReceiptEnable,
+    setUserSetting,
+    transferGroup,
+    unwatchOnlineState,
+    updateMessage,
+    updateMessageStatus,
+    updateRemoteMessageContent,
+    uploadMedia,
+    getMessage,
+    getMessageByUid,
+    getGroupMember,
+    getGroupInfoEx,
 } from './marsWrapper';
 import json from '@ohos.util.json';
 import map from '@hms.core.map.map';
@@ -954,22 +1017,60 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         // TODO
     }
     _getGroupInfos = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let groupIds = call.argument("groupIds") as string[]
+        let refresh = call.argument("refresh") as boolean
+
+        let str = getGroupInfos(groupIds, refresh)
+        result.success(str ? json.parse(str) : [])
     }
     _getGroupInfoAsync = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let refresh = call.argument("refresh") as boolean
+
+        getGroupInfoEx(groupId, refresh, str => {
+            let obj = {
+                'requestId': requestId,
+                'groupInfo': json.parse(str)
+            } as Record<string, Object>
+            this.__callback2UI('getGroupInfoAsyncCallback', obj)
+        }, this.__generalFailCallback(requestId))
     }
     _quitGroup = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
+        let notifyContent = call.argument('notifyContent') as Map<string, object>
+
+        quitGroup(groupId, notifyLines, notifyContent ? json.stringify(this.__map2record(notifyContent)) : '', this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _quitGroupEx = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let keepMessage = call.argument("keepMessage") as boolean
+        let groupId = call.argument("groupId") as string
+        let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
+        let notifyContent = call.argument('notifyContent') as Map<string, object>
+
+        quitGroupEx(groupId, keepMessage, notifyLines, notifyContent ? json.stringify(this.__map2record(notifyContent)) : '', this.__generalVoidCallback(requestId),
+            this.__generalFailCallback(requestId))
     }
     _dismissGroup = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
+        let notifyContent = call.argument('notifyContent') as Map<string, object>
+        dismissGroup(groupId, notifyLines, notifyContent ? json.stringify(this.__map2record(notifyContent)) : '', this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _modifyGroupInfo = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let modifyType = call.argument("modifyType") as number
+        let value = call.argument("value") as string
+        let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
+        let notifyContent = call.argument('notifyContent') as Map<string, object>
+
+        modifyGroupInfo(groupId, modifyType, value, notifyLines, notifyContent ? json.stringify(this.__map2record(notifyContent)) : '', this.__generalVoidCallback(requestId),
+            this.__generalFailCallback(requestId))
     }
     _modifyGroupAlias = (call: MethodCall, result: MethodResult) => {
         // TODO
@@ -1375,11 +1476,17 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         "isGlobalDisableSyncDraft": this._isGlobalDisableSyncDraft,
     }
 
-    __callback2UI(method: string, args: object) {
+    __callback2UI(method:
+        string, args:
+        object
+    ) {
         this.channel?.invokeMethod(method, args)
     }
 
-    __convertConversationInfo(info: string): Record<string, object> {
+    __convertConversationInfo(info:
+        string
+    ):
+        Record<string, object> {
 
         // TODO
         return {} as Record<string, object>
@@ -1407,7 +1514,11 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         return conv
     }
 
-    __conversationFromArgument(call: MethodCall, raw: boolean = false): string {
+    __conversationFromArgument(call:
+        MethodCall, raw:
+        boolean = false
+    ):
+        string {
         if (raw) {
             let obj = {
                 'type': call.argument('type'),

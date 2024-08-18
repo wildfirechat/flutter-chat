@@ -66,6 +66,9 @@ function getUserSettings(scope: number): string {
 function getGroupInfo(groupId: string, fresh: boolean): string {
     return clientModule.getGroupInfo(groupId, fresh);
 }
+function getGroupInfoEx(groupId: string, fresh: boolean, successCB: StringCallback, failCB: FailCallback): void {
+    clientModule.getGroupInfoEx(groupId, fresh, stringCallback(successCB), numberCallback(failCB));
+}
 function getUserInfo(userId: string, fresh: boolean, groupId: string): string {
     return clientModule.getUserInfo(userId, fresh, groupId);
 }
@@ -639,3 +642,4 @@ export { uploadMedia as uploadMedia };
 export { getMessage as getMessage };
 export { getMessageByUid as getMessageByUid };
 export { getGroupMember as getGroupMember };
+export { getGroupInfoEx as getGroupInfoEx };
