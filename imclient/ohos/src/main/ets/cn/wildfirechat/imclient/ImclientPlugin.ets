@@ -90,6 +90,28 @@ import {
     getUploadMediaUrl,
     deleteMessage,
     deleteRemoteMessage,
+    setMediaMessagePlayed,
+    clearRemoteConversationMessages,
+    setMessageLocalExtra,
+    insertMessage,
+    updateMessage,
+    updateRemoteMessageContent,
+    updateMessageStatus,
+    searchUser,
+    getUserInfoEx,
+    searchFriends,
+    searchGroups,
+    getOutgoingFriendRequest,
+    loadFriendRequestFromRemote,
+    clearUnreadFriendRequestStatus,
+    deleteFriend,
+    sendFriendRequest,
+    handleFriendRequest,
+    getFriendAlias,
+    setFriendAlias,
+    isBlackListed,
+    getBlackList,
+    setBlackList,
 } from './marsWrapper';
 import json from '@ohos.util.json';
 import map from '@hms.core.map.map';
@@ -760,85 +782,170 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         // TODO
     }
     _clearRemoteConversationMessage = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let conv = this.__conversationFromArgument(call)
+        let requestId = call.argument("requestId") as number
+        clearRemoteConversationMessages(conv, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _setMediaMessagePlayed = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let messageId = call.argument('messageId') as number
+        setMediaMessagePlayed(messageId)
+        result.success(null)
     }
     _setMessageLocalExtra = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let messageId = call.argument('messageId') as number
+        let localExtra = call.argument('localExtra') as string
+        setMessageLocalExtra(messageId, localExtra)
     }
     _insertMessage = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let conv = this.__conversationFromArgument(call)
+        let content = call.argument('content') as Map<string, object>
+
+        let status = call.argument("status") as number
+        let serverTime = call.argument("serverTime") as number
+        let toUsers = call.argument('toUsers') ? call.argument('toUsers') as string[] : []
+        let sender = call.argument("sender") ? call.argument('sender') as string : this.userId
+
+        let msg = insertMessage(conv, sender, json.stringify(this.__map2record(content)), status, false, toUsers, serverTime)
+        result.success(json.parse(msg))
+
     }
     _updateMessage = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let messageId = call.argument("messageId") as number
+        let content = call.argument("content") as Map<string, object>
+        updateMessage(messageId, json.stringify(this.__map2record(content)))
+        result.success(true)
     }
     _updateRemoteMessageContent = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let messageUid = (call.argument("messageUid") as bigint).toString()
+        let content = call.argument("content") as Map<string, object>
+        let distribute = call.argument("distribute") as boolean
+        let updateLocal = call.argument("updateLocal") as boolean
+
+        updateRemoteMessageContent(messageUid, json.stringify(this.__map2record(content)), distribute, updateLocal, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _updateMessageStatus = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let messageId = call.argument("messageId") as number
+        let status = call.argument("status") as number
+        updateMessageStatus(messageId, status)
+        result.success(true)
     }
     _getMessageCount = (call: MethodCall, result: MethodResult) => {
         // TODO
     }
     _searchUser = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let keyword = call.argument("keyword") as string
+        let searchType = call.argument("searchType") as number
+        let page = call.argument("page") as number
+
+        searchUser(keyword, searchType, page, str => {
+            let obj = {
+                'requestId': requestId,
+                'users': json.parse(str)
+            } as Record<string, Object>
+            this.__callback2UI('onSearchUserResult', obj)
+
+        }, this.__generalFailCallback(requestId))
     }
     _getUserInfoAsync = (call: MethodCall, result: MethodResult) => {
+        let requestId = call.argument("requestId") as number
+        let userId = call.argument("userId") as string
         // TODO
+        // FIXME
+        let groupId = call.argument("groupId") as string
+        let refresh = call.argument("refresh") as boolean
+        getUserInfoEx(userId, refresh, str => {
+            let obj = {
+                'requestId': requestId,
+                'user': json.parse(str)
+            } as Record<string, Object>
+            this.__callback2UI('getUserInfoAsyncCallback', obj)
+        }, this.__generalFailCallback(requestId))
     }
     _searchFriends = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let keyword = call.argument("keyword") as string
+        let str = searchFriends(keyword)
+        result.success(str ? json.parse(str) : [])
     }
     _getFriends = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let refresh = call.argument("refresh") as boolean
+        let str = getMyFriendList(refresh)
+        result.success(str ? json.parse(str) : [])
     }
     _searchGroups = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let keyword = call.argument("keyword") as string
+        let str = searchGroups(keyword)
+        result.success(str ? json.parse(str) : [])
     }
     _getOutgoingFriendRequest = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let str = getOutgoingFriendRequest()
+        result.success(str ? json.parse(str) : [])
     }
     _getFriendRequest = (call: MethodCall, result: MethodResult) => {
+        let userId = call.argument("userId") as string
+        let direction = call.argument("direction") as number
         // TODO
+        // FIXME
     }
     _loadFriendRequestFromRemote = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        loadFriendRequestFromRemote()
+        result.success(null)
     }
     _clearUnreadFriendRequestStatus = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        clearUnreadFriendRequestStatus()
+        result.success(true)
     }
     _clearFriendRequest = (call: MethodCall, result: MethodResult) => {
         // TODO
     }
     _deleteFriend = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let userId = call.argument("userId") as string
+        deleteFriend(userId, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _sendFriendRequest = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let userId = call.argument("userId") as string
+        let reason = call.argument("reason") as string
+        let extra = call.argument("extra") as string
+        sendFriendRequest(userId, reason, extra, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _handleFriendRequest = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let userId = call.argument("userId") as string
+        let extra = call.argument("extra") as string
+        let accept = call.argument("accept") as boolean
+        handleFriendRequest(userId, accept, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId), extra)
     }
     _getFriendAlias = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let friendId = call.argument("friendId") as string
+        result.success(getFriendAlias(friendId))
     }
     _setFriendAlias = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let friendId = call.argument("friendId") as string
+        let alias = call.argument("alias") as string
+        setFriendAlias(this.userId, alias, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getFriendExtra = (call: MethodCall, result: MethodResult) => {
         // TODO
     }
     _isBlackListed = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let userId = call.argument("userId") as string
+        result.success(isBlackListed(userId))
+
     }
     _getBlackList = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let refresh = call.argument("refresh") as boolean
+        let str = getBlackList(refresh)
+        result.success(str ? json.parse(str) : [])
     }
     _setBlackList = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let userId = call.argument("userId") as string
+        let isBlackListed = call.argument("isBlackListed") as boolean
+        setBlackList(userId, isBlackListed, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getGroupMembersByTypes = (call: MethodCall, result: MethodResult) => {
         // TODO

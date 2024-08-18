@@ -254,8 +254,8 @@ function getUserSetting(scope: number, key: string): string {
 function handleFriendRequest(userId: string, accept: boolean, successCB: VoidCallback, failCB: FailCallback, extra: string): void {
     clientModule.handleFriendRequest(userId, accept, voidCallback(successCB), numberCallback(failCB), extra);
 }
-function insertMessage(conversation: string, sender: string, messagePayload: string, status: number, notify: boolean, toUsers: string[], serverTime: number): void {
-    clientModule.insertMessage(conversation, sender, messagePayload, status, notify, toUsers, serverTime);
+function insertMessage(conversation: string, sender: string, messagePayload: string, status: number, notify: boolean, toUsers: string[], serverTime: number): string{
+    return clientModule.insertMessage(conversation, sender, messagePayload, status, notify, toUsers, serverTime);
 }
 function isBlackListed(userId: string): boolean {
     return clientModule.isBlackListed(userId) === 1;
