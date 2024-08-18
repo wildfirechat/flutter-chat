@@ -569,20 +569,23 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _startLog = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _stopLog = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _setSendLogCommand = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _useSM4 = (call: MethodCall, result: MethodResult) => {
-        // TODO
         useSM4()
         result.success(null)
     }
     _setLiteMode = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _setDeviceToken = (call: MethodCall, result: MethodResult) => {
         let deviceToken = call.argument('deviceToken') as string
@@ -626,10 +629,12 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _getProtoRevision = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
         result.success('not implement')
     }
     _getLogFilesPath = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _disconnect = (call: MethodCall, result: MethodResult) => {
         let disablePush = call.argument("disablePush") as boolean;
@@ -686,12 +691,15 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _clearConversationsUnreadStatus = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _clearMessageUnreadStatus = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _markAsUnRead = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _getConversationRead = (call: MethodCall, result: MethodResult) => {
         let conv = this.__conversationFromArgument(call)
@@ -700,15 +708,19 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _getMessageDelivery = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _getMessagesByStatus = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _getConversationsMessages = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _getConversationsMessageByStatus = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _getRemoteMessages = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -782,9 +794,11 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let messageId = call.argument("messageId") as number
         let expireDuration = call.argument("expireDuration") as number
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _cancelSendingMessage = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _uploadMedia = async (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -811,6 +825,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _uploadMediaFile = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _getUploadUrl = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -836,6 +851,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _batchDeleteMessages = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _deleteRemoteMessage = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -845,6 +861,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _clearMessagesKeepLatest = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _clearRemoteConversationMessage = (call: MethodCall, result: MethodResult) => {
         let conv = this.__conversationFromArgument(call)
@@ -897,6 +914,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _getMessageCount = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _searchUser = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -951,6 +969,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let userId = call.argument("userId") as string
         let direction = call.argument("direction") as number
         // TODO
+        console.error(`${call.method} is not implement`);
         // FIXME
     }
     _loadFriendRequestFromRemote = (call: MethodCall, result: MethodResult) => {
@@ -963,6 +982,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _clearFriendRequest = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _deleteFriend = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -995,6 +1015,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _getFriendExtra = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _isBlackListed = (call: MethodCall, result: MethodResult) => {
         let userId = call.argument("userId") as string
@@ -1014,9 +1035,11 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _getGroupMembersByTypes = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _getGroupMembersAsync = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _getGroupInfos = (call: MethodCall, result: MethodResult) => {
         let groupIds = call.argument("groupIds") as string[]
@@ -1140,9 +1163,11 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _getGroupRemark = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _setGroupRemark = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _setFavGroup = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -1172,6 +1197,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let values = call.argument("values") as Map<number, string>
 
         // TODO
+        console.error(`${call.method} is not implement`);
         // FIXME
         for (let entry of values.entries()) {
             modifyMyInfo(entry[0], entry[1], this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
@@ -1187,9 +1213,11 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _isVoipNotificationSilent = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _setVoipNotificationSilent = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _isEnableSyncDraft = (call: MethodCall, result: MethodResult) => {
         result.success(!isGlobalDisableSyncDraft())
@@ -1201,21 +1229,27 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _getNoDisturbingTimes = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _setNoDisturbingTimes = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _clearNoDisturbingTimes = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _isNoDisturbing = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _isHiddenNotificationDetail = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _setHiddenNotificationDetail = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _setHiddenGroupMemberName = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -1227,9 +1261,11 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     _getMyGroups = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _getCommonGroups = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _isUserEnableReceipt = (call: MethodCall, result: MethodResult) => {
         result.success(isReceiptEnabled())
@@ -1340,6 +1376,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _getRemoteListenedChannels = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _destoryChannel = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -1348,24 +1385,31 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _getOnlineInfos = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _kickoffPCClient = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _isMuteNotificationWhenPcOnline = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _muteNotificationWhenPcOnline = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _getUserOnlineState = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _getMyCustomState = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _setMyCustomState = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _watchOnlineState = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -1496,12 +1540,15 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _beginTransaction = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _commitTransaction = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _rollbackTransaction = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _isCommercialServer = (call: MethodCall, result: MethodResult) => {
         result.success(isCommercialServer())
@@ -1511,6 +1558,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _isGroupReceiptEnabled = (call: MethodCall, result: MethodResult) => {
         // TODO
+        console.error(`${call.method} is not implement`);
     }
     _isGlobalDisableSyncDraft = (call: MethodCall, result: MethodResult) => {
         result.success(isGlobalDisableSyncDraft())
@@ -1708,15 +1756,6 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         object
     ) {
         this.channel?.invokeMethod(method, args)
-    }
-
-    __convertConversationInfo(info:
-        string
-    ):
-        Record<string, object> {
-
-        // TODO
-        return {} as Record<string, object>
     }
 
     __fixConversationInfo = (conv: Record<string, object | null> | null): Record<string, object | null> | null => {
