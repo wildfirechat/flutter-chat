@@ -113,7 +113,7 @@ function getUnreadFriendRequestStatus(): number {
 function isFavGroup(groupId: string): boolean {
     return clientModule.isFavGroup(groupId) === 1;
 }
-function getAuthCode(appId: string, appType: number, host: string, successCB: StringCallback, failCB: (err: object) => void) {
+function getAuthCode(appId: string, appType: number, host: string, successCB: StringCallback, failCB: FailCallback) {
     clientModule.getAuthCode(appId, appType, host, (value: string)=>{
         successCB(value);
     }, failCB);
@@ -200,8 +200,8 @@ function getChatroomInfo(chatroomId: string, updateDt: number, successCB: String
 function getChatroomMemberInfo(chatroomId: string, maxCount: number, successCB: StringCallback, failCB: FailCallback): void {
     clientModule.getChatroomMemberInfo(chatroomId, maxCount, stringCallback(successCB), numberCallback(failCB));
 }
-function getConversationFiles(conversation: string, fromUser: string, beforeUid: string, count: number, successCB: StringCallback, failCB: FailCallback): void {
-    clientModule.getConversationFiles(conversation, fromUser, beforeUid, count, 1, stringCallback(successCB), numberCallback(failCB));
+function getConversationFiles(conversation: string, fromUser: string, beforeUid: string, count: number, order:number, successCB: StringCallback, failCB: FailCallback): void {
+    clientModule.getConversationFiles(conversation, fromUser, beforeUid, count, order, stringCallback(successCB), numberCallback(failCB));
 }
 function getConversationFirstUnreadMessageId(conversation: string): number {
     return clientModule.getConversationFirstUnreadMessageId(conversation);
@@ -365,8 +365,8 @@ function searchMessageEx(conversation: string, keyword: string, desc: boolean, l
 function searchMessageEx2(conversationTypes: number[], lines: number[], contentTypes: number[], keyword: string, fromIndex: number, desc: boolean, count: number, withUser: string): string {
     return clientModule.searchMessageEx2(conversationTypes, lines, contentTypes, keyword, fromIndex, desc, count, withUser);
 }
-function searchMyFiles(keyword: string, beforeMessageUid: string, count: number, successCB: StringCallback, failCB: FailCallback): void {
-    clientModule.searchMyFiles(keyword, beforeMessageUid, 1, count, stringCallback(successCB), numberCallback(failCB));
+function searchMyFiles(keyword: string, beforeMessageUid: string, order:number, count: number, successCB: StringCallback, failCB: FailCallback): void {
+    clientModule.searchMyFiles(keyword, beforeMessageUid, order, count, stringCallback(successCB), numberCallback(failCB));
 }
 function searchUser(keyword: string, searchType: number, page: number, successCB: StringCallback, failCB: FailCallback): void {
     clientModule.searchUser(keyword, searchType, page, stringCallback(successCB), numberCallback(failCB));
