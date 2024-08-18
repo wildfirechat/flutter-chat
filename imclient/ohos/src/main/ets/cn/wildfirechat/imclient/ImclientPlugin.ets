@@ -268,6 +268,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
 
     onMethodCall(call: MethodCall, result: MethodResult) {
         try {
+            console.debug('onMethodCall', call.method)
             let fn = this.methods[call.method]
             if (!fn) {
                 Log.e(TAG, call.method + ' not implement')
@@ -539,7 +540,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _recallMessage = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
-        let messageUid = (call.argument('messageUid') as bigint).toString()
+        let messageUid = this.__getLongPara(call, 'messageUid')
         let msg = getMessageByUid(messageUid)
         if (msg) {
             recall(messageUid, () => {
@@ -712,7 +713,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     _getRemoteMessages = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
         let conv = this.__conversationFromArgument(call)
-        let beforeMessageUid = (call.argument("beforeMessageUid") as bigint).toString()
+        let beforeMessageUid = this.__getLongPara(call, "beforeMessageUid")
         let count = call.argument("count") as number
         getRemoteMessages(conv, beforeMessageUid, count, str => {
             let obj = {
@@ -724,7 +725,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _getRemoteMessage = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
-        let messageUid = (call.argument("messageUid") as bigint).toString()
+        let messageUid = this.__getLongPara(call, "messageUid")
         getRemoteMessage(messageUid, str => {
             let obj = {
                 'message': str ? json.parse(str) : null,
@@ -740,7 +741,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         result.success(msg ? json.parse(msg) : null)
     }
     _getMessageByUid = (call: MethodCall, result: MethodResult) => {
-        let messageUid = (call.argument("messageUid") as bigint).toString()
+        let messageUid = this.__getLongPara(call, "messageUid")
         let msg = getMessageByUid(messageUid)
         result.success(msg ? json.parse(msg) : null)
     }
@@ -838,7 +839,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _deleteRemoteMessage = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
-        let messageUid = (call.argument("messageUid") as bigint).toString()
+        let messageUid = this.__getLongPara(call, "messageUid")
 
         deleteRemoteMessage(messageUid, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
@@ -881,7 +882,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _updateRemoteMessageContent = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
-        let messageUid = (call.argument("messageUid") as bigint).toString()
+        let messageUid = this.__getLongPara(call, "messageUid")
         let content = call.argument("content") as Map<string, object>
         let distribute = call.argument("distribute") as boolean
         let updateLocal = call.argument("updateLocal") as boolean
@@ -1288,31 +1289,62 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         }, this.__generalFailCallback(requestId))
     }
     _createChannel = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let channelId = call.argument("channelId") as string
+        let channelName = call.argument("channelName") as string
+        let channelPortrait = call.argument("channelPortrait") as string
+        let desc = call.argument("desc") as string
+        let extra = call.argument("extra") as string
+
+        createChannel(channelName, channelPortrait, 0, desc, extra, this.__generalStringCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getChannelInfo = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let channelId = call.argument("channelId") as string
+        let refresh = call.argument("refresh") as boolean
+        let str = getChannelInfo(channelId, refresh)
+        result.success(str ? json.stringify(str) : null)
     }
     _modifyChannelInfo = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let channelId = call.argument("channelId") as string
+        let type = call.argument("type") as number
+        let newValue = call.argument("newValue") as string
+
+        modifyChannelInfo(channelId, type, newValue, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _searchChannel = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let keyword = call.argument("keyword") as string
+        searchChannel(keyword, str => {
+            let obj = {
+                'requestId': requestId,
+                'channelInfos': json.parse(str)
+            } as Record<string, Object>
+            this.__callback2UI('onSearchChannelResult', obj)
+        }, this.__generalFailCallback(requestId))
     }
     _isListenedChannel = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let channelId = call.argument("channelId") as string
+        result.success(isListenedChannel(channelId))
+
     }
     _listenChannel = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let channelId = call.argument("channelId") as string
+        let listen = call.argument("listen") as boolean
+        listenChannel(channelId, listen, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getMyChannels = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let str = getListenedChannels()
+        result.success(str ? json.parse(str) : [])
     }
     _getRemoteListenedChannels = (call: MethodCall, result: MethodResult) => {
         // TODO
     }
     _destoryChannel = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let channelId = call.argument("channelId") as string
+        destoryChannel(channelId, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getOnlineInfos = (call: MethodCall, result: MethodResult) => {
         // TODO
@@ -1336,40 +1368,131 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         // TODO
     }
     _watchOnlineState = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let targets = call.argument("targets") as string[]
+        let conversationType = call.argument("conversationType") as number
+        let watchDuration = call.argument("watchDuration") as number
+
+        watchOnlineState(conversationType, targets, watchDuration, str => {
+            let obj = {
+                'requestId': requestId,
+                'states': json.stringify(str)
+            } as Record<string, Object>
+            this.__callback2UI('onWatchOnlineStateSuccess', obj)
+
+        }, this.__generalFailCallback(requestId))
     }
     _unwatchOnlineState = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let targets = call.argument("targets") as string[]
+        let conversationType = call.argument("conversationType") as number
+        unwatchOnlineState(conversationType, targets, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _isEnableUserOnlineState = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        result.success(isEnableUserOnlineState())
     }
     _getConversationFiles = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let userId = call.argument("userId") as string
+        let order = call.argument("order") as number
+        let conversation = this.__conversationFromArgument(call)
+        let beforeMessageUid = this.__getLongPara(call, "beforeMessageUid")
+        let count = call.argument("count") as number
+
+        getConversationFiles(conversation, userId, beforeMessageUid, count, order, str => {
+            let obj = {
+                'request': requestId,
+                'files': json.parse(str)
+            } as Record<string, Object>
+            this.__callback2UI('onFilesResult', obj)
+        }, this.__generalFailCallback(requestId))
     }
     _getMyFiles = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let order = call.argument("order") as number
+        let beforeMessageUid = this.__getLongPara(call, "beforeMessageUid");
+        let count = call.argument("count") as number
+        getMyFiles(beforeMessageUid, count, str => {
+            let obj = {
+                'request': requestId,
+                'files': json.parse(str)
+            } as Record<string, Object>
+            this.__callback2UI('onFilesResult', obj)
+
+        }, this.__generalFailCallback(requestId))
     }
     _deleteFileRecord = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let messageUid = this.__getLongPara(call, "messageUid");
+        deleteFileRecord(messageUid, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _searchFiles = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let order = call.argument("order") as number
+        let keyword = call.argument("keyword") as string
+        let userId = call.argument("userId") as string
+        let conversation = this.__conversationFromArgument(call)
+        let beforeMessageUid = this.__getLongPara(call, "beforeMessageUid")
+        let count = call.argument("count") as number
+
+        searchFiles(keyword, conversation, userId, beforeMessageUid, count, str => {
+            let obj = {
+                'request': requestId,
+                'files': json.parse(str)
+            } as Record<string, Object>
+            this.__callback2UI('onFilesResult', obj)
+        }, this.__generalFailCallback(requestId))
     }
     _searchMyFiles = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let keyword = call.argument("keyword") as string
+        let beforeMessageUid = this.__getLongPara(call, "beforeMessageUid");
+        let count = call.argument("count") as number
+        let order = call.argument("order") as number
+
+        searchMyFiles(keyword, beforeMessageUid, order, count, str => {
+            let obj = {
+                'request': requestId,
+                'files': json.parse(str)
+            } as Record<string, Object>
+            this.__callback2UI('onFilesResult', obj)
+        }, this.__generalFailCallback(requestId))
     }
     _getAuthorizedMediaUrl = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let mediaPath = call.argument("mediaPath") as string
+        let messageUid = this.__getLongPara(call, "messageUid")
+        let mediaType = call.argument("mediaType") as number
+
+        getAuthorizedMediaUrl(messageUid, mediaType, mediaPath, arrArgs => {
+            let value = {
+                'requestId': requestId,
+                'string': arrArgs[0],
+                'string2': arrArgs[1],
+            } as Record<string, Object>
+            this.__callback2UI('onOperationStringSuccess', value)
+        }, this.__generalFailCallback(requestId))
     }
     _getAuthCode = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let applicationId = call.argument("applicationId") as string
+        let type = call.argument("type") as number
+        let host = call.argument("host") as string
+
+        getAuthCode(applicationId, type, host, this.__generalStringCallback(requestId), this.__generalFailCallback(requestId))
     }
     _configApplication = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let applicationId = call.argument("applicationId") as string
+        let type = call.argument("type") as number
+        let timestamp = call.argument("timestamp") as number
+        let signature = call.argument("signature") as string
+        let nonce = call.argument("nonce") as string
+
+        configApplication(applicationId, type, timestamp, nonce, signature, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getWavData = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        result.success(null)
     }
     _beginTransaction = (call: MethodCall, result: MethodResult) => {
         // TODO
@@ -1381,16 +1504,16 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         // TODO
     }
     _isCommercialServer = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        result.success(isCommercialServer())
     }
     _isReceiptEnabled = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        result.success(isReceiptEnabled())
     }
     _isGroupReceiptEnabled = (call: MethodCall, result: MethodResult) => {
         // TODO
     }
     _isGlobalDisableSyncDraft = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        result.success(isGlobalDisableSyncDraft())
     }
     methods: Record<string, Function> = {
         "initProto": this._initProto,
@@ -1682,5 +1805,12 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         } else {
             return json.stringify(this.__map2record(map))
         }
+    }
+
+    __getLongPara(call: MethodCall, key: string): string {
+        if (call.argument(key)) {
+            return (call.argument(key) as bigint).toString()
+        }
+        return '0'
     }
 }
