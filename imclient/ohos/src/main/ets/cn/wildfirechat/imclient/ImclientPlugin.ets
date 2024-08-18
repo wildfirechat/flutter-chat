@@ -1217,40 +1217,75 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         // TODO
     }
     _setHiddenGroupMemberName = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let isHidden = call.argument("isHidden") as boolean
+
+        setUserSetting(5, groupId, isHidden ? '1' : '0', this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getMyGroups = (call: MethodCall, result: MethodResult) => {
+        let requestId = call.argument("requestId") as number
         // TODO
     }
     _getCommonGroups = (call: MethodCall, result: MethodResult) => {
         // TODO
     }
     _isUserEnableReceipt = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        result.success(isReceiptEnabled())
     }
     _setUserEnableReceipt = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let isEnable = call.argument("isEnable") as boolean
+        setUserReceiptEnable(isEnable, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getFavUsers = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let userIds = getFavUsers()
+        result.success(userIds ? json.parse(userIds) : [])
     }
     _isFavUser = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let userId = call.argument("userId") as string
+        result.success(isFavUser(userId))
     }
     _setFavUser = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let userId = call.argument("userId") as string
+        let isFav = call.argument("isFav") as boolean
+        setFavUser(userId, isFav, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _joinChatroom = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let chatroomId = call.argument("chatroomId") as string
+        joinChatroom(chatroomId, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _quitChatroom = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let chatroomId = call.argument("chatroomId") as string
+        quitChatroom(chatroomId, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getChatroomInfo = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let chatroomId = call.argument("chatroomId") as string
+        let updateDt = call.argument("updateDt") as number
+        getChatroomInfo(chatroomId, updateDt, str => {
+            let obj = {
+                'requestId': requestId,
+                'chatroomInfo': json.parse(str)
+            } as Record<string, Object>
+            this.__callback2UI('onGetChatroomInfoResult', obj)
+        }, this.__generalFailCallback(requestId))
     }
     _getChatroomMemberInfo = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let chatroomId = call.argument("chatroomId") as string
+        let maxCount = call.argument("maxCount") as number
+
+        getChatroomMemberInfo(chatroomId, maxCount, str => {
+            let obj = {
+                'requestId': requestId,
+                'chatroomMemberInfo': json.parse(str)
+            } as Record<string, Object>
+            this.__callback2UI('onGetChatroomMemberInfoResult', obj)
+        }, this.__generalFailCallback(requestId))
     }
     _createChannel = (call: MethodCall, result: MethodResult) => {
         // TODO
