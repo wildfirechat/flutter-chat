@@ -175,6 +175,7 @@ import {
     getMessageByUid,
     getGroupMember,
     getGroupInfoEx,
+    setDisableSyncDraft
 } from './marsWrapper';
 import json from '@ohos.util.json';
 import map from '@hms.core.map.map';
@@ -477,7 +478,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let notifyLines: number[] = call.argument("notifyLines") ? call.argument('notifyLines') : [0]
         let notifyContent = call.argument("notifyContent") as Map<string, object>
 
-        createGroup(groupId, groupType, groupName, groupPortrait, groupExtra, groupMembers, memberExtra, notifyLines, notifyContent ? json.stringify(this.__map2record(notifyContent)) : '',
+        createGroup(groupId, groupType, groupName, groupPortrait, groupExtra, groupMembers, memberExtra, notifyLines, this.__messageMap2Str(notifyContent),
             this.__generalStringCallback(requestId), this.__generalFailCallback(requestId))
 
     }
@@ -512,7 +513,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
 
         let notifyContent = call.argument("notifyContent") as Map<string, object>
 
-        addMembers(groupId, groupMembers, extra, notifyLines, notifyContent ? json.stringify(this.__map2record(notifyContent)) : '', this.__generalVoidCallback(requestId),
+        addMembers(groupId, groupMembers, extra, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId),
             this.__generalFailCallback(requestId))
 
     }
@@ -524,7 +525,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
 
         let notifyContent = call.argument("notifyContent") as Map<string, object>
 
-        kickoffMembers(groupId, groupMembers, notifyLines, notifyContent ? json.stringify(this.__map2record(notifyContent)) : '', this.__generalVoidCallback(requestId),
+        kickoffMembers(groupId, groupMembers, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId),
             this.__generalFailCallback(requestId))
     }
     _clearMessages = (call: MethodCall, result: MethodResult) => {
@@ -1042,7 +1043,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
         let notifyContent = call.argument('notifyContent') as Map<string, object>
 
-        quitGroup(groupId, notifyLines, notifyContent ? json.stringify(this.__map2record(notifyContent)) : '', this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
+        quitGroup(groupId, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _quitGroupEx = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -1051,7 +1052,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
         let notifyContent = call.argument('notifyContent') as Map<string, object>
 
-        quitGroupEx(groupId, keepMessage, notifyLines, notifyContent ? json.stringify(this.__map2record(notifyContent)) : '', this.__generalVoidCallback(requestId),
+        quitGroupEx(groupId, keepMessage, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId),
             this.__generalFailCallback(requestId))
     }
     _dismissGroup = (call: MethodCall, result: MethodResult) => {
@@ -1059,7 +1060,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let groupId = call.argument("groupId") as string
         let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
         let notifyContent = call.argument('notifyContent') as Map<string, object>
-        dismissGroup(groupId, notifyLines, notifyContent ? json.stringify(this.__map2record(notifyContent)) : '', this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
+        dismissGroup(groupId, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _modifyGroupInfo = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -1069,26 +1070,72 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
         let notifyContent = call.argument('notifyContent') as Map<string, object>
 
-        modifyGroupInfo(groupId, modifyType, value, notifyLines, notifyContent ? json.stringify(this.__map2record(notifyContent)) : '', this.__generalVoidCallback(requestId),
+        modifyGroupInfo(groupId, modifyType, value, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId),
             this.__generalFailCallback(requestId))
     }
     _modifyGroupAlias = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let newAlias = call.argument("newAlias") as string
+        let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
+        let notifyContent = call.argument('notifyContent') as Map<string, object>
+
+        modifyGroupAlias(groupId, newAlias, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId),
+            this.__generalFailCallback(requestId))
     }
     _modifyGroupMemberAlias = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let memberId = call.argument("memberId") as string
+        let newAlias = call.argument("newAlias") as string
+        let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
+        let notifyContent = call.argument('notifyContent') as Map<string, object>
+
+        modifyGroupMemberAlias(groupId, memberId, newAlias, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId),
+            this.__generalFailCallback(requestId))
     }
     _transferGroup = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let newOwner = call.argument("newOwner") as string
+        let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
+        let notifyContent = call.argument('notifyContent') as Map<string, object>
+
+        transferGroup(groupId, newOwner, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId),
+            this.__generalFailCallback(requestId))
     }
     _setGroupManager = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let isSet = call.argument("isSet") as boolean
+        let memberIds = call.argument("memberIds") as string[]
+        let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
+        let notifyContent = call.argument('notifyContent') as Map<string, object>
+
+        setGroupManager(groupId, isSet, memberIds, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId),
+            this.__generalFailCallback(requestId))
     }
     _muteGroupMember = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let isSet = call.argument("isSet") as boolean
+        let memberIds = call.argument("memberIds") as string[]
+        let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
+        let notifyContent = call.argument('notifyContent') as Map<string, object>
+
+        muteGroupMember(groupId, isSet, memberIds, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId),
+            this.__generalFailCallback(requestId))
     }
     _allowGroupMember = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let isSet = call.argument("isSet") as boolean
+        let memberIds = call.argument("memberIds") as string[]
+        let notifyLines = call.argument("notifyLines") ? call.argument('notifyLines') as number[] : [0]
+        let notifyContent = call.argument('notifyContent') as Map<string, object>
+
+        allowGroupMember(groupId, isSet, memberIds, notifyLines, this.__messageMap2Str(notifyContent), this.__generalVoidCallback(requestId),
+            this.__generalFailCallback(requestId))
     }
     _getGroupRemark = (call: MethodCall, result: MethodResult) => {
         // TODO
@@ -1097,25 +1144,45 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         // TODO
     }
     _setFavGroup = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let isFav = call.argument("isFav") as boolean
+        setFavGroup(groupId, isFav, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
+
     }
     _getUserSetting = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let scope = call.argument("scope") as number
+        let key = call.argument("key") as string
+        result.success(getUserSetting(scope, key))
     }
     _getUserSettings = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let scope = call.argument("scope") as number
+        result.success(getUserSettings(scope))
     }
     _setUserSetting = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let scope = call.argument("scope") as number
+        let key = call.argument("key") as string
+        let value = call.argument("value") as string
+        setUserSetting(scope, key, value, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _modifyMyInfo = (call: MethodCall, result: MethodResult) => {
+        let requestId = call.argument("requestId") as number
+        let values = call.argument("values") as Map<number, string>
+
         // TODO
+        // FIXME
+        for (let entry of values.entries()) {
+            modifyMyInfo(entry[0], entry[1], this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
+        }
     }
     _isGlobalSilent = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        result.success(isGlobalSlient())
     }
     _setGlobalSilent = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let isSilent = call.argument("isSilent") as boolean
+        setGlobalSlient(isSilent, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _isVoipNotificationSilent = (call: MethodCall, result: MethodResult) => {
         // TODO
@@ -1124,10 +1191,12 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         // TODO
     }
     _isEnableSyncDraft = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        result.success(!isGlobalDisableSyncDraft())
     }
     _setEnableSyncDraft = (call: MethodCall, result: MethodResult) => {
-        // TODO
+        let requestId = call.argument("requestId") as number
+        let enable = call.argument("enable") as boolean
+        setDisableSyncDraft(!enable, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getNoDisturbingTimes = (call: MethodCall, result: MethodResult) => {
         // TODO
@@ -1569,6 +1638,14 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
                 'errorCode': err
             } as Record<string, Object>
             this.__callback2UI('onOperationFailure', obj)
+        }
+    }
+
+    __messageMap2Str(map: Map<string, Object>): string {
+        if (!map) {
+            return ''
+        } else {
+            return json.stringify(this.__map2record(map))
         }
     }
 }
