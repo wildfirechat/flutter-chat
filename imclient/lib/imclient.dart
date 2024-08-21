@@ -940,6 +940,23 @@ class Imclient {
     return ImclientPlatform.instance.getFriends(refresh);
   }
 
+  ///设置用户好友请求是否需要验证
+  static void setAddFriendNeedVerify(
+      bool enable,
+      OperationSuccessVoidCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    setUserSetting(28, "", enable?"0":"1", successCallback, errorCallback);
+  }
+
+  ///获取用户好友请求是否需要验证
+  static Future<bool> isAddFriendNeedVerify() async {
+    String value = await getUserSetting(28, "");
+    if("1" == value) {
+      return false;
+    }
+    return true;
+  }
+
   ///搜索群组
   static Future<List<GroupSearchInfo>> searchGroups(String keyword) async {
     return ImclientPlatform.instance.searchGroups(keyword);
@@ -976,10 +993,16 @@ class Imclient {
     return ImclientPlatform.instance.clearUnreadFriendRequestStatus();
   }
 
-  ///清除未读好友请求
+  ///清空好友请求
   ///direction 0是收，1是发。
   static Future<bool> clearFriendRequest(int direction, {int beforeTime = 0}) async {
     return ImclientPlatform.instance.clearFriendRequest(direction, beforeTime);
+  }
+
+  ///删除好友请求
+  ///direction 0是收，1是发。
+  static Future<bool> deleteFriendRequest(String userId, int direction) async {
+    return ImclientPlatform.instance.deleteFriendRequest(userId, direction);
   }
 
   ///删除好友
@@ -1473,6 +1496,11 @@ class Imclient {
     ImclientPlatform.instance.getChatroomMemberInfo(chatroomId, successCallback, errorCallback);
   }
 
+  ///获取当前加入聊天室的ID
+  static Future<String> getJoinedChatroomId() {
+    return ImclientPlatform.instance.getJoinedChatroomId();
+  }
+
   ///创建频道
   static void createChannel(
       String channelName,
@@ -1557,6 +1585,12 @@ class Imclient {
   ///是否设置当PC在线时停止手机通知
   static Future<bool> isMuteNotificationWhenPcOnline() async {
     return ImclientPlatform.instance.isMuteNotificationWhenPcOnline();
+  }
+
+  ///设置PC/Web在线时，手机是否默认静音。缺省值为YES，只有在IM服务配置server.mobile_default_silent_when_pc_online 为false时，才需要调用此函数设置为NO，此时静音状态意义翻转。其它请求千万不要调用此函数，否则会引起状态错乱。
+  ///设置当PC在线时是否通知的方法是 muteNotificationWhenPcOnline:success:error
+  static void setDefaultSilentWhenPcOnline(bool defaultSilent) async {
+    return ImclientPlatform.instance.setDefaultSilentWhenPcOnline(defaultSilent);
   }
 
   ///设置/取消设置当PC在线时停止手机通知

@@ -2180,6 +2180,10 @@ class ImclientPlatform extends PlatformInterface {
     return await methodChannel.invokeMethod("clearFriendRequest", {"direction":direction, "beforeTime":beforeTime});
   }
 
+  Future<bool> deleteFriendRequest(String userId, int direction) async {
+    return await methodChannel.invokeMethod("deleteFriendRequest", {"direction":direction, "userId":userId});
+  }
+
   ///删除好友
   void deleteFriend(
       String userId,
@@ -3020,6 +3024,10 @@ class ImclientPlatform extends PlatformInterface {
         {"requestId": requestId, "chatroomId": chatroomId});
   }
 
+  Future<String> getJoinedChatroomId() async {
+    return await methodChannel.invokeMethod("getJoinedChatroomId");
+  }
+
   ///创建频道
   void createChannel(
       String channelName,
@@ -3146,6 +3154,10 @@ class ImclientPlatform extends PlatformInterface {
   ///是否设置当PC在线时停止手机通知
   Future<bool> isMuteNotificationWhenPcOnline() async {
     return await methodChannel.invokeMethod("isMuteNotificationWhenPcOnline");
+  }
+
+  void setDefaultSilentWhenPcOnline(bool defaultSilent) async {
+    return await methodChannel.invokeMethod("setDefaultSilentWhenPcOnline", {"silent":defaultSilent});
   }
 
   ///设置/取消设置当PC在线时停止手机通知

@@ -1184,6 +1184,12 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         result.success(ChatManager.Instance().clearFriendRequest(direction == 1, beforeTime));
     }
 
+    private void deleteFriendRequest(@NonNull MethodCall call, @NonNull Result result) {
+        String userId = call.argument("userId");
+        int direction = call.argument("direction");
+        result.success(ChatManager.Instance().deleteFriendRequest(userId, direction == 1));
+    }
+
     private void deleteFriend(@NonNull MethodCall call, @NonNull Result result) {
         int requestId = call.argument("requestId");
         String userId = call.argument("userId");
@@ -1823,6 +1829,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         });
     }
 
+    private void getJoinedChatroomId(@NonNull MethodCall call, @NonNull Result result) {
+        result.success(null);
+    }
+
     private void createChannel(@NonNull MethodCall call, @NonNull Result result) {
         final int requestId = call.argument("requestId");
         String channelId = call.argument("channelId");
@@ -1916,6 +1926,11 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void isMuteNotificationWhenPcOnline(@NonNull MethodCall call, @NonNull Result result) {
         result.success(ChatManager.Instance().isMuteNotificationWhenPcOnline());
+    }
+
+    private void setDefaultSilentWhenPcOnline(@NonNull MethodCall call, @NonNull Result result) {
+        boolean silent = call.argument("silent");
+        ChatManager.Instance().setDefaultSilentWhenPcOnline(silent);
     }
 
     private void muteNotificationWhenPcOnline(@NonNull MethodCall call, @NonNull Result result) {
