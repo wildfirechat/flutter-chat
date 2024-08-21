@@ -2225,7 +2225,7 @@ class ImclientPlatform extends PlatformInterface {
 
   ///获取好友备注名
   Future<String?> getFriendAlias(String userId) async {
-    return await methodChannel.invokeMethod("getFriendAlias", {"userId": userId});
+    return await methodChannel.invokeMethod("getFriendAlias", {"friendId": userId});
   }
 
   ///设置好友备注名
