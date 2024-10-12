@@ -38,6 +38,8 @@ extern NSString *kSecretChatStateUpdated;
 extern NSString *kSecretMessageStartBurning;
 //密聊消息阅后即焚完成
 extern NSString *kSecretMessageBurned;
+//域信息更新通知
+extern NSString *kDomainInfoUpdated;
 
 #pragma mark - 枚举值定义
 /**
@@ -72,6 +74,20 @@ typedef NS_ENUM(NSInteger, ConnectionStatus) {
   kConnectionStatusReceiving = 2
 };
 
+
+/**
+ 在双网环境中，获取当前连接的网络类型。仅当长连接建立时是准确的。如果长连接未建立，此值为上一次长连接建立时的值
+ 
+ - kConnectedNetworkType_Main 连接到主网络
+ - kConnectedNetworkType_Backup 连接到备网络
+ - kConnectedNetworkType_Unknown 未知
+
+ */
+typedef NS_ENUM(NSInteger, ConnectedNetworkType) {
+  kConnectedNetworkType_Main = 1,
+  kConnectedNetworkType_Unknown = 0,
+  kConnectedNetworkType_Backup = -1,
+};
 
 /**
 平台枚举值
@@ -393,8 +409,7 @@ typedef NS_ENUM(NSInteger, ConnectionStatus) {
 - (void)disconnect:(BOOL)disablePush clearSession:(BOOL)clearSession;
 
 /**
- 设置服务器信息。host可以是IP，可以是域名，如果是域名的话只支持主域名或www域名，二级域名不支持！
- 例如：example.com或www.example.com是支持的；xx.example.com或xx.yy.example.com是不支持的。
+ 设置服务器地址信息。host可以是IP，可以是域名。如果IM服务是专业版IM服务，需要设置为IM服务绑定的地址。
 
  @param host 服务器地址
  */
@@ -445,10 +460,11 @@ typedef NS_ENUM(NSInteger, ConnectionStatus) {
 - (void)cancelForceConnect;
 
 /*
- 设置备选服务地址，仅专业版支持，一般用于政企单位内外网两种网络环境。
+ 设置备选服务地址，仅专业版支持，一般用于政企单位内外网两种网络环境。请参考：https://docs.wildfirechat.cn/blogs/政企内外双网解决方案.html
  */
 - (void)setBackupAddressStrategy:(int)strategy;
 - (void)setBackupAddress:(NSString *)host port:(int)port;
+- (ConnectedNetworkType)getConnectedNetworkType;
 
 /*
  设置协议栈短连接User agent。
