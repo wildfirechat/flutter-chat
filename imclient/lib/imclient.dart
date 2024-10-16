@@ -758,11 +758,11 @@ class Imclient {
   }
 
   ///发送已保存消息
-  static Future<bool> sendSavedMessage(Message message,
+  static Future<bool> sendSavedMessage2(Message message,
       {int expireDuration = 0,
         required SendMessageSuccessCallback successCallback,
         required OperationFailureCallback errorCallback}) async {
-    return ImclientPlatform.instance.sendSavedMessage(messageId, expireDuration: expireDuration, successCallback: successCallback, errorCallback: errorCallback);
+    return ImclientPlatform.instance.sendSavedMessage2(message, expireDuration: expireDuration, successCallback: successCallback, errorCallback: errorCallback);
   }
 
   static Future<bool> cancelSendingMessage(int messageId) async {

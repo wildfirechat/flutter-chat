@@ -1026,6 +1026,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         MessageContent messageContent = messageContentFromMaps(content);
         int status = call.argument("status");
         long serverTime = getLongPara(call, "serverTime");
+        if(serverTime == 0) {
+            serverTime = System.currentTimeMillis();
+        }
         List<String> toUsers = call.argument("toUsers");
         String sender = call.argument("sender");
         if(TextUtils.isEmpty(sender)) {
