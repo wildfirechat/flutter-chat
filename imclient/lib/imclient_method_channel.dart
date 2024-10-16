@@ -1826,7 +1826,7 @@ class ImclientPlatform extends PlatformInterface {
     });
   }
 
-  Future<bool> sendSavedMessage(Message message,
+  Future<bool> sendSavedMessage2(Message message,
       {int expireDuration = 0,
         required SendMessageSuccessCallback successCallback,
         required OperationFailureCallback errorCallback}) async {
