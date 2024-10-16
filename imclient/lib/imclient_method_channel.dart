@@ -412,21 +412,21 @@ class ImclientPlatform extends PlatformInterface {
           int messageId = args['messageId'];
           int messageUid = args['messageUid'];
           int timestamp = args['timestamp'];
-            Message? message = _sendingMessages[requestId];
-            if(message != null) {
-              message.messageUid = messageUid;
-              message.serverTime = timestamp;
-              message.status = MessageStatus.Message_Status_Sent;
-              _sendingMessages.remove(requestId);
+          Message? message = _sendingMessages[requestId];
+          if(message != null) {
+            message.messageUid = messageUid;
+            message.serverTime = timestamp;
+            message.status = MessageStatus.Message_Status_Sent;
+            _sendingMessages.remove(requestId);
+          }
 
-              if(requestId > 0) {
-                var callback = _sendMessageSuccessCallbackMap[requestId];
-                if (callback != null) {
-                  callback(messageUid, timestamp);
-                }
-                _removeSendMessageCallback(requestId);
-              }
+          if(requestId > 0) {
+            var callback = _sendMessageSuccessCallbackMap[requestId];
+            if (callback != null) {
+              callback(messageUid, timestamp);
             }
+            _removeSendMessageCallback(requestId);
+          }
 
           _eventBus.fire(SendMessageSuccessEvent(messageId, messageUid, timestamp));
           break;
@@ -1822,6 +1822,22 @@ class ImclientPlatform extends PlatformInterface {
     return await methodChannel.invokeMethod("sendSavedMessage", {
       "requestId": requestId,
       "messageId": messageId,
+      "expireDuration": expireDuration
+    });
+  }
+
+  Future<bool> sendSavedMessage(Message message,
+      {int expireDuration = 0,
+        required SendMessageSuccessCallback successCallback,
+        required OperationFailureCallback errorCallback}) async {
+    int requestId = _requestId++;
+    _sendMessageSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    _sendingMessages[requestId] = message;
+
+    return await methodChannel.invokeMethod("sendSavedMessage", {
+      "requestId": requestId,
+      "messageId": message.messageId,
       "expireDuration": expireDuration
     });
   }

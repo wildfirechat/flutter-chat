@@ -821,12 +821,12 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             ChatManager.Instance().sendSavedMessage(msg, expireDuration, new SendMessageCallback() {
                 @Override
                 public void onSuccess(long l, long l1) {
-                    callbackBuilder(requestId).put("messageUid", l).put("timestamp", l1).success("onSendMessageSuccess");
+                    callbackBuilder(requestId).put("messageId", messageId).put("messageUid", l).put("timestamp", l1).success("onSendMessageSuccess");
                 }
 
                 @Override
                 public void onFail(int i) {
-                    callbackBuilder(requestId).put("errorCode", i).success("onSendMessageFailure");
+                    callbackBuilder(requestId).put("messageId", messageId).put("errorCode", i).success("onSendMessageFailure");
                 }
 
                 @Override
