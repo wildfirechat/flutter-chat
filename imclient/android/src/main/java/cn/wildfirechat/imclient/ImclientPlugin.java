@@ -358,6 +358,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void getProtoRevision(@NonNull MethodCall call, @NonNull Result result) {
         String revision = ChatManager.Instance().getProtoRevision();
+        result.success(revision);
     }
 
     private void getLogFilesPath(@NonNull MethodCall call, @NonNull Result result) {
