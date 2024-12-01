@@ -791,21 +791,21 @@ class Imclient {
   static void uploadMedia(
       String fileName,
       Uint8List mediaData,
-      int mediaType,
+      MediaType mediaType,
       OperationSuccessStringCallback successCallback,
       SendMediaMessageProgressCallback progressCallback,
       OperationFailureCallback errorCallback) {
-    ImclientPlatform.instance.uploadMedia(fileName, mediaData, mediaType, successCallback, progressCallback, errorCallback);
+    ImclientPlatform.instance.uploadMedia(fileName, mediaData, mediaType.index, successCallback, progressCallback, errorCallback);
   }
 
   ///上传媒体文件
   static void uploadMediaFile(
       String filePath,
-      int mediaType,
+      MediaType mediaType,
       OperationSuccessStringCallback successCallback,
       SendMediaMessageProgressCallback progressCallback,
       OperationFailureCallback errorCallback) {
-    ImclientPlatform.instance.uploadMediaFile(filePath, mediaType, successCallback, progressCallback, errorCallback);
+    ImclientPlatform.instance.uploadMediaFile(filePath, mediaType.index, successCallback, progressCallback, errorCallback);
   }
 
   ///获取上传地址，仅支持大文件上传功能时可用
