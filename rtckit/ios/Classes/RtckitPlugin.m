@@ -186,6 +186,11 @@
     result(nil);
 }
 
+-(void) seEnableProximitySensor:(NSDictionary *)dict result:(FlutterResult)result {
+    [WFAVEngineKit sharedEngineKit].enableProximitySensor = [dict[@"enable"] boolValue];
+    result(nil);
+}
+
 - (void)enableCallkit:(NSDictionary *)dict result:(FlutterResult)result {
     self.callKitManager = [[WFCCallKitManager alloc] initWithChannel:self.channel];
     result(nil);

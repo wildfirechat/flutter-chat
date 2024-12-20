@@ -125,6 +125,11 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         result.success(null);
     }
 
+    private void seEnableProximitySensor(@NonNull MethodCall call, @NonNull Result result) {
+        AVEngineKit.ENABLE_PROXIMITY_SENSOR_ADJUST_AUDIO_OUTPUT_DEVICE = call.argument("enable");
+        result.success(null);
+    }
+
     private void enableCallkit(@NonNull MethodCall call, @NonNull Result result) {
         //only ios support
         result.success(null);

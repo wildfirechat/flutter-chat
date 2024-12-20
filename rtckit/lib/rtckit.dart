@@ -463,12 +463,20 @@ class Rtckit {
     return RtckitPlatform.instance.maxAudioCallCount;
   }
 
+  static bool get enableProximitySensor {
+    return RtckitPlatform.instance.enableProximitySensor;
+  }
+
   static Future<void> seMaxVideoCallCount(int count) async {
     return RtckitPlatform.instance.seMaxVideoCallCount(count);
   }
 
   static Future<void> seMaxAudioCallCount(int count) async {
     return RtckitPlatform.instance.seMaxAudioCallCount(count);
+  }
+
+  static Future<void> seEnableProximitySensor(bool enable) async {
+    return RtckitPlatform.instance.seEnableProximitySensor(enable);
   }
 
   static Future<void> enableCallkit() async {
