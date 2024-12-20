@@ -91,6 +91,7 @@ class _MyAppState extends State<MyApp> {
           debugPrint('didEndCallCallback: $reason, $duration');
         });
     //Rtckit.enableCallkit();
+    Rtckit.seEnableProximitySensor(true);
     if (Config.ICE_SERVERS != null){
       for (int i = 0; i < Config.ICE_SERVERS.length; i ++){
         var iceServer = Config.ICE_SERVERS[i];

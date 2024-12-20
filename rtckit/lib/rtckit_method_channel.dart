@@ -43,6 +43,7 @@ class RtckitPlatform extends PlatformInterface {
 
   static int _maxAudioCallCount = 9;
   static int _maxVideoCallCount = 4;
+  static bool _enableProximitySensor = true;
 
   Future<void> initProto(DidReceiveCallCallback? didReceiveCallCallback, ShowCallViewCallback? showCallViewCallback, ShouldStartRingCallback? shouldStartRingCallback, ShouldStopRingCallback? shouldStopRingCallback, DidEndCallCallback? didEndCallCallback) async {
     _didReceiveCallCallback = didReceiveCallCallback;
@@ -287,6 +288,10 @@ class RtckitPlatform extends PlatformInterface {
     return _maxAudioCallCount;
   }
 
+  bool get enableProximitySensor {
+    return _enableProximitySensor;
+  }
+
   Future<void> seMaxVideoCallCount(int count) async {
     _maxVideoCallCount = count;
     return await methodChannel.invokeMethod("seMaxVideoCallCount", {'count':count});
@@ -295,6 +300,11 @@ class RtckitPlatform extends PlatformInterface {
   Future<void> seMaxAudioCallCount(int count) async {
     _maxAudioCallCount = count;
     return await methodChannel.invokeMethod("seMaxAudioCallCount", {'count':count});
+  }
+
+  Future<void> seEnableProximitySensor(bool enable) async {
+    _enableProximitySensor = enable;
+    return await methodChannel.invokeMethod("seEnableProximitySensor", {'enable':enable});
   }
 
   Future<void> enableCallkit() async {
