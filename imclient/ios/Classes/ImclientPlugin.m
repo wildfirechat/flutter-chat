@@ -1436,13 +1436,12 @@ ImclientPlugin *gIMClientInstance;
 }
 
 - (void)createChannel:(NSDictionary *)dict result:(FlutterResult)result {
-    NSString *channelName = dict[@"channelName"];
-    NSString *channelPortrait = dict[@"channelPortrait"];
+    NSString *channelName = dict[@"name"];
+    NSString *channelPortrait = dict[@"portrait"];
     NSString *desc = dict[@"desc"];
     NSString *extra = dict[@"extra"];
-    int status = [dict[@"status"] intValue];
     int requestId = [dict[@"requestId"] intValue];
-    
+
     [[WFCCIMService sharedWFCIMService] createChannel:channelName portrait:channelPortrait desc:desc extra:extra success:^(WFCCChannelInfo *channelInfo) {
         [self.channel invokeMethod:@"onCreateChannelSuccess" arguments:@{@"requestId":@(requestId), @"channelInfo":[channelInfo toJsonObj]}];
     } error:^(int error_code) {

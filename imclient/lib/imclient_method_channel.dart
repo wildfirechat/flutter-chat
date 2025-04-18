@@ -3048,7 +3048,6 @@ class ImclientPlatform extends PlatformInterface {
   void createChannel(
       String channelName,
       String channelPortrait,
-      int status,
       String desc,
       String extra,
       OperationSuccessChannelInfoCallback successCallback,
@@ -3060,7 +3059,6 @@ class ImclientPlatform extends PlatformInterface {
       "requestId": requestId,
       "name": channelName,
       "portrait": channelPortrait,
-      "status": status,
       "desc": desc,
       "extra": extra
     });

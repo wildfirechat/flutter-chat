@@ -1514,12 +1514,11 @@ class Imclient {
   static void createChannel(
       String channelName,
       String channelPortrait,
-      int status,
       String desc,
       String extra,
       OperationSuccessChannelInfoCallback successCallback,
       OperationFailureCallback errorCallback) {
-    ImclientPlatform.instance.createChannel(channelName, channelPortrait, status, desc, extra, successCallback, errorCallback);
+    ImclientPlatform.instance.createChannel(channelName, channelPortrait, desc, extra, successCallback, errorCallback);
   }
 
   ///获取频道信息
