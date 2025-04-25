@@ -8,6 +8,8 @@ import '../messages/messages_screen.dart';
 class ChatroomList extends StatelessWidget {
   final List modelList = ['chatroom1', 'chatroom2', 'chatroom3'];
 
+  const ChatroomList({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

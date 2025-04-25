@@ -51,6 +51,7 @@ class _MyAppState extends State<MyApp> {
         debugPrint("goto background");
         updateAppBadge();
       }
+      return null;
     });
   }
 
@@ -92,13 +93,11 @@ class _MyAppState extends State<MyApp> {
         });
     //Rtckit.enableCallkit();
     Rtckit.seEnableProximitySensor(true);
-    if (Config.ICE_SERVERS != null){
-      for (int i = 0; i < Config.ICE_SERVERS.length; i ++){
-        var iceServer = Config.ICE_SERVERS[i];
-        Rtckit.addICEServer(iceServer[0], iceServer[1], iceServer[2]);
-      }
+    for (int i = 0; i < Config.ICE_SERVERS.length; i ++){
+      var iceServer = Config.ICE_SERVERS[i];
+      Rtckit.addICEServer(iceServer[0], iceServer[1], iceServer[2]);
     }
-
+  
     Rtckit.defaultUserPortrait = Config.defaultUserPortrait;
     Rtckit.selectMembersDelegate = (BuildContext context, List<String> candidates, List<String>? disabledCheckedUsers, List<String>? disabledUncheckedUsers, int maxSelected, void Function(List<String> selectedMembers) callback) {
       Navigator.push(
@@ -140,7 +139,7 @@ class _MyAppState extends State<MyApp> {
 
         isLogined = false;
         navKey.currentState?.pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => LoginScreen(), maintainState: true),
+          MaterialPageRoute(builder: (context) => const LoginScreen(), maintainState: true),
               (Route<dynamic> route) => false,
         );
       }
@@ -150,11 +149,11 @@ class _MyAppState extends State<MyApp> {
       }
     }, (messageUid) {
       if (kDebugMode) {
-        print('recall message ${messageUid}');
+        print('recall message $messageUid');
       }
     }, (messageUid) {
       if (kDebugMode) {
-        print('delete message ${messageUid}');
+        print('delete message $messageUid');
       }
     }, messageDeliveriedCallback: (Map<String, int> deliveryMap) {
       if (kDebugMode) {
@@ -170,7 +169,7 @@ class _MyAppState extends State<MyApp> {
       }
     }, groupMemberUpdatedCallback: (String groupId, List<GroupMember> members) {
       if (kDebugMode) {
-        print("on group ${groupId} member updated $members");
+        print("on group $groupId member updated $members");
       }
     }, userInfoUpdatedCallback: (List<UserInfo> userInfos) {
       for (var element in userInfos) {
@@ -257,7 +256,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: navKey,
-      home: isLogined == null ? const SplashScreen() : (isLogined! ? const HomeTabBar() : LoginScreen()),
+      home: isLogined == null ? const SplashScreen() : (isLogined! ? const HomeTabBar() : const LoginScreen()),
     );
   }
 }

@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
-import 'package:rtckit/rtckit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app_server.dart';
@@ -12,6 +11,8 @@ import 'config.dart';
 import 'home/home.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
+
   @override
   LoginScreenState createState() => LoginScreenState();
 }
@@ -105,21 +106,19 @@ class LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 String phoneNum = phoneFieldController.value.text;
                 String code = codeFieldController.value.text;
-                if(phoneNum != null && code != null) {
-                  AppServer.login(phoneNum, code, (userId, token, isNewUser) {
-                    Imclient.connect(Config.IM_Host, userId, token);
-                    Navigator.replace(context, oldRoute: ModalRoute.of(context)!,
-                        newRoute: MaterialPageRoute(builder: (context) => const HomeTabBar()));
-                    SharedPreferences.getInstance().then((value) {
-                      value.setString("userId", userId);
-                      value.setString("token", token);
-                      value.commit();
-                    });
-                  }, (msg) {
-                    Fluttertoast.showToast(msg: "登录失败");
+                AppServer.login(phoneNum, code, (userId, token, isNewUser) {
+                  Imclient.connect(Config.IM_Host, userId, token);
+                  Navigator.replace(context, oldRoute: ModalRoute.of(context)!,
+                      newRoute: MaterialPageRoute(builder: (context) => const HomeTabBar()));
+                  SharedPreferences.getInstance().then((value) {
+                    value.setString("userId", userId);
+                    value.setString("token", token);
+                    value.commit();
                   });
-                }
-              },
+                }, (msg) {
+                  Fluttertoast.showToast(msg: "登录失败");
+                });
+                            },
             ),
           ],
         ),
