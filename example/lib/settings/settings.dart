@@ -70,7 +70,7 @@ class SettingsTab extends StatelessWidget {
         } else if(key == "message_notification") {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const MessageNotificationSettings()),
+            MaterialPageRoute(builder: (context) => MessageNotificationSettings()),
           );
         } else {
           Fluttertoast.showToast(msg: "方法没有实现");

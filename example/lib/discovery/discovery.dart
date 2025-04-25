@@ -61,7 +61,7 @@ class DiscoveryState extends State<DiscoveryTab> {
         if(key == 'chatroom') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const ChatroomList()),
+            MaterialPageRoute(builder: (context) => ChatroomList()),
           );
         } else if(key == 'robot') {
           Navigator.push(
