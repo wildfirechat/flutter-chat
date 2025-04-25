@@ -36,7 +36,7 @@ class GroupMemberAllowNotificationContent extends NotificationMessageContent {
       creator = map['o'];
       groupId = map['g'];
       type = map['n'];
-      targetIds = Tools.convertDynamicList(map['ms'])!;
+      targetIds = Tools.convertDynamicList(map['ms']);
     } else {
       creator = "";
       groupId = "";
