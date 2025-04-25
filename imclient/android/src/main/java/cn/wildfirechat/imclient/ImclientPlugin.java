@@ -1844,7 +1844,18 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String desc = call.argument("desc");
         String extra = call.argument("extra");
 
-        ChatManager.Instance().createChannel("", channelName, channelPortrait, desc, extra, new GeneralStringCallback(requestId));
+        ChatManager.Instance().createChannel("", channelName, channelPortrait, desc, extra, new GeneralCallback2(){
+            @Override
+            public void onSuccess(String channelId) {
+                Map<String, Object> stringObjectMap = convertChannelInfo(ChatManager.Instance().getChannelInfo(channelId, false));
+                callbackBuilder(requestId).put("channelInfo", stringObjectMap).success("onCreateChannelSuccess");
+            }
+
+            @Override
+            public void onFail(int i) {
+                callbackFailure(requestId, i);
+            }
+        } );
     }
 
     private void getChannelInfo(@NonNull MethodCall call, @NonNull Result result) {
