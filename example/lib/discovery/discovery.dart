@@ -8,7 +8,7 @@ import 'package:wfc_example/messages/messages_screen.dart';
 import '../channel/channel_list.dart';
 
 class DiscoveryTab extends StatefulWidget {
-  DiscoveryTab({Key? key}) : super(key: key);
+  const DiscoveryTab({Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => DiscoveryState();
@@ -61,7 +61,7 @@ class DiscoveryState extends State<DiscoveryTab> {
         if(key == 'chatroom') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => ChatroomList()),
+            MaterialPageRoute(builder: (context) => const ChatroomList()),
           );
         } else if(key == 'robot') {
           Navigator.push(

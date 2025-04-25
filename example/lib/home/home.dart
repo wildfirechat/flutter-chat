@@ -5,7 +5,6 @@
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
@@ -57,7 +56,7 @@ class HomeTabBarState extends State<HomeTabBar> {
       setState(() {
         unreadFriendRequestCount = count;
       });
-    },), DiscoveryTab(), SettingsTab()];
+    },), const DiscoveryTab(), SettingsTab()];
     tabImages ??= [
         [
           getTabImage('assets/images/tabbar_chat.png'),

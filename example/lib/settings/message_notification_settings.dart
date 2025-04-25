@@ -14,6 +14,8 @@ class MessageNotificationSettings extends StatelessWidget {
     ['同步草稿', 'sync_draft'],
   ];
 
+  const MessageNotificationSettings({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -102,7 +104,7 @@ class MessageNotificationSettingItemState extends State<MessageNotificationSetti
     } else {
       Imclient.getUserSetting(scope, "").then((value)  {
         setState(() {
-          isEnabled = !(value == null || value.isEmpty || value == '0');
+          isEnabled = !(value.isEmpty || value == '0');
           if(revertValue) {
             isEnabled = !isEnabled;
           }

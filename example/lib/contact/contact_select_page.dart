@@ -31,11 +31,9 @@ class _ContactListWidgetState extends State<ContactSelectPage> {
     if(widget.candidates == null) {
       Imclient.getMyFriendList(refresh: true).then((value) {
         setState(() {
-          if (value != null) {
-            friendList = value;
-            selected = List.generate(friendList.length, (index) => widget.disabledCheckedUsers != null && widget.disabledCheckedUsers!.contains(friendList[index]));
-          }
-        });
+          friendList = value;
+          selected = List.generate(friendList.length, (index) => widget.disabledCheckedUsers != null && widget.disabledCheckedUsers!.contains(friendList[index]));
+                });
       });
     } else {
       friendList = widget.candidates!;

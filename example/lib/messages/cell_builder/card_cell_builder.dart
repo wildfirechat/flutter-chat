@@ -1,5 +1,4 @@
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/card_message_content.dart';
 import 'package:wfc_example/config.dart';

@@ -298,7 +298,7 @@ class ConversationListItemState extends State<ConversationListItem> {
       });
     }
 
-    if(widget.conversationInfo.lastMessage != null && widget.conversationInfo.lastMessage!.content != null) {
+    if(widget.conversationInfo.lastMessage != null) {
       digest = Cache.getConversationDigest(widget.conversationInfo.conversation);
       widget.conversationInfo.lastMessage!.content.digest(widget.conversationInfo.lastMessage!).then((value) {
         if(digest != value) {
