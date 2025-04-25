@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import '../../imclient.dart';
-import '../../model/conversation.dart';
 import '../../model/message_payload.dart';
 import '../../model/user_info.dart';
 import '../../tools.dart';
