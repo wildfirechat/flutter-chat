@@ -14,7 +14,7 @@ class MessageNotificationSettings extends StatelessWidget {
     ['同步草稿', 'sync_draft'],
   ];
 
-  const MessageNotificationSettings({Key? key}) : super(key: key);
+  MessageNotificationSettings({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
