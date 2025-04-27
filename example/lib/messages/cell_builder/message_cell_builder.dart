@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:event_bus/event_bus.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 

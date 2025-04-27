@@ -10,7 +10,6 @@ import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
-import 'package:wfc_example/config.dart';
 import 'package:wfc_example/messages/messages_screen.dart';
 
 import '../contact/contact_select_page.dart';
@@ -114,8 +113,8 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
 
   void _initChannelConversationModel() {
     Imclient.getChannelInfo(widget.conversation.target).then((ci) {
-      if(ci != null && ci!.owner != null) {
-        Imclient.getUserInfo(ci!.owner!).then((ui) {
+      if(ci != null && ci.owner != null) {
+        Imclient.getUserInfo(ci.owner!).then((ui) {
           setState(() {
             channelOwner = ui;
           });

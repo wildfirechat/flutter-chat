@@ -2,8 +2,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as image;
 
-import 'package:flutter/cupertino.dart';
-import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
 
