@@ -1,11 +1,10 @@
-
 import '../message/message.dart';
 import 'conversation.dart';
 import 'unread_count.dart';
 
 class ConversationInfo {
-  ConversationInfo(
-      {this.timestamp = 0, this.isTop = 0, this.isSilent = false});
+  ConversationInfo({this.timestamp = 0, this.isTop = 0, this.isSilent = false});
+
   late Conversation conversation;
   Message? lastMessage;
   String? draft;

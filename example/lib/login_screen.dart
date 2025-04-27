@@ -104,7 +104,7 @@ class LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                   const SizedBox(width: 8,),
-                  ElevatedButton(onPressed: isSentCode ? null : () {
+                  ElevatedButton(onPressed: _isPhoneEmpty || isSentCode ? null : () {
                     AppServer.sendCode(phoneFieldController.value.text, () {
                       Fluttertoast.showToast(
                           msg: "验证码发送成功，请在5分钟内进行验证!");
