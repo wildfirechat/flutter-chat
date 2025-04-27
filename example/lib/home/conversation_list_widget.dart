@@ -23,7 +23,7 @@ import '../cache.dart';
 import '../messages/messages_screen.dart';
 
 class ConversationListWidget extends StatelessWidget {
-  ConversationListWidget({Key? key}) : super(key: key);
+  const ConversationListWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -34,31 +34,17 @@ class ConversationListWidget extends StatelessWidget {
             itemCount: conversationListViewModel.conversationList.length,
             itemBuilder: /*1*/ (context, i) {
               ConversationInfo info = conversationListViewModel.conversationList[i];
-              return ConversationListItem(
-                info,
-                i,
-              );
+              return ConversationListItem(info);
             }),
       ),
     );
   }
 }
 
-class ConversationListItem extends StatefulWidget {
+class ConversationListItem extends StatelessWidget {
   late final ConversationInfo conversationInfo;
-  final int index;
 
-  ConversationListItem(this.conversationInfo, this.index) : super(key: ValueKey(conversationInfo));
-
-  @override
-  State<StatefulWidget> createState() => ConversationListItemState();
-}
-
-class ConversationListItemState extends State<ConversationListItem> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  ConversationListItem(this.conversationInfo) : super(key: ValueKey(conversationInfo));
 
   @override
   Widget build(BuildContext context) {
@@ -67,8 +53,8 @@ class ConversationListItemState extends State<ConversationListItem> {
     String? convTitle;
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context, listen: false);
     var userViewModel = Provider.of<UserViewModel>(context, listen: true);
-    var userInfo = userViewModel.getUserInfo(widget.conversationInfo.conversation.target);
-    if (widget.conversationInfo.conversation.conversationType == ConversationType.Single) {
+    var userInfo = userViewModel.getUserInfo(conversationInfo.conversation.target);
+    if (conversationInfo.conversation.conversationType == ConversationType.Single) {
       if (userInfo != null && userInfo.portrait != null && userInfo.portrait!.isNotEmpty) {
         portrait = userInfo.portrait!;
         convTitle = userInfo.displayName!;
@@ -76,10 +62,10 @@ class ConversationListItemState extends State<ConversationListItem> {
         convTitle = '私聊';
       }
       localPortrait = Config.defaultUserPortrait;
-    } else if (widget.conversationInfo.conversation.conversationType == ConversationType.Group) {
+    } else if (conversationInfo.conversation.conversationType == ConversationType.Group) {
       convTitle = '群聊';
       var groupViewModel = Provider.of<GroupViewModel>(context, listen: true);
-      var groupInfo = groupViewModel.getGroupInfo(widget.conversationInfo.conversation.target);
+      var groupInfo = groupViewModel.getGroupInfo(conversationInfo.conversation.target);
       if (groupInfo != null) {
         if (groupInfo.portrait != null && groupInfo.portrait!.isNotEmpty) {
           portrait = groupInfo.portrait!;
@@ -89,9 +75,9 @@ class ConversationListItemState extends State<ConversationListItem> {
         }
       }
       localPortrait = Config.defaultGroupPortrait;
-    } else if (widget.conversationInfo.conversation.conversationType == ConversationType.Channel) {
+    } else if (conversationInfo.conversation.conversationType == ConversationType.Channel) {
       var channelViewModel = Provider.of<ChannelViewModel>(context, listen: true);
-      var channelInfo = channelViewModel.getChannelInfo(widget.conversationInfo.conversation.target);
+      var channelInfo = channelViewModel.getChannelInfo(conversationInfo.conversation.target);
       if (channelInfo != null && channelInfo.portrait != null && channelInfo.portrait!.isNotEmpty) {
         portrait = channelInfo.portrait!;
         convTitle = channelInfo.name!;
@@ -101,18 +87,18 @@ class ConversationListItemState extends State<ConversationListItem> {
       localPortrait = Config.defaultChannelPortrait;
     }
 
-    bool hasDraft = widget.conversationInfo.draft != null && widget.conversationInfo.draft!.isNotEmpty;
+    bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
     UserInfo? senderInfo;
-    if (widget.conversationInfo.lastMessage != null && widget.conversationInfo.conversation.conversationType != ConversationType.Single && widget.conversationInfo.lastMessage?.fromUser != Imclient.currentUserId) {
-      senderInfo = userViewModel.getUserInfo(widget.conversationInfo.lastMessage!.fromUser, groupId: widget.conversationInfo.conversation.conversationType == ConversationType.Group ? widget.conversationInfo.conversation.target : null);
+    if (conversationInfo.lastMessage != null && conversationInfo.conversation.conversationType != ConversationType.Single && conversationInfo.lastMessage?.fromUser != Imclient.currentUserId) {
+      senderInfo = userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser, groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null);
     }
 
     String? senderName = senderInfo?.getReadableName();
-    Future<String>? digest = widget.conversationInfo.lastMessage?.content.digest(widget.conversationInfo.lastMessage!);
+    Future<String>? digest = conversationInfo.lastMessage?.content.digest(conversationInfo.lastMessage!);
 
     return GestureDetector(
       child: Container(
-        color: widget.conversationInfo.isTop > 0 ? CupertinoColors.secondarySystemBackground : CupertinoColors.systemBackground,
+        color: conversationInfo.isTop > 0 ? CupertinoColors.secondarySystemBackground : CupertinoColors.systemBackground,
         child: Column(
           children: <Widget>[
             Container(
@@ -121,8 +107,8 @@ class ConversationListItemState extends State<ConversationListItem> {
               child: Row(
                 children: <Widget>[
                   badge.Badge(
-                      showBadge: widget.conversationInfo.unreadCount.unread > 0,
-                      badgeContent: Text(widget.conversationInfo.isSilent ? '' : '${widget.conversationInfo.unreadCount.unread}'),
+                      showBadge: conversationInfo.unreadCount.unread > 0,
+                      badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
                       child: SizedBox(
                         width: 40,
                         height: 40,
@@ -146,7 +132,7 @@ class ConversationListItemState extends State<ConversationListItem> {
                               ),
                               Row(
                                 children: [
-                                  _getMessageStatusIcon(),
+                                  _messageStatusIcon(),
                                   hasDraft
                                       ? const Text(
                                           "[草稿]",
@@ -159,7 +145,7 @@ class ConversationListItemState extends State<ConversationListItem> {
                                           builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
                                             String digestStr = snapshot.data ?? '';
                                             return Text(
-                                              hasDraft ? widget.conversationInfo.draft! : (senderName == null ? digestStr : '$senderName: $digestStr'),
+                                              hasDraft ? conversationInfo.draft! : (senderName == null ? digestStr : '$senderName: $digestStr'),
                                               style: const TextStyle(fontSize: 12.0, color: Color(0xffaaaaaa)),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
@@ -174,7 +160,7 @@ class ConversationListItemState extends State<ConversationListItem> {
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0.0, 15.0, 15.0, 0.0),
                         child: Text(
-                          Utilities.formatTime(widget.conversationInfo.timestamp),
+                          Utilities.formatTime(conversationInfo.timestamp),
                           style: const TextStyle(
                             fontSize: 10.0,
                             color: Color(0xffaaaaaa),
@@ -183,7 +169,7 @@ class ConversationListItemState extends State<ConversationListItem> {
                       ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(0.0, 5.0, 15.0, 0.0),
-                        child: widget.conversationInfo.isSilent
+                        child: conversationInfo.isSilent
                             ? Image.asset(
                                 'assets/images/conversation_mute.png',
                                 width: 10,
@@ -204,8 +190,8 @@ class ConversationListItemState extends State<ConversationListItem> {
           ],
         ),
       ),
-      onTap: () => _toChatPage(context, widget.conversationInfo.conversation),
-      onLongPressStart: (details) => _onLongPressed(context, widget.conversationInfo, widget.index, details.globalPosition, conversationListViewModel),
+      onTap: () => _toChatPage(context, conversationInfo.conversation),
+      onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition, conversationListViewModel),
     );
   }
 
@@ -218,7 +204,7 @@ class ConversationListItemState extends State<ConversationListItem> {
     });
   }
 
-  void _onLongPressed(BuildContext context, ConversationInfo conversationInfo, int index, Offset position, ConversationListViewModel conversationListViewModel) {
+  void _onLongPressed(BuildContext context, ConversationInfo conversationInfo, Offset position, ConversationListViewModel conversationListViewModel) {
     List<PopupMenuItem> items = [
       const PopupMenuItem(
         value: 'delete',
@@ -277,9 +263,9 @@ class ConversationListItemState extends State<ConversationListItem> {
     });
   }
 
-  Widget _getMessageStatusIcon() {
-    if (widget.conversationInfo.lastMessage != null) {
-      if (widget.conversationInfo.lastMessage!.status == MessageStatus.Message_Status_Sending) {
+  Widget _messageStatusIcon() {
+    if (conversationInfo.lastMessage != null) {
+      if (conversationInfo.lastMessage!.status == MessageStatus.Message_Status_Sending) {
         return Padding(
           padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
           child: Image.asset(
@@ -288,7 +274,7 @@ class ConversationListItemState extends State<ConversationListItem> {
             height: 16,
           ),
         );
-      } else if (widget.conversationInfo.lastMessage!.status == MessageStatus.Message_Status_Send_Failure) {
+      } else if (conversationInfo.lastMessage!.status == MessageStatus.Message_Status_Send_Failure) {
         return Padding(
           padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
           child: Image.asset(
@@ -301,10 +287,5 @@ class ConversationListItemState extends State<ConversationListItem> {
     }
 
     return Container();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
