@@ -18,7 +18,12 @@ class ConversationListViewModel extends ChangeNotifier {
   late StreamSubscription<ClearConversationUnreadEvent> _clearConversationUnreadSubscription;
   late StreamSubscription<ClearConversationsUnreadEvent> _clearConversationsUnreadSubscription;
   late StreamSubscription<SendMessageStartEvent> _sendMessageStartSubscription;
+  late StreamSubscription<SendMessageSuccessEvent> _sendMessageSuccessSubscription;
+  late StreamSubscription<SendMessageFailureEvent> _sendMessageFailureSubscription;
   late StreamSubscription<ClearMessagesEvent> _clearMessagesSubscription;
+  late StreamSubscription<ConversationDraftUpdatedEvent> _draftUpdatedSubscription;
+  late StreamSubscription<ConversationSilentUpdatedEvent> _silentUpdatedSubscription;
+  late StreamSubscription<ConversationTopUpdatedEvent> _topUpdatedSubscription;
 
   List<ConversationInfo> _conversationList = [];
 
@@ -73,14 +78,30 @@ class ConversationListViewModel extends ChangeNotifier {
     _sendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
       _loadConversationList();
     });
+    _sendMessageSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
+      _loadConversationList();
+    });
+    _sendMessageFailureSubscription = _eventBus.on<SendMessageFailureEvent>().listen((event) {
+      _loadConversationList();
+    });
     _clearMessagesSubscription = _eventBus.on<ClearMessagesEvent>().listen((event) {
       _loadConversationList();
     });
+    _draftUpdatedSubscription = _eventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
+      _loadConversationList();
+    });
+    _silentUpdatedSubscription = _eventBus.on<ConversationSilentUpdatedEvent>().listen((event) {
+      _loadConversationList();
+    });
+    _topUpdatedSubscription = _eventBus.on<ConversationTopUpdatedEvent>().listen((event) {
+      _loadConversationList();
+    });
+
     _loadConversationList();
   }
 
   _loadConversationList() {
-    Imclient.getConversationInfos([ConversationType.Channel, ConversationType.Group], [0]).then((cl) {
+    Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((cl) {
       print('ConversaitonListViewModel, load conversation list ${cl.length}');
       _conversationList = cl;
       notifyListeners();
@@ -133,5 +154,10 @@ class ConversationListViewModel extends ChangeNotifier {
     _clearConversationsUnreadSubscription.cancel();
     _sendMessageStartSubscription.cancel();
     _clearMessagesSubscription.cancel();
+    _draftUpdatedSubscription.cancel();
+    _silentUpdatedSubscription.cancel();
+    _topUpdatedSubscription.cancel();
+    _sendMessageSuccessSubscription.cancel();
+    _sendMessageFailureSubscription.cancel();
   }
 }
