@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
-import 'package:imclient/model/im_constant.dart';
-import 'package:imclient/model/user_info.dart';
-import 'package:wfc_example/user_info_widget.dart';
 
 import '../config.dart';
 import '../channel/channel_info_widget.dart';

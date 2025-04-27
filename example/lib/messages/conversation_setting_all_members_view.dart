@@ -71,17 +71,17 @@ class _MemberItemState extends State<_MemberItem> {
     return Column(
       children: [
         Padding(padding: const EdgeInsets.fromLTRB(12, 8, 12, 0), child: image),
-        SizedBox(height: 16, child: Text(name, overflow: TextOverflow.ellipsis, maxLines: 1, style: TextStyle(fontSize: 12)),),
+        SizedBox(height: 16, child: Text(name, overflow: TextOverflow.ellipsis, maxLines: 1, style: const TextStyle(fontSize: 12)),),
       ],
     );
   }
 }
 
 class GroupAllMembersWidget extends StatefulWidget {
-  String _groupId;
+  final String _groupId;
   List<GroupMember> _groupMembers;
-  bool _hasPlus;
-  bool _hasMinus;
+  final bool _hasPlus;
+  final bool _hasMinus;
 
   GroupAllMembersWidget(this._groupId, this._groupMembers, this._hasPlus, this._hasMinus, {Key? key}) : super(key: key);
 

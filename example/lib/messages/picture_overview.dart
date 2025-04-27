@@ -18,7 +18,7 @@ class PictureOverview extends StatefulWidget {
         this.pageToEnd,
         this.direction = Axis.horizontal,
         this.decoration})
-      : assert(imageItems != null), super(key: key);
+      : super(key: key);
 
   @override
   State<PictureOverview> createState() => PictureOverviewState();

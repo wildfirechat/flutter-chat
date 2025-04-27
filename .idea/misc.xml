@@ -1,6 +1,0 @@
-<project version="4">
-  <component name="ProjectRootManager" version="2" project-jdk-name="Android API 23 Platform" project-jdk-type="Android SDK" />
-  <component name="SuppressKotlinCodeStyleNotification">
-    <option name="disableForAll" value="true" />
-  </component>
-</project>

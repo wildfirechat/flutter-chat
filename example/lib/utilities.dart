@@ -58,7 +58,7 @@ class Utilities {
     if(size < 1024) {
       return '${size}B';
     } else if(size < 1024 * 1024) {
-      int k = (size / 1024).toInt();
+      int k = size ~/ 1024;
       return '${k}KB';
     } else if(size < 1024 * 1024 * 1024) {
       int m = (size/1024/1024).toInt();

@@ -68,10 +68,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   void _loadFriendList(bool refresh) {
     Imclient.getMyFriendList(refresh: true).then((value){
       setState(() {
-        if(value != null) {
-          friendList = value;
-        }
-      });
+        friendList = value;
+            });
     });
   }
 
@@ -118,7 +116,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
         } else if(key == "fav_group") {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => FavGroupsPage()),
+            MaterialPageRoute(builder: (context) => const FavGroupsPage()),
           );
         } else if(key == "subscribed_channel") {
         } else {

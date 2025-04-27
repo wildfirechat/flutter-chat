@@ -20,6 +20,8 @@ class SettingsTab extends StatelessWidget {
     ['assets/images/setting_general.png', '设置', 'settings'],
   ];
 
+  SettingsTab({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +41,7 @@ class SettingsTab extends StatelessWidget {
   }
 
   Widget _buildMeRow(BuildContext context) {
-    return SettingProfile();
+    return const SettingProfile();
   }
 
   Widget _buildRow(BuildContext context, int index) {
@@ -52,7 +54,7 @@ class SettingsTab extends StatelessWidget {
         width: View.of(context).physicalSize.width,
         color: const Color(0xffebebeb),
       ),
-      Container(margin: const EdgeInsets.fromLTRB(10, 10, 5, 10), height: 36, child: Row(children: [image, Expanded(child: Container(margin: EdgeInsets.only(left: 15), child: Text(title),))],),),
+      Container(margin: const EdgeInsets.fromLTRB(10, 10, 5, 10), height: 36, child: Row(children: [image, Expanded(child: Container(margin: const EdgeInsets.only(left: 15), child: Text(title),))],),),
       Container(
         margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
         height: 0.5,

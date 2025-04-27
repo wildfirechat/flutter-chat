@@ -21,7 +21,7 @@ typedef OnSoundRecordedCallback = void Function(String soundPath, int duration);
 
 class MessageInputBar extends StatefulWidget {
   MessageInputBar(this._conversation, {required this.sendButtonTapedCallback, required this.textChangedCallback, required this.pickerImageCallback, required this.pickerFileCallback, required this.pressCallBtnCallback, required this.pressCardBtnCallback, required this.cameraCaptureImageCallback, required this.cameraCaptureVideoCallback, required this.soundRecordedCallback, ChatInputBarStatus chatInputBarStatus = ChatInputBarStatus.keyboardStatus, Key? key}) : _chatInputBarStatus = chatInputBarStatus, super(key: key);
-  Conversation _conversation;
+  final Conversation _conversation;
   ChatInputBarStatus _chatInputBarStatus;
   final OnSendButtonTapedCallback sendButtonTapedCallback;
   final OnTextChangedCallback textChangedCallback;

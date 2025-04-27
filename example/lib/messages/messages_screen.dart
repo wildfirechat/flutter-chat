@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:event_bus/event_bus.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/message/notification/tip_notificiation_content.dart';
@@ -44,7 +43,7 @@ import 'message_model.dart';
 class MessagesScreen extends StatefulWidget {
   final Conversation conversation;
 
-  MessagesScreen(this.conversation, {Key? key}) : super(key: key);
+  const MessagesScreen(this.conversation, {Key? key}) : super(key: key);
 
   @override
   State createState() => _State();
@@ -71,8 +70,8 @@ class _State extends State<MessagesScreen> {
   List<GroupMember>? groupMembers;
 
   GlobalKey<MessageTitleState> titleGlobalKey = GlobalKey();
-  GlobalKey<MessageInputBarState> _inputBarGlobalKey = GlobalKey();
-  GlobalKey<PictureOverviewState> _pictureOverviewKey = GlobalKey();
+  final GlobalKey<MessageInputBarState> _inputBarGlobalKey = GlobalKey();
+  final GlobalKey<PictureOverviewState> _pictureOverviewKey = GlobalKey();
 
   Timer? _typingTimer;
   final Map<String, int> _typingUserTime = {};
@@ -171,8 +170,8 @@ class _State extends State<MessagesScreen> {
       noMoreLocalHistoryMsg = true;
     } else if(widget.conversation.conversationType == ConversationType.Channel) {
       Imclient.getChannelInfo(widget.conversation.target, refresh: true).then((channelInfo) {
-        if(channelInfo != null && channelInfo!.name != null) {
-          title = channelInfo!.name!;
+        if(channelInfo != null && channelInfo.name != null) {
+          title = channelInfo.name!;
           titleGlobalKey.currentState!.updateTitle(title);
         }
       });
@@ -186,7 +185,7 @@ class _State extends State<MessagesScreen> {
   void _reloadMessages() {
     models.clear();
     Imclient.getMessages(widget.conversation, 0, 10).then((value) {
-      if(value != null && value.isNotEmpty) {
+      if(value.isNotEmpty) {
         _appendMessage(value);
       } else {
         setState(() {
@@ -331,7 +330,7 @@ class _State extends State<MessagesScreen> {
 
   void _onSoundRecorded(String soundPath, int duration) {
     SoundMessageContent soundMessageContent = SoundMessageContent();
-    soundMessageContent.localPath = soundPath!;
+    soundMessageContent.localPath = soundPath;
     soundMessageContent.duration = duration;
     _sendMessage(soundMessageContent);
   }
@@ -383,7 +382,7 @@ class _State extends State<MessagesScreen> {
   }
 
   String _getTypingDot(int time) {
-    int dotCount = (time/1000).toInt()%4;
+    int dotCount = time~/1000%4;
     String ret = '';
     for(int i = 0; i < dotCount; i++) {
       ret = '$ret.';
@@ -533,7 +532,7 @@ class _State extends State<MessagesScreen> {
       } else {
         fromIndex = models.last.message.messageUid;
         Imclient.getRemoteMessages(widget.conversation, fromIndex!, 20, (messages) {
-          if(messages == null || messages.isEmpty) {
+          if(messages.isEmpty) {
             noMoreRemoteHistoryMsg = true;
           }
           isLoading = false;
@@ -544,11 +543,11 @@ class _State extends State<MessagesScreen> {
         });
       }
     } else {
-      Imclient.getMessages(widget.conversation, fromIndex!, 20).then((
+      Imclient.getMessages(widget.conversation, fromIndex, 20).then((
           value) {
         _appendMessage(value);
         isLoading = false;
-        if(value == null || value.isEmpty) {
+        if(value.isEmpty) {
           noMoreLocalHistoryMsg = true;
         }
       });

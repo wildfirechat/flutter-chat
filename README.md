@@ -33,6 +33,19 @@
 
 野火Flutter插件，包含即时通讯插件和实时音视频插件，包含Flutter Demo。
 
+## 关于 flutter 、Android Studio、gradle 版本的重要说明
+
+1. 为了能够兼容鸿蒙原生系统，flutter 版本会跟随鸿蒙原生已适配的flutter 版本进行升级，目前鸿蒙原生已适配的flutter版本是`3.22.0`
+2. Android Studio 会跟随官方更新，一直使用最新版本
+3. 由于 gradle 版本和 flutter 版本有依赖关系，会使用对应的 gradle 版本，目前是 `8.7`
+
+
+## 常见问题
+
+1. `Execution failed for task ':video_player_android:compileDebugJavaWithJavac'.`
+    1. 查看 `example/.flutter-plugins` 找到 `video_player_android` 的位置，macos 时，位置如下: `video_player_android=/Users/your-user-name/.pub-cache/hosted/pub.flutter-io.cn/video_player_android-2.7.1/`
+    2. 参考[Remove -Werror from Android build](https://github.com/flutter/packages/pull/7776/files) 修改`android/build.gradle`
+
 ## 运行
 
 进入到项目工程目录下，依次执行下述命令：
