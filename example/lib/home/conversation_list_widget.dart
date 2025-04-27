@@ -14,7 +14,9 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/utilities.dart';
+import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
+import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 import '../cache.dart';
@@ -53,40 +55,9 @@ class ConversationListItem extends StatefulWidget {
 }
 
 class ConversationListItemState extends State<ConversationListItem> {
-  GroupInfo? groupInfo;
-  ChannelInfo? channelInfo;
-
   @override
   void initState() {
     super.initState();
-    if (widget.conversationInfo.conversation.conversationType == ConversationType.Single) {
-      // do nothing
-    } else if (widget.conversationInfo.conversation.conversationType == ConversationType.Group) {
-      groupInfo = Cache.getGroupInfo(widget.conversationInfo.conversation.target);
-      Imclient.getGroupInfo(widget.conversationInfo.conversation.target).then((value) {
-        if (value != null && value != groupInfo && value.target == widget.conversationInfo.conversation.target) {
-          Cache.putGroupInfo(value);
-          if (mounted) {
-            setState(() {
-              groupInfo = value;
-            });
-          }
-        }
-      });
-    } else if (widget.conversationInfo.conversation.conversationType == ConversationType.Channel) {
-      Imclient.getChannelInfo(widget.conversationInfo.conversation.target).then((value) {
-        channelInfo = Cache.getChannelInfo(widget.conversationInfo.conversation.target);
-        if (value != null && value != channelInfo && value.channelId == widget.conversationInfo.conversation.target) {
-          Cache.putChannelInfo(value);
-          if (mounted) {
-            setState(() {
-              channelInfo = channelInfo;
-            });
-          }
-        }
-      });
-    }
-
   }
 
   @override
@@ -107,19 +78,23 @@ class ConversationListItemState extends State<ConversationListItem> {
       localPortrait = Config.defaultUserPortrait;
     } else if (widget.conversationInfo.conversation.conversationType == ConversationType.Group) {
       convTitle = '群聊';
+      var groupViewModel = Provider.of<GroupViewModel>(context, listen: true);
+      var groupInfo = groupViewModel.getGroupInfo(widget.conversationInfo.conversation.target);
       if (groupInfo != null) {
-        if (groupInfo!.portrait != null && groupInfo!.portrait!.isNotEmpty) {
-          portrait = groupInfo!.portrait!;
+        if (groupInfo.portrait != null && groupInfo.portrait!.isNotEmpty) {
+          portrait = groupInfo.portrait!;
         }
-        if (groupInfo!.name != null && groupInfo!.name!.isNotEmpty) {
-          convTitle = groupInfo!.name!;
+        if (groupInfo.name != null && groupInfo.name!.isNotEmpty) {
+          convTitle = groupInfo.name!;
         }
       }
       localPortrait = Config.defaultGroupPortrait;
     } else if (widget.conversationInfo.conversation.conversationType == ConversationType.Channel) {
-      if (channelInfo != null && channelInfo!.portrait != null && channelInfo!.portrait!.isNotEmpty) {
-        portrait = channelInfo!.portrait!;
-        convTitle = channelInfo!.name!;
+      var channelViewModel = Provider.of<ChannelViewModel>(context, listen: true);
+      var channelInfo = channelViewModel.getChannelInfo(widget.conversationInfo.conversation.target);
+      if (channelInfo != null && channelInfo.portrait != null && channelInfo.portrait!.isNotEmpty) {
+        portrait = channelInfo.portrait!;
+        convTitle = channelInfo.name!;
       } else {
         convTitle = '频道';
       }
@@ -128,12 +103,12 @@ class ConversationListItemState extends State<ConversationListItem> {
 
     bool hasDraft = widget.conversationInfo.draft != null && widget.conversationInfo.draft!.isNotEmpty;
     UserInfo? senderInfo;
-    if (widget.conversationInfo.conversation.conversationType != ConversationType.Single && widget.conversationInfo.lastMessage?.fromUser != Imclient.currentUserId) {
+    if (widget.conversationInfo.lastMessage != null && widget.conversationInfo.conversation.conversationType != ConversationType.Single && widget.conversationInfo.lastMessage?.fromUser != Imclient.currentUserId) {
       senderInfo = userViewModel.getUserInfo(widget.conversationInfo.lastMessage!.fromUser, groupId: widget.conversationInfo.conversation.conversationType == ConversationType.Group ? widget.conversationInfo.conversation.target : null);
     }
 
     String? senderName = senderInfo?.getReadableName();
-    Future<String> digest = widget.conversationInfo.lastMessage!.content.digest(widget.conversationInfo.lastMessage!);
+    Future<String>? digest = widget.conversationInfo.lastMessage?.content.digest(widget.conversationInfo.lastMessage!);
 
     return GestureDetector(
       child: Container(
