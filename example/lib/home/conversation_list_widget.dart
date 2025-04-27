@@ -32,9 +32,54 @@ class ConversationListWidget extends StatelessWidget {
       body: SafeArea(
         child: ListView.builder(
             itemCount: conversationListViewModel.conversationList.length,
-            itemBuilder: /*1*/ (context, i) {
+            itemBuilder: (context, i) {
               ConversationInfo info = conversationListViewModel.conversationList[i];
-              return ConversationListItem(info);
+              String? portrait;
+              String? convTitle;
+              if (info.conversation.conversationType == ConversationType.Single) {
+                return Selector<UserViewModel, UserInfo?>(
+                    selector: (_, userViewModel) => userViewModel.getUserInfo(info.conversation.target),
+                    builder: (_, userInfo, __) {
+                      if (userInfo != null && userInfo.portrait != null && userInfo.portrait!.isNotEmpty) {
+                        portrait = userInfo.portrait!;
+                        convTitle = userInfo.displayName!;
+                      } else {
+                        convTitle = '私聊';
+                        portrait = Config.defaultUserPortrait;
+                      }
+
+                      return ConversationListItem(info, convTitle!, portrait!);
+                    });
+              } else if (info.conversation.conversationType == ConversationType.Group) {
+                return Selector<GroupViewModel, GroupInfo?>(
+                    selector: (_, groupViewModel) => groupViewModel.getGroupInfo(info.conversation.target),
+                    builder: (_, groupInfo, __) {
+                      if (groupInfo != null && groupInfo.portrait != null && groupInfo.portrait!.isNotEmpty) {
+                        portrait = groupInfo.portrait!;
+                        convTitle = groupInfo.name!;
+                      } else {
+                        convTitle = '群聊';
+                        portrait = Config.defaultGroupPortrait;
+                      }
+                      return ConversationListItem(info, convTitle!, portrait!);
+                    });
+              } else if (info.conversation.conversationType == ConversationType.Channel) {
+                return Selector<ChannelViewModel, ChannelInfo?>(
+                    selector: (_, channelViewModel) => channelViewModel.getChannelInfo(info.conversation.target),
+                    builder: (_, channelInfo, __) {
+                      if (channelInfo != null && channelInfo.portrait != null && channelInfo.portrait!.isNotEmpty) {
+                        portrait = channelInfo.portrait!;
+                        convTitle = channelInfo.name!;
+                      } else {
+                        convTitle = '频道';
+                        portrait = Config.defaultChannelPortrait;
+                      }
+                      return ConversationListItem(info, convTitle!, portrait!);
+                    });
+              } else {
+                convTitle = '未知会话';
+                return Text(convTitle);
+              }
             }),
       ),
     );
@@ -43,53 +88,17 @@ class ConversationListWidget extends StatelessWidget {
 
 class ConversationListItem extends StatelessWidget {
   late final ConversationInfo conversationInfo;
+  late final String convTitle;
+  late final String portrait;
 
-  ConversationListItem(this.conversationInfo) : super(key: ValueKey(conversationInfo));
+  ConversationListItem(this.conversationInfo, this.convTitle, this.portrait) : super(key: ValueKey(conversationInfo));
 
   @override
   Widget build(BuildContext context) {
-    String? portrait;
-    String? localPortrait;
-    String? convTitle;
-    var conversationListViewModel = Provider.of<ConversationListViewModel>(context, listen: false);
-    var userViewModel = Provider.of<UserViewModel>(context, listen: true);
-    var userInfo = userViewModel.getUserInfo(conversationInfo.conversation.target);
-    if (conversationInfo.conversation.conversationType == ConversationType.Single) {
-      if (userInfo != null && userInfo.portrait != null && userInfo.portrait!.isNotEmpty) {
-        portrait = userInfo.portrait!;
-        convTitle = userInfo.displayName!;
-      } else {
-        convTitle = '私聊';
-      }
-      localPortrait = Config.defaultUserPortrait;
-    } else if (conversationInfo.conversation.conversationType == ConversationType.Group) {
-      convTitle = '群聊';
-      var groupViewModel = Provider.of<GroupViewModel>(context, listen: true);
-      var groupInfo = groupViewModel.getGroupInfo(conversationInfo.conversation.target);
-      if (groupInfo != null) {
-        if (groupInfo.portrait != null && groupInfo.portrait!.isNotEmpty) {
-          portrait = groupInfo.portrait!;
-        }
-        if (groupInfo.name != null && groupInfo.name!.isNotEmpty) {
-          convTitle = groupInfo.name!;
-        }
-      }
-      localPortrait = Config.defaultGroupPortrait;
-    } else if (conversationInfo.conversation.conversationType == ConversationType.Channel) {
-      var channelViewModel = Provider.of<ChannelViewModel>(context, listen: true);
-      var channelInfo = channelViewModel.getChannelInfo(conversationInfo.conversation.target);
-      if (channelInfo != null && channelInfo.portrait != null && channelInfo.portrait!.isNotEmpty) {
-        portrait = channelInfo.portrait!;
-        convTitle = channelInfo.name!;
-      } else {
-        convTitle = '频道';
-      }
-      localPortrait = Config.defaultChannelPortrait;
-    }
-
     bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
     UserInfo? senderInfo;
     if (conversationInfo.lastMessage != null && conversationInfo.conversation.conversationType != ConversationType.Single && conversationInfo.lastMessage?.fromUser != Imclient.currentUserId) {
+      UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
       senderInfo = userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser, groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null);
     }
 
@@ -112,7 +121,7 @@ class ConversationListItem extends StatelessWidget {
                       child: SizedBox(
                         width: 40,
                         height: 40,
-                        child: portrait == null ? Image.asset(localPortrait!, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
+                        child: !portrait.startsWith('http') ? Image.asset(portrait!, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
                       )),
                   Expanded(
                       child: Container(
@@ -123,7 +132,7 @@ class ConversationListItem extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                '$convTitle',
+                                convTitle,
                                 style: const TextStyle(fontSize: 15.0),
                                 maxLines: 1,
                               ),
@@ -191,7 +200,7 @@ class ConversationListItem extends StatelessWidget {
         ),
       ),
       onTap: () => _toChatPage(context, conversationInfo.conversation),
-      onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition, conversationListViewModel),
+      onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
     );
   }
 
@@ -204,7 +213,7 @@ class ConversationListItem extends StatelessWidget {
     });
   }
 
-  void _onLongPressed(BuildContext context, ConversationInfo conversationInfo, Offset position, ConversationListViewModel conversationListViewModel) {
+  void _onLongPressed(BuildContext context, ConversationInfo conversationInfo, Offset position) {
     List<PopupMenuItem> items = [
       const PopupMenuItem(
         value: 'delete',
@@ -236,6 +245,7 @@ class ConversationListItem extends StatelessWidget {
       ));
     }
 
+    var conversationListViewModel = Provider.of<ConversationListViewModel>(context, listen: false);
     showMenu(
       context: context,
       position: RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy),
