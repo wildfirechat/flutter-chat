@@ -103,7 +103,7 @@ class ConversationListItem extends StatelessWidget {
     }
 
     String? senderName = senderInfo?.getReadableName();
-    Future<String>? digest = conversationInfo.lastMessage?.content.digest(conversationInfo.lastMessage!);
+    Future<String>? msgDigest = conversationInfo.lastMessage?.content.digest(conversationInfo.lastMessage!);
 
     return GestureDetector(
       child: Container(
@@ -121,7 +121,7 @@ class ConversationListItem extends StatelessWidget {
                       child: SizedBox(
                         width: 40,
                         height: 40,
-                        child: !portrait.startsWith('http') ? Image.asset(portrait!, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
+                        child: !portrait.startsWith('http') ? Image.asset(portrait, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
                       )),
                   Expanded(
                       child: Container(
@@ -150,7 +150,7 @@ class ConversationListItem extends StatelessWidget {
                                       : Container(),
                                   Expanded(
                                       child: FutureBuilder<String>(
-                                          future: digest,
+                                          future: msgDigest,
                                           builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
                                             String digestStr = snapshot.data ?? '';
                                             return Text(
