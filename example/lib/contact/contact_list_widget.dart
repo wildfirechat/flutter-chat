@@ -6,12 +6,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
-import 'package:imclient/model/user_info.dart';
+import 'package:provider/provider.dart';
 
 import 'package:wfc_example/config.dart';
+import 'package:wfc_example/contact/contact_info.dart';
 import 'package:wfc_example/contact/friend_request_page.dart';
-import 'package:wfc_example/user_info_widget.dart';
+import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
 
+import '../user_info_widget.dart';
 import 'fav_groups.dart';
 
 class ContactListWidget extends StatefulWidget {
@@ -25,11 +27,8 @@ class ContactListWidget extends StatefulWidget {
 
 class _ContactListWidgetState extends State<ContactListWidget> {
   final EventBus _eventBus = Imclient.IMEventBus;
-  late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
   late StreamSubscription<FriendRequestUpdateEvent> _friendRequestUpdatedSubscription;
-  late StreamSubscription<FriendUpdateEvent> _friendUpdatedSubscription;
 
-  List<String> friendList = [];
   List fixModelList = [
     ['assets/images/contact_new_friend.png', '新好友', 'new_friend'],
     ['assets/images/contact_fav_group.png', '收藏群组', 'fav_group'],
@@ -37,27 +36,19 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   ];
   int unreadFriendRequestCount = 0;
 
-
   @override
   void initState() {
     super.initState();
-    _loadFriendList(true);
     _loadNewFriendRequestCount();
 
-    _userSettingUpdatedSubscription = _eventBus.on<UserSettingUpdatedEvent>().listen((event) {
-      _loadFriendList(false);
-    });
     _friendRequestUpdatedSubscription = _eventBus.on<FriendRequestUpdateEvent>().listen((event) {
       _loadNewFriendRequestCount();
-    });
-    _friendUpdatedSubscription = _eventBus.on<FriendUpdateEvent>().listen((event) {
-      _loadFriendList(false);
     });
   }
 
   void _loadNewFriendRequestCount() {
     Imclient.getUnreadFriendRequestStatus().then((value) {
-      if(widget.unreadCountCallback != null) {
+      if (widget.unreadCountCallback != null) {
         widget.unreadCountCallback!(value);
       }
       setState(() {
@@ -65,41 +56,34 @@ class _ContactListWidgetState extends State<ContactListWidget> {
       });
     });
   }
-  void _loadFriendList(bool refresh) {
-    Imclient.getMyFriendList(refresh: true).then((value){
-      setState(() {
-        friendList = value;
-            });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
+    var contactListViewModel = Provider.of<ContactListViewModel>(context);
+    var contactList = contactListViewModel.contactList;
     return Scaffold(
-      body: SafeArea(child: ListView.builder(
-          itemCount: fixModelList.length + friendList.length,
-          itemBuilder: /*1*/ (context, i) {
-            if(i < fixModelList.length) {
-              return _fixRow(context, i);
-            } else {
-              String userId = friendList[i - fixModelList.length];
-              return _contactRow(userId, i - fixModelList.length == 0, '');
-            }
-          }),),
+      body: SafeArea(
+        child: ListView.builder(
+            itemCount: fixModelList.length + contactList.length,
+            itemBuilder: /*1*/ (context, i) {
+              if (i < fixModelList.length) {
+                return _fixRow(context, i);
+              } else {
+                return Selector<ContactListViewModel, ContactInfo>(selector: (_, contactInfo) {
+                  return contactList[i - fixModelList.length];
+                }, builder: (context, contactInfo, child) {
+                  return ContactListItem(contactInfo);
+                });
+              }
+            }),
+      ),
     );
   }
-
 
   @override
   void dispose() {
     super.dispose();
-    _userSettingUpdatedSubscription.cancel();
     _friendRequestUpdatedSubscription.cancel();
-    _friendUpdatedSubscription.cancel();
-  }
-
-  Widget _contactRow(String userId, bool withSectionHeader, String? sectionTitle) {
-    return ContactListItem(userId, withSectionHeader, sectionTitle);
   }
 
   Widget _fixRow(BuildContext context, int index) {
@@ -108,17 +92,17 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     String key = fixModelList[index][2];
     return GestureDetector(
       onTap: () {
-        if(key == "new_friend") {
+        if (key == "new_friend") {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const FriendRequestPage()),
           );
-        } else if(key == "fav_group") {
+        } else if (key == "fav_group") {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const FavGroupsPage()),
           );
-        } else if(key == "subscribed_channel") {
+        } else if (key == "subscribed_channel") {
         } else {
           Fluttertoast.showToast(msg: "方法没有实现");
           if (kDebugMode) {
@@ -126,7 +110,6 @@ class _ContactListWidgetState extends State<ContactListWidget> {
           }
         }
       },
-
       child: Column(
         children: <Widget>[
           Container(
@@ -134,20 +117,15 @@ class _ContactListWidgetState extends State<ContactListWidget> {
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                key == 'new_friend'?
-                badge.Badge(
-                    showBadge: unreadFriendRequestCount > 0,
-                    badgeContent: Text('$unreadFriendRequestCount'),
-                    child: Image.asset(imagePaht, width: 40.0, height: 40.0)
-                ) :
-                Image.asset(imagePaht, width: 40.0, height: 40.0),
-                Container(margin: const EdgeInsets.only(left: 16),),
+                key == 'new_friend' ? badge.Badge(showBadge: unreadFriendRequestCount > 0, badgeContent: Text('$unreadFriendRequestCount'), child: Image.asset(imagePaht, width: 40.0, height: 40.0)) : Image.asset(imagePaht, width: 40.0, height: 40.0),
+                Container(
+                  margin: const EdgeInsets.only(left: 16),
+                ),
                 Expanded(
                     child: Text(
-                      title,
-                      style: const TextStyle(fontSize: 15.0),
-                    )
-                ),
+                  title,
+                  style: const TextStyle(fontSize: 15.0),
+                )),
               ],
             ),
           ),
@@ -162,83 +140,38 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   }
 }
 
-class ContactListItem extends StatefulWidget {
-  String userId;
-  bool withSectionHeader;
-  String? sectionTitle;
+class ContactListItem extends StatelessWidget {
+  final ContactInfo contactInfo;
 
-  ContactListItem(this.userId, this.withSectionHeader, this.sectionTitle, {Key? key}) : super(key: key);
-
-  @override
-  State<StatefulWidget> createState() {
-    return _ContactListItemState();
-  }
-}
-
-class _ContactListItemState extends State<ContactListItem> {
-  final EventBus _eventBus = Imclient.IMEventBus;
-  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
-
-  UserInfo? userInfo;
-
-  _ContactListItemState();
-
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserInfo();
-    _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
-      _loadUserInfo();
-    });
-  }
-
-  void _loadUserInfo() {
-    Imclient.getUserInfo(widget.userId).then((value) {
-      setState(() {
-        userInfo = value;
-      });
-    });
-  }
+  const ContactListItem(this.contactInfo, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    String? portrait;
-    String convTitle;
-
-      if(userInfo != null) {
-        if(userInfo!.portrait != null && userInfo!.portrait!.isNotEmpty) {
-          portrait = userInfo!.portrait!;
-        }
-        convTitle = userInfo!.displayName!;
-      } else {
-        convTitle = '用户';
-      }
-
-
     return GestureDetector(
-      onTap: _toUserInfoPage,
+      onTap: () => _toUserInfoPage(context),
       child: Column(
         children: <Widget>[
           Container(
-            height: widget.withSectionHeader?18:0,
-            width: View.of(context).physicalSize.width/View.of(context).devicePixelRatio,
+            height: contactInfo.showCategory ? 18 : 0,
+            width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
             color: const Color(0xffebebeb),
-            child: widget.withSectionHeader && widget.sectionTitle != null ? Text(widget.sectionTitle!): null,
+            padding: const EdgeInsets.only(left: 16),
+            child: contactInfo.showCategory ? Text(contactInfo.category == '{' ? '#' : contactInfo.category) : null,
           ),
           Container(
             height: 52.0,
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                portrait == null ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(portrait, width: 40.0, height: 40.0),
-                Container(margin: const EdgeInsets.only(left: 16),),
+                contactInfo.userInfo.portrait == null ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(contactInfo.userInfo.portrait!, width: 40.0, height: 40.0),
+                Container(
+                  margin: const EdgeInsets.only(left: 16),
+                ),
                 Expanded(
                     child: Text(
-                      convTitle,
-                      style: const TextStyle(fontSize: 15.0),
-                    )
-                ),
+                  contactInfo.userInfo.displayName!,
+                  style: const TextStyle(fontSize: 15.0),
+                )),
               ],
             ),
           ),
@@ -250,23 +183,16 @@ class _ContactListItemState extends State<ContactListItem> {
         ],
       ),
     );
-  }
-
-
-  @override
-  void dispose() {
-    super.dispose();
-    _userInfoUpdatedSubscription.cancel();
   }
 
   ///
   /// 跳转聊天界面
   ///
   ///
-  _toUserInfoPage() {
+  _toUserInfoPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => UserInfoWidget(widget.userId)),
+      MaterialPageRoute(builder: (context) => UserInfoWidget(contactInfo.userInfo.userId)),
     );
   }
 }
