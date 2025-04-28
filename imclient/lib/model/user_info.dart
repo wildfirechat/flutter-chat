@@ -1,6 +1,6 @@
 class UserInfo {
-  UserInfo(
-      {this.gender = 0, this.updateDt = 0, this.type = 0, this.deleted = 0});
+  UserInfo({this.gender = 0, this.updateDt = 0, this.type = 0, this.deleted = 0});
+
   //用户ID
   late String userId;
 
@@ -53,14 +53,21 @@ class UserInfo {
     String readableName = userId;
     if (friendAlias != null && friendAlias!.isNotEmpty) {
       readableName = friendAlias!;
-    } else if (groupAlias != null &&
-        groupAlias!.isNotEmpty) {
+    } else if (groupAlias != null && groupAlias!.isNotEmpty) {
       readableName = groupAlias!;
     } else {
-      if(displayName != null) {
+      if (displayName != null) {
         readableName = displayName!;
       }
     }
     return readableName;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other)
+          || (other is UserInfo
+              && runtimeType == other.runtimeType
+              && userId == other.userId
+              && updateDt == other.updateDt);
 }
