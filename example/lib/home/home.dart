@@ -44,8 +44,6 @@ class HomeTabBarState extends State<HomeTabBar> {
   var _body;
   var pages;
 
-  int unreadFriendRequestCount = 0;
-
   Image getTabImage(path) {
     return Image.asset(path, width: 20.0, height: 20.0);
   }
@@ -53,18 +51,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   @override
   void initState() {
     super.initState();
-    pages = <Widget>[
-      ConversationListWidget(),
-      ContactListWidget(
-        unreadCountCallback: (count) {
-          setState(() {
-            unreadFriendRequestCount = count;
-          });
-        },
-      ),
-      const DiscoveryTab(),
-      SettingsTab()
-    ];
+    pages = <Widget>[const ConversationListWidget(), ContactListWidget(), const DiscoveryTab(), SettingsTab()];
     tabImages = [
       [getTabImage('assets/images/tabbar_chat.png'), getTabImage('assets/images/tabbar_chat_cover.png')],
       [getTabImage('assets/images/tabbar_contact.png'), getTabImage('assets/images/tabbar_contact_cover.png')],
@@ -254,10 +241,13 @@ class HomeTabBarState extends State<HomeTabBar> {
                   ),
                   label: getTabTitle(0)),
               BottomNavigationBarItem(
-                  icon: badge.Badge(
-                    badgeContent: Text('$unreadFriendRequestCount'),
-                    showBadge: unreadFriendRequestCount > 0,
-                    child: getTabIcon(1),
+                  icon: Selector<ContactListViewModel, int>(
+                    selector: (_, model) => model.unreadFriendRequestCount,
+                    builder: (context, unreadFriendRequestCount, child) => badge.Badge(
+                      badgeContent: Text('$unreadFriendRequestCount'),
+                      showBadge: unreadFriendRequestCount > 0,
+                      child: getTabIcon(1),
+                    ),
                   ),
                   label: getTabTitle(1)),
               BottomNavigationBarItem(icon: getTabIcon(2), label: getTabTitle(2)),

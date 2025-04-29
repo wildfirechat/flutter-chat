@@ -10,10 +10,13 @@ class ContactListViewModel extends ChangeNotifier {
   List<ContactInfo> _contactList = [];
   List<String> _friendList = [];
   List<FriendRequest> _newFriendRequestList = [];
+  int _unreadFriendRequestCount = 0;
 
   late StreamSubscription<FriendUpdateEvent> _friendUpdatedSubscription;
   late StreamSubscription<FriendRequestUpdateEvent> _friendRequestUpdatedSubscription;
   late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
+  late StreamSubscription<ClearFriendRequestUnreadEvent> _clearFriendRequestSubscription;
+
   // TODO 星标利息人
   late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
 
@@ -29,6 +32,9 @@ class ContactListViewModel extends ChangeNotifier {
       //var updatedUserInfos = event.userInfos;
       _loadContactList();
     });
+    _clearFriendRequestSubscription = Imclient.IMEventBus.on<ClearFriendRequestUnreadEvent>().listen((event) {
+      _loadFriendRequestListAndNotify();
+    });
 
     _loadContactList(true);
     _loadFriendRequestListAndNotify();
@@ -38,11 +44,17 @@ class ContactListViewModel extends ChangeNotifier {
 
   List<FriendRequest> get newFriendRequestList => _newFriendRequestList;
 
-  _loadFriendRequestListAndNotify() {
-    Imclient.getIncommingFriendRequest().then((friendRequests) {
-      _newFriendRequestList = friendRequests;
-      notifyListeners();
-    });
+  int get unreadFriendRequestCount => _unreadFriendRequestCount;
+
+  void clearUnreadFriendRequestStatus() {
+    Imclient.clearUnreadFriendRequestStatus();
+    // will notifyListeners by the event
+  }
+
+  _loadFriendRequestListAndNotify() async {
+    _newFriendRequestList = await Imclient.getIncommingFriendRequest();
+    _unreadFriendRequestCount = await Imclient.getUnreadFriendRequestStatus();
+    notifyListeners();
   }
 
   void _loadContactList([refresh = false]) async {
@@ -89,5 +101,6 @@ class ContactListViewModel extends ChangeNotifier {
     _friendUpdatedSubscription.cancel();
     _friendRequestUpdatedSubscription.cancel();
     _userInfoUpdatedSubscription.cancel();
+    _clearFriendRequestSubscription.cancel();
   }
 }
