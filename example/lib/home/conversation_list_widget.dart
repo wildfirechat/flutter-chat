@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:badges/badges.dart' as badge;
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
@@ -19,7 +18,6 @@ import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
 import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 
-import '../cache.dart';
 import '../messages/messages_screen.dart';
 
 class ConversationListWidget extends StatelessWidget {
