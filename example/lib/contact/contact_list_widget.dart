@@ -1,11 +1,7 @@
-import 'dart:async';
-
 import 'package:badges/badges.dart' as badge;
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:imclient/imclient.dart';
 import 'package:provider/provider.dart';
 
 import 'package:wfc_example/config.dart';
@@ -16,83 +12,44 @@ import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
 import '../user_info_widget.dart';
 import 'fav_groups.dart';
 
-class ContactListWidget extends StatefulWidget {
-  void Function(int unreadCount)? unreadCountCallback;
+class ContactListWidget extends StatelessWidget {
+  ContactListWidget({super.key});
 
-  ContactListWidget({Key? key, this.unreadCountCallback}) : super(key: key);
-
-  @override
-  State createState() => _ContactListWidgetState();
-}
-
-class _ContactListWidgetState extends State<ContactListWidget> {
-  final EventBus _eventBus = Imclient.IMEventBus;
-  late StreamSubscription<FriendRequestUpdateEvent> _friendRequestUpdatedSubscription;
-
-  List fixModelList = [
+  final List fixHeaderList = [
     ['assets/images/contact_new_friend.png', '新好友', 'new_friend'],
     ['assets/images/contact_fav_group.png', '收藏群组', 'fav_group'],
     ['assets/images/contact_subscribed_channel.png', '订阅频道', 'subscribed_channel'],
   ];
-  int unreadFriendRequestCount = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNewFriendRequestCount();
-
-    _friendRequestUpdatedSubscription = _eventBus.on<FriendRequestUpdateEvent>().listen((event) {
-      _loadNewFriendRequestCount();
-    });
-  }
-
-  void _loadNewFriendRequestCount() {
-    Imclient.getUnreadFriendRequestStatus().then((value) {
-      if (widget.unreadCountCallback != null) {
-        widget.unreadCountCallback!(value);
-      }
-      setState(() {
-        unreadFriendRequestCount = value;
-      });
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    var contactListViewModel = Provider.of<ContactListViewModel>(context);
-    var contactList = contactListViewModel.contactList;
-    return Scaffold(
-      body: SafeArea(
-        child: ListView.builder(
-            itemCount: fixModelList.length + contactList.length,
-            itemBuilder: /*1*/ (context, i) {
-              if (i < fixModelList.length) {
-                return _fixRow(context, i);
-              } else {
-                return Selector<ContactListViewModel, ContactInfo>(selector: (_, contactInfo) {
-                  return contactList[i - fixModelList.length];
-                }, builder: (context, contactInfo, child) {
-                  return ContactListItem(contactInfo);
-                });
-              }
-            }),
-      ),
-    );
+    return Selector<ContactListViewModel, ({List<ContactInfo> contactList, int unreadFriendRequestCount})>(
+        builder: (_, record, __) => Scaffold(
+              body: SafeArea(
+                child: ListView.builder(
+                    itemCount: fixHeaderList.length + record.contactList.length,
+                    itemBuilder: (context, i) {
+                      if (i < fixHeaderList.length) {
+                        return _contactListHeader(context, i, record.unreadFriendRequestCount);
+                      } else {
+                        var contactInfo = record.contactList[i - fixHeaderList.length];
+                        return ContactListItem(contactInfo);
+                      }
+                    }),
+              ),
+            ),
+        selector: (_, contactListViewModel) => (contactList: contactListViewModel.contactList, unreadFriendRequestCount: contactListViewModel.unreadFriendRequestCount));
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    _friendRequestUpdatedSubscription.cancel();
-  }
-
-  Widget _fixRow(BuildContext context, int index) {
-    String imagePaht = fixModelList[index][0];
-    String title = fixModelList[index][1];
-    String key = fixModelList[index][2];
+  Widget _contactListHeader(BuildContext context, int index, int unreadFriendRequestCount) {
+    String imagePath = fixHeaderList[index][0];
+    String title = fixHeaderList[index][1];
+    String key = fixHeaderList[index][2];
     return GestureDetector(
       onTap: () {
         if (key == "new_friend") {
+          var contactListViewModel = Provider.of<ContactListViewModel>(context, listen: false);
+          contactListViewModel.clearUnreadFriendRequestStatus();
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const FriendRequestPage()),
@@ -117,7 +74,12 @@ class _ContactListWidgetState extends State<ContactListWidget> {
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                key == 'new_friend' ? badge.Badge(showBadge: unreadFriendRequestCount > 0, badgeContent: Text('$unreadFriendRequestCount'), child: Image.asset(imagePaht, width: 40.0, height: 40.0)) : Image.asset(imagePaht, width: 40.0, height: 40.0),
+                key == 'new_friend'
+                    ? badge.Badge(
+                        showBadge: unreadFriendRequestCount > 0,
+                        badgeContent: Text('$unreadFriendRequestCount'),
+                        child: Image.asset(imagePath, width: 40.0, height: 40.0))
+                    : Image.asset(imagePath, width: 40.0, height: 40.0),
                 Container(
                   margin: const EdgeInsets.only(left: 16),
                 ),
@@ -143,7 +105,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
 class ContactListItem extends StatelessWidget {
   final ContactInfo contactInfo;
 
-  const ContactListItem(this.contactInfo, {Key? key}) : super(key: key);
+  const ContactListItem(this.contactInfo, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -163,7 +125,9 @@ class ContactListItem extends StatelessWidget {
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                contactInfo.userInfo.portrait == null ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(contactInfo.userInfo.portrait!, width: 40.0, height: 40.0),
+                contactInfo.userInfo.portrait == null
+                    ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0)
+                    : Image.network(contactInfo.userInfo.portrait!, width: 40.0, height: 40.0),
                 Container(
                   margin: const EdgeInsets.only(left: 16),
                 ),
