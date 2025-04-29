@@ -6,10 +6,10 @@ import 'package:imclient/imclient.dart';
 
 import '../../utilities.dart';
 import '../message_cell.dart';
-import '../message_model.dart';
+import '../ui_message.dart';
 
 abstract class MessageCellBuilder {
-  MessageModel model;
+  UIMessage model;
   MessageState state;
 
   final EventBus _eventBus = Imclient.IMEventBus;

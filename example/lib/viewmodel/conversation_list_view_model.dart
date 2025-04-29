@@ -9,7 +9,6 @@ import 'package:imclient/model/conversation_info.dart';
 
 class ConversationListViewModel extends ChangeNotifier {
   final EventBus _eventBus = Imclient.IMEventBus;
-  late StreamSubscription<ReceiveMessagesEvent> _receiveMessagesSubscription;
   late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
   late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
   late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
@@ -43,7 +42,7 @@ class ConversationListViewModel extends ChangeNotifier {
   }
 
   ConversationListViewModel() {
-    print("ConversaitonListViewModel construct");
+    debugPrint("ConversationListViewModel construct");
     _connectionStatusSubscription = _eventBus.on<ConnectionStatusChangedEvent>().listen((event) {
       if (event.connectionStatus == kConnectionStatusConnected) {
         _loadConversationList();
@@ -143,7 +142,6 @@ class ConversationListViewModel extends ChangeNotifier {
   @override
   void dispose() {
     super.dispose();
-    _receiveMessagesSubscription.cancel();
     _conversationList.clear();
     _connectionStatusSubscription.cancel();
     _receiveMessageSubscription.cancel();

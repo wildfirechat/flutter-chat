@@ -6,17 +6,17 @@ import 'package:imclient/message/image_message_content.dart';
 import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
 
 import '../message_cell.dart';
-import '../message_model.dart';
+import '../ui_message.dart';
 
 class ImageCellBuilder extends PortraitCellBuilder {
   late ImageMessageContent imageMessageContent;
   ui.Image? uiImage;
 
-  ImageCellBuilder(MessageState state, MessageModel model) : super(state, model) {
+  ImageCellBuilder(MessageState state, UIMessage model) : super(state, model) {
     imageMessageContent = model.message.content as ImageMessageContent;
     if(imageMessageContent.thumbnail != null) {
-      if(model.uiImage != null) {
-        uiImage = model.uiImage!;
+      if(model.thumbnailImage != null) {
+        uiImage = model.thumbnailImage!;
       } else {
         ui.instantiateImageCodec(
             image.encodePng(imageMessageContent.thumbnail!))
@@ -24,7 +24,7 @@ class ImageCellBuilder extends PortraitCellBuilder {
           codec.getNextFrame().then((frameInfo) {
             setState(() {
               uiImage = frameInfo.image;
-              model.uiImage = frameInfo.image;
+              model.thumbnailImage = frameInfo.image;
             });
           });
         });

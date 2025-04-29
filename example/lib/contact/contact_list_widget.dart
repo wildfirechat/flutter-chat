@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 import 'package:wfc_example/config.dart';
-import 'package:wfc_example/contact/contact_info.dart';
+import 'package:wfc_example/contact/ui_contact_info.dart';
 import 'package:wfc_example/contact/friend_request_page.dart';
 import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
 
@@ -23,7 +23,7 @@ class ContactListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<ContactListViewModel, ({List<ContactInfo> contactList, int unreadFriendRequestCount})>(
+    return Selector<ContactListViewModel, ({List<UIContactInfo> contactList, int unreadFriendRequestCount})>(
         builder: (_, record, __) => Scaffold(
               body: SafeArea(
                 child: ListView.builder(
@@ -103,7 +103,7 @@ class ContactListWidget extends StatelessWidget {
 }
 
 class ContactListItem extends StatelessWidget {
-  final ContactInfo contactInfo;
+  final UIContactInfo contactInfo;
 
   const ContactListItem(this.contactInfo, {super.key});
 

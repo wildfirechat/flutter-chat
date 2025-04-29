@@ -5,12 +5,12 @@ import 'package:wfc_example/config.dart';
 import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
 
 import '../message_cell.dart';
-import '../message_model.dart';
+import '../ui_message.dart';
 
 class CardCellBuilder extends PortraitCellBuilder {
   late CardMessageContent cardMessageContent;
 
-  CardCellBuilder(MessageState state, MessageModel model) : super(state, model) {
+  CardCellBuilder(MessageState state, UIMessage model) : super(state, model) {
     cardMessageContent = model.message.content as CardMessageContent;
   }
 
