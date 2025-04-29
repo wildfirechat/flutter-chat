@@ -6,17 +6,17 @@ import 'package:imclient/message/video_message_content.dart';
 import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
 
 import '../message_cell.dart';
-import '../message_model.dart';
+import '../ui_message.dart';
 
 class VideoCellBuilder extends PortraitCellBuilder {
   late VideoMessageContent videoMessageContent;
   ui.Image? uiImage;
 
-  VideoCellBuilder(MessageState state, MessageModel model) : super(state, model) {
+  VideoCellBuilder(MessageState state, UIMessage model) : super(state, model) {
     videoMessageContent = model.message.content as VideoMessageContent;
     if(videoMessageContent.thumbnail != null) {
-      if(model.uiImage != null) {
-        uiImage = model.uiImage;
+      if(model.thumbnailImage != null) {
+        uiImage = model.thumbnailImage;
       } else {
         ui.instantiateImageCodec(
             image.encodePng(videoMessageContent.thumbnail!))
@@ -24,7 +24,7 @@ class VideoCellBuilder extends PortraitCellBuilder {
           codec.getNextFrame().then((frameInfo) {
             setState(() {
               uiImage = frameInfo.image;
-              model.uiImage = uiImage;
+              model.thumbnailImage = uiImage;
             });
           });
         });

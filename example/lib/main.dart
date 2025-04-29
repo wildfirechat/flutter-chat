@@ -13,12 +13,15 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/read_report.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:imclient/model/user_online_state.dart';
+import 'package:provider/provider.dart';
 import 'package:rtckit/group_video_call.dart';
+
 // import 'package:momentclient/momentclient.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:rtckit/single_voice_call.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wfc_example/splash.dart';
+import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
 import 'config.dart';
 import 'contact/contact_select_page.dart';
@@ -47,7 +50,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _initIMClient();
     SystemChannels.lifecycle.setMessageHandler((message) async {
-      if(message == "AppLifecycleState.inactive") {
+      if (message == "AppLifecycleState.inactive") {
         debugPrint("goto background");
         updateAppBadge();
       }
@@ -56,60 +59,49 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initIMClient() async {
-    Rtckit.init(
-        didReceiveCallCallback: (callSession) {
-          //收到来电请求后，延迟100毫秒，判断是否来电已经结束，解决离线时先拨打再挂掉的问题。
-          Future.delayed(const Duration(milliseconds: 100), () {
-            //收到来电通知，原生代码会自动弹出来电界面。如果在后台，这里要弹出本地通知，本地通知带上震铃声。
-            debugPrint('didReceiveCallCallback: ${callSession.callId}');
-            Rtckit.currentCallSession().then((cs) {
-              if(cs != null && cs.state != kWFAVEngineStateIdle) {
-                if(cs.conversation!.conversationType == ConversationType.Single) {
-                  SingleVideoCallView callView = SingleVideoCallView(
-                      callSession: cs);
-                  navKey.currentState!.push(
-                      MaterialPageRoute(builder: (context) => callView));
-                } else if(cs.conversation!.conversationType == ConversationType.Group) {
-                  GroupVideoCallView callView = GroupVideoCallView(
-                      callSession: cs);
-                  navKey.currentState!.push(
-                      MaterialPageRoute(builder: (context) => callView));
-                }
-              }
-            });
-          });
-        },
-        shouldStartRingCallback: (incoming) {
-          //原生代码通知上层播放铃声。如果在后台就开始震动，如果在前台就播放铃声。这样做的原因是有些系统限制后台播放声音。
-          debugPrint('shouldStartRingCallback: $incoming');
-        },
-        shouldStopRingCallback: () {
-          //原生代码通知上层停止铃声和震动。
-          debugPrint('shouldStopRingCallback');
-        },
-        didEndCallCallback: (reason, duration) {
-          //原生代码通知上层通话结束。
-          debugPrint('didEndCallCallback: $reason, $duration');
+    Rtckit.init(didReceiveCallCallback: (callSession) {
+      //收到来电请求后，延迟100毫秒，判断是否来电已经结束，解决离线时先拨打再挂掉的问题。
+      Future.delayed(const Duration(milliseconds: 100), () {
+        //收到来电通知，原生代码会自动弹出来电界面。如果在后台，这里要弹出本地通知，本地通知带上震铃声。
+        debugPrint('didReceiveCallCallback: ${callSession.callId}');
+        Rtckit.currentCallSession().then((cs) {
+          if (cs != null && cs.state != kWFAVEngineStateIdle) {
+            if (cs.conversation!.conversationType == ConversationType.Single) {
+              SingleVideoCallView callView = SingleVideoCallView(callSession: cs);
+              navKey.currentState!.push(MaterialPageRoute(builder: (context) => callView));
+            } else if (cs.conversation!.conversationType == ConversationType.Group) {
+              GroupVideoCallView callView = GroupVideoCallView(callSession: cs);
+              navKey.currentState!.push(MaterialPageRoute(builder: (context) => callView));
+            }
+          }
         });
+      });
+    }, shouldStartRingCallback: (incoming) {
+      //原生代码通知上层播放铃声。如果在后台就开始震动，如果在前台就播放铃声。这样做的原因是有些系统限制后台播放声音。
+      debugPrint('shouldStartRingCallback: $incoming');
+    }, shouldStopRingCallback: () {
+      //原生代码通知上层停止铃声和震动。
+      debugPrint('shouldStopRingCallback');
+    }, didEndCallCallback: (reason, duration) {
+      //原生代码通知上层通话结束。
+      debugPrint('didEndCallCallback: $reason, $duration');
+    });
     //Rtckit.enableCallkit();
     Rtckit.seEnableProximitySensor(true);
-    for (int i = 0; i < Config.ICE_SERVERS.length; i ++){
+    for (int i = 0; i < Config.ICE_SERVERS.length; i++) {
       var iceServer = Config.ICE_SERVERS[i];
       Rtckit.addICEServer(iceServer[0], iceServer[1], iceServer[2]);
     }
-  
+
     Rtckit.defaultUserPortrait = Config.defaultUserPortrait;
-    Rtckit.selectMembersDelegate = (BuildContext context, List<String> candidates, List<String>? disabledCheckedUsers, List<String>? disabledUncheckedUsers, int maxSelected, void Function(List<String> selectedMembers) callback) {
+    Rtckit.selectMembersDelegate = (BuildContext context, List<String> candidates, List<String>? disabledCheckedUsers, List<String>? disabledUncheckedUsers,
+        int maxSelected, void Function(List<String> selectedMembers) callback) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => ContactSelectPage((context, members) async {
-          callback(members);
-        },
-          maxSelected: maxSelected,
-          candidates: candidates,
-          disabledCheckedUsers: disabledCheckedUsers,
-          disabledUncheckedUsers: disabledUncheckedUsers
-        )),
+        MaterialPageRoute(
+            builder: (context) => ContactSelectPage((context, members) async {
+                  callback(members);
+                }, maxSelected: maxSelected, candidates: candidates, disabledCheckedUsers: disabledCheckedUsers, disabledUncheckedUsers: disabledUncheckedUsers)),
       );
     };
 
@@ -124,9 +116,9 @@ class _MyAppState extends State<MyApp> {
           status == kConnectionStatusRejected ||
           status == kConnectionStatusKickedOff ||
           status == kConnectionStatusLogout) {
-        if(status != kConnectionStatusLogout) {
+        if (status != kConnectionStatusLogout) {
           Imclient.isLogined.then((value) {
-            if(value) {
+            if (value) {
               Imclient.disconnect();
             }
           });
@@ -140,7 +132,7 @@ class _MyAppState extends State<MyApp> {
         isLogined = false;
         navKey.currentState?.pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const LoginScreen(), maintainState: true),
-              (Route<dynamic> route) => false,
+          (Route<dynamic> route) => false,
         );
       }
     }, (List<Message> messages, bool hasMore) {
@@ -200,8 +192,7 @@ class _MyAppState extends State<MyApp> {
     Imclient.startLog();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.getString("userId") != null && prefs.getString("token") != null) {
-      Imclient.connect(
-          Config.IM_Host, prefs.getString("userId")!, prefs.getString("token")!);
+      Imclient.connect(Config.IM_Host, prefs.getString("userId")!, prefs.getString("token")!);
       Future.delayed(const Duration(seconds: 1), () {
         setState(() {
           isLogined = true;
@@ -224,14 +215,10 @@ class _MyAppState extends State<MyApp> {
 
   void updateAppBadge() {
     //只有iOS平台支持，android平台不支持。如果有其他支持android平台badge，请提issue给我们添加。
-    if(defaultTargetPlatform == TargetPlatform.iOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       Imclient.isLogined.then((isLogined) {
         if (isLogined) {
-          Imclient.getConversationInfos([
-            ConversationType.Single,
-            ConversationType.Group,
-            ConversationType.Channel
-          ], [0]).then((value) {
+          Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((value) {
             int unreadCount = 0;
             for (var element in value) {
               if (!element.isSilent) {
@@ -254,9 +241,11 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: navKey,
-      home: isLogined == null ? const SplashScreen() : (isLogined! ? const HomeTabBar() : const LoginScreen()),
-    );
+    return ChangeNotifierProvider<ConversationViewModel>(
+        create: (_) => ConversationViewModel(),
+        child: MaterialApp(
+          navigatorKey: navKey,
+          home: isLogined == null ? const SplashScreen() : (isLogined! ? const HomeTabBar() : const LoginScreen()),
+        ));
   }
 }

@@ -9,7 +9,7 @@ import 'package:imclient/message/sound_message_content.dart';
 import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
 
 import '../message_cell.dart';
-import '../message_model.dart';
+import '../ui_message.dart';
 
 class VoicePlayStatusChangedEvent {
   int messageId;
@@ -29,7 +29,7 @@ class VoiceCellBuilder extends PortraitCellBuilder {
   int _voiceLevel = 0;
   final bool _notPlayed = false;
 
-  VoiceCellBuilder(MessageState state, MessageModel model) : super(state, model) {
+  VoiceCellBuilder(MessageState state, UIMessage model) : super(state, model) {
     soundMessageContent = model.message.content as SoundMessageContent;
     messageId = model.message.messageId;
     _playEventSubscription = _eventBus.on<VoicePlayStatusChangedEvent>().listen((event) {

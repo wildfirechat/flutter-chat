@@ -5,12 +5,12 @@ import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
 import 'package:wfc_example/utilities.dart';
 
 import '../message_cell.dart';
-import '../message_model.dart';
+import '../ui_message.dart';
 
 class CallStartCellBuilder extends PortraitCellBuilder {
   late CallStartMessageContent callStartMessageContent;
 
-  CallStartCellBuilder(MessageState state, MessageModel model) : super(state, model) {
+  CallStartCellBuilder(MessageState state, UIMessage model) : super(state, model) {
     callStartMessageContent = model.message.content as CallStartMessageContent;
   }
 

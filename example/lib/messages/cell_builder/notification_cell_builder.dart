@@ -2,13 +2,13 @@
 import 'package:flutter/cupertino.dart';
 
 import '../message_cell.dart';
-import '../message_model.dart';
+import '../ui_message.dart';
 import 'message_cell_builder.dart';
 
 class NotificationCellBuilder extends MessageCellBuilder {
   String digest = "";
 
-  NotificationCellBuilder(MessageState state, MessageModel model) : super(state, model) {
+  NotificationCellBuilder(MessageState state, UIMessage model) : super(state, model) {
     model.message.content.digest(model.message).then((value) {
       setState(() {
         digest = value;

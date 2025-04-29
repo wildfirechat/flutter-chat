@@ -21,18 +21,18 @@ import 'cell_builder/text_cell_builder.dart';
 import 'cell_builder/unknown_cell_builder.dart';
 import 'cell_builder/video_cell_builder.dart';
 import 'cell_builder/voice_cell_builder.dart';
-import 'message_model.dart';
+import 'ui_message.dart';
 
-typedef OnMessageCellTapedCallback = void Function(MessageModel model);
-typedef OnMessageCellDoubleTapedCallback = void Function(MessageModel model);
-typedef OnMessageCellLongPressedCallback = void Function(MessageModel model, Offset offset);
-typedef OnPortraitTapedCallback = void Function(MessageModel model);
-typedef OnPortraitLongTapedCallback = void Function(MessageModel model);
-typedef OnResendTapedCallback = void Function(MessageModel model);
-typedef OnReadedTapedCallback = void Function(MessageModel model);
+typedef OnMessageCellTapedCallback = void Function(UIMessage model);
+typedef OnMessageCellDoubleTapedCallback = void Function(UIMessage model);
+typedef OnMessageCellLongPressedCallback = void Function(UIMessage model, Offset offset);
+typedef OnPortraitTapedCallback = void Function(UIMessage model);
+typedef OnPortraitLongTapedCallback = void Function(UIMessage model);
+typedef OnResendTapedCallback = void Function(UIMessage model);
+typedef OnReadedTapedCallback = void Function(UIMessage model);
 
 class MessageCell extends StatefulWidget {
-  final MessageModel model;
+  final UIMessage model;
   OnMessageCellTapedCallback cellTapedCallback;
   OnMessageCellDoubleTapedCallback cellDoubleTapedCallback;
   OnMessageCellLongPressedCallback cellLongPressedCallback;
@@ -118,31 +118,31 @@ class MessageState extends State<MessageCell> {
     _cellBuilder.dispose();
   }
 
-  void onTaped(MessageModel model) {
+  void onTaped(UIMessage model) {
     widget.cellTapedCallback(model);
   }
 
-  void onDoubleTaped(MessageModel model) {
+  void onDoubleTaped(UIMessage model) {
     widget.cellDoubleTapedCallback(model);
   }
 
-  void onLongPress(LongPressStartDetails details, MessageModel model) {
+  void onLongPress(LongPressStartDetails details, UIMessage model) {
     widget.cellLongPressedCallback(model, details.globalPosition);
   }
 
-  void onTapedPortrait(MessageModel model) {
+  void onTapedPortrait(UIMessage model) {
     widget.portraitTapedCallback(model);
   }
 
-  void onLongTapedPortrait(MessageModel model) {
+  void onLongTapedPortrait(UIMessage model) {
     widget.portraitLongTapedCallback(model);
   }
 
-  void onResendTaped(MessageModel model) {
+  void onResendTaped(UIMessage model) {
     widget.resendTapedCallback(model);
   }
 
-  void onReadedTaped(MessageModel model) {
+  void onReadedTaped(UIMessage model) {
     widget.readedTapedCallback(model);
   }
 

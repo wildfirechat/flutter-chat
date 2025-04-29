@@ -1,8 +1,9 @@
 import 'dart:ui' as ui;
+import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
+import 'package:image/image.dart' as image;
 
-class MessageModel {
-
+class UIMessage {
   Message message;
   bool showTimeLabel;
   bool showNameLabel;
@@ -18,30 +19,38 @@ class MessageModel {
   bool selecting;
   bool selected;
 
-  //带缩略图的消息的缓存
-  ui.Image? uiImage;
+  ui.Image? thumbnailImage;
 
-  MessageModel(
-  this.message,
-      {
-        this.showTimeLabel = false,
-    this.showNameLabel = false,
-    this.mediaDownloading = false,
-    this.mediaDownloadProgress = 0,
-    this.voicePlaying = false,
-    this.highlighted = false,
-    this.lastReadMessage = false,
-    this.deliveryDict,
-    this.readDict,
-    this.deliveryRate = 0,
-    this.readRate = 0,
-    this.selecting = false,
-    this.selected = false});
+  UIMessage(this.message,
+      {this.showTimeLabel = false,
+      this.showNameLabel = false,
+      this.mediaDownloading = false,
+      this.mediaDownloadProgress = 0,
+      this.voicePlaying = false,
+      this.highlighted = false,
+      this.lastReadMessage = false,
+      this.deliveryDict,
+      this.readDict,
+      this.deliveryRate = 0,
+      this.readRate = 0,
+      this.selecting = false,
+      this.selected = false}) {
+    if (message.content is ImageMessageContent) {
+      var imageMessageContent = message.content as ImageMessageContent;
+      if (imageMessageContent.thumbnail != null) {
+        ui.instantiateImageCodec(image.encodePng(imageMessageContent.thumbnail!)).then((codec) {
+          codec.getNextFrame().then((frameInfo) {
+            thumbnailImage = frameInfo.image;
+          });
+        });
+      }
+    }
+  }
 
   @override
   bool operator ==(Object other) {
     bool equal = identical(this, other) ||
-        other is MessageModel &&
+        other is UIMessage &&
             runtimeType == other.runtimeType &&
             message == other.message &&
             showTimeLabel == other.showTimeLabel &&

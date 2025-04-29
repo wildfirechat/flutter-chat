@@ -6,12 +6,12 @@ import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
 import 'package:wfc_example/utilities.dart';
 
 import '../message_cell.dart';
-import '../message_model.dart';
+import '../ui_message.dart';
 
 class FileCellBuilder extends PortraitCellBuilder {
   late FileMessageContent fileMessageContent;
 
-  FileCellBuilder(MessageState state, MessageModel model) : super(state, model) {
+  FileCellBuilder(MessageState state, UIMessage model) : super(state, model) {
     fileMessageContent = model.message.content as FileMessageContent;
   }
 

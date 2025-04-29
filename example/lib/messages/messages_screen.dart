@@ -23,6 +23,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:provider/provider.dart';
 import 'package:rtckit/group_video_call.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:rtckit/single_voice_call.dart';
@@ -33,12 +34,12 @@ import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import 'package:wfc_example/messages/message_appbar_title.dart';
 import 'package:wfc_example/messages/picture_overview.dart';
 import 'package:wfc_example/messages/video_player_view.dart';
+import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
 import '../contact/contact_select_page.dart';
 import '../user_info_widget.dart';
 import 'message_cell.dart';
-import 'message_model.dart';
-
+import 'ui_message.dart';
 
 class MessagesScreen extends StatefulWidget {
   final Conversation conversation;
@@ -50,7 +51,7 @@ class MessagesScreen extends StatefulWidget {
 }
 
 class _State extends State<MessagesScreen> {
-  List<MessageModel> models = <MessageModel>[];
+  List<UIMessage> models = <UIMessage>[];
   final EventBus _eventBus = Imclient.IMEventBus;
   late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
   late StreamSubscription<ClearMessagesEvent> _clearMessagesSubscription;
@@ -61,6 +62,8 @@ class _State extends State<MessagesScreen> {
 
   bool noMoreLocalHistoryMsg = false;
   bool noMoreRemoteHistoryMsg = false;
+
+  late ConversationViewModel conversationViewModel;
 
   String title = "消息";
 
@@ -85,12 +88,13 @@ class _State extends State<MessagesScreen> {
   @override
   void initState() {
     super.initState();
-    _inputBar = MessageInputBar(widget.conversation,
+    _inputBar = MessageInputBar(
+      widget.conversation,
       sendButtonTapedCallback: (text) => _onSendButtonTyped(text),
       textChangedCallback: (text) => _onInputBarTextChanged(text),
-      pickerImageCallback:(imagePath) => _onPickImage(imagePath),
-      pickerFileCallback:(filePath, name, size) => _onPickFile(filePath, name, size),
-      pressCallBtnCallback:() => _onPressCallBtn(),
+      pickerImageCallback: (imagePath) => _onPickImage(imagePath),
+      pickerFileCallback: (filePath, name, size) => _onPickFile(filePath, name, size),
+      pressCallBtnCallback: () => _onPressCallBtn(),
       pressCardBtnCallback: () => _onPressCardBtn(),
       cameraCaptureImageCallback: _cameraCaptureImage,
       cameraCaptureVideoCallback: _cameraCaptureVideo,
@@ -99,20 +103,22 @@ class _State extends State<MessagesScreen> {
     );
 
     _reloadMessages();
+    conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
+    conversationViewModel.setConversation(widget.conversation);
 
     _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
-      if(!event.hasMore) {
+      if (!event.hasMore) {
         _appendMessage(event.messages, front: true);
       }
     });
     _clearMessagesSubscription = _eventBus.on<ClearMessagesEvent>().listen((event) {
-      if(event.conversation == widget.conversation) {
+      if (event.conversation == widget.conversation) {
         _reloadMessages();
       }
     });
     _deleteMessagesSubscription = _eventBus.on<DeleteMessageEvent>().listen((event) {
       for (var model in models) {
-        if((event.messageUid != null && model.message.messageUid == event.messageUid) || model.message.messageId == event.messageId) {
+        if ((event.messageUid != null && model.message.messageUid == event.messageUid) || model.message.messageId == event.messageId) {
           setState(() {
             models.remove(model);
           });
@@ -121,7 +127,7 @@ class _State extends State<MessagesScreen> {
       }
     });
     _startSendMessageSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
-      if(event.message.conversation == widget.conversation) {
+      if (event.message.conversation == widget.conversation) {
         setState(() {
           _appendMessage([event.message], front: true);
         });
@@ -130,34 +136,34 @@ class _State extends State<MessagesScreen> {
 
     Imclient.clearConversationUnreadStatus(widget.conversation);
 
-    if(widget.conversation.conversationType == ConversationType.Single) {
-      Imclient.getUserInfo(widget.conversation.target, refresh: true).then((value){
+    if (widget.conversation.conversationType == ConversationType.Single) {
+      Imclient.getUserInfo(widget.conversation.target, refresh: true).then((value) {
         userInfo = value;
-        if(userInfo != null) {
+        if (userInfo != null) {
           if (userInfo!.friendAlias != null && userInfo!.friendAlias!.isNotEmpty) {
             title = userInfo!.friendAlias!;
-          } else if(userInfo!.displayName != null) {
+          } else if (userInfo!.displayName != null) {
             title = userInfo!.displayName!;
           }
           titleGlobalKey.currentState!.updateTitle(title);
         }
       });
-    } else if(widget.conversation.conversationType == ConversationType.Group) {
+    } else if (widget.conversation.conversationType == ConversationType.Group) {
       Imclient.getGroupInfo(widget.conversation.target, refresh: true).then((value) {
         groupInfo = value;
-        if(groupInfo != null) {
-          if(groupInfo!.remark != null && groupInfo!.remark!.isNotEmpty) {
+        if (groupInfo != null) {
+          if (groupInfo!.remark != null && groupInfo!.remark!.isNotEmpty) {
             title = groupInfo!.remark!;
-          } else if(groupInfo!.name != null) {
+          } else if (groupInfo!.name != null) {
             title = groupInfo!.name!;
           }
           titleGlobalKey.currentState!.updateTitle(title);
         }
       });
-    } else if(widget.conversation.conversationType == ConversationType.Chatroom) {
+    } else if (widget.conversation.conversationType == ConversationType.Chatroom) {
       Imclient.joinChatroom(widget.conversation.target, () {
         Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
-          if(userInfo != null) {
+          if (userInfo != null) {
             TipNotificationContent tip = TipNotificationContent();
             tip.tip = '欢迎 ${userInfo.displayName} 加入聊天室';
             _sendMessage(tip);
@@ -168,9 +174,9 @@ class _State extends State<MessagesScreen> {
         Navigator.pop(context);
       });
       noMoreLocalHistoryMsg = true;
-    } else if(widget.conversation.conversationType == ConversationType.Channel) {
+    } else if (widget.conversation.conversationType == ConversationType.Channel) {
       Imclient.getChannelInfo(widget.conversation.target, refresh: true).then((channelInfo) {
-        if(channelInfo != null && channelInfo.name != null) {
+        if (channelInfo != null && channelInfo.name != null) {
           title = channelInfo.name!;
           titleGlobalKey.currentState!.updateTitle(title);
         }
@@ -178,19 +184,17 @@ class _State extends State<MessagesScreen> {
     }
 
     Imclient.getConversationInfo(widget.conversation).then((conversationInfo) {
-      _inputBarGlobalKey.currentState!.setDrat(conversationInfo.draft??"");
+      _inputBarGlobalKey.currentState!.setDrat(conversationInfo.draft ?? "");
     });
   }
 
   void _reloadMessages() {
     models.clear();
     Imclient.getMessages(widget.conversation, 0, 10).then((value) {
-      if(value.isNotEmpty) {
+      if (value.isNotEmpty) {
         _appendMessage(value);
       } else {
-        setState(() {
-
-        });
+        setState(() {});
       }
     });
   }
@@ -202,7 +206,7 @@ class _State extends State<MessagesScreen> {
   }
 
   void _onInputBarTextChanged(String text) {
-    if(DateTime.now().second - _sendTypingTime > 12 && text.isNotEmpty) {
+    if (DateTime.now().second - _sendTypingTime > 12 && text.isNotEmpty) {
       _sendTyping();
     }
   }
@@ -222,13 +226,13 @@ class _State extends State<MessagesScreen> {
   }
 
   void _onPressCallBtn() {
-    if(widget.conversation.conversationType != ConversationType.Single && widget.conversation.conversationType != ConversationType.Group) {
+    if (widget.conversation.conversationType != ConversationType.Single && widget.conversation.conversationType != ConversationType.Group) {
       return;
     }
 
     Rtckit.currentCallSession().then((currentSession) {
-      if(currentSession == null || currentSession.state == kWFAVEngineStateIdle) {
-        if(widget.conversation.conversationType == ConversationType.Single) {
+      if (currentSession == null || currentSession.state == kWFAVEngineStateIdle) {
+        if (widget.conversation.conversationType == ConversationType.Single) {
           final double centerX = MediaQuery.of(context).size.width / 2;
           final double centerY = MediaQuery.of(context).size.height / 2;
 
@@ -244,46 +248,54 @@ class _State extends State<MessagesScreen> {
             items: <PopupMenuEntry<String>>[
               const PopupMenuItem<String>(
                 value: 'voice',
-                child: SizedBox(width: menuWidth, child: Text('音频通话'),),
+                child: SizedBox(
+                  width: menuWidth,
+                  child: Text('音频通话'),
+                ),
               ),
               const PopupMenuItem<String>(
                 value: 'video',
-                child: SizedBox(width: menuWidth, child: Text('视频通话'),),
+                child: SizedBox(
+                  width: menuWidth,
+                  child: Text('视频通话'),
+                ),
               ),
             ],
           ).then((value) {
-            if(value == null) {
+            if (value == null) {
               return;
             }
 
             bool isAudioOnly = value == 'voice';
-            SingleVideoCallView callView = SingleVideoCallView(userId:widget.conversation.target, audioOnly:isAudioOnly);
+            SingleVideoCallView callView = SingleVideoCallView(userId: widget.conversation.target, audioOnly: isAudioOnly);
             Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
           });
-        } else if(widget.conversation.conversationType == ConversationType.Group) {
+        } else if (widget.conversation.conversationType == ConversationType.Group) {
           Imclient.getGroupMembers(widget.conversation.target).then((groupMembers) {
             List<String> members = [];
-            for(var gm in groupMembers) {
+            for (var gm in groupMembers) {
               members.add(gm.memberId);
             }
 
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ContactSelectPage((context, members) async {
-                if(members.isEmpty) {
-                  Fluttertoast.showToast(msg: "请选择一位或者多位成员发起通话");
-                } else {
-                  GroupVideoCallView callView = GroupVideoCallView(groupId: widget.conversation.target, participants: members);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => callView),
-                  );
-                }
-              },
-                maxSelected: Rtckit.maxAudioCallCount,
-                candidates: members,
-                disabledCheckedUsers: [Imclient.currentUserId],
-              )),
+              MaterialPageRoute(
+                  builder: (context) => ContactSelectPage(
+                        (context, members) async {
+                          if (members.isEmpty) {
+                            Fluttertoast.showToast(msg: "请选择一位或者多位成员发起通话");
+                          } else {
+                            GroupVideoCallView callView = GroupVideoCallView(groupId: widget.conversation.target, participants: members);
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => callView),
+                            );
+                          }
+                        },
+                        maxSelected: Rtckit.maxAudioCallCount,
+                        candidates: members,
+                        disabledCheckedUsers: [Imclient.currentUserId],
+                      )),
             );
           });
         }
@@ -296,21 +308,25 @@ class _State extends State<MessagesScreen> {
   void _onPressCardBtn() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ContactSelectPage((context, members) async {
-        if(members.isNotEmpty) {
-          UserInfo? userInfo = await Imclient.getUserInfo(members.first);
-          CardMessageContent cardCnt = CardMessageContent();
-          cardCnt.type = CardType.CardType_User;
-          cardCnt.targetId = members.first;
-          if(userInfo != null) {
-            cardCnt.name = userInfo.name;
-            cardCnt.displayName = userInfo.displayName;
-            cardCnt.portrait = userInfo.portrait;
-          }
-          _sendMessage(cardCnt);
-        }
-        Navigator.pop(context);
-      }, maxSelected: 1,)),
+      MaterialPageRoute(
+          builder: (context) => ContactSelectPage(
+                (context, members) async {
+                  if (members.isNotEmpty) {
+                    UserInfo? userInfo = await Imclient.getUserInfo(members.first);
+                    CardMessageContent cardCnt = CardMessageContent();
+                    cardCnt.type = CardType.CardType_User;
+                    cardCnt.targetId = members.first;
+                    if (userInfo != null) {
+                      cardCnt.name = userInfo.name;
+                      cardCnt.displayName = userInfo.displayName;
+                      cardCnt.portrait = userInfo.portrait;
+                    }
+                    _sendMessage(cardCnt);
+                  }
+                  Navigator.pop(context);
+                },
+                maxSelected: 1,
+              )),
     );
   }
 
@@ -336,11 +352,8 @@ class _State extends State<MessagesScreen> {
   }
 
   void _sendMessage(MessageContent messageContent) {
-    Imclient.sendMediaMessage(widget.conversation, messageContent, successCallback: (int messageUid, int timestamp) {
-
-    }, errorCallback: (int errorCode) {
-
-    }, progressCallback: (int uploaded, int total) {
+    Imclient.sendMediaMessage(widget.conversation, messageContent, successCallback: (int messageUid, int timestamp) {}, errorCallback: (int errorCode) {},
+        progressCallback: (int uploaded, int total) {
       debugPrint("progressCallback:$uploaded,$total");
     }, uploadedCallback: (String remoteUrl) {
       debugPrint("uploadedCallback:$remoteUrl");
@@ -355,26 +368,26 @@ class _State extends State<MessagesScreen> {
     _deleteMessagesSubscription.cancel();
     _startSendMessageSubscription.cancel();
     _stopTypingTimer();
-    if(_soundPlayer.isPlaying) {
+    if (_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
     }
-    if(widget.conversation.conversationType == ConversationType.Chatroom) {
+    if (widget.conversation.conversationType == ConversationType.Chatroom) {
       Imclient.quitChatroom(widget.conversation.target, () {
         Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
-          if(userInfo != null) {
+          if (userInfo != null) {
             TipNotificationContent tip = TipNotificationContent();
             tip.tip = '${userInfo.displayName} 离开了聊天室';
             _sendMessage(tip);
           }
         });
-      }, (errorCode) { });
+      }, (errorCode) {});
     }
   }
 
-  void _startTypingTimer () {
+  void _startTypingTimer() {
     _typingTimer = Timer.periodic(const Duration(milliseconds: 300), (timer) {
       bool isUserTyping = _updateTypingStatus();
-      if(!isUserTyping && _typingUserTime.isNotEmpty) {
+      if (!isUserTyping && _typingUserTime.isNotEmpty) {
         _typingUserTime.clear();
         _stopTypingTimer();
       }
@@ -382,42 +395,42 @@ class _State extends State<MessagesScreen> {
   }
 
   String _getTypingDot(int time) {
-    int dotCount = time~/1000%4;
+    int dotCount = time ~/ 1000 % 4;
     String ret = '';
-    for(int i = 0; i < dotCount; i++) {
+    for (int i = 0; i < dotCount; i++) {
       ret = '$ret.';
     }
     return ret;
   }
 
   bool _updateTypingStatus() {
-    if(!mounted) {
+    if (!mounted) {
       return false;
     }
 
     int now = DateTime.now().millisecondsSinceEpoch;
-    if(widget.conversation.conversationType == ConversationType.Single) {
+    if (widget.conversation.conversationType == ConversationType.Single) {
       int? time = _typingUserTime[widget.conversation.target];
-      if(time != null && now - time < 6000) {
+      if (time != null && now - time < 6000) {
         titleGlobalKey.currentState!.updateTitle('对方正在输入${_getTypingDot(now)}');
         return true;
       }
     } else {
       int typingUserCount = 0;
       String? lastTypingUser;
-      for(String userId in _typingUserTime.keys) {
+      for (String userId in _typingUserTime.keys) {
         int time = _typingUserTime[userId]!;
-        if(now - time < 6000) {
+        if (now - time < 6000) {
           typingUserCount++;
           lastTypingUser = userId;
         }
       }
-      if(typingUserCount > 1) {
+      if (typingUserCount > 1) {
         titleGlobalKey.currentState!.updateTitle('$typingUserCount人正在输入${_getTypingDot(now)}');
         return true;
-      } else if(typingUserCount == 1) {
+      } else if (typingUserCount == 1) {
         Imclient.getUserInfo(lastTypingUser!, groupId: widget.conversation.target).then((value) {
-          if(value != null) {
+          if (value != null) {
             titleGlobalKey.currentState!.updateTitle('${value.displayName!} 正在输入${_getTypingDot(now)}');
           }
         });
@@ -430,7 +443,7 @@ class _State extends State<MessagesScreen> {
   }
 
   void _stopTypingTimer() {
-    if(_typingTimer != null) {
+    if (_typingTimer != null) {
       _typingTimer!.cancel();
       _typingTimer = null;
     }
@@ -441,61 +454,62 @@ class _State extends State<MessagesScreen> {
     setState(() {
       bool haveNewMsg = false;
       for (var element in messages) {
-        if(element.conversation != widget.conversation) {
+        if (element.conversation != widget.conversation) {
           continue;
         }
-        if(element.messageId == 0) {
+        if (element.messageId == 0) {
           continue;
         }
 
-        if(element.content is TypingMessageContent) {
-          if(element.conversation == widget.conversation) {
-            TypingMessageContent typing = element
-                .content as TypingMessageContent;
-              if(element.conversation.conversationType == ConversationType.Single || element.conversation.conversationType == ConversationType.Group) {
-                _typingUserTime[element.fromUser] = element.serverTime;
-                _startTypingTimer();
-              }
+        if (element.content is TypingMessageContent) {
+          if (element.conversation == widget.conversation) {
+            TypingMessageContent typing = element.content as TypingMessageContent;
+            if (element.conversation.conversationType == ConversationType.Single || element.conversation.conversationType == ConversationType.Group) {
+              _typingUserTime[element.fromUser] = element.serverTime;
+              _startTypingTimer();
+            }
           }
 
           continue;
         }
 
-        if(element.messageId == 0) {
+        if (element.messageId == 0) {
           continue;
         }
 
-        if(element.status == MessageStatus.Message_Status_AllMentioned || element.status == MessageStatus.Message_Status_Mentioned || element.status == MessageStatus.Message_Status_Unread) {
+        if (element.status == MessageStatus.Message_Status_AllMentioned ||
+            element.status == MessageStatus.Message_Status_Mentioned ||
+            element.status == MessageStatus.Message_Status_Unread) {
           haveNewMsg = true;
           _typingUserTime.remove(element.fromUser);
           _updateTypingStatus();
         }
 
         bool duplicated = false;
-        for(var m in models) {
-          if(m.message.messageId == element.messageId) {
+        for (var m in models) {
+          if (m.message.messageId == element.messageId) {
             m.message = element;
             duplicated = true;
             break;
           }
         }
-        if(duplicated) {
+        if (duplicated) {
           continue;
         }
 
-        MessageModel model = MessageModel(element, showTimeLabel: false);
-        if(front) {
+        UIMessage model = UIMessage(element, showTimeLabel: false);
+        if (front) {
           models.insert(0, model);
         } else {
           models.add(model);
         }
       }
 
-      for(int i = 0; i < models.length; ++i) {
-        MessageModel model = models[i];
-        if(i < models.length - 1) {
-          MessageModel nextModel = models[i+1];
-          if(model.message.serverTime - nextModel.message.serverTime > 60 * 1000) {
+      for (int i = 0; i < models.length; ++i) {
+        UIMessage model = models[i];
+        if (i < models.length - 1) {
+          UIMessage nextModel = models[i + 1];
+          if (model.message.serverTime - nextModel.message.serverTime > 60 * 1000) {
             model.showTimeLabel = true;
           } else {
             model.showTimeLabel = false;
@@ -505,69 +519,26 @@ class _State extends State<MessagesScreen> {
         }
       }
 
-      if(haveNewMsg) {
+      if (haveNewMsg) {
         Imclient.clearConversationUnreadStatus(widget.conversation);
       }
     });
-  }
-
-  void loadHistoryMessage() {
-    if(isLoading) {
-      return;
-    }
-
-    isLoading = true;
-    int? fromIndex = 0;
-    if(models.isNotEmpty) {
-      fromIndex = models.last.message.messageId;
-    } else {
-      isLoading = false;
-      return;
-    }
-
-    if(noMoreLocalHistoryMsg) {
-      if(noMoreRemoteHistoryMsg) {
-        isLoading = false;
-        return;
-      } else {
-        fromIndex = models.last.message.messageUid;
-        Imclient.getRemoteMessages(widget.conversation, fromIndex!, 20, (messages) {
-          if(messages.isEmpty) {
-            noMoreRemoteHistoryMsg = true;
-          }
-          isLoading = false;
-          _appendMessage(messages);
-        }, (errorCode) {
-          isLoading = false;
-          noMoreRemoteHistoryMsg = true;
-        });
-      }
-    } else {
-      Imclient.getMessages(widget.conversation, fromIndex, 20).then((
-          value) {
-        _appendMessage(value);
-        isLoading = false;
-        if(value.isEmpty) {
-          noMoreLocalHistoryMsg = true;
-        }
-      });
-    }
   }
 
   bool notificationFunction(Notification notification) {
     switch (notification.runtimeType) {
       case ScrollEndNotification:
         var noti = notification as ScrollEndNotification;
-        if(noti.metrics.pixels >= noti.metrics.maxScrollExtent) {
-          loadHistoryMessage();
+        if (noti.metrics.pixels >= noti.metrics.maxScrollExtent) {
+          conversationViewModel.loadHistoryMessage();
         }
         break;
     }
     return true;
   }
 
-  void onTapedCell(MessageModel model) {
-    if(model.message.content is ImageMessageContent) {
+  void onTapedCell(UIMessage model) {
+    if (model.message.content is ImageMessageContent) {
       Imclient.getMessages(widget.conversation, model.message.messageId, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value1) {
         Imclient.getMessages(widget.conversation, model.message.messageId, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value2) {
           List<Message> list = [];
@@ -575,53 +546,57 @@ class _State extends State<MessagesScreen> {
           list.add(model.message);
           list.addAll(value1);
           int index = 0;
-          for(int i = 0; i < list.length; i++) {
-            if(list[i].messageId == model.message.messageId) {
+          for (int i = 0; i < list.length; i++) {
+            if (list[i].messageId == model.message.messageId) {
               index = i;
               break;
             }
           }
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => PictureOverview(list, defaultIndex: index, pageToEnd: (fromIndex, tail) {
-              if(tail) {
-                Imclient.getMessages(widget.conversation, fromIndex, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
-                  if(value.isNotEmpty) {
-                    _pictureOverviewKey.currentState!.onLoadMore(value, false);
-                  }
-                });
-              } else {
-                Imclient.getMessages(widget.conversation, fromIndex, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
-                  if(value.isNotEmpty) {
-                    _pictureOverviewKey.currentState!.onLoadMore(value, true);
-                  }
-                });
-              }
-            }, key: _pictureOverviewKey,)),
+            MaterialPageRoute(
+                builder: (context) => PictureOverview(
+                      list,
+                      defaultIndex: index,
+                      pageToEnd: (fromIndex, tail) {
+                        if (tail) {
+                          Imclient.getMessages(widget.conversation, fromIndex, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
+                            if (value.isNotEmpty) {
+                              _pictureOverviewKey.currentState!.onLoadMore(value, false);
+                            }
+                          });
+                        } else {
+                          Imclient.getMessages(widget.conversation, fromIndex, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
+                            if (value.isNotEmpty) {
+                              _pictureOverviewKey.currentState!.onLoadMore(value, true);
+                            }
+                          });
+                        }
+                      },
+                      key: _pictureOverviewKey,
+                    )),
           );
         });
       });
-    } else if(model.message.content is VideoMessageContent) {
+    } else if (model.message.content is VideoMessageContent) {
       VideoMessageContent videoContent = model.message.content as VideoMessageContent;
-      Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => VideoPlayerView(videoContent.remoteUrl!)));
-    } else if(model.message.content is FileMessageContent) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => VideoPlayerView(videoContent.remoteUrl!)));
+    } else if (model.message.content is FileMessageContent) {
       FileMessageContent fileContent = model.message.content as FileMessageContent;
       canLaunchUrl(Uri.parse(fileContent.remoteUrl!)).then((value) {
-        if(value) {
+        if (value) {
           launchUrl(Uri.parse(fileContent.remoteUrl!));
         } else {
           Fluttertoast.showToast(msg: '无法打开');
         }
       });
-    } else if(model.message.content is SoundMessageContent) {
-      if(_playingMessageId == model.message.messageId) {
+    } else if (model.message.content is SoundMessageContent) {
+      if (_playingMessageId == model.message.messageId) {
         stopPlayVoiceMessage(model);
       } else {
-        if(_playingMessageId > 0) {
+        if (_playingMessageId > 0) {
           for (var value in models) {
-            if(value.message.messageId == _playingMessageId) {
+            if (value.message.messageId == _playingMessageId) {
               stopPlayVoiceMessage(model);
               break;
             }
@@ -630,53 +605,50 @@ class _State extends State<MessagesScreen> {
 
         startPlayVoiceMessage(model);
       }
-    } else if(model.message.content is CallStartMessageContent) {
+    } else if (model.message.content is CallStartMessageContent) {
       CallStartMessageContent callContent = model.message.content as CallStartMessageContent;
-      if(model.message.conversation.conversationType == ConversationType.Single) {
-        SingleVideoCallView callView = SingleVideoCallView(userId:widget.conversation.target, audioOnly:callContent.audioOnly);
+      if (model.message.conversation.conversationType == ConversationType.Single) {
+        SingleVideoCallView callView = SingleVideoCallView(userId: widget.conversation.target, audioOnly: callContent.audioOnly);
         Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
-      } else if(model.message.conversation.conversationType == ConversationType.Group) {
+      } else if (model.message.conversation.conversationType == ConversationType.Group) {
         _onPressCallBtn();
       }
     }
   }
 
-  void stopPlayVoiceMessage(MessageModel model) {
-    if(_soundPlayer.isPlaying) {
+  void stopPlayVoiceMessage(UIMessage model) {
+    if (_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
     }
-    _eventBus.fire(
-        VoicePlayStatusChangedEvent(model.message.messageId, false));
+    _eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, false));
     _playingMessageId = 0;
   }
 
-  void startPlayVoiceMessage(MessageModel model) {
-    SoundMessageContent soundContent = model.message
-        .content as SoundMessageContent;
-    if (model.message.direction ==
-        MessageDirection.MessageDirection_Receive &&
-        model.message.status == MessageStatus.Message_Status_Readed) {
+  void startPlayVoiceMessage(UIMessage model) {
+    SoundMessageContent soundContent = model.message.content as SoundMessageContent;
+    if (model.message.direction == MessageDirection.MessageDirection_Receive && model.message.status == MessageStatus.Message_Status_Readed) {
       Imclient.updateMessageStatus(model.message.messageId, MessageStatus.Message_Status_Played);
       model.message.status = MessageStatus.Message_Status_Played;
     }
     _soundPlayer.openPlayer();
-    _soundPlayer.startPlayer(fromURI: soundContent.remoteUrl!, whenFinished: () {
-      stopPlayVoiceMessage(model);
-    });
-    _eventBus.fire(
-        VoicePlayStatusChangedEvent(model.message.messageId, true));
+    _soundPlayer.startPlayer(
+        fromURI: soundContent.remoteUrl!,
+        whenFinished: () {
+          stopPlayVoiceMessage(model);
+        });
+    _eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, true));
     _playingMessageId = model.message.messageId;
   }
 
-  void onDoubleTapedCell(MessageModel model) {
+  void onDoubleTapedCell(UIMessage model) {
     debugPrint("on double taped cell");
   }
 
-  void onLongPressedCell(MessageModel model, Offset postion) {
+  void onLongPressedCell(UIMessage model, Offset postion) {
     _showPopupMenu(model, postion);
   }
 
-  void onPortraitTaped(MessageModel model) {
+  void onPortraitTaped(UIMessage model) {
     debugPrint("on taped portrait");
     Navigator.push(
       context,
@@ -684,21 +656,20 @@ class _State extends State<MessagesScreen> {
     );
   }
 
-  void onPortraitLongTaped(MessageModel model) {
+  void onPortraitLongTaped(UIMessage model) {
     debugPrint("on long taped portrait");
   }
 
-  void onResendTaped(MessageModel model) {
+  void onResendTaped(UIMessage model) {
     debugPrint("on taped resend");
-    Imclient.sendSavedMessage(model.message.messageId, successCallback: (l,ll){}, errorCallback: (errorCode) {});
+    Imclient.sendSavedMessage(model.message.messageId, successCallback: (l, ll) {}, errorCallback: (errorCode) {});
   }
 
-  void onReadedTaped(MessageModel model) {
+  void onReadedTaped(UIMessage model) {
     debugPrint("on taped readed");
-
   }
 
-  void _showPopupMenu(MessageModel model, Offset position) {
+  void _showPopupMenu(UIMessage model, Offset position) {
     List<PopupMenuItem> items = [
       const PopupMenuItem(
         value: 'delete',
@@ -706,28 +677,22 @@ class _State extends State<MessagesScreen> {
       )
     ];
 
-    if(model.message.content is TextMessageContent) {
-      items.add(
-          const PopupMenuItem(
-            value: 'copy',
-            child: Text('复制'))
-      );
+    if (model.message.content is TextMessageContent) {
+      items.add(const PopupMenuItem(value: 'copy', child: Text('复制')));
     }
 
-    items.add(
-        const PopupMenuItem(
-          value: 'forward',
-          child: Text('转发'),
-        )
-    );
+    items.add(const PopupMenuItem(
+      value: 'forward',
+      child: Text('转发'),
+    ));
 
-    if(model.message.direction == MessageDirection.MessageDirection_Send && model.message.status == MessageStatus.Message_Status_Sent && DateTime.now().millisecondsSinceEpoch - model.message.serverTime < 120 * 1000) {
-      items.add(
-          const PopupMenuItem(
-            value: 'recall',
-            child: Text('撤回'),
-          )
-      );
+    if (model.message.direction == MessageDirection.MessageDirection_Send &&
+        model.message.status == MessageStatus.Message_Status_Sent &&
+        DateTime.now().millisecondsSinceEpoch - model.message.serverTime < 120 * 1000) {
+      items.add(const PopupMenuItem(
+        value: 'recall',
+        child: Text('撤回'),
+      ));
     }
 
     items.addAll([
@@ -751,7 +716,7 @@ class _State extends State<MessagesScreen> {
       items: items,
     ).then((selected) {
       if (selected != null) {
-        switch(selected) {
+        switch (selected) {
           case "delete":
             _deleteMessage(model.message.messageId);
             break;
@@ -774,18 +739,14 @@ class _State extends State<MessagesScreen> {
   }
 
   void _recallMessage(int messageId, int messageUid) {
-    Imclient.recallMessage(messageUid, () {
-
-    }, (errorCode) {
-
-    });
+    Imclient.recallMessage(messageUid, () {}, (errorCode) {});
   }
 
   void _deleteMessage(int messageId) {
     Imclient.deleteMessage(messageId).then((value) {
       setState(() {
         for (var model in models) {
-          if(model.message.messageId == messageId) {
+          if (model.message.messageId == messageId) {
             models.remove(model);
             break;
           }
@@ -797,47 +758,56 @@ class _State extends State<MessagesScreen> {
   @override
   Widget build(BuildContext context) {
     List<Widget> actions = [];
-    if(widget.conversation.conversationType != ConversationType.Chatroom) {
+    if (widget.conversation.conversationType != ConversationType.Chatroom) {
       actions = [
-        IconButton(onPressed: (){
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ConversationSettingPage(widget.conversation)),
-          );
-        }, icon: const Icon(Icons.more_horiz_rounded),)
+        IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ConversationSettingPage(widget.conversation)),
+            );
+          },
+          icon: const Icon(Icons.more_horiz_rounded),
+        )
       ];
     }
+    var conversationViewModel = Provider.of<ConversationViewModel>(context);
+    var conversationMessageList = conversationViewModel.conversationMessageList;
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 232, 232, 232),
       appBar: AppBar(
-        title: MessageTitle(title, key: titleGlobalKey,),
+        title: MessageTitle(
+          title,
+          key: titleGlobalKey,
+        ),
         actions: actions,
       ),
       body: SafeArea(
         child: Column(
           children: [
             Flexible(
-                child: GestureDetector(
-                  child: NotificationListener(
-                    onNotification: notificationFunction,
-                    child: ListView.builder(
-                      reverse: true,
-                      itemBuilder: (BuildContext context, int index) => MessageCell(
-                        models[index],
-                            (model)=> onTapedCell(model),
-                            (model)=>onDoubleTapedCell(model),
-                            (model, offset) => onLongPressedCell(model, offset),
-                            (model)=>onPortraitTaped(model),
-                            (model)=>onPortraitLongTaped(model),
-                            (model)=>onResendTaped(model),
-                            (model)=>onReadedTaped(model),
-                      ),
-                      itemCount: models.length,),
+              child: GestureDetector(
+                child: NotificationListener(
+                  onNotification: notificationFunction,
+                  child: ListView.builder(
+                    reverse: true,
+                    itemBuilder: (BuildContext context, int index) => MessageCell(
+                      conversationMessageList[index],
+                      (model) => onTapedCell(model),
+                      (model) => onDoubleTapedCell(model),
+                      (model, offset) => onLongPressedCell(model, offset),
+                      (model) => onPortraitTaped(model),
+                      (model) => onPortraitLongTaped(model),
+                      (model) => onResendTaped(model),
+                      (model) => onReadedTaped(model),
+                    ),
+                    itemCount: conversationMessageList.length,
                   ),
-                  onTap: () {
-                    _inputBarGlobalKey.currentState!.resetStatus();
-                  },
                 ),
+                onTap: () {
+                  _inputBarGlobalKey.currentState!.resetStatus();
+                },
+              ),
             ),
             _getInputBar(),
           ],
@@ -850,11 +820,7 @@ class _State extends State<MessagesScreen> {
     _sendTypingTime = DateTime.now().second;
     TypingMessageContent typingMessageContent = TypingMessageContent();
     typingMessageContent.type = TypingType.Typing_TEXT;
-    Imclient.sendMessage(widget.conversation, typingMessageContent, successCallback: (messageUid, timestamp) {
-
-    }, errorCallback: (errorCode) {
-
-    });
+    Imclient.sendMessage(widget.conversation, typingMessageContent, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
   }
 
   Widget _getInputBar() {

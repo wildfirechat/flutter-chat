@@ -4,10 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/friend_request.dart';
 import 'package:pinyin/pinyin.dart';
-import 'package:wfc_example/contact/contact_info.dart';
+import 'package:wfc_example/contact/ui_contact_info.dart';
 
 class ContactListViewModel extends ChangeNotifier {
-  List<ContactInfo> _contactList = [];
+  List<UIContactInfo> _contactList = [];
   List<String> _friendList = [];
   List<FriendRequest> _newFriendRequestList = [];
   int _unreadFriendRequestCount = 0;
@@ -40,7 +40,7 @@ class ContactListViewModel extends ChangeNotifier {
     _loadFriendRequestListAndNotify();
   }
 
-  List<ContactInfo> get contactList => _contactList;
+  List<UIContactInfo> get contactList => _contactList;
 
   List<FriendRequest> get newFriendRequestList => _newFriendRequestList;
 
@@ -60,7 +60,7 @@ class ContactListViewModel extends ChangeNotifier {
   void _loadContactList([refresh = false]) async {
     _friendList = await Imclient.getMyFriendList(refresh: refresh);
 
-    List<ContactInfo> contactList = [];
+    List<UIContactInfo> contactList = [];
     var userInfos = await Imclient.getUserInfos(_friendList);
     for (var userInfo in userInfos) {
       userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
@@ -71,7 +71,7 @@ class ContactListViewModel extends ChangeNotifier {
         firstWordPinyinLetter = firstWordPinyin.isNotEmpty ? firstWordPinyin.substring(0, 1).toUpperCase() : '{';
       }
 
-      contactList.add(ContactInfo(firstWordPinyinLetter, false, userInfo));
+      contactList.add(UIContactInfo(firstWordPinyinLetter, false, userInfo));
     }
 
     contactList.sort((a, b) {

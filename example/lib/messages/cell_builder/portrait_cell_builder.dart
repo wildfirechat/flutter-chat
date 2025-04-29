@@ -11,7 +11,7 @@ import 'package:imclient/model/user_info.dart';
 
 import '../../config.dart';
 import '../message_cell.dart';
-import '../message_model.dart';
+import '../ui_message.dart';
 import 'message_cell_builder.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
@@ -26,7 +26,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   String? userName;
   late bool isSendMessage;
 
-  PortraitCellBuilder(MessageState state, MessageModel model) : super(state, model) {
+  PortraitCellBuilder(MessageState state, UIMessage model) : super(state, model) {
     String groupId = "";
     isSendMessage = model.message.direction == MessageDirection.MessageDirection_Send;
     if(model.message.conversation.conversationType == ConversationType.Group) {

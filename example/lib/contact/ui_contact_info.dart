@@ -1,9 +1,9 @@
 import 'package:imclient/model/user_info.dart';
 
-class ContactInfo {
+class UIContactInfo {
   String category;
   bool showCategory;
   UserInfo userInfo;
 
-  ContactInfo(this.category, this.showCategory, this.userInfo);
+  UIContactInfo(this.category, this.showCategory, this.userInfo);
 }
