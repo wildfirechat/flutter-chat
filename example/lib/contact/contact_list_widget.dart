@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 import 'package:wfc_example/config.dart';
-import 'package:wfc_example/contact/ui_contact_info.dart';
+import 'package:wfc_example/ui_model/ui_contact_info.dart';
 import 'package:wfc_example/contact/friend_request_page.dart';
 import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
 

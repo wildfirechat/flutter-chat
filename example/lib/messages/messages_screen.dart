@@ -39,7 +39,7 @@ import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 import '../contact/contact_select_page.dart';
 import '../user_info_widget.dart';
 import 'message_cell.dart';
-import 'ui_message.dart';
+import '../ui_model/ui_message.dart';
 
 class MessagesScreen extends StatefulWidget {
   final Conversation conversation;

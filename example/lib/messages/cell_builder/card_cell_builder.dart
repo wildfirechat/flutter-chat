@@ -5,7 +5,7 @@ import 'package:wfc_example/config.dart';
 import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
 
 import '../message_cell.dart';
-import '../ui_message.dart';
+import '../../ui_model/ui_message.dart';
 
 class CardCellBuilder extends PortraitCellBuilder {
   late CardMessageContent cardMessageContent;

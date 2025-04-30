@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:wfc_example/messages/ui_message.dart';
+import 'package:wfc_example/ui_model/ui_message.dart';
 
 class ConversationViewModel extends ChangeNotifier {
   final EventBus _eventBus = Imclient.IMEventBus;

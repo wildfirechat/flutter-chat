@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/friend_request.dart';
 import 'package:pinyin/pinyin.dart';
-import 'package:wfc_example/contact/ui_contact_info.dart';
+import 'package:wfc_example/ui_model/ui_contact_info.dart';
 
 class ContactListViewModel extends ChangeNotifier {
   List<UIContactInfo> _contactList = [];

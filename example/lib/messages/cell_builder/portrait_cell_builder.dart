@@ -11,7 +11,7 @@ import 'package:imclient/model/user_info.dart';
 
 import '../../config.dart';
 import '../message_cell.dart';
-import '../ui_message.dart';
+import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {

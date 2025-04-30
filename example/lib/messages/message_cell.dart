@@ -21,7 +21,7 @@ import 'cell_builder/text_cell_builder.dart';
 import 'cell_builder/unknown_cell_builder.dart';
 import 'cell_builder/video_cell_builder.dart';
 import 'cell_builder/voice_cell_builder.dart';
-import 'ui_message.dart';
+import '../ui_model/ui_message.dart';
 
 typedef OnMessageCellTapedCallback = void Function(UIMessage model);
 typedef OnMessageCellDoubleTapedCallback = void Function(UIMessage model);

@@ -6,7 +6,7 @@ import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
 import 'package:wfc_example/utilities.dart';
 
 import '../message_cell.dart';
-import '../ui_message.dart';
+import '../../ui_model/ui_message.dart';
 
 class FileCellBuilder extends PortraitCellBuilder {
   late FileMessageContent fileMessageContent;

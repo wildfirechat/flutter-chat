@@ -6,7 +6,7 @@ import 'package:imclient/imclient.dart';
 
 import '../../utilities.dart';
 import '../message_cell.dart';
-import '../ui_message.dart';
+import '../../ui_model/ui_message.dart';
 
 abstract class MessageCellBuilder {
   UIMessage model;
