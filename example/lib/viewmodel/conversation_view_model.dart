@@ -4,7 +4,12 @@ import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
+import 'package:imclient/message/message_content.dart';
+import 'package:imclient/message/notification/tip_notificiation_content.dart';
+import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/group_info.dart';
+import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/ui_model/ui_message.dart';
 
 class ConversationViewModel extends ChangeNotifier {
@@ -22,9 +27,11 @@ class ConversationViewModel extends ChangeNotifier {
   List<UIMessage> _conversationMessageList = [];
   late Conversation _currentConversation;
   late String _draft;
-  late bool _isLoading = false;
-  late bool _noMoreLocalHistoryMsg = false;
-  late bool _noMoreRemoteHistoryMsg = false;
+  bool _isLoading = false;
+  bool _noMoreLocalHistoryMsg = false;
+  bool _noMoreRemoteHistoryMsg = false;
+  String _conversationTitle = '';
+  String? _instantConversatonStatusTitle = null;
 
   List<UIMessage> get conversationMessageList => _conversationMessageList;
 
@@ -34,15 +41,36 @@ class ConversationViewModel extends ChangeNotifier {
     return 0;
   }
 
-  void setConversation(Conversation conversation) {
-    _noMoreLocalHistoryMsg = false;
+  String get conversationTitle {
+    return _instantConversatonStatusTitle ?? _conversationTitle;
+  }
+
+  void setConversation(Conversation conversation, [Function(int err)? joinChatroomErrorCallback]) {
     _noMoreRemoteHistoryMsg = false;
     _conversationMessageList = [];
     _currentConversation = conversation;
-    Imclient.getMessages(conversation, 0, 20).then((messages) {
-      _conversationMessageList = messages.map((message) => UIMessage(message)).toList();
-      notifyListeners();
-    });
+
+    _computeConversationTitle();
+    if (conversation.conversationType == ConversationType.Chatroom) {
+      Imclient.joinChatroom(conversation.target, () {
+        Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
+          if (userInfo != null) {
+            TipNotificationContent tip = TipNotificationContent();
+            tip.tip = '欢迎 ${userInfo.displayName} 加入聊天室';
+            _sendMessage(tip);
+          }
+        });
+      }, (errorCode) {
+        joinChatroomErrorCallback?.call(errorCode);
+      });
+      _noMoreLocalHistoryMsg = true;
+    } else {
+      _noMoreLocalHistoryMsg = false;
+      Imclient.getMessages(conversation, 0, 20).then((messages) {
+        _conversationMessageList = messages.map((message) => UIMessage(message)).toList();
+        notifyListeners();
+      });
+    }
   }
 
   ConversationViewModel() {
@@ -98,8 +126,8 @@ class ConversationViewModel extends ChangeNotifier {
     });
     _sendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
       var msg = event.message;
-      if (_currentConversation == msg.conversation) {
-        _conversationMessageList.add(UIMessage(msg));
+      if (_currentConversation == msg.conversation && msg.messageId != 0) {
+        _conversationMessageList.insert(0, UIMessage(msg));
       }
     });
     _sendMessageSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
@@ -198,6 +226,49 @@ class ConversationViewModel extends ChangeNotifier {
         }
       });
     }
+  }
+
+  _computeConversationTitle() async {
+    _conversationTitle = '';
+    if (_currentConversation.conversationType == ConversationType.Single) {
+      UserInfo? userInfo = await Imclient.getUserInfo(_currentConversation.target, refresh: true);
+      if (userInfo != null) {
+        if (userInfo.friendAlias != null && userInfo.friendAlias!.isNotEmpty) {
+          _conversationTitle = userInfo.friendAlias!;
+        } else if (userInfo.displayName != null) {
+          _conversationTitle = userInfo.displayName!;
+        }
+      }
+    } else if (_currentConversation.conversationType == ConversationType.Group) {
+      GroupInfo? groupInfo = await Imclient.getGroupInfo(_currentConversation.target, refresh: true);
+      if (groupInfo != null) {
+        if (groupInfo.remark != null && groupInfo.remark!.isNotEmpty) {
+          _conversationTitle = groupInfo.remark!;
+        } else if (groupInfo.name != null) {
+          _conversationTitle = groupInfo.name!;
+        }
+      }
+    } else if (_currentConversation.conversationType == ConversationType.Chatroom) {
+      Imclient.getChatroomInfo(_currentConversation.target, 0, (chatroomInfo) {
+        _conversationTitle = chatroomInfo.title!;
+      }, (err) {
+        debugPrint("joinChatroom error $err");
+      });
+    } else if (_currentConversation.conversationType == ConversationType.Channel) {
+      ChannelInfo? channelInfo = await Imclient.getChannelInfo(_currentConversation.target, refresh: true);
+      if (channelInfo != null && channelInfo.name != null) {
+        _conversationTitle = channelInfo.name!;
+      }
+    }
+  }
+
+  void _sendMessage(MessageContent messageContent) {
+    Imclient.sendMediaMessage(_currentConversation, messageContent, successCallback: (int messageUid, int timestamp) {}, errorCallback: (int errorCode) {},
+        progressCallback: (int uploaded, int total) {
+      debugPrint("progressCallback:$uploaded,$total");
+    }, uploadedCallback: (String remoteUrl) {
+      debugPrint("uploadedCallback:$remoteUrl");
+    });
   }
 
   @override
