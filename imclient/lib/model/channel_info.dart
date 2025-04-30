@@ -11,4 +11,25 @@ class ChannelInfo {
 
   int status;
   int updateDt;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+          (other is ChannelInfo &&
+          runtimeType == other.runtimeType &&
+          channelId == other.channelId &&
+          updateDt == other.updateDt);
+
+  @override
+  int get hashCode =>
+      channelId.hashCode ^
+      name.hashCode ^
+      portrait.hashCode ^
+      owner.hashCode ^
+      desc.hashCode ^
+      extra.hashCode ^
+      secret.hashCode ^
+      callback.hashCode ^
+      status.hashCode ^
+      updateDt.hashCode;
 }

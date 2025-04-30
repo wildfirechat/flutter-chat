@@ -31,7 +31,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/messages/cell_builder/voice_cell_builder.dart';
 import 'package:wfc_example/messages/conversation_settings.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
-import 'package:wfc_example/messages/message_appbar_title.dart';
+import 'package:wfc_example/messages/conversation_appbar_title.dart';
 import 'package:wfc_example/messages/picture_overview.dart';
 import 'package:wfc_example/messages/video_player_view.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
@@ -53,15 +53,6 @@ class MessagesScreen extends StatefulWidget {
 class _State extends State<MessagesScreen> {
   List<UIMessage> models = <UIMessage>[];
   final EventBus _eventBus = Imclient.IMEventBus;
-  late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
-  late StreamSubscription<ClearMessagesEvent> _clearMessagesSubscription;
-  late StreamSubscription<DeleteMessageEvent> _deleteMessagesSubscription;
-  late StreamSubscription<SendMessageStartEvent> _startSendMessageSubscription;
-
-  bool isLoading = false;
-
-  bool noMoreLocalHistoryMsg = false;
-  bool noMoreRemoteHistoryMsg = false;
 
   late ConversationViewModel conversationViewModel;
 
@@ -72,7 +63,6 @@ class _State extends State<MessagesScreen> {
   ChannelInfo? channelInfo;
   List<GroupMember>? groupMembers;
 
-  GlobalKey<MessageTitleState> titleGlobalKey = GlobalKey();
   final GlobalKey<MessageInputBarState> _inputBarGlobalKey = GlobalKey();
   final GlobalKey<PictureOverviewState> _pictureOverviewKey = GlobalKey();
 
@@ -102,100 +92,16 @@ class _State extends State<MessagesScreen> {
       key: _inputBarGlobalKey,
     );
 
-    _reloadMessages();
     conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
-    conversationViewModel.setConversation(widget.conversation);
-
-    _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
-      if (!event.hasMore) {
-        _appendMessage(event.messages, front: true);
-      }
-    });
-    _clearMessagesSubscription = _eventBus.on<ClearMessagesEvent>().listen((event) {
-      if (event.conversation == widget.conversation) {
-        _reloadMessages();
-      }
-    });
-    _deleteMessagesSubscription = _eventBus.on<DeleteMessageEvent>().listen((event) {
-      for (var model in models) {
-        if ((event.messageUid != null && model.message.messageUid == event.messageUid) || model.message.messageId == event.messageId) {
-          setState(() {
-            models.remove(model);
-          });
-          break;
-        }
-      }
-    });
-    _startSendMessageSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
-      if (event.message.conversation == widget.conversation) {
-        setState(() {
-          _appendMessage([event.message], front: true);
-        });
-      }
+    conversationViewModel.setConversation(widget.conversation, (err) {
+      Fluttertoast.showToast(msg: "网络错误！加入聊天室失败!");
+      Navigator.pop(context);
     });
 
     Imclient.clearConversationUnreadStatus(widget.conversation);
 
-    if (widget.conversation.conversationType == ConversationType.Single) {
-      Imclient.getUserInfo(widget.conversation.target, refresh: true).then((value) {
-        userInfo = value;
-        if (userInfo != null) {
-          if (userInfo!.friendAlias != null && userInfo!.friendAlias!.isNotEmpty) {
-            title = userInfo!.friendAlias!;
-          } else if (userInfo!.displayName != null) {
-            title = userInfo!.displayName!;
-          }
-          titleGlobalKey.currentState!.updateTitle(title);
-        }
-      });
-    } else if (widget.conversation.conversationType == ConversationType.Group) {
-      Imclient.getGroupInfo(widget.conversation.target, refresh: true).then((value) {
-        groupInfo = value;
-        if (groupInfo != null) {
-          if (groupInfo!.remark != null && groupInfo!.remark!.isNotEmpty) {
-            title = groupInfo!.remark!;
-          } else if (groupInfo!.name != null) {
-            title = groupInfo!.name!;
-          }
-          titleGlobalKey.currentState!.updateTitle(title);
-        }
-      });
-    } else if (widget.conversation.conversationType == ConversationType.Chatroom) {
-      Imclient.joinChatroom(widget.conversation.target, () {
-        Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
-          if (userInfo != null) {
-            TipNotificationContent tip = TipNotificationContent();
-            tip.tip = '欢迎 ${userInfo.displayName} 加入聊天室';
-            _sendMessage(tip);
-          }
-        });
-      }, (errorCode) {
-        Fluttertoast.showToast(msg: "网络错误！加入聊天室失败!");
-        Navigator.pop(context);
-      });
-      noMoreLocalHistoryMsg = true;
-    } else if (widget.conversation.conversationType == ConversationType.Channel) {
-      Imclient.getChannelInfo(widget.conversation.target, refresh: true).then((channelInfo) {
-        if (channelInfo != null && channelInfo.name != null) {
-          title = channelInfo.name!;
-          titleGlobalKey.currentState!.updateTitle(title);
-        }
-      });
-    }
-
     Imclient.getConversationInfo(widget.conversation).then((conversationInfo) {
       _inputBarGlobalKey.currentState!.setDrat(conversationInfo.draft ?? "");
-    });
-  }
-
-  void _reloadMessages() {
-    models.clear();
-    Imclient.getMessages(widget.conversation, 0, 10).then((value) {
-      if (value.isNotEmpty) {
-        _appendMessage(value);
-      } else {
-        setState(() {});
-      }
     });
   }
 
@@ -363,10 +269,6 @@ class _State extends State<MessagesScreen> {
   @override
   void dispose() {
     super.dispose();
-    _receiveMessageSubscription.cancel();
-    _clearMessagesSubscription.cancel();
-    _deleteMessagesSubscription.cancel();
-    _startSendMessageSubscription.cancel();
     _stopTypingTimer();
     if (_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
@@ -412,7 +314,7 @@ class _State extends State<MessagesScreen> {
     if (widget.conversation.conversationType == ConversationType.Single) {
       int? time = _typingUserTime[widget.conversation.target];
       if (time != null && now - time < 6000) {
-        titleGlobalKey.currentState!.updateTitle('对方正在输入${_getTypingDot(now)}');
+        // titleGlobalKey.currentState!.updateTitle('对方正在输入${_getTypingDot(now)}');
         return true;
       }
     } else {
@@ -426,19 +328,19 @@ class _State extends State<MessagesScreen> {
         }
       }
       if (typingUserCount > 1) {
-        titleGlobalKey.currentState!.updateTitle('$typingUserCount人正在输入${_getTypingDot(now)}');
+        // titleGlobalKey.currentState!.updateTitle('$typingUserCount人正在输入${_getTypingDot(now)}');
         return true;
       } else if (typingUserCount == 1) {
         Imclient.getUserInfo(lastTypingUser!, groupId: widget.conversation.target).then((value) {
           if (value != null) {
-            titleGlobalKey.currentState!.updateTitle('${value.displayName!} 正在输入${_getTypingDot(now)}');
+            // titleGlobalKey.currentState!.updateTitle('${value.displayName!} 正在输入${_getTypingDot(now)}');
           }
         });
         return true;
       }
     }
 
-    titleGlobalKey.currentState!.updateTitle(title);
+    // titleGlobalKey.currentState!.updateTitle(title);
     return false;
   }
 
@@ -776,10 +678,7 @@ class _State extends State<MessagesScreen> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 232, 232, 232),
       appBar: AppBar(
-        title: MessageTitle(
-          title,
-          key: titleGlobalKey,
-        ),
+        title: const ConversationAppbarTitle(),
         actions: actions,
       ),
       body: SafeArea(

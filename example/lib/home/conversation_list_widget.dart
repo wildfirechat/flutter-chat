@@ -10,6 +10,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/utilities.dart';
@@ -26,6 +27,7 @@ class ConversationListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context);
+    var userViewModel = Provider.of<UserViewModel>(context, listen: false);
     return Scaffold(
       body: SafeArea(
         child: ListView.builder(
@@ -35,19 +37,21 @@ class ConversationListWidget extends StatelessWidget {
               String? portrait;
               String? convTitle;
               if (info.conversation.conversationType == ConversationType.Single) {
-                return Selector<UserViewModel, UserInfo?>(
-                    selector: (_, userViewModel) => userViewModel.getUserInfo(info.conversation.target),
-                    builder: (_, userInfo, __) {
-                      if (userInfo != null && userInfo.portrait != null && userInfo.portrait!.isNotEmpty) {
-                        portrait = userInfo.portrait!;
-                        convTitle = userInfo.displayName!;
-                      } else {
-                        convTitle = '私聊';
-                        portrait = Config.defaultUserPortrait;
-                      }
+                return FutureBuilder(
+                  future: userViewModel.getUserInfo(info.conversation.target),
+                  builder: (_, userInfoFuture) {
+                    var userInfo = userInfoFuture.data;
+                    if (userInfo != null && userInfo.portrait != null && userInfo.portrait!.isNotEmpty) {
+                      portrait = userInfo.portrait!;
+                      convTitle = userInfo.displayName!;
+                    } else {
+                      convTitle = '私聊';
+                      portrait = Config.defaultUserPortrait;
+                    }
 
-                      return ConversationListItem(info, convTitle!, portrait!);
-                    });
+                    return ConversationListItem(info, convTitle!, portrait!);
+                  },
+                );
               } else if (info.conversation.conversationType == ConversationType.Group) {
                 return Selector<GroupViewModel, GroupInfo?>(
                     selector: (_, groupViewModel) => groupViewModel.getGroupInfo(info.conversation.target),
@@ -94,14 +98,21 @@ class ConversationListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
-    UserInfo? senderInfo;
-    if (conversationInfo.lastMessage != null && conversationInfo.conversation.conversationType != ConversationType.Single && conversationInfo.lastMessage?.fromUser != Imclient.currentUserId) {
-      UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
-      senderInfo = userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser, groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null);
-    }
+    if (conversationInfo.lastMessage != null &&
+        conversationInfo.conversation.conversationType != ConversationType.Single &&
+        conversationInfo.lastMessage?.fromUser != Imclient.currentUserId) {}
 
-    String? senderName = senderInfo?.getReadableName();
-    Future<String>? msgDigest = conversationInfo.lastMessage?.content.digest(conversationInfo.lastMessage!);
+    var lastMsgFuture = (() async {
+      UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
+      var userInfoFuture = userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser,
+          groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null);
+
+      Future<String> msgDigestFuture =
+          conversationInfo.lastMessage == null ? Future<String>.value("") : conversationInfo.lastMessage!.content.digest(conversationInfo.lastMessage!);
+
+      final (userInfo, msgDigest) = await (userInfoFuture, msgDigestFuture).wait;
+      return '${userInfo == null ? '': userInfo.getReadableName()}: $msgDigest';
+    })();
 
     return GestureDetector(
       child: Container(
@@ -148,11 +159,11 @@ class ConversationListItem extends StatelessWidget {
                                       : Container(),
                                   Expanded(
                                       child: FutureBuilder<String>(
-                                          future: msgDigest,
+                                          future: lastMsgFuture,
                                           builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
                                             String digestStr = snapshot.data ?? '';
                                             return Text(
-                                              hasDraft ? conversationInfo.draft! : (senderName == null ? digestStr : '$senderName: $digestStr'),
+                                              hasDraft ? conversationInfo.draft! : digestStr,
                                               style: const TextStyle(fontSize: 12.0, color: Color(0xffaaaaaa)),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
