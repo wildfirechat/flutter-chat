@@ -6,29 +6,31 @@ import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/repo/user_repo.dart';
 
 class UserViewModel extends ChangeNotifier {
-  UserCacheRepo userRepo = UserCacheRepo();
-
+  static final Map<String, UserInfo> _userMap = {};
   late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
 
   UserViewModel() {
     _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
       for (var user in event.userInfos) {
-        userRepo.putUserInfo(user);
+        UserRepo.putUserInfo(user);
       }
       notifyListeners();
     });
   }
 
-  Future<UserInfo?> getUserInfo(String userId, {String? groupId}) async {
-    var userInfo = userRepo.getUserInfo(userId, groupId: groupId);
+  UserInfo? getUserInfo(String userId, {String? groupId}) {
+    var userInfo = _userMap[userId];
     if (userInfo != null) {
       return userInfo;
     }
-    userInfo = await Imclient.getUserInfo(userId, groupId: groupId);
-    if (userInfo != null) {
-      userRepo.putUserInfo(userInfo);
-    }
-    return userInfo;
+    Imclient.getUserInfo(userId, groupId: groupId).then((info) {
+      if (info == null) {
+        return;
+      }
+      _userMap[userId] = info;
+      notifyListeners();
+    });
+    return null;
   }
 
   @override

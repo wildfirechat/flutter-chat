@@ -5,13 +5,15 @@ import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:imclient/model/conversation_info.dart';
+
+import '../ui_model/ui_conversation_info.dart';
 
 class ConversationListViewModel extends ChangeNotifier {
   final EventBus _eventBus = Imclient.IMEventBus;
   late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
   late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
   late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
+  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
   late StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
   late StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
   late StreamSubscription<ClearConversationUnreadEvent> _clearConversationUnreadSubscription;
@@ -24,21 +26,17 @@ class ConversationListViewModel extends ChangeNotifier {
   late StreamSubscription<ConversationSilentUpdatedEvent> _silentUpdatedSubscription;
   late StreamSubscription<ConversationTopUpdatedEvent> _topUpdatedSubscription;
 
-  List<ConversationInfo> _conversationList = [];
+  List<UIConversationInfo> _conversationList = [];
 
-  List<ConversationInfo> get conversationList => _conversationList;
+  List<UIConversationInfo> get conversationList => _conversationList;
 
   int get unreadMessageCount {
     int count = 0;
-    for (ConversationInfo conversation in _conversationList) {
-      count += conversation.isSilent ? 0 : conversation.unreadCount.unread;
+    for (UIConversationInfo info in _conversationList) {
+      var convInfo = info.conversationInfo;
+      count += convInfo.isSilent ? 0 : convInfo.unreadCount.unread;
     }
     return count;
-  }
-
-  void setConversationList(List<ConversationInfo> conversationList) {
-    _conversationList = conversationList;
-    notifyListeners();
   }
 
   ConversationListViewModel() {
@@ -60,6 +58,9 @@ class ConversationListViewModel extends ChangeNotifier {
       }
     });
     _userSettingUpdatedSubscription = _eventBus.on<UserSettingUpdatedEvent>().listen((event) {
+      _loadConversationList();
+    });
+    _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
     _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) {
@@ -99,18 +100,16 @@ class ConversationListViewModel extends ChangeNotifier {
     _loadConversationList();
   }
 
-  _loadConversationList() {
-    Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((cl) {
-      print('ConversaitonListViewModel, load conversation list ${cl.length}');
-      _conversationList = cl;
-      notifyListeners();
-    });
+  _loadConversationList() async {
+    var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+    _conversationList = conversationInfos.map((conv) => UIConversationInfo(conv)).toList();
+    notifyListeners();
   }
 
   removeConversation(Conversation conversation, [bool clearMessage = false]) {
     Imclient.removeConversation(conversation, clearMessage);
     for (int i = 0; i < _conversationList.length; i++) {
-      if (_conversationList[i].conversation == conversation) {
+      if (_conversationList[i].conversationInfo.conversation == conversation) {
         _conversationList.removeAt(i);
         notifyListeners();
         break;
@@ -146,6 +145,7 @@ class ConversationListViewModel extends ChangeNotifier {
     _connectionStatusSubscription.cancel();
     _receiveMessageSubscription.cancel();
     _userSettingUpdatedSubscription.cancel();
+    _userInfoUpdatedSubscription.cancel();
     _recallMessageSubscription.cancel();
     _deleteMessageSubscription.cancel();
     _clearConversationUnreadSubscription.cancel();

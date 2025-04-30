@@ -13,45 +13,44 @@ import 'package:imclient/model/user_info.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/config.dart';
+import 'package:wfc_example/ui_model/ui_conversation_info.dart';
 import 'package:wfc_example/utilities.dart';
-import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
-import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 import '../messages/messages_screen.dart';
+import '../viewmodel/channel_view_model.dart';
+import '../viewmodel/group_view_model.dart';
 
 class ConversationListWidget extends StatelessWidget {
   const ConversationListWidget({Key? key}) : super(key: key);
 
+
   @override
   Widget build(BuildContext context) {
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context);
-    var userViewModel = Provider.of<UserViewModel>(context, listen: false);
     return Scaffold(
       body: SafeArea(
         child: ListView.builder(
             itemCount: conversationListViewModel.conversationList.length,
             itemBuilder: (context, i) {
-              ConversationInfo info = conversationListViewModel.conversationList[i];
+              ConversationInfo info = conversationListViewModel.conversationList[i].conversationInfo;
               String? portrait;
               String? convTitle;
               if (info.conversation.conversationType == ConversationType.Single) {
-                return FutureBuilder(
-                  future: userViewModel.getUserInfo(info.conversation.target),
-                  builder: (_, userInfoFuture) {
-                    var userInfo = userInfoFuture.data;
-                    if (userInfo != null && userInfo.portrait != null && userInfo.portrait!.isNotEmpty) {
-                      portrait = userInfo.portrait!;
-                      convTitle = userInfo.displayName!;
-                    } else {
-                      convTitle = '私聊';
-                      portrait = Config.defaultUserPortrait;
-                    }
+                return Selector<UserViewModel, UserInfo?>(
+                    selector: (_, userViewModel) => userViewModel.getUserInfo(info.conversation.target),
+                    builder: (_, userInfo, __) {
+                      if (userInfo != null && userInfo.portrait != null && userInfo.portrait!.isNotEmpty) {
+                        portrait = userInfo.portrait!;
+                        convTitle = userInfo.displayName!;
+                      } else {
+                        convTitle = '私聊';
+                        portrait = Config.defaultUserPortrait;
+                      }
 
-                    return ConversationListItem(info, convTitle!, portrait!);
-                  },
-                );
+                      return ConversationListItem(info, convTitle!, portrait!);
+                    });
               } else if (info.conversation.conversationType == ConversationType.Group) {
                 return Selector<GroupViewModel, GroupInfo?>(
                     selector: (_, groupViewModel) => groupViewModel.getGroupInfo(info.conversation.target),
@@ -104,14 +103,14 @@ class ConversationListItem extends StatelessWidget {
 
     var lastMsgFuture = (() async {
       UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
-      var userInfoFuture = userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser,
-          groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null);
+      var userInfoFuture = Future<UserInfo>.value( userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser,
+          groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null));
 
       Future<String> msgDigestFuture =
           conversationInfo.lastMessage == null ? Future<String>.value("") : conversationInfo.lastMessage!.content.digest(conversationInfo.lastMessage!);
 
       final (userInfo, msgDigest) = await (userInfoFuture, msgDigestFuture).wait;
-      return '${userInfo == null ? '': userInfo.getReadableName()}: $msgDigest';
+      return '${userInfo == null ? '' : userInfo.getReadableName()}: $msgDigest';
     })();
 
     return GestureDetector(
