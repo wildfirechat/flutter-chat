@@ -3,7 +3,7 @@ import 'package:imclient/message/text_message_content.dart';
 import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
 
 import '../message_cell.dart';
-import '../ui_message.dart';
+import '../../ui_model/ui_message.dart';
 
 class TextCellBuilder extends PortraitCellBuilder {
   late TextMessageContent textMessageContent;

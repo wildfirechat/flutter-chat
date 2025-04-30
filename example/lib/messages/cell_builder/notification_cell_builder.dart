@@ -2,7 +2,7 @@
 import 'package:flutter/cupertino.dart';
 
 import '../message_cell.dart';
-import '../ui_message.dart';
+import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
 
 class NotificationCellBuilder extends MessageCellBuilder {
