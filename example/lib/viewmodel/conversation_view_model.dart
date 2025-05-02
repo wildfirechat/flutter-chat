@@ -16,6 +16,7 @@ class ConversationViewModel extends ChangeNotifier {
   final EventBus _eventBus = Imclient.IMEventBus;
   late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
   late StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
+  late StreamSubscription<MessageUpdatedEvent> _messageUpdatedSubscription;
   late StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
   late StreamSubscription<SendMessageStartEvent> _sendMessageStartSubscription;
   late StreamSubscription<SendMessageSuccessEvent> _sendMessageSuccessSubscription;
@@ -92,12 +93,28 @@ class ConversationViewModel extends ChangeNotifier {
         notifyListeners();
       }
     });
-    _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) {
+    _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) async {
       var msgUid = event.messageUid;
-      for (UIMessage msg in _conversationMessageList) {
-        if (msg.message.messageUid == msgUid) {
-          _conversationMessageList.remove(msg);
-          notifyListeners();
+      for (var index = 0; index < _conversationMessageList.length; index++) {
+        if (_conversationMessageList[index].message.messageUid == msgUid) {
+          var msg = await Imclient.getMessageByUid(msgUid);
+          if (msg != null) {
+            _conversationMessageList[index] = UIMessage(msg);
+            notifyListeners();
+          }
+          break;
+        }
+      }
+    });
+    _messageUpdatedSubscription = _eventBus.on<MessageUpdatedEvent>().listen((event) async {
+      var msgId = event.messageId;
+      for (var index = 0; index < _conversationMessageList.length; index++) {
+        if (_conversationMessageList[index].message.messageId == msgId) {
+          var msg = await Imclient.getMessage(msgId);
+          if (msg != null) {
+            _conversationMessageList[index] = UIMessage(msg);
+            notifyListeners();
+          }
           break;
         }
       }
@@ -128,6 +145,7 @@ class ConversationViewModel extends ChangeNotifier {
       var msg = event.message;
       if (_currentConversation == msg.conversation && msg.messageId != 0) {
         _conversationMessageList.insert(0, UIMessage(msg));
+        notifyListeners();
       }
     });
     _sendMessageSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
@@ -277,6 +295,7 @@ class ConversationViewModel extends ChangeNotifier {
     _conversationMessageList.clear();
     _receiveMessageSubscription.cancel();
     _recallMessageSubscription.cancel();
+    _messageUpdatedSubscription.cancel();
     _deleteMessageSubscription.cancel();
     _sendMessageStartSubscription.cancel();
     _clearMessagesSubscription.cancel();

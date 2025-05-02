@@ -18,10 +18,7 @@ import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
-import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:imclient/model/group_info.dart';
-import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:rtckit/group_video_call.dart';
@@ -57,11 +54,6 @@ class _State extends State<MessagesScreen> {
   late ConversationViewModel conversationViewModel;
 
   String title = "消息";
-
-  UserInfo? userInfo;
-  GroupInfo? groupInfo;
-  ChannelInfo? channelInfo;
-  List<GroupMember>? groupMembers;
 
   final GlobalKey<MessageInputBarState> _inputBarGlobalKey = GlobalKey();
   final GlobalKey<PictureOverviewState> _pictureOverviewKey = GlobalKey();

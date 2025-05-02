@@ -31,8 +31,9 @@ typedef OnPortraitLongTapedCallback = void Function(UIMessage model);
 typedef OnResendTapedCallback = void Function(UIMessage model);
 typedef OnReadedTapedCallback = void Function(UIMessage model);
 
-class MessageCell extends StatefulWidget {
+class MessageCell extends StatelessWidget {
   final UIMessage model;
+  late MessageCellBuilder _cellBuilder;
   OnMessageCellTapedCallback cellTapedCallback;
   OnMessageCellDoubleTapedCallback cellDoubleTapedCallback;
   OnMessageCellLongPressedCallback cellLongPressedCallback;
@@ -41,120 +42,64 @@ class MessageCell extends StatefulWidget {
   OnResendTapedCallback resendTapedCallback;
   OnReadedTapedCallback readedTapedCallback;
 
-  MessageCell(this.model, this.cellTapedCallback, this.cellDoubleTapedCallback, this.cellLongPressedCallback, this.portraitTapedCallback, this.portraitLongTapedCallback, this.resendTapedCallback, this.readedTapedCallback):super(key: ObjectKey(model));
-
-  @override
-  State createState() {
-    return MessageState();
-  }
-}
-
-class MessageState extends State<MessageCell> {
-  final EventBus _eventBus = Imclient.IMEventBus;
-  late MessageCellBuilder _cellBuilder;
-  late StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
-  late StreamSubscription<MessageUpdatedEvent> _updateMessageSubscription;
-  bool disposed = false;
-  @override
-  void initState() {
-    super.initState();
+  MessageCell(this.model, this.cellTapedCallback, this.cellDoubleTapedCallback, this.cellLongPressedCallback, this.portraitTapedCallback, this.portraitLongTapedCallback,
+      this.resendTapedCallback, this.readedTapedCallback)
+      : super(key: ObjectKey(model)) {
     _initCellBuilder();
-
-    _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) {
-      if(widget.model.message.messageUid == event.messageUid) {
-        Imclient.getMessageByUid(event.messageUid).then((newMsg) {
-          if(newMsg != null) {
-            setState(() {
-              widget.model.message = newMsg;
-              _initCellBuilder();
-            });
-          }
-        });
-      }
-    });
-    _updateMessageSubscription = _eventBus.on<MessageUpdatedEvent>().listen((event) {
-      if(widget.model.message.messageId == event.messageId) {
-        Imclient.getMessage(event.messageId).then((msg) {
-          if (msg != null) {
-            setState(() {
-              widget.model.message = msg;
-              _initCellBuilder();
-            });
-          }
-        });
-      }
-    });
   }
 
   void _initCellBuilder() {
-    if(widget.model.message.content is NotificationMessageContent) {
-      _cellBuilder = NotificationCellBuilder(this, widget.model);
-    } else if(widget.model.message.content is TextMessageContent) {
-      _cellBuilder = TextCellBuilder(this, widget.model);
-    } else if(widget.model.message.content is ImageMessageContent) {
-      _cellBuilder = ImageCellBuilder(this, widget.model);
-    } else if(widget.model.message.content is CallStartMessageContent) {
-      _cellBuilder = CallStartCellBuilder(this, widget.model);
-    } else if(widget.model.message.content is SoundMessageContent) {
-      _cellBuilder = VoiceCellBuilder(this, widget.model);
-    } else if(widget.model.message.content is FileMessageContent) {
-      _cellBuilder = FileCellBuilder(this, widget.model);
-    } else if(widget.model.message.content is CardMessageContent) {
-      _cellBuilder = CardCellBuilder(this, widget.model);
-    } else if(widget.model.message.content is VideoMessageContent) {
-      _cellBuilder = VideoCellBuilder(this, widget.model);
+    if (model.message.content is NotificationMessageContent) {
+      _cellBuilder = NotificationCellBuilder(model);
+    } else if (model.message.content is TextMessageContent) {
+      _cellBuilder = TextCellBuilder(this, model);
+    } else if (model.message.content is ImageMessageContent) {
+      _cellBuilder = ImageCellBuilder(this, model);
+    } else if (model.message.content is CallStartMessageContent) {
+      _cellBuilder = CallStartCellBuilder(this, model);
+    } else if (model.message.content is SoundMessageContent) {
+      _cellBuilder = VoiceCellBuilder(this, model);
+    } else if (model.message.content is FileMessageContent) {
+      _cellBuilder = FileCellBuilder(this, model);
+    } else if (model.message.content is CardMessageContent) {
+      _cellBuilder = CardCellBuilder(this, model);
+    } else if (model.message.content is VideoMessageContent) {
+      _cellBuilder = VideoCellBuilder(this, model);
     } else {
-      _cellBuilder = UnknownCellBuilder(this, widget.model);
+      _cellBuilder = UnknownCellBuilder(this, model);
     }
   }
 
-
-  @override
-  void dispose() {
-    super.dispose();
-    disposed = true;
-    _recallMessageSubscription.cancel();
-    _updateMessageSubscription.cancel();
-    _cellBuilder.dispose();
-  }
-
   void onTaped(UIMessage model) {
-    widget.cellTapedCallback(model);
+    cellTapedCallback(model);
   }
 
   void onDoubleTaped(UIMessage model) {
-    widget.cellDoubleTapedCallback(model);
+    cellDoubleTapedCallback(model);
   }
 
   void onLongPress(LongPressStartDetails details, UIMessage model) {
-    widget.cellLongPressedCallback(model, details.globalPosition);
+    cellLongPressedCallback(model, details.globalPosition);
   }
 
   void onTapedPortrait(UIMessage model) {
-    widget.portraitTapedCallback(model);
+    portraitTapedCallback(model);
   }
 
   void onLongTapedPortrait(UIMessage model) {
-    widget.portraitLongTapedCallback(model);
+    portraitLongTapedCallback(model);
   }
 
   void onResendTaped(UIMessage model) {
-    widget.resendTapedCallback(model);
+    resendTapedCallback(model);
   }
 
   void onReadedTaped(UIMessage model) {
-    widget.readedTapedCallback(model);
+    readedTapedCallback(model);
   }
 
   @override
   Widget build(BuildContext context) {
-      return _cellBuilder.build(context);
-  }
-
-  void refreshAfter(VoidCallback callback) {
-    if(!disposed) {
-      setState(callback);
-    }
+    return _cellBuilder.build(context);
   }
 }
-
