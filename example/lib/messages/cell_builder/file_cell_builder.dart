@@ -11,7 +11,7 @@ import '../../ui_model/ui_message.dart';
 class FileCellBuilder extends PortraitCellBuilder {
   late FileMessageContent fileMessageContent;
 
-  FileCellBuilder(MessageState state, UIMessage model) : super(state, model) {
+  FileCellBuilder(MessageCell cell, UIMessage model) : super(cell, model) {
     fileMessageContent = model.message.content as FileMessageContent;
   }
 

@@ -4,42 +4,49 @@ import 'package:image/image.dart' as image;
 
 import 'package:imclient/message/image_message_content.dart';
 import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
+import 'package:wfc_example/messages/message_cell.dart';
 
-import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
 
 class ImageCellBuilder extends PortraitCellBuilder {
   late ImageMessageContent imageMessageContent;
   ui.Image? uiImage;
 
-  ImageCellBuilder(MessageState state, UIMessage model) : super(state, model) {
+  ImageCellBuilder(MessageCell cell, UIMessage model) : super(cell, model) {
     imageMessageContent = model.message.content as ImageMessageContent;
-    if(imageMessageContent.thumbnail != null) {
-      if(model.thumbnailImage != null) {
+    if (imageMessageContent.thumbnail != null) {
+      if (model.thumbnailImage != null) {
         uiImage = model.thumbnailImage!;
       } else {
-        ui.instantiateImageCodec(
-            image.encodePng(imageMessageContent.thumbnail!))
-            .then((codec) {
-          codec.getNextFrame().then((frameInfo) {
-            setState(() {
-              uiImage = frameInfo.image;
-              model.thumbnailImage = frameInfo.image;
-            });
-          });
-        });
+        // TODO
+        // ui.instantiateImageCodec(image.encodePng(imageMessageContent.thumbnail!)).then((codec) {
+        //   codec.getNextFrame().then((frameInfo) {
+        //     setState(() {
+        //       uiImage = frameInfo.image;
+        //       model.thumbnailImage = frameInfo.image;
+        //     });
+        //   });
+        // });
       }
     }
   }
 
   @override
   Widget getContentAres(BuildContext context) {
-    if(uiImage != null) {
-      return RawImage(image: uiImage,);
-    } else if(imageMessageContent.remoteUrl != null) {
+    if (uiImage != null) {
+      return RawImage(
+        image: uiImage,
+      );
+    } else if (imageMessageContent.remoteUrl != null) {
       return Image.network(imageMessageContent.remoteUrl!);
     } else {
-      return const SizedBox(width: 48,height: 48,child: Center(child: CircularProgressIndicator(),),);
+      return const SizedBox(
+        width: 48,
+        height: 48,
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
   }
 }

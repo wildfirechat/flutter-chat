@@ -1,4 +1,3 @@
-
 import 'dart:async';
 
 import 'package:event_bus/event_bus.dart';
@@ -25,61 +24,22 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   String? portrait;
   String? userName;
   late bool isSendMessage;
+  late MessageCell messageCell;
 
-  PortraitCellBuilder(MessageState state, UIMessage model) : super(state, model) {
+  PortraitCellBuilder(MessageCell messageCell, UIMessage model) : super(model) {
     String groupId = "";
     isSendMessage = model.message.direction == MessageDirection.MessageDirection_Send;
-    if(model.message.conversation.conversationType == ConversationType.Group) {
+    this.messageCell = messageCell;
+    if (model.message.conversation.conversationType == ConversationType.Group) {
       groupId = model.message.conversation.target;
     }
-
-    Imclient.getUserInfo(model.message.fromUser, groupId: groupId).then((value) {
-      if(value != null) {
-        setState(() {
-          userInfo = value;
-          if(userInfo!.portrait != null && userInfo!.portrait!.isNotEmpty) {
-            portrait = userInfo!.portrait;
-          }
-          userName = userInfo!.friendAlias ?? (userInfo?.groupAlias != null ? userInfo!.groupAlias : userInfo!.displayName);
-        });
-      }
-    });
-
-    _sendSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
-      if(event.messageId > 0 && event.messageId == model.message.messageId) {
-        model.message.status = MessageStatus.Message_Status_Sent;
-        setState(() { });
-      }
-    });
-    _sendProgressSubscription = _eventBus.on<SendMessageProgressEvent>().listen((event) {
-      if(event.messageId > 0 && event.messageId == model.message.messageId) {
-        setState(() { });
-      }
-    });
-    _sendFailureSubscription = _eventBus.on<SendMessageFailureEvent>().listen((event) {
-      if(event.messageId > 0 && event.messageId == model.message.messageId) {
-        if(model.message.status != MessageStatus.Message_Status_Send_Failure) {
-          model.message.status == MessageStatus.Message_Status_Send_Failure;
-        }
-        setState(() { });
-      }
-    });
-    _sendUploadedSubscription = _eventBus.on<SendMessageMediaUploadedEvent>().listen((event) {
-      if(event.messageId > 0 && event.messageId == model.message.messageId) {
-        setState(() { });
-      }
-    });
   }
 
   @override
   Widget getContent(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        isSendMessage ?getPadding():getPortrait(),
-        getBodyArea(context),
-        isSendMessage ?getPortrait():getPadding()
-      ],
+      children: [isSendMessage ? getPadding() : getPortrait(), getBodyArea(context), isSendMessage ? getPortrait() : getPadding()],
     );
   }
 
@@ -95,15 +55,21 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return GestureDetector(
       child: Container(
         margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-        child: SizedBox(width: 40, height: 40, child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0) : Image.network(portrait!, width: 44.0, height: 44.0),),
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0) : Image.network(portrait!, width: 44.0, height: 44.0),
+        ),
       ),
-      onTap: () => state.onTapedPortrait(model),
-      onLongPress: () => state.onLongTapedPortrait(model),
+      onTap: () => messageCell.onTapedPortrait(model),
+      onLongPress: () => messageCell.onLongTapedPortrait(model),
     );
   }
 
   Widget getPadding() {
-    return SizedBox.fromSize(size: const Size(68, 60),);
+    return SizedBox.fromSize(
+      size: const Size(68, 60),
+    );
   }
 
   Widget getBodyArea(BuildContext context) {
@@ -118,50 +84,56 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
             children: [
               getSendStatus(),
               Flexible(
-                  child: GestureDetector(
-                    child:Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isSendMessage ? Colors.green :  Colors.white,
-                        borderRadius: const BorderRadius.only(
-                          topRight: Radius.circular(8),
-                          topLeft: Radius.circular(8),
-                          bottomLeft: Radius.circular(8),
-                          bottomRight: Radius.circular(8),
-                        ),
+                child: GestureDetector(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: isSendMessage ? Colors.green : Colors.white,
+                      borderRadius: const BorderRadius.only(
+                        topRight: Radius.circular(8),
+                        topLeft: Radius.circular(8),
+                        bottomLeft: Radius.circular(8),
+                        bottomRight: Radius.circular(8),
                       ),
-                      child: getContentAres(context),
                     ),
-                    onTap: () => state.onTaped(model),
-                    onDoubleTap: () => state.onDoubleTaped(model),
-                    onLongPressStart: (details) => state.onLongPress(details, model),
+                    child: getContentAres(context),
                   ),
+                  onTap: () => messageCell.onTaped(model),
+                  onDoubleTap: () => messageCell.onDoubleTaped(model),
+                  onLongPressStart: (details) => messageCell.onLongPress(details, model),
+                ),
               ),
               getUnplayed(),
             ],
           ),
-          Container(padding: const EdgeInsets.only(bottom: 3),)
+          Container(
+            padding: const EdgeInsets.only(bottom: 3),
+          )
         ],
       ),
     );
   }
 
   Widget getSendStatus() {
-    if(model.message.direction == MessageDirection.MessageDirection_Send) {
-      if(model.message.status == MessageStatus.Message_Status_Sending) {
+    if (model.message.direction == MessageDirection.MessageDirection_Send) {
+      if (model.message.status == MessageStatus.Message_Status_Sending) {
         return Container(
           margin: const EdgeInsets.all(5),
           width: 10,
           height: 10,
           child: const CircularProgressIndicator(),
         );
-      } else if(model.message.status == MessageStatus.Message_Status_Send_Failure) {
+      } else if (model.message.status == MessageStatus.Message_Status_Send_Failure) {
         return GestureDetector(
           child: Padding(
             padding: const EdgeInsets.all(3),
-            child: Image.asset('assets/images/message_send_failure.png', width: 20, height: 20,),
+            child: Image.asset(
+              'assets/images/message_send_failure.png',
+              width: 20,
+              height: 20,
+            ),
           ),
-          onTap: ()=>state.onResendTaped(model),
+          onTap: () => messageCell.onResendTaped(model),
         );
       }
     }
@@ -170,18 +142,13 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   }
 
   Widget getUnplayed() {
-    if(model.message.content is SoundMessageContent) {
-      if (model.message.direction ==
-          MessageDirection.MessageDirection_Receive &&
-          model.message.status == MessageStatus.Message_Status_Readed) {
+    if (model.message.content is SoundMessageContent) {
+      if (model.message.direction == MessageDirection.MessageDirection_Receive && model.message.status == MessageStatus.Message_Status_Readed) {
         return Container(
           margin: const EdgeInsets.fromLTRB(8, 0, 0, 8),
           width: 8,
           height: 8,
-          decoration: const BoxDecoration(
-              color: Colors.red,
-              borderRadius: BorderRadius.all(Radius.circular(8))
-          ),
+          decoration: const BoxDecoration(color: Colors.red, borderRadius: BorderRadius.all(Radius.circular(8))),
         );
       }
     }

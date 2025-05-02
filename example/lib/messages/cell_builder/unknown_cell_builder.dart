@@ -6,7 +6,7 @@ import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
 
 class UnknownCellBuilder extends MessageCellBuilder {
-  UnknownCellBuilder(MessageState state, UIMessage model) : super(state, model);
+  UnknownCellBuilder(MessageCell cell, UIMessage model) : super(model);
 
   @override
   Widget getContent(BuildContext context) {

@@ -10,45 +10,49 @@ import '../../ui_model/ui_message.dart';
 class CallStartCellBuilder extends PortraitCellBuilder {
   late CallStartMessageContent callStartMessageContent;
 
-  CallStartCellBuilder(MessageState state, UIMessage model) : super(state, model) {
+  CallStartCellBuilder(MessageCell cell, UIMessage model) : super(cell, model) {
     callStartMessageContent = model.message.content as CallStartMessageContent;
   }
 
   @override
   Widget getContentAres(BuildContext context) {
     String ext = "";
-    if(callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonHangup.index ||
+    if (callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonHangup.index ||
         callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonRemoteHangup.index ||
         callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonAllLeft.index) {
-      if(callStartMessageContent.endTime != null && callStartMessageContent.endTime! > 0 && callStartMessageContent.connectTime != null && callStartMessageContent.connectTime! > 0) {
+      if (callStartMessageContent.endTime != null &&
+          callStartMessageContent.endTime! > 0 &&
+          callStartMessageContent.connectTime != null &&
+          callStartMessageContent.connectTime! > 0) {
         int duration = callStartMessageContent.endTime! - callStartMessageContent.connectTime!;
-        if(duration > 0) {
-          ext = Utilities.formatCallTime(duration~/1000);
+        if (duration > 0) {
+          ext = Utilities.formatCallTime(duration ~/ 1000);
         }
-      } else if(callStartMessageContent.connectTime == null) {
-        if(callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonHangup.index) {
-          if(model.message.direction == MessageDirection.MessageDirection_Send) {
+      } else if (callStartMessageContent.connectTime == null) {
+        if (callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonHangup.index) {
+          if (model.message.direction == MessageDirection.MessageDirection_Send) {
             ext = "已取消";
           } else {
             ext = "已拒绝";
           }
-        } else if(callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonRemoteHangup.index ||
+        } else if (callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonRemoteHangup.index ||
             callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonAllLeft.index) {
-          if(model.message.direction == MessageDirection.MessageDirection_Send) {
+          if (model.message.direction == MessageDirection.MessageDirection_Send) {
             ext = "对方已拒绝";
           } else {
             ext = "对方已取消";
           }
         }
       }
-    } else if(callStartMessageContent.status != CallStartEndStatus.kWFAVCallEndReasonUnknown.index) {
+    } else if (callStartMessageContent.status != CallStartEndStatus.kWFAVCallEndReasonUnknown.index) {
       ext = "未接通";
     }
 
-
-    return Text(callStartMessageContent.audioOnly?'[语音通话] $ext':'[视频通话] $ext',
+    return Text(
+      callStartMessageContent.audioOnly ? '[语音通话] $ext' : '[视频通话] $ext',
       overflow: TextOverflow.ellipsis,
       maxLines: 10,
-      style: const TextStyle(fontSize: 16),);
+      style: const TextStyle(fontSize: 16),
+    );
   }
 }
