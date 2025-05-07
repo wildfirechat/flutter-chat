@@ -1,8 +1,5 @@
-import 'dart:async';
 
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
-import 'package:imclient/imclient.dart';
 import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/message/card_message_content.dart';
 import 'package:imclient/message/file_message_content.dart';
@@ -11,7 +8,6 @@ import 'package:imclient/message/notification/notification_message_content.dart'
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
-import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 import 'cell_builder/call_start_cell_builder.dart';
 import 'cell_builder/card_cell_builder.dart';
@@ -25,14 +21,6 @@ import 'cell_builder/video_cell_builder.dart';
 import 'cell_builder/voice_cell_builder.dart';
 import '../ui_model/ui_message.dart';
 import 'conversation_notifier.dart';
-
-typedef OnMessageCellTapedCallback = void Function(UIMessage model);
-typedef OnMessageCellDoubleTapedCallback = void Function(UIMessage model);
-typedef OnMessageCellLongPressedCallback = void Function(UIMessage model, Offset offset);
-typedef OnPortraitTapedCallback = void Function(UIMessage model);
-typedef OnPortraitLongTapedCallback = void Function(UIMessage model);
-typedef OnResendTapedCallback = void Function(UIMessage model);
-typedef OnReadedTapedCallback = void Function(UIMessage model);
 
 class MessageCell extends StatelessWidget {
   final UIMessage model;
