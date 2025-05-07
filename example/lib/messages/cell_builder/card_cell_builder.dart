@@ -14,7 +14,7 @@ class CardCellBuilder extends PortraitCellBuilder {
   }
 
   @override
-  Widget getContentAres(BuildContext context) {
+  Widget buildMessageContent(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
 
     String imagePaht = Config.defaultUserPortrait;

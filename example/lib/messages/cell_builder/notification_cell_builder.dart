@@ -8,7 +8,7 @@ class NotificationCellBuilder extends MessageCellBuilder {
   NotificationCellBuilder(super.model);
 
   @override
-  Widget getContent(BuildContext context) {
+  Widget buildContent(BuildContext context) {
     return Container(
         padding: const EdgeInsets.fromLTRB(60, 0, 60, 0),
         child: FutureBuilder<String>(

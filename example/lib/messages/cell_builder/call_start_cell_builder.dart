@@ -15,7 +15,7 @@ class CallStartCellBuilder extends PortraitCellBuilder {
   }
 
   @override
-  Widget getContentAres(BuildContext context) {
+  Widget buildMessageContent(BuildContext context) {
     String ext = "";
     if (callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonHangup.index ||
         callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonRemoteHangup.index ||

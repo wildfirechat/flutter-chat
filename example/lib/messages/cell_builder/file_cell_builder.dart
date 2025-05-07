@@ -16,7 +16,7 @@ class FileCellBuilder extends PortraitCellBuilder {
   }
 
   @override
-  Widget getContentAres(BuildContext context) {
+  Widget buildMessageContent(BuildContext context) {
     String imagePaht = 'assets/images/file_type/${Utilities.fileType(fileMessageContent.name)}.png';
     Image image = Image.asset(imagePaht, width: 32.0, height: 32.0);
     Text nameText = Text(fileMessageContent.name, maxLines: 2, overflow: TextOverflow.ellipsis,);

@@ -34,7 +34,7 @@ class VideoCellBuilder extends PortraitCellBuilder {
   }
 
   @override
-  Widget getContentAres(BuildContext context) {
+  Widget buildMessageContent(BuildContext context) {
     if(uiImage != null) {
       return SizedBox(
         width: uiImage!.width.toDouble(),

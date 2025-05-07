@@ -13,7 +13,7 @@ class TextCellBuilder extends PortraitCellBuilder {
   }
 
   @override
-  Widget getContentAres(BuildContext context) {
+  Widget buildMessageContent(BuildContext context) {
     return Text(
       textMessageContent.text,
       overflow: TextOverflow.ellipsis,
