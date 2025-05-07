@@ -15,10 +15,6 @@ import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
-  late StreamSubscription<SendMessageSuccessEvent> _sendSuccessSubscription;
-  late StreamSubscription<SendMessageProgressEvent> _sendProgressSubscription;
-  late StreamSubscription<SendMessageMediaUploadedEvent> _sendUploadedSubscription;
-  late StreamSubscription<SendMessageFailureEvent> _sendFailureSubscription;
 
   UserInfo? userInfo;
   String? portrait;
@@ -36,22 +32,14 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   }
 
   @override
-  Widget getContent(BuildContext context) {
+  Widget buildContent(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [isSendMessage ? getPadding() : getPortrait(context), getBodyArea(context), isSendMessage ? getPortrait(context) : getPadding()],
+      children: [isSendMessage ? _padding() : _portrait(context), _messageContentContainer(context), isSendMessage ? _portrait(context) : _padding()],
     );
   }
 
-  @override
-  void dispose() {
-    _sendSuccessSubscription.cancel();
-    _sendProgressSubscription.cancel();
-    _sendUploadedSubscription.cancel();
-    _sendFailureSubscription.cancel();
-  }
-
-  Widget getPortrait(BuildContext context) {
+  Widget _portrait(BuildContext context) {
     return GestureDetector(
       child: Container(
         margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
@@ -66,13 +54,13 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     );
   }
 
-  Widget getPadding() {
+  Widget _padding() {
     return SizedBox.fromSize(
       size: const Size(68, 60),
     );
   }
 
-  Widget getBodyArea(BuildContext context) {
+  Widget _messageContentContainer(BuildContext context) {
     return Flexible(
       child: Column(
         crossAxisAlignment: isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -82,7 +70,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
             mainAxisAlignment: isSendMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              getSendStatus(),
+              _sendStatus(),
               Flexible(
                 child: GestureDetector(
                   child: Container(
@@ -96,14 +84,14 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                         bottomRight: Radius.circular(8),
                       ),
                     ),
-                    child: getContentAres(context),
+                    child: buildMessageContent(context),
                   ),
                   onTap: () => messageCell.onTaped(model),
                   onDoubleTap: () => messageCell.onDoubleTaped(model),
                   onLongPressStart: (details) => messageCell.onLongPress(details, model),
                 ),
               ),
-              getUnplayed(),
+              _playStatus(),
             ],
           ),
           Container(
@@ -114,7 +102,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     );
   }
 
-  Widget getSendStatus() {
+  Widget _sendStatus() {
     if (model.message.direction == MessageDirection.MessageDirection_Send) {
       if (model.message.status == MessageStatus.Message_Status_Sending) {
         return Container(
@@ -141,7 +129,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return Container();
   }
 
-  Widget getUnplayed() {
+  Widget _playStatus() {
     if (model.message.content is SoundMessageContent) {
       if (model.message.direction == MessageDirection.MessageDirection_Receive && model.message.status == MessageStatus.Message_Status_Readed) {
         return Container(
@@ -155,5 +143,5 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return Container();
   }
 
-  Widget getContentAres(BuildContext context);
+  Widget buildMessageContent(BuildContext context);
 }

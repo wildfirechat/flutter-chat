@@ -22,7 +22,6 @@ class VoiceCellBuilder extends PortraitCellBuilder {
   late SoundMessageContent soundMessageContent;
   late int messageId;
   bool _playing = false;
-  final EventBus _eventBus = Imclient.IMEventBus;
   late StreamSubscription<VoicePlayStatusChangedEvent> _playEventSubscription;
 
   Timer? _timer;
@@ -62,7 +61,7 @@ class VoiceCellBuilder extends PortraitCellBuilder {
   }
 
   @override
-  Widget getContentAres(BuildContext context) {
+  Widget buildMessageContent(BuildContext context) {
     String imagePaht = isSendMessage ? 'assets/images/send_voice.png' : 'assets/images/receive_voice.png';
     if (_playing) {
       imagePaht = isSendMessage ? 'assets/images/send_voice_$_voiceLevel.png' : 'assets/images/receive_voice_$_voiceLevel.png';
@@ -89,10 +88,11 @@ class VoiceCellBuilder extends PortraitCellBuilder {
     );
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-    _playEventSubscription.cancel();
-    _stopTimer();
-  }
+  // TODO
+  // @override
+  // void dispose() {
+  //   super.dispose();
+  //   _playEventSubscription.cancel();
+  //   _stopTimer();
+  // }
 }

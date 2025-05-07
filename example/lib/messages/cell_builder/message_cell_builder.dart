@@ -28,12 +28,12 @@ abstract class MessageCellBuilder {
                 )
               : Container(),
           Container(
-            child: getContent(context),
+            child: buildContent(context),
           ),
         ],
       ),
     );
   }
 
-  Widget getContent(BuildContext context);
+  Widget buildContent(BuildContext context);
 }
