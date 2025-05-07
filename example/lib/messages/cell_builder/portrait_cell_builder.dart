@@ -9,12 +9,12 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 
 import '../../config.dart';
+import '../../user_info_widget.dart';
 import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
-  final EventBus _eventBus = Imclient.IMEventBus;
   late StreamSubscription<SendMessageSuccessEvent> _sendSuccessSubscription;
   late StreamSubscription<SendMessageProgressEvent> _sendProgressSubscription;
   late StreamSubscription<SendMessageMediaUploadedEvent> _sendUploadedSubscription;
@@ -39,7 +39,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   Widget getContent(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [isSendMessage ? getPadding() : getPortrait(), getBodyArea(context), isSendMessage ? getPortrait() : getPadding()],
+      children: [isSendMessage ? getPadding() : getPortrait(context), getBodyArea(context), isSendMessage ? getPortrait(context) : getPadding()],
     );
   }
 
@@ -51,7 +51,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     _sendFailureSubscription.cancel();
   }
 
-  Widget getPortrait() {
+  Widget getPortrait(BuildContext context) {
     return GestureDetector(
       child: Container(
         margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),

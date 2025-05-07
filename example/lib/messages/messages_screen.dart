@@ -26,6 +26,7 @@ import 'package:rtckit/rtckit.dart';
 import 'package:rtckit/single_voice_call.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/messages/cell_builder/voice_cell_builder.dart';
+import 'package:wfc_example/messages/conversation_notifier.dart';
 import 'package:wfc_example/messages/conversation_settings.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import 'package:wfc_example/messages/conversation_appbar_title.dart';
@@ -62,27 +63,12 @@ class _State extends State<MessagesScreen> {
   final Map<String, int> _typingUserTime = {};
   int _sendTypingTime = 0;
 
-  late MessageInputBar _inputBar;
-
   int _playingMessageId = 0;
   final FlutterSoundPlayer _soundPlayer = FlutterSoundPlayer(logLevel: Level.error);
 
   @override
   void initState() {
     super.initState();
-    _inputBar = MessageInputBar(
-      widget.conversation,
-      sendButtonTapedCallback: (text) => _onSendButtonTyped(text),
-      textChangedCallback: (text) => _onInputBarTextChanged(text),
-      pickerImageCallback: (imagePath) => _onPickImage(imagePath),
-      pickerFileCallback: (filePath, name, size) => _onPickFile(filePath, name, size),
-      pressCallBtnCallback: () => _onPressCallBtn(),
-      pressCardBtnCallback: () => _onPressCardBtn(),
-      cameraCaptureImageCallback: _cameraCaptureImage,
-      cameraCaptureVideoCallback: _cameraCaptureVideo,
-      soundRecordedCallback: (soundPath, duration) => _onSoundRecorded(soundPath, duration),
-      key: _inputBarGlobalKey,
-    );
 
     conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
     conversationViewModel.setConversation(widget.conversation, (err) {
@@ -95,158 +81,6 @@ class _State extends State<MessagesScreen> {
     Imclient.getConversationInfo(widget.conversation).then((conversationInfo) {
       _inputBarGlobalKey.currentState!.setDrat(conversationInfo.draft ?? "");
     });
-  }
-
-  void _onSendButtonTyped(String text) {
-    TextMessageContent txt = TextMessageContent(text);
-    _sendMessage(txt);
-    _sendTypingTime = 0;
-  }
-
-  void _onInputBarTextChanged(String text) {
-    if (DateTime.now().second - _sendTypingTime > 12 && text.isNotEmpty) {
-      _sendTyping();
-    }
-  }
-
-  void _onPickImage(String imagePath) {
-    ImageMessageContent imgCont = ImageMessageContent();
-    imgCont.localPath = imagePath;
-    _sendMessage(imgCont);
-  }
-
-  void _onPickFile(String filePath, String name, int size) {
-    FileMessageContent fileCnt = FileMessageContent();
-    fileCnt.name = name;
-    fileCnt.size = size;
-    fileCnt.localPath = filePath;
-    _sendMessage(fileCnt);
-  }
-
-  void _onPressCallBtn() {
-    if (widget.conversation.conversationType != ConversationType.Single && widget.conversation.conversationType != ConversationType.Group) {
-      return;
-    }
-
-    Rtckit.currentCallSession().then((currentSession) {
-      if (currentSession == null || currentSession.state == kWFAVEngineStateIdle) {
-        if (widget.conversation.conversationType == ConversationType.Single) {
-          final double centerX = MediaQuery.of(context).size.width / 2;
-          final double centerY = MediaQuery.of(context).size.height / 2;
-
-          // 计算菜单位置
-          const double menuWidth = 150.0; // 菜单的宽度
-          const double menuHeight = 100.0; // 菜单的高度
-          final double left = centerX - (menuWidth / 2) - 36;
-          final double top = centerY - (menuHeight / 2) - 24;
-
-          showMenu(
-            context: context,
-            position: RelativeRect.fromLTRB(left, top, left + menuWidth, top + menuHeight),
-            items: <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'voice',
-                child: SizedBox(
-                  width: menuWidth,
-                  child: Text('音频通话'),
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'video',
-                child: SizedBox(
-                  width: menuWidth,
-                  child: Text('视频通话'),
-                ),
-              ),
-            ],
-          ).then((value) {
-            if (value == null) {
-              return;
-            }
-
-            bool isAudioOnly = value == 'voice';
-            SingleVideoCallView callView = SingleVideoCallView(userId: widget.conversation.target, audioOnly: isAudioOnly);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
-          });
-        } else if (widget.conversation.conversationType == ConversationType.Group) {
-          Imclient.getGroupMembers(widget.conversation.target).then((groupMembers) {
-            List<String> members = [];
-            for (var gm in groupMembers) {
-              members.add(gm.memberId);
-            }
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => ContactSelectPage(
-                        (context, members) async {
-                          if (members.isEmpty) {
-                            Fluttertoast.showToast(msg: "请选择一位或者多位成员发起通话");
-                          } else {
-                            GroupVideoCallView callView = GroupVideoCallView(groupId: widget.conversation.target, participants: members);
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => callView),
-                            );
-                          }
-                        },
-                        maxSelected: Rtckit.maxAudioCallCount,
-                        candidates: members,
-                        disabledCheckedUsers: [Imclient.currentUserId],
-                      )),
-            );
-          });
-        }
-      } else {
-        Fluttertoast.showToast(msg: "正在通话中，无法再次发起！");
-      }
-    });
-  }
-
-  void _onPressCardBtn() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => ContactSelectPage(
-                (context, members) async {
-                  if (members.isNotEmpty) {
-                    UserInfo? userInfo = await Imclient.getUserInfo(members.first);
-                    CardMessageContent cardCnt = CardMessageContent();
-                    cardCnt.type = CardType.CardType_User;
-                    cardCnt.targetId = members.first;
-                    if (userInfo != null) {
-                      cardCnt.name = userInfo.name;
-                      cardCnt.displayName = userInfo.displayName;
-                      cardCnt.portrait = userInfo.portrait;
-                    }
-                    _sendMessage(cardCnt);
-                  }
-                  Navigator.pop(context);
-                },
-                maxSelected: 1,
-              )),
-    );
-  }
-
-  void _cameraCaptureImage(String imagePath) {
-    ImageMessageContent imgContent = ImageMessageContent();
-    imgContent.localPath = imagePath;
-    _sendMessage(imgContent);
-  }
-
-  void _cameraCaptureVideo(String videoPath, img.Image? thumbnail, int duration) {
-    VideoMessageContent videoContent = VideoMessageContent();
-    videoContent.duration = duration;
-    videoContent.localPath = videoPath;
-    videoContent.thumbnail = thumbnail;
-    _sendMessage(videoContent);
-  }
-
-  void _onSoundRecorded(String soundPath, int duration) {
-    SoundMessageContent soundMessageContent = SoundMessageContent();
-    soundMessageContent.localPath = soundPath;
-    soundMessageContent.duration = duration;
-    _sendMessage(soundMessageContent);
   }
 
   void _sendMessage(MessageContent messageContent) {
@@ -343,82 +177,6 @@ class _State extends State<MessagesScreen> {
     }
   }
 
-  void _appendMessage(List<Message> messages, {bool front = false}) {
-    debugPrint('received ${messages.length} messages');
-    setState(() {
-      bool haveNewMsg = false;
-      for (var element in messages) {
-        if (element.conversation != widget.conversation) {
-          continue;
-        }
-        if (element.messageId == 0) {
-          continue;
-        }
-
-        if (element.content is TypingMessageContent) {
-          if (element.conversation == widget.conversation) {
-            TypingMessageContent typing = element.content as TypingMessageContent;
-            if (element.conversation.conversationType == ConversationType.Single || element.conversation.conversationType == ConversationType.Group) {
-              _typingUserTime[element.fromUser] = element.serverTime;
-              _startTypingTimer();
-            }
-          }
-
-          continue;
-        }
-
-        if (element.messageId == 0) {
-          continue;
-        }
-
-        if (element.status == MessageStatus.Message_Status_AllMentioned ||
-            element.status == MessageStatus.Message_Status_Mentioned ||
-            element.status == MessageStatus.Message_Status_Unread) {
-          haveNewMsg = true;
-          _typingUserTime.remove(element.fromUser);
-          _updateTypingStatus();
-        }
-
-        bool duplicated = false;
-        for (var m in models) {
-          if (m.message.messageId == element.messageId) {
-            m.message = element;
-            duplicated = true;
-            break;
-          }
-        }
-        if (duplicated) {
-          continue;
-        }
-
-        UIMessage model = UIMessage(element, showTimeLabel: false);
-        if (front) {
-          models.insert(0, model);
-        } else {
-          models.add(model);
-        }
-      }
-
-      for (int i = 0; i < models.length; ++i) {
-        UIMessage model = models[i];
-        if (i < models.length - 1) {
-          UIMessage nextModel = models[i + 1];
-          if (model.message.serverTime - nextModel.message.serverTime > 60 * 1000) {
-            model.showTimeLabel = true;
-          } else {
-            model.showTimeLabel = false;
-          }
-        } else {
-          model.showTimeLabel = true;
-        }
-      }
-
-      if (haveNewMsg) {
-        Imclient.clearConversationUnreadStatus(widget.conversation);
-      }
-    });
-  }
-
   bool notificationFunction(Notification notification) {
     switch (notification.runtimeType) {
       case ScrollEndNotification:
@@ -429,85 +187,6 @@ class _State extends State<MessagesScreen> {
         break;
     }
     return true;
-  }
-
-  void onTapedCell(UIMessage model) {
-    if (model.message.content is ImageMessageContent) {
-      Imclient.getMessages(widget.conversation, model.message.messageId, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value1) {
-        Imclient.getMessages(widget.conversation, model.message.messageId, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value2) {
-          List<Message> list = [];
-          list.addAll(value2);
-          list.add(model.message);
-          list.addAll(value1);
-          int index = 0;
-          for (int i = 0; i < list.length; i++) {
-            if (list[i].messageId == model.message.messageId) {
-              index = i;
-              break;
-            }
-          }
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => PictureOverview(
-                      list,
-                      defaultIndex: index,
-                      pageToEnd: (fromIndex, tail) {
-                        if (tail) {
-                          Imclient.getMessages(widget.conversation, fromIndex, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
-                            if (value.isNotEmpty) {
-                              _pictureOverviewKey.currentState!.onLoadMore(value, false);
-                            }
-                          });
-                        } else {
-                          Imclient.getMessages(widget.conversation, fromIndex, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
-                            if (value.isNotEmpty) {
-                              _pictureOverviewKey.currentState!.onLoadMore(value, true);
-                            }
-                          });
-                        }
-                      },
-                      key: _pictureOverviewKey,
-                    )),
-          );
-        });
-      });
-    } else if (model.message.content is VideoMessageContent) {
-      VideoMessageContent videoContent = model.message.content as VideoMessageContent;
-      Navigator.push(context, MaterialPageRoute(builder: (context) => VideoPlayerView(videoContent.remoteUrl!)));
-    } else if (model.message.content is FileMessageContent) {
-      FileMessageContent fileContent = model.message.content as FileMessageContent;
-      canLaunchUrl(Uri.parse(fileContent.remoteUrl!)).then((value) {
-        if (value) {
-          launchUrl(Uri.parse(fileContent.remoteUrl!));
-        } else {
-          Fluttertoast.showToast(msg: '无法打开');
-        }
-      });
-    } else if (model.message.content is SoundMessageContent) {
-      if (_playingMessageId == model.message.messageId) {
-        stopPlayVoiceMessage(model);
-      } else {
-        if (_playingMessageId > 0) {
-          for (var value in models) {
-            if (value.message.messageId == _playingMessageId) {
-              stopPlayVoiceMessage(model);
-              break;
-            }
-          }
-        }
-
-        startPlayVoiceMessage(model);
-      }
-    } else if (model.message.content is CallStartMessageContent) {
-      CallStartMessageContent callContent = model.message.content as CallStartMessageContent;
-      if (model.message.conversation.conversationType == ConversationType.Single) {
-        SingleVideoCallView callView = SingleVideoCallView(userId: widget.conversation.target, audioOnly: callContent.audioOnly);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
-      } else if (model.message.conversation.conversationType == ConversationType.Group) {
-        _onPressCallBtn();
-      }
-    }
   }
 
   void stopPlayVoiceMessage(UIMessage model) {
@@ -667,44 +346,37 @@ class _State extends State<MessagesScreen> {
     }
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationMessageList = conversationViewModel.conversationMessageList;
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 232, 232, 232),
-      appBar: AppBar(
-        title: const ConversationAppbarTitle(),
-        actions: actions,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Flexible(
-              child: GestureDetector(
-                child: NotificationListener(
-                  onNotification: notificationFunction,
-                  child: ListView.builder(
-                    reverse: true,
-                    itemBuilder: (BuildContext context, int index) => MessageCell(
-                      conversationMessageList[index],
-                      (model) => onTapedCell(model),
-                      (model) => onDoubleTapedCell(model),
-                      (model, offset) => onLongPressedCell(model, offset),
-                      (model) => onPortraitTaped(model),
-                      (model) => onPortraitLongTaped(model),
-                      (model) => onResendTaped(model),
-                      (model) => onReadedTaped(model),
+    return ChangeNotifierProvider<ConversationNotifier>(
+        create: (_) => ConversationNotifier(),
+        child: Scaffold(
+          backgroundColor: const Color.fromARGB(255, 232, 232, 232),
+          appBar: AppBar(
+            title: const ConversationAppbarTitle(),
+            actions: actions,
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                Flexible(
+                  child: GestureDetector(
+                    child: NotificationListener(
+                      onNotification: notificationFunction,
+                      child: ListView.builder(
+                        reverse: true,
+                        itemBuilder: (BuildContext context, int index) => MessageCell(context, conversationMessageList[index]),
+                        itemCount: conversationMessageList.length,
+                      ),
                     ),
-                    itemCount: conversationMessageList.length,
+                    onTap: () {
+                      _inputBarGlobalKey.currentState!.resetStatus();
+                    },
                   ),
                 ),
-                onTap: () {
-                  _inputBarGlobalKey.currentState!.resetStatus();
-                },
-              ),
+                _getInputBar(),
+              ],
             ),
-            _getInputBar(),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 
   void _sendTyping() {
@@ -715,7 +387,10 @@ class _State extends State<MessagesScreen> {
   }
 
   Widget _getInputBar() {
-    return _inputBar;
+    return MessageInputBar(
+      widget.conversation,
+      key: _inputBarGlobalKey,
+    );
   }
 
   @override

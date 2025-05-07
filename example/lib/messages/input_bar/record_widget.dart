@@ -1,16 +1,21 @@
 import 'dart:async';
 
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:imclient/model/conversation.dart';
 import 'package:logger/logger.dart' show Level, Logger;
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
+import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 
+import '../conversation_notifier.dart';
+
 class RecordWidget extends StatefulWidget {
-  RecordWidget(this.soundRecordedCallback, {Key? key}) : super(key: key);
-  OnSoundRecordedCallback soundRecordedCallback;
+  RecordWidget(this.conversation, {Key? key}) : super(key: key);
+  Conversation conversation;
 
   @override
   State<StatefulWidget> createState() => RecordState();
@@ -31,41 +36,43 @@ class RecordState extends State<RecordWidget> {
   String soundTipsText = "手指上滑，取消发送";
   String soundTitleText = "松开发送";
 
+  late ConversationNotifier conversationNotifier;
+
   @override
   Widget build(BuildContext context) {
+    conversationNotifier = Provider.of<ConversationNotifier>(context, listen: false);
     OutlinedButton btn;
-    if(_isRecording) {
+    if (_isRecording) {
       btn = OutlinedButton(
           style: OutlinedButton.styleFrom(
-            backgroundColor: _isReleaseCancel?Colors.red:Colors.green,
+            backgroundColor: _isReleaseCancel ? Colors.red : Colors.green,
           ),
-          onPressed: (){},
+          onPressed: () {},
           child: Text(soundTitleText));
     } else {
       btn = OutlinedButton(
           style: OutlinedButton.styleFrom(
             backgroundColor: Colors.grey,
           ),
-          onPressed: (){},
+          onPressed: () {},
           child: const Text("按下说话"));
     }
 
     return GestureDetector(
       child: btn,
       onLongPressDown: (details) => _onVoiceLongPressDown(),
-      onLongPressStart: (details) => _onVoiceLongPressStart(),
+      onLongPressStart: (details) => _onVoiceLongPressStart(context),
       onLongPressUp: () => _onVoiceLongPressUp(),
       onLongPressCancel: () => _onVoiceLongPressCancel(),
       onLongPressMoveUpdate: (LongPressMoveUpdateDetails details) => _onVoicePressMove(details),
     );
-
   }
 
-
   String? _recordPath;
-  void _startRecord() async {
+
+  void _startRecord(BuildContext context) async {
     var status = Permission.byValue(Permission.microphone.value).request();
-    if(!await status.isGranted && !await status.isLimited) {
+    if (!await status.isGranted && !await status.isLimited) {
       Fluttertoast.showToast(msg: "没有权限，请开启权限!");
       return;
     }
@@ -77,7 +84,7 @@ class RecordState extends State<RecordWidget> {
     });
     _recorder = FlutterSoundRecorder(logLevel: Level.wtf);
     await _recorder!.openRecorder();
-    if(_isRecording) {
+    if (_isRecording) {
       await _recorder!.startRecorder(
         codec: Codec.pcm16WAV,
         sampleRate: 8000,
@@ -87,9 +94,9 @@ class RecordState extends State<RecordWidget> {
       _recordStartTime = DateTime.now().millisecondsSinceEpoch;
       _recorder?.setSubscriptionDuration(const Duration(milliseconds: 250));
       _recorderSubscription = _recorder!.onProgress?.listen((RecordingDisposition event) {
-        if(event.decibels != null) {
-          _audioLevel = event.decibels!~/16;
-          if(_audioLevel > 6) {
+        if (event.decibels != null) {
+          _audioLevel = event.decibels! ~/ 16;
+          if (_audioLevel > 6) {
             _audioLevel = 6;
           }
           if (overlayEntry != null) {
@@ -97,27 +104,27 @@ class RecordState extends State<RecordWidget> {
           }
         }
       });
-      buildOverLayView();
+      buildOverLayView(context);
     }
   }
 
   void _stopRecord(bool send) {
-    if(_recorder == null) {
+    if (_recorder == null) {
       return;
     }
 
-    if(mounted) {
+    if (mounted) {
       setState(() {
         _isRecording = false;
       });
     } else {
       _isRecording = false;
     }
-    if(_recorder != null) {
+    if (_recorder != null) {
       _recorder!.stopRecorder().then((value) {
-        if(send && !_isReleaseCancel) {
-          int duration = (DateTime.now().millisecondsSinceEpoch - _recordStartTime + 500)~/1000;
-          widget.soundRecordedCallback(_recordPath!, duration);
+        if (send && !_isReleaseCancel) {
+          int duration = (DateTime.now().millisecondsSinceEpoch - _recordStartTime + 500) ~/ 1000;
+          conversationNotifier.onSoundRecorded(widget.conversation, _recordPath!, duration);
         }
         _recorder = null;
       });
@@ -131,7 +138,7 @@ class RecordState extends State<RecordWidget> {
     }
   }
 
-  buildOverLayView() {
+  buildOverLayView(BuildContext context) {
     if (overlayEntry == null) {
       overlayEntry = OverlayEntry(builder: (content) {
         return Positioned(
@@ -169,7 +176,7 @@ class RecordState extends State<RecordWidget> {
                               width: 50,
                               height: 60,
                               child: Image.asset(
-                                "assets/images/input/voice/voice_${_audioLevel+1}.png",
+                                "assets/images/input/voice/voice_${_audioLevel + 1}.png",
                                 width: 50,
                                 height: 60,
                               ),
@@ -206,12 +213,10 @@ class RecordState extends State<RecordWidget> {
     _stopRecord(false);
   }
 
-  void _onVoiceLongPressDown() {
+  void _onVoiceLongPressDown() {}
 
-  }
-
-  void _onVoiceLongPressStart() {
-    _startRecord();
+  void _onVoiceLongPressStart(BuildContext context) {
+    _startRecord(context);
   }
 
   void _onVoiceLongPressUp() {
@@ -224,7 +229,7 @@ class RecordState extends State<RecordWidget> {
 
   void _onVoicePressMove(LongPressMoveUpdateDetails details) {
     double height = 25;
-    double dy = details.localPosition.dy-25;
+    double dy = details.localPosition.dy - 25;
     if (dy.abs() > height) {
       if (mounted && soundTipsText != "松开取消") {
         setState(() {
@@ -243,5 +248,4 @@ class RecordState extends State<RecordWidget> {
       }
     }
   }
-
 }
