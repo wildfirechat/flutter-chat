@@ -34,19 +34,14 @@ import '../user_info_widget.dart';
 import '../ui_model/ui_message.dart';
 
 class ConversationNotifier extends ChangeNotifier {
-  // final Conversation conversation;
 
   late ConversationViewModel conversationViewModel;
 
-  String title = "消息";
+  ConversationNotifier(this.conversationViewModel);
 
   final GlobalKey<PictureOverviewState> _pictureOverviewKey = GlobalKey();
 
-  Timer? _typingTimer;
-  final Map<String, int> _typingUserTime = {};
   int _sendTypingTime = 0;
-
-  late MessageInputBar _inputBar;
 
   int _playingMessageId = 0;
   final FlutterSoundPlayer _soundPlayer = FlutterSoundPlayer(logLevel: Level.error);
@@ -211,72 +206,6 @@ class ConversationNotifier extends ChangeNotifier {
     }, uploadedCallback: (String remoteUrl) {
       debugPrint("uploadedCallback:$remoteUrl");
     });
-  }
-
-  void _startTypingTimer() {
-    _typingTimer = Timer.periodic(const Duration(milliseconds: 300), (timer) {
-      bool isUserTyping = _updateTypingStatus();
-      if (!isUserTyping && _typingUserTime.isNotEmpty) {
-        _typingUserTime.clear();
-        _stopTypingTimer();
-      }
-    });
-  }
-
-  String _getTypingDot(int time) {
-    int dotCount = time ~/ 1000 % 4;
-    String ret = '';
-    for (int i = 0; i < dotCount; i++) {
-      ret = '$ret.';
-    }
-    return ret;
-  }
-
-  bool _updateTypingStatus() {
-    // TODO
-    // if (!mounted) {
-    //   return false;
-    // }
-    //
-    // int now = DateTime.now().millisecondsSinceEpoch;
-    // if (conversation.conversationType == ConversationType.Single) {
-    //   int? time = _typingUserTime[conversation.target];
-    //   if (time != null && now - time < 6000) {
-    //     // titleGlobalKey.currentState!.updateTitle('对方正在输入${_getTypingDot(now)}');
-    //     return true;
-    //   }
-    // } else {
-    //   int typingUserCount = 0;
-    //   String? lastTypingUser;
-    //   for (String userId in _typingUserTime.keys) {
-    //     int time = _typingUserTime[userId]!;
-    //     if (now - time < 6000) {
-    //       typingUserCount++;
-    //       lastTypingUser = userId;
-    //     }
-    //   }
-    //   if (typingUserCount > 1) {
-    //     // titleGlobalKey.currentState!.updateTitle('$typingUserCount人正在输入${_getTypingDot(now)}');
-    //     return true;
-    //   } else if (typingUserCount == 1) {
-    //     Imclient.getUserInfo(lastTypingUser!, groupId: conversation.target).then((value) {
-    //       if (value != null) {
-    //         // titleGlobalKey.currentState!.updateTitle('${value.displayName!} 正在输入${_getTypingDot(now)}');
-    //       }
-    //     });
-    //     return true;
-    //   }
-    // }
-    //
-    // titleGlobalKey.currentState!.updateTitle(title);
-    return false;
-  }
-
-  void _stopTypingTimer() {
-    if (_typingTimer != null) {
-      _typingTimer!.cancel();
-      _typingTimer = null;
-    }
   }
 
   bool notificationFunction(Notification notification) {
@@ -505,8 +434,4 @@ class ConversationNotifier extends ChangeNotifier {
     // call viewmodel
   }
 
-
-  Widget _getInputBar() {
-    return _inputBar;
-  }
 }

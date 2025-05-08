@@ -54,13 +54,13 @@ class ConversationViewModel extends ChangeNotifier {
     _noMoreRemoteHistoryMsg = false;
     _conversationMessageList = [];
     _instantConversationStatusTitle = null;
+    _currentConversation = conversation;
     _stopTypingTimer();
 
-    if(conversation == null){
+    if (conversation == null) {
       _currentConversation = null;
-     return;
+      return;
     }
-    _currentConversation = conversation;
 
     _computeConversationTitle();
     if (conversation.conversationType == ConversationType.Chatroom) {
@@ -87,6 +87,9 @@ class ConversationViewModel extends ChangeNotifier {
 
   ConversationViewModel() {
     _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
+      if (_currentConversation == null) {
+        return;
+      }
       var newMsg = false;
       for (Message msg in event.messages) {
         if (msg.conversation == _currentConversation) {
@@ -225,7 +228,7 @@ class ConversationViewModel extends ChangeNotifier {
       return;
     }
 
-    var loadingConv = _currentConversation;
+    var loadingConv = _currentConversation!;
     if (_noMoreLocalHistoryMsg) {
       if (_noMoreRemoteHistoryMsg) {
         _isLoading = false;
@@ -262,8 +265,10 @@ class ConversationViewModel extends ChangeNotifier {
 
   _computeConversationTitle() async {
     _conversationTitle = '';
-    if (_currentConversation.conversationType == ConversationType.Single) {
-      UserInfo? userInfo = await Imclient.getUserInfo(_currentConversation.target, refresh: true);
+    var conversation = _currentConversation!;
+    if (conversation.conversationType == ConversationType.Single) {
+      _conversationTitle = '单聊';
+      UserInfo? userInfo = await Imclient.getUserInfo(conversation.target, refresh: true);
       if (userInfo != null) {
         if (userInfo.friendAlias != null && userInfo.friendAlias!.isNotEmpty) {
           _conversationTitle = userInfo.friendAlias!;
@@ -271,8 +276,9 @@ class ConversationViewModel extends ChangeNotifier {
           _conversationTitle = userInfo.displayName!;
         }
       }
-    } else if (_currentConversation.conversationType == ConversationType.Group) {
-      GroupInfo? groupInfo = await Imclient.getGroupInfo(_currentConversation.target, refresh: true);
+    } else if (conversation.conversationType == ConversationType.Group) {
+      GroupInfo? groupInfo = await Imclient.getGroupInfo(conversation.target, refresh: true);
+      _conversationTitle = '群聊';
       if (groupInfo != null) {
         if (groupInfo.remark != null && groupInfo.remark!.isNotEmpty) {
           _conversationTitle = groupInfo.remark!;
@@ -280,14 +286,16 @@ class ConversationViewModel extends ChangeNotifier {
           _conversationTitle = groupInfo.name!;
         }
       }
-    } else if (_currentConversation.conversationType == ConversationType.Chatroom) {
-      Imclient.getChatroomInfo(_currentConversation.target, 0, (chatroomInfo) {
+    } else if (conversation.conversationType == ConversationType.Chatroom) {
+      _conversationTitle = '聊天室';
+      Imclient.getChatroomInfo(conversation.target, 0, (chatroomInfo) {
         _conversationTitle = chatroomInfo.title!;
       }, (err) {
         debugPrint("joinChatroom error $err");
       });
-    } else if (_currentConversation.conversationType == ConversationType.Channel) {
-      ChannelInfo? channelInfo = await Imclient.getChannelInfo(_currentConversation.target, refresh: true);
+    } else if (conversation.conversationType == ConversationType.Channel) {
+      ChannelInfo? channelInfo = await Imclient.getChannelInfo(conversation.target, refresh: true);
+      _conversationTitle = '频道';
       if (channelInfo != null && channelInfo.name != null) {
         _conversationTitle = channelInfo.name!;
       }
@@ -295,7 +303,10 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   void _sendMessage(MessageContent messageContent) {
-    Imclient.sendMediaMessage(_currentConversation, messageContent, successCallback: (int messageUid, int timestamp) {}, errorCallback: (int errorCode) {},
+    if (_currentConversation == null) {
+      return;
+    }
+    Imclient.sendMediaMessage(_currentConversation!, messageContent, successCallback: (int messageUid, int timestamp) {}, errorCallback: (int errorCode) {},
         progressCallback: (int uploaded, int total) {
       debugPrint("progressCallback:$uploaded,$total");
     }, uploadedCallback: (String remoteUrl) {
@@ -304,9 +315,12 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   void sendTyping() {
+    if (_currentConversation == null) {
+      return;
+    }
     TypingMessageContent typingMessageContent = TypingMessageContent();
     typingMessageContent.type = TypingType.Typing_TEXT;
-    Imclient.sendMessage(_currentConversation, typingMessageContent, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
+    Imclient.sendMessage(_currentConversation!, typingMessageContent, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
   }
 
   String _getTypingDot(int time) {
@@ -319,9 +333,12 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   bool _updateTypingStatus() {
+    if (_currentConversation == null) {
+      return false;
+    }
     int now = DateTime.now().millisecondsSinceEpoch;
-    if (_currentConversation.conversationType == ConversationType.Single) {
-      int? time = _typingUserTime[_currentConversation.target];
+    if (_currentConversation!.conversationType == ConversationType.Single) {
+      int? time = _typingUserTime[_currentConversation!.target];
       if (time != null && now - time < 6000) {
         _instantConversationStatusTitle = '对方正在输入${_getTypingDot(now)}';
         return true;
@@ -340,7 +357,7 @@ class ConversationViewModel extends ChangeNotifier {
         _instantConversationStatusTitle = '$typingUserCount人正在输入${_getTypingDot(now)}';
         return true;
       } else if (typingUserCount == 1) {
-        Imclient.getUserInfo(lastTypingUser!, groupId: _currentConversation.target).then((value) {
+        Imclient.getUserInfo(lastTypingUser!, groupId: _currentConversation!.target).then((value) {
           if (value != null) {
             _instantConversationStatusTitle = '${value.displayName!} 正在输入${_getTypingDot(now)}';
           }
