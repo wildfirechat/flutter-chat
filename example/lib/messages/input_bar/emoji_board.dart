@@ -4,18 +4,11 @@ import 'package:flutter/material.dart';
 typedef OnPickerEmojiCallback = void Function(String emoji);
 typedef OnDelEmojiCallback = void Function();
 
-class EmojiBoard extends StatefulWidget {
+class EmojiBoard extends StatelessWidget{
   EmojiBoard(this.emojis, {Key? key, required this.pickerEmojiCallback, required this.delEmojiCallback}) : super(key: key);
   OnPickerEmojiCallback pickerEmojiCallback;
   OnDelEmojiCallback delEmojiCallback;
   List<String> emojis;
-
-  @override
-  State<StatefulWidget> createState() => EmojiBoardState();
-}
-
-class EmojiBoardState extends State<EmojiBoard> {
-
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +30,10 @@ class EmojiBoardState extends State<EmojiBoard> {
         children: [
           GridView.builder(
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: lineCount),
-            itemCount: widget.emojis.length,
+            itemCount: emojis.length,
             itemBuilder: (context, index) {
               return GestureDetector(
-                child: Center(child: Text(widget.emojis[index], style: TextStyle(fontSize: textSize),),),
+                child: Center(child: Text(emojis[index], style: TextStyle(fontSize: textSize),),),
                 onTap: () => _onTapItem(index) ,
               );
             },
@@ -63,10 +56,10 @@ class EmojiBoardState extends State<EmojiBoard> {
   }
 
   void _onDel() {
-    widget.delEmojiCallback();
+    delEmojiCallback();
   }
 
   void _onTapItem(int index) {
-    widget.pickerEmojiCallback(widget.emojis[index]);
+    pickerEmojiCallback(emojis[index]);
   }
 }

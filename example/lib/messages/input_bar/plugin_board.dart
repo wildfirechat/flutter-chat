@@ -18,7 +18,8 @@ class _PluginItem {
 }
 
 class PluginBoard extends StatelessWidget {
-  PluginBoard(this.conversation, {Key? key}) : super(key: key);
+  PluginBoard(this.conversation, {super.key});
+
   final Conversation conversation;
 
   final List<_PluginItem> _line1 = [
@@ -26,6 +27,8 @@ class PluginBoard extends StatelessWidget {
     _PluginItem('assets/images/input/camera.png', "拍摄", "camera"),
     _PluginItem('assets/images/input/call.png', "通话", "call"),
     _PluginItem('assets/images/input/location.png', "位置", "location"),
+    _PluginItem('assets/images/input/file.png', "文件", "file"),
+    _PluginItem('assets/images/input/card.png', "名片", "card"),
   ];
   final List<_PluginItem> _line2 = [
     _PluginItem('assets/images/input/file.png', "文件", "file"),
@@ -58,6 +61,33 @@ class PluginBoard extends StatelessWidget {
     }
 
     return items;
+  }
+
+  Widget _pluginItemWidget(BuildContext context, _PluginItem item) {
+    double width = View.of(context).physicalSize.width / View.of(context).devicePixelRatio;
+    double itemWidth = 54;
+    double padding = (width - 4 * itemWidth) / 4 / 2;
+    return Row(
+      children: [
+        Padding(padding: EdgeInsets.only(left: padding)),
+        GestureDetector(
+          onTap: () => _onClickItem(context, item.key),
+          child: Column(
+            children: [
+              Padding(padding: EdgeInsets.only(top: padding)),
+              Image.asset(
+                item.iconPath,
+                width: itemWidth,
+                height: itemWidth,
+              ),
+              const Padding(padding: EdgeInsets.only(top: 10)),
+              Text(item.title),
+            ],
+          ),
+        ),
+        Padding(padding: EdgeInsets.only(left: padding))
+      ],
+    );
   }
 
   void _onClickItem(BuildContext context, String key) {
@@ -123,15 +153,24 @@ class PluginBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          children: _getLineItem(context, _line1),
-        ),
-        Row(
-          children: _getLineItem(context, _line2),
-        ),
-      ],
-    );
+    return SizedBox(
+        height: 250,
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4),
+          itemCount: _line1.length,
+          itemBuilder: (context, index) {
+            return _pluginItemWidget(context, _line1[index]);
+          },
+        ));
+    // return Column(
+    //   children: [
+    //     Row(
+    //       children: _getLineItem(context, _line1),
+    //     ),
+    //     Row(
+    //       children: _getLineItem(context, _line2),
+    //     ),
+    //   ],
+    // );
   }
 }

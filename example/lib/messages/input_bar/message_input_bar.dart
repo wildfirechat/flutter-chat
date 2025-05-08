@@ -17,10 +17,6 @@ enum ChatInputBarStatus {
   pttStatus
 }
 
-typedef OnSendButtonTapedCallback = void Function(String text);
-typedef OnTextChangedCallback = void Function(String text);
-typedef OnSoundRecordedCallback = void Function(String soundPath, int duration);
-
 class MessageInputBar extends StatefulWidget {
   MessageInputBar(this._conversation, {ChatInputBarStatus chatInputBarStatus = ChatInputBarStatus.keyboardStatus, Key? key}) : _chatInputBarStatus = chatInputBarStatus, super(key: key);
   final Conversation _conversation;

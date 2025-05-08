@@ -14,7 +14,7 @@ import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import '../conversation_notifier.dart';
 
 class RecordWidget extends StatefulWidget {
-  RecordWidget(this.conversation, {Key? key}) : super(key: key);
+  RecordWidget(this.conversation, {super.key});
   Conversation conversation;
 
   @override
