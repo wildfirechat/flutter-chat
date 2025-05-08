@@ -49,12 +49,9 @@ class MessagesScreen extends StatefulWidget {
 }
 
 class _State extends State<MessagesScreen> {
-  List<UIMessage> models = <UIMessage>[];
   final EventBus _eventBus = Imclient.IMEventBus;
 
   late ConversationViewModel conversationViewModel;
-
-  String title = "消息";
 
   final GlobalKey<MessageInputBarState> _inputBarGlobalKey = GlobalKey();
 
@@ -93,6 +90,7 @@ class _State extends State<MessagesScreen> {
     if (_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
     }
+    conversationViewModel.setConversation(null);
     if (widget.conversation.conversationType == ConversationType.Chatroom) {
       Imclient.quitChatroom(widget.conversation.target, () {
         Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
@@ -142,121 +140,6 @@ class _State extends State<MessagesScreen> {
     _playingMessageId = model.message.messageId;
   }
 
-  void onDoubleTapedCell(UIMessage model) {
-    debugPrint("on double taped cell");
-  }
-
-  void onLongPressedCell(UIMessage model, Offset postion) {
-    _showPopupMenu(model, postion);
-  }
-
-  void onPortraitTaped(UIMessage model) {
-    debugPrint("on taped portrait");
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => UserInfoWidget(model.message.fromUser)),
-    );
-  }
-
-  void onPortraitLongTaped(UIMessage model) {
-    debugPrint("on long taped portrait");
-  }
-
-  void onResendTaped(UIMessage model) {
-    debugPrint("on taped resend");
-    Imclient.sendSavedMessage(model.message.messageId, successCallback: (l, ll) {}, errorCallback: (errorCode) {});
-  }
-
-  void onReadedTaped(UIMessage model) {
-    debugPrint("on taped readed");
-  }
-
-  void _showPopupMenu(UIMessage model, Offset position) {
-    List<PopupMenuItem> items = [
-      const PopupMenuItem(
-        value: 'delete',
-        child: Text('删除'),
-      )
-    ];
-
-    if (model.message.content is TextMessageContent) {
-      items.add(const PopupMenuItem(value: 'copy', child: Text('复制')));
-    }
-
-    items.add(const PopupMenuItem(
-      value: 'forward',
-      child: Text('转发'),
-    ));
-
-    if (model.message.direction == MessageDirection.MessageDirection_Send &&
-        model.message.status == MessageStatus.Message_Status_Sent &&
-        DateTime.now().millisecondsSinceEpoch - model.message.serverTime < 120 * 1000) {
-      items.add(const PopupMenuItem(
-        value: 'recall',
-        child: Text('撤回'),
-      ));
-    }
-
-    items.addAll([
-      const PopupMenuItem(
-        value: 'multi_select',
-        child: Text('多选'),
-      ),
-      const PopupMenuItem(
-        value: 'quote',
-        child: Text('引用'),
-      ),
-      const PopupMenuItem(
-        value: 'favorite',
-        child: Text('收藏'),
-      )
-    ]);
-
-    showMenu(
-      context: context,
-      position: RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy),
-      items: items,
-    ).then((selected) {
-      if (selected != null) {
-        switch (selected) {
-          case "delete":
-            _deleteMessage(model.message.messageId);
-            break;
-          case "copy":
-            break;
-          case "forward":
-            break;
-          case "recall":
-            _recallMessage(model.message.messageId, model.message.messageUid!);
-            break;
-          case "multi_select":
-            break;
-          case "quote":
-            break;
-          case "favorite":
-            break;
-        }
-      }
-    });
-  }
-
-  void _recallMessage(int messageId, int messageUid) {
-    Imclient.recallMessage(messageUid, () {}, (errorCode) {});
-  }
-
-  void _deleteMessage(int messageId) {
-    Imclient.deleteMessage(messageId).then((value) {
-      setState(() {
-        for (var model in models) {
-          if (model.message.messageId == messageId) {
-            models.remove(model);
-            break;
-          }
-        }
-      });
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     List<Widget> actions = [];
@@ -276,7 +159,7 @@ class _State extends State<MessagesScreen> {
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationMessageList = conversationViewModel.conversationMessageList;
     return ChangeNotifierProvider<ConversationNotifier>(
-        create: (_) => ConversationNotifier(),
+        create: (_) => ConversationNotifier(conversationViewModel),
         child: Scaffold(
           backgroundColor: const Color.fromARGB(255, 232, 232, 232),
           appBar: AppBar(
@@ -301,14 +184,14 @@ class _State extends State<MessagesScreen> {
                     },
                   ),
                 ),
-                _getInputBar(),
+                _inputBar(),
               ],
             ),
           ),
         ));
   }
 
-  Widget _getInputBar() {
+  Widget _inputBar() {
     return MessageInputBar(
       widget.conversation,
       key: _inputBarGlobalKey,
