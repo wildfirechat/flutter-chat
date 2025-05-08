@@ -40,7 +40,6 @@ class ConversationNotifier extends ChangeNotifier {
 
   String title = "消息";
 
-  final GlobalKey<MessageInputBarState> _inputBarGlobalKey = GlobalKey();
   final GlobalKey<PictureOverviewState> _pictureOverviewKey = GlobalKey();
 
   Timer? _typingTimer;
@@ -60,7 +59,8 @@ class ConversationNotifier extends ChangeNotifier {
 
   void onInputBarTextChanged(String text) {
     if (DateTime.now().second - _sendTypingTime > 12 && text.isNotEmpty) {
-      _sendTyping();
+      _sendTypingTime = DateTime.now().microsecondsSinceEpoch;
+      conversationViewModel.sendTyping();
     }
   }
 
@@ -505,13 +505,6 @@ class ConversationNotifier extends ChangeNotifier {
     // call viewmodel
   }
 
-  void _sendTyping() {
-    // TODO
-    // _sendTypingTime = DateTime.now().second;
-    // TypingMessageContent typingMessageContent = TypingMessageContent();
-    // typingMessageContent.type = TypingType.Typing_TEXT;
-    // Imclient.sendMessage(conversation, typingMessageContent, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
-  }
 
   Widget _getInputBar() {
     return _inputBar;
