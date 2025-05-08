@@ -57,11 +57,6 @@ class _State extends State<MessagesScreen> {
   String title = "消息";
 
   final GlobalKey<MessageInputBarState> _inputBarGlobalKey = GlobalKey();
-  final GlobalKey<PictureOverviewState> _pictureOverviewKey = GlobalKey();
-
-  Timer? _typingTimer;
-  final Map<String, int> _typingUserTime = {};
-  int _sendTypingTime = 0;
 
   int _playingMessageId = 0;
   final FlutterSoundPlayer _soundPlayer = FlutterSoundPlayer(logLevel: Level.error);
@@ -95,7 +90,6 @@ class _State extends State<MessagesScreen> {
   @override
   void dispose() {
     super.dispose();
-    _stopTypingTimer();
     if (_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
     }
@@ -109,71 +103,6 @@ class _State extends State<MessagesScreen> {
           }
         });
       }, (errorCode) {});
-    }
-  }
-
-  void _startTypingTimer() {
-    _typingTimer = Timer.periodic(const Duration(milliseconds: 300), (timer) {
-      bool isUserTyping = _updateTypingStatus();
-      if (!isUserTyping && _typingUserTime.isNotEmpty) {
-        _typingUserTime.clear();
-        _stopTypingTimer();
-      }
-    });
-  }
-
-  String _getTypingDot(int time) {
-    int dotCount = time ~/ 1000 % 4;
-    String ret = '';
-    for (int i = 0; i < dotCount; i++) {
-      ret = '$ret.';
-    }
-    return ret;
-  }
-
-  bool _updateTypingStatus() {
-    if (!mounted) {
-      return false;
-    }
-
-    int now = DateTime.now().millisecondsSinceEpoch;
-    if (widget.conversation.conversationType == ConversationType.Single) {
-      int? time = _typingUserTime[widget.conversation.target];
-      if (time != null && now - time < 6000) {
-        // titleGlobalKey.currentState!.updateTitle('对方正在输入${_getTypingDot(now)}');
-        return true;
-      }
-    } else {
-      int typingUserCount = 0;
-      String? lastTypingUser;
-      for (String userId in _typingUserTime.keys) {
-        int time = _typingUserTime[userId]!;
-        if (now - time < 6000) {
-          typingUserCount++;
-          lastTypingUser = userId;
-        }
-      }
-      if (typingUserCount > 1) {
-        // titleGlobalKey.currentState!.updateTitle('$typingUserCount人正在输入${_getTypingDot(now)}');
-        return true;
-      } else if (typingUserCount == 1) {
-        Imclient.getUserInfo(lastTypingUser!, groupId: widget.conversation.target).then((value) {
-          if (value != null) {
-            // titleGlobalKey.currentState!.updateTitle('${value.displayName!} 正在输入${_getTypingDot(now)}');
-          }
-        });
-        return true;
-      }
-    }
-
-    // titleGlobalKey.currentState!.updateTitle(title);
-    return false;
-  }
-
-  void _stopTypingTimer() {
-    if (_typingTimer != null) {
-      _typingTimer!.cancel();
-      _typingTimer = null;
     }
   }
 
@@ -377,13 +306,6 @@ class _State extends State<MessagesScreen> {
             ),
           ),
         ));
-  }
-
-  void _sendTyping() {
-    _sendTypingTime = DateTime.now().second;
-    TypingMessageContent typingMessageContent = TypingMessageContent();
-    typingMessageContent.type = TypingType.Typing_TEXT;
-    Imclient.sendMessage(widget.conversation, typingMessageContent, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
   }
 
   Widget _getInputBar() {

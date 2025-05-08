@@ -6,6 +6,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/notification/tip_notificiation_content.dart';
+import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
@@ -26,13 +27,16 @@ class ConversationViewModel extends ChangeNotifier {
 
   //  消息倒序，第 0 条是最新消息，但UI 层list 进行了 reverse
   List<UIMessage> _conversationMessageList = [];
-  late Conversation _currentConversation;
+  late Conversation? _currentConversation;
   late String _draft;
   bool _isLoading = false;
   bool _noMoreLocalHistoryMsg = false;
   bool _noMoreRemoteHistoryMsg = false;
   String _conversationTitle = '';
-  String? _instantConversatonStatusTitle = null;
+  String? _instantConversationStatusTitle;
+
+  Timer? _typingTimer;
+  final Map<String, int> _typingUserTime = {};
 
   List<UIMessage> get conversationMessageList => _conversationMessageList;
 
@@ -43,12 +47,19 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   String get conversationTitle {
-    return _instantConversatonStatusTitle ?? _conversationTitle;
+    return _instantConversationStatusTitle ?? _conversationTitle;
   }
 
-  void setConversation(Conversation conversation, [Function(int err)? joinChatroomErrorCallback]) {
+  void setConversation(Conversation? conversation, [Function(int err)? joinChatroomErrorCallback]) {
     _noMoreRemoteHistoryMsg = false;
     _conversationMessageList = [];
+    _instantConversationStatusTitle = null;
+    _stopTypingTimer();
+
+    if(conversation == null){
+      _currentConversation = null;
+     return;
+    }
     _currentConversation = conversation;
 
     _computeConversationTitle();
@@ -80,8 +91,11 @@ class ConversationViewModel extends ChangeNotifier {
       for (Message msg in event.messages) {
         if (msg.conversation == _currentConversation) {
           if (msg.messageId == 0) {
-            // TODO
-            // typing
+            if (msg.content is TypingMessageContent) {
+              _typingUserTime[msg.fromUser] = DateTime.now().millisecondsSinceEpoch;
+              _startTypingTimer();
+              debugPrint('typing');
+            }
             continue;
           }
           _conversationMessageList.insert(0, UIMessage(msg));
@@ -287,6 +301,79 @@ class ConversationViewModel extends ChangeNotifier {
     }, uploadedCallback: (String remoteUrl) {
       debugPrint("uploadedCallback:$remoteUrl");
     });
+  }
+
+  void sendTyping() {
+    TypingMessageContent typingMessageContent = TypingMessageContent();
+    typingMessageContent.type = TypingType.Typing_TEXT;
+    Imclient.sendMessage(_currentConversation, typingMessageContent, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
+  }
+
+  String _getTypingDot(int time) {
+    int dotCount = time ~/ 1000 % 4;
+    String ret = '';
+    for (int i = 0; i < dotCount; i++) {
+      ret = '$ret.';
+    }
+    return ret;
+  }
+
+  bool _updateTypingStatus() {
+    int now = DateTime.now().millisecondsSinceEpoch;
+    if (_currentConversation.conversationType == ConversationType.Single) {
+      int? time = _typingUserTime[_currentConversation.target];
+      if (time != null && now - time < 6000) {
+        _instantConversationStatusTitle = '对方正在输入${_getTypingDot(now)}';
+        return true;
+      }
+    } else {
+      int typingUserCount = 0;
+      String? lastTypingUser;
+      for (String userId in _typingUserTime.keys) {
+        int time = _typingUserTime[userId]!;
+        if (now - time < 6000) {
+          typingUserCount++;
+          lastTypingUser = userId;
+        }
+      }
+      if (typingUserCount > 1) {
+        _instantConversationStatusTitle = '$typingUserCount人正在输入${_getTypingDot(now)}';
+        return true;
+      } else if (typingUserCount == 1) {
+        Imclient.getUserInfo(lastTypingUser!, groupId: _currentConversation.target).then((value) {
+          if (value != null) {
+            _instantConversationStatusTitle = '${value.displayName!} 正在输入${_getTypingDot(now)}';
+          }
+        });
+        return true;
+      }
+    }
+
+    _instantConversationStatusTitle = null;
+    return false;
+  }
+
+  void _startTypingTimer() {
+    String lastTitle = conversationTitle;
+    _typingTimer = Timer.periodic(const Duration(milliseconds: 300), (timer) {
+      bool isUserTyping = _updateTypingStatus();
+      if (!isUserTyping && _typingUserTime.isNotEmpty) {
+        _typingUserTime.clear();
+        _stopTypingTimer();
+      }
+      debugPrint('typing: $_instantConversationStatusTitle');
+      if (lastTitle != conversationTitle) {
+        lastTitle = conversationTitle;
+        notifyListeners();
+      }
+    });
+  }
+
+  void _stopTypingTimer() {
+    if (_typingTimer != null) {
+      _typingTimer!.cancel();
+      _typingTimer = null;
+    }
   }
 
   @override
