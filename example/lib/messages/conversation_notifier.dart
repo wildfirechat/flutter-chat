@@ -430,8 +430,7 @@ class ConversationNotifier extends ChangeNotifier {
   }
 
   void _deleteMessage(int messageId) {
-    // TODO
-    // call viewmodel
+    conversationViewModel.deleteMessage(messageId);
   }
 
 }
