@@ -10,7 +10,7 @@ import 'package:rtckit/single_voice_call.dart';
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/contact/invite_friend.dart';
 
-import 'messages/messages_screen.dart';
+import 'messages/messages.dart';
 
 class UserInfoWidget extends StatefulWidget {
   UserInfoWidget(this.userId, {this.inGroupId, Key? key}) : super(key: key);
@@ -178,7 +178,7 @@ class _UserInfoState extends State<UserInfoWidget> {
           Conversation conversation = Conversation(conversationType: ConversationType.Single, target: widget.userId);
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
+            MaterialPageRoute(builder: (context) => Messages(conversation)),
           );
         } else if(key == "voip") {
           SingleVideoCallView callView = SingleVideoCallView(userId:widget.userId, audioOnly:false);

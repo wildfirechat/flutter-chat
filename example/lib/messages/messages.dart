@@ -21,16 +21,16 @@ import 'input_bar/message_input_bar_controller.dart';
 import 'message_cell.dart';
 import '../ui_model/ui_message.dart';
 
-class MessagesScreen extends StatefulWidget {
+class Messages extends StatefulWidget {
   final Conversation conversation;
 
-  const MessagesScreen(this.conversation, {Key? key}) : super(key: key);
+  const Messages(this.conversation, {Key? key}) : super(key: key);
 
   @override
   State createState() => _State();
 }
 
-class _State extends State<MessagesScreen> {
+class _State extends State<Messages> {
   final EventBus _eventBus = Imclient.IMEventBus;
 
   late ConversationViewModel conversationViewModel;

@@ -10,7 +10,7 @@ import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
-import 'package:wfc_example/messages/messages_screen.dart';
+import 'package:wfc_example/messages/messages.dart';
 
 import '../contact/contact_select_page.dart';
 import '../user_info_widget.dart';
@@ -193,11 +193,11 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
       ),
     );
   }
-  
+
   Widget _getList() {
     return ListView.builder(
-        itemCount: modelList.length, 
-        itemBuilder: _buildRow 
+        itemCount: modelList.length,
+        itemBuilder: _buildRow
     );
   }
 
@@ -330,7 +330,7 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
             Imclient.createGroup(null, null, null, 2, members, (strValue) {
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => MessagesScreen(Conversation(conversationType: ConversationType.Group, target: strValue))),
+                MaterialPageRoute(builder: (context) => Messages(Conversation(conversationType: ConversationType.Group, target: strValue))),
               );
             }, (errorCode) {
               Fluttertoast.showToast(msg: "网络错误");

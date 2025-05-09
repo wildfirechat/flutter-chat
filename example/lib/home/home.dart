@@ -17,14 +17,13 @@ import 'package:wfc_example/settings/settings.dart';
 import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
-import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 import '../contact/contact_list_widget.dart';
+import '../messages/messages.dart';
 import 'conversation_list_widget.dart';
 import '../discovery/discovery.dart';
-import '../messages/messages_screen.dart';
 
 class HomeTabBar extends StatefulWidget {
   const HomeTabBar({Key? key}) : super(key: key);
@@ -115,7 +114,7 @@ class HomeTabBarState extends State<HomeTabBar> {
                   Conversation conversation = Conversation(conversationType: ConversationType.Single, target: members[0]);
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
+                    MaterialPageRoute(builder: (context) => Messages(conversation)),
                   );
                 } else {
                   _showProcessingDialog(context, "群组创建中...");
@@ -139,7 +138,7 @@ class HomeTabBarState extends State<HomeTabBar> {
                     Conversation conversation = Conversation(conversationType: ConversationType.Group, target: strValue);
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
+                      MaterialPageRoute(builder: (context) => Messages(conversation)),
                     );
                   }, (errorCode) {
                     _dismissProcessingDialog(context);
