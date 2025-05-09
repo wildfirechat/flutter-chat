@@ -1,9 +1,7 @@
 import 'package:flutter/foundation.dart';
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:imclient/message/call_start_message_content.dart';
-import 'package:imclient/message/notification/tip_notificiation_content.dart';
 import 'package:logger/logger.dart' show Level, Logger;
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -16,7 +14,6 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
-import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
@@ -24,7 +21,6 @@ import 'package:rtckit/group_video_call.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:rtckit/single_voice_call.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import 'package:wfc_example/messages/picture_overview.dart';
 import 'package:wfc_example/messages/video_player_view.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
@@ -33,31 +29,17 @@ import '../contact/contact_select_page.dart';
 import '../user_info_widget.dart';
 import '../ui_model/ui_message.dart';
 
-class ConversationNotifier extends ChangeNotifier {
+class ConversationController extends ChangeNotifier {
 
   late ConversationViewModel conversationViewModel;
 
-  ConversationNotifier(this.conversationViewModel);
+  ConversationController(this.conversationViewModel);
 
   final GlobalKey<PictureOverviewState> _pictureOverviewKey = GlobalKey();
 
-  int _sendTypingTime = 0;
 
   int _playingMessageId = 0;
   final FlutterSoundPlayer _soundPlayer = FlutterSoundPlayer(logLevel: Level.error);
-
-  void onSendButtonTyped(Conversation conversation, String text) {
-    TextMessageContent txt = TextMessageContent(text);
-    _sendMessage(conversation, txt);
-    _sendTypingTime = 0;
-  }
-
-  void onInputBarTextChanged(String text) {
-    if (DateTime.now().second - _sendTypingTime > 12 && text.isNotEmpty) {
-      _sendTypingTime = DateTime.now().microsecondsSinceEpoch;
-      conversationViewModel.sendTyping();
-    }
-  }
 
   void onPickImage(Conversation conversation, String imagePath) {
     ImageMessageContent imgCont = ImageMessageContent();

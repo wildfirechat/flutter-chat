@@ -11,7 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 
-import '../conversation_notifier.dart';
+import '../conversation_controller.dart';
 
 class RecordWidget extends StatefulWidget {
   RecordWidget(this.conversation, {super.key});
@@ -36,11 +36,11 @@ class RecordState extends State<RecordWidget> {
   String soundTipsText = "手指上滑，取消发送";
   String soundTitleText = "松开发送";
 
-  late ConversationNotifier conversationNotifier;
+  late ConversationController conversationController;
 
   @override
   Widget build(BuildContext context) {
-    conversationNotifier = Provider.of<ConversationNotifier>(context, listen: false);
+    conversationController = Provider.of<ConversationController>(context, listen: false);
     OutlinedButton btn;
     if (_isRecording) {
       btn = OutlinedButton(
@@ -124,7 +124,7 @@ class RecordState extends State<RecordWidget> {
       _recorder!.stopRecorder().then((value) {
         if (send && !_isReleaseCancel) {
           int duration = (DateTime.now().millisecondsSinceEpoch - _recordStartTime + 500) ~/ 1000;
-          conversationNotifier.onSoundRecorded(widget.conversation, _recordPath!, duration);
+          conversationController.onSoundRecorded(widget.conversation, _recordPath!, duration);
         }
         _recorder = null;
       });
