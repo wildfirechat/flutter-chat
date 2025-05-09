@@ -18,7 +18,7 @@ import 'package:wfc_example/utilities.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 
-import '../messages/messages_screen.dart';
+import '../messages/messages.dart';
 import '../viewmodel/channel_view_model.dart';
 import '../viewmodel/group_view_model.dart';
 
@@ -215,7 +215,7 @@ class ConversationListItem extends StatelessWidget {
   void _toChatPage(BuildContext context, Conversation conversation) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
+      MaterialPageRoute(builder: (context) => Messages(conversation)),
     ).then((value) {
       // _loadConversation();
     });

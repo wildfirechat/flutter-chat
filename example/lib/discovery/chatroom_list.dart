@@ -3,7 +3,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/chatroom_info.dart';
 import 'package:imclient/model/conversation.dart';
 
-import '../messages/messages_screen.dart';
+import '../messages/messages.dart';
 
 class ChatroomList extends StatelessWidget {
   final List modelList = ['chatroom1', 'chatroom2', 'chatroom3'];
@@ -72,7 +72,7 @@ class ChatroomItemState extends State<ChatroomItem> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => MessagesScreen(Conversation(conversationType: ConversationType.Chatroom, target: widget.chatroomId))),
+          MaterialPageRoute(builder: (context) => Messages(Conversation(conversationType: ConversationType.Chatroom, target: widget.chatroomId))),
         );
       },
     );
