@@ -314,13 +314,11 @@ class ConversationViewModel extends ChangeNotifier {
     });
   }
 
-  void sendTyping() {
+  void sendMessage(MessageContent messageContent) {
     if (_currentConversation == null) {
       return;
     }
-    TypingMessageContent typingMessageContent = TypingMessageContent();
-    typingMessageContent.type = TypingType.Typing_TEXT;
-    Imclient.sendMessage(_currentConversation!, typingMessageContent, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
+    Imclient.sendMessage(_currentConversation!, messageContent, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
   }
 
   String _getTypingDot(int time) {

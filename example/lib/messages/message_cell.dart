@@ -20,16 +20,16 @@ import 'cell_builder/unknown_cell_builder.dart';
 import 'cell_builder/video_cell_builder.dart';
 import 'cell_builder/voice_cell_builder.dart';
 import '../ui_model/ui_message.dart';
-import 'conversation_notifier.dart';
+import 'conversation_controller.dart';
 
 class MessageCell extends StatelessWidget {
   final UIMessage model;
   late BuildContext context;
   late MessageCellBuilder _cellBuilder;
-  late ConversationNotifier conversationNotifier;
+  late ConversationController conversationController;
 
   MessageCell(this.context, this.model) : super(key: ObjectKey(model)) {
-    conversationNotifier = Provider.of<ConversationNotifier>(context, listen: false);
+    conversationController = Provider.of<ConversationController>(context, listen: false);
     _initCellBuilder();
   }
 
@@ -56,31 +56,31 @@ class MessageCell extends StatelessWidget {
   }
 
   void onTaped(UIMessage model) {
-    conversationNotifier.onTapedCell(context, model);
+    conversationController.onTapedCell(context, model);
   }
 
   void onDoubleTaped(UIMessage model) {
-    conversationNotifier.onDoubleTapedCell(model);
+    conversationController.onDoubleTapedCell(model);
   }
 
   void onLongPress(LongPressStartDetails details, UIMessage model) {
-    conversationNotifier.onLongPressedCell(context, model, details.globalPosition);
+    conversationController.onLongPressedCell(context, model, details.globalPosition);
   }
 
   void onTapedPortrait(UIMessage model) {
-    conversationNotifier.onPortraitTaped(context, model);
+    conversationController.onPortraitTaped(context, model);
   }
 
   void onLongTapedPortrait(UIMessage model) {
-    conversationNotifier.onPortraitLongTaped(model);
+    conversationController.onPortraitLongTaped(model);
   }
 
   void onResendTaped(UIMessage model) {
-    conversationNotifier.onResendTaped(model);
+    conversationController.onResendTaped(model);
   }
 
   void onReadedTaped(UIMessage model) {
-    conversationNotifier.onReadedTaped(model);
+    conversationController.onReadedTaped(model);
   }
 
   @override

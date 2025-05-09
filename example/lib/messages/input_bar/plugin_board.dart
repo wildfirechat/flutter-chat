@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
-import 'package:wfc_example/messages/conversation_notifier.dart';
+import 'package:wfc_example/messages/conversation_controller.dart';
 
 class _PluginItem {
   String iconPath;
@@ -91,14 +91,14 @@ class PluginBoard extends StatelessWidget {
   }
 
   void _onClickItem(BuildContext context, String key) {
-    var conversationNotifier = Provider.of<ConversationNotifier>(context, listen: false);
+    var conversationController = Provider.of<ConversationController>(context, listen: false);
     switch (key) {
       case "album":
         {
           var picker = ImagePicker();
           picker.pickImage(source: ImageSource.gallery).then((value) {
             if (value != null) {
-              conversationNotifier.onPickImage(conversation, value.path);
+              conversationController.onPickImage(conversation, value.path);
             }
           });
         }
@@ -109,7 +109,7 @@ class PluginBoard extends StatelessWidget {
             if (entity.type == AssetType.image) {
               entity.file.then((file) {
                 if (file != null) {
-                  conversationNotifier.cameraCaptureImage(conversation, file.path);
+                  conversationController.cameraCaptureImage(conversation, file.path);
                 }
               });
             } else if (entity.type == AssetType.video) {
@@ -120,7 +120,7 @@ class PluginBoard extends StatelessWidget {
                   if (thumbData != null) {
                     thumb = img.decodeJpg((await entity.thumbnailData)!);
                   }
-                  conversationNotifier.cameraCaptureVideo(conversation, file.path, thumb, entity.duration);
+                  conversationController.cameraCaptureVideo(conversation, file.path, thumb, entity.duration);
                 }
               });
             }
@@ -129,7 +129,7 @@ class PluginBoard extends StatelessWidget {
         break;
       case "call":
         // _pressCallBtnCallback();
-        conversationNotifier.onPressCallBtn(context, conversation);
+        conversationController.onPressCallBtn(context, conversation);
         break;
       case "location":
         break;
@@ -140,13 +140,13 @@ class PluginBoard extends StatelessWidget {
             String name = value.files.first.name;
             int size = value.files.first.size;
             // _pickerFileCallback(path, name, size);
-            conversationNotifier.onPickFile(conversation, path, name, size);
+            conversationController.onPickFile(conversation, path, name, size);
           }
         });
         break;
       case "card":
         // _pressCardBtnCallback();
-        conversationNotifier.onPressCardBtn(context, conversation);
+        conversationController.onPressCardBtn(context, conversation);
         break;
     }
   }

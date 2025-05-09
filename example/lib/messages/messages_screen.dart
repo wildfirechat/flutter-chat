@@ -1,41 +1,23 @@
-import 'dart:async';
-
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
-import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/message/notification/tip_notificiation_content.dart';
 import 'package:logger/logger.dart' show Level, Logger;
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:image/image.dart' as img;
 import 'package:imclient/imclient.dart';
-import 'package:imclient/message/card_message_content.dart';
-import 'package:imclient/message/file_message_content.dart';
-import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/sound_message_content.dart';
-import 'package:imclient/message/text_message_content.dart';
-import 'package:imclient/message/typing_message_content.dart';
-import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:rtckit/group_video_call.dart';
-import 'package:rtckit/rtckit.dart';
-import 'package:rtckit/single_voice_call.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/messages/cell_builder/voice_cell_builder.dart';
-import 'package:wfc_example/messages/conversation_notifier.dart';
+import 'package:wfc_example/messages/conversation_controller.dart';
 import 'package:wfc_example/messages/conversation_settings.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import 'package:wfc_example/messages/conversation_appbar_title.dart';
-import 'package:wfc_example/messages/picture_overview.dart';
-import 'package:wfc_example/messages/video_player_view.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
-import '../contact/contact_select_page.dart';
-import '../user_info_widget.dart';
+import 'input_bar/message_input_bar_controller.dart';
 import 'message_cell.dart';
 import '../ui_model/ui_message.dart';
 
@@ -52,8 +34,7 @@ class _State extends State<MessagesScreen> {
   final EventBus _eventBus = Imclient.IMEventBus;
 
   late ConversationViewModel conversationViewModel;
-
-  final GlobalKey<MessageInputBarState> _inputBarGlobalKey = GlobalKey();
+  late MessageInputBarController _inputBarController;
 
   int _playingMessageId = 0;
   final FlutterSoundPlayer _soundPlayer = FlutterSoundPlayer(logLevel: Level.error);
@@ -70,9 +51,6 @@ class _State extends State<MessagesScreen> {
 
     Imclient.clearConversationUnreadStatus(widget.conversation);
 
-    Imclient.getConversationInfo(widget.conversation).then((conversationInfo) {
-      _inputBarGlobalKey.currentState!.setDrat(conversationInfo.draft ?? "");
-    });
   }
 
   void _sendMessage(MessageContent messageContent) {
@@ -86,6 +64,8 @@ class _State extends State<MessagesScreen> {
 
   @override
   void dispose() {
+    // 释放controller资源
+    _inputBarController.dispose();
     super.dispose();
     if (_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
@@ -158,8 +138,15 @@ class _State extends State<MessagesScreen> {
     }
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationMessageList = conversationViewModel.conversationMessageList;
-    return ChangeNotifierProvider<ConversationNotifier>(
-        create: (_) => ConversationNotifier(conversationViewModel),
+
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider<ConversationController>(create: (_) => ConversationController(conversationViewModel)),
+          ChangeNotifierProvider<MessageInputBarController>(create: (_) {
+            _inputBarController = MessageInputBarController(conversation: widget.conversation, conversationViewModel: conversationViewModel);
+            return _inputBarController;
+          }),
+        ],
         child: Scaffold(
           backgroundColor: const Color.fromARGB(255, 232, 232, 232),
           appBar: AppBar(
@@ -180,27 +167,22 @@ class _State extends State<MessagesScreen> {
                       ),
                     ),
                     onTap: () {
-                      _inputBarGlobalKey.currentState!.resetStatus();
+                      // 使用controller重置状态
+                      _inputBarController.resetStatus();
                     },
                   ),
                 ),
-                _inputBar(),
+                MessageInputBar()
               ],
             ),
           ),
         ));
   }
 
-  Widget _inputBar() {
-    return MessageInputBar(
-      widget.conversation,
-      key: _inputBarGlobalKey,
-    );
-  }
-
   @override
   void deactivate() {
-    String draft = _inputBarGlobalKey.currentState!.getDraft();
+    // 使用controller获取草稿
+    String draft = _inputBarController.getDraft();
     Imclient.setConversationDraft(widget.conversation, draft);
     super.deactivate();
   }
