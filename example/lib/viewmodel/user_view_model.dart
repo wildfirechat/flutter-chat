@@ -12,25 +12,24 @@ class UserViewModel extends ChangeNotifier {
   UserViewModel() {
     _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
       for (var user in event.userInfos) {
-        UserRepo.putUserInfo(user);
+        _userMap[user.userId] = user;
       }
       notifyListeners();
     });
   }
 
-  UserInfo? getUserInfo(String userId, {String? groupId}) {
+  Future<UserInfo?> getUserInfo(String userId, {String? groupId}) async {
     var userInfo = _userMap[userId];
     if (userInfo != null) {
       return userInfo;
     }
-    Imclient.getUserInfo(userId, groupId: groupId).then((info) {
-      if (info == null) {
-        return;
-      }
-      _userMap[userId] = info;
-      notifyListeners();
-    });
-    return null;
+    userInfo = await Imclient.getUserInfo(userId, groupId: groupId);
+    if (userInfo == null) {
+      return null;
+    }
+    _userMap[userId] = userInfo;
+    notifyListeners();
+    return userInfo;
   }
 
   @override
