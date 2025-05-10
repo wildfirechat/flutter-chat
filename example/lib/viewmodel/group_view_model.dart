@@ -18,19 +18,18 @@ class GroupViewModel extends ChangeNotifier {
     });
   }
 
-  GroupInfo? getGroupInfo(String groupId) {
+  Future<GroupInfo?> getGroupInfo(String groupId) async {
     var groupInfo = _groupInfoMap[groupId];
     if (groupInfo != null) {
       return groupInfo;
     }
-    Imclient.getGroupInfo(groupId).then((info) {
-      if (info == null) {
-        return;
-      }
-      _groupInfoMap[groupId] = info;
-      notifyListeners();
-    });
-    return null;
+    groupInfo = await Imclient.getGroupInfo(groupId);
+    if (groupInfo == null) {
+      return null;
+    }
+    _groupInfoMap[groupId] = groupInfo;
+    notifyListeners();
+    return groupInfo;
   }
 
   @override

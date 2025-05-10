@@ -18,19 +18,18 @@ class ChannelViewModel extends ChangeNotifier {
     });
   }
 
-  ChannelInfo? getChannelInfo(String groupId) {
+  Future<ChannelInfo?> getChannelInfo(String groupId) async {
     var groupInfo = _channelInfoMap[groupId];
     if (groupInfo != null) {
       return groupInfo;
     }
-    Imclient.getChannelInfo(groupId).then((info) {
-      if (info == null) {
-        return;
-      }
-      _channelInfoMap[groupId] = info;
-      notifyListeners();
-    });
-    return null;
+    groupInfo = await Imclient.getChannelInfo(groupId);
+    if (groupInfo == null) {
+      return null;
+    }
+    _channelInfoMap[groupId] = groupInfo;
+    notifyListeners();
+    return groupInfo;
   }
 
   @override
