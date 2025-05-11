@@ -12,9 +12,10 @@ enum ChatInputBarStatus { keyboardStatus, pluginStatus, emojiStatus, recordStatu
 class MessageInputBarController extends ChangeNotifier {
   final TextEditingController textEditingController = TextEditingController();
   final FocusNode focusNode = FocusNode();
-  ChatInputBarStatus _status;
   final Conversation conversation;
   final ConversationViewModel conversationViewModel;
+
+  ChatInputBarStatus _status;
 
   int _sendTypingTime = 0;
 
