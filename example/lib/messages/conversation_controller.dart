@@ -415,4 +415,12 @@ class ConversationController extends ChangeNotifier {
     conversationViewModel.deleteMessage(messageId);
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    if (_soundPlayer.isPlaying) {
+      _soundPlayer.stopPlayer();
+    }
+  }
+
 }

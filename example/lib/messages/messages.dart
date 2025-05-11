@@ -6,7 +6,6 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
-import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
@@ -31,13 +30,9 @@ class Messages extends StatefulWidget {
 }
 
 class _State extends State<Messages> {
-  final EventBus _eventBus = Imclient.IMEventBus;
 
   late ConversationViewModel conversationViewModel;
   late MessageInputBarController _inputBarController;
-
-  int _playingMessageId = 0;
-  final FlutterSoundPlayer _soundPlayer = FlutterSoundPlayer(logLevel: Level.error);
 
   @override
   void initState() {
@@ -50,16 +45,6 @@ class _State extends State<Messages> {
     });
 
     Imclient.clearConversationUnreadStatus(widget.conversation);
-
-  }
-
-  void _sendMessage(MessageContent messageContent) {
-    Imclient.sendMediaMessage(widget.conversation, messageContent, successCallback: (int messageUid, int timestamp) {}, errorCallback: (int errorCode) {},
-        progressCallback: (int uploaded, int total) {
-      debugPrint("progressCallback:$uploaded,$total");
-    }, uploadedCallback: (String remoteUrl) {
-      debugPrint("uploadedCallback:$remoteUrl");
-    });
   }
 
   @override
@@ -67,9 +52,7 @@ class _State extends State<Messages> {
     // 释放controller资源
     _inputBarController.dispose();
     super.dispose();
-    if (_soundPlayer.isPlaying) {
-      _soundPlayer.stopPlayer();
-    }
+
     conversationViewModel.setConversation(null);
     if (widget.conversation.conversationType == ConversationType.Chatroom) {
       Imclient.quitChatroom(widget.conversation.target, () {
@@ -77,7 +60,7 @@ class _State extends State<Messages> {
           if (userInfo != null) {
             TipNotificationContent tip = TipNotificationContent();
             tip.tip = '${userInfo.displayName} 离开了聊天室';
-            _sendMessage(tip);
+            conversationViewModel.sendMessage(tip);
           }
         });
       }, (errorCode) {});
@@ -94,30 +77,6 @@ class _State extends State<Messages> {
         break;
     }
     return true;
-  }
-
-  void stopPlayVoiceMessage(UIMessage model) {
-    if (_soundPlayer.isPlaying) {
-      _soundPlayer.stopPlayer();
-    }
-    _eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, false));
-    _playingMessageId = 0;
-  }
-
-  void startPlayVoiceMessage(UIMessage model) {
-    SoundMessageContent soundContent = model.message.content as SoundMessageContent;
-    if (model.message.direction == MessageDirection.MessageDirection_Receive && model.message.status == MessageStatus.Message_Status_Readed) {
-      Imclient.updateMessageStatus(model.message.messageId, MessageStatus.Message_Status_Played);
-      model.message.status = MessageStatus.Message_Status_Played;
-    }
-    _soundPlayer.openPlayer();
-    _soundPlayer.startPlayer(
-        fromURI: soundContent.remoteUrl!,
-        whenFinished: () {
-          stopPlayVoiceMessage(model);
-        });
-    _eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, true));
-    _playingMessageId = model.message.messageId;
   }
 
   @override
