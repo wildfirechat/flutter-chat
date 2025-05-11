@@ -1,15 +1,9 @@
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/notification/tip_notificiation_content.dart';
-import 'package:logger/logger.dart' show Level, Logger;
-import 'package:flutter_sound/flutter_sound.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
-import 'package:imclient/message/message.dart';
-import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
-import 'package:wfc_example/messages/cell_builder/voice_cell_builder.dart';
 import 'package:wfc_example/messages/conversation_controller.dart';
 import 'package:wfc_example/messages/conversation_settings.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
@@ -18,7 +12,6 @@ import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
 import 'input_bar/message_input_bar_controller.dart';
 import 'message_cell.dart';
-import '../ui_model/ui_message.dart';
 
 class Messages extends StatefulWidget {
   final Conversation conversation;
