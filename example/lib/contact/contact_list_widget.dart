@@ -133,7 +133,7 @@ class ContactListItem extends StatelessWidget {
                 ),
                 Expanded(
                     child: Text(
-                  contactInfo.userInfo.displayName!,
+                  contactInfo.userInfo.friendAlias ?? contactInfo.userInfo.displayName ?? '<${contactInfo.userInfo.userId}>',
                   style: const TextStyle(fontSize: 15.0),
                 )),
               ],
