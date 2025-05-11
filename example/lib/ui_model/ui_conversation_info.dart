@@ -9,6 +9,7 @@ import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 class UIConversationInfo {
   ConversationInfo conversationInfo;
+
   // TODO the following member fields not used now
   String? portrait;
   String? title;
@@ -24,11 +25,11 @@ class UIConversationInfo {
     if (conversationInfo.conversation.conversationType == ConversationType.Single) {
       UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
       var userInfo = await userViewModel.getUserInfo(conversationInfo.conversation.target);
-      return (userInfo?.displayName ?? '私聊', userInfo?.portrait ?? Config.defaultUserPortrait);
+      return (userInfo?.friendAlias ?? userInfo?.displayName ?? '私聊', userInfo?.portrait ?? Config.defaultUserPortrait);
     } else if (conversationInfo.conversation.conversationType == ConversationType.Group) {
       GroupViewModel groupViewModel = Provider.of<GroupViewModel>(context, listen: false);
       var groupInfo = await groupViewModel.getGroupInfo(conversationInfo.conversation.target);
-      return (groupInfo?.name ?? "群聊", groupInfo?.portrait ?? Config.defaultGroupPortrait);
+      return (groupInfo?.remark ?? groupInfo?.name ?? "群聊", groupInfo?.portrait ?? Config.defaultGroupPortrait);
     } else if (conversationInfo.conversation.conversationType == ConversationType.Channel) {
       ChannelViewModel channelViewModel = Provider.of<ChannelViewModel>(context, listen: false);
       var channelInfo = await channelViewModel.getChannelInfo(conversationInfo.conversation.target);
