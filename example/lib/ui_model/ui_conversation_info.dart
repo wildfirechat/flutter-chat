@@ -52,7 +52,7 @@ class UIConversationInfo {
     return '${userInfo == null ? '' : userInfo.getReadableName()}: $msgDigest';
   }
 
-  Future<(String, String, String)> titlePortraitAndLastMsgFuture(BuildContext context) async {
+  Future<(String, String, String)> titlePortraitAndLastMsg(BuildContext context) async {
     final (titleAndPortraitRecord, lastMsgDigestStr) = await (titleAndPortrait(context), lastMsgDigest(context)).wait;
     return (titleAndPortraitRecord.$1, titleAndPortraitRecord.$2, lastMsgDigestStr);
   }

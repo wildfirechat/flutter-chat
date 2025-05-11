@@ -42,24 +42,22 @@ class ConversationListItem extends StatefulWidget {
 
 class _ConversationListItemState extends State<ConversationListItem> {
   var convTitle = '';
-
-  var portrait = '';
-
+  var convPortrait = '';
   var lastMsgDigest = '';
 
   @override
   void initState() {
     super.initState();
-    widget.uiConversationInfo.titlePortraitAndLastMsgFuture(context).then((onValue) {
+    widget.uiConversationInfo.titlePortraitAndLastMsg(context).then((onValue) {
       debugPrint('onValue: $onValue');
       setState(() {
         convTitle = onValue.$1;
-        portrait = onValue.$2;
+        convPortrait = onValue.$2;
         lastMsgDigest = onValue.$3;
       });
     }).catchError((error) {
       // Handle error
-      print("Error fetching conversation data: $error");
+      debugPrint("Error fetching conversation data: $error");
     });
   }
 
@@ -87,7 +85,9 @@ class _ConversationListItemState extends State<ConversationListItem> {
                         child: SizedBox(
                           width: 40,
                           height: 40,
-                          child: !portrait.startsWith('http') ? Image.asset(portrait, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
+                          child: !convPortrait.startsWith('http')
+                              ? Image.asset(convPortrait, width: 44.0, height: 44.0)
+                              : Image.network(convPortrait, width: 44.0, height: 44.0),
                         )),
                     Expanded(
                         child: Container(
