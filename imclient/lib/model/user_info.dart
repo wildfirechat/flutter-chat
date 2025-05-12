@@ -74,19 +74,5 @@ class UserInfo {
   @override
   int get hashCode =>
       userId.hashCode ^
-      name.hashCode ^
-      displayName.hashCode ^
-      gender.hashCode ^
-      portrait.hashCode ^
-      mobile.hashCode ^
-      email.hashCode ^
-      address.hashCode ^
-      company.hashCode ^
-      social.hashCode ^
-      extra.hashCode ^
-      friendAlias.hashCode ^
-      groupAlias.hashCode ^
-      updateDt.hashCode ^
-      type.hashCode ^
-      deleted.hashCode;
+      updateDt.hashCode ;
 }

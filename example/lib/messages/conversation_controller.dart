@@ -25,7 +25,7 @@ import 'package:wfc_example/messages/picture_overview.dart';
 import 'package:wfc_example/messages/video_player_view.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
-import '../contact/contact_select_page.dart';
+import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
 import '../ui_model/ui_message.dart';
 
@@ -110,7 +110,7 @@ class ConversationController extends ChangeNotifier {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => ContactSelectPage(
+                  builder: (context) => PickUserScreen(
                         (context, members) async {
                           if (members.isEmpty) {
                             Fluttertoast.showToast(msg: "请选择一位或者多位成员发起通话");
@@ -139,7 +139,7 @@ class ConversationController extends ChangeNotifier {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => ContactSelectPage(
+          builder: (context) => PickUserScreen(
                 (context, members) async {
                   if (members.isNotEmpty) {
                     UserInfo? userInfo = await Imclient.getUserInfo(members.first);

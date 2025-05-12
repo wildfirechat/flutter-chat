@@ -24,7 +24,7 @@ import 'package:wfc_example/splash.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
 import 'config.dart';
-import 'contact/contact_select_page.dart';
+import 'contact/pick_user_screen.dart';
 import 'default_portrait_provider.dart';
 import 'home/home.dart';
 import 'login_screen.dart';
@@ -99,7 +99,7 @@ class _MyAppState extends State<MyApp> {
       Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => ContactSelectPage((context, members) async {
+            builder: (context) => PickUserScreen((context, members) async {
                   callback(members);
                 }, maxSelected: maxSelected, candidates: candidates, disabledCheckedUsers: disabledCheckedUsers, disabledUncheckedUsers: disabledUncheckedUsers)),
       );

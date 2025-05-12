@@ -11,7 +11,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:wfc_example/contact/contact_select_page.dart';
+import 'package:wfc_example/contact/pick_user_screen.dart';
 import 'package:wfc_example/contact/search_user.dart';
 import 'package:wfc_example/settings/settings.dart';
 import 'package:wfc_example/viewmodel/channel_view_model.dart';
@@ -107,7 +107,7 @@ class HomeTabBarState extends State<HomeTabBar> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => ContactSelectPage((context, members) async {
+          builder: (context) => PickUserScreen((context, members) async {
                 if (members.isEmpty) {
                   Fluttertoast.showToast(msg: "请选择一位或者多位好友发起聊天");
                 } else if (members.length == 1) {
