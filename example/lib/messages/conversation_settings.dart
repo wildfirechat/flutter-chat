@@ -12,7 +12,7 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/messages/messages.dart';
 
-import '../contact/contact_select_page.dart';
+import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
 import 'conversation_setting_all_members_view.dart';
 import 'conversation_setting_members_view.dart';
@@ -265,7 +265,7 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) =>
-              ContactSelectPage((context, members) async {
+              PickUserScreen((context, members) async {
                 if(members.isEmpty) {
                   Navigator.pop(context);
                 } else {
@@ -299,7 +299,7 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) =>
-                ContactSelectPage((context, members) async {
+                PickUserScreen((context, members) async {
                   if(members.isEmpty) {
                     Navigator.pop(context);
                     return;
@@ -324,7 +324,7 @@ class ConversationSettingPageState extends State<ConversationSettingPage> {
     } else {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => ContactSelectPage((context, members) async {
+        MaterialPageRoute(builder: (context) => PickUserScreen((context, members) async {
           Navigator.pop(context);
           if(members.isNotEmpty) {
             Imclient.createGroup(null, null, null, 2, members, (strValue) {

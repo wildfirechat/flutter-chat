@@ -10,7 +10,7 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 
 import '../config.dart';
-import '../contact/contact_select_page.dart';
+import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
 
 class _MemberItem extends StatefulWidget {
@@ -145,7 +145,7 @@ class _GroupAllMembersWidgetState extends State<GroupAllMembersWidget> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) =>
-              ContactSelectPage((context, members) async {
+              PickUserScreen((context, members) async {
                 if(members.isEmpty) {
                   Navigator.pop(context);
                   return;
@@ -175,7 +175,7 @@ class _GroupAllMembersWidgetState extends State<GroupAllMembersWidget> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) =>
-              ContactSelectPage((context, members) async {
+              PickUserScreen((context, members) async {
                 if(members.isEmpty) {
                   Navigator.pop(context);
                 } else {
