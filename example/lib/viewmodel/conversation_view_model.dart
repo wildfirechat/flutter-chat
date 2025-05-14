@@ -194,6 +194,7 @@ class ConversationViewModel extends ChangeNotifier {
   setConversationSilent(Conversation conversation, bool silent) {
     Imclient.setConversationSilent(conversation, silent, () {
       if (conversation == _currentConversation) {
+        _currentConversationInfo?.isSilent = silent;
         notifyListeners();
       }
     }, (errorCode) {
@@ -204,6 +205,7 @@ class ConversationViewModel extends ChangeNotifier {
   setConversationTop(Conversation conversation, int top) {
     Imclient.setConversationTop(conversation, top, () {
       if (conversation == _currentConversation) {
+        _currentConversationInfo?.isTop = top;
         notifyListeners();
       }
     }, (errorCode) {
