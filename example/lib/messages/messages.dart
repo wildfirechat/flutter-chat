@@ -5,7 +5,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/messages/conversation_controller.dart';
-import 'package:wfc_example/messages/conversation_settings.dart';
+import 'package:wfc_example/messages/group_conversation_info_screen.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import 'package:wfc_example/messages/conversation_appbar_title.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
@@ -23,7 +23,6 @@ class Messages extends StatefulWidget {
 }
 
 class _State extends State<Messages> {
-
   late ConversationViewModel _conversationViewModel;
   late MessageInputBarController _inputBarController;
 
@@ -79,7 +78,7 @@ class _State extends State<Messages> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ConversationSettingPage(widget.conversation)),
+              MaterialPageRoute(builder: (context) => GroupConversationInfoScreen(widget.conversation)),
             );
           },
           icon: const Icon(Icons.more_horiz_rounded),
