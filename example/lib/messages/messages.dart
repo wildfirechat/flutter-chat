@@ -42,8 +42,6 @@ class _State extends State<Messages> {
 
   @override
   void dispose() {
-    // 释放controller资源
-    _inputBarController.dispose();
     super.dispose();
 
     conversationViewModel.setConversation(null);
