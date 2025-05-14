@@ -205,9 +205,9 @@ class MessageInputBarController extends ChangeNotifier {
 
   @override
   void dispose() {
+    super.dispose();
     textEditingController.dispose();
     focusNode.removeListener(_onFocusChanged);
     focusNode.dispose();
-    super.dispose();
   }
 }
