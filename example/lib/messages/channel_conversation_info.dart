@@ -17,14 +17,14 @@ import '../user_info_widget.dart';
 import 'conversation_setting_all_members_view.dart';
 import 'conversation_setting_members_view.dart';
 
-class ConversationSettingPage extends StatefulWidget {
-  ConversationSettingPage(this.conversation, {Key? key}) : super(key: key);
+class ChannelConversationInfoScreen extends StatefulWidget {
+  ChannelConversationInfoScreen(this.conversation, {Key? key}) : super(key: key);
   Conversation conversation;
   @override
-  State<StatefulWidget> createState() => ConversationSettingPageState();
+  State<StatefulWidget> createState() => ChannelConversationInfoScreenState();
 }
 
-class ConversationSettingPageState extends State<ConversationSettingPage> {
+class ChannelConversationInfoScreenState extends State<ChannelConversationInfoScreen> {
   late ConversationInfo conversationInfo;
   List modelList = [];
   GroupInfo? groupInfo;

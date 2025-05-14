@@ -9,6 +9,7 @@ import 'package:imclient/message/notification/tip_notificiation_content.dart';
 import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/ui_model/ui_message.dart';
@@ -28,6 +29,7 @@ class ConversationViewModel extends ChangeNotifier {
   //  消息倒序，第 0 条是最新消息，但UI 层list 进行了 reverse
   List<UIMessage> _conversationMessageList = [];
   late Conversation? _currentConversation;
+  late ConversationInfo? _currentConversationInfo;
   late String _draft;
   bool _isLoading = false;
   bool _noMoreLocalHistoryMsg = false;
@@ -50,39 +52,8 @@ class ConversationViewModel extends ChangeNotifier {
     return _instantConversationStatusTitle ?? _conversationTitle;
   }
 
-  void setConversation(Conversation? conversation, [Function(int err)? joinChatroomErrorCallback]) {
-    _noMoreRemoteHistoryMsg = false;
-    _conversationMessageList = [];
-    _instantConversationStatusTitle = null;
-    _currentConversation = conversation;
-    _stopTypingTimer();
-
-    if (conversation == null) {
-      _currentConversation = null;
-      return;
-    }
-
-    _computeConversationTitle();
-    if (conversation.conversationType == ConversationType.Chatroom) {
-      Imclient.joinChatroom(conversation.target, () {
-        Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
-          if (userInfo != null) {
-            TipNotificationContent tip = TipNotificationContent();
-            tip.tip = '欢迎 ${userInfo.displayName} 加入聊天室';
-            _sendMessage(tip);
-          }
-        });
-      }, (errorCode) {
-        joinChatroomErrorCallback?.call(errorCode);
-      });
-      _noMoreLocalHistoryMsg = true;
-    } else {
-      _noMoreLocalHistoryMsg = false;
-      Imclient.getMessages(conversation, 0, 20).then((messages) {
-        _conversationMessageList = messages.map((message) => UIMessage(message)).toList();
-        notifyListeners();
-      });
-    }
+  ConversationInfo? get conversationInfo {
+    return _currentConversationInfo;
   }
 
   ConversationViewModel() {
@@ -180,6 +151,63 @@ class ConversationViewModel extends ChangeNotifier {
     _draftUpdatedSubscription = _eventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
       _draft = event.draft;
       notifyListeners();
+    });
+  }
+
+  void setConversation(Conversation? conversation, [Function(int err)? joinChatroomErrorCallback]) async {
+    _noMoreRemoteHistoryMsg = false;
+    _conversationMessageList = [];
+    _instantConversationStatusTitle = null;
+    _currentConversation = conversation;
+    _stopTypingTimer();
+
+    if (conversation == null) {
+      _currentConversation = null;
+      _currentConversationInfo = null;
+      return;
+    }
+
+    _currentConversationInfo = await Imclient.getConversationInfo(conversation);
+    _computeConversationTitle();
+    if (conversation.conversationType == ConversationType.Chatroom) {
+      Imclient.joinChatroom(conversation.target, () {
+        Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
+          if (userInfo != null) {
+            TipNotificationContent tip = TipNotificationContent();
+            tip.tip = '欢迎 ${userInfo.displayName} 加入聊天室';
+            _sendMessage(tip);
+          }
+        });
+      }, (errorCode) {
+        joinChatroomErrorCallback?.call(errorCode);
+      });
+      _noMoreLocalHistoryMsg = true;
+    } else {
+      _noMoreLocalHistoryMsg = false;
+      Imclient.getMessages(conversation, 0, 20).then((messages) {
+        _conversationMessageList = messages.map((message) => UIMessage(message)).toList();
+        notifyListeners();
+      });
+    }
+  }
+
+  setConversationSilent(Conversation conversation, bool silent) {
+    Imclient.setConversationSilent(conversation, silent, () {
+      if (conversation == _currentConversation) {
+        notifyListeners();
+      }
+    }, (errorCode) {
+      // do nothing
+    });
+  }
+
+  setConversationTop(Conversation conversation, int top) {
+    Imclient.setConversationTop(conversation, top, () {
+      if (conversation == _currentConversation) {
+        notifyListeners();
+      }
+    }, (errorCode) {
+      // do nothing
     });
   }
 
