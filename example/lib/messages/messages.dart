@@ -16,7 +16,7 @@ import 'message_cell.dart';
 class Messages extends StatefulWidget {
   final Conversation conversation;
 
-  const Messages(this.conversation, {Key? key}) : super(key: key);
+  const Messages(this.conversation, {super.key});
 
   @override
   State createState() => _State();
@@ -24,15 +24,15 @@ class Messages extends StatefulWidget {
 
 class _State extends State<Messages> {
 
-  late ConversationViewModel conversationViewModel;
+  late ConversationViewModel _conversationViewModel;
   late MessageInputBarController _inputBarController;
 
   @override
   void initState() {
     super.initState();
 
-    conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
-    conversationViewModel.setConversation(widget.conversation, (err) {
+    _conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
+    _conversationViewModel.setConversation(widget.conversation, (err) {
       Fluttertoast.showToast(msg: "网络错误！加入聊天室失败!");
       Navigator.pop(context);
     });
@@ -44,14 +44,14 @@ class _State extends State<Messages> {
   void dispose() {
     super.dispose();
 
-    conversationViewModel.setConversation(null);
+    _conversationViewModel.setConversation(null);
     if (widget.conversation.conversationType == ConversationType.Chatroom) {
       Imclient.quitChatroom(widget.conversation.target, () {
         Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
           if (userInfo != null) {
             TipNotificationContent tip = TipNotificationContent();
             tip.tip = '${userInfo.displayName} 离开了聊天室';
-            conversationViewModel.sendMessage(tip);
+            _conversationViewModel.sendMessage(tip);
           }
         });
       }, (errorCode) {});
@@ -63,7 +63,7 @@ class _State extends State<Messages> {
       case ScrollEndNotification:
         var noti = notification as ScrollEndNotification;
         if (noti.metrics.pixels >= noti.metrics.maxScrollExtent) {
-          conversationViewModel.loadHistoryMessage();
+          _conversationViewModel.loadHistoryMessage();
         }
         break;
     }
