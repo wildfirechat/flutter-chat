@@ -5,10 +5,13 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_member.dart';
+import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/messages/messages.dart';
+import 'package:wfc_example/messages/single_conversation_member_view.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 import 'package:wfc_example/viewmodel/group_view_model.dart';
+import 'package:wfc_example/viewmodel/user_view_model.dart';
 import 'package:wfc_example/widget/OptionButtonItem.dart';
 import 'package:wfc_example/widget/OptionItem.dart';
 import 'package:wfc_example/widget/OptionSwitchItem.dart';
@@ -18,44 +21,50 @@ import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
 import 'group_conversation_members_view.dart';
 
-class GroupConversationInfoScreen extends StatelessWidget {
-  GroupConversationInfoScreen(this.conversation, {super.key});
+class SingleConversationInfoScreen extends StatelessWidget {
+  const SingleConversationInfoScreen(this.conversation, {super.key});
 
   final Conversation conversation;
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<GroupViewModel>(
-        create: (_) {
-          var groupViewModel = GroupViewModel();
-          groupViewModel.setup(conversation.target);
-          return groupViewModel;
-        },
-        child: Consumer<GroupViewModel>(
-            builder: (context, viewModel, child) => Scaffold(
-                  appBar: AppBar(
-                    title: const Text('群会话详情'),
-                  ),
-                  body: SafeArea(
-                    child: viewModel.groupMember == null
-                        ? const Center(
-                            child: CircularProgressIndicator(),
-                          )
-                        : _buildGroupConversationInfoView(context),
-                  ),
-                )));
+    var future = Imclient.getUserInfo(conversation.target);
+    return FutureBuilder<UserInfo?>(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('单聊会话详情'),
+            ),
+            body: SafeArea(
+              child: _buildSingleConversationInfoView(context, snapshot.data!),
+            ),
+          );
+        } else {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('单聊会话详情'),
+            ),
+            body: const SafeArea(
+                child: Center(
+              child: CircularProgressIndicator(),
+            )),
+          );
+        }
+      },
+    );
   }
 
-  Widget _buildGroupConversationInfoView(BuildContext context) {
-    var groupViewModel = Provider.of<GroupViewModel>(context);
-    var groupMember = groupViewModel.groupMember;
+  Widget _buildSingleConversationInfoView(BuildContext context, UserInfo userInfo) {
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationInfo = conversationViewModel.conversationInfo!;
     return SingleChildScrollView(
         child: Column(children: [
-      GroupConversationMembersView(
+      SingleConversationMemberView(
         conversation,
-        onGroupMemberTap: (userInfo) {
+        userInfo,
+        onUserTap: (userInfo) {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => UserInfoWidget(userInfo.userId)),
@@ -64,24 +73,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
         onAddActionTap: () {
           _onPlusItemClicked(context);
         },
-        onRemoveActionTap: () {
-          _onMinusItemClicked(context);
-        },
-        onShowMoreGroupMemberTap: () {
-          // TODO
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => GroupAllMembersWidget(conversation.target, groupMembers, hasPlus, hasMinus)),
-          // );
-        },
       ),
-      const SectionDivider(),
-      OptionItem('成员列表', onTap: () {}),
-      OptionItem('群聊名称', desc: groupViewModel.groupInfo?.name, onTap: () {}),
-      OptionItem('群二维码', rightIcon: Icons.qr_code, onTap: () {}),
-      OptionItem('群公告', desc: '占位群公告', onTap: () {}),
-      OptionItem('群备注', desc: groupViewModel.groupInfo?.remark, onTap: () {}),
-      groupMember!.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner ? OptionItem('群管理', onTap: () {}) : Container(),
       const SectionDivider(),
       OptionItem('查找聊天内容', onTap: () {}),
       OptionItem('会话文件', onTap: () {}),
@@ -92,23 +84,12 @@ class GroupConversationInfoScreen extends StatelessWidget {
       OptionSwitchItem('置顶聊天', conversationInfo.isTop > 0, (enable) {
         conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
       }),
-      OptionSwitchItem('保存到通讯录', groupViewModel.isFavGroup, (enable) {
-        groupViewModel.setFavGroup(conversationInfo.conversation.target, enable);
-      }),
-      const SectionDivider(),
-      OptionItem('我在本群的昵称', desc: groupMember.alias, onTap: () {}),
-      OptionSwitchItem('显示群成员昵称', !groupViewModel.isHiddenMemberName, (enable) {
-        groupViewModel.setHideGroupMemberName(conversationInfo.conversation.target, !enable);
-      }),
       const SectionDivider(),
       OptionButtonItem('清空聊天记录', () {
         Imclient.clearMessages(conversation).then((value) {
           Fluttertoast.showToast(msg: "清理成功");
         });
       }),
-      groupMember.type == GroupMemberType.Owner ? OptionButtonItem('转移群组', () {}) : Container(),
-      groupMember.type == GroupMemberType.Owner ? OptionButtonItem('解散群组', () {}) : Container(),
-      groupMember.type != GroupMemberType.Owner ? OptionButtonItem('退出群组', () {}) : Container(),
       const SectionDivider(),
     ]));
   }
