@@ -40,10 +40,10 @@ class UIConversationInfo {
   }
 
   Future<String> lastMsgDigest(BuildContext context) async {
-    UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
     if (conversationInfo.lastMessage == null) {
       return '';
     }
+    UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
     var userInfoFuture = userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser,
         groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null);
 
@@ -57,4 +57,11 @@ class UIConversationInfo {
     final (titleAndPortraitRecord, lastMsgDigestStr) = await (titleAndPortrait(context), lastMsgDigest(context)).wait;
     return (titleAndPortraitRecord.$1, titleAndPortraitRecord.$2, lastMsgDigestStr);
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is UIConversationInfo && runtimeType == other.runtimeType && conversationInfo == other.conversationInfo;
+
+  @override
+  int get hashCode => conversationInfo.hashCode;
 }
