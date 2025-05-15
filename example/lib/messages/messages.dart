@@ -8,8 +8,10 @@ import 'package:wfc_example/messages/conversation_controller.dart';
 import 'package:wfc_example/messages/group_conversation_info_screen.dart';
 import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
 import 'package:wfc_example/messages/conversation_appbar_title.dart';
+import 'package:wfc_example/messages/single_conversation_info_screen.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
+import 'channel_conversation_info.dart';
 import 'input_bar/message_input_bar_controller.dart';
 import 'message_cell.dart';
 
@@ -78,7 +80,12 @@ class _State extends State<Messages> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => GroupConversationInfoScreen(widget.conversation)),
+              MaterialPageRoute(
+                  builder: (context) => widget.conversation.conversationType == ConversationType.Single
+                      ? SingleConversationInfoScreen(widget.conversation)
+                      : widget.conversation.conversationType == ConversationType.Channel
+                          ? ChannelConversationInfoScreen(widget.conversation)
+                          : GroupConversationInfoScreen(widget.conversation)),
             );
           },
           icon: const Icon(Icons.more_horiz_rounded),
