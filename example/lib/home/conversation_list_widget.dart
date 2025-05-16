@@ -1,4 +1,5 @@
 import 'package:badges/badges.dart' as badge;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
@@ -9,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:wfc_example/utilities.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
 
+import '../config.dart';
 import '../messages/messages.dart';
 import '../ui_model/ui_conversation_info.dart';
 
@@ -28,6 +30,7 @@ class _ConversationListWidgetState extends State<ConversationListWidget> {
         child: ListView.builder(
             itemCount: conversationListViewModel.conversationList.length,
             // 使用 ListView.builder 的 key 参数确保列表项在顺序变化时能正确更新
+            itemExtent: 64.5,
             key: ValueKey<int>(conversationListViewModel.conversationList.length),
             itemBuilder: (context, i) {
               UIConversationInfo info = conversationListViewModel.conversationList[i];
@@ -210,46 +213,21 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
 
   // 构建头像图片，优化图片加载
   Widget _buildPortraitImage(String portrait) {
-    if (portrait.isEmpty) {
-      // 返回默认头像
-      return Image.asset('assets/images/default_avatar.png', width: 44.0, height: 44.0);
-    }
-
-    if (!portrait.startsWith('http')) {
-      // 本地图片资源
-      return Image.asset(portrait, width: 44.0, height: 44.0);
-    }
-
-    // 网络图片使用缓存处理
-    return Image.network(
-      portrait,
-      width: 44.0,
-      height: 44.0,
-      cacheWidth: 88,
-      // 指定缓存尺寸，优化内存使用
-      cacheHeight: 88,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        // 加载失败时显示默认图片
-        return Image.asset('assets/images/default_avatar.png', width: 44.0, height: 44.0);
-      },
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-        // 加载中显示进度指示器
-        return Container(
+    var defaultPortrait = widget.uiConversationInfo.conversationInfo.conversation.conversationType == ConversationType.Single
+        ? Config.defaultUserPortrait
+        : widget.uiConversationInfo.conversationInfo.conversation.conversationType == ConversationType.Group
+            ? Config.defaultGroupPortrait
+            : Config.defaultChannelPortrait;
+    return ClipRRect(
+        borderRadius: BorderRadius.circular(6.0),
+        child: CachedNetworkImage(
+          imageUrl: portrait,
           width: 44.0,
           height: 44.0,
-          color: Colors.grey.withOpacity(0.2),
-          child: const Center(
-            child: SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
-        );
-      },
-    );
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Image.asset(defaultPortrait, width: 44.0, height: 44.0),
+          errorWidget: (context, url, err) => Image.asset(defaultPortrait, width: 44.0, height: 44.0),
+        ));
   }
 
   // 构建加载中的占位UI

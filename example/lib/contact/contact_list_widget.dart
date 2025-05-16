@@ -1,4 +1,5 @@
 import 'package:badges/badges.dart' as badge;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -173,7 +174,6 @@ class _ContactListItemState extends State<ContactListItem> with AutomaticKeepAli
     );
   }
 
-  // 构建头像组件
   Widget _buildPortraitWidget() {
     // 加载中或无头像时显示默认头像
     var portrait = widget.contactInfo.userInfo.portrait;
@@ -181,40 +181,16 @@ class _ContactListItemState extends State<ContactListItem> with AutomaticKeepAli
       return Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0);
     }
 
-    if (!portrait.startsWith('http')) {
-      return Image.asset(portrait!, width: 40.0, height: 40.0);
-    }
-
-    return Image.network(
-      portrait,
-      width: 40.0,
-      height: 40.0,
-      cacheWidth: 80,
-      // 缩小缓存尺寸以提高性能
-      cacheHeight: 80,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        // 加载失败显示默认头像
-        return Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0);
-      },
-      loadingBuilder: (context, child, loadingProgress) {
-        if (loadingProgress == null) return child;
-
-        // 加载中显示进度组件
-        return Container(
+    return ClipRRect(
+        borderRadius: BorderRadius.circular(4.0),
+        child: CachedNetworkImage(
+          imageUrl: portrait,
           width: 40.0,
           height: 40.0,
-          color: Colors.grey.withOpacity(0.2),
-          child: const Center(
-            child: SizedBox(
-              width: 20.0,
-              height: 20.0,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          ),
-        );
-      },
-    );
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0),
+          errorWidget: (context, url, err) => Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0),
+        ));
   }
 
   @override
