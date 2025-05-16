@@ -24,20 +24,27 @@ class ContactListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Selector<ContactListViewModel, ({List<UIContactInfo> contactList, int unreadFriendRequestCount})>(
-        builder: (_, record, __) => Scaffold(
-              body: SafeArea(
-                child: ListView.builder(
-                    itemCount: fixHeaderList.length + record.contactList.length,
-                    itemBuilder: (context, i) {
-                      if (i < fixHeaderList.length) {
-                        return _contactListHeader(context, i, record.unreadFriendRequestCount);
-                      } else {
-                        var contactInfo = record.contactList[i - fixHeaderList.length];
-                        return ContactListItem(contactInfo);
-                      }
-                    }),
-              ),
+        builder: (_, record, __) {
+          return Scaffold(
+            body: SafeArea(
+              child: ListView.builder(
+                  itemCount: fixHeaderList.length + record.contactList.length,
+                  // 使用key帮助ListView正确处理数据更新
+                  key: ValueKey('contact_list_${record.contactList.length}'),
+                  itemBuilder: (context, i) {
+                    if (i < fixHeaderList.length) {
+                      return _contactListHeader(context, i, record.unreadFriendRequestCount);
+                    } else {
+                      var contactInfo = record.contactList[i - fixHeaderList.length];
+                      return ContactListItem(
+                        contactInfo,
+                        key: ValueKey('contact_${contactInfo.userInfo.userId}-${contactInfo.userInfo.updateDt}'),
+                      );
+                    }
+                  }),
             ),
+          );
+        },
         selector: (_, contactListViewModel) => (contactList: contactListViewModel.contactList, unreadFriendRequestCount: contactListViewModel.unreadFriendRequestCount));
   }
 
@@ -102,38 +109,55 @@ class ContactListWidget extends StatelessWidget {
   }
 }
 
-class ContactListItem extends StatelessWidget {
+class ContactListItem extends StatefulWidget {
   final UIContactInfo contactInfo;
 
   const ContactListItem(this.contactInfo, {super.key});
 
   @override
+  State<ContactListItem> createState() => _ContactListItemState();
+}
+
+class _ContactListItemState extends State<ContactListItem> with AutomaticKeepAliveClientMixin {
+  // @override
+  // void didUpdateWidget(ContactListItem oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  //   if (oldWidget.contactInfo.userInfo.updateDt != widget.contactInfo.userInfo.updateDt) {
+  //   do something
+  //   }
+  // }
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+
+    // 获取显示名称
+    final displayName = widget.contactInfo.userInfo.friendAlias ?? widget.contactInfo.userInfo.displayName ?? '<${widget.contactInfo.userInfo.userId}>';
+
     return GestureDetector(
       onTap: () => _toUserInfoPage(context),
       child: Column(
         children: <Widget>[
+          // 分类标题
           Container(
-            height: contactInfo.showCategory ? 18 : 0,
+            height: widget.contactInfo.showCategory ? 18 : 0,
             width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
             color: const Color(0xffebebeb),
             padding: const EdgeInsets.only(left: 16),
-            child: contactInfo.showCategory ? Text(contactInfo.category == '{' ? '#' : contactInfo.category) : null,
+            child: widget.contactInfo.showCategory ? Text(widget.contactInfo.category == '{' ? '#' : widget.contactInfo.category) : null,
           ),
           Container(
             height: 52.0,
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                contactInfo.userInfo.portrait == null
-                    ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0)
-                    : Image.network(contactInfo.userInfo.portrait!, width: 40.0, height: 40.0),
+                _buildPortraitWidget(),
                 Container(
                   margin: const EdgeInsets.only(left: 16),
                 ),
                 Expanded(
                     child: Text(
-                  contactInfo.userInfo.friendAlias ?? contactInfo.userInfo.displayName ?? '<${contactInfo.userInfo.userId}>',
+                  displayName,
                   style: const TextStyle(fontSize: 15.0),
                 )),
               ],
@@ -149,6 +173,53 @@ class ContactListItem extends StatelessWidget {
     );
   }
 
+  // 构建头像组件
+  Widget _buildPortraitWidget() {
+    // 加载中或无头像时显示默认头像
+    var portrait = widget.contactInfo.userInfo.portrait;
+    if (portrait == null) {
+      return Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0);
+    }
+
+    if (!portrait.startsWith('http')) {
+      return Image.asset(portrait!, width: 40.0, height: 40.0);
+    }
+
+    return Image.network(
+      portrait,
+      width: 40.0,
+      height: 40.0,
+      cacheWidth: 80,
+      // 缩小缓存尺寸以提高性能
+      cacheHeight: 80,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        // 加载失败显示默认头像
+        return Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0);
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+
+        // 加载中显示进度组件
+        return Container(
+          width: 40.0,
+          height: 40.0,
+          color: Colors.grey.withOpacity(0.2),
+          child: const Center(
+            child: SizedBox(
+              width: 20.0,
+              height: 20.0,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
   ///
   /// 跳转聊天界面
   ///
@@ -156,7 +227,7 @@ class ContactListItem extends StatelessWidget {
   _toUserInfoPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => UserInfoWidget(contactInfo.userInfo.userId)),
+      MaterialPageRoute(builder: (context) => UserInfoWidget(widget.contactInfo.userInfo.userId)),
     );
   }
 }

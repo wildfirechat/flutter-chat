@@ -31,9 +31,11 @@ class _ConversationListWidgetState extends State<ConversationListWidget> {
             key: ValueKey<int>(conversationListViewModel.conversationList.length),
             itemBuilder: (context, i) {
               UIConversationInfo info = conversationListViewModel.conversationList[i];
+              var key =
+                  '${info.conversationInfo.conversation.conversationType}-${info.conversationInfo.conversation.target}-${info.conversationInfo.conversation.conversationType}-${info.conversationInfo.conversation.line}-${info.conversationInfo.timestamp}';
               return ConversationListItem(
                 info,
-                key: ValueKey(info.conversationInfo.conversation.target),
+                key: ValueKey(key),
               );
             }),
       ),
@@ -44,7 +46,7 @@ class _ConversationListWidgetState extends State<ConversationListWidget> {
 class ConversationListItem extends StatefulWidget {
   final UIConversationInfo uiConversationInfo;
 
-  const ConversationListItem(this.uiConversationInfo, {Key? key}) : super(key: key);
+  const ConversationListItem(this.uiConversationInfo, {super.key});
 
   @override
   State<ConversationListItem> createState() => _ConversationListItemState();
@@ -65,14 +67,14 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     _loadData();
   }
 
-  @override
-  void didUpdateWidget(ConversationListItem oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // 如果会话更新了，重新加载数据
-    if (oldWidget.uiConversationInfo.conversationInfo.timestamp != widget.uiConversationInfo.conversationInfo.timestamp) {
-      _loadData();
-    }
-  }
+  // @override
+  // void didUpdateWidget(ConversationListItem oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  //   // 如果会话更新了，重新加载数据
+  //   if (oldWidget.uiConversationInfo.conversationInfo.timestamp != widget.uiConversationInfo.conversationInfo.timestamp) {
+  //     _loadData();
+  //   }
+  // }
 
   // 加载会话数据
   Future<void> _loadData() async {

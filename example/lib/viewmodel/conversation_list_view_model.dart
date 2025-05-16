@@ -6,6 +6,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
 
+import '../repo/user_repo.dart';
 import '../ui_model/ui_conversation_info.dart';
 
 class ConversationListViewModel extends ChangeNotifier {
@@ -97,11 +98,19 @@ class ConversationListViewModel extends ChangeNotifier {
       _loadConversationList();
     });
 
-    _loadConversationList();
+    _preloadFriendUserInfos().then((_) {
+      _loadConversationList();
+    });
+  }
+
+  _preloadFriendUserInfos() async {
+    var friendList = await Imclient.getMyFriendList(refresh: false);
+    await UserRepo.getUserInfos(friendList);
   }
 
   _loadConversationList() async {
-    var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+    //var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+    var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single], [0]);
     _conversationList = conversationInfos.map((conv) => UIConversationInfo(conv)).toList();
     notifyListeners();
   }
