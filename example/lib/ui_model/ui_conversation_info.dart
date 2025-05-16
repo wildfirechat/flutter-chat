@@ -3,6 +3,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/config.dart';
+import 'package:wfc_example/repo/user_repo.dart';
 import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
@@ -21,10 +22,10 @@ class UIConversationInfo {
     updateDt = conversationInfo.timestamp;
   }
 
-  Future<(String, String)> titleAndPortrait(BuildContext context) async {
+  Future<(String, String)> _titleAndPortrait(BuildContext context) async {
     if (conversationInfo.conversation.conversationType == ConversationType.Single) {
-      UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
-      var userInfo = await userViewModel.getUserInfo(conversationInfo.conversation.target);
+      // UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
+      var userInfo = await UserRepo.getUserInfo(conversationInfo.conversation.target);
       return (userInfo?.friendAlias ?? userInfo?.displayName ?? '私聊', userInfo?.portrait ?? Config.defaultUserPortrait);
     } else if (conversationInfo.conversation.conversationType == ConversationType.Group) {
       GroupViewModel groupViewModel = Provider.of<GroupViewModel>(context, listen: false);
@@ -39,7 +40,7 @@ class UIConversationInfo {
     }
   }
 
-  Future<String> lastMsgDigest(BuildContext context) async {
+  Future<String> _lastMsgDigest(BuildContext context) async {
     if (conversationInfo.lastMessage == null) {
       return '';
     }
@@ -54,7 +55,7 @@ class UIConversationInfo {
   }
 
   Future<(String, String, String)> titlePortraitAndLastMsg(BuildContext context) async {
-    final (titleAndPortraitRecord, lastMsgDigestStr) = await (titleAndPortrait(context), lastMsgDigest(context)).wait;
+    final (titleAndPortraitRecord, lastMsgDigestStr) = await (_titleAndPortrait(context), _lastMsgDigest(context)).wait;
     return (titleAndPortraitRecord.$1, titleAndPortraitRecord.$2, lastMsgDigestStr);
   }
 

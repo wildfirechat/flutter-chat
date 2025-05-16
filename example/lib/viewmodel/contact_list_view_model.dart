@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/friend_request.dart';
 import 'package:pinyin/pinyin.dart';
+import 'package:wfc_example/repo/user_repo.dart';
 import 'package:wfc_example/ui_model/ui_contact_info.dart';
 
 class ContactListViewModel extends ChangeNotifier {
@@ -17,7 +18,7 @@ class ContactListViewModel extends ChangeNotifier {
   late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
   late StreamSubscription<ClearFriendRequestUnreadEvent> _clearFriendRequestSubscription;
 
-  // TODO 星标利息人
+  // TODO 星标联系人
   late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
 
   ContactListViewModel() {
@@ -61,7 +62,7 @@ class ContactListViewModel extends ChangeNotifier {
     _friendList = await Imclient.getMyFriendList(refresh: refresh);
 
     List<UIContactInfo> contactList = [];
-    var userInfos = await Imclient.getUserInfos(_friendList);
+    var userInfos = await UserRepo.getUserInfos(_friendList);
     for (var userInfo in userInfos) {
       userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
       var runes = userInfo.displayName!.runes.toList();
