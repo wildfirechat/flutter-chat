@@ -1,3 +1,4 @@
+
 import 'package:badges/badges.dart' as badge;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
@@ -32,6 +33,14 @@ class ContactListWidget extends StatelessWidget {
                   itemCount: fixHeaderList.length + record.contactList.length,
                   // 使用key帮助ListView正确处理数据更新
                   key: ValueKey('contact_list_${record.contactList.length}'),
+                  cacheExtent: 1024,
+                  itemExtentBuilder: (i, _) {
+                    if (i >= fixHeaderList.length) {
+                      return record.contactList[i - fixHeaderList.length].showCategory ? 52.5 + 18 : 52.5;
+                    } else {
+                      return 52.5;
+                    }
+                  },
                   itemBuilder: (context, i) {
                     if (i < fixHeaderList.length) {
                       return _contactListHeader(context, i, record.unreadFriendRequestCount);
@@ -132,6 +141,7 @@ class _ContactListItemState extends State<ContactListItem> with AutomaticKeepAli
   Widget build(BuildContext context) {
     super.build(context);
 
+    debugPrint('----------build contactItem');
     // 获取显示名称
     final displayName = widget.contactInfo.userInfo.friendAlias ?? widget.contactInfo.userInfo.displayName ?? '<${widget.contactInfo.userInfo.userId}>';
 

@@ -98,9 +98,11 @@ class ConversationListViewModel extends ChangeNotifier {
       _loadConversationList();
     });
 
-    _preloadFriendUserInfos().then((_) {
-      _loadConversationList();
-    });
+    // TODO 优化，预加载会话列表相关的用户信息、群信息等
+    // _preloadFriendUserInfos().then((_) {
+    //   _loadConversationList();
+    // });
+    _loadConversationList();
   }
 
   _preloadFriendUserInfos() async {
