@@ -49,13 +49,15 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _initIMClient();
-    SystemChannels.lifecycle.setMessageHandler((message) async {
-      if (message == "AppLifecycleState.inactive") {
-        debugPrint("goto background");
-        updateAppBadge();
-      }
-      return null;
-    });
+    // FIXME
+    // 下面这几行，会导致 Android 真机运行 release 版本时，应用卡主，不能交互，只渲染第一帧
+    // SystemChannels.lifecycle.setMessageHandler((message) async { // Temporarily comment out the entire handler
+    //   if (message == "AppLifecycleState.inactive") {
+    //     debugPrint("goto background");
+    //     updateAppBadge();
+    //   }
+    //   return message; // Ensure the message is returned as per your last working state
+    // });
   }
 
   Future<void> _initIMClient() async {
@@ -164,9 +166,9 @@ class _MyAppState extends State<MyApp> {
         print("on group $groupId member updated $members");
       }
     }, userInfoUpdatedCallback: (List<UserInfo> userInfos) {
-      for (var element in userInfos) {
-        debugPrint('on ${element.userId} user info updated');
-      }
+      // for (var element in userInfos) {
+      //   debugPrint(\'on \${element.userId} user info updated\');
+      // }
     }, channelInfoUpdatedCallback: (List<ChannelInfo> channelInfos) {
       if (kDebugMode) {
         print("on ChannelInfo updated $channelInfos");
@@ -205,7 +207,7 @@ class _MyAppState extends State<MyApp> {
         });
       });
     }
-    //
+
     // MomentClient.init((comment) {
     //   debugPrint("receive comment");
     // }, (feed){
