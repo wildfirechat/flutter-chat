@@ -27,6 +27,7 @@ import 'config.dart';
 import 'contact/pick_user_screen.dart';
 import 'default_portrait_provider.dart';
 import 'home/home.dart';
+import 'internal/app_state.dart';
 import 'login_screen.dart';
 
 void main() {
@@ -51,13 +52,15 @@ class _MyAppState extends State<MyApp> {
     _initIMClient();
     // FIXME
     // 下面这几行，会导致 Android 真机运行 release 版本时，应用卡主，不能交互，只渲染第一帧
-    // SystemChannels.lifecycle.setMessageHandler((message) async { // Temporarily comment out the entire handler
-    //   if (message == "AppLifecycleState.inactive") {
-    //     debugPrint("goto background");
-    //     updateAppBadge();
-    //   }
-    //   return message; // Ensure the message is returned as per your last working state
-    // });
+    SystemChannels.lifecycle.setMessageHandler((message) async {
+      final state = parseStateFromString(message!);
+      WidgetsBinding.instance.handleAppLifecycleStateChanged(state);
+      if (state == AppLifecycleState.inactive) {
+        debugPrint("goto background");
+        updateAppBadge();
+      }
+      return message; // Ensure the message is returned as per your last working state
+    });
   }
 
   Future<void> _initIMClient() async {
