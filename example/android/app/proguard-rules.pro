@@ -24,6 +24,21 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
+-keep class io.flutter.** { *; }
+-keep class androidx.** { *; }
+-keep class com.google.gson.** { *; }
+
+# 保留Flutter相关注解
+-keepattributes *Annotation*
+-keepattributes SourceFile,LineNumberTable
+-keepattributes Signature
+-keepattributes Exceptions
+
+# 确保所有序列化数据类不被混淆
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
 -dontwarn com.tencent.bugly.**
 -keep public class com.tencent.bugly.**{*;}
 
@@ -96,6 +111,15 @@
 -keepclassmembers class cn.wildfirechat.remote.** {
    public *;
 }
+
+# Flutter 插件相关类不混淆
+-keep class cn.wildfirechat.** { *; }
+-keep class cn.wildfire.** { *; }
+-keep class imclient.** { *; }
+-keep class rtckit.** { *; }
+
+# 防止混淆自定义Application类
+-keep class cn.wildfirechat.wfc_example.WfcApplication { *; }
 
 -keep class cn.wildfirechat.rtckit.** {*;}
 -keepclassmembers class cn.wildfirechat.rtckit.** {
