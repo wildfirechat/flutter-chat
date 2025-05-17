@@ -8,7 +8,7 @@ import '../../ui_model/ui_message.dart';
 class TextCellBuilder extends PortraitCellBuilder {
   late TextMessageContent textMessageContent;
 
-  TextCellBuilder(MessageCell cell, UIMessage model) : super(cell, model) {
+  TextCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
     textMessageContent = model.message.content as TextMessageContent;
   }
 

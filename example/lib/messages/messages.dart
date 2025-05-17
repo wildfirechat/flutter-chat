@@ -118,7 +118,7 @@ class _State extends State<Messages> {
                       onNotification: notificationFunction,
                       child: ListView.builder(
                         reverse: true,
-                        itemBuilder: (BuildContext context, int index) => MessageCell(context, conversationMessageList[index]),
+                        itemBuilder: (BuildContext context, int index) => MessageCell(conversationMessageList[index]),
                         itemCount: conversationMessageList.length,
                       ),
                     ),

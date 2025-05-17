@@ -10,7 +10,7 @@ import '../../ui_model/ui_message.dart';
 class CallStartCellBuilder extends PortraitCellBuilder {
   late CallStartMessageContent callStartMessageContent;
 
-  CallStartCellBuilder(MessageCell cell, UIMessage model) : super(cell, model) {
+  CallStartCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
     callStartMessageContent = model.message.content as CallStartMessageContent;
   }
 

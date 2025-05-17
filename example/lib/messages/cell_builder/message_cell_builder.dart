@@ -10,8 +10,9 @@ import '../../ui_model/ui_message.dart';
 
 abstract class MessageCellBuilder {
   UIMessage model;
+  BuildContext context;
 
-  MessageCellBuilder(this.model);
+  MessageCellBuilder(this.context, this.model);
 
   Widget build(BuildContext context) {
     return Padding(
