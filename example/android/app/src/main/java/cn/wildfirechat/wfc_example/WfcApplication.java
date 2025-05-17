@@ -53,16 +53,14 @@ public class WfcApplication extends Application {
 
             // 创建和缓存FlutterEngine，并配置更多优化选项
             flutterEngine = new FlutterEngine(this);
-            // 注册 Flutter 插件
-            GeneratedPluginRegistrant.registerWith(flutterEngine);
 
-//            // 配置渲染模式为Surface（对于UI交互更重要）
+            // 配置渲染模式为Surface（对于UI交互更重要）
 //            flutterEngine.getRenderer().setSemanticsEnabled(true);
-//
-//            // 启动Dart执行
-//            flutterEngine.getDartExecutor().executeDartEntrypoint(
-//                    DartExecutor.DartEntrypoint.createDefault()
-//            );
+
+            // 启动Dart执行
+            flutterEngine.getDartExecutor().executeDartEntrypoint(
+                    DartExecutor.DartEntrypoint.createDefault()
+            );
 
             // 预先加载一些资源
             flutterEngine.getPlatformViewsController().getRegistry();
