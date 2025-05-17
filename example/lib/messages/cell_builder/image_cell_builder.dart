@@ -12,7 +12,7 @@ class ImageCellBuilder extends PortraitCellBuilder {
   late ImageMessageContent imageMessageContent;
   ui.Image? uiImage;
 
-  ImageCellBuilder(MessageCell cell, UIMessage model) : super(cell, model) {
+  ImageCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
     imageMessageContent = model.message.content as ImageMessageContent;
     if (imageMessageContent.thumbnail != null) {
       if (model.thumbnailImage != null) {

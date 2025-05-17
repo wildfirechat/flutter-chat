@@ -12,7 +12,7 @@ class VideoCellBuilder extends PortraitCellBuilder {
   late VideoMessageContent videoMessageContent;
   ui.Image? uiImage;
 
-  VideoCellBuilder(MessageCell cell, UIMessage model) : super(cell, model) {
+  VideoCellBuilder(BuildContext cell, UIMessage model) : super(cell, model) {
     videoMessageContent = model.message.content as VideoMessageContent;
     if(videoMessageContent.thumbnail != null) {
       if(model.thumbnailImage != null) {

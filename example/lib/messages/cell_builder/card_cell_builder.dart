@@ -9,7 +9,7 @@ import '../../ui_model/ui_message.dart';
 class CardCellBuilder extends PortraitCellBuilder {
   late CardMessageContent cardMessageContent;
 
-  CardCellBuilder(MessageCell cell, UIMessage model) : super(cell, model) {
+  CardCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
     cardMessageContent = model.message.content as CardMessageContent;
   }
 
@@ -17,18 +17,18 @@ class CardCellBuilder extends PortraitCellBuilder {
   Widget buildMessageContent(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
 
-    String imagePaht = Config.defaultUserPortrait;
+    String imagePath = Config.defaultUserPortrait;
     String hint = "个人名片";
     if (cardMessageContent.type == CardType.CardType_Group) {
-      imagePaht = Config.defaultGroupPortrait;
+      imagePath = Config.defaultGroupPortrait;
       hint = "群组名片";
     } else if (cardMessageContent.type == CardType.CardType_Channel) {
-      imagePaht = Config.defaultChannelPortrait;
+      imagePath = Config.defaultChannelPortrait;
       hint = "频道名片";
     }
 
     Image image =
-        cardMessageContent.portrait != null ? Image.network(cardMessageContent.portrait!, width: 48.0, height: 48.0) : Image.asset(imagePaht, width: 48.0, height: 48.0);
+        cardMessageContent.portrait != null ? Image.network(cardMessageContent.portrait!, width: 48.0, height: 48.0) : Image.asset(imagePath, width: 48.0, height: 48.0);
     Text displayNameText = Text(
       cardMessageContent.displayName!,
       maxLines: 2,

@@ -28,7 +28,7 @@ class VoiceCellBuilder extends PortraitCellBuilder {
   int _voiceLevel = 0;
   final bool _notPlayed = false;
 
-  VoiceCellBuilder(MessageCell cell, UIMessage model) : super(cell, model) {
+  VoiceCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
     soundMessageContent = model.message.content as SoundMessageContent;
     messageId = model.message.messageId;
     // _playEventSubscription = _eventBus.on<VoicePlayStatusChangedEvent>().listen((event) {

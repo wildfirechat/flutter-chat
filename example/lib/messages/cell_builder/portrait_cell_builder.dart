@@ -7,6 +7,8 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:provider/provider.dart';
+import 'package:wfc_example/messages/conversation_controller.dart';
 
 import '../../config.dart';
 import '../../user_info_widget.dart';
@@ -15,20 +17,15 @@ import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
-
   UserInfo? userInfo;
   String? portrait;
   String? userName;
   late bool isSendMessage;
-  late MessageCell messageCell;
+  late ConversationController conversationController;
 
-  PortraitCellBuilder(MessageCell messageCell, UIMessage model) : super(model) {
-    String groupId = "";
+  PortraitCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+    conversationController = Provider.of<ConversationController>(context, listen: false);
     isSendMessage = model.message.direction == MessageDirection.MessageDirection_Send;
-    this.messageCell = messageCell;
-    if (model.message.conversation.conversationType == ConversationType.Group) {
-      groupId = model.message.conversation.target;
-    }
   }
 
   @override
@@ -49,8 +46,8 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
           child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0) : Image.network(portrait!, width: 44.0, height: 44.0),
         ),
       ),
-      onTap: () => messageCell.onTapedPortrait(model),
-      onLongPress: () => messageCell.onLongTapedPortrait(model),
+      onTap: () => conversationController.onPortraitTaped(context, model),
+      onLongPress: () => conversationController.onPortraitLongTaped(model),
     );
   }
 
@@ -86,9 +83,9 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                     ),
                     child: buildMessageContent(context),
                   ),
-                  onTap: () => messageCell.onTaped(model),
-                  onDoubleTap: () => messageCell.onDoubleTaped(model),
-                  onLongPressStart: (details) => messageCell.onLongPress(details, model),
+                  onTap: () => conversationController.onTapedCell(context, model),
+                  onDoubleTap: () => conversationController.onDoubleTapedCell(model),
+                  onLongPressStart: (details) => conversationController.onLongPressedCell(context, model, details.globalPosition),
                 ),
               ),
               _playStatus(),
@@ -121,7 +118,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
               height: 20,
             ),
           ),
-          onTap: () => messageCell.onResendTaped(model),
+          onTap: () => conversationController.onResendTaped(model),
         );
       }
     }

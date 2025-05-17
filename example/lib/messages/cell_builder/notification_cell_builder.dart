@@ -5,7 +5,7 @@ import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
 
 class NotificationCellBuilder extends MessageCellBuilder {
-  NotificationCellBuilder(super.model);
+  NotificationCellBuilder(super.context, super.model);
 
   @override
   Widget buildContent(BuildContext context) {
