@@ -17,7 +17,7 @@ import 'package:wfc_example/settings/settings.dart';
 import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
-import 'package:wfc_example/viewmodel/group_view_model.dart';
+import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 import '../contact/contact_list_widget.dart';
@@ -164,11 +164,7 @@ class HomeTabBarState extends State<HomeTabBar> {
     return MultiProvider(
         providers: [
           ChangeNotifierProvider<ConversationListViewModel>(create: (_) => ConversationListViewModel()),
-          ChangeNotifierProvider<UserViewModel>(create: (_) => UserViewModel()),
-          ChangeNotifierProvider<GroupViewModel>(create: (_) => GroupViewModel()),
-          ChangeNotifierProvider<ChannelViewModel>(create: (_) => ChannelViewModel()),
           ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
-          // ChangeNotifierProvider<ConversationViewModel>(create: (_) => ConversationViewModel()),
         ],
         child: Scaffold(
           //布局结构

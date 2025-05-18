@@ -24,7 +24,10 @@ import 'package:wfc_example/repo/channel_repo.dart';
 import 'package:wfc_example/repo/group_repo.dart';
 import 'package:wfc_example/repo/user_repo.dart';
 import 'package:wfc_example/splash.dart';
+import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
+import 'package:wfc_example/viewmodel/group_view_model.dart';
+import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 import 'config.dart';
 import 'contact/pick_user_screen.dart';
@@ -262,8 +265,13 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<ConversationViewModel>(
-        create: (_) => ConversationViewModel(),
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider<UserViewModel>(create: (_) => UserViewModel()),
+          ChangeNotifierProvider<GroupViewModel>(create: (_) => GroupViewModel()),
+          ChangeNotifierProvider<ChannelViewModel>(create: (_) => ChannelViewModel()),
+          ChangeNotifierProvider<ConversationViewModel>(create: (_) => ConversationViewModel())
+        ],
         child: MaterialApp(
           navigatorKey: navKey,
           home: isLogined == null ? const SplashScreen() : (isLogined! ? const HomeTabBar() : const LoginScreen()),

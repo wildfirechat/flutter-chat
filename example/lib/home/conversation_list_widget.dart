@@ -6,9 +6,11 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
+import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/utilities.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
+import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 import '../config.dart';
 import '../messages/messages.dart';
@@ -56,8 +58,6 @@ class ConversationListItem extends StatefulWidget {
 }
 
 class _ConversationListItemState extends State<ConversationListItem> with AutomaticKeepAliveClientMixin {
-  String convTitle = '';
-  String convPortrait = '';
   String lastMsgDigest = '';
   bool isLoading = true;
 
@@ -82,12 +82,10 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   // 加载会话数据
   Future<void> _loadData() async {
     try {
-      var data = await widget.uiConversationInfo.titlePortraitAndLastMsg(context);
+      var content = await widget.uiConversationInfo.conversationInfo.lastMessage!.content.digest(widget.uiConversationInfo.conversationInfo.lastMessage!);
       if (mounted) {
         setState(() {
-          convTitle = data.$1;
-          convPortrait = data.$2;
-          lastMsgDigest = data.$3;
+          lastMsgDigest = content;
           isLoading = false;
         });
       }
@@ -96,8 +94,6 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       if (mounted) {
         setState(() {
           // 设置默认值以避免UI错误
-          convTitle = "会话";
-          convPortrait = "assets/images/default_avatar.png";
           lastMsgDigest = "";
           isLoading = false;
         });
@@ -125,79 +121,88 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
               Container(
                 height: 64.0,
                 margin: const EdgeInsets.only(left: 15),
-                child: Row(
-                  children: <Widget>[
-                    badge.Badge(
-                        showBadge: conversationInfo.unreadCount.unread > 0,
-                        badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
-                        child: SizedBox(
-                          width: 40,
-                          height: 40,
-                          child: _buildPortraitImage(convPortrait),
-                        )),
-                    Expanded(
-                        child: Container(
-                            height: 48.0,
-                            alignment: Alignment.centerLeft,
-                            margin: const EdgeInsets.only(left: 15),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Text(
-                                  convTitle,
-                                  style: const TextStyle(fontSize: 15.0),
-                                  maxLines: 1,
+                child: Selector<UserViewModel, (UserInfo?, UserInfo?)>(
+                    selector: (context, userViewModel) => (
+                          userViewModel.getUserInfo(conversationInfo.conversation.target),
+                          conversationInfo.lastMessage != null ? userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser) : null
+                        ),
+                    builder: (context, value, child) => Row(
+                          children: <Widget>[
+                            badge.Badge(
+                                showBadge: conversationInfo.unreadCount.unread > 0,
+                                badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
+                                child: SizedBox(
+                                  width: 40,
+                                  height: 40,
+                                  child: _buildPortraitImage(value.$1?.portrait ?? ''),
+                                )),
+                            Expanded(
+                                child: Container(
+                                    height: 48.0,
+                                    alignment: Alignment.centerLeft,
+                                    margin: const EdgeInsets.only(left: 15),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(
+                                          value.$1?.getReadableName() ?? '',
+                                          style: const TextStyle(fontSize: 15.0),
+                                          maxLines: 1,
+                                        ),
+                                        Container(
+                                          height: 2,
+                                        ),
+                                        Row(
+                                          children: [
+                                            _messageStatusIcon(),
+                                            hasDraft
+                                                ? const Text(
+                                                    "[草稿]",
+                                                    style: TextStyle(fontSize: 12.0, color: Colors.red),
+                                                  )
+                                                : Container(),
+                                            Expanded(
+                                              child: Text(
+                                                hasDraft
+                                                    ? conversationInfo.draft!
+                                                    : conversationInfo.lastMessage != null
+                                                        ? '${value.$2?.getReadableName() ?? "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
+                                                        : '',
+                                                style: const TextStyle(fontSize: 12.0, color: Color(0xffaaaaaa)),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ],
+                                    ))),
+                            Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(0.0, 15.0, 15.0, 0.0),
+                                  child: Text(
+                                    Utilities.formatTime(conversationInfo.timestamp),
+                                    style: const TextStyle(
+                                      fontSize: 10.0,
+                                      color: Color(0xffaaaaaa),
+                                    ),
+                                  ),
                                 ),
-                                Container(
-                                  height: 2,
-                                ),
-                                Row(
-                                  children: [
-                                    _messageStatusIcon(),
-                                    hasDraft
-                                        ? const Text(
-                                            "[草稿]",
-                                            style: TextStyle(fontSize: 12.0, color: Colors.red),
-                                          )
-                                        : Container(),
-                                    Expanded(
-                                      child: Text(
-                                        hasDraft ? conversationInfo.draft! : lastMsgDigest,
-                                        style: const TextStyle(fontSize: 12.0, color: Color(0xffaaaaaa)),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    )
-                                  ],
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(0.0, 5.0, 15.0, 0.0),
+                                  child: conversationInfo.isSilent
+                                      ? Image.asset(
+                                          'assets/images/conversation_mute.png',
+                                          width: 10,
+                                          height: 10,
+                                        )
+                                      : null,
                                 ),
                               ],
-                            ))),
-                    Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0.0, 15.0, 15.0, 0.0),
-                          child: Text(
-                            Utilities.formatTime(conversationInfo.timestamp),
-                            style: const TextStyle(
-                              fontSize: 10.0,
-                              color: Color(0xffaaaaaa),
                             ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0.0, 5.0, 15.0, 0.0),
-                          child: conversationInfo.isSilent
-                              ? Image.asset(
-                                  'assets/images/conversation_mute.png',
-                                  width: 10,
-                                  height: 10,
-                                )
-                              : null,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                          ],
+                        )),
               ),
               Container(
                 margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),

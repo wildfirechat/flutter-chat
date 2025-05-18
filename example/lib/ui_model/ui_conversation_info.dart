@@ -9,7 +9,6 @@ import 'package:wfc_example/repo/user_repo.dart';
 class UIConversationInfo {
   ConversationInfo conversationInfo;
 
-  // TODO the following member fields not used now
   String? portrait;
   String? title;
   String? lastMessageSenderName;

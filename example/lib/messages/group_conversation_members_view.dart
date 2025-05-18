@@ -6,7 +6,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/messages/conversation_member_action_item.dart';
 import 'package:wfc_example/messages/conversation_member_item.dart';
-import 'package:wfc_example/viewmodel/group_view_model.dart';
+import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
 
 class GroupConversationMembersView extends StatelessWidget {
   final Conversation conversation;
@@ -21,7 +21,7 @@ class GroupConversationMembersView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    GroupViewModel groupViewModel = Provider.of<GroupViewModel>(context);
+    GroupConversationInfoViewModel groupViewModel = Provider.of<GroupConversationInfoViewModel>(context);
 
     List<UserInfo>? groupMemberUserInfos;
     GroupInfo? groupInfo;

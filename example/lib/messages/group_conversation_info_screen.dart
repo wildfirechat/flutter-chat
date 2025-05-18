@@ -8,7 +8,7 @@ import 'package:imclient/model/group_member.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/messages/messages.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
-import 'package:wfc_example/viewmodel/group_view_model.dart';
+import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
 import 'package:wfc_example/widget/OptionButtonItem.dart';
 import 'package:wfc_example/widget/OptionItem.dart';
 import 'package:wfc_example/widget/OptionSwitchItem.dart';
@@ -25,13 +25,13 @@ class GroupConversationInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<GroupViewModel>(
+    return ChangeNotifierProvider<GroupConversationInfoViewModel>(
         create: (_) {
-          var groupViewModel = GroupViewModel();
+          var groupViewModel = GroupConversationInfoViewModel();
           groupViewModel.setup(conversation.target);
           return groupViewModel;
         },
-        child: Consumer<GroupViewModel>(
+        child: Consumer<GroupConversationInfoViewModel>(
             builder: (context, viewModel, child) => Scaffold(
                   appBar: AppBar(
                     title: const Text('群会话详情'),
@@ -47,7 +47,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
   }
 
   Widget _buildGroupConversationInfoView(BuildContext context) {
-    var groupViewModel = Provider.of<GroupViewModel>(context);
+    var groupViewModel = Provider.of<GroupConversationInfoViewModel>(context);
     var groupMember = groupViewModel.groupMember;
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationInfo = conversationViewModel.conversationInfo!;
