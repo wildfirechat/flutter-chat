@@ -2,19 +2,21 @@ import 'package:badges/badges.dart' as badge;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
+import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
+import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/utilities.dart';
+import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
+import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 import '../config.dart';
 import '../messages/messages.dart';
-import '../ui_model/ui_conversation_info.dart';
 
 class ConversationListWidget extends StatefulWidget {
   const ConversationListWidget({Key? key}) : super(key: key);
@@ -35,9 +37,9 @@ class _ConversationListWidgetState extends State<ConversationListWidget> {
             itemExtent: 64.5,
             key: ValueKey<int>(conversationListViewModel.conversationList.length),
             itemBuilder: (context, i) {
-              UIConversationInfo info = conversationListViewModel.conversationList[i];
+              ConversationInfo info = conversationListViewModel.conversationList[i];
               var key =
-                  '${info.conversationInfo.conversation.conversationType}-${info.conversationInfo.conversation.target}-${info.conversationInfo.conversation.conversationType}-${info.conversationInfo.conversation.line}-${info.conversationInfo.timestamp}';
+                  '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
               return ConversationListItem(
                 info,
                 key: ValueKey(key),
@@ -49,9 +51,9 @@ class _ConversationListWidgetState extends State<ConversationListWidget> {
 }
 
 class ConversationListItem extends StatefulWidget {
-  final UIConversationInfo uiConversationInfo;
+  final ConversationInfo conversationInfo;
 
-  const ConversationListItem(this.uiConversationInfo, {super.key});
+  const ConversationListItem(this.conversationInfo, {super.key});
 
   @override
   State<ConversationListItem> createState() => _ConversationListItemState();
@@ -67,25 +69,28 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadLastMessageDigest();
   }
 
   // @override
   // void didUpdateWidget(ConversationListItem oldWidget) {
   //   super.didUpdateWidget(oldWidget);
   //   // 如果会话更新了，重新加载数据
-  //   if (oldWidget.uiConversationInfo.conversationInfo.timestamp != widget.uiConversationInfo.conversationInfo.timestamp) {
+  //   if (oldWidget.conversationInfo.conversationInfo.timestamp != widget.conversationInfo.conversationInfo.timestamp) {
   //     _loadData();
   //   }
   // }
 
-  // 加载会话数据
-  Future<void> _loadData() async {
+  // 未使用 futureBuilder
+  Future<void> _loadLastMessageDigest() async {
     try {
-      var content = await widget.uiConversationInfo.conversationInfo.lastMessage!.content.digest(widget.uiConversationInfo.conversationInfo.lastMessage!);
+      var digest = '';
+      if (widget.conversationInfo.lastMessage != null) {
+        digest = await widget.conversationInfo.lastMessage!.content.digest(widget.conversationInfo.lastMessage!);
+      }
       if (mounted) {
         setState(() {
-          lastMsgDigest = content;
+          lastMsgDigest = digest;
           isLoading = false;
         });
       }
@@ -103,15 +108,15 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // 必须调用super.build
+    super.build(context);
 
-    var conversationInfo = widget.uiConversationInfo.conversationInfo;
+    var conversationInfo = widget.conversationInfo;
     bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
 
     // 如果数据正在加载中，显示占位UI
-    if (isLoading) {
-      return _buildPlaceholder(conversationInfo);
-    }
+    // if (isLoading) {
+    //   return _buildPlaceholder(conversationInfo);
+    // }
 
     return GestureDetector(
       child: Container(
@@ -121,9 +126,18 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
               Container(
                 height: 64.0,
                 margin: const EdgeInsets.only(left: 15),
-                child: Selector<UserViewModel, (UserInfo?, UserInfo?)>(
-                    selector: (context, userViewModel) => (
-                          userViewModel.getUserInfo(conversationInfo.conversation.target),
+                child: Selector3<UserViewModel, GroupViewModel, ChannelViewModel,
+                        (UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? channelInfo, UserInfo? lastMessageSenderUserInfo)>(
+                    selector: (context, userViewModel, groupViewModel, channelViewModel) => (
+                          conversationInfo.conversation.conversationType == ConversationType.Single
+                              ? userViewModel.getUserInfo(conversationInfo.conversation.target)
+                              : null,
+                          conversationInfo.conversation.conversationType == ConversationType.Group
+                              ? groupViewModel.getGroupInfo(conversationInfo.conversation.target)
+                              : null,
+                          conversationInfo.conversation.conversationType == ConversationType.Channel
+                              ? channelViewModel.getChannelInfo(conversationInfo.conversation.target)
+                              : null,
                           conversationInfo.lastMessage != null ? userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser) : null
                         ),
                     builder: (context, value, child) => Row(
@@ -134,7 +148,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                 child: SizedBox(
                                   width: 40,
                                   height: 40,
-                                  child: _buildPortraitImage(value.$1?.portrait ?? ''),
+                                  child: _buildPortraitImage(conversationInfo.conversation, value.$1, value.$2, value.$3),
                                 )),
                             Expanded(
                                 child: Container(
@@ -145,7 +159,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          value.$1?.getReadableName() ?? '',
+                                          _conversationTitle(conversationInfo.conversation, value.$1, value.$2, value.$3),
                                           style: const TextStyle(fontSize: 15.0),
                                           maxLines: 1,
                                         ),
@@ -166,7 +180,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                                 hasDraft
                                                     ? conversationInfo.draft!
                                                     : conversationInfo.lastMessage != null
-                                                        ? '${value.$2?.getReadableName() ?? "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
+                                                        ? '${value.$4?.getReadableName() ?? "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
                                                         : '',
                                                 style: const TextStyle(fontSize: 12.0, color: Color(0xffaaaaaa)),
                                                 maxLines: 1,
@@ -216,11 +230,34 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     );
   }
 
-  // 构建头像图片，优化图片加载
-  Widget _buildPortraitImage(String portrait) {
-    var defaultPortrait = widget.uiConversationInfo.conversationInfo.conversation.conversationType == ConversationType.Single
+  String _conversationTitle(Conversation conversation, UserInfo? userInfo, GroupInfo? groupInfo, ChannelInfo? channelInfo) {
+    String title = '';
+    switch (conversation.conversationType) {
+      case ConversationType.Single:
+        title = userInfo?.getReadableName() ?? '单聊<${userInfo?.userId}>';
+        break;
+      case ConversationType.Group:
+        title = groupInfo?.name ?? '群聊<${groupInfo?.target}>';
+        break;
+      case ConversationType.Channel:
+        title = channelInfo?.name ?? '频道<${channelInfo?.name}>';
+        break;
+      case _:
+        break;
+    }
+    return title;
+  }
+
+  Widget _buildPortraitImage(Conversation conversation, UserInfo? userInfo, GroupInfo? groupInfo, ChannelInfo? channelInfo) {
+    String portrait = switch (conversation.conversationType) {
+      ConversationType.Single => userInfo?.portrait ?? Config.defaultUserPortrait,
+      ConversationType.Group => groupInfo?.portrait ?? Config.defaultGroupPortrait,
+      ConversationType.Channel => channelInfo?.portrait ?? Config.defaultChannelPortrait,
+      _ => ''
+    };
+    var defaultPortrait = widget.conversationInfo.conversation.conversationType == ConversationType.Single
         ? Config.defaultUserPortrait
-        : widget.uiConversationInfo.conversationInfo.conversation.conversationType == ConversationType.Group
+        : widget.conversationInfo.conversation.conversationType == ConversationType.Group
             ? Config.defaultGroupPortrait
             : Config.defaultChannelPortrait;
     return ClipRRect(
@@ -304,12 +341,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => Messages(conversation)),
-    ).then((value) {
-      // 从聊天页面返回后刷新数据
-      if (mounted) {
-        _loadData();
-      }
-    });
+    ).then((value) {});
   }
 
   void _onLongPressed(BuildContext context, ConversationInfo conversationInfo, Offset position) {
@@ -373,7 +405,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   }
 
   Widget _messageStatusIcon() {
-    var conversationInfo = widget.uiConversationInfo.conversationInfo;
+    var conversationInfo = widget.conversationInfo;
     if (conversationInfo.lastMessage != null) {
       if (conversationInfo.lastMessage!.status == MessageStatus.Message_Status_Sending) {
         return Padding(

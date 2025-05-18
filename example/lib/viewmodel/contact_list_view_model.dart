@@ -9,7 +9,6 @@ import 'package:wfc_example/ui_model/ui_contact_info.dart';
 
 class ContactListViewModel extends ChangeNotifier {
   List<UIContactInfo> _contactList = [];
-  List<String> _friendList = [];
   List<FriendRequest> _newFriendRequestList = [];
   int _unreadFriendRequestCount = 0;
 
@@ -29,9 +28,9 @@ class ContactListViewModel extends ChangeNotifier {
       _loadFriendRequestListAndNotify();
     });
     _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
-      // TODO 优化
-      //var updatedUserInfos = event.userInfos;
-      _loadContactList();
+      // _loadContactList();
+      // UserViewModel 会更新缓存
+      notifyListeners();
     });
     _clearFriendRequestSubscription = Imclient.IMEventBus.on<ClearFriendRequestUnreadEvent>().listen((event) {
       _loadFriendRequestListAndNotify();
@@ -59,10 +58,8 @@ class ContactListViewModel extends ChangeNotifier {
   }
 
   void _loadContactList([refresh = false]) async {
-    _friendList = await Imclient.getMyFriendList(refresh: refresh);
-
     List<UIContactInfo> contactList = [];
-    var userInfos = await UserRepo.getUserInfos(_friendList);
+    var userInfos = await UserRepo.loadFriendUserInfos();
     for (var userInfo in userInfos) {
       userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
       var runes = userInfo.displayName!.runes.toList();
