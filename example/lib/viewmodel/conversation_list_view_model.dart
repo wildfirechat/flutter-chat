@@ -18,6 +18,8 @@ class ConversationListViewModel extends ChangeNotifier {
   late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
   late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
   late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
+  late StreamSubscription<GroupInfoUpdatedEvent> _groupInfoUpdatedSubscription;
+  late StreamSubscription<GroupMembersUpdatedEvent> _groupMembersUpdatedSubscription;
   late StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
   late StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
   late StreamSubscription<ClearConversationUnreadEvent> _clearConversationUnreadSubscription;
@@ -73,6 +75,12 @@ class ConversationListViewModel extends ChangeNotifier {
       _loadConversationList();
     });
     _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
+      _loadConversationList();
+    });
+    _groupInfoUpdatedSubscription = _eventBus.on<GroupInfoUpdatedEvent>().listen((event) {
+      _loadConversationList();
+    });
+    _groupMembersUpdatedSubscription= _eventBus.on<GroupMembersUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
     _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) {
@@ -149,10 +157,11 @@ class ConversationListViewModel extends ChangeNotifier {
     if (!force && _connectionStatus != kConnectionStatusConnected) {
       return;
     }
-    var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+    //var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+    var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single], [0]);
     _conversationList = conversationInfos.map((conv) => UIConversationInfo(conv)).toList();
     if (force) {
-      _preloadConversationTargetAndLastMessageSender(conversationInfos);
+      //_preloadConversationTargetAndLastMessageSender(conversationInfos);
     }
     notifyListeners();
   }
@@ -197,6 +206,8 @@ class ConversationListViewModel extends ChangeNotifier {
     _receiveMessageSubscription.cancel();
     _userSettingUpdatedSubscription.cancel();
     _userInfoUpdatedSubscription.cancel();
+    _groupInfoUpdatedSubscription.cancel();
+    _groupMembersUpdatedSubscription.cancel();
     _recallMessageSubscription.cancel();
     _deleteMessageSubscription.cancel();
     _clearConversationUnreadSubscription.cancel();

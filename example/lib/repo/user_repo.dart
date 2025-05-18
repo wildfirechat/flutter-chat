@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
@@ -54,6 +55,10 @@ class UserRepo {
     _groupMembersUpdateSubscription?.cancel();
     _groupMembersUpdateSubscription = null;
   }
+
+  // todo
+  // get in memory
+  // load in db, or remote
 
   static Future<UserInfo?> getUserInfo(String userId, {String? groupId}) async {
     var map = groupId != null ? _groupUserMap[groupId] : _userMap;

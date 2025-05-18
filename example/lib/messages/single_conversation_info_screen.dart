@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:wfc_example/messages/messages.dart';
 import 'package:wfc_example/messages/single_conversation_member_view.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
-import 'package:wfc_example/viewmodel/group_view_model.dart';
+import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 import 'package:wfc_example/widget/OptionButtonItem.dart';
 import 'package:wfc_example/widget/OptionItem.dart';
