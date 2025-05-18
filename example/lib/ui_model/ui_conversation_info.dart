@@ -1,12 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
-import 'package:provider/provider.dart';
 import 'package:wfc_example/config.dart';
+import 'package:wfc_example/repo/channel_repo.dart';
+import 'package:wfc_example/repo/group_repo.dart';
 import 'package:wfc_example/repo/user_repo.dart';
-import 'package:wfc_example/viewmodel/channel_view_model.dart';
-import 'package:wfc_example/viewmodel/group_view_model.dart';
-import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 class UIConversationInfo {
   ConversationInfo conversationInfo;
@@ -24,16 +22,13 @@ class UIConversationInfo {
 
   Future<(String, String)> _titleAndPortrait(BuildContext context) async {
     if (conversationInfo.conversation.conversationType == ConversationType.Single) {
-      // UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
       var userInfo = await UserRepo.getUserInfo(conversationInfo.conversation.target);
       return (userInfo?.friendAlias ?? userInfo?.displayName ?? '私聊', userInfo?.portrait ?? Config.defaultUserPortrait);
     } else if (conversationInfo.conversation.conversationType == ConversationType.Group) {
-      GroupViewModel groupViewModel = Provider.of<GroupViewModel>(context, listen: false);
-      var groupInfo = await groupViewModel.getGroupInfo(conversationInfo.conversation.target);
+      var groupInfo = await GroupRepo.getGroupInfo(conversationInfo.conversation.target);
       return (groupInfo?.remark ?? groupInfo?.name ?? "群聊", groupInfo?.portrait ?? Config.defaultGroupPortrait);
     } else if (conversationInfo.conversation.conversationType == ConversationType.Channel) {
-      ChannelViewModel channelViewModel = Provider.of<ChannelViewModel>(context, listen: false);
-      var channelInfo = await channelViewModel.getChannelInfo(conversationInfo.conversation.target);
+      var channelInfo = await ChannelRepo.getChannelInfo(conversationInfo.conversation.target);
       return (channelInfo?.name ?? "频道", channelInfo?.portrait ?? Config.defaultChannelPortrait);
     } else {
       return ("会话", "");
@@ -44,8 +39,7 @@ class UIConversationInfo {
     if (conversationInfo.lastMessage == null) {
       return '';
     }
-    UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
-    var userInfoFuture = userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser,
+    var userInfoFuture = UserRepo.getUserInfo(conversationInfo.lastMessage!.fromUser,
         groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null);
 
     Future<String> msgDigestFuture = conversationInfo.lastMessage!.content.digest(conversationInfo.lastMessage!);

@@ -20,6 +20,9 @@ import 'package:rtckit/group_video_call.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:rtckit/single_voice_call.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wfc_example/repo/channel_repo.dart';
+import 'package:wfc_example/repo/group_repo.dart';
+import 'package:wfc_example/repo/user_repo.dart';
 import 'package:wfc_example/splash.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
@@ -50,8 +53,8 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     _initIMClient();
-    // FIXME
-    // 下面这几行，会导致 Android 真机运行 release 版本时，应用卡主，不能交互，只渲染第一帧
+    _initRepo();
+
     SystemChannels.lifecycle.setMessageHandler((message) async {
       final state = parseStateFromString(message!);
       WidgetsBinding.instance.handleAppLifecycleStateChanged(state);
@@ -125,6 +128,7 @@ class _MyAppState extends State<MyApp> {
           Imclient.isLogined.then((value) {
             if (value) {
               Imclient.disconnect();
+              _disposeRepo();
             }
           });
         }
@@ -216,6 +220,18 @@ class _MyAppState extends State<MyApp> {
     // }, (feed){
     //   debugPrint("receive feed");
     // });
+  }
+
+  void _initRepo() {
+    UserRepo.init();
+    GroupRepo.init();
+    ChannelRepo.init();
+  }
+
+  void _disposeRepo() {
+    UserRepo.dispose();
+    GroupRepo.dispose();
+    ChannelRepo.dispose();
   }
 
   void updateAppBadge() {

@@ -5,6 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/conversation_info.dart';
+import 'package:wfc_example/repo/channel_repo.dart';
+import 'package:wfc_example/repo/group_repo.dart';
 
 import '../repo/user_repo.dart';
 import '../ui_model/ui_conversation_info.dart';
@@ -31,6 +34,8 @@ class ConversationListViewModel extends ChangeNotifier {
 
   List<UIConversationInfo> get conversationList => _conversationList;
 
+  late int _connectionStatus = 0;
+
   int get unreadMessageCount {
     int count = 0;
     for (UIConversationInfo info in _conversationList) {
@@ -42,14 +47,20 @@ class ConversationListViewModel extends ChangeNotifier {
 
   ConversationListViewModel() {
     debugPrint("ConversationListViewModel construct");
+    Imclient.connectionStatus.then((status) {
+      _connectionStatus = status;
+      debugPrint('connection status: $status');
+    });
     _connectionStatusSubscription = _eventBus.on<ConnectionStatusChangedEvent>().listen((event) {
+      _connectionStatus = event.connectionStatus;
+      debugPrint('connection status changed: ${event.connectionStatus}');
       if (event.connectionStatus == kConnectionStatusConnected) {
         _loadConversationList();
       }
     });
 
     _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
-      if (!event.hasMore) {
+      if (!event.hasMore && _connectionStatus == kConnectionStatusConnected) {
         for (Message msg in event.messages) {
           if (msg.messageId > 0) {
             _loadConversationList();
@@ -98,22 +109,51 @@ class ConversationListViewModel extends ChangeNotifier {
       _loadConversationList();
     });
 
-    // TODO 优化，预加载会话列表相关的用户信息、群信息等
-    // _preloadFriendUserInfos().then((_) {
-    //   _loadConversationList();
-    // });
-    _loadConversationList();
+    _loadConversationList(force: true);
   }
 
-  _preloadFriendUserInfos() async {
-    var friendList = await Imclient.getMyFriendList(refresh: false);
-    await UserRepo.getUserInfos(friendList);
+  _preloadConversationTargetAndLastMessageSender(List<ConversationInfo> infos) async {
+    Set<String> targetUsers = {};
+    List<(String, String)> targetGroupUsers = [];
+    Set<String> targetGroups = {};
+    Set<String> targetChannels = {};
+    for (var info in infos) {
+      if (info.conversation.conversationType == ConversationType.Single) {
+        targetUsers.add(info.conversation.target);
+      } else if (info.conversation.conversationType == ConversationType.Group) {
+        targetGroups.add(info.conversation.target);
+      } else if (info.conversation.conversationType == ConversationType.Channel) {
+        targetChannels.add(info.conversation.target);
+      }
+      if (info.lastMessage != null) {
+        if (info.conversation.conversationType == ConversationType.Group) {
+          targetGroupUsers.add((info.conversation.target, info.lastMessage!.fromUser));
+        } else {
+          targetUsers.add(info.lastMessage!.fromUser);
+        }
+      }
+    }
+
+    UserRepo.getUserInfos(targetUsers.toList());
+    for (var rec in targetGroupUsers) {
+      UserRepo.getUserInfo(rec.$2, groupId: rec.$1);
+    }
+    GroupRepo.getGroupInfos(targetGroups.toList());
+
+    for (var channelId in targetChannels) {
+      ChannelRepo.getChannelInfo(channelId);
+    }
   }
 
-  _loadConversationList() async {
-    //var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
-    var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single], [0]);
+  _loadConversationList({bool force = false}) async {
+    if (!force && _connectionStatus != kConnectionStatusConnected) {
+      return;
+    }
+    var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
     _conversationList = conversationInfos.map((conv) => UIConversationInfo(conv)).toList();
+    if (force) {
+      _preloadConversationTargetAndLastMessageSender(conversationInfos);
+    }
     notifyListeners();
   }
 
