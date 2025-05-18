@@ -20,9 +20,6 @@ import 'package:rtckit/group_video_call.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:rtckit/single_voice_call.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wfc_example/repo/channel_repo.dart';
-import 'package:wfc_example/repo/group_repo.dart';
-import 'package:wfc_example/repo/user_repo.dart';
 import 'package:wfc_example/splash.dart';
 import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
@@ -131,7 +128,6 @@ class _MyAppState extends State<MyApp> {
           Imclient.isLogined.then((value) {
             if (value) {
               Imclient.disconnect();
-              _disposeRepo();
             }
           });
         }
@@ -226,15 +222,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _initRepo() {
-    UserRepo.init();
-    GroupRepo.init();
-    ChannelRepo.init();
-  }
-
-  void _disposeRepo() {
-    UserRepo.dispose();
-    GroupRepo.dispose();
-    ChannelRepo.dispose();
+    // TODO: 是否需要优化，预加载一些数据
   }
 
   void updateAppBadge() {

@@ -6,11 +6,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
-import 'package:wfc_example/repo/channel_repo.dart';
 import 'package:wfc_example/repo/group_repo.dart';
-
-import '../repo/user_repo.dart';
-import '../ui_model/ui_conversation_info.dart';
 
 class ConversationListViewModel extends ChangeNotifier {
   final EventBus _eventBus = Imclient.IMEventBus;
@@ -32,16 +28,16 @@ class ConversationListViewModel extends ChangeNotifier {
   late StreamSubscription<ConversationSilentUpdatedEvent> _silentUpdatedSubscription;
   late StreamSubscription<ConversationTopUpdatedEvent> _topUpdatedSubscription;
 
-  List<UIConversationInfo> _conversationList = [];
+  List<ConversationInfo> _conversationList = [];
 
-  List<UIConversationInfo> get conversationList => _conversationList;
+  List<ConversationInfo> get conversationList => _conversationList;
 
   late int _connectionStatus = 0;
 
   int get unreadMessageCount {
     int count = 0;
-    for (UIConversationInfo info in _conversationList) {
-      var convInfo = info.conversationInfo;
+    for (ConversationInfo info in _conversationList) {
+      var convInfo = info;
       count += convInfo.isSilent ? 0 : convInfo.unreadCount.unread;
     }
     return count;
@@ -80,7 +76,7 @@ class ConversationListViewModel extends ChangeNotifier {
     _groupInfoUpdatedSubscription = _eventBus.on<GroupInfoUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
-    _groupMembersUpdatedSubscription= _eventBus.on<GroupMembersUpdatedEvent>().listen((event) {
+    _groupMembersUpdatedSubscription = _eventBus.on<GroupMembersUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
     _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) {
@@ -120,48 +116,34 @@ class ConversationListViewModel extends ChangeNotifier {
     _loadConversationList(force: true);
   }
 
-  _preloadConversationTargetAndLastMessageSender(List<ConversationInfo> infos) async {
-    Set<String> targetUsers = {};
-    List<(String, String)> targetGroupUsers = [];
+  _preloadConversationGroupAndChannel(List<ConversationInfo> infos) async {
     Set<String> targetGroups = {};
     Set<String> targetChannels = {};
     for (var info in infos) {
       if (info.conversation.conversationType == ConversationType.Single) {
-        targetUsers.add(info.conversation.target);
       } else if (info.conversation.conversationType == ConversationType.Group) {
         targetGroups.add(info.conversation.target);
       } else if (info.conversation.conversationType == ConversationType.Channel) {
         targetChannels.add(info.conversation.target);
       }
-      if (info.lastMessage != null) {
-        if (info.conversation.conversationType == ConversationType.Group) {
-          targetGroupUsers.add((info.conversation.target, info.lastMessage!.fromUser));
-        } else {
-          targetUsers.add(info.lastMessage!.fromUser);
-        }
-      }
     }
 
-    UserRepo.getUserInfos(targetUsers.toList());
-    for (var rec in targetGroupUsers) {
-      UserRepo.getUserInfo(rec.$2, groupId: rec.$1);
-    }
-    GroupRepo.getGroupInfos(targetGroups.toList());
-
-    for (var channelId in targetChannels) {
-      ChannelRepo.getChannelInfo(channelId);
-    }
+    GroupRepo.loadConversationGroupInfos(targetGroups.toList());
+    //
+    // for (var channelId in targetChannels) {
+    //   ChannelRepo.getChannelInfo(channelId);
+    // }
   }
 
   _loadConversationList({bool force = false}) async {
     if (!force && _connectionStatus != kConnectionStatusConnected) {
       return;
     }
-    //var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
-    var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single], [0]);
-    _conversationList = conversationInfos.map((conv) => UIConversationInfo(conv)).toList();
+    var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+    // var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single], [0]);
+    _conversationList = conversationInfos;
     if (force) {
-      //_preloadConversationTargetAndLastMessageSender(conversationInfos);
+      _preloadConversationGroupAndChannel(conversationInfos);
     }
     notifyListeners();
   }
@@ -169,7 +151,7 @@ class ConversationListViewModel extends ChangeNotifier {
   removeConversation(Conversation conversation, [bool clearMessage = false]) {
     Imclient.removeConversation(conversation, clearMessage);
     for (int i = 0; i < _conversationList.length; i++) {
-      if (_conversationList[i].conversationInfo.conversation == conversation) {
+      if (_conversationList[i].conversation == conversation) {
         _conversationList.removeAt(i);
         notifyListeners();
         break;
