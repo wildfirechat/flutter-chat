@@ -20,7 +20,7 @@ class ChannelViewModel extends ChangeNotifier {
     if (channelInfo == null) {
       Imclient.getChannelInfo(channelId).then((info) {
         if (info != null && info.updateDt > 0) {
-          ChannelRepo.putChannelInfo(channelInfo!);
+          ChannelRepo.putChannelInfo(info);
           notifyListeners();
         }
       });

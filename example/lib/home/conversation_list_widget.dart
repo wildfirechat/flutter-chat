@@ -39,7 +39,7 @@ class _ConversationListWidgetState extends State<ConversationListWidget> {
             itemBuilder: (context, i) {
               ConversationInfo info = conversationListViewModel.conversationList[i];
               var key =
-                  '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
+                  '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}-${info.timestamp}';
               return ConversationListItem(
                 info,
                 key: ValueKey(key),
@@ -138,7 +138,10 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                           conversationInfo.conversation.conversationType == ConversationType.Channel
                               ? channelViewModel.getChannelInfo(conversationInfo.conversation.target)
                               : null,
-                          conversationInfo.lastMessage != null ? userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser) : null
+                          conversationInfo.lastMessage != null
+                              ? userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser,
+                                  groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null)
+                              : null
                         ),
                     builder: (context, value, child) => Row(
                           children: <Widget>[

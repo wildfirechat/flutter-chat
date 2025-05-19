@@ -21,6 +21,7 @@ class UserViewModel extends ChangeNotifier {
 
     // _groupMembersUpdateSubscription?.cancel();
     _groupMembersUpdateSubscription = Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
+      debugPrint('groupMembers updated ${event.groupId} ${event.members}');
       final String groupId = event.groupId;
       final List<GroupMember> updatedMembers = event.members;
       UserRepo.updateGroupUserInfos(groupId, updatedMembers);
@@ -29,7 +30,7 @@ class UserViewModel extends ChangeNotifier {
   }
 
   UserInfo? getUserInfo(String userId, {String? groupId}) {
-    debugPrint('jyj getUserInfo $userId groupId $groupId');
+    debugPrint('getUserInfo $userId groupId $groupId');
     var info = UserRepo.getUserInfo(userId, groupId: groupId);
     if (info == null) {
       Imclient.getUserInfo(userId, groupId: groupId).then((info) {
