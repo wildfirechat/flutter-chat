@@ -79,7 +79,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       child: Column(
         crossAxisAlignment: isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          !isHiddenGroupMemberName ? Text(senderUserInfo != null ? senderUserInfo.getReadableName() : '<${model.message.fromUser}>') : Container(),
+          !isHiddenGroupMemberName ? Text(senderUserInfo != null ? senderUserInfo.groupAlias! : '<${model.message.fromUser}>') : Container(),
           Row(
             mainAxisAlignment: isSendMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,

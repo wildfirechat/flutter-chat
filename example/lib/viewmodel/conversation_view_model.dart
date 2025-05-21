@@ -398,6 +398,13 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   @override
+  void notifyListeners() {
+    if(_currentConversation != null){
+      super.notifyListeners();
+    }
+  }
+
+  @override
   void dispose() {
     super.dispose();
     _conversationMessageList.clear();
