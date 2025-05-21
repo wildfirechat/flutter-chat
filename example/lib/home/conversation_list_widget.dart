@@ -240,7 +240,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
         title = userInfo?.getReadableName() ?? '单聊<${userInfo?.userId}>';
         break;
       case ConversationType.Group:
-        title = groupInfo?.name ?? '群聊<${groupInfo?.target}>';
+        title = groupInfo?.remark ?? groupInfo?.name ?? '群聊<${groupInfo?.target}>';
         break;
       case ConversationType.Channel:
         title = channelInfo?.name ?? '频道<${channelInfo?.name}>';
