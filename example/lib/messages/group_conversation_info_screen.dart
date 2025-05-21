@@ -62,10 +62,10 @@ class GroupConversationInfoScreen extends StatelessWidget {
           );
         },
         onAddActionTap: () {
-          _onPlusItemClicked(context);
+          _onAddNewConversationMember(context);
         },
         onRemoveActionTap: () {
-          _onMinusItemClicked(context);
+          _onRemoveConversationMember(context);
         },
         onShowMoreGroupMemberTap: () {
           // TODO
@@ -113,7 +113,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
     ]));
   }
 
-  void _onMinusItemClicked(BuildContext context) {
+  void _onRemoveConversationMember(BuildContext context) {
     Imclient.getGroupMembers(conversation.target).then((value) {
       if (value.isNotEmpty) {
         List<String> memberIds = [];
@@ -142,7 +142,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
     });
   }
 
-  void _onPlusItemClicked(BuildContext context) {
+  void _onAddNewConversationMember(BuildContext context) {
     if (conversation.conversationType == ConversationType.Group) {
       Imclient.getGroupMembers(conversation.target).then((value) {
         if (value.isNotEmpty) {

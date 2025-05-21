@@ -28,52 +28,40 @@ class SingleConversationInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var future = Imclient.getUserInfo(conversation.target);
-    return FutureBuilder<UserInfo?>(
-      future: future,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
+    return Selector<UserViewModel, UserInfo?>(
+        builder: (context, userInfo, child) {
           return Scaffold(
             appBar: AppBar(
               title: const Text('单聊会话详情'),
             ),
             body: SafeArea(
-              child: _buildSingleConversationInfoView(context, snapshot.data!),
+              child: _buildSingleConversationInfoView(context, userInfo),
             ),
           );
-        } else {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('单聊会话详情'),
-            ),
-            body: const SafeArea(
-                child: Center(
-              child: CircularProgressIndicator(),
-            )),
-          );
-        }
-      },
-    );
+        },
+        selector: (context, userViewModel) => userViewModel.getUserInfo(conversation.target));
   }
 
-  Widget _buildSingleConversationInfoView(BuildContext context, UserInfo userInfo) {
+  Widget _buildSingleConversationInfoView(BuildContext context, UserInfo? userInfo) {
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationInfo = conversationViewModel.conversationInfo!;
     return SingleChildScrollView(
         child: Column(children: [
-      SingleConversationMemberView(
-        conversation,
-        userInfo,
-        onUserTap: (userInfo) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => UserInfoWidget(userInfo.userId)),
-          );
-        },
-        onAddActionTap: () {
-          _onPlusItemClicked(context);
-        },
-      ),
+      userInfo != null
+          ? SingleConversationMemberView(
+              conversation,
+              userInfo,
+              onUserTap: (userInfo) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UserInfoWidget(userInfo.userId)),
+                );
+              },
+              onAddActionTap: () {
+                _onAddNewConversationMember(context);
+              },
+            )
+          : Container(),
       const SectionDivider(),
       OptionItem('查找聊天内容', onTap: () {}),
       OptionItem('会话文件', onTap: () {}),
@@ -94,36 +82,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
     ]));
   }
 
-  void _onMinusItemClicked(BuildContext context) {
-    Imclient.getGroupMembers(conversation.target).then((value) {
-      if (value.isNotEmpty) {
-        List<String> memberIds = [];
-        for (var value1 in value) {
-          memberIds.add(value1.memberId);
-        }
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => PickUserScreen(
-                    (context, members) async {
-                      if (members.isEmpty) {
-                        Navigator.pop(context);
-                      } else {
-                        Imclient.kickoffGroupMembers(conversation.target, members, () {
-                          Navigator.pop(context);
-                          Future.delayed(const Duration(milliseconds: 100), () {});
-                        }, (errorCode) {});
-                      }
-                    },
-                    disabledUncheckedUsers: [Imclient.currentUserId],
-                    candidates: memberIds,
-                  )),
-        );
-      }
-    });
-  }
-
-  void _onPlusItemClicked(BuildContext context) {
+  void _onAddNewConversationMember(BuildContext context) {
     if (conversation.conversationType == ConversationType.Group) {
       Imclient.getGroupMembers(conversation.target).then((value) {
         if (value.isNotEmpty) {
