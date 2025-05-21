@@ -1,23 +1,16 @@
-import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
-import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/messages/conversation_controller.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
-import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 import '../../config.dart';
-import '../../user_info_widget.dart';
-import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
 
@@ -79,7 +72,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       child: Column(
         crossAxisAlignment: isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          !isHiddenGroupMemberName ? Text(senderUserInfo != null ? senderUserInfo.groupAlias! : '<${model.message.fromUser}>') : Container(),
+          !isHiddenGroupMemberName ? Text(senderUserInfo != null ? senderUserInfo.getReadableName() : '<${model.message.fromUser}>') : Container(),
           Row(
             mainAxisAlignment: isSendMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
