@@ -42,13 +42,12 @@ class GroupConversationInfoScreen extends StatelessWidget {
                         ? const Center(
                             child: CircularProgressIndicator(),
                           )
-                        : _buildGroupConversationInfoView(context, viewModel.groupMember!),
+                        : _buildGroupConversationInfoView(context, viewModel, viewModel.groupMember!),
                   ),
                 )));
   }
 
-  Widget _buildGroupConversationInfoView(BuildContext context, GroupMember groupMember) {
-    var groupConversationInfoViewModel = Provider.of<GroupConversationInfoViewModel>(context);
+  Widget _buildGroupConversationInfoView(BuildContext context, GroupConversationInfoViewModel groupConversationInfoViewModel, GroupMember groupMember) {
     var groupViewModel = Provider.of<GroupViewModel>(context);
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationInfo = conversationViewModel.conversationInfo!;

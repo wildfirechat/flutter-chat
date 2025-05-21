@@ -21,6 +21,17 @@ class GroupConversationInfoViewModel extends ChangeNotifier {
   void setup(String groupId) async {
     _isFavGroup = await Imclient.isFavGroup(groupId);
     _groupMember = await Imclient.getGroupMember(groupId, Imclient.currentUserId);
+    _groupMembersUpdatedSubscription = Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
+      if (event.groupId == groupId) {
+        for (var member in event.members) {
+          if (member.memberId == Imclient.currentUserId) {
+            _groupMember = member;
+            notifyListeners();
+            break;
+          }
+        }
+      }
+    });
     notifyListeners();
   }
 

@@ -72,9 +72,7 @@ class ConversationViewModel extends ChangeNotifier {
         if (msg.conversation == _currentConversation) {
           if (msg.messageId == 0) {
             if (msg.content is TypingMessageContent) {
-              _typingUserTime[msg.fromUser] = DateTime
-                  .now()
-                  .millisecondsSinceEpoch;
+              _typingUserTime[msg.fromUser] = DateTime.now().millisecondsSinceEpoch;
               _startTypingTimer();
               debugPrint('typing');
             }
@@ -87,6 +85,7 @@ class ConversationViewModel extends ChangeNotifier {
       }
       // newMsg ? notifyListeners() : null;
       if (newMsg) {
+        Imclient.clearConversationUnreadStatus(_currentConversation!);
         notifyListeners();
       }
     });
@@ -193,6 +192,8 @@ class ConversationViewModel extends ChangeNotifier {
     } else {
       if (conversation.conversationType == ConversationType.Group) {
         _isHiddenConversationMemberName = await Imclient.isHiddenGroupMemberName(conversation.target);
+      } else {
+        _isHiddenConversationMemberName = true;
       }
       _noMoreLocalHistoryMsg = false;
       Imclient.getMessages(conversation, 0, 20).then((messages) {
@@ -317,10 +318,10 @@ class ConversationViewModel extends ChangeNotifier {
     }
     Imclient.sendMediaMessage(_currentConversation!, messageContent, successCallback: (int messageUid, int timestamp) {}, errorCallback: (int errorCode) {},
         progressCallback: (int uploaded, int total) {
-          debugPrint("progressCallback:$uploaded,$total");
-        }, uploadedCallback: (String remoteUrl) {
-          debugPrint("uploadedCallback:$remoteUrl");
-        });
+      debugPrint("progressCallback:$uploaded,$total");
+    }, uploadedCallback: (String remoteUrl) {
+      debugPrint("uploadedCallback:$remoteUrl");
+    });
   }
 
   void sendMessage(MessageContent messageContent) {
@@ -343,9 +344,7 @@ class ConversationViewModel extends ChangeNotifier {
     if (_currentConversation == null) {
       return false;
     }
-    int now = DateTime
-        .now()
-        .millisecondsSinceEpoch;
+    int now = DateTime.now().millisecondsSinceEpoch;
     if (_currentConversation!.conversationType == ConversationType.Single) {
       int? time = _typingUserTime[_currentConversation!.target];
       if (time != null && now - time < 6000) {
@@ -399,7 +398,7 @@ class ConversationViewModel extends ChangeNotifier {
 
   @override
   void notifyListeners() {
-    if(_currentConversation != null){
+    if (_currentConversation != null) {
       super.notifyListeners();
     }
   }
