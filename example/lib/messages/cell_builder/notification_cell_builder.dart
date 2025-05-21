@@ -21,7 +21,11 @@ class NotificationCellBuilder extends MessageCellBuilder {
                 style: const TextStyle(fontSize: 12),
               );
             } else {
-              return const Text("");
+              return const Text(
+                "",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12),
+              );
             }
           },
         ));

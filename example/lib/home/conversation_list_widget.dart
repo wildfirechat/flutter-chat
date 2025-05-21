@@ -162,7 +162,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          _conversationTitle(conversationInfo.conversation, value.$1, value.$2, value.$3),
+                                          Utilities.conversationTitle(conversationInfo.conversation, value.$1, value.$2, value.$3),
                                           style: const TextStyle(fontSize: 15.0),
                                           maxLines: 1,
                                         ),
@@ -231,24 +231,6 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       onTap: () => _toChatPage(context, conversationInfo.conversation),
       onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
     );
-  }
-
-  String _conversationTitle(Conversation conversation, UserInfo? userInfo, GroupInfo? groupInfo, ChannelInfo? channelInfo) {
-    String title = '';
-    switch (conversation.conversationType) {
-      case ConversationType.Single:
-        title = userInfo?.getReadableName() ?? '单聊<${userInfo?.userId}>';
-        break;
-      case ConversationType.Group:
-        title = groupInfo?.remark ?? groupInfo?.name ?? '群聊<${groupInfo?.target}>';
-        break;
-      case ConversationType.Channel:
-        title = channelInfo?.name ?? '频道<${channelInfo?.name}>';
-        break;
-      case _:
-        break;
-    }
-    return title;
   }
 
   Widget _buildPortraitImage(Conversation conversation, UserInfo? userInfo, GroupInfo? groupInfo, ChannelInfo? channelInfo) {

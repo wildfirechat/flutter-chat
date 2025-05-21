@@ -106,7 +106,7 @@ class _State extends State<Messages> {
         child: Scaffold(
           backgroundColor: const Color.fromARGB(255, 232, 232, 232),
           appBar: AppBar(
-            title: const ConversationAppbarTitle(),
+            title: ConversationAppbarTitle(widget.conversation),
             actions: actions,
           ),
           body: SafeArea(
