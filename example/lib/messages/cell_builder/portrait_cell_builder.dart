@@ -1,14 +1,19 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/messages/conversation_controller.dart';
+import 'package:wfc_example/viewmodel/conversation_view_model.dart';
+import 'package:wfc_example/viewmodel/group_view_model.dart';
+import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 import '../../config.dart';
 import '../../user_info_widget.dart';
@@ -17,9 +22,6 @@ import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
-  UserInfo? userInfo;
-  String? portrait;
-  String? userName;
   late bool isSendMessage;
   late ConversationController conversationController;
 
@@ -30,22 +32,37 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
 
   @override
   Widget buildContent(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [isSendMessage ? _padding() : _portrait(context), _messageContentContainer(context), isSendMessage ? _portrait(context) : _padding()],
-    );
+    return Selector2<UserViewModel, ConversationViewModel, (UserInfo? senderUserInfo, bool showGroupMemberName)>(
+        builder: (_, rec, __) => Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                isSendMessage ? _padding() : _portrait(context, rec.$1),
+                _messageContentContainer(context, rec.$1, rec.$2),
+                isSendMessage ? _portrait(context, rec.$1) : _padding()
+              ],
+            ),
+        selector: (context, userViewModel, conversationViewModel) => (
+              userViewModel.getUserInfo(model.message.fromUser,
+                  groupId: model.message.conversation.conversationType == ConversationType.Group ? model.message.conversation.target : null),
+              conversationViewModel.isHiddenConversationMemberName
+            ));
   }
 
-  Widget _portrait(BuildContext context) {
+  Widget _portrait(BuildContext context, UserInfo? userInfo) {
+    var portrait = userInfo?.portrait ?? Config.defaultUserPortrait;
     return GestureDetector(
       child: Container(
-        margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-        child: SizedBox(
-          width: 40,
-          height: 40,
-          child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0) : Image.network(portrait!, width: 44.0, height: 44.0),
-        ),
-      ),
+          margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+          child: ClipRRect(
+              borderRadius: BorderRadius.circular(6.0),
+              child: CachedNetworkImage(
+                imageUrl: portrait,
+                width: 44.0,
+                height: 44.0,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0),
+                errorWidget: (context, url, err) => Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0),
+              ))),
       onTap: () => conversationController.onPortraitTaped(context, model),
       onLongPress: () => conversationController.onPortraitLongTaped(model),
     );
@@ -57,12 +74,12 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     );
   }
 
-  Widget _messageContentContainer(BuildContext context) {
+  Widget _messageContentContainer(BuildContext context, UserInfo? senderUserInfo, bool isHiddenGroupMemberName) {
     return Flexible(
       child: Column(
         crossAxisAlignment: isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          model.showNameLabel ? Text(userName!) : Container(),
+          !isHiddenGroupMemberName ? Text(senderUserInfo != null ? senderUserInfo.getReadableName() : '<${model.message.fromUser}>') : Container(),
           Row(
             mainAxisAlignment: isSendMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
