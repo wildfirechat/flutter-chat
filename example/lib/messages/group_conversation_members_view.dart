@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:wfc_example/messages/conversation_member_action_item.dart';
 import 'package:wfc_example/messages/conversation_member_item.dart';
 import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
+import 'package:wfc_example/viewmodel/group_view_model.dart';
 
 class GroupConversationMembersView extends StatelessWidget {
   final Conversation conversation;
@@ -21,13 +22,13 @@ class GroupConversationMembersView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    GroupConversationInfoViewModel groupViewModel = Provider.of<GroupConversationInfoViewModel>(context);
+    GroupViewModel groupViewModel = Provider.of<GroupViewModel>(context);
 
     List<UserInfo>? groupMemberUserInfos;
     GroupInfo? groupInfo;
-    groupMemberUserInfos = groupViewModel.groupMemberUserInfos;
-    groupInfo = groupViewModel.groupInfo;
-    if ((groupInfo == null) && conversation.conversationType == ConversationType.Group) {
+    groupMemberUserInfos = groupViewModel.getGroupMemberUserInfos(conversation.target);
+    groupInfo = groupViewModel.getGroupInfo(conversation.target);
+    if (groupInfo == null || groupMemberUserInfos == null) {
       return Container();
     }
 
@@ -44,7 +45,7 @@ class GroupConversationMembersView extends StatelessWidget {
     showGroupMemberUserInfos = groupMemberUserInfos;
     memberCount = groupMemberUserInfos.length;
     int moreItemCount = 0;
-    if (groupInfo!.type != GroupType.Organization) {
+    if (groupInfo.type != GroupType.Organization) {
       if (groupInfo.owner == Imclient.currentUserId) {
         moreItemCount = 2;
         showAddAction = true;

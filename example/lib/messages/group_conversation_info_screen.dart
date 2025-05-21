@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:wfc_example/messages/messages.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
+import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/widget/OptionButtonItem.dart';
 import 'package:wfc_example/widget/OptionItem.dart';
 import 'package:wfc_example/widget/OptionSwitchItem.dart';
@@ -47,10 +48,12 @@ class GroupConversationInfoScreen extends StatelessWidget {
   }
 
   Widget _buildGroupConversationInfoView(BuildContext context) {
-    var groupViewModel = Provider.of<GroupConversationInfoViewModel>(context);
-    var groupMember = groupViewModel.groupMember;
+    var groupConversationInfoViewModel = Provider.of<GroupConversationInfoViewModel>(context);
+    var groupViewModel = Provider.of<GroupViewModel>(context);
+    var groupMember = groupConversationInfoViewModel.groupMember;
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationInfo = conversationViewModel.conversationInfo!;
+    var groupInfo = groupViewModel.getGroupInfo(conversation.target);
     return SingleChildScrollView(
         child: Column(children: [
       GroupConversationMembersView(
@@ -77,10 +80,10 @@ class GroupConversationInfoScreen extends StatelessWidget {
       ),
       const SectionDivider(),
       OptionItem('成员列表', onTap: () {}),
-      OptionItem('群聊名称', desc: groupViewModel.groupInfo?.name, onTap: () {}),
+      OptionItem('群聊名称', desc: groupInfo?.name ?? '群聊', onTap: () {}),
       OptionItem('群二维码', rightIcon: Icons.qr_code, onTap: () {}),
       OptionItem('群公告', desc: '占位群公告', onTap: () {}),
-      OptionItem('群备注', desc: groupViewModel.groupInfo?.remark, onTap: () {}),
+      OptionItem('群备注', desc: groupInfo?.remark, onTap: () {}),
       groupMember!.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner ? OptionItem('群管理', onTap: () {}) : Container(),
       const SectionDivider(),
       OptionItem('查找聊天内容', onTap: () {}),
@@ -92,13 +95,13 @@ class GroupConversationInfoScreen extends StatelessWidget {
       OptionSwitchItem('置顶聊天', conversationInfo.isTop > 0, (enable) {
         conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
       }),
-      OptionSwitchItem('保存到通讯录', groupViewModel.isFavGroup, (enable) {
-        groupViewModel.setFavGroup(conversationInfo.conversation.target, enable);
+      OptionSwitchItem('保存到通讯录', groupConversationInfoViewModel.isFavGroup, (enable) {
+        groupConversationInfoViewModel.setFavGroup(conversationInfo.conversation.target, enable);
       }),
       const SectionDivider(),
       OptionItem('我在本群的昵称', desc: groupMember.alias, onTap: () {}),
-      OptionSwitchItem('显示群成员昵称', !groupViewModel.isHiddenMemberName, (enable) {
-        groupViewModel.setHideGroupMemberName(conversationInfo.conversation.target, !enable);
+      OptionSwitchItem('显示群成员昵称', !conversationViewModel.isHiddenConversationMemberName, (enable) {
+        conversationViewModel.setHideGroupMemberName(conversationInfo.conversation.target, !enable);
       }),
       const SectionDivider(),
       OptionButtonItem('清空聊天记录', () {
