@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/model/user_info.dart';
@@ -11,33 +12,23 @@ class ConversationMemberItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? portrait;
-    String name = '';
-    late Image image;
-    name = '<${userInfo.userId}>';
-
-    if (userInfo.portrait != null) {
-      portrait = userInfo.portrait!;
-    }
-    if (userInfo.friendAlias != null) {
-      name = userInfo.friendAlias!;
-    } else if (userInfo.groupAlias != null) {
-      name = userInfo.groupAlias!;
-    } else if (userInfo.displayName != null) {
-      name = userInfo.displayName!;
-    }
-
-    image = portrait == null ? Image.asset(Config.defaultUserPortrait) : Image.network(portrait);
-
     return Column(
       children: [
         SizedBox.square(
-          dimension: 48,
-          child: image,
-        ),
+            dimension: 48,
+            child: ClipRRect(
+                borderRadius: BorderRadius.circular(6.0),
+                child: CachedNetworkImage(
+                  imageUrl: userInfo.portrait ?? Config.defaultUserPortrait,
+                  width: 44.0,
+                  height: 44.0,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0),
+                  errorWidget: (context, url, err) => Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0),
+                ))),
         SizedBox(
           height: 16,
-          child: Text(name, overflow: TextOverflow.ellipsis, maxLines: 1, style: const TextStyle(fontSize: 12)),
+          child: Text(userInfo.getReadableName(), overflow: TextOverflow.ellipsis, maxLines: 1, style: const TextStyle(fontSize: 12)),
         ),
       ],
     );
