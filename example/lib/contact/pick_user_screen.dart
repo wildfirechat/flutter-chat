@@ -11,8 +11,9 @@ import 'package:wfc_example/widget/portrait.dart';
 typedef OnPickUserCallback = void Function(BuildContext context, List<String> pickedUsers);
 
 class PickUserScreen extends StatelessWidget {
-  PickUserScreen(this.callback, {this.maxSelected = 1024, this.candidates, this.disabledCheckedUsers, this.disabledUncheckedUsers, super.key});
+  PickUserScreen(this.callback, {this.title = '', this.maxSelected = 1024, this.candidates, this.disabledCheckedUsers, this.disabledUncheckedUsers, super.key});
 
+  final String title;
   final OnPickUserCallback callback;
   final int maxSelected;
   final List<String>? candidates;
@@ -40,6 +41,7 @@ class PickUserScreen extends StatelessWidget {
         child: Consumer<PickUserViewModel>(
             builder: (context, viewModel, child) => Scaffold(
                   appBar: AppBar(
+                    title: Text(title),
                     actions: [
                       GestureDetector(
                         onTap: () => _onPressedDone(context),

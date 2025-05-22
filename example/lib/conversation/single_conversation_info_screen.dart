@@ -83,52 +83,26 @@ class SingleConversationInfoScreen extends StatelessWidget {
   }
 
   void _onAddNewConversationMember(BuildContext context) {
-    if (conversation.conversationType == ConversationType.Group) {
-      Imclient.getGroupMembers(conversation.target).then((value) {
-        if (value.isNotEmpty) {
-          List<String> memberIds = [];
-          for (var value1 in value) {
-            memberIds.add(value1.memberId);
-          }
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => PickUserScreen((context, members) async {
-                      if (members.isEmpty) {
-                        Navigator.pop(context);
-                        return;
-                      }
-                      Imclient.addGroupMembers(conversation.target, members, () {
-                        Navigator.pop(context);
-                        Future.delayed(const Duration(milliseconds: 100), () {});
-                      }, (errorCode) {
-                        Fluttertoast.showToast(msg: "网络错误");
-                      });
-                    }, disabledUncheckedUsers: memberIds)),
-          );
-        }
-      });
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => PickUserScreen(
-                  (context, members) async {
-                    Navigator.pop(context);
-                    if (members.isNotEmpty) {
-                      Imclient.createGroup(null, null, null, 2, members, (strValue) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue))),
-                        );
-                      }, (errorCode) {
-                        Fluttertoast.showToast(msg: "网络错误");
-                      });
-                    }
-                  },
-                  disabledCheckedUsers: [conversation.target],
-                )),
-      );
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => PickUserScreen(
+                title: '选择联系人',
+                (context, members) async {
+                  Navigator.pop(context);
+                  if (members.isNotEmpty) {
+                    Imclient.createGroup(null, null, null, 2, members, (strValue) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue))),
+                      );
+                    }, (errorCode) {
+                      Fluttertoast.showToast(msg: "网络错误");
+                    });
+                  }
+                },
+                disabledCheckedUsers: [conversation.target],
+              )),
+    );
   }
 }

@@ -107,7 +107,7 @@ class HomeTabBarState extends State<HomeTabBar> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => PickUserScreen((context, members) async {
+          builder: (context) => PickUserScreen(title: '发起群聊', (context, members) async {
                 if (members.isEmpty) {
                   Fluttertoast.showToast(msg: "请选择一位或者多位好友发起聊天");
                 } else if (members.length == 1) {

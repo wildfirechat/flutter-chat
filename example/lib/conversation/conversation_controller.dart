@@ -30,13 +30,11 @@ import '../user_info_widget.dart';
 import '../ui_model/ui_message.dart';
 
 class ConversationController extends ChangeNotifier {
-
   late ConversationViewModel conversationViewModel;
 
   ConversationController(this.conversationViewModel);
 
   final GlobalKey<PictureOverviewState> _pictureOverviewKey = GlobalKey();
-
 
   int _playingMessageId = 0;
   final FlutterSoundPlayer _soundPlayer = FlutterSoundPlayer(logLevel: Level.error);
@@ -111,6 +109,7 @@ class ConversationController extends ChangeNotifier {
               context,
               MaterialPageRoute(
                   builder: (context) => PickUserScreen(
+                        title: '选择群成员',
                         (context, members) async {
                           if (members.isEmpty) {
                             Fluttertoast.showToast(msg: "请选择一位或者多位成员发起通话");
@@ -140,6 +139,7 @@ class ConversationController extends ChangeNotifier {
       context,
       MaterialPageRoute(
           builder: (context) => PickUserScreen(
+                title: '选择联系人',
                 (context, members) async {
                   if (members.isNotEmpty) {
                     UserInfo? userInfo = await Imclient.getUserInfo(members.first);
@@ -422,5 +422,4 @@ class ConversationController extends ChangeNotifier {
       _soundPlayer.stopPlayer();
     }
   }
-
 }
