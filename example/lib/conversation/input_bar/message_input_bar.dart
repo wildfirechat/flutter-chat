@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:wfc_example/messages/input_bar/emoji_board.dart';
-import 'package:wfc_example/messages/input_bar/plugin_board.dart';
-import 'package:wfc_example/messages/input_bar/record_widget.dart';
+import 'package:wfc_example/conversation/input_bar/emoji_board.dart';
+import 'package:wfc_example/conversation/input_bar/plugin_board.dart';
+import 'package:wfc_example/conversation/input_bar/record_widget.dart';
 
 import 'message_input_bar_controller.dart';
 

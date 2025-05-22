@@ -4,8 +4,8 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:wfc_example/messages/conversation_member_action_item.dart';
-import 'package:wfc_example/messages/conversation_member_item.dart';
+import 'package:wfc_example/conversation/conversation_info_member_action_item.dart';
+import 'package:wfc_example/conversation/conversation_info_member_item.dart';
 import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
 
 import '../config.dart';
@@ -43,14 +43,14 @@ class SingleConversationMemberView extends StatelessWidget {
                     onTap: () {
                       onUserTap(userInfos[index]);
                     },
-                    child: ConversationMemberItem(userInfos[index]),
+                    child: ConversationInfoMemberItem(userInfos[index]),
                   );
                 } else {
                   return GestureDetector(
                     onTap: () {
                       onAddActionTap();
                     },
-                    child: const ConversationMemberActionItem(true),
+                    child: const ConversationInfoMemberActionItem(true),
                   );
                 }
               }),

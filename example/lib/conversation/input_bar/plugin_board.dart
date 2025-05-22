@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
-import 'package:wfc_example/messages/conversation_controller.dart';
+import 'package:wfc_example/conversation/conversation_controller.dart';
 
 class _PluginItem {
   String iconPath;

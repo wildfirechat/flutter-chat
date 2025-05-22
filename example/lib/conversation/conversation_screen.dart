@@ -4,27 +4,27 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
-import 'package:wfc_example/messages/conversation_controller.dart';
-import 'package:wfc_example/messages/group_conversation_info_screen.dart';
-import 'package:wfc_example/messages/input_bar/message_input_bar.dart';
-import 'package:wfc_example/messages/conversation_appbar_title.dart';
-import 'package:wfc_example/messages/single_conversation_info_screen.dart';
+import 'package:wfc_example/conversation/conversation_controller.dart';
+import 'package:wfc_example/conversation/group_conversation_info_screen.dart';
+import 'package:wfc_example/conversation/input_bar/message_input_bar.dart';
+import 'package:wfc_example/conversation/conversation_appbar_title.dart';
+import 'package:wfc_example/conversation/single_conversation_info_screen.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
 import 'channel_conversation_info.dart';
 import 'input_bar/message_input_bar_controller.dart';
 import 'message_cell.dart';
 
-class Messages extends StatefulWidget {
+class ConversationScreen extends StatefulWidget {
   final Conversation conversation;
 
-  const Messages(this.conversation, {super.key});
+  const ConversationScreen(this.conversation, {super.key});
 
   @override
   State createState() => _State();
 }
 
-class _State extends State<Messages> {
+class _State extends State<ConversationScreen> {
   late ConversationViewModel _conversationViewModel;
   late MessageInputBarController _inputBarController;
 

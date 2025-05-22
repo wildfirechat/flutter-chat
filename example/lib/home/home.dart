@@ -21,7 +21,7 @@ import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 import '../contact/contact_list_widget.dart';
-import '../messages/messages.dart';
+import '../conversation/conversation_screen.dart';
 import 'conversation_list_widget.dart';
 import '../discovery/discovery.dart';
 
@@ -114,7 +114,7 @@ class HomeTabBarState extends State<HomeTabBar> {
                   Conversation conversation = Conversation(conversationType: ConversationType.Single, target: members[0]);
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => Messages(conversation)),
+                    MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
                   );
                 } else {
                   _showProcessingDialog(context, "群组创建中...");
@@ -138,7 +138,7 @@ class HomeTabBarState extends State<HomeTabBar> {
                     Conversation conversation = Conversation(conversationType: ConversationType.Group, target: strValue);
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => Messages(conversation)),
+                      MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
                     );
                   }, (errorCode) {
                     _dismissProcessingDialog(context);

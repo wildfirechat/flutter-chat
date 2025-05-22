@@ -5,10 +5,10 @@ import 'package:wfc_example/widget/portrait.dart';
 
 import '../config.dart';
 
-class ConversationMemberItem extends StatelessWidget {
+class ConversationInfoMemberItem extends StatelessWidget {
   final UserInfo userInfo;
 
-  const ConversationMemberItem(this.userInfo, {super.key});
+  const ConversationInfoMemberItem(this.userInfo, {super.key});
 
   @override
   Widget build(BuildContext context) {

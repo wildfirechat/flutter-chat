@@ -1,9 +1,9 @@
 import 'package:flutter/cupertino.dart';
 
-class ConversationMemberActionItem extends StatelessWidget {
+class ConversationInfoMemberActionItem extends StatelessWidget {
   final bool isPlus;
 
-  const ConversationMemberActionItem(this.isPlus, {super.key});
+  const ConversationInfoMemberActionItem(this.isPlus, {super.key});
 
   @override
   Widget build(BuildContext context) {

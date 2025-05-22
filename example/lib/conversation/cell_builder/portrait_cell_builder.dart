@@ -5,7 +5,7 @@ import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:wfc_example/messages/conversation_controller.dart';
+import 'package:wfc_example/conversation/conversation_controller.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 

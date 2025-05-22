@@ -3,7 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/discovery/chatroom_list.dart';
-import 'package:wfc_example/messages/messages.dart';
+import 'package:wfc_example/conversation/conversation_screen.dart';
 
 import '../channel/channel_list.dart';
 
@@ -66,7 +66,7 @@ class DiscoveryState extends State<DiscoveryTab> {
         } else if(key == 'robot') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Messages(Conversation(conversationType: ConversationType.Single, target: 'FireRobot'))),
+            MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Single, target: 'FireRobot'))),
           );
         } else if(key == 'channel') {
           Navigator.push(

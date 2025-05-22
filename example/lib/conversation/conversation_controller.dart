@@ -21,8 +21,8 @@ import 'package:rtckit/group_video_call.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:rtckit/single_voice_call.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:wfc_example/messages/picture_overview.dart';
-import 'package:wfc_example/messages/video_player_view.dart';
+import 'package:wfc_example/conversation/picture_overview.dart';
+import 'package:wfc_example/conversation/video_player_view.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
 import '../contact/pick_user_screen.dart';
