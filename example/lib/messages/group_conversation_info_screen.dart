@@ -13,7 +13,7 @@ import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/widget/option_button_item.dart';
 import 'package:wfc_example/widget/option_item.dart';
 import 'package:wfc_example/widget/option_switch_item.dart';
-import 'package:wfc_example/widget/SectionDivider.dart';
+import 'package:wfc_example/widget/section_divider.dart';
 
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
