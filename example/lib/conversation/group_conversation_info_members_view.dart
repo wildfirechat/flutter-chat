@@ -4,12 +4,12 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:wfc_example/messages/conversation_member_action_item.dart';
-import 'package:wfc_example/messages/conversation_member_item.dart';
-import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
 import 'package:wfc_example/viewmodel/group_view_model.dart';
 
-class GroupConversationMembersView extends StatelessWidget {
+import 'conversation_info_member_action_item.dart';
+import 'conversation_info_member_item.dart';
+
+class GroupConversationInfoMembersView extends StatelessWidget {
   final Conversation conversation;
 
   final void Function() onAddActionTap;
@@ -17,7 +17,7 @@ class GroupConversationMembersView extends StatelessWidget {
   final void Function(UserInfo userInfo) onGroupMemberTap;
   final void Function()? onShowMoreGroupMemberTap;
 
-  const GroupConversationMembersView(this.conversation,
+  const GroupConversationInfoMembersView(this.conversation,
       {required this.onGroupMemberTap, required this.onAddActionTap, required this.onRemoveActionTap, this.onShowMoreGroupMemberTap, super.key});
 
   @override
@@ -83,7 +83,7 @@ class GroupConversationMembersView extends StatelessWidget {
                     onTap: () {
                       onGroupMemberTap(showGroupMemberUserInfos[index]);
                     },
-                    child: ConversationMemberItem(showGroupMemberUserInfos[index]),
+                    child: ConversationInfoMemberItem(showGroupMemberUserInfos[index]),
                   );
                 } else {
                   if (showRemoveAction && index == memberCount - 1) {
@@ -91,14 +91,14 @@ class GroupConversationMembersView extends StatelessWidget {
                       onTap: () {
                         onRemoveActionTap();
                       },
-                      child: const ConversationMemberActionItem(false),
+                      child: const ConversationInfoMemberActionItem(false),
                     );
                   } else if (showAddAction) {
                     return GestureDetector(
                       onTap: () {
                         onAddActionTap();
                       },
-                      child: const ConversationMemberActionItem(true),
+                      child: const ConversationInfoMemberActionItem(true),
                     );
                   } else {
                     return Container();

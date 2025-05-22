@@ -2,7 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/file_message_content.dart';
-import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
+import 'package:wfc_example/conversation/cell_builder/portrait_cell_builder.dart';
 import 'package:wfc_example/utilities.dart';
 
 import '../message_cell.dart';

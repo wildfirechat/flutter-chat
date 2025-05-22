@@ -6,7 +6,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:provider/provider.dart';
-import 'package:wfc_example/messages/messages.dart';
+import 'package:wfc_example/conversation/conversation_screen.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
 import 'package:wfc_example/viewmodel/group_view_model.dart';
@@ -17,7 +17,7 @@ import 'package:wfc_example/widget/section_divider.dart';
 
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
-import 'group_conversation_members_view.dart';
+import 'group_conversation_info_members_view.dart';
 
 class GroupConversationInfoScreen extends StatelessWidget {
   const GroupConversationInfoScreen(this.conversation, {super.key});
@@ -54,7 +54,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
     var groupInfo = groupViewModel.getGroupInfo(conversation.target);
     return SingleChildScrollView(
         child: Column(children: [
-      GroupConversationMembersView(
+      GroupConversationInfoMembersView(
         conversation,
         onGroupMemberTap: (userInfo) {
           Navigator.push(
@@ -180,7 +180,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
                       Imclient.createGroup(null, null, null, 2, members, (strValue) {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => Messages(Conversation(conversationType: ConversationType.Group, target: strValue))),
+                          MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue))),
                         );
                       }, (errorCode) {
                         Fluttertoast.showToast(msg: "网络错误");

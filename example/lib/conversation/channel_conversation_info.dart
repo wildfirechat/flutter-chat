@@ -10,12 +10,11 @@ import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
-import 'package:wfc_example/messages/messages.dart';
+import 'package:wfc_example/conversation/conversation_screen.dart';
 
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
-import 'conversation_setting_all_members_view.dart';
-import 'group_conversation_members_view.dart';
+import 'group_conversation_info_members_view.dart';
 
 class ChannelConversationInfoScreen extends StatefulWidget {
   ChannelConversationInfoScreen(this.conversation, {Key? key}) : super(key: key);
@@ -144,7 +143,7 @@ class ChannelConversationInfoScreenState extends State<ChannelConversationInfoSc
   late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
   final EventBus _eventBus = Imclient.IMEventBus;
 
-  GroupConversationMembersView? conversationSettingMembersWidget;
+  GroupConversationInfoMembersView? conversationSettingMembersWidget;
 
   @override
   void initState() {
@@ -206,7 +205,7 @@ class ChannelConversationInfoScreenState extends State<ChannelConversationInfoSc
     bool center = modelList[index][3];
     bool arrow = modelList[index][4];
 
-    conversationSettingMembersWidget ??= GroupConversationMembersView(
+    conversationSettingMembersWidget ??= GroupConversationInfoMembersView(
       widget.conversation,
       onGroupMemberTap: (userInfo) {
         Navigator.push(
@@ -330,7 +329,7 @@ class ChannelConversationInfoScreenState extends State<ChannelConversationInfoSc
                       Imclient.createGroup(null, null, null, 2, members, (strValue) {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => Messages(Conversation(conversationType: ConversationType.Group, target: strValue))),
+                          MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue))),
                         );
                       }, (errorCode) {
                         Fluttertoast.showToast(msg: "网络错误");

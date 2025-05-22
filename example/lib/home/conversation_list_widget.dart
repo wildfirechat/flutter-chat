@@ -20,7 +20,7 @@ import 'package:wfc_example/viewmodel/user_view_model.dart';
 import 'package:wfc_example/widget/portrait.dart';
 
 import '../config.dart';
-import '../messages/messages.dart';
+import '../conversation/conversation_screen.dart';
 
 class ConversationListWidget extends StatefulWidget {
   const ConversationListWidget({Key? key}) : super(key: key);
@@ -334,7 +334,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   void _toChatPage(BuildContext context, Conversation conversation) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => Messages(conversation)),
+      MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
     ).then((value) {});
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/message/message.dart';
-import 'package:wfc_example/messages/cell_builder/portrait_cell_builder.dart';
+import 'package:wfc_example/conversation/cell_builder/portrait_cell_builder.dart';
 import 'package:wfc_example/utilities.dart';
 
 import '../message_cell.dart';
