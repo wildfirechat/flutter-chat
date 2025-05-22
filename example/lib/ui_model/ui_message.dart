@@ -6,7 +6,6 @@ import 'package:image/image.dart' as image;
 class UIMessage {
   Message message;
   bool showTimeLabel;
-  bool showNameLabel;
   bool mediaDownloading;
   int mediaDownloadProgress;
   bool voicePlaying;
@@ -23,7 +22,6 @@ class UIMessage {
 
   UIMessage(this.message,
       {this.showTimeLabel = false,
-      this.showNameLabel = false,
       this.mediaDownloading = false,
       this.mediaDownloadProgress = 0,
       this.voicePlaying = false,
@@ -54,7 +52,6 @@ class UIMessage {
             runtimeType == other.runtimeType &&
             message == other.message &&
             showTimeLabel == other.showTimeLabel &&
-            showNameLabel == other.showNameLabel &&
             mediaDownloading == other.mediaDownloading &&
             mediaDownloadProgress == other.mediaDownloadProgress &&
             voicePlaying == other.voicePlaying &&
@@ -73,7 +70,6 @@ class UIMessage {
   int get hashCode =>
       message.hashCode ^
       showTimeLabel.hashCode ^
-      showNameLabel.hashCode ^
       mediaDownloading.hashCode ^
       mediaDownloadProgress.hashCode ^
       voicePlaying.hashCode ^

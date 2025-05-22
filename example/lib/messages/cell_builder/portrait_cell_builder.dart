@@ -1,4 +1,3 @@
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/message.dart';
@@ -12,6 +11,7 @@ import 'package:wfc_example/viewmodel/user_view_model.dart';
 
 import '../../config.dart';
 import '../../ui_model/ui_message.dart';
+import '../../widget/portrait.dart';
 import 'message_cell_builder.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
@@ -44,18 +44,8 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   Widget _portrait(BuildContext context, UserInfo? userInfo) {
     var portrait = userInfo?.portrait ?? Config.defaultUserPortrait;
     return GestureDetector(
-      child: Container(
-          margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-          child: ClipRRect(
-              borderRadius: BorderRadius.circular(6.0),
-              child: CachedNetworkImage(
-                imageUrl: portrait,
-                width: 44.0,
-                height: 44.0,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0),
-                errorWidget: (context, url, err) => Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0),
-              ))),
+      child:
+          Container(margin: const EdgeInsets.fromLTRB(8, 0, 8, 0), child: Portrait(portrait, Config.defaultUserPortrait, width: 44.0, height: 44.0, borderRadius: 6.0)),
       onTap: () => conversationController.onPortraitTaped(context, model),
       onLongPress: () => conversationController.onPortraitLongTaped(model),
     );

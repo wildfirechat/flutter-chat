@@ -12,9 +12,9 @@ import 'package:wfc_example/messages/single_conversation_member_view.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
-import 'package:wfc_example/widget/OptionButtonItem.dart';
-import 'package:wfc_example/widget/OptionItem.dart';
-import 'package:wfc_example/widget/OptionSwitchItem.dart';
+import 'package:wfc_example/widget/option_button_item.dart';
+import 'package:wfc_example/widget/option_item.dart';
+import 'package:wfc_example/widget/option_switch_item.dart';
 import 'package:wfc_example/widget/SectionDivider.dart';
 
 import '../contact/pick_user_screen.dart';
