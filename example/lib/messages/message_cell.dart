@@ -57,12 +57,19 @@ class _MessageCellState extends State<MessageCell> with AutomaticKeepAliveClient
     } else {
       _cellBuilder = UnknownCellBuilder(context, widget.model);
     }
+    _cellBuilder.initState(this);
   }
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     return _cellBuilder.build(context);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _cellBuilder.dispose();
   }
 
   @override

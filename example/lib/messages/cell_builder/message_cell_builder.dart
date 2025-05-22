@@ -11,8 +11,22 @@ import '../../ui_model/ui_message.dart';
 abstract class MessageCellBuilder {
   UIMessage model;
   BuildContext context;
+  late State<MessageCell> state;
 
   MessageCellBuilder(this.context, this.model);
+
+  void initState(State<MessageCell> s) {
+    state = s;
+  }
+
+  void dispose() {
+    // do nothing
+  }
+
+  @protected
+  setState(VoidCallback f) {
+    state.setState(f);
+  }
 
   Widget build(BuildContext context) {
     return Padding(

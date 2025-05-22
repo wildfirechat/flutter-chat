@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:badges/badges.dart' as badge;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
+import 'package:imclient/message/notification/notification_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
@@ -63,13 +67,30 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   String lastMsgDigest = '';
   bool isLoading = true;
 
+  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
+
   @override
   bool get wantKeepAlive => true; // 保持状态，防止滚动时重建
 
   @override
   void initState() {
     super.initState();
+    var lastMessage = widget.conversationInfo.lastMessage;
+    // FIXME
+    // optimization
+    // TODO 更细致的判断，仅包含用户信息的消息，比如加群等消息，需要重新加载 lastMessage
+    if (lastMessage != null && lastMessage.content is NotificationMessageContent) {
+      _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
+        _loadLastMessageDigest();
+      });
+    }
     _loadLastMessageDigest();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _userInfoUpdatedSubscription?.cancel();
   }
 
   // @override
