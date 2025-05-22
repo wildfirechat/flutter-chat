@@ -125,6 +125,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
           context,
           MaterialPageRoute(
               builder: (context) => PickUserScreen(
+                    title: '移除群成员',
                     (context, members) async {
                       if (members.isEmpty) {
                         Navigator.pop(context);
@@ -154,7 +155,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => PickUserScreen((context, members) async {
+                builder: (context) => PickUserScreen(title: '选择联系人', (context, members) async {
                       if (members.isEmpty) {
                         Navigator.pop(context);
                         return;
