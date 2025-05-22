@@ -11,7 +11,7 @@ import 'package:wfc_example/conversation/conversation_appbar_title.dart';
 import 'package:wfc_example/conversation/single_conversation_info_screen.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
-import 'channel_conversation_info.dart';
+import 'channel_conversation_info_screen.dart';
 import 'input_bar/message_input_bar_controller.dart';
 import 'message_cell.dart';
 
