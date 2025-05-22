@@ -39,6 +39,15 @@ mixin UserRepo {
     return _groupUserMap[groupId]?.values.toList();
   }
 
+  static Future<List<UserInfo>> getFriendUserInfos() async {
+    var friends = await Imclient.getMyFriendList();
+    List<UserInfo> userInfos = [];
+    for (var friendId in friends) {
+      userInfos.add(_userMap[friendId]!);
+    }
+    return userInfos;
+  }
+
   static void putGroupMemberUserInfos(String groupId, List<UserInfo> userInfos) {
     var map = _groupUserMap[groupId];
     if (map == null) {
