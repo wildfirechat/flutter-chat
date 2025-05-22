@@ -5,7 +5,7 @@ import 'package:imclient/model/user_info.dart';
 
 class PickUserViewModel extends ChangeNotifier {
   List<UserInfo> _users = [];
-  List<UserInfo> _pickedUsers = [];
+  final List<UserInfo> _pickedUsers = [];
   List<String> _uncheckableUserIds = [];
   List<String> _disabledAndCheckedUserIds = [];
   int _maxPickCount = 0;

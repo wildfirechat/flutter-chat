@@ -5,13 +5,14 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 
 import 'package:wfc_example/config.dart';
-import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
 import 'package:wfc_example/viewmodel/pick_user_view_model.dart';
+import 'package:wfc_example/widget/portrait.dart';
 
 typedef OnPickUserCallback = void Function(BuildContext context, List<String> pickedUsers);
 
 class PickUserScreen extends StatelessWidget {
-  PickUserScreen(this.callback, {this.maxSelected = 0, this.candidates, this.disabledCheckedUsers, this.disabledUncheckedUsers, super.key});
+  PickUserScreen(this.callback, {this.maxSelected = 1024, this.candidates, this.disabledCheckedUsers, this.disabledUncheckedUsers, super.key});
+
   final OnPickUserCallback callback;
   final int maxSelected;
   final List<String>? candidates;
@@ -31,10 +32,7 @@ class PickUserScreen extends StatelessWidget {
           () async {
             var userIds = candidates ?? await Imclient.getMyFriendList(refresh: false);
             var userInfos = await Imclient.getUserInfos(userIds);
-            _pickUserViewModel.setup(userInfos,
-                maxPickCount: maxSelected,
-                uncheckableUserIds: disabledUncheckedUsers,
-                disabledUserIds: disabledCheckedUsers);
+            _pickUserViewModel.setup(userInfos, maxPickCount: maxSelected, uncheckableUserIds: disabledUncheckedUsers, disabledUserIds: disabledCheckedUsers);
           }();
           return _pickUserViewModel;
         },
@@ -92,9 +90,7 @@ class ContactSelectableItem extends StatelessWidget {
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                userInfo.portrait == null
-                    ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0)
-                    : Image.network(userInfo.portrait!, width: 40.0, height: 40.0),
+                Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
                 Container(
                   margin: const EdgeInsets.only(left: 16),
                 ),
