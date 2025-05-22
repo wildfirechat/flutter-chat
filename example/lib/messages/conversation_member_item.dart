@@ -1,7 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:wfc_example/widget/portrait.dart';
 
 import '../config.dart';
 
@@ -14,18 +14,7 @@ class ConversationMemberItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox.square(
-            dimension: 48,
-            child: ClipRRect(
-                borderRadius: BorderRadius.circular(6.0),
-                child: CachedNetworkImage(
-                  imageUrl: userInfo.portrait ?? Config.defaultUserPortrait,
-                  width: 44.0,
-                  height: 44.0,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0),
-                  errorWidget: (context, url, err) => Image.asset(Config.defaultUserPortrait, width: 44.0, height: 44.0),
-                ))),
+        Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
         SizedBox(
           height: 16,
           child: Text(userInfo.getReadableName(), overflow: TextOverflow.ellipsis, maxLines: 1, style: const TextStyle(fontSize: 12)),

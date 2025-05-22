@@ -1,6 +1,4 @@
-
 import 'package:badges/badges.dart' as badge;
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -10,6 +8,7 @@ import 'package:wfc_example/config.dart';
 import 'package:wfc_example/ui_model/ui_contact_info.dart';
 import 'package:wfc_example/contact/friend_request_page.dart';
 import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
+import 'package:wfc_example/widget/portrait.dart';
 
 import '../user_info_widget.dart';
 import 'fav_groups.dart';
@@ -162,7 +161,7 @@ class _ContactListItemState extends State<ContactListItem> with AutomaticKeepAli
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                _buildPortraitWidget(),
+                Portrait(widget.contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
                 Container(
                   margin: const EdgeInsets.only(left: 16),
                 ),
@@ -182,25 +181,6 @@ class _ContactListItemState extends State<ContactListItem> with AutomaticKeepAli
         ],
       ),
     );
-  }
-
-  Widget _buildPortraitWidget() {
-    // 加载中或无头像时显示默认头像
-    var portrait = widget.contactInfo.userInfo.portrait;
-    if (portrait == null) {
-      return Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0);
-    }
-
-    return ClipRRect(
-        borderRadius: BorderRadius.circular(4.0),
-        child: CachedNetworkImage(
-          imageUrl: portrait,
-          width: 40.0,
-          height: 40.0,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0),
-          errorWidget: (context, url, err) => Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0),
-        ));
   }
 
   @override

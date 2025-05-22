@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:badges/badges.dart' as badge;
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
@@ -18,6 +17,7 @@ import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
 import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
+import 'package:wfc_example/widget/portrait.dart';
 
 import '../config.dart';
 import '../messages/messages.dart';
@@ -167,13 +167,10 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                     builder: (context, value, child) => Row(
                           children: <Widget>[
                             badge.Badge(
-                                showBadge: conversationInfo.unreadCount.unread > 0,
-                                badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
-                                child: SizedBox(
-                                  width: 40,
-                                  height: 40,
-                                  child: _buildPortraitImage(conversationInfo.conversation, value.$1, value.$2, value.$3),
-                                )),
+                              showBadge: conversationInfo.unreadCount.unread > 0,
+                              badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
+                              child: _buildPortraitImage(conversationInfo.conversation, value.$1, value.$2, value.$3),
+                            ),
                             Expanded(
                                 child: Container(
                                     height: 48.0,
@@ -266,16 +263,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
         : widget.conversationInfo.conversation.conversationType == ConversationType.Group
             ? Config.defaultGroupPortrait
             : Config.defaultChannelPortrait;
-    return ClipRRect(
-        borderRadius: BorderRadius.circular(6.0),
-        child: CachedNetworkImage(
-          imageUrl: portrait,
-          width: 44.0,
-          height: 44.0,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Image.asset(defaultPortrait, width: 44.0, height: 44.0),
-          errorWidget: (context, url, err) => Image.asset(defaultPortrait, width: 44.0, height: 44.0),
-        ));
+    return Portrait(portrait, defaultPortrait, borderRadius: 6.0);
   }
 
   // 构建加载中的占位UI
