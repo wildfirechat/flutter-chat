@@ -20,7 +20,7 @@ import '../user_info_widget.dart';
 import 'group_conversation_members_view.dart';
 
 class GroupConversationInfoScreen extends StatelessWidget {
-  GroupConversationInfoScreen(this.conversation, {super.key});
+  const GroupConversationInfoScreen(this.conversation, {super.key});
 
   final Conversation conversation;
 
@@ -82,7 +82,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
       OptionItem('群二维码', rightIcon: Icons.qr_code, onTap: () {}),
       OptionItem('群公告', desc: '占位群公告', onTap: () {}),
       OptionItem('群备注', desc: groupInfo?.remark, onTap: () {}),
-      groupMember!.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner ? OptionItem('群管理', onTap: () {}) : Container(),
+      groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner ? OptionItem('群管理', onTap: () {}) : Container(),
       const SectionDivider(),
       OptionItem('查找聊天内容', onTap: () {}),
       OptionItem('会话文件', onTap: () {}),
