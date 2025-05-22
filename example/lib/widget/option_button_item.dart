@@ -2,15 +2,11 @@ import 'package:flutter/material.dart';
 
 class OptionButtonItem extends StatelessWidget {
   final String title;
+  final Color? titleColor;
   final bool showBottomDivider;
   final GestureTapCallback onTap;
 
-  const OptionButtonItem(
-    this.title,
-    this.onTap, {
-    this.showBottomDivider = true,
-    super.key,
-  });
+  const OptionButtonItem(this.title, this.onTap, {this.showBottomDivider = true, this.titleColor = Colors.red, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +18,7 @@ class OptionButtonItem extends StatelessWidget {
           child: Center(
               child: Text(
             title,
-            style: const TextStyle(color: Colors.red),
+            style: TextStyle(color: titleColor),
           )),
         ),
         Container(
