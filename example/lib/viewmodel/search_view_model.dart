@@ -9,6 +9,14 @@ import 'package:imclient/model/group_search_info.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:imclient/model/user_info.dart';
 
+enum SearchType {
+  User,
+  Friend,
+  Group,
+  Channel,
+  Conversation,
+}
+
 class SearchViewModel extends ChangeNotifier {
   String? _keyword;
   List<UserInfo> _searchedUsers = [];
@@ -16,6 +24,8 @@ class SearchViewModel extends ChangeNotifier {
   List<ChannelInfo> _searchedChannels = [];
   List<ConversationSearchInfo> _searchedConversationInfos = [];
   List<GroupSearchInfo> _searchedGroupInfos = [];
+
+  Map<SearchType, List<Object>> _groupedSearchResult = {};
 
   List<UserInfo> get searchedUsers {
     return _searchedUsers;
@@ -37,16 +47,31 @@ class SearchViewModel extends ChangeNotifier {
     return _searchedGroupInfos;
   }
 
-  search(String keyword) async {
+  Map<SearchType, List<Object>> get groupedSearchResult {
+    return _groupedSearchResult;
+  }
+
+  search(String keyword,
+      {List<SearchType> searchTypes = const [SearchType.User, SearchType.Friend, SearchType.Channel, SearchType.Group, SearchType.Conversation]}) async {
     if (keyword == _keyword) {
       return;
     }
     _keyword = keyword;
-    searchUser(keyword);
-    searchFriend(keyword);
-    searchChannel(keyword);
-    searchConversation(keyword);
-    searchGroup(keyword);
+    if (searchTypes.contains(SearchType.User)) {
+      searchUser(keyword);
+    }
+    if (searchTypes.contains(SearchType.Friend)) {
+      searchFriend(keyword);
+    }
+    if (searchTypes.contains(SearchType.Channel)) {
+      searchChannel(keyword);
+    }
+    if (searchTypes.contains(SearchType.Conversation)) {
+      searchConversation(keyword);
+    }
+    if (searchTypes.contains(SearchType.Group)) {
+      searchGroup(keyword);
+    }
   }
 
   searchUser(String keyword, {SearchUserType searchType = SearchUserType.SearchUserType_General, int page = 0}) async {
@@ -55,6 +80,7 @@ class SearchViewModel extends ChangeNotifier {
     Imclient.searchUser(keyword, searchType.index, page, (List<UserInfo>? userInfos) {
       if (keyword == _keyword) {
         _searchedUsers = userInfos ?? [];
+        _groupedSearchResult[SearchType.User] = _searchedUsers;
         completer.complete(userInfos);
         notifyListeners();
       }
@@ -68,6 +94,7 @@ class SearchViewModel extends ChangeNotifier {
 
   searchFriend(String keyword) async {
     _searchedFriends = await Imclient.searchFriends(keyword);
+    _groupedSearchResult[SearchType.Friend] = _searchedFriends;
     notifyListeners();
   }
 
@@ -80,6 +107,7 @@ class SearchViewModel extends ChangeNotifier {
 
   searchConversation(String keyword) async {
     _searchedConversationInfos = await Imclient.searchConversation(keyword, [ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+    _groupedSearchResult[SearchType.Conversation] = _searchedConversationInfos;
     notifyListeners();
   }
 
