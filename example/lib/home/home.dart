@@ -13,6 +13,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/contact/pick_user_screen.dart';
 import 'package:wfc_example/contact/search_user.dart';
+import 'package:wfc_example/search/search_portal_delegate.dart';
 import 'package:wfc_example/settings/settings.dart';
 import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
@@ -78,7 +79,9 @@ class HomeTabBarState extends State<HomeTabBar> {
     return appBarTitles[curIndex];
   }
 
-  void _onTapSearchButton(BuildContext context) {}
+  void _onTapSearchButton(BuildContext context) {
+    showSearch(context: context, delegate: SearchPortalDelegate());
+  }
 
   void _dismissProcessingDialog(BuildContext context) {
     Navigator.of(context).pop();
