@@ -360,16 +360,18 @@ class _GroupListViewState extends State<GroupListView> {
       return widget.itemBuilder(context, indexPath);
     } else {
       if (indexPath.index == widget.countOfItemInSection(indexPath.section) - 1) {
-        return GestureDetector(
-          onTap: () {
-            debugPrint('jyj onTap ${indexPath.section} ${indexPath.index}');
-            setState(() {
-              _sectionExpandStatus[indexPath.section] = true;
-              debugPrint('jyj set State ${_sectionExpandStatus[indexPath.section]}');
-            });
-          },
-          child: widget.groupExpandBuilder != null ? widget.groupExpandBuilder!(context, indexPath.section) : const Text('全部展开'),
-        );
+        return widget.groupExpandBuilder != null
+            ? widget.groupExpandBuilder!(context, indexPath.section)
+            : ListTile(
+                dense: true,
+                title: const Text('全部展开', style: TextStyle(fontSize: 13)),
+                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+                onTap: () {
+                  setState(() {
+                    _sectionExpandStatus[indexPath.section] = true;
+                  });
+                },
+              );
       } else {
         return Container(
           height: 0,
