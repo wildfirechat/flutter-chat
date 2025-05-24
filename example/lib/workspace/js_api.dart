@@ -1,11 +1,9 @@
 import 'dart:convert';
-
 import 'package:dsbridge_flutter/dsbridge_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
-import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/workspace/wf_webview_screen.dart';
 
@@ -14,9 +12,16 @@ import '../contact/pick_user_screen.dart';
 class JsApi extends JavaScriptNamespaceInterface {
   final BuildContext context;
   final String appUrl;
+  late String currentUr;
   final DWebViewController webViewController;
 
-  JsApi(this.context, this.appUrl, this.webViewController);
+  JsApi(this.context, this.appUrl, this.webViewController) {
+    currentUr = appUrl;
+  }
+
+  setCurrentUrl(String url) {
+    currentUr = url;
+  }
 
   @override
   void register() {
@@ -38,14 +43,6 @@ class JsApi extends JavaScriptNamespaceInterface {
 
   void close(dynamic obj, CompletionHandler handler) {
     Navigator.pop(context);
-    // activity.finish();
-    // JSONObject resultObj = new JSONObject();
-    // try {
-    //   resultObj.put("code", 0);
-    //   handler.complete(resultObj);
-    // } catch (JSONException e) {
-    // e.printStackTrace();
-    // }
   }
 
   void getAuthCode(dynamic obj, CompletionHandler handler) {
@@ -83,15 +80,10 @@ class JsApi extends JavaScriptNamespaceInterface {
   }
 
   void chooseContacts(Object obj, CompletionHandler handler) {
-    // if (!preCheck()) {
-    //   callbackJs(handler, -2);
-    //   return;
-    // }
-    // JSONObject jsonObject = (JSONObject) obj;
-    // int max = jsonObject.optInt("max", 0);
-    // Intent intent = PickContactActivity.buildPickIntent(activity, max, null, null);
-    // startActivityForResult(intent, REQUEST_CODE_PICK_CONTACT);
-    // this.jsCallbackHandlers.put(REQUEST_CODE_PICK_CONTACT, handler);
+    if (!_preCheck()) {
+      _callbackJs(handler, -2);
+      return;
+    }
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -111,19 +103,25 @@ class JsApi extends JavaScriptNamespaceInterface {
                       'portrait': userInfo.portrait,
                     });
                   }
-                  handler.complete({'code': 0, 'data': json.encode(userInfoList)});
+                  _callbackJs2(handler, 0, json.encode(userInfoList));
                   Navigator.pop(context);
                 }
               })),
     );
   }
 
-  Map<String, dynamic> _userInfoToJson(UserInfo userInfo) {
-    return {
-      'userId': userInfo.userId,
-      'name': userInfo.name,
-      'displayName': userInfo.displayName,
-      'portrait': userInfo.portrait,
-    };
+  _preCheck() {
+    return appUrl == currentUr;
+  }
+
+  _callbackJs(CompletionHandler handler, int code) {
+    _callbackJs2(handler, code, null);
+  }
+
+  _callbackJs2(CompletionHandler handler, int code, String? result) {
+    Map<String, dynamic> object = {};
+    object["code"] = code;
+    object["data"] = result;
+    handler.complete(object);
   }
 }
