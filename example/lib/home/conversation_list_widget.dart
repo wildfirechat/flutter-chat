@@ -67,7 +67,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   String lastMsgDigest = '';
   bool isLoading = true;
 
-  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
+  StreamSubscription<UserInfoUpdatedEvent>? _userInfoUpdatedSubscription;
 
   @override
   bool get wantKeepAlive => true; // 保持状态，防止滚动时重建
