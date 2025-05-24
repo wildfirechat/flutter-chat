@@ -6,6 +6,11 @@ class Config {
   // static const String APP_Server_Address = 'http://wildfirechat.net:8888';
   static const String APP_Server_Address = 'https://app.wildfirechat.net';
 
+  /// 工作台页面地址
+  /// <p>
+  /// 如果不想显示工作台，置为 '' 即可
+  static String WORKSPACE_URL = "https://open.wildfirechat.cn/work.html";
+
   /// 音视频通话所用的turn server配置，详情参考 https://docs.wildfirechat.net/webrtc/
   /// <br>
   /// <br>
@@ -15,10 +20,10 @@ class Config {
   /// <br>
   /// <strong>上线时请一定要切换成你们自己的服务。可以购买腾讯云或者阿里云的轻量服务器，价格很便宜，可以避免影响到您的用户体验。</strong>
   /// <br>
-  static final ICE_SERVERS/*请仔细阅读上面的注释*/ =[
-  // 数组元素定义
-  /*{"turn server uri", "userName", "password"}*/
-  ["turn:turn.wildfirechat.net:3478", "wfchat", "wfchat123"]
+  static final ICE_SERVERS /*请仔细阅读上面的注释*/ = [
+    // 数组元素定义
+    /*{"turn server uri", "userName", "password"}*/
+    ["turn:turn.wildfirechat.net:3478", "wfchat", "wfchat123"]
   ];
 
   static const String defaultUserPortrait = 'assets/images/user_avatar_default.png';
