@@ -70,9 +70,8 @@ class SearchPortalDelegate extends SearchDelegate<String> {
     if (query.isNotEmpty) {
       return SearchPortalResultView(query);
     } else {
-      return Container(
-        margin: const EdgeInsets.all(16),
-        child: const Text("输入关键字进行搜索"),
+      return const Center(
+        child: Text("输入关键字进行搜索"),
       );
     }
   }
