@@ -1,3 +1,4 @@
+
 import 'package:dsbridge_flutter/dsbridge_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -26,6 +27,7 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
     _pageTitle = widget.title ?? '';
 
     final DWebViewController controller = DWebViewController();
+    final jsApi = JsApi(context, widget.url, controller);
 
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -45,6 +47,9 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
               _pageTitle = title ?? '';
             });
           },
+          onUrlChange: (UrlChange urlChange) {
+            jsApi.setCurrentUrl(urlChange.url!);
+          },
           onNavigationRequest: (NavigationRequest request) {
             if (request.url.startsWith('https://www.youtube.com/')) {
               debugPrint('blocking navigation to ${request.url}');
@@ -55,7 +60,7 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
           },
         ),
       )
-      ..addJavaScriptObject(JsApi(context, widget.url, controller));
+      ..addJavaScriptObject(jsApi);
 
     controller.loadRequest(Uri.parse(widget.url));
 
