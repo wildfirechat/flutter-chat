@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:wfc_example/config.dart';
+import 'package:wfc_example/widget/portrait.dart';
 import '../user_info_widget.dart';
-import 'organization_viewmodel.dart';
+import 'organization_view_model.dart';
 
-class OrganizationViewPage extends StatefulWidget {
+class OrganizationScreen extends StatefulWidget {
   final int? initialOrganizationId;
 
-  const OrganizationViewPage({super.key, this.initialOrganizationId});
+  const OrganizationScreen({super.key, this.initialOrganizationId});
 
   @override
-  _OrganizationViewPageState createState() => _OrganizationViewPageState();
+  _OrganizationScreenState createState() => _OrganizationScreenState();
 }
 
-class _OrganizationViewPageState extends State<OrganizationViewPage> {
+class _OrganizationScreenState extends State<OrganizationScreen> {
   late OrganizationViewModel _viewModel;
 
   @override
@@ -129,7 +130,7 @@ class _OrganizationViewPageState extends State<OrganizationViewPage> {
                         if (viewModel.currentOrganizationDetails!.employees != null && viewModel.currentOrganizationDetails!.employees!.isNotEmpty)
                           ...viewModel.currentOrganizationDetails!.employees!.map((emp) {
                             return ListTile(
-                              leading: Icon(Icons.person, color: Theme.of(context).colorScheme.secondary),
+                              leading: emp.portraitUrl != null ? Portrait(emp.portraitUrl!, Config.defaultUserPortrait) : Icon(Icons.person, color: Theme.of(context).colorScheme.secondary),
                               title: Text(emp.name ?? 'Unnamed Employee'),
                               // subtitle: Text(emp.alias ?? emp.id?.toString() ?? 'No ID/Alias'),
                               onTap: () {
