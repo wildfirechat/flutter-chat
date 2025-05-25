@@ -6,12 +6,12 @@ import 'package:provider/provider.dart';
 
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/organization/model/organization.dart';
-import 'package:wfc_example/organization/organization_viewmodel.dart';
+import 'package:wfc_example/organization/organization_view_model.dart';
 import 'package:wfc_example/ui_model/ui_contact_info.dart';
 import 'package:wfc_example/contact/friend_request_page.dart';
 import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
 import 'package:wfc_example/widget/portrait.dart';
-import 'package:wfc_example/organization/organization_view_page.dart';
+import 'package:wfc_example/organization/organization_screen.dart';
 
 import '../user_info_widget.dart';
 import 'fav_groups.dart';
@@ -151,7 +151,7 @@ class ContactListWidget extends StatelessWidget {
           // Directly navigate to OrganizationViewPage.
           // The ViewModel in OrganizationViewPage will handle loading the root/default organization.
           MaterialPageRoute(
-              builder: (context) => OrganizationViewPage(
+              builder: (context) => OrganizationScreen(
                     initialOrganizationId: org.id,
                   )),
         );
