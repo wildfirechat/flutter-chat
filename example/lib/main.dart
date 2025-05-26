@@ -113,7 +113,7 @@ class _MyAppState extends State<MyApp> {
       );
     };
 
-    Imclient.setDefaultPortraitProvider(WFPortraitProvider());
+    Imclient.setDefaultPortraitProvider(WFPortraitProvider.instance);
 
     Imclient.init((int status) {
       if (kDebugMode) {

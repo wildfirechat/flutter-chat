@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/widget/portrait.dart';
+import '../default_portrait_provider.dart';
 import '../user_info_widget.dart';
 import 'organization_view_model.dart';
 
@@ -120,7 +121,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                           ...viewModel.currentOrganizationDetails!.subOrganizations!.map((subOrg) {
                             return ListTile(
                               leading: Icon(Icons.corporate_fare, color: Theme.of(context).colorScheme.secondary),
-                              title: Text(subOrg.name ?? 'Unnamed Sub-Organization'),
+                              title: Text(subOrg.name),
                               trailing: const Icon(Icons.chevron_right),
                               onTap: () => viewModel.navigateToOrganization(subOrg),
                             );
@@ -130,8 +131,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                         if (viewModel.currentOrganizationDetails!.employees != null && viewModel.currentOrganizationDetails!.employees!.isNotEmpty)
                           ...viewModel.currentOrganizationDetails!.employees!.map((emp) {
                             return ListTile(
-                              leading: emp.portraitUrl != null ? Portrait(emp.portraitUrl!, Config.defaultUserPortrait) : Icon(Icons.person, color: Theme.of(context).colorScheme.secondary),
-                              title: Text(emp.name ?? 'Unnamed Employee'),
+                              leading: Portrait(emp.portraitUrl ?? WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()), Config.defaultUserPortrait),
+                              title: Text(emp.name),
                               // subtitle: Text(emp.alias ?? emp.id?.toString() ?? 'No ID/Alias'),
                               onTap: () {
                                 Navigator.push(
