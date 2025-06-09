@@ -4,20 +4,21 @@ import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/friend_request.dart';
 import 'package:pinyin/pinyin.dart';
-import 'package:wfc_example/contact/contact_info.dart';
+import 'package:wfc_example/repo/user_repo.dart';
+import 'package:wfc_example/ui_model/ui_contact_info.dart';
 
 class ContactListViewModel extends ChangeNotifier {
-  List<ContactInfo> _contactList = [];
-  List<String> _friendList = [];
+  List<UIContactInfo> _contactList = [];
   List<FriendRequest> _newFriendRequestList = [];
   int _unreadFriendRequestCount = 0;
 
+  late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
   late StreamSubscription<FriendUpdateEvent> _friendUpdatedSubscription;
   late StreamSubscription<FriendRequestUpdateEvent> _friendRequestUpdatedSubscription;
   late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
   late StreamSubscription<ClearFriendRequestUnreadEvent> _clearFriendRequestSubscription;
 
-  // TODO 星标利息人
+  // TODO 星标联系人
   late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
 
   ContactListViewModel() {
@@ -28,19 +29,25 @@ class ContactListViewModel extends ChangeNotifier {
       _loadFriendRequestListAndNotify();
     });
     _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
-      // TODO 优化
-      //var updatedUserInfos = event.userInfos;
-      _loadContactList();
+      // _loadContactList();
+      // UserViewModel 会更新缓存
+      notifyListeners();
     });
     _clearFriendRequestSubscription = Imclient.IMEventBus.on<ClearFriendRequestUnreadEvent>().listen((event) {
       _loadFriendRequestListAndNotify();
+    });
+
+    _connectionStatusSubscription = Imclient.IMEventBus.on<ConnectionStatusChangedEvent>().listen((event) {
+      if(event.connectionStatus == kConnectionStatusConnected) {
+        _loadContactList(true);
+      }
     });
 
     _loadContactList(true);
     _loadFriendRequestListAndNotify();
   }
 
-  List<ContactInfo> get contactList => _contactList;
+  List<UIContactInfo> get contactList => _contactList;
 
   List<FriendRequest> get newFriendRequestList => _newFriendRequestList;
 
@@ -57,11 +64,9 @@ class ContactListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _loadContactList([refresh = false]) async {
-    _friendList = await Imclient.getMyFriendList(refresh: refresh);
-
-    List<ContactInfo> contactList = [];
-    var userInfos = await Imclient.getUserInfos(_friendList);
+  void _loadContactList([bool refresh = false]) async {
+    List<UIContactInfo> contactList = [];
+    var userInfos = await UserRepo.loadFriendUserInfos(refresh : refresh);
     for (var userInfo in userInfos) {
       userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
       var runes = userInfo.displayName!.runes.toList();
@@ -71,7 +76,7 @@ class ContactListViewModel extends ChangeNotifier {
         firstWordPinyinLetter = firstWordPinyin.isNotEmpty ? firstWordPinyin.substring(0, 1).toUpperCase() : '{';
       }
 
-      contactList.add(ContactInfo(firstWordPinyinLetter, false, userInfo));
+      contactList.add(UIContactInfo(firstWordPinyinLetter, false, userInfo));
     }
 
     contactList.sort((a, b) {
@@ -102,5 +107,6 @@ class ContactListViewModel extends ChangeNotifier {
     _friendRequestUpdatedSubscription.cancel();
     _userInfoUpdatedSubscription.cancel();
     _clearFriendRequestSubscription.cancel();
+    _connectionStatusSubscription.cancel();
   }
 }

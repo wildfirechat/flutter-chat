@@ -3,39 +3,34 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
+import 'package:wfc_example/repo/channel_repo.dart';
 
 class ChannelViewModel extends ChangeNotifier {
-  static final Map<String, ChannelInfo> _channelInfoMap = {};
-
-  late StreamSubscription<ChannelInfoUpdateEvent> _groupInfoUpdatedSubscription;
+  late StreamSubscription<ChannelInfoUpdateEvent> _channelInfoUpdatedSubscription;
 
   ChannelViewModel() {
-    _groupInfoUpdatedSubscription = Imclient.IMEventBus.on<ChannelInfoUpdateEvent>().listen((event) {
-      for (var channel in event.channelInfos) {
-        _channelInfoMap[channel.channelId] = channel;
-      }
+    _channelInfoUpdatedSubscription = Imclient.IMEventBus.on<ChannelInfoUpdateEvent>().listen((event) {
+      ChannelRepo.updateChannelInfos(event.channelInfos);
       notifyListeners();
     });
   }
 
-  ChannelInfo? getChannelInfo(String groupId) {
-    var groupInfo = _channelInfoMap[groupId];
-    if (groupInfo != null) {
-      return groupInfo;
+  ChannelInfo? getChannelInfo(String channelId) {
+    var channelInfo = ChannelRepo.getChannelInfo(channelId);
+    if (channelInfo == null) {
+      Imclient.getChannelInfo(channelId).then((info) {
+        if (info != null && info.updateDt > 0) {
+          ChannelRepo.putChannelInfo(info);
+          notifyListeners();
+        }
+      });
     }
-    Imclient.getChannelInfo(groupId).then((info) {
-      if (info == null) {
-        return;
-      }
-      _channelInfoMap[groupId] = info;
-      notifyListeners();
-    });
-    return null;
+    return channelInfo;
   }
 
   @override
   void dispose() {
     super.dispose();
-    _groupInfoUpdatedSubscription.cancel();
+    _channelInfoUpdatedSubscription.cancel();
   }
 }

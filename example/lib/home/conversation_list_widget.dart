@@ -5,24 +5,31 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
+import 'package:imclient/message/notification/notification_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:wfc_example/config.dart';
 import 'package:wfc_example/utilities.dart';
 import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
 import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
+import 'package:wfc_example/widget/portrait.dart';
 
-import '../messages/messages_screen.dart';
+import '../config.dart';
+import '../conversation/conversation_screen.dart';
 
-class ConversationListWidget extends StatelessWidget {
+class ConversationListWidget extends StatefulWidget {
   const ConversationListWidget({Key? key}) : super(key: key);
 
+  @override
+  State<ConversationListWidget> createState() => _ConversationListWidgetState();
+}
+
+class _ConversationListWidgetState extends State<ConversationListWidget> {
   @override
   Widget build(BuildContext context) {
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context);
@@ -30,185 +37,305 @@ class ConversationListWidget extends StatelessWidget {
       body: SafeArea(
         child: ListView.builder(
             itemCount: conversationListViewModel.conversationList.length,
+            // 使用 ListView.builder 的 key 参数确保列表项在顺序变化时能正确更新
+            itemExtent: 64.5,
+            key: ValueKey<int>(conversationListViewModel.conversationList.length),
             itemBuilder: (context, i) {
               ConversationInfo info = conversationListViewModel.conversationList[i];
-              String? portrait;
-              String? convTitle;
-              if (info.conversation.conversationType == ConversationType.Single) {
-                return Selector<UserViewModel, UserInfo?>(
-                    selector: (_, userViewModel) => userViewModel.getUserInfo(info.conversation.target),
-                    builder: (_, userInfo, __) {
-                      if (userInfo != null && userInfo.portrait != null && userInfo.portrait!.isNotEmpty) {
-                        portrait = userInfo.portrait!;
-                        convTitle = userInfo.displayName!;
-                      } else {
-                        convTitle = '私聊';
-                        portrait = Config.defaultUserPortrait;
-                      }
-
-                      return ConversationListItem(info, convTitle!, portrait!);
-                    });
-              } else if (info.conversation.conversationType == ConversationType.Group) {
-                return Selector<GroupViewModel, GroupInfo?>(
-                    selector: (_, groupViewModel) => groupViewModel.getGroupInfo(info.conversation.target),
-                    builder: (_, groupInfo, __) {
-                      if (groupInfo != null && groupInfo.portrait != null && groupInfo.portrait!.isNotEmpty) {
-                        portrait = groupInfo.portrait!;
-                        convTitle = groupInfo.name!;
-                      } else {
-                        convTitle = '群聊';
-                        portrait = Config.defaultGroupPortrait;
-                      }
-                      return ConversationListItem(info, convTitle!, portrait!);
-                    });
-              } else if (info.conversation.conversationType == ConversationType.Channel) {
-                return Selector<ChannelViewModel, ChannelInfo?>(
-                    selector: (_, channelViewModel) => channelViewModel.getChannelInfo(info.conversation.target),
-                    builder: (_, channelInfo, __) {
-                      if (channelInfo != null && channelInfo.portrait != null && channelInfo.portrait!.isNotEmpty) {
-                        portrait = channelInfo.portrait!;
-                        convTitle = channelInfo.name!;
-                      } else {
-                        convTitle = '频道';
-                        portrait = Config.defaultChannelPortrait;
-                      }
-                      return ConversationListItem(info, convTitle!, portrait!);
-                    });
-              } else {
-                convTitle = '未知会话';
-                return Text(convTitle);
-              }
+              var key =
+                  '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}-${info.timestamp}';
+              return ConversationListItem(
+                info,
+                key: ValueKey(key),
+              );
             }),
       ),
     );
   }
 }
 
-class ConversationListItem extends StatelessWidget {
-  late final ConversationInfo conversationInfo;
-  late final String convTitle;
-  late final String portrait;
+class ConversationListItem extends StatefulWidget {
+  final ConversationInfo conversationInfo;
 
-  ConversationListItem(this.conversationInfo, this.convTitle, this.portrait) : super(key: ValueKey(conversationInfo));
+  const ConversationListItem(this.conversationInfo, {super.key});
+
+  @override
+  State<ConversationListItem> createState() => _ConversationListItemState();
+}
+
+class _ConversationListItemState extends State<ConversationListItem> with AutomaticKeepAliveClientMixin {
+  String lastMsgDigest = '';
+  bool isLoading = true;
+
+  StreamSubscription<UserInfoUpdatedEvent>? _userInfoUpdatedSubscription;
+
+  @override
+  bool get wantKeepAlive => true; // 保持状态，防止滚动时重建
+
+  @override
+  void initState() {
+    super.initState();
+    var lastMessage = widget.conversationInfo.lastMessage;
+    // FIXME
+    // optimization
+    // TODO 更细致的判断，仅包含用户信息的消息，比如加群等消息，需要重新加载 lastMessage
+    if (lastMessage != null && lastMessage.content is NotificationMessageContent) {
+      _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
+        _loadLastMessageDigest();
+      });
+    }
+    _loadLastMessageDigest();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _userInfoUpdatedSubscription?.cancel();
+  }
+
+  // @override
+  // void didUpdateWidget(ConversationListItem oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
+  //   // 如果会话更新了，重新加载数据
+  //   if (oldWidget.conversationInfo.conversationInfo.timestamp != widget.conversationInfo.conversationInfo.timestamp) {
+  //     _loadData();
+  //   }
+  // }
+
+  // 未使用 futureBuilder
+  Future<void> _loadLastMessageDigest() async {
+    try {
+      var digest = '';
+      if (widget.conversationInfo.lastMessage != null) {
+        digest = await widget.conversationInfo.lastMessage!.content.digest(widget.conversationInfo.lastMessage!);
+      }
+      if (mounted) {
+        setState(() {
+          lastMsgDigest = digest;
+          isLoading = false;
+        });
+      }
+    } catch (error) {
+      debugPrint("Error fetching conversation data: $error");
+      if (mounted) {
+        setState(() {
+          // 设置默认值以避免UI错误
+          lastMsgDigest = "";
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
-    UserInfo? senderInfo;
-    if (conversationInfo.lastMessage != null && conversationInfo.conversation.conversationType != ConversationType.Single && conversationInfo.lastMessage?.fromUser != Imclient.currentUserId) {
-      UserViewModel userViewModel = Provider.of<UserViewModel>(context, listen: false);
-      senderInfo = userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser, groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null);
-    }
+    super.build(context);
 
-    String? senderName = senderInfo?.getReadableName();
-    Future<String>? msgDigest = conversationInfo.lastMessage?.content.digest(conversationInfo.lastMessage!);
+    var conversationInfo = widget.conversationInfo;
+    bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
+
+    // 如果数据正在加载中，显示占位UI
+    // if (isLoading) {
+    //   return _buildPlaceholder(conversationInfo);
+    // }
 
     return GestureDetector(
       child: Container(
-        color: conversationInfo.isTop > 0 ? CupertinoColors.secondarySystemBackground : CupertinoColors.systemBackground,
-        child: Column(
-          children: <Widget>[
-            Container(
-              height: 64.0,
-              margin: const EdgeInsets.only(left: 15),
-              child: Row(
-                children: <Widget>[
-                  badge.Badge(
-                      showBadge: conversationInfo.unreadCount.unread > 0,
-                      badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
-                      child: SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: !portrait.startsWith('http') ? Image.asset(portrait, width: 44.0, height: 44.0) : Image.network(portrait, width: 44.0, height: 44.0),
-                      )),
-                  Expanded(
-                      child: Container(
-                          height: 48.0,
-                          alignment: Alignment.centerLeft,
-                          margin: const EdgeInsets.only(left: 15),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text(
-                                convTitle,
-                                style: const TextStyle(fontSize: 15.0),
-                                maxLines: 1,
-                              ),
-                              Container(
-                                height: 2,
-                              ),
-                              Row(
-                                children: [
-                                  _messageStatusIcon(),
-                                  hasDraft
-                                      ? const Text(
-                                          "[草稿]",
-                                          style: TextStyle(fontSize: 12.0, color: Colors.red),
-                                        )
-                                      : Container(),
-                                  Expanded(
-                                      child: FutureBuilder<String>(
-                                          future: msgDigest,
-                                          builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
-                                            String digestStr = snapshot.data ?? '';
-                                            return Text(
-                                              hasDraft ? conversationInfo.draft! : (senderName == null ? digestStr : '$senderName: $digestStr'),
-                                              style: const TextStyle(fontSize: 12.0, color: Color(0xffaaaaaa)),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            );
-                                          })),
-                                ],
-                              ),
-                            ],
-                          ))),
-                  Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0.0, 15.0, 15.0, 0.0),
-                        child: Text(
-                          Utilities.formatTime(conversationInfo.timestamp),
-                          style: const TextStyle(
-                            fontSize: 10.0,
-                            color: Color(0xffaaaaaa),
-                          ),
+          color: conversationInfo.isTop > 0 ? CupertinoColors.secondarySystemBackground : CupertinoColors.systemBackground,
+          child: Column(
+            children: <Widget>[
+              Container(
+                height: 64.0,
+                margin: const EdgeInsets.only(left: 15),
+                child: Selector3<UserViewModel, GroupViewModel, ChannelViewModel,
+                        (UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? channelInfo, UserInfo? lastMessageSenderUserInfo)>(
+                    selector: (context, userViewModel, groupViewModel, channelViewModel) => (
+                          conversationInfo.conversation.conversationType == ConversationType.Single
+                              ? userViewModel.getUserInfo(conversationInfo.conversation.target)
+                              : null,
+                          conversationInfo.conversation.conversationType == ConversationType.Group
+                              ? groupViewModel.getGroupInfo(conversationInfo.conversation.target)
+                              : null,
+                          conversationInfo.conversation.conversationType == ConversationType.Channel
+                              ? channelViewModel.getChannelInfo(conversationInfo.conversation.target)
+                              : null,
+                          conversationInfo.lastMessage != null
+                              ? userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser,
+                                  groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null)
+                              : null
                         ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0.0, 5.0, 15.0, 0.0),
-                        child: conversationInfo.isSilent
-                            ? Image.asset(
-                                'assets/images/conversation_mute.png',
-                                width: 10,
-                                height: 10,
-                              )
-                            : null,
-                      ),
-                    ],
-                  ),
-                ],
+                    builder: (context, value, child) => Row(
+                          children: <Widget>[
+                            badge.Badge(
+                              showBadge: conversationInfo.unreadCount.unread > 0,
+                              badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
+                              child: _buildPortraitImage(conversationInfo.conversation, value.$1, value.$2, value.$3),
+                            ),
+                            Expanded(
+                                child: Container(
+                                    height: 48.0,
+                                    alignment: Alignment.centerLeft,
+                                    margin: const EdgeInsets.only(left: 15),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Text(
+                                          Utilities.conversationTitle(conversationInfo.conversation, value.$1, value.$2, value.$3),
+                                          style: const TextStyle(fontSize: 15.0),
+                                          maxLines: 1,
+                                        ),
+                                        Container(
+                                          height: 2,
+                                        ),
+                                        Row(
+                                          children: [
+                                            _messageStatusIcon(),
+                                            hasDraft
+                                                ? const Text(
+                                                    "[草稿]",
+                                                    style: TextStyle(fontSize: 12.0, color: Colors.red),
+                                                  )
+                                                : Container(),
+                                            Expanded(
+                                              child: Text(
+                                                hasDraft
+                                                    ? conversationInfo.draft!
+                                                    : conversationInfo.lastMessage != null
+                                                        ? '${value.$4?.getReadableName() ?? "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
+                                                        : '',
+                                                style: const TextStyle(fontSize: 12.0, color: Color(0xffaaaaaa)),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ],
+                                    ))),
+                            Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(0.0, 15.0, 15.0, 0.0),
+                                  child: Text(
+                                    Utilities.formatTime(conversationInfo.timestamp),
+                                    style: const TextStyle(
+                                      fontSize: 10.0,
+                                      color: Color(0xffaaaaaa),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(0.0, 5.0, 15.0, 0.0),
+                                  child: conversationInfo.isSilent
+                                      ? Image.asset(
+                                          'assets/images/conversation_mute.png',
+                                          width: 10,
+                                          height: 10,
+                                        )
+                                      : null,
+                                ),
+                              ],
+                            ),
+                          ],
+                        )),
               ),
-            ),
-            Container(
-              margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-              height: 0.5,
-              color: const Color(0xffebebeb),
-            ),
-          ],
-        ),
-      ),
+              Container(
+                margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+                height: 0.5,
+                color: const Color(0xffebebeb),
+              ),
+            ],
+          )),
       onTap: () => _toChatPage(context, conversationInfo.conversation),
       onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
+    );
+  }
+
+  Widget _buildPortraitImage(Conversation conversation, UserInfo? userInfo, GroupInfo? groupInfo, ChannelInfo? channelInfo) {
+    String portrait = switch (conversation.conversationType) {
+      ConversationType.Single => userInfo?.portrait ?? Config.defaultUserPortrait,
+      ConversationType.Group => groupInfo?.portrait ?? Config.defaultGroupPortrait,
+      ConversationType.Channel => channelInfo?.portrait ?? Config.defaultChannelPortrait,
+      _ => ''
+    };
+    var defaultPortrait = widget.conversationInfo.conversation.conversationType == ConversationType.Single
+        ? Config.defaultUserPortrait
+        : widget.conversationInfo.conversation.conversationType == ConversationType.Group
+            ? Config.defaultGroupPortrait
+            : Config.defaultChannelPortrait;
+    return Portrait(portrait, defaultPortrait, borderRadius: 6.0);
+  }
+
+  // 构建加载中的占位UI
+  Widget _buildPlaceholder(ConversationInfo info) {
+    return Container(
+      color: info.isTop > 0 ? CupertinoColors.secondarySystemBackground : CupertinoColors.systemBackground,
+      child: Column(
+        children: [
+          Container(
+            height: 64.0,
+            margin: const EdgeInsets.only(left: 15),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    height: 48.0,
+                    margin: const EdgeInsets.only(left: 15),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 100,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: 150,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  width: 40,
+                  margin: const EdgeInsets.only(right: 15),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+            height: 0.5,
+            color: const Color(0xffebebeb),
+          ),
+        ],
+      ),
     );
   }
 
   void _toChatPage(BuildContext context, Conversation conversation) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
-    ).then((value) {
-      // _loadConversation();
-    });
+      MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
+    ).then((value) {});
   }
 
   void _onLongPressed(BuildContext context, ConversationInfo conversationInfo, Offset position) {
@@ -272,6 +399,7 @@ class ConversationListItem extends StatelessWidget {
   }
 
   Widget _messageStatusIcon() {
+    var conversationInfo = widget.conversationInfo;
     if (conversationInfo.lastMessage != null) {
       if (conversationInfo.lastMessage!.status == MessageStatus.Message_Status_Sending) {
         return Padding(

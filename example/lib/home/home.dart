@@ -11,19 +11,22 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:wfc_example/contact/contact_select_page.dart';
+import 'package:wfc_example/config.dart';
+import 'package:wfc_example/contact/pick_user_screen.dart';
 import 'package:wfc_example/contact/search_user.dart';
+import 'package:wfc_example/search/search_portal_delegate.dart';
 import 'package:wfc_example/settings/settings.dart';
 import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
-import 'package:wfc_example/viewmodel/group_view_model.dart';
+import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
+import 'package:wfc_example/workspace/work_space.dart';
 
 import '../contact/contact_list_widget.dart';
+import '../conversation/conversation_screen.dart';
 import 'conversation_list_widget.dart';
 import '../discovery/discovery.dart';
-import '../messages/messages_screen.dart';
 
 class HomeTabBar extends StatefulWidget {
   const HomeTabBar({Key? key}) : super(key: key);
@@ -33,7 +36,7 @@ class HomeTabBar extends StatefulWidget {
 }
 
 class HomeTabBarState extends State<HomeTabBar> {
-  final appBarTitles = ['信息', '联系人', '发现', '我的'];
+  final appBarTitles = ['信息', '联系人', '工作台', '发现', '我的'];
   final tabTextStyleSelected = const TextStyle(color: Color(0xff3B9AFF));
   final tabTextStyleNormal = const TextStyle(color: Color(0xff969696));
 
@@ -51,10 +54,11 @@ class HomeTabBarState extends State<HomeTabBar> {
   @override
   void initState() {
     super.initState();
-    pages = <Widget>[const ConversationListWidget(), ContactListWidget(), const DiscoveryTab(), SettingsTab()];
+    pages = <Widget>[const ConversationListWidget(), ContactListWidget(), const WorkSpace(), const DiscoveryTab(), SettingsTab()];
     tabImages = [
       [getTabImage('assets/images/tabbar_chat.png'), getTabImage('assets/images/tabbar_chat_cover.png')],
       [getTabImage('assets/images/tabbar_contact.png'), getTabImage('assets/images/tabbar_contact_cover.png')],
+      [getTabImage('assets/images/tabbar_work.png'), getTabImage('assets/images/tabbar_work_cover.png')],
       [getTabImage('assets/images/tabbar_discover.png'), getTabImage('assets/images/tabbar_discover_cover.png')],
       [getTabImage('assets/images/tabbar_me.png'), getTabImage('assets/images/tabbar_me_cover.png')]
     ];
@@ -78,7 +82,9 @@ class HomeTabBarState extends State<HomeTabBar> {
     return appBarTitles[curIndex];
   }
 
-  void _onTapSearchButton(BuildContext context) {}
+  void _onTapSearchButton(BuildContext context) {
+    showSearch(context: context, delegate: SearchPortalDelegate());
+  }
 
   void _dismissProcessingDialog(BuildContext context) {
     Navigator.of(context).pop();
@@ -107,14 +113,14 @@ class HomeTabBarState extends State<HomeTabBar> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => ContactSelectPage((context, members) async {
+          builder: (context) => PickUserScreen(title: '发起群聊', (context, members) async {
                 if (members.isEmpty) {
                   Fluttertoast.showToast(msg: "请选择一位或者多位好友发起聊天");
                 } else if (members.length == 1) {
                   Conversation conversation = Conversation(conversationType: ConversationType.Single, target: members[0]);
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
+                    MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
                   );
                 } else {
                   _showProcessingDialog(context, "群组创建中...");
@@ -138,7 +144,7 @@ class HomeTabBarState extends State<HomeTabBar> {
                     Conversation conversation = Conversation(conversationType: ConversationType.Group, target: strValue);
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
+                      MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
                     );
                   }, (errorCode) {
                     _dismissProcessingDialog(context);
@@ -164,9 +170,6 @@ class HomeTabBarState extends State<HomeTabBar> {
     return MultiProvider(
         providers: [
           ChangeNotifierProvider<ConversationListViewModel>(create: (_) => ConversationListViewModel()),
-          ChangeNotifierProvider<UserViewModel>(create: (_) => UserViewModel()),
-          ChangeNotifierProvider<GroupViewModel>(create: (_) => GroupViewModel()),
-          ChangeNotifierProvider<ChannelViewModel>(create: (_) => ChannelViewModel()),
           ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
         ],
         child: Scaffold(
@@ -252,7 +255,14 @@ class HomeTabBarState extends State<HomeTabBar> {
                   label: getTabTitle(1)),
               BottomNavigationBarItem(icon: getTabIcon(2), label: getTabTitle(2)),
               BottomNavigationBarItem(icon: getTabIcon(3), label: getTabTitle(3)),
-            ],
+              BottomNavigationBarItem(icon: getTabIcon(4), label: getTabTitle(4)),
+            ].where((tab) {
+              if (Config.WORKSPACE_URL == '') {
+                return tab.label != getTabTitle(2);
+              } else {
+                return true;
+              }
+            }).toList(),
             currentIndex: _tabIndex,
             onTap: (index) {
               setState(() {
