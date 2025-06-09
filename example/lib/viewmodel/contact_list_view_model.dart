@@ -12,6 +12,7 @@ class ContactListViewModel extends ChangeNotifier {
   List<FriendRequest> _newFriendRequestList = [];
   int _unreadFriendRequestCount = 0;
 
+  late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
   late StreamSubscription<FriendUpdateEvent> _friendUpdatedSubscription;
   late StreamSubscription<FriendRequestUpdateEvent> _friendRequestUpdatedSubscription;
   late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
@@ -36,6 +37,12 @@ class ContactListViewModel extends ChangeNotifier {
       _loadFriendRequestListAndNotify();
     });
 
+    _connectionStatusSubscription = Imclient.IMEventBus.on<ConnectionStatusChangedEvent>().listen((event) {
+      if(event.connectionStatus == kConnectionStatusConnected) {
+        _loadContactList(true);
+      }
+    });
+
     _loadContactList(true);
     _loadFriendRequestListAndNotify();
   }
@@ -57,9 +64,9 @@ class ContactListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _loadContactList([refresh = false]) async {
+  void _loadContactList([bool refresh = false]) async {
     List<UIContactInfo> contactList = [];
-    var userInfos = await UserRepo.loadFriendUserInfos();
+    var userInfos = await UserRepo.loadFriendUserInfos(refresh : refresh);
     for (var userInfo in userInfos) {
       userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
       var runes = userInfo.displayName!.runes.toList();
@@ -100,5 +107,6 @@ class ContactListViewModel extends ChangeNotifier {
     _friendRequestUpdatedSubscription.cancel();
     _userInfoUpdatedSubscription.cancel();
     _clearFriendRequestSubscription.cancel();
+    _connectionStatusSubscription.cancel();
   }
 }
