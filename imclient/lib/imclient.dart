@@ -39,6 +39,8 @@ import 'message/pclogin_request_message_content.dart';
 import 'message/ptext_message_content.dart';
 import 'message/sound_message_content.dart';
 import 'message/sticker_message_content.dart';
+import 'message/streaming_text_generating_message_content.dart';
+import 'message/streaming_text_generated_message_content.dart';
 import 'message/text_message_content.dart';
 import 'message/typing_message_content.dart';
 import 'message/video_message_content.dart';
@@ -487,6 +489,8 @@ class Imclient {
     registerMessageContent(ptextContentMeta);
     registerMessageContent(soundContentMeta);
     registerMessageContent(stickerContentMeta);
+    registerMessageContent(streamingTextGeneratingContentMeta);
+    registerMessageContent(streamingTextGeneratedContentMeta);
     registerMessageContent(textContentMeta);
     registerMessageContent(typingContentMeta);
     registerMessageContent(videoContentMeta);
