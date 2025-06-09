@@ -10,7 +10,7 @@ import 'package:rtckit/single_voice_call.dart';
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/contact/invite_friend.dart';
 
-import 'messages/messages_screen.dart';
+import 'conversation/conversation_screen.dart';
 
 class UserInfoWidget extends StatefulWidget {
   UserInfoWidget(this.userId, {this.inGroupId, Key? key}) : super(key: key);
@@ -48,8 +48,8 @@ class _UserInfoState extends State<UserInfoWidget> {
   void initState() {
     super.initState();
     _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
-      for(UserInfo userInfo in event.userInfos) {
-        if(userInfo.userId == widget.userId) {
+      for (UserInfo userInfo in event.userInfos) {
+        if (userInfo.userId == widget.userId) {
           loadUserInfo();
           break;
         }
@@ -58,16 +58,15 @@ class _UserInfoState extends State<UserInfoWidget> {
 
     Imclient.isMyFriend(widget.userId).then((value) {
       isFriend = value;
-      if(value) {
+      if (value) {
         modelList = friendModelList;
       } else {
         modelList = strangerModelList;
-    }
+      }
     });
 
     loadUserInfo();
   }
-
 
   @override
   void dispose() {
@@ -77,10 +76,10 @@ class _UserInfoState extends State<UserInfoWidget> {
 
   void loadUserInfo() {
     Imclient.getUserInfo(widget.userId, groupId: widget.inGroupId, refresh: true).then((value) => {
-      setState((){
-        userInfo = value;
-      })
-    });
+          setState(() {
+            userInfo = value;
+          })
+        });
   }
 
   @override
@@ -90,34 +89,58 @@ class _UserInfoState extends State<UserInfoWidget> {
         title: const Text('设置'),
       ),
       body: SafeArea(
-        child: userInfo == null || modelList == null ? const Text("加载中。。。") : ListView.builder(
-          itemCount: modelList!.length+1,
-          itemBuilder: (BuildContext context, int index) {
-            return index == 0 ? _buildHeader(context):_buildRow(context, index-1);
-          },
-        ),
+        child: userInfo == null || modelList == null
+            ? const Text("加载中。。。")
+            : ListView.builder(
+                itemCount: modelList!.length + 1,
+                itemBuilder: (BuildContext context, int index) {
+                  return index == 0 ? _buildHeader(context) : _buildRow(context, index - 1);
+                },
+              ),
       ),
     );
   }
 
   Widget _buildHeader(BuildContext context) {
-    if(userInfo == null) {
+    if (userInfo == null) {
       return const Text("加载中。。。");
     } else {
       String? portrait;
-      if(userInfo != null && userInfo!.portrait != null && userInfo!.portrait!.isNotEmpty) {
+      if (userInfo != null && userInfo!.portrait != null && userInfo!.portrait!.isNotEmpty) {
         portrait = userInfo!.portrait;
       }
 
       List<Widget> nameList = [];
-      nameList.add(Text(userInfo!.displayName!, textAlign: TextAlign.left, style: const TextStyle(fontSize: 18),));
+      nameList.add(Text(
+        userInfo!.displayName!,
+        textAlign: TextAlign.left,
+        style: const TextStyle(fontSize: 18),
+      ));
       bool hasAlias = isFriend && userInfo!.friendAlias != null && userInfo!.friendAlias!.isNotEmpty;
-      nameList.add(Container(margin: EdgeInsets.only(top: hasAlias?3:6),));
-      if(hasAlias) {
-        nameList.add(Text('备注名:${userInfo!.friendAlias!}', textAlign: TextAlign.left, style: const TextStyle(fontSize: 12),));
-        nameList.add(Container(margin: EdgeInsets.only(top: hasAlias?3:6),));
+      nameList.add(Container(
+        margin: EdgeInsets.only(top: hasAlias ? 3 : 6),
+      ));
+      if (hasAlias) {
+        nameList.add(Text(
+          '备注名:${userInfo!.friendAlias!}',
+          textAlign: TextAlign.left,
+          style: const TextStyle(fontSize: 12),
+        ));
+        nameList.add(Container(
+          margin: EdgeInsets.only(top: hasAlias ? 3 : 6),
+        ));
       }
-      nameList.add(Container(constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width/View.of(context).devicePixelRatio - 100), child: Text('野火号:${userInfo!.name}', textAlign: TextAlign.left, style: const TextStyle(fontSize: 12, color: Color(0xFF3b3b3b), ), overflow: TextOverflow.ellipsis,)));
+      nameList.add(Container(
+          constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 100),
+          child: Text(
+            '野火号:${userInfo!.name}',
+            textAlign: TextAlign.left,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Color(0xFF3b3b3b),
+            ),
+            overflow: TextOverflow.ellipsis,
+          )));
 
       return Container(
         height: 80,
@@ -154,36 +177,49 @@ class _UserInfoState extends State<UserInfoWidget> {
     bool hasSection = modelList![index][2];
     bool center = modelList![index][3];
     bool red = modelList![index][4];
-    Color color = red ? Colors.red:Colors.black;
+    Color color = red ? Colors.red : Colors.black;
 
-    return GestureDetector(child: Column(children: [
-      Container(
-        height: hasSection?18:0,
-        width: View.of(context).physicalSize.width,
-        color: const Color(0xffebebeb),
+    return GestureDetector(
+      child: Column(
+        children: [
+          Container(
+            height: hasSection ? 18 : 0,
+            width: View.of(context).physicalSize.width,
+            color: const Color(0xffebebeb),
+          ),
+          Container(
+            margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
+            height: 36,
+            child: center
+                ? Center(
+                    child: Text(
+                    title,
+                    style: TextStyle(color: color),
+                  ))
+                : Row(
+                    children: [
+                      Expanded(child: Text(title)),
+                    ],
+                  ),
+          ),
+          Container(
+            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+            height: 0.5,
+            color: const Color(0xdbdbdbdb),
+          ),
+        ],
       ),
-      Container(
-        margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
-        height: 36,
-        child: center?Center(child: Text(title, style: TextStyle(color: color),)):Row(children: [Expanded(child: Text(title)),],),
-      ),
-      Container(
-        margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-        height: 0.5,
-        color: const Color(0xdbdbdbdb),
-      ),
-    ],),
       onTap: () {
-        if(key == "message") {
+        if (key == "message") {
           Conversation conversation = Conversation(conversationType: ConversationType.Single, target: widget.userId);
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => MessagesScreen(conversation)),
+            MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
           );
-        } else if(key == "voip") {
-          SingleVideoCallView callView = SingleVideoCallView(userId:widget.userId, audioOnly:false);
+        } else if (key == "voip") {
+          SingleVideoCallView callView = SingleVideoCallView(userId: widget.userId, audioOnly: false);
           Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
-        } else if(key == "friend") {
+        } else if (key == "friend") {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => InviteFriendPage(widget.userId)),
@@ -192,6 +228,7 @@ class _UserInfoState extends State<UserInfoWidget> {
           Fluttertoast.showToast(msg: "方法没有实现");
           print("on tap item $index");
         }
-      },);
+      },
+    );
   }
 }

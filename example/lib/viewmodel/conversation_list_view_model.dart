@@ -6,13 +6,16 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
+import 'package:wfc_example/repo/group_repo.dart';
 
 class ConversationListViewModel extends ChangeNotifier {
   final EventBus _eventBus = Imclient.IMEventBus;
-  late StreamSubscription<ReceiveMessagesEvent> _receiveMessagesSubscription;
   late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
   late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
   late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
+  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
+  late StreamSubscription<GroupInfoUpdatedEvent> _groupInfoUpdatedSubscription;
+  late StreamSubscription<GroupMembersUpdatedEvent> _groupMembersUpdatedSubscription;
   late StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
   late StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
   late StreamSubscription<ClearConversationUnreadEvent> _clearConversationUnreadSubscription;
@@ -29,29 +32,33 @@ class ConversationListViewModel extends ChangeNotifier {
 
   List<ConversationInfo> get conversationList => _conversationList;
 
+  late int _connectionStatus = 0;
+
   int get unreadMessageCount {
     int count = 0;
-    for (ConversationInfo conversation in _conversationList) {
-      count += conversation.isSilent ? 0 : conversation.unreadCount.unread;
+    for (ConversationInfo info in _conversationList) {
+      var convInfo = info;
+      count += convInfo.isSilent ? 0 : convInfo.unreadCount.unread;
     }
     return count;
   }
 
-  void setConversationList(List<ConversationInfo> conversationList) {
-    _conversationList = conversationList;
-    notifyListeners();
-  }
-
   ConversationListViewModel() {
-    print("ConversaitonListViewModel construct");
+    debugPrint("ConversationListViewModel construct");
+    Imclient.connectionStatus.then((status) {
+      _connectionStatus = status;
+      debugPrint('connection status: $status');
+    });
     _connectionStatusSubscription = _eventBus.on<ConnectionStatusChangedEvent>().listen((event) {
+      _connectionStatus = event.connectionStatus;
+      debugPrint('connection status changed: ${event.connectionStatus}');
       if (event.connectionStatus == kConnectionStatusConnected) {
         _loadConversationList();
       }
     });
 
     _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
-      if (!event.hasMore) {
+      if (!event.hasMore && _connectionStatus == kConnectionStatusConnected) {
         for (Message msg in event.messages) {
           if (msg.messageId > 0) {
             _loadConversationList();
@@ -61,6 +68,15 @@ class ConversationListViewModel extends ChangeNotifier {
       }
     });
     _userSettingUpdatedSubscription = _eventBus.on<UserSettingUpdatedEvent>().listen((event) {
+      _loadConversationList();
+    });
+    _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
+      _loadConversationList();
+    });
+    _groupInfoUpdatedSubscription = _eventBus.on<GroupInfoUpdatedEvent>().listen((event) {
+      _loadConversationList();
+    });
+    _groupMembersUpdatedSubscription = _eventBus.on<GroupMembersUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
     _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) {
@@ -97,15 +113,39 @@ class ConversationListViewModel extends ChangeNotifier {
       _loadConversationList();
     });
 
-    _loadConversationList();
+    _loadConversationList(force: true);
   }
 
-  _loadConversationList() {
-    Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((cl) {
-      print('ConversaitonListViewModel, load conversation list ${cl.length}');
-      _conversationList = cl;
-      notifyListeners();
-    });
+  _preloadConversationGroupAndChannel(List<ConversationInfo> infos) async {
+    Set<String> targetGroups = {};
+    Set<String> targetChannels = {};
+    for (var info in infos) {
+      if (info.conversation.conversationType == ConversationType.Single) {
+      } else if (info.conversation.conversationType == ConversationType.Group) {
+        targetGroups.add(info.conversation.target);
+      } else if (info.conversation.conversationType == ConversationType.Channel) {
+        targetChannels.add(info.conversation.target);
+      }
+    }
+
+    GroupRepo.loadConversationGroupInfos(targetGroups.toList());
+    //
+    // for (var channelId in targetChannels) {
+    //   ChannelRepo.getChannelInfo(channelId);
+    // }
+  }
+
+  _loadConversationList({bool force = false}) async {
+    if (!force && _connectionStatus != kConnectionStatusConnected) {
+      return;
+    }
+    var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+    // var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single], [0]);
+    _conversationList = conversationInfos;
+    if (force) {
+      _preloadConversationGroupAndChannel(conversationInfos);
+    }
+    notifyListeners();
   }
 
   removeConversation(Conversation conversation, [bool clearMessage = false]) {
@@ -143,11 +183,13 @@ class ConversationListViewModel extends ChangeNotifier {
   @override
   void dispose() {
     super.dispose();
-    _receiveMessagesSubscription.cancel();
     _conversationList.clear();
     _connectionStatusSubscription.cancel();
     _receiveMessageSubscription.cancel();
     _userSettingUpdatedSubscription.cancel();
+    _userInfoUpdatedSubscription.cancel();
+    _groupInfoUpdatedSubscription.cancel();
+    _groupMembersUpdatedSubscription.cancel();
     _recallMessageSubscription.cancel();
     _deleteMessageSubscription.cancel();
     _clearConversationUnreadSubscription.cancel();

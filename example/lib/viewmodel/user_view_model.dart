@@ -1,41 +1,54 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:wfc_example/repo/user_repo.dart';
 
 class UserViewModel extends ChangeNotifier {
-  static final Map<String, UserInfo> _userMap = {};
-
-  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
+  late StreamSubscription? _userInfoUpdateSubscription;
+  late StreamSubscription? _groupMembersUpdateSubscription;
 
   UserViewModel() {
-    _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
-      for (var user in event.userInfos) {
-        _userMap[user.userId] = user;
-      }
+    _userInfoUpdateSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
+      final List<UserInfo> updatedUsers = event.userInfos;
+
+      debugPrint('userInfo updated ${updatedUsers.length}');
+      UserRepo.updateUserInfos(updatedUsers);
+      notifyListeners();
+    });
+
+    // _groupMembersUpdateSubscription?.cancel();
+    _groupMembersUpdateSubscription = Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
+      debugPrint('groupMembers updated ${event.groupId} ${event.members}');
+      final String groupId = event.groupId;
+      final List<GroupMember> updatedMembers = event.members;
+      UserRepo.updateGroupUserInfos(groupId, updatedMembers);
       notifyListeners();
     });
   }
 
   UserInfo? getUserInfo(String userId, {String? groupId}) {
-    var userInfo = _userMap[userId];
-    if (userInfo != null) {
-      return userInfo;
+    debugPrint('getUserInfo $userId groupId $groupId');
+    var info = UserRepo.getUserInfo(userId, groupId: groupId);
+    if (info == null) {
+      Imclient.getUserInfo(userId, groupId: groupId).then((info) {
+        if (info != null) {
+          UserRepo.putUserInfo(info, groupId: groupId);
+          notifyListeners();
+        }
+      });
     }
-    Imclient.getUserInfo(userId, groupId: groupId).then((info) {
-      if (info == null) {
-        return;
-      }
-      _userMap[userId] = info;
-      notifyListeners();
-    });
-    return null;
+    return info;
   }
 
   @override
   void dispose() {
     super.dispose();
-    _userInfoUpdatedSubscription.cancel();
+    _userInfoUpdateSubscription?.cancel();
+    _userInfoUpdateSubscription = null;
+    _groupMembersUpdateSubscription?.cancel();
+    _groupMembersUpdateSubscription = null;
   }
 }
