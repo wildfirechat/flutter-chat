@@ -53,7 +53,7 @@ class ImclientPlatform extends PlatformInterface {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
-  
+
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel('imclient');
@@ -1307,7 +1307,7 @@ class ImclientPlatform extends PlatformInterface {
       content = UnknownMessageContent();
       content.decode(payload);
     }
-    
+
     return content;
   }
 
@@ -1525,7 +1525,7 @@ class ImclientPlatform extends PlatformInterface {
   Future<bool> markAsUnRead(Conversation conversation, bool sync) async {
     return await methodChannel.invokeMethod('markAsUnRead', {'conversation': _convertConversation(conversation), "sync":sync});
   }
-  
+
   ///获取会话的已读状态
   Future<Map<String, int>> getConversationRead(
       Conversation conversation) async {
@@ -2556,9 +2556,9 @@ class ImclientPlatform extends PlatformInterface {
       "modifyType": modifyType.index,
       "value": newValue
     };
-    
+
     args['notifyLines'] = notifyLines??[0];
-    
+
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -3085,7 +3085,7 @@ class ImclientPlatform extends PlatformInterface {
     methodChannel.invokeMethod("modifyChannelInfo", {
       "requestId": requestId,
       "channelId": channelId,
-      "modifyType": modifyType.index,
+      "type": modifyType.index,
       "newValue": newValue
     });
   }
@@ -3144,7 +3144,7 @@ class ImclientPlatform extends PlatformInterface {
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
     methodChannel.invokeMethod(
-        "destoryChannel", {"requestId": requestId, "channelId": channelId});
+        "destroyChannel", {"requestId": requestId, "channelId": channelId});
   }
 
   ///获取PC端在线状态
