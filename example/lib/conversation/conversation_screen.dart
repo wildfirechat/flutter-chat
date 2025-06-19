@@ -33,7 +33,7 @@ class _State extends State<ConversationScreen> {
     super.initState();
 
     _conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
-    _conversationViewModel.setConversation(widget.conversation, (err) {
+    _conversationViewModel.setConversation(widget.conversation, joinChatroomErrorCallback: (err) {
       Fluttertoast.showToast(msg: "网络错误！加入聊天室失败!");
       Navigator.pop(context);
     });

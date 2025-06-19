@@ -190,18 +190,6 @@ class ConversationController extends ChangeNotifier {
     });
   }
 
-  bool notificationFunction(Notification notification) {
-    switch (notification.runtimeType) {
-      case ScrollEndNotification:
-        var noti = notification as ScrollEndNotification;
-        if (noti.metrics.pixels >= noti.metrics.maxScrollExtent) {
-          conversationViewModel.loadHistoryMessage();
-        }
-        break;
-    }
-    return true;
-  }
-
   void onTapedCell(BuildContext context, UIMessage model) {
     var conversation = model.message.conversation;
     if (model.message.content is ImageMessageContent) {

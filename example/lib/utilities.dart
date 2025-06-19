@@ -137,6 +137,9 @@ class Utilities {
       case ConversationType.Channel:
         title = channelInfo?.name ?? '频道<${channelInfo?.name}>';
         break;
+      case ConversationType.Chatroom:
+        title = '聊天室-<${conversation.target}>';
+        break;
       case _:
         break;
     }

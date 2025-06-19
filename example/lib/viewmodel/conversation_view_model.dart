@@ -68,7 +68,11 @@ class ConversationViewModel extends ChangeNotifier {
         return;
       }
       var newMsg = false;
-      for (Message msg in event.messages) {
+      var messages = event.messages;
+      if(_currentConversation!.conversationType == ConversationType.Chatroom) {
+        messages = event.messages.reversed.toList();
+      }
+      for (Message msg in messages) {
         if (msg.conversation == _currentConversation) {
           if (msg.messageId == 0) {
             if (msg.content is TypingMessageContent) {
@@ -162,7 +166,7 @@ class ConversationViewModel extends ChangeNotifier {
     });
   }
 
-  void setConversation(Conversation? conversation, [Function(int err)? joinChatroomErrorCallback]) async {
+  void setConversation(Conversation? conversation, {Function(int err)? joinChatroomErrorCallback}) async {
     _noMoreRemoteHistoryMsg = false;
     _conversationMessageList = [];
     _conversationTypingStatus = null;
@@ -177,6 +181,7 @@ class ConversationViewModel extends ChangeNotifier {
 
     _currentConversationInfo = await Imclient.getConversationInfo(conversation);
     if (conversation.conversationType == ConversationType.Chatroom) {
+      _noMoreLocalHistoryMsg = true;
       Imclient.joinChatroom(conversation.target, () {
         Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
           if (userInfo != null) {
@@ -188,7 +193,6 @@ class ConversationViewModel extends ChangeNotifier {
       }, (errorCode) {
         joinChatroomErrorCallback?.call(errorCode);
       });
-      _noMoreLocalHistoryMsg = true;
     } else {
       if (conversation.conversationType == ConversationType.Group) {
         _isHiddenConversationMemberName = await Imclient.isHiddenGroupMemberName(conversation.target);
@@ -270,12 +274,6 @@ class ConversationViewModel extends ChangeNotifier {
 
     _isLoading = true;
     int? fromIndex = 0;
-    if (_conversationMessageList.isNotEmpty) {
-      fromIndex = _conversationMessageList.last.message.messageId;
-    } else {
-      _isLoading = false;
-      return;
-    }
 
     var loadingConv = _currentConversation!;
     if (_noMoreLocalHistoryMsg) {
@@ -283,13 +281,13 @@ class ConversationViewModel extends ChangeNotifier {
         _isLoading = false;
         return;
       } else {
-        fromIndex = _conversationMessageList.last.message.messageUid;
+        fromIndex = _conversationMessageList.isEmpty ? 0 : _conversationMessageList.last.message.messageUid;
         Imclient.getRemoteMessages(loadingConv, fromIndex!, 20, (messages) {
           if (loadingConv != _currentConversation) {
             return;
           }
           if (messages.isEmpty) {
-            _noMoreLocalHistoryMsg = true;
+            _noMoreRemoteHistoryMsg = true;
           }
           _isLoading = false;
           _insertMessages(_conversationMessageList.length, messages);
@@ -299,13 +297,14 @@ class ConversationViewModel extends ChangeNotifier {
         });
       }
     } else {
-      Imclient.getMessages(loadingConv, fromIndex, 20).then((value) {
+      fromIndex = _conversationMessageList.isEmpty ? 0 : _conversationMessageList.last.message.messageId;
+      Imclient.getMessages(loadingConv, fromIndex, 20).then((messages) {
         if (loadingConv != _currentConversation) {
           return;
         }
-        _insertMessages(_conversationMessageList.length, value);
+        _insertMessages(_conversationMessageList.length, messages);
         _isLoading = false;
-        if (value.isEmpty) {
+        if (messages.isEmpty) {
           _noMoreLocalHistoryMsg = true;
         }
       });
