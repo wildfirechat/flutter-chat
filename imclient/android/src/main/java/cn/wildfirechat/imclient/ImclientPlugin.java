@@ -1834,7 +1834,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
     }
 
     private void getJoinedChatroomId(@NonNull MethodCall call, @NonNull Result result) {
-        result.success(null);
+        String chatroomId = ChatManager.Instance().getJoinedChatroom();
+        result.success(chatroomId);
     }
 
     private void createChannel(@NonNull MethodCall call, @NonNull Result result) {
