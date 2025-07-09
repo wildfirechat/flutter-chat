@@ -33,7 +33,7 @@
         configInternal.supportedHandleTypes = [[NSSet alloc] initWithObjects:[NSNumber numberWithInt:CXHandleTypeGeneric],[NSNumber numberWithInt:CXHandleTypePhoneNumber], nil];
 //        UIImage* iconMaskImage = [UIImage imageNamed:@"file_icon"];
 //        configInternal.iconTemplateImageData = UIImagePNGRepresentation(iconMaskImage);
-        
+
         self.provider = [[CXProvider alloc] initWithConfiguration: configInternal];
         [self.provider setDelegate:self queue:dispatch_get_main_queue()];
         self.callController = [[CXCallController alloc] initWithQueue:dispatch_get_main_queue()];
@@ -46,11 +46,15 @@
     if(self.callUUIDDict[session.callId]) {
         session.callUUID = self.callUUIDDict[session.callId];
     } else {
+        if(session.state == kWFAVEngineStateIdle) {
+            return;
+        }
+        
         NSUUID *currentCall = [NSUUID UUID];
         session.callUUID = currentCall;
         [self reportIncomingCallWithTitle:[[WFAVEngineKit sharedEngineKit] getUserDisplayName:session.initiator] Sid:session.initiator audioOnly:session.audioOnly callId:session.callId uuid:currentCall];
     }
-    
+
 }
 - (void)didCallEnded:(WFAVCallEndReason)reason duration:(int)callDuration {
     if([WFAVEngineKit sharedEngineKit].currentSession.callUUID) {
@@ -89,12 +93,12 @@
     update.hasVideo = !audioOnly;
     update.remoteHandle = [[CXHandle alloc] initWithType:CXHandleTypeGeneric value:sid];
     update.localizedCallerName = title;
-    
+
     self.callUUIDDict[callId] = uuid;
     [[WFAVEngineKit sharedEngineKit] registerCall:callId uuid:uuid];
     NSUUID *uu = [WFAVEngineKit sharedEngineKit].currentSession.callUUID;
     NSLog(@"the uuid is %@", uu.UUIDString);
-    
+
     [self.provider reportNewIncomingCallWithUUID:uuid update:update completion:^(NSError * _Nullable error) {
         if(error) {
             NSLog(@"error:%@", error);
