@@ -956,8 +956,12 @@ class ImclientPlatform extends PlatformInterface {
       payload.mentionedTargets = Tools.convertDynamicList(map['mentionedTargets']);
     }
 
-    if (map['mediaType'] != null && map['mediaType'] >= 0 && map['mediaType'] < 10) {
-      payload.mediaType = MediaType.values[map['mediaType']];
+    if (map['mediaType'] != null){
+     if( map['mediaType'] >= 0 && map['mediaType'] < 8) {
+       payload.mediaType = MediaType.values[map['mediaType']];
+     }else{
+       payload.mediaType = MediaType.Media_Type_GENERAL;
+     }
     }
     payload.remoteMediaUrl = map['remoteMediaUrl'];
     payload.localMediaPath = map['localMediaPath'];
