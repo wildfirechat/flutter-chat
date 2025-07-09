@@ -71,28 +71,28 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
         }
       });
     } else {
-      if(widget.callSession!.state == kWFAVEngineStateIdle) {
-        Navigator.pop(context);
-        return;
-      }
+      Rtckit.currentCallSession().then((cs) {
+        if(cs == null || cs.state == kWFAVEngineStateIdle || cs.callId != widget.callSession!.callId) {
+          Navigator.pop(context);
+          return;
+        }
 
-      widget.groupId = widget.callSession?.conversation!.target;
-      widget.callSession!.participantIds.then((value) {
-        setState(() {
-          loadProfiles();
+        widget.groupId = widget.callSession?.conversation!.target;
+        widget.callSession!.participantIds.then((value) {
+          setState(() {
+            loadProfiles();
+          });
         });
-      });
 
-      widget.callSession?.setCallSessionCallback(this);
-      widget.callSession?.reloadSession((CallSession session){
+        cs.setCallSessionCallback(this);
         setState(() {
-          widget.callSession = session;
+          widget.callSession = cs;
         });
-      });
 
-      Imclient.getUserInfo(widget.callSession!.initiator!, groupId: widget.groupId!).then((value) {
-        setState(() {
-          initiator = value;
+        Imclient.getUserInfo(widget.callSession!.initiator!, groupId: widget.groupId!).then((value) {
+          setState(() {
+            initiator = value;
+          });
         });
       });
     }
