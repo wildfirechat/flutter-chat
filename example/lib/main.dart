@@ -76,10 +76,12 @@ class _MyAppState extends State<MyApp> {
           if (cs != null && cs.state != kWFAVEngineStateIdle) {
             if (cs.conversation!.conversationType == ConversationType.Single) {
               SingleVideoCallView callView = SingleVideoCallView(callSession: cs);
-              navKey.currentState!.push(MaterialPageRoute(builder: (context) => callView));
+              navKey.currentState!.pushAndRemoveUntil(MaterialPageRoute(builder: (context) => callView, settings: const RouteSettings(name: "singleCall")),(Route<dynamic> route) =>
+              route.settings.name != 'singleCall');
             } else if (cs.conversation!.conversationType == ConversationType.Group) {
               GroupVideoCallView callView = GroupVideoCallView(callSession: cs);
-              navKey.currentState!.push(MaterialPageRoute(builder: (context) => callView));
+              navKey.currentState!.pushAndRemoveUntil(MaterialPageRoute(builder: (context) => callView, settings: const RouteSettings(name: "multiCall")),(Route<dynamic> route) =>
+              route.settings.name != 'multiCall');
             }
           }
         });
