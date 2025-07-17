@@ -311,6 +311,10 @@ class RtckitPlatform extends PlatformInterface {
     return await methodChannel.invokeMethod("enableCallkit");
   }
 
+  Future<void> disableCallkit() async {
+    return await methodChannel.invokeMethod("disableCallkit");
+  }
+
   Future<void> addICEServer(String url, String name, String password) async {
     var args = {"url": url, "name": name, "password": password};
     return await methodChannel.invokeMethod("addICEServer", args);

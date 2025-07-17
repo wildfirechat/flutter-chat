@@ -137,7 +137,7 @@
 @property(nonatomic, strong) WFCCallKitManager *callKitManager;
 @end
 
-
+#define WF_ENABLE_CALLKIT_KEY @"WF_ENABLE_CALLKIT"
 @implementation RtckitPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
@@ -149,6 +149,10 @@
     [WFAVEngineKit sharedEngineKit].delegate = instance;
     instance.delegaters = [[NSMutableDictionary alloc] init];
     instance.videoViews = [[NSMutableDictionary alloc] init];
+    if([[[NSUserDefaults standardUserDefaults] objectForKey:WF_ENABLE_CALLKIT_KEY] boolValue]) {
+        instance.callKitManager = [[WFCCallKitManager alloc] initWithChannel:channel];
+    }
+    
     
     FLNativeViewFactory* factory = [[FLNativeViewFactory alloc] initWithMessenger:registrar.messenger maps:instance.videoViews];
     [registrar registerViewFactory:factory withId:@"<platform-view-type>"];
@@ -192,7 +196,18 @@
 }
 
 - (void)enableCallkit:(NSDictionary *)dict result:(FlutterResult)result {
-    self.callKitManager = [[WFCCallKitManager alloc] initWithChannel:self.channel];
+    [[NSUserDefaults standardUserDefaults] setObject:@(YES) forKey:WF_ENABLE_CALLKIT_KEY];
+    if(!self.callKitManager) {
+        self.callKitManager = [[WFCCallKitManager alloc] initWithChannel:self.channel];
+    }
+    result(nil);
+}
+
+- (void)disableCallkit:(NSDictionary *)dict result:(FlutterResult)result {
+    [[NSUserDefaults standardUserDefaults] setObject:@(NO) forKey:WF_ENABLE_CALLKIT_KEY];
+    if(self.callKitManager) {
+        self.callKitManager = nil;
+    }
     result(nil);
 }
 
