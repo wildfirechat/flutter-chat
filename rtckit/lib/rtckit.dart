@@ -483,6 +483,10 @@ class Rtckit {
     return RtckitPlatform.instance.enableCallkit();
   }
 
+  static Future<void> disableCallkit() async {
+    return RtckitPlatform.instance.disableCallkit();
+  }
+
   static Future<void> addICEServer(String url, String name, String password) async {
     return RtckitPlatform.instance.addICEServer(url, name, password);
   }
