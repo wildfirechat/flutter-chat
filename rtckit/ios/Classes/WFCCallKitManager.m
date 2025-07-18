@@ -71,11 +71,19 @@
     NSDictionary *wfc = payload.dictionaryPayload[@"wfc"];
     if(wfc) {
         NSString *sender = wfc[@"sender"];
+        NSString *senderName = wfc[@"senderName"];
+        if(!senderName.length) {
+            senderName = sender;
+        }
         NSString *pushData = wfc[@"pushData"];
         NSDictionary *pd = [NSJSONSerialization JSONObjectWithData:[pushData dataUsingEncoding:NSUTF8StringEncoding] options:kNilOptions error:nil];
         BOOL audioOnly = [pd[@"audioOnly"] boolValue];
         NSString *callId = pd[@"callId"];
-        [self reportIncomingCallWithTitle:[[WFAVEngineKit sharedEngineKit] getUserDisplayName:sender] Sid:sender audioOnly:audioOnly callId:callId];
+        NSString *name = [[WFAVEngineKit sharedEngineKit] getUserDisplayName:sender];
+        if(!name.length || [name rangeOfString:@"<"].location == 0) {
+            name = senderName;
+        }
+        [self reportIncomingCallWithTitle:name Sid:sender audioOnly:audioOnly callId:callId];
     }
 }
 
