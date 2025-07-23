@@ -68,8 +68,27 @@
         path: ${path_to_rtckit}
     ```
 
-2. 在项目```android/app/build.gradle```文件依赖配置中，添加依赖
+2. 在项目```android/app/build.gradle```文件中配置混淆规则，并添加依赖
    ```groovy
+      buildTypes {
+        release {
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig signingConfigs.debug
+            shrinkResources true
+            // 是否开启混淆，如果开启了混淆，需要在proguard-rules.pro中添加规则，可参考build.gradle同目录中的混淆棍子，避免混淆掉野火IM相关类。
+            // 如果开启混淆，但混淆规则配置错误，应用可能无法启动，或不能正常连接到IM服务。
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug{
+            signingConfig signingConfigs.debug
+            shrinkResources true
+            // 是否开启混淆，如果开发调试阶段，不想开启混淆，需要显示配置为false。
+            minifyEnabled false
+        }
+    }
+
+
       dependencies {
 
         // 将path_to_android_xxx_aars 替换成实际路径，可以使用相对路径，但一定要保证路径是正确的；路径不对的话，会报 ClassNotFoundException
