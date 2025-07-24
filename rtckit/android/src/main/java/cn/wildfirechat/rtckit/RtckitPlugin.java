@@ -126,7 +126,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     }
 
     private void seEnableProximitySensor(@NonNull MethodCall call, @NonNull Result result) {
-        AVEngineKit.ENABLE_PROXIMITY_SENSOR_ADJUST_AUDIO_OUTPUT_DEVICE = call.argument("enable");
+        AVEngineKit.enableProximitySensor = call.argument("enable");
         result.success(null);
     }
 
@@ -139,7 +139,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
         //only ios support
         result.success(null);
     }
-    
+
     private void addICEServer(@NonNull MethodCall call, @NonNull Result result) {
         String url = call.argument("url");
         String name = call.argument("name");
@@ -424,7 +424,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
 
     private Map<String, Object> profile2Dict(AVEngineKit.ParticipantProfile profile) {
         Map<String, Object> dict = new HashMap<>();
-        
+
         dict.put("userId", profile.getUserId());
         dict.put("startTime", profile.getStartTime());
         dict.put("state", profile.getState().ordinal());
