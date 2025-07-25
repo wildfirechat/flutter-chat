@@ -126,7 +126,7 @@ public class RtckitPlugin implements FlutterPlugin, MethodCallHandler, ActivityA
     }
 
     private void seEnableProximitySensor(@NonNull MethodCall call, @NonNull Result result) {
-        AVEngineKit.enableProximitySensor = call.argument("enable");
+        AVEngineKit.ENABLE_PROXIMITY_SENSOR = call.argument("enable");
         result.success(null);
     }
 
