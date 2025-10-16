@@ -142,7 +142,7 @@ class CompositeMessageContent extends MediaMessageContent {
 
   @override
   Future<String> digest(Message message) async {
-    if (title != null && title.isNotEmpty) {
+    if (title.isNotEmpty) {
       return '[聊天]:$title';
     }
     return '[聊天]';

@@ -37,7 +37,7 @@ class GroupSetManagerNotificationContent extends NotificationMessageContent {
       operatorId = map['o'];
       groupId = map['g'];
       type = map['n'];
-      memberIds = Tools.convertDynamicList(map['ms'])!;
+      memberIds = Tools.convertDynamicList(map['ms']);
     } else {
       operatorId = "";
       groupId = "";

@@ -33,6 +33,19 @@
 
 野火Flutter插件，包含即时通讯插件和实时音视频插件，包含Flutter Demo。
 
+## 关于 flutter 、Android Studio、gradle 版本的重要说明
+
+1. 为了能够兼容鸿蒙原生系统，flutter 版本会跟随鸿蒙原生已适配的flutter 版本进行升级，目前鸿蒙原生已适配的flutter版本是`3.22.0`
+2. Android Studio 会跟随官方更新，一直使用最新版本
+3. 由于 gradle 版本和 flutter 版本有依赖关系，会使用对应的 gradle 版本，目前是 `8.7`
+
+
+## 常见问题
+
+1. `Execution failed for task ':video_player_android:compileDebugJavaWithJavac'.`
+    1. 查看 `example/.flutter-plugins` 找到 `video_player_android` 的位置，macos 时，位置如下: `video_player_android=/Users/your-user-name/.pub-cache/hosted/pub.flutter-io.cn/video_player_android-2.7.1/`
+    2. 参考[Remove -Werror from Android build](https://github.com/flutter/packages/pull/7776/files) 修改`android/build.gradle`
+
 ## 运行
 
 进入到项目工程目录下，依次执行下述命令：
@@ -55,8 +68,27 @@
         path: ${path_to_rtckit}
     ```
 
-2. 在项目```android/app/build.gradle```文件依赖配置中，添加依赖
+2. 在项目```android/app/build.gradle```文件中配置混淆规则，并添加依赖
    ```groovy
+      buildTypes {
+        release {
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig signingConfigs.debug
+            shrinkResources true
+            // 是否开启混淆，如果开启了混淆，需要在proguard-rules.pro中添加规则，可参考build.gradle同目录中的混淆棍子，避免混淆掉野火IM相关类。
+            // 如果开启混淆，但混淆规则配置错误，应用可能无法启动，或不能正常连接到IM服务。
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug{
+            signingConfig signingConfigs.debug
+            shrinkResources true
+            // 是否开启混淆，如果开发调试阶段，不想开启混淆，需要显示配置为false。
+            minifyEnabled false
+        }
+    }
+
+
       dependencies {
 
         // 将path_to_android_xxx_aars 替换成实际路径，可以使用相对路径，但一定要保证路径是正确的；路径不对的话，会报 ClassNotFoundException
@@ -205,6 +237,13 @@ Imclient.setDeviceToken(pushType, deviceToken);
 2. 方案2：是使用原生的音视频SDK，但UI层使用dart语言编写，UI和SDK使用flutter插件的方式沟通。这种方案引入的SDK比较小，且修改方便，有利于大家做自定义。
 
 我们在2023.11.29日起，正式采用方案2，同时方案1保留在```native-rtc-ui```分支。已经使用方案1的用户可以继续使用```native-rtc-ui```的分支，如果有需求可以切换到```master```分支去，以后我们的开发重点将会放到```master```分支上去。
+
+## iOS平台使用Callkit
+在国外是可以使用callkit的，需要使用callkit时，推送服务需要配置启用callkit。另外客户端这边也需要做一些处理来支持callkit，首先代码中搜索
+```dart
+Rtckit.enableCallkit()
+```
+把这句话的注释打开。另外打开iOS工程，在应用的依赖库中添加```CallKit.framework```和```PushKit.framework```，另外在项目的```Signing & Capabilities```中添加```Background Modes```中添加```Audio, AirPlay, and Picture in Picture```, ```Voice over IP```和```Remote Notification```（如果找不到请百度一下）。
 
 ## 截图
 会话列表

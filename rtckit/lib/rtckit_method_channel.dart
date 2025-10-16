@@ -35,6 +35,7 @@ class RtckitPlatform extends PlatformInterface {
   final methodChannel = const MethodChannel('rtckit');
 
   static DidReceiveCallCallback? _didReceiveCallCallback;
+  static ShowCallViewCallback? _showCallViewCallback;
   static ShouldStartRingCallback? _shouldStartRingCallback;
   static ShouldStopRingCallback? _shouldStopRingCallback;
   static DidEndCallCallback? _didEndCallCallback;
@@ -42,9 +43,11 @@ class RtckitPlatform extends PlatformInterface {
 
   static int _maxAudioCallCount = 9;
   static int _maxVideoCallCount = 4;
+  static bool _enableProximitySensor = true;
 
-  Future<void> initProto(DidReceiveCallCallback? didReceiveCallCallback, ShouldStartRingCallback? shouldStartRingCallback, ShouldStopRingCallback? shouldStopRingCallback, DidEndCallCallback? didEndCallCallback) async {
+  Future<void> initProto(DidReceiveCallCallback? didReceiveCallCallback, ShowCallViewCallback? showCallViewCallback, ShouldStartRingCallback? shouldStartRingCallback, ShouldStopRingCallback? shouldStopRingCallback, DidEndCallCallback? didEndCallCallback) async {
     _didReceiveCallCallback = didReceiveCallCallback;
+    _showCallViewCallback = showCallViewCallback;
     _shouldStartRingCallback = shouldStartRingCallback;
     _shouldStopRingCallback = shouldStopRingCallback;
     _didEndCallCallback = didEndCallCallback;
@@ -62,6 +65,16 @@ class RtckitPlatform extends PlatformInterface {
             CallSession? session = sessionFromMap(mapSession);
             if(session != null) {
               _didReceiveCallCallback!(session!);
+            }
+          }
+          break;
+        case 'showCallView':
+          if(_showCallViewCallback != null) {
+            Map<dynamic, dynamic> args = call.arguments;
+            Map<dynamic, dynamic> mapSession = args['callSession'];
+            CallSession? session = sessionFromMap(mapSession);
+            if(session != null) {
+              _showCallViewCallback!(session!);
             }
           }
           break;
@@ -275,6 +288,10 @@ class RtckitPlatform extends PlatformInterface {
     return _maxAudioCallCount;
   }
 
+  bool get enableProximitySensor {
+    return _enableProximitySensor;
+  }
+
   Future<void> seMaxVideoCallCount(int count) async {
     _maxVideoCallCount = count;
     return await methodChannel.invokeMethod("seMaxVideoCallCount", {'count':count});
@@ -283,6 +300,19 @@ class RtckitPlatform extends PlatformInterface {
   Future<void> seMaxAudioCallCount(int count) async {
     _maxAudioCallCount = count;
     return await methodChannel.invokeMethod("seMaxAudioCallCount", {'count':count});
+  }
+
+  Future<void> seEnableProximitySensor(bool enable) async {
+    _enableProximitySensor = enable;
+    return await methodChannel.invokeMethod("seEnableProximitySensor", {'enable':enable});
+  }
+
+  Future<void> enableCallkit() async {
+    return await methodChannel.invokeMethod("enableCallkit");
+  }
+
+  Future<void> disableCallkit() async {
+    return await methodChannel.invokeMethod("disableCallkit");
   }
 
   Future<void> addICEServer(String url, String name, String password) async {

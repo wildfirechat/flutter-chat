@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:typed_data';
 
 import '../model/message_payload.dart';
 import 'media_message_content.dart';

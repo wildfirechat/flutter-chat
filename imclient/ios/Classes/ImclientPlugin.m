@@ -774,6 +774,13 @@ ImclientPlugin *gIMClientInstance;
     result(@(ret));
 }
 
+- (void)deleteFriendRequest:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *userId = dict[@"userId"];
+    int direction = [dict[@"direction"] intValue];
+    BOOL ret = [[WFCCIMService sharedWFCIMService] deleteFriendRequest:userId direction:direction==1];
+    result(@(ret));
+}
+
 - (void)deleteFriend:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *userId = dict[@"userId"];
     int requestId = [dict[@"requestId"] intValue];
@@ -1424,14 +1431,17 @@ ImclientPlugin *gIMClientInstance;
     }];
 }
 
+- (void)getJoinedChatroomId:(NSDictionary *)dict result:(FlutterResult)result {
+    result([[WFCCIMService sharedWFCIMService] getJoinedChatroomId]);
+}
+
 - (void)createChannel:(NSDictionary *)dict result:(FlutterResult)result {
-    NSString *channelName = dict[@"channelName"];
-    NSString *channelPortrait = dict[@"channelPortrait"];
+    NSString *channelName = dict[@"name"];
+    NSString *channelPortrait = dict[@"portrait"];
     NSString *desc = dict[@"desc"];
     NSString *extra = dict[@"extra"];
-    int status = [dict[@"status"] intValue];
     int requestId = [dict[@"requestId"] intValue];
-    
+
     [[WFCCIMService sharedWFCIMService] createChannel:channelName portrait:channelPortrait desc:desc extra:extra success:^(WFCCChannelInfo *channelInfo) {
         [self.channel invokeMethod:@"onCreateChannelSuccess" arguments:@{@"requestId":@(requestId), @"channelInfo":[channelInfo toJsonObj]}];
     } error:^(int error_code) {
@@ -1533,6 +1543,11 @@ ImclientPlugin *gIMClientInstance;
 - (void)isMuteNotificationWhenPcOnline:(NSDictionary *)dict result:(FlutterResult)result {
     BOOL ret = [[WFCCIMService sharedWFCIMService] isMuteNotificationWhenPcOnline];
     result(@(ret));
+}
+
+- (void)setDefaultSilentWhenPcOnline:(NSDictionary *)dict result:(FlutterResult)result {
+    BOOL silent = [dict[@"silent"] boolValue];
+    [[WFCCIMService sharedWFCIMService] setDefaultSilentWhenPcOnline:silent];
 }
 
 - (void)muteNotificationWhenPcOnline:(NSDictionary *)dict result:(FlutterResult)result {

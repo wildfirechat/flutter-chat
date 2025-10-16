@@ -67,23 +67,31 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
         }
       });
     } else {
-      if(widget.callSession!.state == kWFAVEngineStateIdle) {
-        Navigator.pop(context);
-        return;
-      }
+      Rtckit.currentCallSession().then((cs) {
+        if(cs == null || cs.state == kWFAVEngineStateIdle || cs.callId != widget.callSession!.callId) {
+          Navigator.pop(context);
+          return;
+        }
 
-      widget.userId = widget.callSession?.conversation!.target;
-      if(!widget.callSession!.audioOnly) {
-        createVideoView();
-      }
-      widget.callSession?.setCallSessionCallback(this);
+        widget.userId = widget.callSession?.conversation!.target;
+        if(!widget.callSession!.audioOnly) {
+          createVideoView();
+        }
+
+        cs.setCallSessionCallback(this);
+        setState(() {
+          widget.callSession = cs;
+        });
+      });
     }
 
-    Imclient.getUserInfo(widget.userId!).then((value) {
-      setState(() {
-        userInfo = value;
+    if(widget.userId != null){
+      Imclient.getUserInfo(widget.userId!).then((value) {
+        setState(() {
+          userInfo = value;
+        });
       });
-    });
+    }
   }
 
   void startCall() {
@@ -597,12 +605,14 @@ class SingleVideoCallState extends State<SingleVideoCallView> implements CallSes
 
   @override
   void didChangeState(CallSession session, int state) {
-    if(stateGlobalKey.currentState != null) {
-      stateGlobalKey.currentState!.updateCallStateView(state);
-    }
-    updateVideoView();
     setState(() {
-
+      if(widget.callSession != null && widget.callSession?.callId == session.callId) {
+        widget.callSession = session;
+        if(stateGlobalKey.currentState != null) {
+          stateGlobalKey.currentState!.updateCallStateView(state);
+        }
+        updateVideoView();
+      }
     });
   }
 

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 
 class FavGroupsPage extends StatefulWidget {
+  const FavGroupsPage({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() => FavGroupsPageState();
 }

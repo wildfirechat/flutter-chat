@@ -259,6 +259,15 @@ class CallSession implements CallSessionCallback {
     startTime = session.startTime;
   }
 
+  void reloadSession(Function doneFun) {
+    Rtckit.currentCallSession().then((value) {
+      if(value != null && value.callId == callId) {
+        _syncData(value);
+        doneFun(value);
+      }
+    });
+  }
+
   @override
   void didCallEndWithReason(CallSession session, int reason) {
     _syncData(session);
@@ -434,6 +443,8 @@ typedef ShouldStartRingCallback = void Function(bool incomming);
 typedef ShouldStopRingCallback = void Function();
 typedef DidEndCallCallback = void Function(int reason, int duration);
 
+typedef ShowCallViewCallback = void Function(CallSession callSession);
+
 typedef SelectMembersDelegate = void Function(BuildContext context, List<String> candidates, List<String>? disabledCheckedUsers, List<String>? disabledUncheckedUsers, int maxSelected, void Function(List<String> selectedMembers) callback);
 
 class Rtckit {
@@ -441,7 +452,7 @@ class Rtckit {
   static SelectMembersDelegate? selectMembersDelegate;
 
   static void init({DidReceiveCallCallback? didReceiveCallCallback, ShouldStartRingCallback? shouldStartRingCallback, ShouldStopRingCallback? shouldStopRingCallback, DidEndCallCallback? didEndCallCallback}) {
-    RtckitPlatform.instance.initProto(didReceiveCallCallback, shouldStartRingCallback, shouldStopRingCallback, didEndCallCallback);
+    RtckitPlatform.instance.initProto(didReceiveCallCallback, didReceiveCallCallback, shouldStartRingCallback, shouldStopRingCallback, didEndCallCallback);
   }
 
   static int get maxVideoCallCount {
@@ -452,12 +463,28 @@ class Rtckit {
     return RtckitPlatform.instance.maxAudioCallCount;
   }
 
+  static bool get enableProximitySensor {
+    return RtckitPlatform.instance.enableProximitySensor;
+  }
+
   static Future<void> seMaxVideoCallCount(int count) async {
     return RtckitPlatform.instance.seMaxVideoCallCount(count);
   }
 
   static Future<void> seMaxAudioCallCount(int count) async {
     return RtckitPlatform.instance.seMaxAudioCallCount(count);
+  }
+
+  static Future<void> seEnableProximitySensor(bool enable) async {
+    return RtckitPlatform.instance.seEnableProximitySensor(enable);
+  }
+
+  static Future<void> enableCallkit() async {
+    return RtckitPlatform.instance.enableCallkit();
+  }
+
+  static Future<void> disableCallkit() async {
+    return RtckitPlatform.instance.disableCallkit();
   }
 
   static Future<void> addICEServer(String url, String name, String password) async {

@@ -8,7 +8,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:wfc_example/channel/search_channel.dart';
 import 'package:wfc_example/config.dart';
 
-import '../messages/messages_screen.dart';
+import '../conversation/conversation_screen.dart';
 
 class ChannelList extends StatefulWidget {
   const ChannelList({Key? key}) : super(key: key);
@@ -56,7 +56,7 @@ class ChannelListState extends State<ChannelList> {
   void _toChat(String channelId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => MessagesScreen(Conversation(conversationType: ConversationType.Channel, target: channelId))),
+      MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Channel, target: channelId))),
     );
   }
 

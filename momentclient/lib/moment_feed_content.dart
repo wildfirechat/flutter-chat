@@ -40,15 +40,13 @@ class MomentFeedMessageContent extends MessageContent {
     sender = map['s'];
     text = map['c'];
     List<dynamic> ms = map['ms'];
-    if(ms != null) {
-      medias = [];
-      for (var value in ms) {
-        if(value is Map) {
-          medias!.add(MethodChannelMomentClient.entryFromMap(value));
-        }
+    medias = [];
+    for (var value in ms) {
+      if(value is Map) {
+        medias!.add(MethodChannelMomentClient.entryFromMap(value));
       }
     }
-    extra = map['e'];
+      extra = map['e'];
   }
 
   @override

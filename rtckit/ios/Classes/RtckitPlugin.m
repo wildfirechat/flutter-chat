@@ -2,6 +2,7 @@
 #import <Flutter/Flutter.h>
 #import "FLNativeView.h"
 #import <WFAVEngineKit/WFAVEngineKit.h>
+#import "WFCCallKitManager.h"
 
 
 @interface WFCallSessionDelegater : NSObject<WFAVCallSessionDelegate>
@@ -132,9 +133,11 @@
 @property(nonatomic, strong)NSMutableDictionary<NSString*, WFCallSessionDelegater*>* delegaters;
 
 @property(nonatomic, strong)NSMutableDictionary<NSNumber*, FLNativeView*>* videoViews;
+
+@property(nonatomic, strong) WFCCallKitManager *callKitManager;
 @end
 
-
+#define WF_ENABLE_CALLKIT_KEY @"WF_ENABLE_CALLKIT"
 @implementation RtckitPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
     FlutterMethodChannel* channel = [FlutterMethodChannel
@@ -143,10 +146,13 @@
     RtckitPlugin* instance = [[RtckitPlugin alloc] init];
     instance.channel = channel;
     [registrar addMethodCallDelegate:instance channel:channel];
-    [WFAVEngineKit notRegisterVoipPushService];
     [WFAVEngineKit sharedEngineKit].delegate = instance;
     instance.delegaters = [[NSMutableDictionary alloc] init];
     instance.videoViews = [[NSMutableDictionary alloc] init];
+    if([[[NSUserDefaults standardUserDefaults] objectForKey:WF_ENABLE_CALLKIT_KEY] boolValue]) {
+        instance.callKitManager = [[WFCCallKitManager alloc] initWithChannel:channel];
+    }
+    
     
     FLNativeViewFactory* factory = [[FLNativeViewFactory alloc] initWithMessenger:registrar.messenger maps:instance.videoViews];
     [registrar registerViewFactory:factory withId:@"<platform-view-type>"];
@@ -181,6 +187,27 @@
 
 -(void) seMaxAudioCallCount:(NSDictionary *)dict result:(FlutterResult)result {
     [WFAVEngineKit sharedEngineKit].maxVideoCallCount = [dict[@"count"] intValue];
+    result(nil);
+}
+
+-(void) seEnableProximitySensor:(NSDictionary *)dict result:(FlutterResult)result {
+    [WFAVEngineKit sharedEngineKit].enableProximitySensor = [dict[@"enable"] boolValue];
+    result(nil);
+}
+
+- (void)enableCallkit:(NSDictionary *)dict result:(FlutterResult)result {
+    [[NSUserDefaults standardUserDefaults] setObject:@(YES) forKey:WF_ENABLE_CALLKIT_KEY];
+    if(!self.callKitManager) {
+        self.callKitManager = [[WFCCallKitManager alloc] initWithChannel:self.channel];
+    }
+    result(nil);
+}
+
+- (void)disableCallkit:(NSDictionary *)dict result:(FlutterResult)result {
+    [[NSUserDefaults standardUserDefaults] setObject:@(NO) forKey:WF_ENABLE_CALLKIT_KEY];
+    if(self.callKitManager) {
+        self.callKitManager = nil;
+    }
     result(nil);
 }
 
@@ -450,11 +477,21 @@
         WFCallSessionDelegater* delegater = [[WFCallSessionDelegater alloc] initWithSession:session channel:self.channel delegaters:self.delegaters videoViews:self.videoViews];
         session.delegate = delegater;
         
+        
+        if(self.callKitManager) {
+            [self.callKitManager didReceiveCall:session];
+            return;
+        }
+        
         [self.channel invokeMethod:@"didReceiveCallCallback" arguments:@{@"callSession":[RtckitPlugin callSession2Dict:session]}];
     });
 }
 
 - (void)shouldStartRing:(BOOL)isIncoming {
+    if(self.callKitManager) {
+        return;
+    }
+    
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if ([WFAVEngineKit sharedEngineKit].currentSession.state == kWFAVEngineStateIncomming || [WFAVEngineKit sharedEngineKit].currentSession.state == kWFAVEngineStateOutgoing) {
             [self.channel invokeMethod:@"shouldStartRingCallback" arguments:@{@"incoming":@(isIncoming)}];
@@ -463,10 +500,19 @@
 }
 
 - (void)shouldStopRing {
+    if(self.callKitManager) {
+        return;
+    }
+    
     [self.channel invokeMethod:@"shouldStopRingCallback" arguments:nil];
 }
 
 - (void)didCallEnded:(WFAVCallEndReason) reason duration:(int)callDuration {
+    if(self.callKitManager) {
+        [self.callKitManager didCallEnded:reason duration:callDuration];
+        return;
+    }
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         [self.channel invokeMethod:@"didEndCallCallback" arguments:@{@"reason":@(reason), @"duration":@(callDuration)}];
     });
@@ -474,6 +520,8 @@
 
 - (void)didReceiveIncomingPushWithPayload:(PKPushPayload * _Nonnull )payload
                                   forType:(NSString * _Nonnull )type {
-    
+    if(self.callKitManager) {
+        [self.callKitManager didReceiveIncomingPushWithPayload:payload forType:type];
+    }
 }
 @end

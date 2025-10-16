@@ -55,11 +55,6 @@ class Message {
           runtimeType == other.runtimeType &&
           messageId == other.messageId &&
           messageUid == other.messageUid &&
-          conversation == other.conversation &&
-          fromUser == other.fromUser &&
-          toUsers == other.toUsers &&
-          content == other.content &&
-          direction == other.direction &&
           status == other.status &&
           serverTime == other.serverTime;
 
@@ -67,11 +62,6 @@ class Message {
   int get hashCode =>
       messageId.hashCode ^
       messageUid.hashCode ^
-      conversation.hashCode ^
-      fromUser.hashCode ^
-      toUsers.hashCode ^
-      content.hashCode ^
-      direction.hashCode ^
       status.hashCode ^
       serverTime.hashCode;
 }
