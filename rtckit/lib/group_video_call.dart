@@ -71,23 +71,28 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
         }
       });
     } else {
-      if(widget.callSession!.state == kWFAVEngineStateIdle) {
-        Navigator.pop(context);
-        return;
-      }
+      Rtckit.currentCallSession().then((cs) {
+        if(cs == null || cs.state == kWFAVEngineStateIdle || cs.callId != widget.callSession!.callId) {
+          Navigator.pop(context);
+          return;
+        }
 
-      widget.groupId = widget.callSession?.conversation!.target;
-      widget.callSession!.participantIds.then((value) {
-        setState(() {
-          loadProfiles();
+        widget.groupId = widget.callSession?.conversation!.target;
+        widget.callSession!.participantIds.then((value) {
+          setState(() {
+            loadProfiles();
+          });
         });
-      });
 
-      widget.callSession?.setCallSessionCallback(this);
-
-      Imclient.getUserInfo(widget.callSession!.initiator!, groupId: widget.groupId!).then((value) {
+        cs.setCallSessionCallback(this);
         setState(() {
-          initiator = value;
+          widget.callSession = cs;
+        });
+
+        Imclient.getUserInfo(widget.callSession!.initiator!, groupId: widget.groupId!).then((value) {
+          setState(() {
+            initiator = value;
+          });
         });
       });
     }
@@ -559,10 +564,15 @@ class GroupVideoCallState extends State<GroupVideoCallView> implements CallSessi
 
   @override
   void didChangeState(CallSession session, int state) {
-    if(stateGlobalKey.currentState != null) {
-      stateGlobalKey.currentState!.updateCallStateView(state);
-    }
-    loadProfiles();
+    setState(() {
+      if(widget.callSession != null && widget.callSession?.callId == session.callId) {
+        widget.callSession = session;
+        if(stateGlobalKey.currentState != null) {
+          stateGlobalKey.currentState!.updateCallStateView(state);
+        }
+        loadProfiles();
+      }
+    });
   }
 
   @override

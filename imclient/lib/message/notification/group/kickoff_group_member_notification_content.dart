@@ -33,7 +33,7 @@ class KickoffGroupMemberNotificationContent extends NotificationMessageContent {
           utf8.decode(payload.binaryContent!));
       operateUser = map['o'];
       groupId = map['g'];
-      kickedMembers = Tools.convertDynamicList(map['ms'])!;
+      kickedMembers = Tools.convertDynamicList(map['ms']);
     } else {
       operateUser = "";
       groupId = "";

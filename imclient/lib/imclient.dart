@@ -39,6 +39,8 @@ import 'message/pclogin_request_message_content.dart';
 import 'message/ptext_message_content.dart';
 import 'message/sound_message_content.dart';
 import 'message/sticker_message_content.dart';
+import 'message/streaming_text_generating_message_content.dart';
+import 'message/streaming_text_generated_message_content.dart';
 import 'message/text_message_content.dart';
 import 'message/typing_message_content.dart';
 import 'message/video_message_content.dart';
@@ -487,6 +489,8 @@ class Imclient {
     registerMessageContent(ptextContentMeta);
     registerMessageContent(soundContentMeta);
     registerMessageContent(stickerContentMeta);
+    registerMessageContent(streamingTextGeneratingContentMeta);
+    registerMessageContent(streamingTextGeneratedContentMeta);
     registerMessageContent(textContentMeta);
     registerMessageContent(typingContentMeta);
     registerMessageContent(videoContentMeta);
@@ -749,11 +753,20 @@ class Imclient {
   }
 
   ///发送已保存消息
+  @Deprecated('Use another one.')
   static Future<bool> sendSavedMessage(int messageId,
       {int expireDuration = 0,
         required SendMessageSuccessCallback successCallback,
         required OperationFailureCallback errorCallback}) async {
     return ImclientPlatform.instance.sendSavedMessage(messageId, expireDuration: expireDuration, successCallback: successCallback, errorCallback: errorCallback);
+  }
+
+  ///发送已保存消息
+  static Future<bool> sendSavedMessage2(Message message,
+      {int expireDuration = 0,
+        required SendMessageSuccessCallback successCallback,
+        required OperationFailureCallback errorCallback}) async {
+    return ImclientPlatform.instance.sendSavedMessage2(message, expireDuration: expireDuration, successCallback: successCallback, errorCallback: errorCallback);
   }
 
   static Future<bool> cancelSendingMessage(int messageId) async {
@@ -782,21 +795,21 @@ class Imclient {
   static void uploadMedia(
       String fileName,
       Uint8List mediaData,
-      int mediaType,
+      MediaType mediaType,
       OperationSuccessStringCallback successCallback,
       SendMediaMessageProgressCallback progressCallback,
       OperationFailureCallback errorCallback) {
-    ImclientPlatform.instance.uploadMedia(fileName, mediaData, mediaType, successCallback, progressCallback, errorCallback);
+    ImclientPlatform.instance.uploadMedia(fileName, mediaData, mediaType.index, successCallback, progressCallback, errorCallback);
   }
 
   ///上传媒体文件
   static void uploadMediaFile(
       String filePath,
-      int mediaType,
+      MediaType mediaType,
       OperationSuccessStringCallback successCallback,
       SendMediaMessageProgressCallback progressCallback,
       OperationFailureCallback errorCallback) {
-    ImclientPlatform.instance.uploadMediaFile(filePath, mediaType, successCallback, progressCallback, errorCallback);
+    ImclientPlatform.instance.uploadMediaFile(filePath, mediaType.index, successCallback, progressCallback, errorCallback);
   }
 
   ///获取上传地址，仅支持大文件上传功能时可用
@@ -940,6 +953,23 @@ class Imclient {
     return ImclientPlatform.instance.getFriends(refresh);
   }
 
+  ///设置用户好友请求是否需要验证
+  static void setAddFriendNeedVerify(
+      bool enable,
+      OperationSuccessVoidCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    setUserSetting(28, "", enable?"0":"1", successCallback, errorCallback);
+  }
+
+  ///获取用户好友请求是否需要验证
+  static Future<bool> isAddFriendNeedVerify() async {
+    String value = await getUserSetting(28, "");
+    if("1" == value) {
+      return false;
+    }
+    return true;
+  }
+
   ///搜索群组
   static Future<List<GroupSearchInfo>> searchGroups(String keyword) async {
     return ImclientPlatform.instance.searchGroups(keyword);
@@ -976,10 +1006,16 @@ class Imclient {
     return ImclientPlatform.instance.clearUnreadFriendRequestStatus();
   }
 
-  ///清除未读好友请求
+  ///清空好友请求
   ///direction 0是收，1是发。
   static Future<bool> clearFriendRequest(int direction, {int beforeTime = 0}) async {
     return ImclientPlatform.instance.clearFriendRequest(direction, beforeTime);
+  }
+
+  ///删除好友请求
+  ///direction 0是收，1是发。
+  static Future<bool> deleteFriendRequest(String userId, int direction) async {
+    return ImclientPlatform.instance.deleteFriendRequest(userId, direction);
   }
 
   ///删除好友
@@ -1473,16 +1509,20 @@ class Imclient {
     ImclientPlatform.instance.getChatroomMemberInfo(chatroomId, successCallback, errorCallback);
   }
 
+  ///获取当前加入聊天室的ID
+  static Future<String> getJoinedChatroomId() {
+    return ImclientPlatform.instance.getJoinedChatroomId();
+  }
+
   ///创建频道
   static void createChannel(
       String channelName,
       String channelPortrait,
-      int status,
       String desc,
       String extra,
       OperationSuccessChannelInfoCallback successCallback,
       OperationFailureCallback errorCallback) {
-    ImclientPlatform.instance.createChannel(channelName, channelPortrait, status, desc, extra, successCallback, errorCallback);
+    ImclientPlatform.instance.createChannel(channelName, channelPortrait, desc, extra, successCallback, errorCallback);
   }
 
   ///获取频道信息
@@ -1557,6 +1597,12 @@ class Imclient {
   ///是否设置当PC在线时停止手机通知
   static Future<bool> isMuteNotificationWhenPcOnline() async {
     return ImclientPlatform.instance.isMuteNotificationWhenPcOnline();
+  }
+
+  ///设置PC/Web在线时，手机是否默认静音。缺省值为YES，只有在IM服务配置server.mobile_default_silent_when_pc_online 为false时，才需要调用此函数设置为NO，此时静音状态意义翻转。其它请求千万不要调用此函数，否则会引起状态错乱。
+  ///设置当PC在线时是否通知的方法是 muteNotificationWhenPcOnline:success:error
+  static void setDefaultSilentWhenPcOnline(bool defaultSilent) async {
+    return ImclientPlatform.instance.setDefaultSilentWhenPcOnline(defaultSilent);
   }
 
   ///设置/取消设置当PC在线时停止手机通知

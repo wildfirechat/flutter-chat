@@ -8,6 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import "WFCCIMService.h"
+#import "WFCCEnums.h"
 
 @interface WFCCUtilities : NSObject
 
@@ -52,6 +53,12 @@
 
 + (UIImage *)imageWithRightOrientation:(UIImage *)aImage;
 
++ (BOOL)isExternalTarget:(NSString *)targetId;
++ (NSString *)getExternalDomain:(NSString *)targetId;
++ (NSString *)getTargetWithoutDomain:(NSString *)targetId;
++ (NSAttributedString *)getExternal:(NSString *)domainId withName:(NSString *)name withColor:(UIColor *)color;
++ (NSAttributedString *)getExternal:(NSString *)domainId withName:(NSString *)name withColor:(UIColor *)color withSize:(CGFloat)fontSize;
+
 //同步函数，只能在后台线程执行
 + (NSString *)getGroupGridPortrait:(NSString *)groupId
                              width:(int)width
@@ -62,4 +69,11 @@
                    memberPortraits:(NSArray<NSDictionary<NSString*, NSString*>*> *)groupMembers
                              width:(int)PortraitWidth
                defaultUserPortrait:(UIImage *(^)(NSString *userId))defaultUserPortraitBlock;
+
+
++ (NSString *)getGroupMemberExtra:(WFCCGroupMemberSourceType)sourceType sourceTargetId:(NSString *)sourceTargetId;
+
++ (WFCCGroupMemberSourceType)getGroupMemberSourceType:(NSString *)memberExtra sourceTargetId:(NSMutableString *)sourceTargetId;
+
++ (NSString *)getUserDisplayName:(NSString *)userId inGroup:(NSString *)groupId;
 @end

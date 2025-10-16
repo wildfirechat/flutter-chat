@@ -6,7 +6,7 @@ import 'package:imclient/model/channel_info.dart';
 class ChannelInfoWidget extends StatefulWidget {
   final ChannelInfo channelInfo;
 
-  ChannelInfoWidget(this.channelInfo, {Key? key}) : super(key: key);
+  const ChannelInfoWidget(this.channelInfo, {Key? key}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => ChannelInfoWidgetState();

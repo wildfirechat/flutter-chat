@@ -201,7 +201,7 @@ class MethodChannelMomentClient extends PlatformInterface {
     }
 
     Map<dynamic, dynamic> fm = await methodChannel.invokeMethod('postFeed', args);
-    return _feedFromMap(fm)!;
+    return _feedFromMap(fm);
   }
 
   void deleteFeed(int feedId, MomentVoidSuccessCallback successCallback, FailureCallback errorCallback) {
@@ -261,7 +261,7 @@ class MethodChannelMomentClient extends PlatformInterface {
     }
 
     Map<dynamic, dynamic> fm = await methodChannel.invokeMethod('postComment', args);
-    return _commentFromMap(fm)!;
+    return _commentFromMap(fm);
   }
 
   void deleteComment(int commentId, int feedId, MomentVoidSuccessCallback successCallback, FailureCallback errorCallback) {
@@ -301,7 +301,7 @@ class MethodChannelMomentClient extends PlatformInterface {
   Future<List<Feed>> restoreCache({String? userId}) async {
     Map args = {};
     if(userId != null) {
-      args['userId'] = userId!;
+      args['userId'] = userId;
     }
     List list = await methodChannel.invokeMethod('restoreCache', args);
     return _feedListFromMap(list);

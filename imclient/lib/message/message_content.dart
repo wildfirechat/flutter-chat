@@ -10,6 +10,8 @@ import 'package:imclient/message/unknown_message_content.dart';
 import '../model/message_payload.dart';
 import 'message.dart';
 
+//自定义消息请使用1000以上的值，避免与系统预制的消息类型冲突
+
 const int MESSAGE_CONTENT_TYPE_UNKNOWN = 0;
 //文本消息
 const int MESSAGE_CONTENT_TYPE_TEXT = 1;
@@ -33,6 +35,10 @@ const int MESSAGE_CONTENT_TYPE_P_TEXT = 9;
 const int MESSAGE_CONTENT_TYPE_CARD = 10;
 //组合消息
 const int MESSAGE_CONTENT_TYPE_COMPOSITE_MESSAGE = 11;
+//流式文本正在生成消息
+const int MESSAGE_CONTENT_TYPE_STREAMING_TEXT_GENERATING = 14;
+//流式文本消息
+const int MESSAGE_CONTENT_TYPE_STREAMING_TEXT_GENERATED = 15;
 
 //撤回消息
 const int MESSAGE_CONTENT_TYPE_RECALL = 80;
@@ -102,6 +108,8 @@ const int VOIP_CONTENT_CONFERENCE_INVITE = 408;
 
 const int MESSAGE_CONTENT_TYPE_FEED = 501;
 const int MESSAGE_CONTENT_TYPE_COMMENT = 502;
+
+//自定义消息请使用1000以上的值，避免与系统预制的消息类型冲突
 
 enum MessageFlag {
   //不存储，不计数

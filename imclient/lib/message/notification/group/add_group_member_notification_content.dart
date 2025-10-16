@@ -33,7 +33,7 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
           utf8.decode(payload.binaryContent!));
       invitor = map['o'];
       groupId = map['g'];
-      invitees = Tools.convertDynamicList(map['ms'])!;
+      invitees = Tools.convertDynamicList(map['ms']);
     } else {
       groupId = "";
       invitees = [];

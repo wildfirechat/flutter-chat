@@ -53,7 +53,7 @@ class ImclientPlatform extends PlatformInterface {
     PlatformInterface.verifyToken(instance, _token);
     _instance = instance;
   }
-  
+
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel('imclient');
@@ -72,6 +72,8 @@ class ImclientPlatform extends PlatformInterface {
   static UserSettingsUpdatedCallback? _userSettingsUpdatedCallback;
   static ChannelInfoUpdatedCallback? _channelInfoUpdatedCallback;
   static OnlineEventCallback? _onlineEventCallback;
+
+  static bool _initialized = false;
 
 
   static int _requestId = 0;
@@ -227,6 +229,7 @@ class ImclientPlatform extends PlatformInterface {
 
 
     methodChannel.invokeMethod<Void>('initProto');
+    _initialized = true;
 
     methodChannel.setMethodCallHandler((MethodCall call) async {
       switch (call.method) {
@@ -409,21 +412,21 @@ class ImclientPlatform extends PlatformInterface {
           int messageId = args['messageId'];
           int messageUid = args['messageUid'];
           int timestamp = args['timestamp'];
-            Message? message = _sendingMessages[requestId];
-            if(message != null) {
-              message.messageUid = messageUid;
-              message.serverTime = timestamp;
-              message.status = MessageStatus.Message_Status_Sent;
-              _sendingMessages.remove(requestId);
+          Message? message = _sendingMessages[requestId];
+          if(message != null) {
+            message.messageUid = messageUid;
+            message.serverTime = timestamp;
+            message.status = MessageStatus.Message_Status_Sent;
+            _sendingMessages.remove(requestId);
+          }
 
-              if(requestId > 0) {
-                var callback = _sendMessageSuccessCallbackMap[requestId];
-                if (callback != null) {
-                  callback(messageUid, timestamp);
-                }
-                _removeSendMessageCallback(requestId);
-              }
+          if(requestId > 0) {
+            var callback = _sendMessageSuccessCallbackMap[requestId];
+            if (callback != null) {
+              callback(messageUid, timestamp);
             }
+            _removeSendMessageCallback(requestId);
+          }
 
           _eventBus.fire(SendMessageSuccessEvent(messageId, messageUid, timestamp));
           break;
@@ -954,8 +957,12 @@ class ImclientPlatform extends PlatformInterface {
       payload.mentionedTargets = Tools.convertDynamicList(map['mentionedTargets']);
     }
 
-    if (map['mediaType'] != null) {
-      payload.mediaType = MediaType.values[map['mediaType']];
+    if (map['mediaType'] != null){
+     if( map['mediaType'] >= 0 && map['mediaType'] < 8) {
+       payload.mediaType = MediaType.values[map['mediaType']];
+     }else{
+       payload.mediaType = MediaType.Media_Type_GENERAL;
+     }
     }
     payload.remoteMediaUrl = map['remoteMediaUrl'];
     payload.localMediaPath = map['localMediaPath'];
@@ -1305,7 +1312,7 @@ class ImclientPlatform extends PlatformInterface {
       content = UnknownMessageContent();
       content.decode(payload);
     }
-    
+
     return content;
   }
 
@@ -1314,6 +1321,9 @@ class ImclientPlatform extends PlatformInterface {
   /// 连接IM服务。调用连接之后才可以调用获取数据接口。连接状态会通过连接状态回调返回。
   /// [host]为IM服务域名或IP，必须im.example.com或114.144.114.144，不带http头和端口。
   Future<int> connect(String host, String userId, String token) async {
+    if(!_initialized) {
+      throw Exception("没有初始化，请在应用启动时，调用imclient的init方法，之后才可以调用connect进行连接。");
+    }
     this.userId = userId;
     int lastConnectTime = await methodChannel.invokeMethod('connect', {'host':host, 'userId':userId, 'token':token});
     return lastConnectTime;
@@ -1520,7 +1530,7 @@ class ImclientPlatform extends PlatformInterface {
   Future<bool> markAsUnRead(Conversation conversation, bool sync) async {
     return await methodChannel.invokeMethod('markAsUnRead', {'conversation': _convertConversation(conversation), "sync":sync});
   }
-  
+
   ///获取会话的已读状态
   Future<Map<String, int>> getConversationRead(
       Conversation conversation) async {
@@ -1817,6 +1827,22 @@ class ImclientPlatform extends PlatformInterface {
     return await methodChannel.invokeMethod("sendSavedMessage", {
       "requestId": requestId,
       "messageId": messageId,
+      "expireDuration": expireDuration
+    });
+  }
+
+  Future<bool> sendSavedMessage2(Message message,
+      {int expireDuration = 0,
+        required SendMessageSuccessCallback successCallback,
+        required OperationFailureCallback errorCallback}) async {
+    int requestId = _requestId++;
+    _sendMessageSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    _sendingMessages[requestId] = message;
+
+    return await methodChannel.invokeMethod("sendSavedMessage", {
+      "requestId": requestId,
+      "messageId": message.messageId,
       "expireDuration": expireDuration
     });
   }
@@ -2175,6 +2201,10 @@ class ImclientPlatform extends PlatformInterface {
     return await methodChannel.invokeMethod("clearFriendRequest", {"direction":direction, "beforeTime":beforeTime});
   }
 
+  Future<bool> deleteFriendRequest(String userId, int direction) async {
+    return await methodChannel.invokeMethod("deleteFriendRequest", {"direction":direction, "userId":userId});
+  }
+
   ///删除好友
   void deleteFriend(
       String userId,
@@ -2220,7 +2250,7 @@ class ImclientPlatform extends PlatformInterface {
 
   ///获取好友备注名
   Future<String?> getFriendAlias(String userId) async {
-    return await methodChannel.invokeMethod("getFriendAlias", {"userId": userId});
+    return await methodChannel.invokeMethod("getFriendAlias", {"friendId": userId});
   }
 
   ///设置好友备注名
@@ -2531,9 +2561,9 @@ class ImclientPlatform extends PlatformInterface {
       "modifyType": modifyType.index,
       "value": newValue
     };
-    
+
     args['notifyLines'] = notifyLines??[0];
-    
+
     if (notifyContent != null) {
       args['notifyContent'] = _convertMessageContent(notifyContent);
     }
@@ -3015,11 +3045,14 @@ class ImclientPlatform extends PlatformInterface {
         {"requestId": requestId, "chatroomId": chatroomId});
   }
 
+  Future<String> getJoinedChatroomId() async {
+    return await methodChannel.invokeMethod("getJoinedChatroomId");
+  }
+
   ///创建频道
   void createChannel(
       String channelName,
       String channelPortrait,
-      int status,
       String desc,
       String extra,
       OperationSuccessChannelInfoCallback successCallback,
@@ -3031,7 +3064,6 @@ class ImclientPlatform extends PlatformInterface {
       "requestId": requestId,
       "name": channelName,
       "portrait": channelPortrait,
-      "status": status,
       "desc": desc,
       "extra": extra
     });
@@ -3058,7 +3090,7 @@ class ImclientPlatform extends PlatformInterface {
     methodChannel.invokeMethod("modifyChannelInfo", {
       "requestId": requestId,
       "channelId": channelId,
-      "modifyType": modifyType.index,
+      "type": modifyType.index,
       "newValue": newValue
     });
   }
@@ -3117,7 +3149,7 @@ class ImclientPlatform extends PlatformInterface {
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
     methodChannel.invokeMethod(
-        "destoryChannel", {"requestId": requestId, "channelId": channelId});
+        "destroyChannel", {"requestId": requestId, "channelId": channelId});
   }
 
   ///获取PC端在线状态
@@ -3141,6 +3173,10 @@ class ImclientPlatform extends PlatformInterface {
   ///是否设置当PC在线时停止手机通知
   Future<bool> isMuteNotificationWhenPcOnline() async {
     return await methodChannel.invokeMethod("isMuteNotificationWhenPcOnline");
+  }
+
+  void setDefaultSilentWhenPcOnline(bool defaultSilent) async {
+    return await methodChannel.invokeMethod("setDefaultSilentWhenPcOnline", {"silent":defaultSilent});
   }
 
   ///设置/取消设置当PC在线时停止手机通知

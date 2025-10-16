@@ -371,6 +371,18 @@ typedef NS_ENUM(NSInteger, WFAVCameraPosition) {
 - (void)didGetStats:(NSArray<RTCLegacyStatsReport *> *_Nonnull)stats ofUser:(NSString *_Nonnull)userId screenSharing:(BOOL)screenSharing;
 @end
 
+/**
+ /* 此方法没有意义，仅为了兼容UI代码
+ */
+@protocol WFAVCallSessionAudioDataDelegate <NSObject>
+@optional
+/* 此方法没有意义，仅为了兼容UI代码 */
+-(OSStatus)onDeliverRecordeAudiodData:(AudioUnitRenderActionFlags*_Nonnull)flags timestamp:(const AudioTimeStamp*_Nonnull)time_stamp busNumber:(UInt32)bus_number numFrames:(UInt32)num_frames ioData:(AudioBufferList*_Nonnull)io_data;
+
+/* 此方法没有意义，仅为了兼容UI代码 */
+-(OSStatus)onGetPlayoutAudioData:(AudioUnitRenderActionFlags*_Nonnull)io_action_flags timestamp:(const AudioTimeStamp*_Nonnull)time_stamp busNumber:(UInt32)bus_number numFrames:(UInt32)num_frames ioData:(AudioBufferList*_Nonnull)io_data;
+@end
+
 @protocol WFAVExternalFrameDelegate <NSObject>
 - (void)capturer:(_Nullable id)capturer didCaptureVideoFrame:(nonnull RTCVideoFrame *)frame;
 @end
@@ -532,6 +544,22 @@ typedef NS_ENUM(NSInteger, WFAVCameraPosition) {
  取消通话界面
  */
 - (void)dismissViewController:(UIViewController *)viewController;
+
+/**
+ 当使用callkit时，需要注册当前音视频通话的UUID，这样音视频SDK才可以判断是否跟其他电话是否冲突
+ 
+ @param callId 野火通话ID。
+ @param callUUID call UUID
+ */
+- (void)registerCall:(NSString *_Nonnull)callId uuid:(NSUUID *_Nonnull)callUUID;
+
+/**
+ 获取用户显示名称。实现方法是调用im sdk获取用户信息并返回用户昵称。为了解决某些平台音视频插件无法添加IM依赖的问题 。
+ 
+ @param userId 用户ID
+ @return 返回用户显示名称
+ */
+- (NSString *_Nullable)getUserDisplayName:(NSString *_Nonnull)userId;
 @end
 
 /*!
@@ -584,6 +612,11 @@ typedef NS_ENUM(NSInteger, WFAVVideoType) {
  通话Session的事件监听
  */
 @property(nonatomic, weak)id<WFAVCallSessionDelegate> delegate;
+
+/**
+ * 此属性没有意义，仅为了兼容UI代码
+ */
+@property(nonatomic, weak) _Nullable id <WFAVCallSessionAudioDataDelegate> audioDataDelegate;
 
 /**
  通话状态

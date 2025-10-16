@@ -358,6 +358,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void getProtoRevision(@NonNull MethodCall call, @NonNull Result result) {
         String revision = ChatManager.Instance().getProtoRevision();
+        result.success(revision);
     }
 
     private void getLogFilesPath(@NonNull MethodCall call, @NonNull Result result) {
@@ -821,12 +822,12 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             ChatManager.Instance().sendSavedMessage(msg, expireDuration, new SendMessageCallback() {
                 @Override
                 public void onSuccess(long l, long l1) {
-                    callbackBuilder(requestId).put("messageUid", l).put("timestamp", l1).success("onSendMessageSuccess");
+                    callbackBuilder(requestId).put("messageId", messageId).put("messageUid", l).put("timestamp", l1).success("onSendMessageSuccess");
                 }
 
                 @Override
                 public void onFail(int i) {
-                    callbackBuilder(requestId).put("errorCode", i).success("onSendMessageFailure");
+                    callbackBuilder(requestId).put("messageId", messageId).put("errorCode", i).success("onSendMessageFailure");
                 }
 
                 @Override
@@ -1026,6 +1027,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         MessageContent messageContent = messageContentFromMaps(content);
         int status = call.argument("status");
         long serverTime = getLongPara(call, "serverTime");
+        if(serverTime == 0) {
+            serverTime = System.currentTimeMillis();
+        }
         List<String> toUsers = call.argument("toUsers");
         String sender = call.argument("sender");
         if(TextUtils.isEmpty(sender)) {
@@ -1182,6 +1186,12 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         int direction = call.argument("direction");
         long beforeTime = getLongPara(call, "beforeTime");
         result.success(ChatManager.Instance().clearFriendRequest(direction == 1, beforeTime));
+    }
+
+    private void deleteFriendRequest(@NonNull MethodCall call, @NonNull Result result) {
+        String userId = call.argument("userId");
+        int direction = call.argument("direction");
+        result.success(ChatManager.Instance().deleteFriendRequest(userId, direction == 1));
     }
 
     private void deleteFriend(@NonNull MethodCall call, @NonNull Result result) {
@@ -1823,15 +1833,30 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         });
     }
 
+    private void getJoinedChatroomId(@NonNull MethodCall call, @NonNull Result result) {
+        String chatroomId = ChatManager.Instance().getJoinedChatroom();
+        result.success(chatroomId);
+    }
+
     private void createChannel(@NonNull MethodCall call, @NonNull Result result) {
         final int requestId = call.argument("requestId");
-        String channelId = call.argument("channelId");
-        String channelName = call.argument("channelName");
-        String channelPortrait = call.argument("channelPortrait");
+        String channelName = call.argument("name");
+        String channelPortrait = call.argument("portrait");
         String desc = call.argument("desc");
         String extra = call.argument("extra");
 
-        ChatManager.Instance().createChannel(channelId, channelName, channelPortrait, desc, extra, new GeneralStringCallback(requestId));
+        ChatManager.Instance().createChannel("", channelName, channelPortrait, desc, extra, new GeneralCallback2(){
+            @Override
+            public void onSuccess(String channelId) {
+                Map<String, Object> stringObjectMap = convertChannelInfo(ChatManager.Instance().getChannelInfo(channelId, false));
+                callbackBuilder(requestId).put("channelInfo", stringObjectMap).success("onCreateChannelSuccess");
+            }
+
+            @Override
+            public void onFail(int i) {
+                callbackFailure(requestId, i);
+            }
+        } );
     }
 
     private void getChannelInfo(@NonNull MethodCall call, @NonNull Result result) {
@@ -1916,6 +1941,11 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void isMuteNotificationWhenPcOnline(@NonNull MethodCall call, @NonNull Result result) {
         result.success(ChatManager.Instance().isMuteNotificationWhenPcOnline());
+    }
+
+    private void setDefaultSilentWhenPcOnline(@NonNull MethodCall call, @NonNull Result result) {
+        boolean silent = call.argument("silent");
+        ChatManager.Instance().setDefaultSilentWhenPcOnline(silent);
     }
 
     private void muteNotificationWhenPcOnline(@NonNull MethodCall call, @NonNull Result result) {
@@ -3099,6 +3129,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                         case "onConversationSilentUpdate":
                         case "onClearMessage":
                         case "onProgress":
+                        case "onMediaUpload":
+                        case "onSendSuccess":
                             //ignore these event
                             break;
                         default: {
