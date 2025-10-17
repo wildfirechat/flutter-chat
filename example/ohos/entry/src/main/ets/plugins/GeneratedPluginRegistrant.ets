@@ -1,5 +1,6 @@
 import { FlutterEngine, Log } from '@ohos/flutter_ohos';
 import ImclientPlugin from 'imclient';
+import PhotoManagerPlugin from 'photo_manager';
 import SharedPreferencesPlugin from 'shared_preferences_ohos';
 
 /**
@@ -15,6 +16,7 @@ export class GeneratedPluginRegistrant {
   static registerWith(flutterEngine: FlutterEngine) {
     try {
       flutterEngine.getPlugins()?.add(new ImclientPlugin());
+      flutterEngine.getPlugins()?.add(new PhotoManagerPlugin());
       flutterEngine.getPlugins()?.add(new SharedPreferencesPlugin());
     } catch (e) {
       Log.e(
