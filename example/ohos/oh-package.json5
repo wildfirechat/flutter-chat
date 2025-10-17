@@ -16,6 +16,7 @@
     "@ohos/flutter_ohos": "file:./har/flutter.har",
     "imclient": "file:./har/imclient.har",
     "@ohos/flutter_module": "file:./entry",
-    "shared_preferences_ohos": "file:./har/shared_preferences_ohos.har"
+    "shared_preferences_ohos": "file:./har/shared_preferences_ohos.har",
+    "photo_manager": "file:./har/photo_manager.har"
   }
 }
