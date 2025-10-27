@@ -56,7 +56,7 @@ extern NSString *kDomainInfoUpdated;
  - kConnectionStatusUnconnected: 未连接
  - kConnectionStatusConnecting: 连接中
  - kConnectionStatusConnected: 已连接
- - kConnectionStatusReceiving: 获取离线消息中，可忽略
+ - kConnectionStatusReceiving: 正在与服务同步数据中
  */
 typedef NS_ENUM(NSInteger, ConnectionStatus) {
   kConnectionStatusTimeInconsistent = -9,
@@ -257,6 +257,14 @@ typedef NS_ENUM(NSInteger, ConnectedNetworkType) {
 - (NSString *)groupDefaultPortrait:(WFCCGroupInfo *)groupInfo memberInfos:(NSArray<WFCCUserInfo *> *)memberInfos;
 @end
 
+/**
+ 链接地址转换器，用于双网环境下媒体资源和头像等在不同网络下的转换
+ */
+@protocol WFCCUrlRedirector <NSObject>
+- (NSString *)redirect:(NSString *)originalUrl;
+@end
+
+
 #pragma mark - 连接服务
 /**
  连接服务
@@ -306,6 +314,11 @@ typedef NS_ENUM(NSInteger, ConnectedNetworkType) {
 @property(nonatomic, weak)id<WFCCDefaultPortraitProvider> defaultPortraitProvider;
 
 /**
+ 双网地址转换器
+ */
+@property(nonatomic, strong)id<WFCCUrlRedirector> urlRedirector;
+
+/**
  当前是否处于登录状态
  */
 @property(nonatomic, assign, getter=isLogined, readonly)BOOL logined;
@@ -334,6 +347,12 @@ typedef NS_ENUM(NSInteger, ConnectedNetworkType) {
  发送日志命令
  */
 @property (nonatomic, strong)NSString *sendLogCommand;
+
+
+/**
+ 设备是否以Pad平台登录
+ */
+@property (nonatomic, assign)BOOL isPad;
 
 /**
  开启Log
@@ -383,6 +402,16 @@ typedef NS_ENUM(NSInteger, ConnectedNetworkType) {
  */
 - (void)setLiteMode:(BOOL)isLiteMode;
 
+/**
+ 设置心跳时间，默认为270秒，可以设置为30-300之间的秒数。
+ */
+- (void)setHeartBeatInterval:(int)second;
+
+
+/**
+ 时间偏移。一般用于时间不正确的设置，可以设置时间偏移确保能够设备能够正常使用。时间是服务器时间-当前时间
+ */
+@property (nonatomic, assign)int timeOffset;
 /**
  获取客户端id
  
