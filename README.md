@@ -35,7 +35,7 @@
 
 ## 关于 flutter 、Android Studio、gradle 版本的重要说明
 
-1. 为了能够兼容鸿蒙原生系统，flutter 版本会跟随鸿蒙原生已适配的flutter 版本进行升级，目前鸿蒙原生已适配的flutter版本是`3.22.0`
+1. 为了能够兼容鸿蒙原生系统，flutter 版本会跟随鸿蒙原生已适配的flutter 版本进行升级，目前鸿蒙原生已适配的flutter版本是`3.27.4`
 2. Android Studio 会跟随官方更新，一直使用最新版本
 3. 由于 gradle 版本和 flutter 版本有依赖关系，会使用对应的 gradle 版本，目前是 `8.7`
 
