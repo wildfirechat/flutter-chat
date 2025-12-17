@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/message/message.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/quote_info.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
 enum ChatInputBarStatus { keyboardStatus, pluginStatus, emojiStatus, recordStatus, muteStatus, pttStatus }
@@ -16,6 +18,7 @@ class MessageInputBarController extends ChangeNotifier {
   final ConversationViewModel conversationViewModel;
 
   ChatInputBarStatus _status;
+  Message? _quotedMessage;
 
   int _sendTypingTime = 0;
 
@@ -35,6 +38,12 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   ChatInputBarStatus get status => _status;
+  Message? get quotedMessage => _quotedMessage;
+
+  void setQuotedMessage(Message? message) {
+    _quotedMessage = message;
+    notifyListeners();
+  }
 
   void _onFocusChanged() {
     if (focusNode.hasFocus && _status != ChatInputBarStatus.keyboardStatus) {
@@ -98,6 +107,7 @@ class MessageInputBarController extends ChangeNotifier {
     if (textEditingController.text.isNotEmpty) {
       _sendTextMessage(conversation, textEditingController.text.trim());
       textEditingController.clear();
+      _quotedMessage = null;
       notifyListeners();
     }
   }
@@ -107,8 +117,11 @@ class MessageInputBarController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _sendTextMessage(Conversation conversation, String text) {
+  void _sendTextMessage(Conversation conversation, String text) async{
     TextMessageContent txt = TextMessageContent(text);
+    if (_quotedMessage != null) {
+      txt.quoteInfo = await QuoteInfo.fromMessage(_quotedMessage!);
+    }
     conversationViewModel.sendMessage(txt);
     _sendTypingTime = 0;
   }
