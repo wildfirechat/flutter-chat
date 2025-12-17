@@ -444,6 +444,8 @@ class ConversationController extends ChangeNotifier {
         _recallMessage(model.message.messageId, model.message.messageUid!);
         break;
       case "multi_select":
+        conversationViewModel.toggleMultiSelectMode();
+        conversationViewModel.toggleMessageSelection(model.message.messageId);
         break;
       case "quote":
         messageInputBarController.setQuotedMessage(model.message);
