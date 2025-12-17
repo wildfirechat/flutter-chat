@@ -62,6 +62,47 @@ class ConversationViewModel extends ChangeNotifier {
     return _currentConversationInfo;
   }
 
+  bool _isMultiSelectMode = false;
+  final Set<int> _selectedMessageIds = {};
+
+  bool get isMultiSelectMode => _isMultiSelectMode;
+  Set<int> get selectedMessageIds => _selectedMessageIds;
+
+  void toggleMultiSelectMode() {
+    _isMultiSelectMode = !_isMultiSelectMode;
+    if (!_isMultiSelectMode) {
+      _selectedMessageIds.clear();
+    }
+    notifyListeners();
+  }
+
+  void toggleMessageSelection(int messageId) {
+    if (_selectedMessageIds.contains(messageId)) {
+      _selectedMessageIds.remove(messageId);
+    } else {
+      _selectedMessageIds.add(messageId);
+    }
+    notifyListeners();
+  }
+
+  bool isMessageSelected(int messageId) {
+    return _selectedMessageIds.contains(messageId);
+  }
+
+  List<Message> getSelectedMessages() {
+    List<Message> selected = [];
+    // Iterate through the list to maintain order (assuming list is ordered)
+    // Note: _conversationMessageList is reversed (0 is newest).
+    // If we want chronological order, we should iterate from end to start.
+    for (int i = _conversationMessageList.length - 1; i >= 0; i--) {
+      var msg = _conversationMessageList[i].message;
+      if (_selectedMessageIds.contains(msg.messageId)) {
+        selected.add(msg);
+      }
+    }
+    return selected;
+  }
+
   ConversationViewModel() {
     _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
       if (_currentConversation == null) {
