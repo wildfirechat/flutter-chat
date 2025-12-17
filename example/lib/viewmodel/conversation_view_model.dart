@@ -332,7 +332,9 @@ class ConversationViewModel extends ChangeNotifier {
             _noMoreRemoteHistoryMsg = true;
           }
           _isLoading = false;
-          _insertMessages(_conversationMessageList.length, messages);
+          if(messages.isNotEmpty){
+            _insertMessages(_conversationMessageList.length, messages);
+          }
         }, (errorCode) {
           _isLoading = false;
           _noMoreRemoteHistoryMsg = true;
