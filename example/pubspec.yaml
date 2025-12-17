@@ -68,6 +68,7 @@ dependencies:
   logger: any
   path: any
   pinyin: ^3.3.0
+  flutter_popup: ^3.3.9
 dev_dependencies:
   flutter_test:
     sdk: flutter
