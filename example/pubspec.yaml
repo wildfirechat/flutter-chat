@@ -58,7 +58,7 @@ dependencies:
   path_provider: ^2.1.1
   permission_handler: ^10.4.3
   wechat_camera_picker: ^4.2.1
-  video_player: ^2.7.1
+  video_player: ^2.7.7
   url_launcher: ^6.1.14
   flutter_dynamic_icon: ^2.1.0
   provider: ^6.1.4
