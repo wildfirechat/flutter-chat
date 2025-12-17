@@ -30,38 +30,6 @@ class PluginBoard extends StatelessWidget {
     _PluginItem('assets/images/input/file.png', "文件", "file"),
     _PluginItem('assets/images/input/card.png', "名片", "card"),
   ];
-  final List<_PluginItem> _line2 = [
-    _PluginItem('assets/images/input/file.png', "文件", "file"),
-    _PluginItem('assets/images/input/card.png', "名片", "card"),
-  ];
-
-  List<Widget> _getLineItem(BuildContext context, List<_PluginItem> line) {
-    double width = View.of(context).physicalSize.width / View.of(context).devicePixelRatio;
-    double itemWidth = 54;
-    double padding = (width - 4 * itemWidth) / 4 / 2;
-    List<Widget> items = [];
-    for (var value in line) {
-      items.add(Padding(padding: EdgeInsets.only(left: padding)));
-      items.add(GestureDetector(
-        onTap: () => _onClickItem(context, value.key),
-        child: Column(
-          children: [
-            Padding(padding: EdgeInsets.only(top: padding)),
-            Image.asset(
-              value.iconPath,
-              width: itemWidth,
-              height: itemWidth,
-            ),
-            const Padding(padding: EdgeInsets.only(top: 10)),
-            Text(value.title),
-          ],
-        ),
-      ));
-      items.add(Padding(padding: EdgeInsets.only(left: padding)));
-    }
-
-    return items;
-  }
 
   Widget _pluginItemWidget(BuildContext context, _PluginItem item) {
     double width = View.of(context).physicalSize.width / View.of(context).devicePixelRatio;

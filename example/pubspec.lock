@@ -278,6 +278,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.0.29"
+  flutter_popup:
+    dependency: "direct main"
+    description:
+      name: flutter_popup
+      sha256: "08e554be1173f4e7bb5eda2ae2e5addd565873026a3ac9b64c38ea86dfd4dc9d"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.3.9"
   flutter_sound:
     dependency: "direct main"
     description:

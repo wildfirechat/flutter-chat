@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 import 'package:imclient/message/call_start_message_content.dart';
 import 'package:logger/logger.dart' show Level, Logger;
 import 'package:flutter_sound/flutter_sound.dart';
@@ -327,72 +328,114 @@ class ConversationController extends ChangeNotifier {
   }
 
   void _showPopupMenu(BuildContext context, UIMessage model, Offset position) {
-    List<PopupMenuItem> items = [
-      const PopupMenuItem(
-        value: 'delete',
-        child: Text('删除'),
-      )
+    List<Map<String, dynamic>> menuItems = [
+      {'label': '删除', 'value': 'delete', 'icon': Icons.delete},
     ];
 
     if (model.message.content is TextMessageContent) {
-      items.add(const PopupMenuItem(value: 'copy', child: Text('复制')));
+      menuItems.add({'label': '复制', 'value': 'copy', 'icon': Icons.copy});
     }
 
-    items.add(const PopupMenuItem(
-      value: 'forward',
-      child: Text('转发'),
-    ));
+    menuItems.add({'label': '转发', 'value': 'forward', 'icon': Icons.forward});
 
     if (model.message.direction == MessageDirection.MessageDirection_Send &&
         model.message.status == MessageStatus.Message_Status_Sent &&
         DateTime.now().millisecondsSinceEpoch - model.message.serverTime < 120 * 1000) {
-      items.add(const PopupMenuItem(
-        value: 'recall',
-        child: Text('撤回'),
-      ));
+      menuItems.add({'label': '撤回', 'value': 'recall', 'icon': Icons.undo});
     }
 
-    items.addAll([
-      const PopupMenuItem(
-        value: 'multi_select',
-        child: Text('多选'),
-      ),
-      const PopupMenuItem(
-        value: 'quote',
-        child: Text('引用'),
-      ),
-      const PopupMenuItem(
-        value: 'favorite',
-        child: Text('收藏'),
-      )
+    menuItems.addAll([
+      {'label': '多选', 'value': 'multi_select', 'icon': Icons.checklist},
+      {'label': '引用', 'value': 'quote', 'icon': Icons.format_quote},
+      {'label': '收藏', 'value': 'favorite', 'icon': Icons.favorite},
     ]);
 
-    showMenu(
-      context: context,
-      position: RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy),
-      items: items,
-    ).then((selected) {
-      if (selected != null) {
-        switch (selected) {
-          case "delete":
-            _deleteMessage(model.message.messageId);
-            break;
-          case "copy":
-            break;
-          case "forward":
-            break;
-          case "recall":
-            _recallMessage(model.message.messageId, model.message.messageUid!);
-            break;
-          case "multi_select":
-            break;
-          case "quote":
-            break;
-          case "favorite":
-            break;
-        }
-      }
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.transparent,
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return Stack(
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () {
+                  Navigator.pop(context);
+                },
+                child: Container(
+                  color: Colors.transparent,
+                ),
+              ),
+              Positioned(
+                left: position.dx,
+                top: position.dy,
+                child: _buildPopup(context, menuItems, model),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPopup(BuildContext context, List<Map<String, dynamic>> items, UIMessage model) {
+    final GlobalKey<CustomPopupState> popupKey = GlobalKey<CustomPopupState>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      popupKey.currentState?.show();
     });
+
+    const double popupWidth = 250;
+    const double padding = 10;
+    const int crossAxisCount = 4;
+    const double itemWidth = (popupWidth - padding * 2) / crossAxisCount;
+
+    return CustomPopup(
+      key: popupKey,
+      backgroundColor: const Color(0xFF4C4C4C),
+      arrowColor: const Color(0xFF4C4C4C),
+      barrierColor: Colors.transparent,
+      showArrow: true,
+      content: Container(
+        width: popupWidth,
+        padding: const EdgeInsets.all(padding),
+        child: Wrap(
+          alignment: WrapAlignment.start,
+          children: items.map((item) {
+            return _PopupMenuItem(
+              item: item,
+              width: itemWidth,
+              onTap: () {
+                Navigator.pop(context);
+                _handleMenuItemTap(item['value'], model);
+              },
+            );
+          }).toList(),
+        ),
+      ),
+      child: const SizedBox(width: 1, height: 1),
+    );
+  }
+
+  void _handleMenuItemTap(String value, UIMessage model) {
+    switch (value) {
+      case "delete":
+        _deleteMessage(model.message.messageId);
+        break;
+      case "copy":
+        break;
+      case "forward":
+        break;
+      case "recall":
+        _recallMessage(model.message.messageId, model.message.messageUid!);
+        break;
+      case "multi_select":
+        break;
+      case "quote":
+        break;
+      case "favorite":
+        break;
+    }
   }
 
   void _recallMessage(int messageId, int messageUid) {
@@ -411,3 +454,53 @@ class ConversationController extends ChangeNotifier {
     }
   }
 }
+
+class _PopupMenuItem extends StatefulWidget {
+  final Map<String, dynamic> item;
+  final double width;
+  final VoidCallback onTap;
+
+  const _PopupMenuItem({
+    Key? key,
+    required this.item,
+    required this.width,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  State<_PopupMenuItem> createState() => _PopupMenuItemState();
+}
+
+class _PopupMenuItemState extends State<_PopupMenuItem> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: Container(
+        width: widget.width,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: _isPressed ? Colors.black26 : Colors.transparent,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(widget.item['icon'], color: Colors.white, size: 24),
+            const SizedBox(height: 5),
+            Text(
+              widget.item['label'],
+              style: const TextStyle(color: Colors.white, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
