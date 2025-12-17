@@ -29,6 +29,7 @@ import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
 import '../ui_model/ui_message.dart';
+import 'pick_conversation_screen.dart';
 
 class ConversationController extends ChangeNotifier {
   late ConversationViewModel conversationViewModel;
@@ -407,7 +408,7 @@ class ConversationController extends ChangeNotifier {
               width: itemWidth,
               onTap: () {
                 Navigator.pop(context);
-                _handleMenuItemTap(item['value'], model);
+                _handleMenuItemTap(context, item['value'], model);
               },
             );
           }).toList(),
@@ -417,7 +418,7 @@ class ConversationController extends ChangeNotifier {
     );
   }
 
-  void _handleMenuItemTap(String value, UIMessage model) {
+  void _handleMenuItemTap(BuildContext context, String value, UIMessage model) async {
     switch (value) {
       case "delete":
         _deleteMessage(model.message.messageId);
@@ -425,6 +426,16 @@ class ConversationController extends ChangeNotifier {
       case "copy":
         break;
       case "forward":
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PickConversationScreen(
+              onConversationSelected: (ctx, conversation) {
+                _showForwardDialog(ctx, conversation, model.message);
+              },
+            ),
+          ),
+        );
         break;
       case "recall":
         _recallMessage(model.message.messageId, model.message.messageUid!);
@@ -435,6 +446,71 @@ class ConversationController extends ChangeNotifier {
         break;
       case "favorite":
         break;
+    }
+  }
+
+  void _showForwardDialog(BuildContext context, Conversation target, Message message) async {
+    String targetName = target.target;
+    if (target.conversationType == ConversationType.Single) {
+      var userInfo = await Imclient.getUserInfo(target.target);
+      if (userInfo != null) {
+        targetName = userInfo.displayName??'<${target.target}';
+      }
+    } else if (target.conversationType == ConversationType.Group) {
+      var groupInfo = await Imclient.getGroupInfo(target.target);
+      if (groupInfo != null) {
+        targetName = groupInfo.name??'群聊<${groupInfo.target}>';
+      }
+    }
+
+    if (!context.mounted) return;
+
+    TextEditingController controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("发送给：$targetName"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("确定转发这条消息吗？"),
+              const SizedBox(height: 10),
+              TextField(
+                controller: controller,
+                decoration: const InputDecoration(hintText: "给朋友留言"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close Dialog
+                Navigator.pop(context); // Close PickConversationScreen
+              },
+              child: const Text("取消"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Close Dialog
+                _performForward(target, message, controller.text);
+                Navigator.pop(context); // Close PickConversationScreen
+              },
+              child: const Text("发送"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _performForward(Conversation target, Message message, String extraText) {
+    Imclient.sendMessage(target, message.content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
+    if (extraText.isNotEmpty) {
+      TextMessageContent textContent = TextMessageContent(extraText);
+      textContent.text = extraText;
+      Imclient.sendMessage(target, textContent, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
     }
   }
 

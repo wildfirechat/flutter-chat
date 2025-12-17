@@ -167,12 +167,7 @@ class HomeTabBarState extends State<HomeTabBar> {
       children: pages,
       index: _tabIndex,
     );
-    return MultiProvider(
-        providers: [
-          ChangeNotifierProvider<ConversationListViewModel>(create: (_) => ConversationListViewModel()),
-          ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
-        ],
-        child: Scaffold(
+    return Scaffold(
           //布局结构
           appBar: AppBar(
             //选中每一项的标题和图标设置
@@ -270,6 +265,6 @@ class HomeTabBarState extends State<HomeTabBar> {
               });
             },
           ),
-        ));
+        );
   }
 }

@@ -56,8 +56,9 @@ class _ConversationListWidgetState extends State<ConversationListWidget> {
 
 class ConversationListItem extends StatefulWidget {
   final ConversationInfo conversationInfo;
+  final Function(Conversation conversation)? onTap;
 
-  const ConversationListItem(this.conversationInfo, {super.key});
+  const ConversationListItem(this.conversationInfo, {super.key, this.onTap});
 
   @override
   State<ConversationListItem> createState() => _ConversationListItemState();
@@ -246,7 +247,13 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
               ),
             ],
           )),
-      onTap: () => _toChatPage(context, conversationInfo.conversation),
+      onTap: () {
+        if (widget.onTap != null) {
+          widget.onTap!(conversationInfo.conversation);
+        } else {
+          _toChatPage(context, conversationInfo.conversation);
+        }
+      },
       onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
     );
   }

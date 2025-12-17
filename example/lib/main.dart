@@ -22,6 +22,8 @@ import 'package:rtckit/single_voice_call.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wfc_example/splash.dart';
 import 'package:wfc_example/viewmodel/channel_view_model.dart';
+import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
+import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
@@ -260,7 +262,9 @@ class _MyAppState extends State<MyApp> {
           ChangeNotifierProvider<UserViewModel>(create: (_) => UserViewModel()),
           ChangeNotifierProvider<GroupViewModel>(create: (_) => GroupViewModel()),
           ChangeNotifierProvider<ChannelViewModel>(create: (_) => ChannelViewModel()),
-          ChangeNotifierProvider<ConversationViewModel>(create: (_) => ConversationViewModel())
+          ChangeNotifierProvider<ConversationViewModel>(create: (_) => ConversationViewModel()),
+          ChangeNotifierProvider<ConversationListViewModel>(create: (_) => ConversationListViewModel()),
+          ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
         ],
         child: MaterialApp(
           navigatorKey: navKey,
