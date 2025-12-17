@@ -1152,6 +1152,28 @@ class ImclientPlatform extends PlatformInterface {
     return list;
   }
 
+  static ChannelMenu _convertProtoChannelMenu(Map<dynamic, dynamic> map) {
+    ChannelMenu menu = ChannelMenu();
+    menu.menuId = map['menuId'];
+    menu.type = map['type'];
+    menu.name = map['name'];
+    menu.key = map['key'];
+    menu.url = map['url'];
+    menu.mediaId = map['mediaId'];
+    menu.articleId = map['articleId'];
+    menu.appId = map['appId'];
+    menu.appPage = map['appPage'];
+    menu.extra = map['extra'];
+    if(map['subMenus'] != null) {
+      List<dynamic> subMenus = map['subMenus'];
+      menu.subMenus = [];
+      for (var element in subMenus) {
+        menu.subMenus!.add(_convertProtoChannelMenu(element));
+      }
+    }
+    return menu;
+  }
+
   static ChannelInfo? _convertProtoChannelInfo(Map<dynamic, dynamic>? map) {
     if(map == null || map['channelId'] == null) {
       return null;
@@ -1169,6 +1191,14 @@ class ImclientPlatform extends PlatformInterface {
       channelInfo.status = map['status'];
     }
     if (map['updateDt'] != null) channelInfo.updateDt = map['updateDt'];
+
+    if(map['menus'] != null) {
+      List<dynamic> menus = map['menus'];
+      channelInfo.menus = [];
+      for (var element in menus) {
+        channelInfo.menus!.add(_convertProtoChannelMenu(element));
+      }
+    }
 
     return channelInfo;
   }

@@ -4,11 +4,12 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/typing_message_content.dart';
+import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/quote_info.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
-enum ChatInputBarStatus { keyboardStatus, pluginStatus, emojiStatus, recordStatus, muteStatus, pttStatus }
+enum ChatInputBarStatus { keyboardStatus, pluginStatus, emojiStatus, recordStatus, muteStatus, pttStatus, menuStatus }
 
 /// 控制器类，用于管理输入栏的状态
 class MessageInputBarController extends ChangeNotifier {
@@ -19,6 +20,7 @@ class MessageInputBarController extends ChangeNotifier {
 
   ChatInputBarStatus _status;
   Message? _quotedMessage;
+  ChannelInfo? channelInfo;
 
   int _sendTypingTime = 0;
 
@@ -35,6 +37,15 @@ class MessageInputBarController extends ChangeNotifier {
         setDraft(conversationInfo.draft!);
       }
     });
+
+    if (conversation.conversationType == ConversationType.Channel) {
+      Imclient.getChannelInfo(conversation.target).then((info) {
+        if (info != null) {
+          channelInfo = info;
+          notifyListeners();
+        }
+      });
+    }
   }
 
   ChatInputBarStatus get status => _status;
@@ -62,7 +73,7 @@ class MessageInputBarController extends ChangeNotifier {
       if (!focusNode.hasFocus) {
         focusNode.requestFocus();
       }
-    } else if (newStatus == ChatInputBarStatus.pluginStatus || newStatus == ChatInputBarStatus.emojiStatus) {
+    } else if (newStatus == ChatInputBarStatus.pluginStatus || newStatus == ChatInputBarStatus.emojiStatus || newStatus == ChatInputBarStatus.menuStatus) {
       if (focusNode.hasFocus) {
         focusNode.unfocus();
       }
@@ -72,7 +83,7 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void resetStatus() {
-    if (_status == ChatInputBarStatus.pluginStatus || _status == ChatInputBarStatus.emojiStatus) {
+    if (_status == ChatInputBarStatus.pluginStatus || _status == ChatInputBarStatus.emojiStatus || _status == ChatInputBarStatus.menuStatus) {
       _status = ChatInputBarStatus.keyboardStatus;
       notifyListeners();
     }
@@ -84,6 +95,14 @@ class MessageInputBarController extends ChangeNotifier {
       setStatus(ChatInputBarStatus.keyboardStatus);
     } else {
       setStatus(ChatInputBarStatus.pluginStatus);
+    }
+  }
+
+  void onMenuButton() {
+    if (_status == ChatInputBarStatus.menuStatus) {
+      setStatus(ChatInputBarStatus.keyboardStatus);
+    } else {
+      setStatus(ChatInputBarStatus.menuStatus);
     }
   }
 

@@ -39,6 +39,7 @@ import cn.wildfirechat.message.core.MessagePayload;
 import cn.wildfirechat.message.core.MessageStatus;
 import cn.wildfirechat.message.core.PersistFlag;
 import cn.wildfirechat.model.ChannelInfo;
+import cn.wildfirechat.model.ChannelMenu;
 import cn.wildfirechat.model.ChatRoomInfo;
 import cn.wildfirechat.model.ChatRoomMembersInfo;
 import cn.wildfirechat.model.ClientState;
@@ -2585,6 +2586,28 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         return output;
     }
 
+    private static Map<String, Object> convertChannelMenu(ChannelMenu menu) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("menuId", menu.menuId);
+        map.put("type", menu.type);
+        map.put("name", menu.name);
+        map.put("key", menu.key);
+        map.put("url", menu.url);
+        map.put("mediaId", menu.mediaId);
+        map.put("articleId", menu.articleId);
+        map.put("appId", menu.appId);
+        map.put("appPage", menu.appPage);
+        map.put("extra", menu.extra);
+        if (menu.subMenus != null) {
+            List<Map<String, Object>> subMenus = new ArrayList<>();
+            for (ChannelMenu subMenu : menu.subMenus) {
+                subMenus.add(convertChannelMenu(subMenu));
+            }
+            map.put("subMenus", subMenus);
+        }
+        return map;
+    }
+
     private static Map<String, Object> convertChannelInfo(ChannelInfo protoData) {
         Map<String, Object> map = new HashMap<>();
         map.put("channelId", protoData.channelId);
@@ -2602,6 +2625,14 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             map.put("status", protoData.status);
         if (protoData.updateDt > 0)
             map.put("updateDt", protoData.updateDt);
+
+        if (protoData.menus != null) {
+            List<Map<String, Object>> menus = new ArrayList<>();
+            for (ChannelMenu menu : protoData.menus) {
+                menus.add(convertChannelMenu(menu));
+            }
+            map.put("menus", menus);
+        }
         return map;
     }
 

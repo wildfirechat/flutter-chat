@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:wfc_example/conversation/input_bar/emoji_board.dart';
 import 'package:wfc_example/conversation/input_bar/plugin_board.dart';
 import 'package:wfc_example/conversation/input_bar/record_widget.dart';
+import 'package:wfc_example/conversation/input_bar/channel_menu_widget.dart';
 
 import 'message_input_bar_controller.dart';
 
@@ -149,6 +150,8 @@ class MessageInputBar extends StatelessWidget {
   Widget build(BuildContext context) {
     MessageInputBarController controller = Provider.of<MessageInputBarController>(context);
     double iconSize = 32;
+    bool showMenu = controller.channelInfo?.menus != null && controller.channelInfo!.menus!.isNotEmpty;
+
     return Column(
       children: [
         Container(
@@ -169,31 +172,41 @@ class MessageInputBar extends StatelessWidget {
                       ? IconButton(
                           icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
                       : IconButton(icon: Image.asset('assets/images/input/chat_input_bar_voice.png', width: iconSize, height: iconSize), onPressed: controller.onVoiceButton),
+                  if (showMenu)
+                    IconButton(
+                        icon: controller.status == ChatInputBarStatus.menuStatus
+                            ? Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize)
+                            : const Icon(Icons.menu, size: 32, color: Color(0xFF7f7f7f)),
+                        onPressed: controller.onMenuButton),
                   Expanded(
-                    child: controller.status == ChatInputBarStatus.recordStatus
-                        ? RecordWidget(controller.conversation)
-                        : Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
-                            child: CupertinoTextField(
-                              maxLines: 3,
-                              minLines: 1,
-                              controller: controller.textEditingController,
-                              focusNode: controller.focusNode,
-                              onSubmitted: (_) => controller.onSendButton(),
-                              onChanged: controller.onTextChanged,
-                            ),
-                          ),
+                    child: showMenu && controller.status == ChatInputBarStatus.menuStatus
+                        ? ChannelMenuWidget(menus: controller.channelInfo!.menus!, conversation: controller.conversation)
+                        : (controller.status == ChatInputBarStatus.recordStatus
+                            ? RecordWidget(controller.conversation)
+                            : Padding(
+                                padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
+                                child: CupertinoTextField(
+                                  maxLines: 3,
+                                  minLines: 1,
+                                  controller: controller.textEditingController,
+                                  focusNode: controller.focusNode,
+                                  onSubmitted: (_) => controller.onSendButton(),
+                                  onChanged: controller.onTextChanged,
+                                ),
+                              )),
                   ),
-                  controller.status == ChatInputBarStatus.emojiStatus
-                      ? IconButton(
-                          icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
-                      : IconButton(icon: Image.asset('assets/images/input/chat_input_bar_emoji.png', width: iconSize, height: iconSize), onPressed: controller.onEmojiButton),
-                  controller.textEditingController.text.isNotEmpty &&
-                          controller.status != ChatInputBarStatus.recordStatus &&
-                          controller.status != ChatInputBarStatus.pluginStatus
-                      ? ElevatedButton(onPressed: controller.onSendButton, child: const Text("发送"))
-                      : IconButton(
-                          icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize), onPressed: controller.onPluginButton),
+                  if (controller.status != ChatInputBarStatus.menuStatus) ...[
+                    controller.status == ChatInputBarStatus.emojiStatus
+                        ? IconButton(
+                            icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
+                        : IconButton(icon: Image.asset('assets/images/input/chat_input_bar_emoji.png', width: iconSize, height: iconSize), onPressed: controller.onEmojiButton),
+                    controller.textEditingController.text.isNotEmpty &&
+                            controller.status != ChatInputBarStatus.recordStatus &&
+                            controller.status != ChatInputBarStatus.pluginStatus
+                        ? ElevatedButton(onPressed: controller.onSendButton, child: const Text("发送"))
+                        : IconButton(
+                            icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize), onPressed: controller.onPluginButton),
+                  ]
                 ],
               ),
               if (controller.quotedMessage != null)

@@ -1,3 +1,17 @@
+class ChannelMenu {
+  String? menuId;
+  String? type;
+  String? name;
+  String? key;
+  String? url;
+  String? mediaId;
+  String? articleId;
+  String? appId;
+  String? appPage;
+  String? extra;
+  List<ChannelMenu>? subMenus;
+}
+
 class ChannelInfo {
   ChannelInfo({this.status = 0, this.updateDt = 0});
   late String channelId;
@@ -11,6 +25,8 @@ class ChannelInfo {
 
   int status;
   int updateDt;
+
+  List<ChannelMenu>? menus;
 
   @override
   bool operator ==(Object other) =>
