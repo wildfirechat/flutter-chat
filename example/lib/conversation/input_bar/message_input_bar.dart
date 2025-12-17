@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:imclient/imclient.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/conversation/input_bar/emoji_board.dart';
 import 'package:wfc_example/conversation/input_bar/plugin_board.dart';
@@ -159,38 +160,68 @@ class MessageInputBar extends StatelessWidget {
               bottom: BorderSide(width: 1, color: Color(0xFFDDDDDD)),
             ),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Column(
             children: [
-              controller.status == ChatInputBarStatus.recordStatus
-                  ? IconButton(
-                      icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
-                  : IconButton(icon: Image.asset('assets/images/input/chat_input_bar_voice.png', width: iconSize, height: iconSize), onPressed: controller.onVoiceButton),
-              Expanded(
-                child: controller.status == ChatInputBarStatus.recordStatus
-                    ? RecordWidget(controller.conversation)
-                    : Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
-                        child: CupertinoTextField(
-                          maxLines: 3,
-                          minLines: 1,
-                          controller: controller.textEditingController,
-                          focusNode: controller.focusNode,
-                          onSubmitted: (_) => controller.onSendButton(),
-                          onChanged: controller.onTextChanged,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  controller.status == ChatInputBarStatus.recordStatus
+                      ? IconButton(
+                          icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
+                      : IconButton(icon: Image.asset('assets/images/input/chat_input_bar_voice.png', width: iconSize, height: iconSize), onPressed: controller.onVoiceButton),
+                  Expanded(
+                    child: controller.status == ChatInputBarStatus.recordStatus
+                        ? RecordWidget(controller.conversation)
+                        : Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
+                            child: CupertinoTextField(
+                              maxLines: 3,
+                              minLines: 1,
+                              controller: controller.textEditingController,
+                              focusNode: controller.focusNode,
+                              onSubmitted: (_) => controller.onSendButton(),
+                              onChanged: controller.onTextChanged,
+                            ),
+                          ),
+                  ),
+                  controller.status == ChatInputBarStatus.emojiStatus
+                      ? IconButton(
+                          icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
+                      : IconButton(icon: Image.asset('assets/images/input/chat_input_bar_emoji.png', width: iconSize, height: iconSize), onPressed: controller.onEmojiButton),
+                  controller.textEditingController.text.isNotEmpty &&
+                          controller.status != ChatInputBarStatus.recordStatus &&
+                          controller.status != ChatInputBarStatus.pluginStatus
+                      ? ElevatedButton(onPressed: controller.onSendButton, child: const Text("发送"))
+                      : IconButton(
+                          icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize), onPressed: controller.onPluginButton),
+                ],
+              ),
+              if (controller.quotedMessage != null)
+                Container(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                  color: const Color(0xFFF5F5F5),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: FutureBuilder<String>(
+                          future: controller.quotedMessage!.content.digest(controller.quotedMessage!),
+                          builder: (context, snapshot) {
+                            return Text(
+                              "引用: ${snapshot.data ?? ''}",
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Color(0xFF666666), fontSize: 12),
+                            );
+                          },
                         ),
                       ),
-              ),
-              controller.status == ChatInputBarStatus.emojiStatus
-                  ? IconButton(
-                      icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
-                  : IconButton(icon: Image.asset('assets/images/input/chat_input_bar_emoji.png', width: iconSize, height: iconSize), onPressed: controller.onEmojiButton),
-              controller.textEditingController.text.isNotEmpty &&
-                      controller.status != ChatInputBarStatus.recordStatus &&
-                      controller.status != ChatInputBarStatus.pluginStatus
-                  ? ElevatedButton(onPressed: controller.onSendButton, child: const Text("发送"))
-                  : IconButton(
-                      icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize), onPressed: controller.onPluginButton),
+                      GestureDetector(
+                        onTap: () => controller.setQuotedMessage(null),
+                        child: const Icon(Icons.close, size: 16, color: Color(0xFF999999)),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),

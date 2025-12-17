@@ -30,6 +30,8 @@ import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
 import '../ui_model/ui_message.dart';
 import 'pick_conversation_screen.dart';
+import 'package:provider/provider.dart';
+import 'input_bar/message_input_bar_controller.dart';
 
 class ConversationController extends ChangeNotifier {
   late ConversationViewModel conversationViewModel;
@@ -329,6 +331,7 @@ class ConversationController extends ChangeNotifier {
   }
 
   void _showPopupMenu(BuildContext context, UIMessage model, Offset position) {
+    final messageInputBarController = Provider.of<MessageInputBarController>(context, listen: false);
     List<Map<String, dynamic>> menuItems = [
       {'label': '删除', 'value': 'delete', 'icon': Icons.delete},
     ];
@@ -371,7 +374,7 @@ class ConversationController extends ChangeNotifier {
               Positioned(
                 left: position.dx,
                 top: position.dy,
-                child: _buildPopup(context, menuItems, model),
+                child: _buildPopup(context, menuItems, model, messageInputBarController),
               ),
             ],
           );
@@ -380,7 +383,7 @@ class ConversationController extends ChangeNotifier {
     );
   }
 
-  Widget _buildPopup(BuildContext context, List<Map<String, dynamic>> items, UIMessage model) {
+  Widget _buildPopup(BuildContext context, List<Map<String, dynamic>> items, UIMessage model, MessageInputBarController messageInputBarController) {
     final GlobalKey<CustomPopupState> popupKey = GlobalKey<CustomPopupState>();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       popupKey.currentState?.show();
@@ -408,7 +411,7 @@ class ConversationController extends ChangeNotifier {
               width: itemWidth,
               onTap: () {
                 Navigator.pop(context);
-                _handleMenuItemTap(context, item['value'], model);
+                _handleMenuItemTap(context, item['value'], model, messageInputBarController);
               },
             );
           }).toList(),
@@ -418,7 +421,7 @@ class ConversationController extends ChangeNotifier {
     );
   }
 
-  void _handleMenuItemTap(BuildContext context, String value, UIMessage model) async {
+  void _handleMenuItemTap(BuildContext context, String value, UIMessage model, MessageInputBarController messageInputBarController) async {
     switch (value) {
       case "delete":
         _deleteMessage(model.message.messageId);
@@ -443,6 +446,7 @@ class ConversationController extends ChangeNotifier {
       case "multi_select":
         break;
       case "quote":
+        messageInputBarController.setQuotedMessage(model.message);
         break;
       case "favorite":
         break;
