@@ -49,7 +49,6 @@ class _State extends State<ConversationScreen> {
     super.dispose();
 
     _conversationViewModel.setConversation(null);
-    _conversationViewModel.toggleMultiSelectMode();
     if (widget.conversation.conversationType == ConversationType.Chatroom) {
       Imclient.quitChatroom(widget.conversation.target, () {
         Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {

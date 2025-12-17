@@ -212,6 +212,7 @@ class ConversationViewModel extends ChangeNotifier {
     _conversationMessageList = [];
     _conversationTypingStatus = null;
     _currentConversation = conversation;
+    _isMultiSelectMode = false;
     _stopTypingTimer();
 
     if (conversation == null) {
