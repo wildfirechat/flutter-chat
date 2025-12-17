@@ -156,7 +156,7 @@ class PluginBoard extends StatelessWidget {
     return SizedBox(
         height: 250,
         child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisExtent: 120),
           itemCount: _line1.length,
           itemBuilder: (context, index) {
             return _pluginItemWidget(context, _line1[index]);
