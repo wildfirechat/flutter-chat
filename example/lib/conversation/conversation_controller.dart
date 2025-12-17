@@ -424,7 +424,7 @@ class ConversationController extends ChangeNotifier {
   void _handleMenuItemTap(BuildContext context, String value, UIMessage model, MessageInputBarController messageInputBarController) async {
     switch (value) {
       case "delete":
-        _deleteMessage(model.message.messageId);
+        _showDeleteOptions(context, model);
         break;
       case "copy":
         break;
@@ -522,6 +522,49 @@ class ConversationController extends ChangeNotifier {
 
   void _recallMessage(int messageId, int messageUid) {
     Imclient.recallMessage(messageUid, () {}, (errorCode) {});
+  }
+
+  void _showDeleteOptions(BuildContext context, UIMessage model) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('删除消息'),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteMessage(model.message.messageId);
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('删除本地消息'),
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteRemoteMessage(model.message);
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('删除远程消息'),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteRemoteMessage(Message message) {
+    if (message.messageUid != null && message.messageUid! > 0) {
+      Imclient.deleteRemoteMessage(message.messageUid!, () {}, (errorCode) {
+        Fluttertoast.showToast(msg: "删除远程消息失败: $errorCode");
+      });
+    } else {
+      _deleteMessage(message.messageId);
+    }
   }
 
   void _deleteMessage(int messageId) {

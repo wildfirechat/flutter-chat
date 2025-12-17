@@ -49,6 +49,7 @@ class _State extends State<ConversationScreen> {
     super.dispose();
 
     _conversationViewModel.setConversation(null);
+    _conversationViewModel.toggleMultiSelectMode();
     if (widget.conversation.conversationType == ConversationType.Chatroom) {
       Imclient.quitChatroom(widget.conversation.target, () {
         Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
@@ -197,31 +198,33 @@ class _State extends State<ConversationScreen> {
       Fluttertoast.showToast(msg: "请选择消息");
       return;
     }
-    showModalBottomSheet(
+    showDialog(
       context: context,
       builder: (BuildContext context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.delete_outline),
-                title: const Text('删除本地消息'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _deleteMessages(context, viewModel, false);
-                },
+        return SimpleDialog(
+          title: const Text('删除消息'),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteMessages(context, viewModel, false);
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('删除本地消息'),
               ),
-              ListTile(
-                leading: const Icon(Icons.delete_forever),
-                title: const Text('删除远程消息'),
-                onTap: () {
-                  Navigator.pop(context);
-                  _deleteMessages(context, viewModel, true);
-                },
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteMessages(context, viewModel, true);
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('删除远程消息'),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
