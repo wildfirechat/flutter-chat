@@ -29,6 +29,9 @@ class Config {
     ["turn:turn.wildfirechat.net:3478", "wfchat", "wfchat123"]
   ];
 
+     // AI机器人ID
+  static final AI_ROBOTS = ["FireRobot"];
+
   static const String defaultUserPortrait = 'assets/images/user_avatar_default.png';
   static const String defaultGroupPortrait = 'assets/images/group_avatar_default.png';
   static const String defaultChannelPortrait = 'assets/images/channel_avatar_default.png';

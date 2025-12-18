@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/friend_request.dart';
 import 'package:pinyin/pinyin.dart';
+import 'package:wfc_example/config.dart';
 import 'package:wfc_example/repo/user_repo.dart';
 import 'package:wfc_example/ui_model/ui_contact_info.dart';
 
@@ -79,7 +80,20 @@ class ContactListViewModel extends ChangeNotifier {
       contactList.add(UIContactInfo(firstWordPinyinLetter, false, userInfo));
     }
 
+    if (Config.AI_ROBOTS.isNotEmpty) {
+      for (var robotId in Config.AI_ROBOTS) {
+        var userInfo = await Imclient.getUserInfo(robotId, refresh: refresh);
+        if (userInfo != null) {
+          userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
+          contactList.add(UIContactInfo("AI 机器人", false, userInfo));
+        }
+      }
+    }
+
     contactList.sort((a, b) {
+      if (a.category == "AI 机器人" && b.category != "AI 机器人") return -1;
+      if (a.category != "AI 机器人" && b.category == "AI 机器人") return 1;
+
       if (a.category == b.category) {
         return a.userInfo.displayName!.compareTo(b.userInfo.displayName!);
       }
