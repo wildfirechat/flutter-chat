@@ -275,6 +275,9 @@ class ConversationViewModel extends ChangeNotifier {
       _noMoreLocalHistoryMsg = false;
       Imclient.getMessages(conversation, 0, 20).then((messages) {
         _conversationMessageList = messages.map((message) => UIMessage(message)).toList();
+        if (messages.length < 20) {
+          _noMoreLocalHistoryMsg = true;
+        }
         notifyListeners();
       });
     }
@@ -340,10 +343,11 @@ class ConversationViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void loadHistoryMessage() {
+  Future<void> loadHistoryMessage() {
     if (_isLoading) {
-      return;
+      return Future.value();
     }
+    Completer<void> completer = Completer();
 
     _isLoading = true;
     int? fromIndex = 0;
@@ -352,38 +356,51 @@ class ConversationViewModel extends ChangeNotifier {
     if (_noMoreLocalHistoryMsg) {
       if (_noMoreRemoteHistoryMsg) {
         _isLoading = false;
-        return;
+        completer.complete();
+        return completer.future;
       } else {
         fromIndex = _conversationMessageList.isEmpty ? 0 : _conversationMessageList.last.message.messageUid;
         Imclient.getRemoteMessages(loadingConv, fromIndex!, 20, (messages) {
           if (loadingConv != _currentConversation) {
+            completer.complete();
             return;
           }
           if (messages.isEmpty) {
             _noMoreRemoteHistoryMsg = true;
           }
           _isLoading = false;
-          if(messages.isNotEmpty){
-            _insertMessages(_conversationMessageList.length, messages);
+          if (messages.isNotEmpty) {
+            _insertMessages(_conversationMessageList.length, messages.reversed.toList());
+          } else {
+            notifyListeners();
           }
+          completer.complete();
         }, (errorCode) {
           _isLoading = false;
           _noMoreRemoteHistoryMsg = true;
+          notifyListeners();
+          completer.complete();
         });
       }
     } else {
       fromIndex = _conversationMessageList.isEmpty ? 0 : _conversationMessageList.last.message.messageId;
       Imclient.getMessages(loadingConv, fromIndex, 20).then((messages) {
         if (loadingConv != _currentConversation) {
+          completer.complete();
           return;
         }
-        _insertMessages(_conversationMessageList.length, messages);
         _isLoading = false;
         if (messages.isEmpty) {
           _noMoreLocalHistoryMsg = true;
+          notifyListeners();
+          completer.complete();
+          return;
         }
+        _insertMessages(_conversationMessageList.length, messages);
+        completer.complete();
       });
     }
+    return completer.future;
   }
 
   void _sendMessage(MessageContent messageContent) {

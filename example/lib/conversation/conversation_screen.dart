@@ -34,6 +34,9 @@ class ConversationScreen extends StatefulWidget {
 class _State extends State<ConversationScreen> {
   late ConversationViewModel _conversationViewModel;
   late MessageInputBarController _inputBarController;
+  double _pullDistance = 0.0;
+  bool _isDragging = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -67,15 +70,55 @@ class _State extends State<ConversationScreen> {
   }
 
   bool notificationFunction(Notification notification) {
-    switch (notification.runtimeType) {
-      case ScrollEndNotification:
-        var noti = notification as ScrollEndNotification;
-        if (noti.metrics.pixels >= noti.metrics.maxScrollExtent) {
-          _conversationViewModel.loadHistoryMessage();
+    if (notification is ScrollStartNotification) {
+      if (notification.dragDetails != null) {
+        _isDragging = true;
+      }
+    } else if (notification is ScrollUpdateNotification) {
+      if (notification.metrics.pixels > notification.metrics.maxScrollExtent) {
+        setState(() {
+          _pullDistance = (notification.metrics.pixels - notification.metrics.maxScrollExtent);
+        });
+      } else {
+        if (_pullDistance > 0) {
+          setState(() {
+            _pullDistance = 0.0;
+          });
         }
-        break;
+      }
+      if (notification.dragDetails == null && _isDragging) {
+        _isDragging = false;
+        if (_pullDistance > 50) {
+          setState(() {
+            _isLoading = true;
+          });
+          _conversationViewModel.loadHistoryMessage().then((value) {
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
+          });
+        }
+      }
+    } else if (notification is OverscrollNotification) {
+      if (notification.overscroll > 0) {
+        setState(() {
+          _pullDistance += notification.overscroll;
+        });
+      } else if (notification.overscroll < 0) {
+        setState(() {
+          _pullDistance += notification.overscroll;
+          if (_pullDistance < 0) _pullDistance = 0;
+        });
+      }
+    } else if (notification is ScrollEndNotification) {
+      _isDragging = false;
+      setState(() {
+        _pullDistance = 0.0;
+      });
     }
-    return true;
+    return false;
   }
 
   @override
@@ -118,15 +161,18 @@ class _State extends State<ConversationScreen> {
             actions: actions,
           ),
           body: SafeArea(
-            child: Column(
+            child: Stack(
               children: [
-                Flexible(
-                  child: GestureDetector(
-                    child: NotificationListener(
-                      onNotification: notificationFunction,
-                      child: ListView.builder(
-                        reverse: true,
-                        itemBuilder: (BuildContext context, int index) {
+                Column(
+                  children: [
+                    Flexible(
+                      child: GestureDetector(
+                        child: NotificationListener(
+                          onNotification: notificationFunction,
+                          child: ListView.builder(
+                            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                            reverse: true,
+                            itemBuilder: (BuildContext context, int index) {
                           var msg = conversationMessageList[index];
                           var cell = MessageCell(msg);
                           if (conversationViewModel.isMultiSelectMode) {
@@ -167,7 +213,38 @@ class _State extends State<ConversationScreen> {
                 conversationViewModel.isMultiSelectMode ? _buildMultiSelectToolBar(context, conversationViewModel) : MessageInputBar()
               ],
             ),
-          ),
+            if (_pullDistance > 0 || _isLoading)
+              Positioned(
+                top: 10,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    width: 35,
+                    height: 35,
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.5),
+                          spreadRadius: 1,
+                          blurRadius: 3,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      value: _isLoading ? null : (_pullDistance / 50).clamp(0.0, 1.0),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
         ));
   }
 
