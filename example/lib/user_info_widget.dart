@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/im_constant.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:rtckit/single_voice_call.dart';
@@ -38,12 +39,29 @@ class UserInfoWidget extends StatelessWidget {
                   return const Center(child: Text("加载中。。。"));
                 }
                 bool isFriend = snapshot.data!;
+                bool isMe = userId == Imclient.currentUserId;
 
                 return SingleChildScrollView(
                   child: Column(
                     children: [
                       _buildHeader(context, userInfo, isFriend),
-                      if (isFriend) ...[
+                      if (isMe) ...[
+                        OptionItem('修改昵称', onTap: () {
+                          _showSetDisplayNameDialog(context, userInfo);
+                        }),
+                        const SectionDivider(),
+                        OptionItem('更多信息', onTap: () {
+                          Fluttertoast.showToast(msg: "方法没有实现");
+                        }),
+                        const SectionDivider(),
+                        OptionButtonItem('发送消息', () {
+                          Conversation conversation = Conversation(conversationType: ConversationType.Single, target: userId);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
+                          );
+                        }),
+                      ] else if (isFriend) ...[
                         OptionItem('设置昵称或者别名', onTap: () {
                           _showSetAliasDialog(context, userInfo);
                         }),
@@ -92,6 +110,42 @@ class UserInfoWidget extends StatelessWidget {
       return true;
     }
     return await Imclient.isMyFriend(userId);
+  }
+
+  void _showSetDisplayNameDialog(BuildContext context, UserInfo userInfo) {
+    TextEditingController controller = TextEditingController(text: userInfo.displayName);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('修改昵称'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: '请输入昵称'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Imclient.modifyMyInfo({ModifyMyInfoType.Modify_DisplayName: controller.text}, () {
+                  Fluttertoast.showToast(msg: "修改成功");
+                }, (errorCode) {
+                  Fluttertoast.showToast(msg: "修改失败: $errorCode");
+                });
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showSetAliasDialog(BuildContext context, UserInfo userInfo) {
