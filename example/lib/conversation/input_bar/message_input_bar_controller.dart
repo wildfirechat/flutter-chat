@@ -222,10 +222,10 @@ class MessageInputBarController extends ChangeNotifier {
           // We want it at the start of the first removed mention (in the new text coordinates)
           // But we processed in reverse.
           // The 'start' of the edit is a good approximation, or the debrisStart of the last processed (first in text).
-          
+
           var firstRemoved = toRemove.last;
           int firstDebrisStart = firstRemoved.start < start ? firstRemoved.start : start;
-          
+
           textEditingController.value = TextEditingValue(
             text: tempText,
             selection: TextSelection.collapsed(offset: firstDebrisStart),

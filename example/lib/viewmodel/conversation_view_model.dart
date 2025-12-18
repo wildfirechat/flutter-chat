@@ -6,6 +6,8 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/notification/tip_notificiation_content.dart';
+import 'package:imclient/message/streaming_text_generated_message_content.dart';
+import 'package:imclient/message/streaming_text_generating_message_content.dart';
 import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
@@ -120,9 +122,38 @@ class ConversationViewModel extends ChangeNotifier {
               _typingUserTime[msg.fromUser] = DateTime.now().millisecondsSinceEpoch;
               _startTypingTimer();
               debugPrint('typing');
+            } else if (msg.content is StreamingTextGeneratingMessageContent) {
+              var content = msg.content as StreamingTextGeneratingMessageContent;
+              var index = _conversationMessageList.indexWhere((element) {
+                if (element.message.content is StreamingTextGeneratingMessageContent) {
+                  return (element.message.content as StreamingTextGeneratingMessageContent).streamId == content.streamId;
+                }
+                return false;
+              });
+              if (index != -1) {
+                _conversationMessageList[index] = UIMessage(msg);
+                newMsg = true;
+              } else {
+                _conversationMessageList.insert(0, UIMessage(msg));
+                newMsg = true;
+              }
             }
           } else {
             _typingUserTime.remove(msg.fromUser);
+            if (msg.content is StreamingTextGeneratedMessageContent) {
+              var content = msg.content as StreamingTextGeneratedMessageContent;
+              var index = _conversationMessageList.indexWhere((element) {
+                if (element.message.content is StreamingTextGeneratingMessageContent) {
+                  return (element.message.content as StreamingTextGeneratingMessageContent).streamId == content.streamId;
+                }
+                return false;
+              });
+              if (index != -1) {
+                _conversationMessageList[index] = UIMessage(msg);
+                newMsg = true;
+                continue;
+              }
+            }
             _conversationMessageList.insert(0, UIMessage(msg));
             newMsg = true;
           }
