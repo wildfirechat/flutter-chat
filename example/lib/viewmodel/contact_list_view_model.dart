@@ -69,7 +69,7 @@ class ContactListViewModel extends ChangeNotifier {
 
   void _loadContactList([bool refresh = false]) async {
     List<UIContactInfo> contactList = [];
-    var userInfos = await UserRepo.loadFriendUserInfos(refresh : refresh);
+    var userInfos = await UserRepo.getFriendUserInfos(refresh : refresh);
     for (var userInfo in userInfos) {
       userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
       var runes = userInfo.displayName!.runes.toList();

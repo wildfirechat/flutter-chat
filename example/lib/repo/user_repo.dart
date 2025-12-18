@@ -16,7 +16,7 @@ mixin UserRepo {
     _groupUserMap.clear();
   }
 
-  static Future<List<UserInfo>> loadFriendUserInfos({bool refresh = false}) async {
+  static Future<List<UserInfo>> getFriendUserInfos({bool refresh = false}) async {
     if (!refresh && _friendUserMap.isNotEmpty) {
       return _friendUserMap.values.toList();
     }
@@ -26,7 +26,7 @@ mixin UserRepo {
       _friendUserMap[user.userId] = user;
       _userMap.remove(user.userId);
     }
-    debugPrint('loadFriendUserInfos ${userInfos.length}');
+    debugPrint('getFriendUserInfos ${userInfos.length}');
     return userInfos;
   }
 
@@ -37,15 +37,6 @@ mixin UserRepo {
 
   static List<UserInfo>? getGroupMemberUserInfos(String groupId) {
     return _groupUserMap[groupId]?.values.toList();
-  }
-
-  static Future<List<UserInfo>> getFriendUserInfos() async {
-    var friends = await Imclient.getMyFriendList();
-    List<UserInfo> userInfos = [];
-    for (var friendId in friends) {
-      userInfos.add(_userMap[friendId]!);
-    }
-    return userInfos;
   }
 
   static void putGroupMemberUserInfos(String groupId, List<UserInfo> userInfos) {
