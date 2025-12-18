@@ -45,7 +45,7 @@ class UserInfoWidget extends StatelessWidget {
                       _buildHeader(context, userInfo, isFriend),
                       if (isFriend) ...[
                         OptionItem('设置昵称或者别名', onTap: () {
-                          Fluttertoast.showToast(msg: "方法没有实现");
+                          _showSetAliasDialog(context, userInfo);
                         }),
                         const SectionDivider(),
                         OptionItem('更多信息', onTap: () {
@@ -92,6 +92,42 @@ class UserInfoWidget extends StatelessWidget {
       return true;
     }
     return await Imclient.isMyFriend(userId);
+  }
+
+  void _showSetAliasDialog(BuildContext context, UserInfo userInfo) {
+    TextEditingController controller = TextEditingController(text: userInfo.friendAlias);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('设置备注'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: '请输入备注名'),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Imclient.setFriendAlias(userInfo.userId, controller.text, () {
+                  Fluttertoast.showToast(msg: "设置成功");
+                }, (errorCode) {
+                  Fluttertoast.showToast(msg: "设置失败: $errorCode");
+                });
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildHeader(BuildContext context, UserInfo userInfo, bool isFriend) {

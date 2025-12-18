@@ -63,16 +63,5 @@ class UserInfo {
     return readableName;
   }
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other)
-          || (other is UserInfo
-              && runtimeType == other.runtimeType
-              && userId == other.userId
-              && updateDt == other.updateDt);
 
-  @override
-  int get hashCode =>
-      userId.hashCode ^
-      updateDt.hashCode ;
 }
