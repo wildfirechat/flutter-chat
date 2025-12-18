@@ -1444,11 +1444,6 @@ class Imclient {
   }
 
 
-  ///当前用户是否启用回执功能
-  static Future<bool> isUserEnableReceipt() async {
-    return ImclientPlatform.instance.isUserEnableReceipt();
-  }
-
   ///设置当前用户是否启用回执功能，仅当服务支持回执功能有效
   static void setUserEnableReceipt(
       bool isEnable,
@@ -1765,6 +1760,11 @@ class Imclient {
   ///服务是否支持消息回执
   static Future<bool> isReceiptEnabled() async {
     return ImclientPlatform.instance.isReceiptEnabled();
+  }
+
+  ///当前用户是否启用回执功能
+  static Future<bool> isUserEnableReceipt() async {
+    return ImclientPlatform.instance.isUserEnableReceipt();
   }
 
   ///服务是否支持群组消息回执
