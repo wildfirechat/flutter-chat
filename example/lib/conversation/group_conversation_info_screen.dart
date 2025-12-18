@@ -103,15 +103,52 @@ class GroupConversationInfoScreen extends StatelessWidget {
       }),
       const SectionDivider(),
       OptionButtonItem('清空聊天记录', () {
-        Imclient.clearMessages(conversation).then((value) {
-          Fluttertoast.showToast(msg: "清理成功");
-        });
+        _showClearMessageDialog(context, conversation);
       }),
       groupMember.type == GroupMemberType.Owner ? OptionButtonItem('转移群组', () {}) : Container(),
       groupMember.type == GroupMemberType.Owner ? OptionButtonItem('解散群组', () {}) : Container(),
       groupMember.type != GroupMemberType.Owner ? OptionButtonItem('退出群组', () {}) : Container(),
       const SectionDivider(),
     ]));
+  }
+
+  void _showClearMessageDialog(BuildContext context, Conversation conversation) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('清空聊天记录'),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                Imclient.clearMessages(conversation).then((value) {
+                  Fluttertoast.showToast(msg: "清理本地消息成功");
+                });
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('清空本地消息'),
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                Imclient.clearRemoteConversationMessage(conversation, () {
+                  Fluttertoast.showToast(msg: "清理远程消息成功");
+                }, (errorCode) {
+                  Fluttertoast.showToast(msg: "清理远程消息失败: $errorCode");
+                });
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('清空远程消息'),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _onRemoveConversationMember(BuildContext context) {
