@@ -25,8 +25,8 @@ import 'package:wfc_example/workspace/work_space.dart';
 
 import '../contact/contact_list_widget.dart';
 import '../conversation/conversation_screen.dart';
+import '../discovery/discovery_tab.dart';
 import 'conversation_list_widget.dart';
-import '../discovery/discovery.dart';
 
 class HomeTabBar extends StatefulWidget {
   const HomeTabBar({Key? key}) : super(key: key);
@@ -54,7 +54,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   @override
   void initState() {
     super.initState();
-    pages = <Widget>[const ConversationListWidget(), ContactListWidget(), const WorkSpace(), const DiscoveryTab(), MeTab()];
+    pages = <Widget>[const ConversationListWidget(), ContactListWidget(), const WorkSpace(), const DiscoveryTab(), const MeTab()];
     tabImages = [
       [getTabImage('assets/images/tabbar_chat.png'), getTabImage('assets/images/tabbar_chat_cover.png')],
       [getTabImage('assets/images/tabbar_contact.png'), getTabImage('assets/images/tabbar_contact_cover.png')],
