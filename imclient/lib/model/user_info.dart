@@ -63,5 +63,22 @@ class UserInfo {
     return readableName;
   }
 
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other)
+          || (other is UserInfo
+          && runtimeType == other.runtimeType
+          && userId == other.userId
+          && updateDt == other.updateDt
+          // friendAlis 更新时，不会触发 updateDt 更新
+          && friendAlias == other.friendAlias
+          && groupAlias == other.groupAlias
+      );
 
+  @override
+  int get hashCode =>
+      userId.hashCode ^
+      updateDt.hashCode ^
+      (friendAlias != null ? friendAlias.hashCode : 0) ^
+      (groupAlias != null ? groupAlias.hashCode : 0);
 }
