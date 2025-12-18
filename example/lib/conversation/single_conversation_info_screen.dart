@@ -1,16 +1,13 @@
-import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/conversation/conversation_screen.dart';
 import 'package:wfc_example/conversation/single_conversation_member_view.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
-import 'package:wfc_example/viewmodel/group_conversation_info_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 import 'package:wfc_example/widget/option_button_item.dart';
 import 'package:wfc_example/widget/option_item.dart';
@@ -19,7 +16,6 @@ import 'package:wfc_example/widget/section_divider.dart';
 
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
-import 'group_conversation_info_members_view.dart';
 
 class SingleConversationInfoScreen extends StatelessWidget {
   const SingleConversationInfoScreen(this.conversation, {super.key});
@@ -74,12 +70,49 @@ class SingleConversationInfoScreen extends StatelessWidget {
       }),
       const SectionDivider(),
       OptionButtonItem('清空聊天记录', () {
-        Imclient.clearMessages(conversation).then((value) {
-          Fluttertoast.showToast(msg: "清理成功");
-        });
+        _showClearMessageDialog(context, conversation);
       }),
       const SectionDivider(),
     ]));
+  }
+
+  void _showClearMessageDialog(BuildContext context, Conversation conversation) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: const Text('清空聊天记录'),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                Imclient.clearMessages(conversation).then((value) {
+                  Fluttertoast.showToast(msg: "清理本地消息成功");
+                });
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('清空本地消息'),
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                Imclient.clearRemoteConversationMessage(conversation, () {
+                  Fluttertoast.showToast(msg: "清理远程消息成功");
+                }, (errorCode) {
+                  Fluttertoast.showToast(msg: "清理远程消息失败: $errorCode");
+                });
+              },
+              child: const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8),
+                child: Text('清空远程消息'),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _onAddNewConversationMember(BuildContext context) {

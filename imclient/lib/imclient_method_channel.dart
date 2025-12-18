@@ -2025,6 +2025,7 @@ class ImclientPlatform extends PlatformInterface {
       "requestId": requestId,
       "conversation": _convertConversation(conversation)
     });
+    _eventBus.fire(ClearMessagesEvent(conversation));
   }
 
   ///设置消息已经播放

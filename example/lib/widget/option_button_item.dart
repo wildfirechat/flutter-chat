@@ -12,14 +12,18 @@ class OptionButtonItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
-          height: 32,
-          child: Center(
-              child: Text(
-            title,
-            style: TextStyle(color: titleColor),
-          )),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onTap,
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
+            height: 32,
+            child: Center(
+                child: Text(
+              title,
+              style: TextStyle(color: titleColor),
+            )),
+          ),
         ),
         Container(
           //margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
