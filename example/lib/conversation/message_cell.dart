@@ -5,6 +5,8 @@ import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/notification/notification_message_content.dart';
 import 'package:imclient/message/sound_message_content.dart';
+import 'package:imclient/message/streaming_text_generated_message_content.dart';
+import 'package:imclient/message/streaming_text_generating_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'cell_builder/call_start_cell_builder.dart';
@@ -13,6 +15,7 @@ import 'cell_builder/file_cell_builder.dart';
 import 'cell_builder/image_cell_builder.dart';
 import 'cell_builder/message_cell_builder.dart';
 import 'cell_builder/notification_cell_builder.dart';
+import 'cell_builder/streaming_text_cell_builder.dart';
 import 'cell_builder/text_cell_builder.dart';
 import 'cell_builder/unknown_cell_builder.dart';
 import 'cell_builder/video_cell_builder.dart';
@@ -54,6 +57,8 @@ class _MessageCellState extends State<MessageCell> with AutomaticKeepAliveClient
       _cellBuilder = CardCellBuilder(context, widget.model);
     } else if (widget.model.message.content is VideoMessageContent) {
       _cellBuilder = VideoCellBuilder(context, widget.model);
+    } else if (widget.model.message.content is StreamingTextGeneratingMessageContent || widget.model.message.content is StreamingTextGeneratedMessageContent) {
+      _cellBuilder = StreamingTextCellBuilder(context, widget.model);
     } else {
       _cellBuilder = UnknownCellBuilder(context, widget.model);
     }
