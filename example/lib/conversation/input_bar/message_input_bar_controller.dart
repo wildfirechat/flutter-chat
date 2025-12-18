@@ -7,9 +7,24 @@ import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/quote_info.dart';
+import 'package:imclient/model/user_info.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
 enum ChatInputBarStatus { keyboardStatus, pluginStatus, emojiStatus, recordStatus, muteStatus, pttStatus, menuStatus }
+
+class Mention {
+  final String userId;
+  final String displayName;
+  int start;
+  int end; // exclusive
+
+  Mention(this.userId, this.displayName, this.start, this.end);
+
+  @override
+  String toString() {
+    return 'Mention{userId: $userId, displayName: $displayName, start: $start, end: $end}';
+  }
+}
 
 /// 控制器类，用于管理输入栏的状态
 class MessageInputBarController extends ChangeNotifier {
@@ -21,6 +36,9 @@ class MessageInputBarController extends ChangeNotifier {
   ChatInputBarStatus _status;
   Message? _quotedMessage;
   ChannelInfo? channelInfo;
+  Function(Conversation conversation)? onMentionTriggered;
+  final List<Mention> _mentionsList = [];
+  String _lastText = "";
 
   int _sendTypingTime = 0;
 
@@ -127,19 +145,139 @@ class MessageInputBarController extends ChangeNotifier {
       _sendTextMessage(conversation, textEditingController.text.trim());
       textEditingController.clear();
       _quotedMessage = null;
+      _mentionsList.clear();
+      _lastText = "";
       notifyListeners();
     }
   }
 
   void onTextChanged(String text) {
+    if (text.isNotEmpty && text.endsWith('@')) {
+      if (text.length > _lastText.length && text.substring(text.length - 1) == '@') {
+        if (onMentionTriggered != null) {
+          onMentionTriggered!(conversation);
+        }
+      }
+    }
+
+    if (_mentionsList.isNotEmpty) {
+      _handleMentionsChange(text);
+    }
+
+    _lastText = text;
     _sendTyping(text);
     notifyListeners();
+  }
+
+  void _handleMentionsChange(String newText) {
+    int len1 = _lastText.length;
+    int len2 = newText.length;
+    int delta = len2 - len1;
+
+    int start = 0;
+    int minLen = len1 < len2 ? len1 : len2;
+    while (start < minLen && _lastText[start] == newText[start]) {
+      start++;
+    }
+
+    if (delta < 0) {
+      // Deletion
+      int deletedLen = -delta;
+      int deletedEnd = start + deletedLen;
+
+      List<Mention> toRemove = [];
+      for (var mention in _mentionsList) {
+        if (mention.start < deletedEnd && mention.end > start) {
+          toRemove.add(mention);
+        } else if (mention.start >= deletedEnd) {
+          mention.start += delta;
+          mention.end += delta;
+        }
+      }
+
+      if (toRemove.isNotEmpty) {
+        _mentionsList.removeWhere((m) => toRemove.contains(m));
+        toRemove.sort((a, b) => b.start.compareTo(a.start));
+
+        String tempText = newText;
+        for (var m in toRemove) {
+          int debrisStart = m.start < start ? m.start : start;
+          int debrisEnd = m.end > deletedEnd ? m.end - deletedLen : start;
+
+          if (debrisEnd > debrisStart) {
+            tempText = tempText.replaceRange(debrisStart, debrisEnd, "");
+            int shift = debrisEnd - debrisStart;
+            for (var other in _mentionsList) {
+              if (other.start >= debrisStart) {
+                other.start -= shift;
+                other.end -= shift;
+              }
+            }
+          }
+        }
+
+        if (tempText != newText) {
+          // Update text and cursor
+          // Find where to put cursor.
+          // We want it at the start of the first removed mention (in the new text coordinates)
+          // But we processed in reverse.
+          // The 'start' of the edit is a good approximation, or the debrisStart of the last processed (first in text).
+          
+          var firstRemoved = toRemove.last;
+          int firstDebrisStart = firstRemoved.start < start ? firstRemoved.start : start;
+          
+          textEditingController.value = TextEditingValue(
+            text: tempText,
+            selection: TextSelection.collapsed(offset: firstDebrisStart),
+          );
+          _lastText = tempText;
+          return; // _lastText updated, exit to avoid double update
+        }
+      }
+    } else if (delta > 0) {
+      // Insertion
+      List<Mention> toRemove = [];
+      for (var mention in _mentionsList) {
+        if (mention.start >= start) {
+          mention.start += delta;
+          mention.end += delta;
+        } else if (mention.end > start) {
+          // Insertion inside a mention
+          toRemove.add(mention);
+        }
+      }
+      _mentionsList.removeWhere((m) => toRemove.contains(m));
+    }
+  }
+
+  void addMention(UserInfo user) {
+    String name = user.displayName ?? user.userId;
+    int selectionStart = textEditingController.selection.start;
+    int mentionStart = selectionStart;
+
+    if (selectionStart > 0 && textEditingController.text[selectionStart - 1] == '@') {
+      mentionStart = selectionStart - 1;
+    }
+
+    insertText("$name ");
+    _mentionsList.add(Mention(user.userId, name, mentionStart, mentionStart + 1 + name.length));
+    _lastText = textEditingController.text;
   }
 
   void _sendTextMessage(Conversation conversation, String text) async{
     TextMessageContent txt = TextMessageContent(text);
     if (_quotedMessage != null) {
       txt.quoteInfo = await QuoteInfo.fromMessage(_quotedMessage!);
+    }
+    List<String> mentionedUsers = _mentionsList.map((e) => e.userId).toList();
+    if (mentionedUsers.isNotEmpty) {
+      if (mentionedUsers.contains('All')) {
+        txt.mentionedType = 2;
+        txt.mentionedTargets = [];
+      } else {
+        txt.mentionedType = 1;
+        txt.mentionedTargets = mentionedUsers;
+      }
     }
     conversationViewModel.sendMessage(txt);
     _sendTypingTime = 0;
@@ -162,6 +300,7 @@ class MessageInputBarController extends ChangeNotifier {
   void setDraft(String draft) {
     textEditingController.text = draft;
     textEditingController.selection = TextSelection(baseOffset: draft.length, extentOffset: draft.length);
+    _lastText = draft;
     notifyListeners();
   }
 
@@ -179,6 +318,11 @@ class MessageInputBarController extends ChangeNotifier {
       baseOffset: selection.start + text.length,
       extentOffset: selection.start + text.length,
     );
+
+    if (_mentionsList.isNotEmpty) {
+      _handleMentionsChange(newText);
+    }
+    _lastText = newText;
 
     notifyListeners();
   }
@@ -200,6 +344,10 @@ class MessageInputBarController extends ChangeNotifier {
         baseOffset: selection.start,
         extentOffset: selection.start,
       );
+      if (_mentionsList.isNotEmpty) {
+        _handleMentionsChange(newText);
+      }
+      _lastText = newText;
       notifyListeners();
       return;
     }
@@ -231,6 +379,11 @@ class MessageInputBarController extends ChangeNotifier {
       baseOffset: newStart,
       extentOffset: newStart,
     );
+
+    if (_mentionsList.isNotEmpty) {
+      _handleMentionsChange(newText);
+    }
+    _lastText = newText;
 
     notifyListeners();
   }

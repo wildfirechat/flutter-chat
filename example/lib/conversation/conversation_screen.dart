@@ -4,6 +4,8 @@ import 'package:imclient/message/notification/tip_notificiation_content.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/group_member.dart';
+import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/conversation/conversation_controller.dart';
 import 'package:wfc_example/conversation/group_conversation_info_screen.dart';
@@ -14,6 +16,8 @@ import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 
 import 'package:wfc_example/conversation/pick_conversation_screen.dart';
 import 'package:imclient/message/composite_message_content.dart';
+import 'package:wfc_example/contact/pick_user_screen.dart';
+import 'package:wfc_example/config.dart';
 import 'channel_conversation_info_screen.dart';
 import 'input_bar/message_input_bar_controller.dart';
 import 'message_cell.dart';
@@ -103,6 +107,7 @@ class _State extends State<ConversationScreen> {
           ChangeNotifierProvider<ConversationController>(create: (_) => ConversationController(conversationViewModel)),
           ChangeNotifierProvider<MessageInputBarController>(create: (_) {
             _inputBarController = MessageInputBarController(conversation: widget.conversation, conversationViewModel: conversationViewModel);
+            _inputBarController.onMentionTriggered = _onMentionTriggered;
             return _inputBarController;
           }),
         ],
@@ -326,6 +331,64 @@ class _State extends State<ConversationScreen> {
     viewModel.toggleMultiSelectMode();
     Navigator.pop(context);
     Fluttertoast.showToast(msg: "已发送");
+  }
+
+  void _onMentionTriggered(Conversation conversation) async {
+    List<String> candidates = [];
+    bool showAll = false;
+    if (conversation.conversationType == ConversationType.Group) {
+      var members = await Imclient.getGroupMembers(conversation.target);
+      if (members != null) {
+        candidates.addAll(members.map((e) => e.memberId).toList());
+        var me = members.firstWhere((element) => element.memberId == Imclient.currentUserId, orElse: () => GroupMember());
+        if(me.type == GroupMemberType.Owner || me.type == GroupMemberType.Manager) {
+          showAll = true;
+        }
+      }
+    }
+    if (Config.AI_ROBOTS.isNotEmpty) {
+      candidates.addAll(Config.AI_ROBOTS);
+    }
+
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    // Remove self
+    candidates.remove(Imclient.currentUserId);
+
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PickUserScreen(
+          (context, pickedUsers) {
+            if (pickedUsers.isNotEmpty) {
+              if(pickedUsers[0] == 'All') {
+                UserInfo all = UserInfo();
+                all.userId = 'All';
+                all.displayName = '所有人';
+                _inputBarController.addMention(all);
+              } else {
+                Imclient.getUserInfo(pickedUsers[0]).then((userInfo) {
+                  if (userInfo != null) {
+                    _inputBarController.addMention(userInfo);
+                  }
+                });
+              }
+            }
+            Navigator.pop(context);
+          },
+          title: '选择提醒的人',
+          maxSelected: 1,
+          candidates: candidates,
+          showMentionAll: showAll,
+        ),
+      ),
+    );
   }
 
   @override

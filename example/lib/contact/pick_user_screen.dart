@@ -5,13 +5,14 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 
 import 'package:wfc_example/config.dart';
+import 'package:wfc_example/repo/user_repo.dart';
 import 'package:wfc_example/viewmodel/pick_user_view_model.dart';
 import 'package:wfc_example/widget/portrait.dart';
 
 typedef OnPickUserCallback = void Function(BuildContext context, List<String> pickedUsers);
 
 class PickUserScreen extends StatelessWidget {
-  PickUserScreen(this.callback, {this.title = '', this.maxSelected = 1024, this.candidates, this.disabledCheckedUsers, this.disabledUncheckedUsers, super.key});
+  PickUserScreen(this.callback, {this.title = '', this.maxSelected = 1024, this.candidates, this.disabledCheckedUsers, this.disabledUncheckedUsers, this.showMentionAll = false, super.key});
 
   final String title;
   final OnPickUserCallback callback;
@@ -19,7 +20,8 @@ class PickUserScreen extends StatelessWidget {
   final List<String>? candidates;
   final List<String>? disabledCheckedUsers;
   final List<String>? disabledUncheckedUsers;
-  late PickUserViewModel _pickUserViewModel;
+  final bool showMentionAll;
+  late final PickUserViewModel _pickUserViewModel;
 
   void _onPressedDone(BuildContext context) {
     callback(context, _pickUserViewModel.pickedUsers.map((u) => u.userId).toList());
@@ -31,9 +33,8 @@ class PickUserScreen extends StatelessWidget {
         create: (_) {
           _pickUserViewModel = PickUserViewModel();
           () async {
-            var userIds = candidates ?? await Imclient.getMyFriendList(refresh: false);
-            var userInfos = await Imclient.getUserInfos(userIds);
-            _pickUserViewModel.setup(userInfos, maxPickCount: maxSelected, uncheckableUserIds: disabledUncheckedUsers, disabledUserIds: disabledCheckedUsers);
+            var userInfos = candidates !=null ?  await Imclient.getUserInfos(candidates!) : await UserRepo.getFriendUserInfos();
+            _pickUserViewModel.setup(userInfos, maxPickCount: maxSelected, uncheckableUserIds: disabledUncheckedUsers, disabledUserIds: disabledCheckedUsers, showMentionAll: showMentionAll);
           }();
           return _pickUserViewModel;
         },
@@ -43,39 +44,91 @@ class PickUserScreen extends StatelessWidget {
                   appBar: AppBar(
                     title: Text(title),
                     actions: [
-                      GestureDetector(
-                        onTap: () => _onPressedDone(context),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
-                          child: Text(
-                            _pickUserViewModel.pickedUsers.isNotEmpty ? '完成(${_pickUserViewModel.pickedUsers.length})' : '取消',
-                            style: const TextStyle(fontSize: 18),
+                      if (maxSelected > 1)
+                        GestureDetector(
+                          onTap: () => _onPressedDone(context),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
+                            child: Text(
+                              _pickUserViewModel.pickedUsers.isNotEmpty ? '完成(${_pickUserViewModel.pickedUsers.length})' : '取消',
+                              style: const TextStyle(fontSize: 18),
+                            ),
                           ),
-                        ),
-                      )
+                        )
                     ],
                   ),
                   body: SafeArea(
                     child: ListView.builder(
-                        itemCount: _pickUserViewModel.users.length,
+                        itemCount: _pickUserViewModel.userList.length,
                         itemBuilder: /*1*/ (context, i) {
-                          // String userId = _pickUserViewModel.users[i];
-                          // return _contactRow(userId, i);
-                          return ContactSelectableItem(_pickUserViewModel.users[i]);
+                          var userInfo = _pickUserViewModel.userList[i];
+                          return SelectableUserItem(userInfo, maxSelected, callback);
                         }),
                   ),
                 )));
   }
 }
 
-class ContactSelectableItem extends StatelessWidget {
-  final UserInfo userInfo;
+class SelectableUserItem extends StatelessWidget {
+  final UIPickUserInfo contactInfo;
+  final int maxSelected;
+  final OnPickUserCallback? callback;
 
-  const ContactSelectableItem(this.userInfo, {super.key});
+  const SelectableUserItem(this.contactInfo, this.maxSelected, this.callback, {super.key});
 
   @override
   Widget build(BuildContext context) {
     PickUserViewModel pickUserViewModel = Provider.of<PickUserViewModel>(context);
+    UserInfo userInfo = contactInfo.userInfo;
+
+    Widget content = Column(
+      children: <Widget>[
+        // 分类标题
+        Container(
+          height: contactInfo.showCategory ? 18 : 0,
+          width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
+          color: const Color(0xffebebeb),
+          padding: const EdgeInsets.only(left: 16),
+          child: contactInfo.showCategory ? Text(contactInfo.category == '{' ? '#' : contactInfo.category) : null,
+        ),
+        Container(
+          height: 52.0,
+          margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
+          child: Row(
+            children: <Widget>[
+              if (userInfo.userId == 'All')
+                Image.asset('assets/images/group_avatar_default.png', width: 40, height: 40)
+              else
+                Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
+              Container(
+                margin: const EdgeInsets.only(left: 16),
+              ),
+              Expanded(
+                  child: Text(
+                userInfo.displayName ?? userInfo.userId,
+                style: const TextStyle(fontSize: 15.0),
+              )),
+            ],
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+          height: 0.5,
+          color: const Color(0xffebebeb),
+        ),
+      ],
+    );
+
+    if (maxSelected == 1) {
+      return GestureDetector(
+        onTap: () {
+          if (callback != null) {
+            callback!(context, [userInfo.userId]);
+          }
+        },
+        child: content,
+      );
+    }
 
     return CheckboxListTile(
       enabled: pickUserViewModel.isCheckable(userInfo.userId),
@@ -85,32 +138,7 @@ class ContactSelectableItem extends StatelessWidget {
           Fluttertoast.showToast(msg: "超过最大人数限制");
         }
       },
-      title: Column(
-        children: <Widget>[
-          Container(
-            height: 52.0,
-            margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
-            child: Row(
-              children: <Widget>[
-                Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
-                Container(
-                  margin: const EdgeInsets.only(left: 16),
-                ),
-                Expanded(
-                    child: Text(
-                  userInfo.displayName ?? '<${userInfo.userId}>',
-                  style: const TextStyle(fontSize: 15.0),
-                )),
-              ],
-            ),
-          ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-            height: 0.5,
-            color: const Color(0xffebebeb),
-          ),
-        ],
-      ),
+      title: content,
     );
   }
 }
