@@ -25,13 +25,14 @@ class ContactListViewModel extends ChangeNotifier {
   ContactListViewModel() {
     _friendUpdatedSubscription = Imclient.IMEventBus.on<FriendUpdateEvent>().listen((event) {
       _loadContactList(false);
+      notifyListeners();
     });
     _friendRequestUpdatedSubscription = Imclient.IMEventBus.on<FriendRequestUpdateEvent>().listen((event) {
       _loadFriendRequestListAndNotify();
     });
     _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
-      // _loadContactList();
-      // UserViewModel 会更新缓存
+      debugPrint('userInfo updated to load contactViewModel');
+      _loadContactList();
       notifyListeners();
     });
     _clearFriendRequestSubscription = Imclient.IMEventBus.on<ClearFriendRequestUnreadEvent>().listen((event) {
@@ -41,6 +42,7 @@ class ContactListViewModel extends ChangeNotifier {
     _connectionStatusSubscription = Imclient.IMEventBus.on<ConnectionStatusChangedEvent>().listen((event) {
       if(event.connectionStatus == kConnectionStatusConnected) {
         _loadContactList(true);
+        notifyListeners();
       }
     });
 
@@ -111,7 +113,6 @@ class ContactListViewModel extends ChangeNotifier {
     }
 
     _contactList = contactList;
-    notifyListeners();
   }
 
   @override

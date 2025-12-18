@@ -81,22 +81,24 @@ mixin UserRepo {
       _groupUserMap.forEach((groupId, groupCache) {
         var oldGroupUser = groupCache[userInfo.userId];
         if (oldGroupUser != null) {
-          oldGroupUser
-            ..displayName = userInfo.displayName
-            ..name = userInfo.name
-            ..displayName = userInfo.displayName
-            ..gender = userInfo.gender
-            ..portrait = userInfo.portrait
-            ..mobile = userInfo.mobile
-            ..email = userInfo.email
-            ..address = userInfo.address
-            ..company = userInfo.company
-            ..social = userInfo.social
-            ..extra = userInfo.extra
-            ..friendAlias = userInfo.friendAlias
-            ..updateDt = userInfo.updateDt
-            ..type = userInfo.type
-            ..deleted = userInfo.deleted;
+          UserInfo newGroupUser = UserInfo();
+          newGroupUser.userId = userInfo.userId;
+          newGroupUser.name = userInfo.name;
+          newGroupUser.displayName = userInfo.displayName;
+          newGroupUser.gender = userInfo.gender;
+          newGroupUser.portrait = userInfo.portrait;
+          newGroupUser.mobile = userInfo.mobile;
+          newGroupUser.email = userInfo.email;
+          newGroupUser.address = userInfo.address;
+          newGroupUser.company = userInfo.company;
+          newGroupUser.social = userInfo.social;
+          newGroupUser.extra = userInfo.extra;
+          newGroupUser.friendAlias = userInfo.friendAlias;
+          newGroupUser.updateDt = userInfo.updateDt;
+          newGroupUser.type = userInfo.type;
+          newGroupUser.deleted = userInfo.deleted;
+          newGroupUser.groupAlias = oldGroupUser.groupAlias;
+          groupCache[userInfo.userId] = newGroupUser;
         }
       });
     }
