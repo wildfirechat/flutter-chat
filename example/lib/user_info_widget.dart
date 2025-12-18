@@ -1,234 +1,162 @@
 import 'dart:async';
 
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:provider/provider.dart';
 import 'package:rtckit/single_voice_call.dart';
 import 'package:wfc_example/config.dart';
 import 'package:wfc_example/contact/invite_friend.dart';
+import 'package:wfc_example/viewmodel/user_view_model.dart';
+import 'package:wfc_example/widget/option_button_item.dart';
+import 'package:wfc_example/widget/option_item.dart';
+import 'package:wfc_example/widget/section_divider.dart';
 
 import 'conversation/conversation_screen.dart';
 
-class UserInfoWidget extends StatefulWidget {
-  UserInfoWidget(this.userId, {this.inGroupId, Key? key}) : super(key: key);
-  String userId;
-  String? inGroupId;
-
-  @override
-  State<StatefulWidget> createState() {
-    return _UserInfoState();
-  }
-}
-
-class _UserInfoState extends State<UserInfoWidget> {
-  final EventBus _eventBus = Imclient.IMEventBus;
-  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
-  final List friendModelList = [
-    //标题，key，是否带有section，是否居中，是否标红
-    ['设置昵称或者别名', 'alias', false, false, false],
-    ['更多信息', 'more', true, false, false],
-    ['发送消息', 'message', true, true, false],
-    ['视频聊天', 'voip', false, true, true],
-  ];
-
-  final List strangerModelList = [
-    //标题，key，是否带有section，是否居中，是否标红
-    ['更多信息', 'more', true, false, false],
-    ['添加好友', 'friend', true, true, false],
-  ];
-
-  List? modelList;
-  UserInfo? userInfo;
-  bool isFriend = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
-      for (UserInfo userInfo in event.userInfos) {
-        if (userInfo.userId == widget.userId) {
-          loadUserInfo();
-          break;
-        }
-      }
-    });
-
-    Imclient.isMyFriend(widget.userId).then((value) {
-      isFriend = value;
-      if (value) {
-        modelList = friendModelList;
-      } else {
-        modelList = strangerModelList;
-      }
-    });
-
-    loadUserInfo();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _userInfoUpdatedSubscription.cancel();
-  }
-
-  void loadUserInfo() {
-    Imclient.getUserInfo(widget.userId, groupId: widget.inGroupId, refresh: true).then((value) => {
-          setState(() {
-            userInfo = value;
-          })
-        });
-  }
+class UserInfoWidget extends StatelessWidget {
+  const UserInfoWidget(this.userId, {this.inGroupId, Key? key}) : super(key: key);
+  final String userId;
+  final String? inGroupId;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('设置'),
+        title: const Text('用户详情'),
       ),
       body: SafeArea(
-        child: userInfo == null || modelList == null
-            ? const Text("加载中。。。")
-            : ListView.builder(
-                itemCount: modelList!.length + 1,
-                itemBuilder: (BuildContext context, int index) {
-                  return index == 0 ? _buildHeader(context) : _buildRow(context, index - 1);
-                },
-              ),
+        child: Selector<UserViewModel, UserInfo?>(
+          selector: (context, viewModel) => viewModel.getUserInfo(userId, groupId: inGroupId),
+          builder: (context, userInfo, child) {
+            return FutureBuilder<bool>(
+              future: _isFriend(userId),
+              builder: (context, snapshot) {
+                if (userInfo == null || !snapshot.hasData) {
+                  return const Center(child: Text("加载中。。。"));
+                }
+                bool isFriend = snapshot.data!;
+
+                return SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildHeader(context, userInfo, isFriend),
+                      if (isFriend) ...[
+                        OptionItem('设置昵称或者别名', onTap: () {
+                          Fluttertoast.showToast(msg: "方法没有实现");
+                        }),
+                        const SectionDivider(),
+                        OptionItem('更多信息', onTap: () {
+                          Fluttertoast.showToast(msg: "方法没有实现");
+                        }),
+                        const SectionDivider(),
+                        OptionButtonItem('发送消息', () {
+                          Conversation conversation = Conversation(conversationType: ConversationType.Single, target: userId);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
+                          );
+                        }),
+                        OptionButtonItem('视频聊天', () {
+                          SingleVideoCallView callView = SingleVideoCallView(userId: userId, audioOnly: false);
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
+                        }),
+                      ] else ...[
+                        const SectionDivider(),
+                        OptionItem('更多信息', onTap: () {
+                          Fluttertoast.showToast(msg: "方法没有实现");
+                        }),
+                        const SectionDivider(),
+                        OptionButtonItem('添加好友', () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => InviteFriendPage(userId)),
+                          );
+                        }),
+                      ]
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    if (userInfo == null) {
-      return const Text("加载中。。。");
-    } else {
-      String? portrait;
-      if (userInfo != null && userInfo!.portrait != null && userInfo!.portrait!.isNotEmpty) {
-        portrait = userInfo!.portrait;
-      }
+  Future<bool> _isFriend(String userId) async {
+    if (Config.AI_ROBOTS.contains(userId)) {
+      return true;
+    }
+    return await Imclient.isMyFriend(userId);
+  }
 
-      List<Widget> nameList = [];
+  Widget _buildHeader(BuildContext context, UserInfo userInfo, bool isFriend) {
+    String? portrait;
+    if (userInfo.portrait != null && userInfo.portrait!.isNotEmpty) {
+      portrait = userInfo.portrait;
+    }
+
+    List<Widget> nameList = [];
+    nameList.add(Text(
+      userInfo.displayName!,
+      textAlign: TextAlign.left,
+      style: const TextStyle(fontSize: 18),
+    ));
+    bool hasAlias = isFriend && userInfo.friendAlias != null && userInfo.friendAlias!.isNotEmpty;
+    nameList.add(Container(
+      margin: EdgeInsets.only(top: hasAlias ? 3 : 6),
+    ));
+    if (hasAlias) {
       nameList.add(Text(
-        userInfo!.displayName!,
+        '备注名:${userInfo.friendAlias!}',
         textAlign: TextAlign.left,
-        style: const TextStyle(fontSize: 18),
+        style: const TextStyle(fontSize: 12),
       ));
-      bool hasAlias = isFriend && userInfo!.friendAlias != null && userInfo!.friendAlias!.isNotEmpty;
       nameList.add(Container(
         margin: EdgeInsets.only(top: hasAlias ? 3 : 6),
       ));
-      if (hasAlias) {
-        nameList.add(Text(
-          '备注名:${userInfo!.friendAlias!}',
-          textAlign: TextAlign.left,
-          style: const TextStyle(fontSize: 12),
-        ));
-        nameList.add(Container(
-          margin: EdgeInsets.only(top: hasAlias ? 3 : 6),
-        ));
-      }
-      nameList.add(Container(
-          constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 100),
-          child: Text(
-            '野火号:${userInfo!.name}',
-            textAlign: TextAlign.left,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF3b3b3b),
-            ),
-            overflow: TextOverflow.ellipsis,
-          )));
-
-      return Container(
-        height: 80,
-        margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-        child: Row(
-          children: [
-            GestureDetector(
-              child: Container(
-                height: 60,
-                width: 60,
-                margin: const EdgeInsets.only(right: 16),
-                child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 32.0, height: 32.0) : Image.network(portrait, width: 32.0, height: 32.0),
-              ),
-              onTap: () {
-                //show user portrait
-              },
-            ),
-            Container(
-              margin: const EdgeInsets.only(top: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: nameList,
-              ),
-            )
-          ],
-        ),
-      );
     }
-  }
+    nameList.add(Container(
+        constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 100),
+        child: Text(
+          '野火号:${userInfo.name}',
+          textAlign: TextAlign.left,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFF3b3b3b),
+          ),
+          overflow: TextOverflow.ellipsis,
+        )));
 
-  Widget _buildRow(BuildContext context, int index) {
-    String title = modelList![index][0];
-    String key = modelList![index][1];
-    bool hasSection = modelList![index][2];
-    bool center = modelList![index][3];
-    bool red = modelList![index][4];
-    Color color = red ? Colors.red : Colors.black;
-
-    return GestureDetector(
-      child: Column(
+    return Container(
+      height: 80,
+      margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+      child: Row(
         children: [
-          Container(
-            height: hasSection ? 18 : 0,
-            width: View.of(context).physicalSize.width,
-            color: const Color(0xffebebeb),
+          GestureDetector(
+            child: Container(
+              height: 60,
+              width: 60,
+              margin: const EdgeInsets.only(right: 16),
+              child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 32.0, height: 32.0) : Image.network(portrait, width: 32.0, height: 32.0),
+            ),
+            onTap: () {
+              //show user portrait
+            },
           ),
           Container(
-            margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
-            height: 36,
-            child: center
-                ? Center(
-                    child: Text(
-                    title,
-                    style: TextStyle(color: color),
-                  ))
-                : Row(
-                    children: [
-                      Expanded(child: Text(title)),
-                    ],
-                  ),
-          ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-            height: 0.5,
-            color: const Color(0xdbdbdbdb),
-          ),
+            margin: const EdgeInsets.only(top: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: nameList,
+            ),
+          )
         ],
       ),
-      onTap: () {
-        if (key == "message") {
-          Conversation conversation = Conversation(conversationType: ConversationType.Single, target: widget.userId);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
-          );
-        } else if (key == "voip") {
-          SingleVideoCallView callView = SingleVideoCallView(userId: widget.userId, audioOnly: false);
-          Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
-        } else if (key == "friend") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => InviteFriendPage(widget.userId)),
-          );
-        } else {
-          Fluttertoast.showToast(msg: "方法没有实现");
-          print("on tap item $index");
-        }
-      },
     );
   }
 }
