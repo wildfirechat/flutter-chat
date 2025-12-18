@@ -257,11 +257,9 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    // UserViewModel 必须第一个初始化，以确保它最先订阅 UserInfoUpdatedEvent，并维护用户信息缓存
-    var userViewModel = UserViewModel();
     return MultiProvider(
         providers: [
-          ChangeNotifierProvider<UserViewModel>(create: (_) => userViewModel),
+          ChangeNotifierProvider<UserViewModel>(create: (_) => UserViewModel()),
           ChangeNotifierProvider<GroupViewModel>(create: (_) => GroupViewModel()),
           ChangeNotifierProvider<ChannelViewModel>(create: (_) => ChannelViewModel()),
           ChangeNotifierProvider<ConversationViewModel>(create: (_) => ConversationViewModel()),
