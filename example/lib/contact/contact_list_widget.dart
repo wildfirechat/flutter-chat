@@ -22,7 +22,7 @@ class ContactListWidget extends StatelessWidget {
   final List fixHeaderList = [
     ['assets/images/contact_new_friend.png', '新好友', 'new_friend'],
     ['assets/images/contact_fav_group.png', '收藏群组', 'fav_group'],
-    ['assets/images/contact_subscribed_channel.png', '订阅频道', 'subscribed_channel'],
+    ['assets/images/contact_subscribed_channel.png', '频道', 'subscribed_channel'],
     // ['assets/images/contact_organization.png', '组织架构', 'organization'],
   ];
 
