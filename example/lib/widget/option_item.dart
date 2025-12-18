@@ -48,7 +48,7 @@ class OptionItem extends StatelessWidget {
                         child: rightImage ?? Icon(rightIcon),
                       )
                     : const SizedBox.shrink(),
-                showRightArrow ? const Icon(Icons.chevron_right) : Container()
+                showRightArrow ? const Icon(Icons.chevron_right, color: Colors.grey) : Container()
               ],
             )),
           ),
