@@ -12,15 +12,7 @@ class OptionItem extends StatelessWidget {
   final GestureTapCallback? onTap;
 
   const OptionItem(this.title,
-      {super.key,
-      this.desc = '',
-      this.showRightArrow = true,
-      this.showBottomDivider = true,
-      this.onTap,
-      this.leftImage,
-      this.rightImage,
-      this.leftIcon,
-      this.rightIcon});
+      {super.key, this.desc = '', this.showRightArrow = true, this.showBottomDivider = true, this.onTap, this.leftImage, this.rightImage, this.leftIcon, this.rightIcon});
 
   @override
   Widget build(BuildContext context) {
@@ -60,11 +52,13 @@ class OptionItem extends StatelessWidget {
               ],
             )),
           ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-            height: 0.5,
-            color: const Color(0xdbdbdbdb),
-          ),
+          showBottomDivider
+              ? Container(
+                  margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+                  height: 0.5,
+                  color: const Color(0xdbdbdbdb),
+                )
+              : Container(),
         ],
       ),
       onTap: () {

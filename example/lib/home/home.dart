@@ -15,7 +15,7 @@ import 'package:wfc_example/config.dart';
 import 'package:wfc_example/contact/pick_user_screen.dart';
 import 'package:wfc_example/contact/search_user.dart';
 import 'package:wfc_example/search/search_portal_delegate.dart';
-import 'package:wfc_example/settings/settings.dart';
+import 'package:wfc_example/settings/me_tab.dart';
 import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
@@ -54,7 +54,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   @override
   void initState() {
     super.initState();
-    pages = <Widget>[const ConversationListWidget(), ContactListWidget(), const WorkSpace(), const DiscoveryTab(), SettingsTab()];
+    pages = <Widget>[const ConversationListWidget(), ContactListWidget(), const WorkSpace(), const DiscoveryTab(), MeTab()];
     tabImages = [
       [getTabImage('assets/images/tabbar_chat.png'), getTabImage('assets/images/tabbar_chat_cover.png')],
       [getTabImage('assets/images/tabbar_contact.png'), getTabImage('assets/images/tabbar_contact_cover.png')],
