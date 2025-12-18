@@ -22,14 +22,9 @@ import 'package:wfc_example/widget/portrait.dart';
 import '../config.dart';
 import '../conversation/conversation_screen.dart';
 
-class ConversationListWidget extends StatefulWidget {
-  const ConversationListWidget({Key? key}) : super(key: key);
+class ConversationListWidget extends StatelessWidget {
+  const ConversationListWidget({super.key});
 
-  @override
-  State<ConversationListWidget> createState() => _ConversationListWidgetState();
-}
-
-class _ConversationListWidgetState extends State<ConversationListWidget> {
   @override
   Widget build(BuildContext context) {
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context);
