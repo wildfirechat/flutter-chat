@@ -6,6 +6,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/conversation/conversation_controller.dart';
+import 'package:wfc_example/conversation/read_receipt_status_widget.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 
@@ -120,6 +121,8 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
           ),
           onTap: () => conversationController.onResendTaped(model),
         );
+      } else if (model.message.status == MessageStatus.Message_Status_Sent || model.message.status == MessageStatus.Message_Status_Readed) {
+        return ReadReceiptStatusWidget(model.message);
       }
     }
 
