@@ -17,10 +17,12 @@ import 'message_cell_builder.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
   late bool isSendMessage;
-  late ConversationController conversationController;
+  ConversationController? conversationController;
 
   PortraitCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
-    conversationController = Provider.of<ConversationController>(context, listen: false);
+    try {
+      conversationController = Provider.of<ConversationController>(context, listen: false);
+    } catch (e) {}
     isSendMessage = model.message.direction == MessageDirection.MessageDirection_Send;
   }
 
@@ -47,8 +49,8 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return GestureDetector(
       child:
           Container(margin: const EdgeInsets.fromLTRB(8, 0, 8, 0), child: Portrait(portrait, Config.defaultUserPortrait, width: 44.0, height: 44.0, borderRadius: 6.0)),
-      onTap: () => conversationController.onPortraitTaped(context, model),
-      onLongPress: () => conversationController.onPortraitLongTaped(model),
+      onTap: () => conversationController?.onPortraitTaped(context, model),
+      onLongPress: () => conversationController?.onPortraitLongTaped(model),
     );
   }
 
@@ -84,9 +86,9 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                     ),
                     child: buildMessageContent(context),
                   ),
-                  onTap: () => conversationController.onTapedCell(context, model),
-                  onDoubleTap: () => conversationController.onDoubleTapedCell(model),
-                  onLongPressStart: (details) => conversationController.onLongPressedCell(context, model, details.globalPosition),
+                  onTap: () => conversationController?.onTapedCell(context, model),
+                  onDoubleTap: () => conversationController?.onDoubleTapedCell(model),
+                  onLongPressStart: (details) => conversationController?.onLongPressedCell(context, model, details.globalPosition),
                 ),
               ),
               _playStatus(),
@@ -119,7 +121,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
               height: 20,
             ),
           ),
-          onTap: () => conversationController.onResendTaped(model),
+          onTap: () => conversationController?.onResendTaped(model),
         );
       } else if (model.message.status == MessageStatus.Message_Status_Sent || model.message.status == MessageStatus.Message_Status_Readed) {
         return ReadReceiptStatusWidget(model.message);
@@ -143,5 +145,6 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return Container();
   }
 
+  @override
   Widget buildMessageContent(BuildContext context);
 }
