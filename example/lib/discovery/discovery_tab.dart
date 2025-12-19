@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/channel/channel_list.dart';
 import 'package:wfc_example/conversation/conversation_screen.dart';
 import 'package:wfc_example/discovery/chatroom_list.dart';
 import 'package:wfc_example/widget/option_item.dart';
+
+import '../workspace/wf_webview_screen.dart';
 
 class DiscoveryTab extends StatelessWidget {
   const DiscoveryTab({Key? key}) : super(key: key);
@@ -53,9 +54,10 @@ class DiscoveryTab extends StatelessWidget {
                 leftImage: Image.asset('assets/images/discover_devdocs.png', width: 20.0, height: 20.0),
                 onTap: () {
                   var url = 'https://docs.wildfirechat.cn';
-                  canLaunch(url).then((value) {
-                    launch(url);
-                  });
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => WFWebViewScreen(url)),
+                  );
                 },
               ),
             ],

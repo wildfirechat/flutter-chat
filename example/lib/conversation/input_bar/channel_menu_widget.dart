@@ -3,7 +3,8 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:url_launcher/url_launcher.dart';
+
+import '../../workspace/wf_webview_screen.dart';
 
 class ChannelMenuWidget extends StatelessWidget {
   final List<ChannelMenu> menus;
@@ -30,7 +31,7 @@ class ChannelMenuWidget extends StatelessWidget {
                     child: Text(subMenu.name ?? ''),
                   );
                 }).toList(),
-                onSelected: _handleMenuSelected,
+                onSelected: (menu) => _handleMenuSelected(context, menu),
                 offset: Offset(0, -(menu.subMenus!.length * 48.0) - 10),
                 child: Container(
                   alignment: Alignment.center,
@@ -57,7 +58,7 @@ class ChannelMenuWidget extends StatelessWidget {
             return Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => _handleMenuSelected(menu),
+                onTap: () => _handleMenuSelected(context, menu),
                 child: Container(
                   alignment: Alignment.center,
                   decoration: const BoxDecoration(
@@ -78,9 +79,12 @@ class ChannelMenuWidget extends StatelessWidget {
     );
   }
 
-  void _handleMenuSelected(ChannelMenu menu) {
+  void _handleMenuSelected(BuildContext context, ChannelMenu menu) {
     if (menu.type == 'view' && menu.url != null) {
-      launchUrl(Uri.parse(menu.url!));
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => WFWebViewScreen(menu.url!)),
+      );
     } else if (menu.type == 'click') {
       if (menu.name != null) {
         // TODO
