@@ -183,7 +183,7 @@ class _State extends State<ConversationScreen> {
                                   (context, index) {
                                     int focusIndex = conversationViewModel.focusMessageIndex;
                                     int newerCount = focusIndex;
-                                    if (!conversationViewModel.noMoreNewerMsg) {
+                                    if (focusIndex > 0 && !conversationViewModel.noMoreNewerMsg) {
                                       if (index == newerCount) {
                                         if (!_isLoadingNewer) {
                                           _isLoadingNewer = true;
