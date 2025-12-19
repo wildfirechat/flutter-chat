@@ -5,6 +5,7 @@ import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_search_info.dart';
 import 'package:imclient/model/group_info.dart';
+import 'package:imclient/model/group_search_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/config.dart';
@@ -19,6 +20,7 @@ import '../viewmodel/group_view_model.dart';
 import '../viewmodel/user_view_model.dart';
 import '../widget/group_list_view/index_path.dart';
 import 'search_conversation_result_view.dart';
+import '../user_info_widget.dart';
 
 // 需要 StatefulWidget 才能保持 SearchVieModel，实现实时搜索
 class SearchPortalResultView extends StatefulWidget {
@@ -71,6 +73,8 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                     return switch (groupedSearchResults.keys.toList()[index.section]) {
                       SearchType.User => _buildUserSearchResultItem(groupedSearchResults.values.toList()[index.section][index.index] as UserInfo),
                       SearchType.Friend => _buildFriendSearchResultItem(groupedSearchResults.values.toList()[index.section][index.index] as UserInfo),
+                      SearchType.Group => _buildGroupSearchResultItem(groupedSearchResults.values.toList()[index.section][index.index] as GroupSearchInfo),
+                      SearchType.Channel => _buildChannelSearchResultItem(groupedSearchResults.values.toList()[index.section][index.index] as ChannelInfo),
                       SearchType.Conversation =>
                         _buildConversationSearchResultItem(groupedSearchResults.values.toList()[index.section][index.index] as ConversationSearchInfo),
                       // TODO 根据类型显示不同的 cell
@@ -85,6 +89,8 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                       SearchType.User => '用户',
                       SearchType.Friend => '联系人',
                       SearchType.Conversation => '聊天记录',
+                      SearchType.Group => '群组',
+                      SearchType.Channel => '频道',
                       // TODO 根据类型显示不同的 cell
                       _ => '其他'
                     };
@@ -121,7 +127,12 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
       leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
       title: Text(userInfo.getReadableName()),
       onTap: () {
-        Fluttertoast.showToast(msg: 'TODO user click');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => UserInfoWidget(userInfo.userId),
+          ),
+        );
       },
     );
   }
@@ -131,7 +142,52 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
       leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
       title: Text(userInfo.getReadableName()),
       onTap: () {
-        Fluttertoast.showToast(msg: 'TODO friend click');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => UserInfoWidget(userInfo.userId),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildGroupSearchResultItem(GroupSearchInfo info) {
+    if (info.groupInfo == null) {
+      return Container();
+    }
+    return ListTile(
+      leading: Portrait(info.groupInfo!.portrait ?? Config.defaultGroupPortrait, Config.defaultGroupPortrait),
+      title: Text(info.groupInfo!.name ?? 'Group', maxLines: 1,),
+      subtitle: (info.marchType & 2 != 0 && info.marchedMemberNames != null && info.marchedMemberNames!.isNotEmpty)
+          ? Text("包含成员: ${info.marchedMemberNames!.join(" ")}", maxLines: 1,)
+          : null,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ConversationScreen(
+              Conversation(conversationType: ConversationType.Group, target: info.groupInfo!.target, line: 0),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChannelSearchResultItem(ChannelInfo info) {
+    return ListTile(
+      leading: Portrait(info.portrait ?? Config.defaultChannelPortrait, Config.defaultChannelPortrait),
+      title: Text(info.name ?? 'Channel'),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ConversationScreen(
+              Conversation(conversationType: ConversationType.Channel, target: info.channelId, line:0),
+            ),
+          ),
+        );
       },
     );
   }

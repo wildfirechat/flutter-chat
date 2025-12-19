@@ -101,6 +101,7 @@ class SearchViewModel extends ChangeNotifier {
   searchChannel(String keyword) async {
     Imclient.searchChannel(keyword, (channelInfos) {
       _searchedChannels = channelInfos;
+      _groupedSearchResult[SearchType.Channel] = _searchedChannels;
       notifyListeners();
     }, (err) {});
   }
@@ -113,5 +114,7 @@ class SearchViewModel extends ChangeNotifier {
 
   searchGroup(String keyword) async {
     _searchedGroupInfos = await Imclient.searchGroups(keyword);
+    _groupedSearchResult[SearchType.Group] = _searchedGroupInfos;
+    notifyListeners();
   }
 }
