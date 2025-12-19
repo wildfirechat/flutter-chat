@@ -12,6 +12,7 @@ import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:wfc_example/app_server.dart';
+import 'package:wfc_example/conversation/composite_message_detail_screen.dart';
 import 'package:wfc_example/conversation/picture_overview.dart';
 import 'package:wfc_example/conversation/video_player_view.dart';
 import 'package:wfc_example/model/favorite_item.dart';
@@ -68,12 +69,22 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
   }
 
   void _deleteItem(FavoriteItem item) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+
     AppServer.removeFavoriteItem(item.favId, () {
+      Navigator.pop(context);
       setState(() {
         _items.remove(item);
       });
       Fluttertoast.showToast(msg: '删除成功');
     }, (msg) {
+      Navigator.pop(context);
       Fluttertoast.showToast(msg: msg);
     });
   }
@@ -102,8 +113,12 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
       // TODO: Open file
       Fluttertoast.showToast(msg: "文件: ${(message.content as FileMessageContent).name}");
     } else if (message.content is CompositeMessageContent) {
-      // TODO: Open composite message
-      Fluttertoast.showToast(msg: "聊天记录");
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CompositeMessageDetailScreen(message.content as CompositeMessageContent),
+        ),
+      );
     } else if (message.content is TextMessageContent) {
       // TODO: Show text detail
       Fluttertoast.showToast(msg: (message.content as TextMessageContent).text);
@@ -250,16 +265,29 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
       appBar: AppBar(
         title: const Text('我的收藏'),
       ),
-      body: ListView.builder(
-        itemCount: _items.length + (_hasMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index == _items.length) {
-            _loadData();
-            return const Center(child: CircularProgressIndicator());
-          }
-          return _buildItem(_items[index]);
-        },
-      ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_items.isEmpty && _isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_items.isEmpty) {
+      return const Center(child: Text('暂无收藏'));
+    }
+    return ListView.builder(
+      itemCount: _items.length + (_hasMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == _items.length) {
+          _loadData();
+          return const Padding(
+            padding: EdgeInsets.all(10.0),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+        return _buildItem(_items[index]);
+      },
     );
   }
 }

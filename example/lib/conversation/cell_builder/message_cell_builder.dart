@@ -52,4 +52,8 @@ abstract class MessageCellBuilder {
   }
 
   Widget buildContent(BuildContext context);
+
+  Widget buildMessageContent(BuildContext context) {
+    return buildContent(context);
+  }
 }
