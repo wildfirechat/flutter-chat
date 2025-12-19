@@ -15,6 +15,7 @@ import 'package:wfc_example/organization/organization_screen.dart';
 
 import '../user_info_widget.dart';
 import 'fav_groups.dart';
+import 'subscribed_channels.dart';
 
 class ContactListWidget extends StatelessWidget {
   ContactListWidget({super.key});
@@ -99,7 +100,10 @@ class ContactListWidget extends StatelessWidget {
             MaterialPageRoute(builder: (context) => const FavGroupsPage()),
           );
         } else if (key == "subscribed_channel") {
-          Fluttertoast.showToast(msg: 'TODO');
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SubscribedChannelsPage()),
+          );
         } else {
           Fluttertoast.showToast(msg: "方法没有实现");
           if (kDebugMode) {
