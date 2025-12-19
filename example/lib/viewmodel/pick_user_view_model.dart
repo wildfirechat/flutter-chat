@@ -20,11 +20,35 @@ class PickUserViewModel extends ChangeNotifier {
 
   List<UserInfo> get pickedUsers => _pickedUsers;
 
-  List<UIPickUserInfo> get userList => _users;
-
   List<String> get uncheckableUserIds => _uncheckableUserIds;
 
   List<String> get disabledAndCheckedUserIds => _disabledAndCheckedUserIds;
+
+  String _query = '';
+  List<UIPickUserInfo> _filteredUsers = [];
+
+  List<UIPickUserInfo> get userList => _query.isEmpty ? _users : _filteredUsers;
+
+  bool get isSearching => _query.isNotEmpty;
+
+  void search(String query) {
+    _query = query;
+    if (query.isEmpty) {
+      _filteredUsers = [];
+    } else {
+      _filteredUsers = _users.where((u) {
+        if (u.userInfo.userId == 'All') return false;
+        String name = u.userInfo.displayName ?? '';
+        String pinyin = PinyinHelper.getPinyinE(name, separator: "", defPinyin: '#', format: PinyinFormat.WITHOUT_TONE);
+        String shortPinyin = PinyinHelper.getShortPinyin(name);
+
+        return name.contains(query) ||
+            pinyin.contains(query.toLowerCase()) ||
+            shortPinyin.contains(query.toLowerCase());
+      }).toList();
+    }
+    notifyListeners();
+  }
 
   void setup(List<UserInfo> users, {int maxPickCount = 1024, List<String>? uncheckableUserIds, List<String>? disabledUserIds, bool showMentionAll = false}) {
     _maxPickCount = maxPickCount;
