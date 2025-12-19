@@ -21,7 +21,9 @@ import 'package:wfc_example/widget/option_switch_item.dart';
 import 'package:wfc_example/widget/section_divider.dart';
 
 import '../contact/pick_user_screen.dart';
+import '../search/search_conversation_result_view.dart';
 import '../user_info_widget.dart';
+import 'conversation_files_screen.dart';
 import 'group_conversation_info_members_view.dart';
 
 class ChannelConversationInfoScreen extends StatelessWidget {
@@ -65,8 +67,25 @@ class ChannelConversationInfoScreen extends StatelessWidget {
               child: CircularProgressIndicator(),
             ),
       const SectionDivider(),
-      OptionItem('查找聊天内容', onTap: () {}),
-      OptionItem('会话文件', onTap: () {}),
+      OptionItem('查找聊天内容', onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SearchConversationResultView(
+              conversation: conversation,
+              keyword: '',
+            ),
+          ),
+        );
+      }),
+      OptionItem('会话文件', onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ConversationFilesScreen(conversation),
+          ),
+        );
+      }),
       const SectionDivider(),
       OptionSwitchItem('消息免打扰', conversationInfo.isSilent, (enable) {
         conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
