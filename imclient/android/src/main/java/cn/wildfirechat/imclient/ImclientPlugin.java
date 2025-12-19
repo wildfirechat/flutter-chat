@@ -212,6 +212,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             line = (int) call.argument("line");
         } else {
             Map conversation = call.argument("conversation");
+            if(conversation == null){
+                return null;
+            }
             type = Conversation.ConversationType.type((int) conversation.get("type"));
             target = (String) conversation.get("target");
             line = (int) conversation.get("line");
