@@ -25,6 +25,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:wfc_example/conversation/picture_overview.dart';
 import 'package:wfc_example/conversation/video_player_view.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
+import 'package:wfc_example/app_server.dart';
+import 'package:wfc_example/model/favorite_item.dart';
 
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
@@ -451,6 +453,12 @@ class ConversationController extends ChangeNotifier {
         messageInputBarController.setQuotedMessage(model.message);
         break;
       case "favorite":
+        var item = await FavoriteItem.fromMessage(model.message);
+        AppServer.addFavoriteItem(item, () {
+          Fluttertoast.showToast(msg: "收藏成功");
+        }, (msg) {
+          Fluttertoast.showToast(msg: "收藏失败: $msg");
+        });
         break;
     }
   }
