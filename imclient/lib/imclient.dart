@@ -648,6 +648,9 @@ class Imclient {
   }
 
   ///获取会话的消息列表
+  /// count 可以控制方向，>0 表示获取之前更旧的; <0 更新的
+  /// >0 返回值是 [older...newer]
+  /// <0 返回值是 [newer...older]
   static Future<List<Message>> getMessages(
       Conversation conversation, int fromIndex, int count,
       {List<int>? contentTypes, String? withUser}) async {

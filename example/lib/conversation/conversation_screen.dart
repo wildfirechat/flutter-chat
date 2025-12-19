@@ -24,8 +24,9 @@ import 'message_cell.dart';
 
 class ConversationScreen extends StatefulWidget {
   final Conversation conversation;
+  final int? toFocusMessageId;
 
-  const ConversationScreen(this.conversation, {super.key});
+  const ConversationScreen(this.conversation, {super.key, this.toFocusMessageId});
 
   @override
   State createState() => _State();
@@ -37,13 +38,15 @@ class _State extends State<ConversationScreen> {
   double _pullDistance = 0.0;
   bool _isDragging = false;
   bool _isLoading = false;
+  bool _isLoadingNewer = false;
+  final Key _centerKey = UniqueKey();
 
   @override
   void initState() {
     super.initState();
 
     _conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
-    _conversationViewModel.setConversation(widget.conversation, joinChatroomErrorCallback: (err) {
+    _conversationViewModel.setConversation(widget.conversation, toFocusMessageId: widget.toFocusMessageId, joinChatroomErrorCallback: (err) {
       Fluttertoast.showToast(msg: "网络错误！加入聊天室失败!");
       Navigator.pop(context);
     });
@@ -169,41 +172,61 @@ class _State extends State<ConversationScreen> {
                       child: GestureDetector(
                         child: NotificationListener(
                           onNotification: notificationFunction,
-                          child: ListView.builder(
-                            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                          child: CustomScrollView(
+                            center: _centerKey,
+                            anchor: conversationViewModel.focusMessageIndex > 0 ? 0.5 : 0.0,
                             reverse: true,
-                            itemBuilder: (BuildContext context, int index) {
-                          var msg = conversationMessageList[index];
-                          var cell = MessageCell(msg);
-                          if (conversationViewModel.isMultiSelectMode) {
-                            return GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () {
-                                conversationViewModel.toggleMessageSelection(msg.message.messageId);
-                              },
-                              child: Row(
-                                children: [
-                                  Checkbox(
-                                    value: conversationViewModel.isMessageSelected(msg.message.messageId),
-                                    onChanged: (bool? value) {
-                                      conversationViewModel.toggleMessageSelection(msg.message.messageId);
-                                    },
-                                  ),
-                                  Expanded(
-                                    child: AbsorbPointer(
-                                      child: cell,
-                                    ),
-                                  ),
-                                ],
+                            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                            slivers: [
+                              SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) {
+                                    int focusIndex = conversationViewModel.focusMessageIndex;
+                                    int newerCount = focusIndex;
+                                    if (!conversationViewModel.noMoreNewerMsg) {
+                                      if (index == newerCount) {
+                                        if (!_isLoadingNewer) {
+                                          _isLoadingNewer = true;
+                                          _conversationViewModel.loadNewerMessage().then((value) {
+                                            if (mounted) {
+                                              setState(() {
+                                                _isLoadingNewer = false;
+                                              });
+                                            }
+                                          });
+                                        }
+                                        return Container(
+                                          padding: const EdgeInsets.all(10),
+                                          alignment: Alignment.center,
+                                          child: const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                    int listIndex = focusIndex - 1 - index;
+                                    if (listIndex < 0) return null;
+                                    return _buildMessageItem(context, listIndex, conversationViewModel);
+                                  },
+                                  childCount: conversationViewModel.focusMessageIndex + (!conversationViewModel.noMoreNewerMsg ? 1 : 0),
+                                ),
                               ),
-                            );
-                          } else {
-                            return cell;
-                          }
-                        },
-                        itemCount: conversationMessageList.length,
-                      ),
-                    ),
+                              SliverList(
+                                key: _centerKey,
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) {
+                                    int listIndex = conversationViewModel.focusMessageIndex + index;
+                                    if (listIndex >= conversationMessageList.length) return null;
+                                    return _buildMessageItem(context, listIndex, conversationViewModel);
+                                  },
+                                  childCount: conversationMessageList.length - conversationViewModel.focusMessageIndex,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                     onTap: () {
                       // 使用controller重置状态
                       _inputBarController.resetStatus();
@@ -474,5 +497,36 @@ class _State extends State<ConversationScreen> {
     String draft = _inputBarController.getDraft();
     Imclient.setConversationDraft(widget.conversation, draft);
     super.deactivate();
+  }
+
+  Widget _buildMessageItem(BuildContext context, int index, ConversationViewModel conversationViewModel) {
+    var conversationMessageList = conversationViewModel.conversationMessageList;
+    var msg = conversationMessageList[index];
+    var cell = MessageCell(msg);
+    if (conversationViewModel.isMultiSelectMode) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          conversationViewModel.toggleMessageSelection(msg.message.messageId);
+        },
+        child: Row(
+          children: [
+            Checkbox(
+              value: conversationViewModel.isMessageSelected(msg.message.messageId),
+              onChanged: (bool? value) {
+                conversationViewModel.toggleMessageSelection(msg.message.messageId);
+              },
+            ),
+            Expanded(
+              child: AbsorbPointer(
+                child: cell,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return cell;
+    }
   }
 }

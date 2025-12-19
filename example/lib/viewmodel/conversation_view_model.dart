@@ -39,12 +39,16 @@ class ConversationViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool _noMoreLocalHistoryMsg = false;
   bool _noMoreRemoteHistoryMsg = false;
+  bool _noMoreNewerMsg = false;
+  int focusMessageIndex = 0;
   String? _conversationTypingStatus;
 
   Timer? _typingTimer;
   final Map<String, int> _typingUserTime = {};
 
   List<UIMessage> get conversationMessageList => _conversationMessageList;
+
+  bool get noMoreNewerMsg => _noMoreNewerMsg;
 
   String get draft => _draft;
 
@@ -238,9 +242,10 @@ class ConversationViewModel extends ChangeNotifier {
     });
   }
 
-  void setConversation(Conversation? conversation, {Function(int err)? joinChatroomErrorCallback}) async {
+  void setConversation(Conversation? conversation, {int? toFocusMessageId, Function(int err)? joinChatroomErrorCallback}) async {
     _noMoreRemoteHistoryMsg = false;
     _conversationMessageList = [];
+    focusMessageIndex = 0;
     _conversationTypingStatus = null;
     _currentConversation = conversation;
     _isMultiSelectMode = false;
@@ -255,6 +260,7 @@ class ConversationViewModel extends ChangeNotifier {
     _currentConversationInfo = await Imclient.getConversationInfo(conversation);
     if (conversation.conversationType == ConversationType.Chatroom) {
       _noMoreLocalHistoryMsg = true;
+      _noMoreNewerMsg = true;
       Imclient.joinChatroom(conversation.target, () {
         Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
           if (userInfo != null) {
@@ -273,14 +279,91 @@ class ConversationViewModel extends ChangeNotifier {
         _isHiddenConversationMemberName = true;
       }
       _noMoreLocalHistoryMsg = false;
-      Imclient.getMessages(conversation, 0, 20).then((messages) {
+      _noMoreNewerMsg = false;
+
+      if (toFocusMessageId != null && toFocusMessageId > 0) {
+        _loadMessagesAround(toFocusMessageId);
+      } else {
+        _noMoreNewerMsg = true;
+        Imclient.getMessages(conversation, 0, 20).then((messages) {
+          _conversationMessageList = messages.map((message) => UIMessage(message)).toList();
+          if (messages.length < 20) {
+            _noMoreLocalHistoryMsg = true;
+          }
+          notifyListeners();
+        });
+      }
+    }
+  }
+
+  void _loadMessagesAround(int messageId) async {
+    var targetMsg = await Imclient.getMessage(messageId);
+    if (targetMsg == null) {
+      _noMoreNewerMsg = true;
+      Imclient.getMessages(_currentConversation!, 0, 20).then((messages) {
         _conversationMessageList = messages.map((message) => UIMessage(message)).toList();
         if (messages.length < 20) {
           _noMoreLocalHistoryMsg = true;
         }
         notifyListeners();
       });
+      return;
     }
+
+    var olderMsgs = await Imclient.getMessages(_currentConversation!, messageId, 20);
+    var newerMsgs = await Imclient.getMessages(_currentConversation!, messageId, -20);
+
+    List<UIMessage> list = [];
+    list.addAll(olderMsgs.map((e) => UIMessage(e)));
+    var uiTarget = UIMessage(targetMsg);
+    uiTarget.highlighted = true;
+    list.add(uiTarget);
+    list.addAll(newerMsgs.reversed.toList().map((e) => UIMessage(e)));
+
+    // 因为 _conversationMessageList 是反的，最新的在最前面
+    _conversationMessageList = list.reversed.toList();
+    focusMessageIndex = newerMsgs.length;
+    if (olderMsgs.length < 20) {
+      _noMoreLocalHistoryMsg = true;
+    }
+    if (newerMsgs.length < 20) {
+      _noMoreNewerMsg = true;
+    }
+    notifyListeners();
+
+    Future.delayed(const Duration(seconds: 1), () {
+      uiTarget.highlighted = false;
+      notifyListeners();
+    });
+  }
+
+  Future<void> loadNewerMessage() {
+    if (_isLoading || _noMoreNewerMsg) {
+      return Future.value();
+    }
+    Completer<void> completer = Completer();
+
+    _isLoading = true;
+    int fromIndex = _conversationMessageList.isEmpty ? 0 : _conversationMessageList.first.message.messageId;
+
+    Imclient.getMessages(_currentConversation!, fromIndex, -20).then((messages) {
+      _isLoading = false;
+      if (messages.isEmpty) {
+        _noMoreNewerMsg = true;
+        notifyListeners();
+        completer.complete();
+        return;
+      }
+      var newMsgs = messages.map((msg) => UIMessage(msg));
+      _conversationMessageList.insertAll(0, newMsgs);
+      focusMessageIndex += newMsgs.length;
+      if (messages.length < 20) {
+        _noMoreNewerMsg = true;
+      }
+      notifyListeners();
+      completer.complete();
+    });
+    return completer.future;
   }
 
   setConversationSilent(Conversation conversation, bool silent) {
