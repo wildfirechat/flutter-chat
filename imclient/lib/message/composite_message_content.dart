@@ -40,50 +40,63 @@ class CompositeMessageContent extends MediaMessageContent {
           utf8.decode(payload.binaryContent!));
       List<dynamic> ms = map['ms'];
       for (int i = 0; i < ms.length; ++i) {
-        Map map = ms[i];
+        Map mmap = ms[i];
         Message msg = Message();
-        msg.messageUid = map['uid'];
+        if(mmap['uid'] is String) {
+          String str = mmap['uid'];
+          str = str.replaceAll("L", "");
+          msg.messageUid = int.tryParse(str);
+        } else {
+          msg.messageUid = mmap['uid'];
+        }
         msg.conversation = Conversation();
         msg.conversation.conversationType =
-        ConversationType.values[map['type']];
-        msg.conversation.target = map['target'];
-        if(map['line'] != null) {
-          msg.conversation.line = map['line'];
+        ConversationType.values[mmap['type']];
+        msg.conversation.target = mmap['target'];
+        if(mmap['line'] != null) {
+          msg.conversation.line = mmap['line'];
         } else {
           msg.conversation.line = 0;
         }
 
-        msg.fromUser = map['from'];
-        if(map['tos'] != null && map['tos'] is List<dynamic>) {
-          msg.toUsers = map['tos'].cast<String>();
+        msg.fromUser = mmap['from'];
+        if(mmap['tos'] != null && mmap['tos'] is List<dynamic>) {
+          msg.toUsers = mmap['tos'].cast<String>();
         }
         msg.direction = MessageDirection.MessageDirection_Send;
-        if (map['direction'] != null) {
-          msg.direction = MessageDirection.values[map['direction']];
+        if (mmap['direction'] != null) {
+          msg.direction = MessageDirection.values[mmap['direction']];
         }
-        if (map['status'] != null) {
-          msg.status = MessageStatus.values[map['status']];
+        if (mmap['status'] != null) {
+          msg.status = MessageStatus.values[mmap['status']];
         }
-        msg.serverTime = map['serverTime'];
+        // msg.serverTime = mmap['serverTime'];
+        if(mmap['uid'] is String) {
+          String str = mmap['serverTime'];
+          str = str.replaceAll("L", "");
+          msg.serverTime = int.tryParse(str)!;
+        } else {
+          msg.serverTime = mmap['serverTime'];
+        }
 
         MessagePayload payload = MessagePayload();
-        payload.contentType = map['ctype'];
-        payload.searchableContent = map['csc'];
-        payload.pushContent = map['cpc'];
-        payload.pushData = map['cpd'];
-        payload.content = map['cc'];
-        if (map['cbc'] != null) {
-          payload.binaryContent = const Base64Decoder().convert(map['cbc']);
+        payload.contentType = mmap['ctype'];
+        payload.searchableContent = mmap['csc'];
+        payload.pushContent = mmap['cpc'];
+        payload.pushData = mmap['cpd'];
+        payload.content = mmap['cc'];
+        if (mmap['cbc'] != null) {
+          payload.binaryContent = const Base64Decoder().convert(mmap['cbc']);
         }
-        payload.mentionedType = map['cmt']??0;
-        if(map['cmts'] != null) {
-          payload.mentionedTargets = map['cmts'].cast<String>();
+        payload.mentionedType = mmap['cmt']??0;
+        if(mmap['cmts'] != null) {
+          payload.mentionedTargets = mmap['cmts'].cast<String>();
         }
-        payload.extra = map['ce'];
-        if (map['mt'] != null) {
-          payload.mediaType = MediaType.values[map['mt']];
+        payload.extra = mmap['ce'];
+        if (mmap['mt'] != null) {
+          payload.mediaType = MediaType.values[mmap['mt']];
         }
-        payload.remoteMediaUrl = map['mru'];
+        payload.remoteMediaUrl = mmap['mru'];
 
         msg.content = Imclient.decodeMessageContent(payload);
         messages.add(msg);
