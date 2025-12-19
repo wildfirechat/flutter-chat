@@ -5,6 +5,7 @@ import 'package:imclient/imclient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
+import 'model/favorite_item.dart';
 
 typedef AppServerErrorCallback = Function(String msg);
 typedef AppServerLoginSuccessCallback = Function(String userId, String token, bool isNewUser);
@@ -54,6 +55,43 @@ class AppServer {
 
   static void updateGroupAnnouncement(String groupId, String text, Function successCallback, AppServerErrorCallback errorCallback) {
     postJson('/put_group_announcement', json.encode({'groupId': groupId, 'author':Imclient.currentUserId, 'text': text}), (response) {
+      Map<dynamic, dynamic> map = json.decode(response);
+      if (map['code'] == 0) {
+        successCallback();
+      } else {
+        errorCallback(map['message'] ?? '网络错误');
+      }
+    }, errorCallback);
+  }
+
+  static void getFavoriteItems(int startId, int count, Function(List<FavoriteItem>, bool) successCallback, AppServerErrorCallback errorCallback) {
+    postJson('/fav/list', json.encode({'id': startId, 'count': count}), (response) {
+      Map<dynamic, dynamic> map = json.decode(response);
+      if (map['code'] == 0) {
+        var result = map['result'];
+        bool hasMore = result['hasMore'];
+        List<dynamic> items = result['items'];
+        List<FavoriteItem> favItems = items.map((e) => FavoriteItem.fromJson(e)).toList();
+        successCallback(favItems, hasMore);
+      } else {
+        errorCallback(map['message'] ?? '网络错误');
+      }
+    }, errorCallback);
+  }
+
+  static void addFavoriteItem(FavoriteItem item, Function successCallback, AppServerErrorCallback errorCallback) {
+    postJson('/fav/add', json.encode(item.toJson()), (response) {
+      Map<dynamic, dynamic> map = json.decode(response);
+      if (map['code'] == 0) {
+        successCallback();
+      } else {
+        errorCallback(map['message'] ?? '网络错误');
+      }
+    }, errorCallback);
+  }
+
+  static void removeFavoriteItem(int favId, Function successCallback, AppServerErrorCallback errorCallback) {
+    postJson('/fav/del/$favId', json.encode({}), (response) {
       Map<dynamic, dynamic> map = json.decode(response);
       if (map['code'] == 0) {
         successCallback();

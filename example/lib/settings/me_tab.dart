@@ -8,6 +8,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/settings/general_settings.dart';
 import 'package:wfc_example/settings/message_notification_settings.dart';
+import 'package:wfc_example/settings/favorite_list_screen.dart';
 
 import 'package:wfc_example/viewmodel/user_view_model.dart';
 import 'package:wfc_example/widget/option_item.dart';
@@ -44,7 +45,10 @@ class MeTab extends StatelessWidget {
                 '收藏',
                 leftImage: Image.asset('assets/images/setting_favorite.png', width: 20.0, height: 20.0),
                 onTap: () {
-                  Fluttertoast.showToast(msg: "方法没有实现");
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FavoriteListScreen()),
+                  );
                 },
               ),
               const SectionDivider(),
