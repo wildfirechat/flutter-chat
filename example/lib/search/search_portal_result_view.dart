@@ -18,6 +18,7 @@ import '../viewmodel/channel_view_model.dart';
 import '../viewmodel/group_view_model.dart';
 import '../viewmodel/user_view_model.dart';
 import '../widget/group_list_view/index_path.dart';
+import 'search_conversation_result_view.dart';
 
 // 需要 StatefulWidget 才能保持 SearchVieModel，实现实时搜索
 class SearchPortalResultView extends StatefulWidget {
@@ -171,7 +172,7 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                           }
                         }),
             onTap: () {
-              if (info.marchedCount == 0 || info.marchedCount == 1) {
+              if (info.marchedCount == 1) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -181,8 +182,16 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                     ),
                   ),
                 );
-              } else {
-                Fluttertoast.showToast(msg: 'TODO conversation click');
+              } else if (info.marchedCount > 1) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SearchConversationResultView(
+                      conversation: conversation,
+                      keyword: widget.query,
+                    ),
+                  ),
+                );
               }
             },
           );
