@@ -12,6 +12,7 @@ import 'package:wfc_example/viewmodel/search_view_model.dart';
 import 'package:wfc_example/widget/group_list_view/list_view.dart';
 import 'package:wfc_example/widget/portrait.dart';
 
+import '../conversation/conversation_screen.dart';
 import '../utilities.dart';
 import '../viewmodel/channel_view_model.dart';
 import '../viewmodel/group_view_model.dart';
@@ -170,7 +171,19 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                           }
                         }),
             onTap: () {
-              Fluttertoast.showToast(msg: 'TODO conversation click');
+              if (info.marchedCount == 0 || info.marchedCount == 1) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ConversationScreen(
+                      conversation,
+                      toFocusMessageId: info.marchedMessage?.messageId,
+                    ),
+                  ),
+                );
+              } else {
+                Fluttertoast.showToast(msg: 'TODO conversation click');
+              }
             },
           );
         });

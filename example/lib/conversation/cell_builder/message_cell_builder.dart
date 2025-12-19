@@ -29,7 +29,8 @@ abstract class MessageCellBuilder {
   }
 
   Widget build(BuildContext context) {
-    return Padding(
+    return Container(
+      color: model.highlighted ? Colors.grey.withOpacity(0.5) : null,
       padding: EdgeInsets.all(model.showTimeLabel ? 5 : 3),
       child: Column(
         children: [
