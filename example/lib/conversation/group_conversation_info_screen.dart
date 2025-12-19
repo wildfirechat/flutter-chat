@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_member.dart';
+import 'package:imclient/model/im_constant.dart';
 import 'package:provider/provider.dart';
 import 'package:wfc_example/conversation/conversation_screen.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
@@ -19,7 +20,10 @@ import '../contact/pick_user_screen.dart';
 import '../search/search_conversation_result_view.dart';
 import '../user_info_widget.dart';
 import 'conversation_files_screen.dart';
+import 'group_announcement_screen.dart';
 import 'group_conversation_info_members_view.dart';
+import 'group_manage_screen.dart';
+import 'group_qrcode_screen.dart';
 
 class GroupConversationInfoScreen extends StatelessWidget {
   const GroupConversationInfoScreen(this.conversation, {super.key});
@@ -80,11 +84,46 @@ class GroupConversationInfoScreen extends StatelessWidget {
       ),
       const SectionDivider(),
       OptionItem('成员列表', onTap: () {}),
-      OptionItem('群聊名称', desc: groupInfo?.name ?? '群聊', onTap: () {}),
-      OptionItem('群二维码', rightIcon: Icons.qr_code, onTap: () {}),
-      OptionItem('群公告', desc: '占位群公告', onTap: () {}),
-      OptionItem('群备注', desc: groupInfo?.remark, onTap: () {}),
-      groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner ? OptionItem('群管理', onTap: () {}) : Container(),
+      OptionItem('群聊名称', desc: groupInfo?.name ?? '群聊', onTap: () {
+        if (groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager) {
+          _showEditDialog(context, '修改群名称', groupInfo?.name ?? '', (value) {
+            Imclient.modifyGroupInfo(conversation.target, ModifyGroupInfoType.Modify_Group_Name, value, () {}, (errorCode) {
+              Fluttertoast.showToast(msg: "修改失败: $errorCode");
+            });
+          });
+        } else {
+          Fluttertoast.showToast(msg: "只有群主和管理员可以修改群名称");
+        }
+      }),
+      OptionItem('群二维码', rightIcon: Icons.qr_code, onTap: () {
+        if (groupInfo != null) {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => GroupQRCodeScreen(groupInfo: groupInfo)));
+        }
+      }),
+      OptionItem('群公告', desc: groupConversationInfoViewModel.groupAnnouncement ?? '点击查看', onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => GroupAnnouncementScreen(
+                    groupId: conversation.target,
+                    canEdit: groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager))).then((value) {
+          groupConversationInfoViewModel.refreshGroupAnnouncement(conversation.target);
+        });
+      }),
+      OptionItem('群备注', desc: groupInfo?.remark, onTap: () {
+        _showEditDialog(context, '修改群备注', groupInfo?.remark ?? '', (value) {
+          Imclient.setGroupRemark(conversation.target, value, () {}, (errorCode) {
+            Fluttertoast.showToast(msg: "修改失败: $errorCode");
+          });
+        });
+      }),
+      groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner
+          ? OptionItem('群管理', onTap: () {
+              if (groupInfo != null) {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => GroupManageScreen(groupInfo: groupInfo)));
+              }
+            })
+          : Container(),
       const SectionDivider(),
       OptionItem('查找聊天内容', onTap: () {
         Navigator.push(
@@ -116,7 +155,13 @@ class GroupConversationInfoScreen extends StatelessWidget {
         groupConversationInfoViewModel.setFavGroup(conversationInfo.conversation.target, enable);
       }),
       const SectionDivider(),
-      OptionItem('我在本群的昵称', desc: groupMember.alias, onTap: () {}),
+      OptionItem('我在本群的昵称', desc: groupMember.alias, onTap: () {
+        _showEditDialog(context, '修改群昵称', groupMember.alias ?? '', (value) {
+          Imclient.modifyGroupAlias(conversation.target, value, () {}, (errorCode) {
+            Fluttertoast.showToast(msg: "修改失败: $errorCode");
+          });
+        });
+      }),
       OptionSwitchItem('显示群成员昵称', !conversationViewModel.isHiddenConversationMemberName, (enable) {
         conversationViewModel.setHideGroupMemberName(conversationInfo.conversation.target, !enable);
       }),
@@ -211,18 +256,20 @@ class GroupConversationInfoScreen extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => PickUserScreen(title: '选择联系人', (context, members) async {
-                      if (members.isEmpty) {
-                        Navigator.pop(context);
-                        return;
-                      }
-                      Imclient.addGroupMembers(conversation.target, members, () {
-                        Navigator.pop(context);
-                        Future.delayed(const Duration(milliseconds: 100), () {});
-                      }, (errorCode) {
-                        Fluttertoast.showToast(msg: "网络错误");
-                      });
-                    }, disabledUncheckedUsers: memberIds)),
+                builder: (context) => PickUserScreen(
+                      title: '添加群成员',
+                      (context, members) async {
+                        if (members.isEmpty) {
+                          Navigator.pop(context);
+                        } else {
+                          Imclient.addGroupMembers(conversation.target, members, () {
+                            Navigator.pop(context);
+                            Future.delayed(const Duration(milliseconds: 100), () {});
+                          }, (errorCode) {});
+                        }
+                      },
+                      disabledCheckedUsers: memberIds,
+                    )),
           );
         }
       });
@@ -231,13 +278,18 @@ class GroupConversationInfoScreen extends StatelessWidget {
         context,
         MaterialPageRoute(
             builder: (context) => PickUserScreen(
+                  title: '选择联系人',
                   (context, members) async {
                     Navigator.pop(context);
                     if (members.isNotEmpty) {
-                      Imclient.createGroup(null, null, null, 2, members, (strValue) {
+                      List<String> groupMembers = List.from(members);
+                      if (!groupMembers.contains(conversation.target)) {
+                        groupMembers.add(conversation.target);
+                      }
+                      Imclient.createGroup(null, null, null, 2, groupMembers, (strValue) {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue))),
+                          MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue, line: 0))),
                         );
                       }, (errorCode) {
                         Fluttertoast.showToast(msg: "网络错误");
@@ -248,5 +300,36 @@ class GroupConversationInfoScreen extends StatelessWidget {
                 )),
       );
     }
+  }
+
+  void _showEditDialog(BuildContext context, String title, String initialValue, Function(String) onConfirm) {
+    TextEditingController controller = TextEditingController(text: initialValue);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                onConfirm(controller.text);
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

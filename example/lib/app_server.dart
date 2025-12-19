@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:imclient/imclient.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
 
@@ -40,20 +41,56 @@ class AppServer {
     }, errorCallback);
   }
 
-  static void postJson(String request, String json, AppServerHTTPCallback successCallback, AppServerErrorCallback errorCallback) async {
+  static void getGroupAnnouncement(String groupId, Function(String) successCallback, AppServerErrorCallback errorCallback) {
+    postJson('/get_group_announcement', json.encode({'groupId': groupId}), (response) {
+      Map<dynamic, dynamic> map = json.decode(response);
+      if (map['code'] == 0) {
+        successCallback(map['result'] != null ? map['result']['text'] : '');
+      } else {
+        errorCallback(map['message'] ?? '网络错误');
+      }
+    }, errorCallback);
+  }
+
+  static void updateGroupAnnouncement(String groupId, String text, Function successCallback, AppServerErrorCallback errorCallback) {
+    postJson('/put_group_announcement', json.encode({'groupId': groupId, 'author':Imclient.currentUserId, 'text': text}), (response) {
+      Map<dynamic, dynamic> map = json.decode(response);
+      if (map['code'] == 0) {
+        successCallback();
+      } else {
+        errorCallback(map['message'] ?? '网络错误');
+      }
+    }, errorCallback);
+  }
+
+  static void postJson(String request, String jsonStr, AppServerHTTPCallback successCallback, AppServerErrorCallback errorCallback) async {
     var url = Config.APP_Server_Address + request;
+
+    if (_authToken == null) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      _authToken = prefs.getString('app_server_auth_token');
+    }
+
+    Map<String, String> headers = {"content-type": "application/json"};
+    if (_authToken != null) {
+      headers['authToken'] = _authToken!;
+    }
 
     // print(json);
     http.Response response = await http.post(
         Uri.parse(url), // post地址
-        headers: {"content-type": "application/json"}, //设置content-type为json
-        body: json //json参数
+        headers: headers, //设置content-type为json
+        body: jsonStr //json参数
     );
 
-    if(response.statusCode != 200) {
+    if (response.statusCode != 200) {
       errorCallback(response.body);
     } else {
-      _authToken = response.headers['authtoken'];
+      _authToken = response.headers['authToken'] ?? response.headers['authtoken'];
+      if (_authToken != null) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('app_server_auth_token', _authToken!);
+      }
       successCallback(response.body);
     }
   }
