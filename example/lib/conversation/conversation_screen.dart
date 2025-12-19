@@ -168,7 +168,7 @@ class _State extends State<ConversationScreen> {
               children: [
                 Column(
                   children: [
-                    Flexible(
+                    Expanded(
                       child: GestureDetector(
                         child: NotificationListener(
                           onNotification: notificationFunction,
@@ -178,41 +178,42 @@ class _State extends State<ConversationScreen> {
                             reverse: true,
                             physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
                             slivers: [
-                              SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, index) {
-                                    int focusIndex = conversationViewModel.focusMessageIndex;
-                                    int newerCount = focusIndex;
-                                    if (focusIndex > 0 && !conversationViewModel.noMoreNewerMsg) {
-                                      if (index == newerCount) {
-                                        if (!_isLoadingNewer) {
-                                          _isLoadingNewer = true;
-                                          _conversationViewModel.loadNewerMessage().then((value) {
-                                            if (mounted) {
-                                              setState(() {
-                                                _isLoadingNewer = false;
-                                              });
-                                            }
-                                          });
+                              if (conversationViewModel.focusMessageIndex > 0)
+                                SliverList(
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      int focusIndex = conversationViewModel.focusMessageIndex;
+                                      int newerCount = focusIndex;
+                                      if (!conversationViewModel.noMoreNewerMsg) {
+                                        if (index == newerCount) {
+                                          if (!_isLoadingNewer) {
+                                            _isLoadingNewer = true;
+                                            _conversationViewModel.loadNewerMessage().then((value) {
+                                              if (mounted) {
+                                                setState(() {
+                                                  _isLoadingNewer = false;
+                                                });
+                                              }
+                                            });
+                                          }
+                                          return Container(
+                                            padding: const EdgeInsets.all(10),
+                                            alignment: Alignment.center,
+                                            child: const SizedBox(
+                                              width: 20,
+                                              height: 20,
+                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                            ),
+                                          );
                                         }
-                                        return Container(
-                                          padding: const EdgeInsets.all(10),
-                                          alignment: Alignment.center,
-                                          child: const SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(strokeWidth: 2),
-                                          ),
-                                        );
                                       }
-                                    }
-                                    int listIndex = focusIndex - 1 - index;
-                                    if (listIndex < 0) return null;
-                                    return _buildMessageItem(context, listIndex, conversationViewModel);
-                                  },
-                                  childCount: conversationViewModel.focusMessageIndex + (!conversationViewModel.noMoreNewerMsg ? 1 : 0),
+                                      int listIndex = focusIndex - 1 - index;
+                                      if (listIndex < 0) return null;
+                                      return _buildMessageItem(context, listIndex, conversationViewModel);
+                                    },
+                                    childCount: conversationViewModel.focusMessageIndex + (!conversationViewModel.noMoreNewerMsg ? 1 : 0),
+                                  ),
                                 ),
-                              ),
                               SliverList(
                                 key: _centerKey,
                                 delegate: SliverChildBuilderDelegate(

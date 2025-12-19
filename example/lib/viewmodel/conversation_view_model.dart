@@ -111,7 +111,8 @@ class ConversationViewModel extends ChangeNotifier {
 
   ConversationViewModel() {
     _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
-      if (_currentConversation == null) {
+      // 定位到某条消息时，如果还没加载到最后，就不将新收到的消息加入到列表
+      if (_currentConversation == null || !_noMoreNewerMsg) {
         return;
       }
       var newMsg = false;
@@ -314,7 +315,7 @@ class ConversationViewModel extends ChangeNotifier {
     var newerMsgs = await Imclient.getMessages(_currentConversation!, messageId, -20);
 
     List<UIMessage> list = [];
-    list.addAll(olderMsgs.map((e) => UIMessage(e)));
+    list.addAll(olderMsgs.reversed.toList().map((e) => UIMessage(e)));
     var uiTarget = UIMessage(targetMsg);
     uiTarget.highlighted = true;
     list.add(uiTarget);
