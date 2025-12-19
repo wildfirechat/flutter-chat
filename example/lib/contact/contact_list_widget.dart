@@ -12,13 +12,23 @@ import 'package:wfc_example/contact/friend_request_page.dart';
 import 'package:wfc_example/viewmodel/contact_list_view_model.dart';
 import 'package:wfc_example/widget/portrait.dart';
 import 'package:wfc_example/organization/organization_screen.dart';
+import 'package:wfc_example/widget/sidebar_index.dart';
 
 import '../user_info_widget.dart';
 import 'fav_groups.dart';
 import 'subscribed_channels.dart';
 
-class ContactListWidget extends StatelessWidget {
-  ContactListWidget({super.key});
+class ContactListWidget extends StatefulWidget {
+  const ContactListWidget({super.key});
+
+  @override
+  State<ContactListWidget> createState() => _ContactListWidgetState();
+}
+
+class _ContactListWidgetState extends State<ContactListWidget> {
+  final ScrollController _scrollController = ScrollController();
+  String _currentLetter = '';
+  bool _isTouchingIndex = false;
 
   final List fixHeaderList = [
     ['assets/images/contact_new_friend.png', '新好友', 'new_friend'],
@@ -39,37 +49,67 @@ class ContactListWidget extends StatelessWidget {
         child: Selector2<ContactListViewModel, OrganizationViewModel,
                 ({List<UIContactInfo> contactList, int unreadFriendRequestCount, List<Organization> rootOrgs, List<Organization> myOrgs})>(
             builder: (_, record, __) {
+              List<String> indexList = _getIndexList(record.contactList);
               return Scaffold(
                 body: SafeArea(
-                  child: ListView.builder(
-                      itemCount: fixHeaderList.length + record.contactList.length + record.rootOrgs.length + record.myOrgs.length,
-                      // 使用key帮助ListView正确处理数据更新
-                      key: ValueKey('contact_list_${record.contactList.length}'),
-                      cacheExtent: 1024,
-                      itemExtentBuilder: (i, _) {
-                        if (i < fixHeaderList.length + record.rootOrgs.length + record.myOrgs.length) {
-                          return 52.5;
-                        } else {
-                          return record.contactList[i - fixHeaderList.length - record.rootOrgs.length - record.myOrgs.length].showCategory ? 52.5 + 18 : 52.5;
-                        }
-                      },
-                      itemBuilder: (context, i) {
-                        if (i < fixHeaderList.length) {
-                          return _contactListFixHeader(context, i, record.unreadFriendRequestCount);
-                        } else if (i < fixHeaderList.length + record.rootOrgs.length) {
-                          var org = record.rootOrgs[i - fixHeaderList.length];
-                          return _contactListOrgHeader(context, org, true);
-                        } else if (i < fixHeaderList.length + record.rootOrgs.length + record.myOrgs.length) {
-                          var org = record.myOrgs[i - fixHeaderList.length - record.rootOrgs.length];
-                          return _contactListOrgHeader(context, org, false);
-                        } else {
-                          var contactInfo = record.contactList[i - fixHeaderList.length - record.rootOrgs.length - record.myOrgs.length];
-                          return ContactListItem(
-                            contactInfo,
-                            key: ValueKey('contact_${contactInfo.userInfo.userId}-${contactInfo.userInfo.updateDt}'),
-                          );
-                        }
-                      }),
+                  child: Stack(
+                    children: [
+                      ListView.builder(
+                          controller: _scrollController,
+                          itemCount: fixHeaderList.length + record.contactList.length + record.rootOrgs.length + record.myOrgs.length,
+                          // 使用key帮助ListView正确处理数据更新
+                          key: ValueKey('contact_list_${record.contactList.length}'),
+                          cacheExtent: 1024,
+                          itemBuilder: (context, i) {
+                            if (i < fixHeaderList.length) {
+                              return _contactListFixHeader(context, i, record.unreadFriendRequestCount);
+                            } else if (i < fixHeaderList.length + record.rootOrgs.length) {
+                              var org = record.rootOrgs[i - fixHeaderList.length];
+                              return _contactListOrgHeader(context, org, true);
+                            } else if (i < fixHeaderList.length + record.rootOrgs.length + record.myOrgs.length) {
+                              var org = record.myOrgs[i - fixHeaderList.length - record.rootOrgs.length];
+                              return _contactListOrgHeader(context, org, false);
+                            } else {
+                              var contactInfo = record.contactList[i - fixHeaderList.length - record.rootOrgs.length - record.myOrgs.length];
+                              return ContactListItem(
+                                contactInfo,
+                                key: ValueKey('contact_${contactInfo.userInfo.userId}-${contactInfo.userInfo.updateDt}'),
+                              );
+                            }
+                          }),
+                      if (indexList.isNotEmpty)
+                        SidebarIndex(
+                          indexList: indexList,
+                          onIndexSelected: (tag) {
+                            _jumpToTag(tag, record.contactList, fixHeaderList.length + record.rootOrgs.length + record.myOrgs.length);
+                          },
+                          onTouch: (tag, isTouching) {
+                            setState(() {
+                              _currentLetter = tag;
+                              _isTouchingIndex = isTouching;
+                            });
+                          },
+                        ),
+                      if (_isTouchingIndex)
+                        Center(
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            alignment: Alignment.center,
+                            child: _currentLetter == '↑'
+                                ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
+                                : Text(
+                                    _currentLetter,
+                                    style: const TextStyle(color: Colors.white, fontSize: 40),
+                                  ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -79,6 +119,40 @@ class ContactListWidget extends StatelessWidget {
                   rootOrgs: organizationViewModel.rootOrganizations,
                   myOrgs: organizationViewModel.myOrganizations
                 )));
+  }
+
+  List<String> _getIndexList(List<UIContactInfo> contactList) {
+    List<String> indexList = [];
+    indexList.add('↑');
+    for (var contact in contactList) {
+      if (contact.showCategory) {
+        String category = contact.category;
+        if (category.startsWith("AI")) continue;
+        if (category == "{") category = "#";
+        if (!indexList.contains(category)) {
+          indexList.add(category);
+        }
+      }
+    }
+    return indexList;
+  }
+
+  void _jumpToTag(String tag, List<UIContactInfo> contactList, int headerCount) {
+    if (tag == '↑') {
+      _scrollController.jumpTo(0.0);
+      return;
+    }
+    String targetCategory = tag;
+    if (tag == '#') targetCategory = '{';
+
+    double offset = headerCount * 52.5;
+    for (var contact in contactList) {
+      if (contact.category == targetCategory) {
+        _scrollController.jumpTo(offset);
+        return;
+      }
+      offset += contact.showCategory ? 70.5 : 52.5;
+    }
   }
 
   Widget _contactListFixHeader(BuildContext context, int index, int unreadFriendRequestCount) {
@@ -212,7 +286,6 @@ class _ContactListItemState extends State<ContactListItem> with AutomaticKeepAli
   Widget build(BuildContext context) {
     super.build(context);
 
-    debugPrint('----------build contactItem');
     // 获取显示名称
     final displayName = widget.contactInfo.userInfo.friendAlias ?? widget.contactInfo.userInfo.displayName ?? '<${widget.contactInfo.userInfo.userId}>';
 
@@ -269,3 +342,6 @@ class _ContactListItemState extends State<ContactListItem> with AutomaticKeepAli
     );
   }
 }
+
+
+

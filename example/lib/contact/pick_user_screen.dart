@@ -8,12 +8,11 @@ import 'package:wfc_example/config.dart';
 import 'package:wfc_example/repo/user_repo.dart';
 import 'package:wfc_example/viewmodel/pick_user_view_model.dart';
 import 'package:wfc_example/widget/portrait.dart';
+import 'package:wfc_example/widget/sidebar_index.dart';
 
 typedef OnPickUserCallback = void Function(BuildContext context, List<String> pickedUsers);
 
-class PickUserScreen extends StatelessWidget {
-  PickUserScreen(this.callback, {this.title = '', this.maxSelected = 1024, this.candidates, this.disabledCheckedUsers, this.disabledUncheckedUsers, this.showMentionAll = false, super.key});
-
+class PickUserScreen extends StatefulWidget {
   final String title;
   final OnPickUserCallback callback;
   final int maxSelected;
@@ -21,51 +20,158 @@ class PickUserScreen extends StatelessWidget {
   final List<String>? disabledCheckedUsers;
   final List<String>? disabledUncheckedUsers;
   final bool showMentionAll;
+
+  const PickUserScreen(this.callback, {
+    this.title = '',
+    this.maxSelected = 1024,
+    this.candidates,
+    this.disabledCheckedUsers,
+    this.disabledUncheckedUsers,
+    this.showMentionAll = false,
+    super.key
+  });
+
+  @override
+  State<PickUserScreen> createState() => _PickUserScreenState();
+}
+
+class _PickUserScreenState extends State<PickUserScreen> {
   late final PickUserViewModel _pickUserViewModel;
+  final ScrollController _scrollController = ScrollController();
+  String _currentLetter = '';
+  bool _isTouchingIndex = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pickUserViewModel = PickUserViewModel();
+    _initData();
+  }
+
+  void _initData() async {
+    var userInfos = widget.candidates != null
+        ? await Imclient.getUserInfos(widget.candidates!)
+        : await UserRepo.getFriendUserInfos();
+    _pickUserViewModel.setup(
+      userInfos,
+      maxPickCount: widget.maxSelected,
+      uncheckableUserIds: widget.disabledUncheckedUsers,
+      disabledUserIds: widget.disabledCheckedUsers,
+      showMentionAll: widget.showMentionAll
+    );
+  }
 
   void _onPressedDone(BuildContext context) {
-    callback(context, _pickUserViewModel.pickedUsers.map((u) => u.userId).toList());
+    widget.callback(context, _pickUserViewModel.pickedUsers.map((u) => u.userId).toList());
+  }
+
+  List<String> _getIndexList(List<UIPickUserInfo> userList) {
+    List<String> indexList = [];
+    indexList.add('↑');
+    for (var user in userList) {
+      if (user.showCategory) {
+        String category = user.category;
+        if (category.startsWith("AI")) continue;
+        if (category == "{") category = "#";
+        if (!indexList.contains(category)) {
+          indexList.add(category);
+        }
+      }
+    }
+    return indexList;
+  }
+
+  void _jumpToTag(String tag, List<UIPickUserInfo> userList) {
+    if (tag == '↑') {
+      _scrollController.jumpTo(0.0);
+      return;
+    }
+    String targetCategory = tag;
+    if (tag == '#') targetCategory = '{';
+
+    double offset = 0;
+    for (var user in userList) {
+      if (user.category == targetCategory) {
+        _scrollController.jumpTo(offset);
+        return;
+      }
+      offset += user.showCategory ? 70.5 : 52.5;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<PickUserViewModel>(
-        create: (_) {
-          _pickUserViewModel = PickUserViewModel();
-          () async {
-            var userInfos = candidates !=null ?  await Imclient.getUserInfos(candidates!) : await UserRepo.getFriendUserInfos();
-            _pickUserViewModel.setup(userInfos, maxPickCount: maxSelected, uncheckableUserIds: disabledUncheckedUsers, disabledUserIds: disabledCheckedUsers, showMentionAll: showMentionAll);
-          }();
-          return _pickUserViewModel;
+    return ChangeNotifierProvider<PickUserViewModel>.value(
+      value: _pickUserViewModel,
+      child: Consumer<PickUserViewModel>(
+        builder: (context, viewModel, child) {
+          List<String> indexList = _getIndexList(viewModel.userList);
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(widget.title),
+              actions: [
+                if (widget.maxSelected > 1)
+                  GestureDetector(
+                    onTap: () => _onPressedDone(context),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
+                      child: Text(
+                        viewModel.pickedUsers.isNotEmpty ? '完成(${viewModel.pickedUsers.length})' : '取消',
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  )
+              ],
+            ),
+            body: SafeArea(
+              child: Stack(
+                children: [
+                  ListView.builder(
+                    controller: _scrollController,
+                    itemCount: viewModel.userList.length,
+                    itemBuilder: (context, i) {
+                      var userInfo = viewModel.userList[i];
+                      return SelectableUserItem(userInfo, widget.maxSelected, widget.callback);
+                    },
+                  ),
+                  if (indexList.isNotEmpty)
+                    SidebarIndex(
+                      indexList: indexList,
+                      onIndexSelected: (tag) {
+                        _jumpToTag(tag, viewModel.userList);
+                      },
+                      onTouch: (tag, isTouching) {
+                        setState(() {
+                          _currentLetter = tag;
+                          _isTouchingIndex = isTouching;
+                        });
+                      },
+                    ),
+                  if (_isTouchingIndex)
+                    Center(
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        alignment: Alignment.center,
+                        child: _currentLetter == '↑'
+                            ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
+                            : Text(
+                                _currentLetter,
+                                style: const TextStyle(color: Colors.white, fontSize: 40),
+                              ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
         },
-        // 不使用 Consumer 的话，下面的 _pickUserViewModel 会提示未初始化，不能正常监听使用
-        child: Consumer<PickUserViewModel>(
-            builder: (context, viewModel, child) => Scaffold(
-                  appBar: AppBar(
-                    title: Text(title),
-                    actions: [
-                      if (maxSelected > 1)
-                        GestureDetector(
-                          onTap: () => _onPressedDone(context),
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
-                            child: Text(
-                              _pickUserViewModel.pickedUsers.isNotEmpty ? '完成(${_pickUserViewModel.pickedUsers.length})' : '取消',
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                          ),
-                        )
-                    ],
-                  ),
-                  body: SafeArea(
-                    child: ListView.builder(
-                        itemCount: _pickUserViewModel.userList.length,
-                        itemBuilder: /*1*/ (context, i) {
-                          var userInfo = _pickUserViewModel.userList[i];
-                          return SelectableUserItem(userInfo, maxSelected, callback);
-                        }),
-                  ),
-                )));
+      ),
+    );
   }
 }
 
@@ -81,38 +187,61 @@ class SelectableUserItem extends StatelessWidget {
     PickUserViewModel pickUserViewModel = Provider.of<PickUserViewModel>(context);
     UserInfo userInfo = contactInfo.userInfo;
 
-    Widget content = Column(
-      children: <Widget>[
-        // 分类标题
-        Container(
-          height: contactInfo.showCategory ? 18 : 0,
-          width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
-          color: const Color(0xffebebeb),
-          padding: const EdgeInsets.only(left: 16),
-          child: contactInfo.showCategory ? Text(contactInfo.category == '{' ? '#' : contactInfo.category) : null,
-        ),
-        Container(
-          height: 52.0,
-          margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
-          child: Row(
-            children: <Widget>[
-              if (userInfo.userId == 'All')
-                Image.asset('assets/images/group_avatar_default.png', width: 40, height: 40)
-              else
-                Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
-              Container(
-                margin: const EdgeInsets.only(left: 16),
+    Widget content = Container(
+      height: 52.0,
+      color: Colors.white,
+      child: Row(
+        children: <Widget>[
+          if (maxSelected > 1)
+            Padding(
+              padding: const EdgeInsets.only(left: 2.0),
+              child: Checkbox(
+                value: pickUserViewModel.isChecked(userInfo.userId),
+                onChanged: pickUserViewModel.isCheckable(userInfo.userId) ? (bool? value) {
+                  if (!pickUserViewModel.pickUser(userInfo, value!)) {
+                    Fluttertoast.showToast(msg: "超过最大人数限制");
+                  }
+                } : null,
               ),
-              Expanded(
-                  child: Text(
+            ),
+          Padding(
+            padding: EdgeInsets.only(left: maxSelected > 1 ? 4.0 : 8.0),
+            child: userInfo.userId == 'All'
+                ? Image.asset('assets/images/group_avatar_default.png', width: 40, height: 40)
+                : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 12.0),
+              child: Text(
                 userInfo.displayName ?? userInfo.userId,
                 style: const TextStyle(fontSize: 15.0),
-              )),
-            ],
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
-        ),
+        ],
+      ),
+    );
+
+    Widget item = Column(
+      children: <Widget>[
+        if (contactInfo.showCategory)
+          Container(
+            height: 18,
+            width: double.infinity,
+            color: const Color(0xffebebeb),
+            padding: const EdgeInsets.only(left: 16),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              contactInfo.category == '{' ? '#' : contactInfo.category,
+              style: const TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ),
+        content,
         Container(
-          margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+          margin: const EdgeInsets.only(left: 16.0),
           height: 0.5,
           color: const Color(0xffebebeb),
         ),
@@ -126,19 +255,20 @@ class SelectableUserItem extends StatelessWidget {
             callback!(context, [userInfo.userId]);
           }
         },
-        child: content,
+        child: item,
+      );
+    } else {
+      return GestureDetector(
+        onTap: () {
+          if (pickUserViewModel.isCheckable(userInfo.userId)) {
+            bool checked = pickUserViewModel.isChecked(userInfo.userId);
+            if (!pickUserViewModel.pickUser(userInfo, !checked)) {
+              Fluttertoast.showToast(msg: "超过最大人数限制");
+            }
+          }
+        },
+        child: item,
       );
     }
-
-    return CheckboxListTile(
-      enabled: pickUserViewModel.isCheckable(userInfo.userId),
-      value: pickUserViewModel.isChecked(userInfo.userId),
-      onChanged: (bool? value) {
-        if (!pickUserViewModel.pickUser(userInfo, value!)) {
-          Fluttertoast.showToast(msg: "超过最大人数限制");
-        }
-      },
-      title: content,
-    );
   }
 }
