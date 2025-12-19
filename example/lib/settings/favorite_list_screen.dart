@@ -69,22 +69,12 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
   }
 
   void _deleteItem(FavoriteItem item) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const Center(child: CircularProgressIndicator());
-      },
-    );
-
     AppServer.removeFavoriteItem(item.favId, () {
-      Navigator.pop(context);
       setState(() {
         _items.remove(item);
       });
       Fluttertoast.showToast(msg: '删除成功');
     }, (msg) {
-      Navigator.pop(context);
       Fluttertoast.showToast(msg: msg);
     });
   }
