@@ -38,14 +38,42 @@ class PickUserScreen extends StatefulWidget {
 class _PickUserScreenState extends State<PickUserScreen> {
   late final PickUserViewModel _pickUserViewModel;
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _selectedUsersScrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
   String _currentLetter = '';
   bool _isTouchingIndex = false;
+  int _previousPickedCount = 0;
 
   @override
   void initState() {
     super.initState();
     _pickUserViewModel = PickUserViewModel();
+    _pickUserViewModel.addListener(_onViewModelChanged);
     _initData();
+  }
+
+  @override
+  void dispose() {
+    _pickUserViewModel.removeListener(_onViewModelChanged);
+    _searchController.dispose();
+    _scrollController.dispose();
+    _selectedUsersScrollController.dispose();
+    super.dispose();
+  }
+
+  void _onViewModelChanged() {
+    if (_pickUserViewModel.pickedUsers.length > _previousPickedCount) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_selectedUsersScrollController.hasClients) {
+          _selectedUsersScrollController.animateTo(
+            _selectedUsersScrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
+    _previousPickedCount = _pickUserViewModel.pickedUsers.length;
   }
 
   void _initData() async {
@@ -105,7 +133,7 @@ class _PickUserScreenState extends State<PickUserScreen> {
       value: _pickUserViewModel,
       child: Consumer<PickUserViewModel>(
         builder: (context, viewModel, child) {
-          List<String> indexList = _getIndexList(viewModel.userList);
+          List<String> indexList = viewModel.isSearching ? [] : _getIndexList(viewModel.userList);
           return Scaffold(
             appBar: AppBar(
               title: Text(widget.title),
@@ -124,47 +152,118 @@ class _PickUserScreenState extends State<PickUserScreen> {
               ],
             ),
             body: SafeArea(
-              child: Stack(
+              child: Column(
                 children: [
-                  ListView.builder(
-                    controller: _scrollController,
-                    itemCount: viewModel.userList.length,
-                    itemBuilder: (context, i) {
-                      var userInfo = viewModel.userList[i];
-                      return SelectableUserItem(userInfo, widget.maxSelected, widget.callback);
-                    },
-                  ),
-                  if (indexList.isNotEmpty)
-                    SidebarIndex(
-                      indexList: indexList,
-                      onIndexSelected: (tag) {
-                        _jumpToTag(tag, viewModel.userList);
-                      },
-                      onTouch: (tag, isTouching) {
-                        setState(() {
-                          _currentLetter = tag;
-                          _isTouchingIndex = isTouching;
-                        });
-                      },
-                    ),
-                  if (_isTouchingIndex)
-                    Center(
-                      child: Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        alignment: Alignment.center,
-                        child: _currentLetter == '↑'
-                            ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
-                            : Text(
-                                _currentLetter,
-                                style: const TextStyle(color: Colors.white, fontSize: 40),
-                              ),
+                  Container(
+                    height: 56,
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    color: Colors.white,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xfff3f4f5),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.search, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 140),
+                                  child: SingleChildScrollView(
+                                    controller: _selectedUsersScrollController,
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: viewModel.pickedUsers.map((u) => Padding(
+                                        padding: const EdgeInsets.only(right: 4),
+                                        child: GestureDetector(
+                                          onTap: () => viewModel.pickUser(u, false),
+                                          child: Portrait(u.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 30, height: 30, borderRadius: 4),
+                                        ),
+                                      )).toList(),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _searchController,
+                                    decoration: const InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: '搜索',
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                    onChanged: (text) {
+                                      viewModel.search(text);
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
+                  ),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        ListView.builder(
+                          controller: _scrollController,
+                          itemCount: viewModel.userList.length,
+                          itemBuilder: (context, i) {
+                            var userInfo = viewModel.userList[i];
+                            return SelectableUserItem(
+                              userInfo,
+                              widget.maxSelected,
+                              widget.callback,
+                              onUserPicked: () {
+                                if (_searchController.text.isNotEmpty) {
+                                  _searchController.clear();
+                                  viewModel.search('');
+                                }
+                              },
+                            );
+                          },
+                        ),
+                        if (indexList.isNotEmpty)
+                          SidebarIndex(
+                            indexList: indexList,
+                            onIndexSelected: (tag) {
+                              _jumpToTag(tag, viewModel.userList);
+                            },
+                            onTouch: (tag, isTouching) {
+                              setState(() {
+                                _currentLetter = tag;
+                                _isTouchingIndex = isTouching;
+                              });
+                            },
+                          ),
+                        if (_isTouchingIndex)
+                          Center(
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              alignment: Alignment.center,
+                              child: _currentLetter == '↑'
+                                  ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
+                                  : Text(
+                                      _currentLetter,
+                                      style: const TextStyle(color: Colors.white, fontSize: 40),
+                                    ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -179,13 +278,15 @@ class SelectableUserItem extends StatelessWidget {
   final UIPickUserInfo contactInfo;
   final int maxSelected;
   final OnPickUserCallback? callback;
+  final VoidCallback? onUserPicked;
 
-  const SelectableUserItem(this.contactInfo, this.maxSelected, this.callback, {super.key});
+  const SelectableUserItem(this.contactInfo, this.maxSelected, this.callback, {super.key, this.onUserPicked});
 
   @override
   Widget build(BuildContext context) {
     PickUserViewModel pickUserViewModel = Provider.of<PickUserViewModel>(context);
     UserInfo userInfo = contactInfo.userInfo;
+    bool showCategory = contactInfo.showCategory && !pickUserViewModel.isSearching;
 
     Widget content = Container(
       height: 52.0,
@@ -194,18 +295,22 @@ class SelectableUserItem extends StatelessWidget {
         children: <Widget>[
           if (maxSelected > 1)
             Padding(
-              padding: const EdgeInsets.only(left: 2.0),
+              padding: const EdgeInsets.only(left: 16.0),
               child: Checkbox(
                 value: pickUserViewModel.isChecked(userInfo.userId),
                 onChanged: pickUserViewModel.isCheckable(userInfo.userId) ? (bool? value) {
                   if (!pickUserViewModel.pickUser(userInfo, value!)) {
                     Fluttertoast.showToast(msg: "超过最大人数限制");
+                  } else {
+                    if (value == true && onUserPicked != null) {
+                      onUserPicked!();
+                    }
                   }
                 } : null,
               ),
             ),
           Padding(
-            padding: EdgeInsets.only(left: maxSelected > 1 ? 4.0 : 8.0),
+            padding: EdgeInsets.only(left: maxSelected > 1 ? 8.0 : 16.0),
             child: userInfo.userId == 'All'
                 ? Image.asset('assets/images/group_avatar_default.png', width: 40, height: 40)
                 : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
@@ -227,7 +332,7 @@ class SelectableUserItem extends StatelessWidget {
 
     Widget item = Column(
       children: <Widget>[
-        if (contactInfo.showCategory)
+        if (showCategory)
           Container(
             height: 18,
             width: double.infinity,
@@ -264,6 +369,10 @@ class SelectableUserItem extends StatelessWidget {
             bool checked = pickUserViewModel.isChecked(userInfo.userId);
             if (!pickUserViewModel.pickUser(userInfo, !checked)) {
               Fluttertoast.showToast(msg: "超过最大人数限制");
+            } else {
+              if (!checked && onUserPicked != null) {
+                onUserPicked!();
+              }
             }
           }
         },

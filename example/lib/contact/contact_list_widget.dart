@@ -331,10 +331,6 @@ class _ContactListItemState extends State<ContactListItem> with AutomaticKeepAli
   @override
   bool get wantKeepAlive => true;
 
-  ///
-  /// 跳转聊天界面
-  ///
-  ///
   _toUserInfoPage(BuildContext context) {
     Navigator.push(
       context,
