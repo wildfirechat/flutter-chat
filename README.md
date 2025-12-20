@@ -45,8 +45,10 @@
 1. `Execution failed for task ':video_player_android:compileDebugJavaWithJavac'.`
     1. 查看 `example/.flutter-plugins` 找到 `video_player_android` 的位置，macos 时，位置如下: `video_player_android=/Users/your-user-name/.pub-cache/hosted/pub.flutter-io.cn/video_player_android-2.7.1/`
     2. 参考[Remove -Werror from Android build](https://github.com/flutter/packages/pull/7776/files) 修改`android/build.gradle`
+2. 鸿蒙上提示包找不到，请从 [flutter_packages](https://gitcode.com/openharmony-tpc/flutter_packages) 查询已适配鸿蒙平台的版本，并固定为该版本
 
 ## 运行
+> 鸿蒙平台时，先参考[这儿](https://gitcode.com/openharmony-tpc/flutter_flutter)进行相关配置
 
 进入到项目工程目录下，依次执行下述命令：
 

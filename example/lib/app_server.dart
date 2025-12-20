@@ -26,7 +26,7 @@ class AppServer {
   }
 
   static void login(String phoneNum, String smsCode, AppServerLoginSuccessCallback successCallback, AppServerErrorCallback errorCallback) async {
-    String jsonStr = json.encode({'mobile':phoneNum, 'code':smsCode, 'clientId':await Imclient.clientId, 'platform': 2});
+    String jsonStr = json.encode({'mobile':phoneNum, 'code':smsCode, 'clientId':await Imclient.clientId, 'platform': 10});
     postJson('/login', jsonStr, (response) {
 
       Map<dynamic, dynamic> map = json.decode(response);

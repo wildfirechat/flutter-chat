@@ -26,7 +26,7 @@ class ChannelListState extends State<ChannelList> {
         actions: [
           GestureDetector(
             onTap: () => _searchChannel(),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(Icons.add_circle_outline_rounded),
                 Padding(padding: EdgeInsets.only(left: 16)),

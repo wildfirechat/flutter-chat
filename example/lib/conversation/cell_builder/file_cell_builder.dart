@@ -1,4 +1,6 @@
 
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/file_message_content.dart';
@@ -29,7 +31,7 @@ class FileCellBuilder extends PortraitCellBuilder {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ConstrainedBox(constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width/View.of(context).devicePixelRatio/3), child: nameText,),
+            ConstrainedBox(constraints: BoxConstraints(maxWidth:PlatformDispatcher.instance.views.first.physicalSize.width/PlatformDispatcher.instance.views.first.devicePixelRatio/3), child: nameText,),
             padding,
             sizeText,
           ],
