@@ -27,9 +27,11 @@ import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_view_model.dart';
 import 'package:wfc_example/viewmodel/group_view_model.dart';
 import 'package:wfc_example/viewmodel/user_view_model.dart';
+import 'package:wfc_example/wfc_notification_manager.dart';
 
 import 'config.dart';
 import 'contact/pick_user_screen.dart';
+
 import 'default_portrait_provider.dart';
 import 'home/home.dart';
 import 'internal/app_state.dart';
@@ -50,21 +52,39 @@ class _MyAppState extends State<MyApp> {
   final navKey = GlobalKey<NavigatorState>();
 
   bool? isLogined;
+  bool _isBackground = false;
 
   @override
   void initState() {
     super.initState();
     _initIMClient();
     _initRepo();
+    WfcNotificationManager().init();
 
     SystemChannels.lifecycle.setMessageHandler((message) async {
       final state = parseStateFromString(message!);
       WidgetsBinding.instance.handleAppLifecycleStateChanged(state);
-      if (state == AppLifecycleState.inactive) {
+      if (state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
+        _isBackground = true;
         debugPrint("goto background");
         updateAppBadge();
+      } else if (state == AppLifecycleState.resumed) {
+        debugPrint("goto foreground");
+        _isBackground = false;
       }
       return message; // Ensure the message is returned as per your last working state
+    });
+
+    Imclient.IMEventBus.on<ReceiveMessagesEvent>().listen((event) {
+      if (_isBackground) {
+        WfcNotificationManager().handleReceiveMessage(event.messages);
+      }
+    });
+
+    Imclient.IMEventBus.on<FriendRequestUpdateEvent>().listen((event) {
+      if (_isBackground) {
+        WfcNotificationManager().handleFriendRequest(event.newUserRequests);
+      }
     });
   }
 

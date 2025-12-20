@@ -32,6 +32,7 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -64,6 +65,7 @@ android {
     }
 
     dependencies {
+        coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
         // wfc kit start
         implementation fileTree(dir: "../../../imclient/android/android_client_aars", include: ["*.aar"])
         implementation fileTree(dir: "../../../rtckit/android/android_avclient_aars", include: ["*.aar"])
