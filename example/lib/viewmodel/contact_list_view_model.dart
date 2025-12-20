@@ -74,7 +74,7 @@ class ContactListViewModel extends ChangeNotifier {
       userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
       var runes = userInfo.displayName!.runes.toList();
       var firstWordPinyinLetter = '{';
-      if (ChineseHelper.isChinese(String.fromCharCode(runes[0]))) {
+      if (runes.isNotEmpty && ChineseHelper.isChinese(String.fromCharCode(runes[0]))) {
         var firstWordPinyin = PinyinHelper.getFirstWordPinyin(userInfo.displayName!);
         firstWordPinyinLetter = firstWordPinyin.isNotEmpty ? firstWordPinyin.substring(0, 1).toUpperCase() : '{';
       }
