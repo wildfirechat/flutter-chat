@@ -16,11 +16,13 @@ import 'package:wfc_example/utilities.dart';
 import 'package:wfc_example/viewmodel/channel_view_model.dart';
 import 'package:wfc_example/viewmodel/conversation_list_view_model.dart';
 import 'package:wfc_example/viewmodel/group_view_model.dart';
-import 'package:wfc_example/viewmodel/user_view_model.dart';
+import 'package:wfc_example/viewmodel/status_notification_view_model.dart';
 import 'package:wfc_example/widget/portrait.dart';
+import 'package:wfc_example/settings/pc_online_devices_screen.dart';
 
 import '../config.dart';
 import '../conversation/conversation_screen.dart';
+import '../viewmodel/user_view_model.dart';
 
 class ConversationListWidget extends StatelessWidget {
   const ConversationListWidget({super.key});
@@ -28,23 +30,98 @@ class ConversationListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context);
-    return Scaffold(
-      body: SafeArea(
-        child: ListView.builder(
-            itemCount: conversationListViewModel.conversationList.length,
-            // 使用 ListView.builder 的 key 参数确保列表项在顺序变化时能正确更新
-            itemExtent: 64.5,
-            key: ValueKey<int>(conversationListViewModel.conversationList.length),
-            itemBuilder: (context, i) {
-              ConversationInfo info = conversationListViewModel.conversationList[i];
-              var key =
-                  '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}-${info.timestamp}';
-              return ConversationListItem(
-                info,
-                key: ValueKey(key),
-              );
-            }),
+    return ChangeNotifierProvider<StatusNotificationViewModel>(
+      create: (_) => StatusNotificationViewModel(),
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              const StatusNotificationHeader(),
+              Expanded(
+                child: ListView.builder(
+                    itemCount: conversationListViewModel.conversationList.length,
+                    // 使用 ListView.builder 的 key 参数确保列表项在顺序变化时能正确更新
+                    itemExtent: 64.5,
+                    key: ValueKey<int>(conversationListViewModel.conversationList.length),
+                    itemBuilder: (context, i) {
+                      ConversationInfo info = conversationListViewModel.conversationList[i];
+                      var key =
+                          '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}-${info.timestamp}';
+                      return ConversationListItem(
+                        info,
+                        key: ValueKey(key),
+                      );
+                    }),
+              ),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+}
+
+class StatusNotificationHeader extends StatelessWidget {
+  const StatusNotificationHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<StatusNotificationViewModel>(
+      builder: (context, viewModel, child) {
+        List<Widget> headers = [];
+
+        if (viewModel.connectionStatus == kConnectionStatusConnecting ||
+            viewModel.connectionStatus == kConnectionStatusReceiving) {
+          headers.add(Container(
+            height: 40,
+            color: Colors.red[100],
+            alignment: Alignment.center,
+            child: const Text('连接中...', style: TextStyle(color: Colors.red)),
+          ));
+        } else if (viewModel.connectionStatus < 0) {
+          headers.add(Container(
+            height: 40,
+            color: Colors.red[100],
+            alignment: Alignment.center,
+            child: const Text('连接失败', style: TextStyle(color: Colors.red)),
+          ));
+        }
+
+        if (viewModel.connectionStatus == kConnectionStatusConnected && viewModel.pcOnlineInfos.isNotEmpty) {
+          String pcStatus = viewModel.pcOnlineInfos.map((e) {
+            if (e.type == 0) return "PC";
+            if (e.type == 1) return "Web";
+            if (e.type == 2) return "小程序";
+            return "PC";
+          }).toSet().join('/');
+          headers.add(GestureDetector(
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const PCOnlineDevicesScreen())).then((_) {
+                viewModel.refreshOnlineInfos();
+              });
+            },
+            child: Container(
+              height: 40,
+              color: const Color(0xfff5f5f5),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  const Icon(Icons.computer, color: Colors.grey, size: 20),
+                  const SizedBox(width: 8),
+                  Text('$pcStatus 已登录', style: const TextStyle(color: Colors.grey)),
+                  const Spacer(),
+                  const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                ],
+              ),
+            ),
+          ));
+        }
+
+        if (headers.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return Column(children: headers);
+      },
     );
   }
 }
