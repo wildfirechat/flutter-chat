@@ -410,7 +410,8 @@ class ImclientPlatform extends PlatformInterface {
           Map<dynamic, dynamic> args = call.arguments;
           int requestId = args['requestId'];
           int messageId = args['messageId'];
-          int messageUid = args['messageUid'];
+          var muid = args['messageUid'];
+          int messageUid = muid is String ? int.parse(muid) : muid;
           int timestamp = args['timestamp'];
           Message? message = _sendingMessages[requestId];
           if(message != null) {
