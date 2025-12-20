@@ -64,6 +64,7 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                   ),
                 )
               : GroupListView(
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.all(0),
                   sectionsCount: groupedSearchResults.keys.toList().length,
                   countOfItemInSection: (int section) {

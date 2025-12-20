@@ -213,6 +213,7 @@ class _PickUserScreenState extends State<PickUserScreen> {
                     child: Stack(
                       children: [
                         ListView.builder(
+                          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                           controller: _scrollController,
                           itemCount: viewModel.userList.length,
                           itemBuilder: (context, i) {
