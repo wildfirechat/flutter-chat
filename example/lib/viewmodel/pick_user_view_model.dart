@@ -71,7 +71,7 @@ class PickUserViewModel extends ChangeNotifier {
         category = "AI 机器人";
       } else {
         var runes = userInfo.displayName!.runes.toList();
-        if (ChineseHelper.isChinese(String.fromCharCode(runes[0]))) {
+        if (runes.isNotEmpty && ChineseHelper.isChinese(String.fromCharCode(runes[0]))) {
           var firstWordPinyin = PinyinHelper.getFirstWordPinyin(userInfo.displayName!);
           category = firstWordPinyin.isNotEmpty ? firstWordPinyin.substring(0, 1).toUpperCase() : '{';
         }
