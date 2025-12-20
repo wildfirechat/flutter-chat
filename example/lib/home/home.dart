@@ -62,6 +62,12 @@ class HomeTabBarState extends State<HomeTabBar> {
       [getTabImage('assets/images/tabbar_discover.png'), getTabImage('assets/images/tabbar_discover_cover.png')],
       [getTabImage('assets/images/tabbar_me.png'), getTabImage('assets/images/tabbar_me_cover.png')]
     ];
+
+    if (Config.WORKSPACE_URL.isEmpty) {
+      appBarTitles.removeAt(2);
+      pages.removeAt(2);
+      tabImages.removeAt(2);
+    }
   }
 
   TextStyle getTabTextStyle(int curIndex) {
@@ -227,37 +233,33 @@ class HomeTabBarState extends State<HomeTabBar> {
           body: _body,
           bottomNavigationBar: CupertinoTabBar(
             //
-            items: <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                  icon: Selector<ConversationListViewModel, int>(
-                    selector: (_, model) => model.unreadMessageCount,
-                    builder: (context, unreadCount, child) => badge.Badge(
-                      badgeContent: Text('$unreadCount'),
-                      showBadge: unreadCount > 0,
-                      child: getTabIcon(0),
+            items: List.generate(appBarTitles.length, (index) {
+              if (index == 0) {
+                return BottomNavigationBarItem(
+                    icon: Selector<ConversationListViewModel, int>(
+                      selector: (_, model) => model.unreadMessageCount,
+                      builder: (context, unreadCount, child) => badge.Badge(
+                        badgeContent: Text('$unreadCount'),
+                        showBadge: unreadCount > 0,
+                        child: getTabIcon(0),
+                      ),
                     ),
-                  ),
-                  label: getTabTitle(0)),
-              BottomNavigationBarItem(
-                  icon: Selector<ContactListViewModel, int>(
-                    selector: (_, model) => model.unreadFriendRequestCount,
-                    builder: (context, unreadFriendRequestCount, child) => badge.Badge(
-                      badgeContent: Text('$unreadFriendRequestCount'),
-                      showBadge: unreadFriendRequestCount > 0,
-                      child: getTabIcon(1),
+                    label: getTabTitle(0));
+              } else if (index == 1) {
+                return BottomNavigationBarItem(
+                    icon: Selector<ContactListViewModel, int>(
+                      selector: (_, model) => model.unreadFriendRequestCount,
+                      builder: (context, unreadFriendRequestCount, child) => badge.Badge(
+                        badgeContent: Text('$unreadFriendRequestCount'),
+                        showBadge: unreadFriendRequestCount > 0,
+                        child: getTabIcon(1),
+                      ),
                     ),
-                  ),
-                  label: getTabTitle(1)),
-              BottomNavigationBarItem(icon: getTabIcon(2), label: getTabTitle(2)),
-              BottomNavigationBarItem(icon: getTabIcon(3), label: getTabTitle(3)),
-              BottomNavigationBarItem(icon: getTabIcon(4), label: getTabTitle(4)),
-            ].where((tab) {
-              if (Config.WORKSPACE_URL == '') {
-                return tab.label != getTabTitle(2);
+                    label: getTabTitle(1));
               } else {
-                return true;
+                return BottomNavigationBarItem(icon: getTabIcon(index), label: getTabTitle(index));
               }
-            }).toList(),
+            }),
             currentIndex: _tabIndex,
             onTap: (index) {
               setState(() {
