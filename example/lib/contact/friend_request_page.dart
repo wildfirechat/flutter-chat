@@ -50,7 +50,7 @@ class FriendRequestPageState extends State<FriendRequestPage> {
         actions: [
           GestureDetector(
             onTap: () => _clearAll(context),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(Icons.delete_outline_rounded),
                 Padding(padding: EdgeInsets.only(left: 16)),
