@@ -1,9 +1,19 @@
+import 'package:flutter/cupertino.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
+
+extension EmptyStringToNull on String? {
+  String? get emptyToNull {
+    if (this == null || this!.isEmpty) {
+      return null;
+    }
+    return this;
+  }
+}
 
 class Utilities {
   static String formatTime(int timestamp) {
@@ -129,13 +139,13 @@ class Utilities {
     String title = '';
     switch (conversation.conversationType) {
       case ConversationType.Single:
-        title = userInfo?.getReadableName() ?? '单聊<${userInfo?.userId}>';
+        title = userInfo?.getReadableName() ?? '单聊<${conversation.target}>';
         break;
       case ConversationType.Group:
-        title = groupInfo?.remark ?? groupInfo?.name ?? '群聊<${groupInfo?.target}>';
+        title = groupInfo?.remark.emptyToNull ?? groupInfo?.name.emptyToNull ?? '群聊<${conversation.target}>';
         break;
       case ConversationType.Channel:
-        title = channelInfo?.name ?? '频道<${channelInfo?.name}>';
+        title = channelInfo?.name ?? '频道<${conversation.target}>';
         break;
       case ConversationType.Chatroom:
         title = '聊天室-<${conversation.target}>';
