@@ -1243,10 +1243,9 @@ class ImclientPlatform extends PlatformInterface {
 
   static FileRecord _convertProtoFileRecord(Map<dynamic, dynamic> map) {
     FileRecord record = FileRecord();
-    Map<dynamic, dynamic> conversation = map['conversation'];
-    record.conversation = _convertProtoConversation(conversation);
+    record.conversation = map.containsKey("conversation") ? _convertProtoConversation(map['conversation']): _convertProtoConversation(map);
     record.userId = map['userId'];
-    record.messageUid = map['messageUid'];
+    record.messageUid = map['messageUid'] is int ? map['messageUid'] : map['messageUid'].toInt();
     record.name = map['name'];
     record.url = map['url'];
     record.size = map['size'];
