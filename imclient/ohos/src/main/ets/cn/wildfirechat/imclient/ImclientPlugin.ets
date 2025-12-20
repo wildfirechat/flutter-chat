@@ -486,12 +486,12 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     _isHiddenGroupMemberName = (call: MethodCall, result: MethodResult) => {
         let groupId = call.argument('groupId') as string
         let value = getUserSetting(5, groupId)
-        return value === '1'
+        result.success(value === '1');
     }
     _isFavGroup = (call: MethodCall, result: MethodResult) => {
         let groupId = call.argument('groupId') as string
         let value = getUserSetting(6, groupId)
-        return value === '1'
+        result.success(value === '1');
     }
     _getGroupMember = (call: MethodCall, result: MethodResult) => {
         let groupId = call.argument('groupId') as string
