@@ -39,6 +39,10 @@
 2. Android Studio 会跟随官方更新，一直使用最新版本
 3. 由于 gradle 版本和 flutter 版本有依赖关系，会使用对应的 gradle 版本，目前是 `8.7`
 
+## 关于鸿蒙的重要说明
+1. 鸿蒙版所依赖的 sdk 是需要付费的
+2. 鸿蒙版，有一些功能异常，正在适配中
+
 
 ## 常见问题
 
@@ -54,7 +58,7 @@
 
 1. ``` cd example && flutter packages get && cd .. ```
 2. ``` cd example/ios/ && pod install && cd ..```(仅iOS平台需要)
-3. ``` cd example && flutter run ```
+3. ``` cd example && flutter run ```(鸿蒙平台时，需要添加 --debug -d 设备id)
 
 ## 集成到flutter应用
 
