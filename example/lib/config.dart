@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class Config {
   //IM服务地址，不能带HTTP头和端口
   static const String IM_Host = 'wildfirechat.net';
@@ -12,7 +14,9 @@ class Config {
   /// 工作台页面地址
   /// <p>
   /// 如果不想显示工作台，置为 '' 即可
-  static String WORKSPACE_URL = "https://open.wildfirechat.cn/work.html";
+  /// static String WORKSPACE_URL = "https://open.wildfirechat.cn/work.html";
+  /// 鸿蒙暂不支持
+  static String WORKSPACE_URL = ['android', 'ios'].contains(Platform.operatingSystem) ? "https://open.wildfirechat.cn/work.html" : "";
 
   /// 音视频通话所用的turn server配置，详情参考 https://docs.wildfirechat.net/webrtc/
   /// <br>
@@ -29,7 +33,7 @@ class Config {
     ["turn:turn.wildfirechat.net:3478", "wfchat", "wfchat123"]
   ];
 
-     // AI机器人ID
+  // AI机器人ID
   static final AI_ROBOTS = ["FireRobot"];
 
   static const String defaultUserPortrait = 'assets/images/user_avatar_default.png';
