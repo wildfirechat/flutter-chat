@@ -29,16 +29,23 @@ class UserViewModel extends ChangeNotifier {
     });
   }
 
+  final Set<String> _fetchingUserIds = {};
+
   UserInfo? getUserInfo(String userId, {String? groupId}) {
-    debugPrint('getUserInfo $userId groupId $groupId');
+    // debugPrint('getUserInfo $userId groupId $groupId');
     var info = UserRepo.getUserInfo(userId, groupId: groupId);
     if (info == null) {
-      Imclient.getUserInfo(userId, groupId: groupId).then((info) {
-        if (info != null) {
-          UserRepo.putUserInfo(info, groupId: groupId);
-          notifyListeners();
-        }
-      });
+      String key = groupId != null ? "$userId@$groupId" : userId;
+      if (!_fetchingUserIds.contains(key)) {
+        _fetchingUserIds.add(key);
+        Imclient.getUserInfo(userId, groupId: groupId).then((info) {
+          _fetchingUserIds.remove(key);
+          if (info != null) {
+            UserRepo.putUserInfo(info, groupId: groupId);
+            notifyListeners();
+          }
+        });
+      }
     }
     return info;
   }
