@@ -1437,15 +1437,15 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _getConversationFiles = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
-        let userId = call.argument("userId") as string
+        let userId = call.argument('userId') ? call.argument("userId") as string : ''
         let order = call.argument("order") as number
-        let conversation = this.__conversationFromArgument(call)
+        let conversation = call.argument("conversation") ? this.__conversationFromArgument(call) : ''
         let beforeMessageUid = this.__getLongPara(call, "beforeMessageUid")
         let count = call.argument("count") as number
 
-        getConversationFiles(conversation, userId, beforeMessageUid, count, order, str => {
+        getConversationFiles(conversation, userId, beforeMessageUid, order, count, str => {
             let obj = {
-                'request': requestId,
+                'requestId': requestId,
                 'files': json.parse(str)
             } as Record<string, Object>
             this.__callback2UI('onFilesResult', obj)
@@ -1458,7 +1458,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let count = call.argument("count") as number
         getMyFiles(beforeMessageUid, count, str => {
             let obj = {
-                'request': requestId,
+                'requestId': requestId,
                 'files': json.parse(str)
             } as Record<string, Object>
             this.__callback2UI('onFilesResult', obj)
@@ -1474,14 +1474,14 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let requestId = call.argument("requestId") as number
         let order = call.argument("order") as number
         let keyword = call.argument("keyword") as string
-        let userId = call.argument("userId") as string
+        let userId = call.argument('userId') ? call.argument("userId") as string : ''
         let conversation = this.__conversationFromArgument(call)
         let beforeMessageUid = this.__getLongPara(call, "beforeMessageUid")
         let count = call.argument("count") as number
 
         searchFiles(keyword, conversation, userId, beforeMessageUid, count, str => {
             let obj = {
-                'request': requestId,
+                'requestId': requestId,
                 'files': json.parse(str)
             } as Record<string, Object>
             this.__callback2UI('onFilesResult', obj)
@@ -1496,7 +1496,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
 
         searchMyFiles(keyword, beforeMessageUid, order, count, str => {
             let obj = {
-                'request': requestId,
+                'requestId': requestId,
                 'files': json.parse(str)
             } as Record<string, Object>
             this.__callback2UI('onFilesResult', obj)
