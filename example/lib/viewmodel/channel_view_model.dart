@@ -15,15 +15,21 @@ class ChannelViewModel extends ChangeNotifier {
     });
   }
 
+  final Set<String> _fetchingChannelIds = {};
+
   ChannelInfo? getChannelInfo(String channelId) {
     var channelInfo = ChannelRepo.getChannelInfo(channelId);
     if (channelInfo == null) {
-      Imclient.getChannelInfo(channelId).then((info) {
-        if (info != null && info.updateDt > 0) {
-          ChannelRepo.putChannelInfo(info);
-          notifyListeners();
-        }
-      });
+      if (!_fetchingChannelIds.contains(channelId)) {
+        _fetchingChannelIds.add(channelId);
+        Imclient.getChannelInfo(channelId).then((info) {
+          _fetchingChannelIds.remove(channelId);
+          if (info != null && info.updateDt > 0) {
+            ChannelRepo.putChannelInfo(info);
+            notifyListeners();
+          }
+        });
+      }
     }
     return channelInfo;
   }

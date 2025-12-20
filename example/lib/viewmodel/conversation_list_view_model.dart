@@ -33,6 +33,7 @@ class ConversationListViewModel extends ChangeNotifier {
   List<ConversationInfo> get conversationList => _conversationList;
 
   late int _connectionStatus = 0;
+  Timer? _debounceTimer;
 
   int get unreadMessageCount {
     int count = 0;
@@ -139,13 +140,17 @@ class ConversationListViewModel extends ChangeNotifier {
     if (!force && _connectionStatus != kConnectionStatusConnected) {
       return;
     }
-    var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
-    // var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single], [0]);
-    _conversationList = conversationInfos;
-    if (force) {
-      _preloadConversationGroupAndChannel(conversationInfos);
-    }
-    notifyListeners();
+    
+    if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 100), () async {
+        var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+        // var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single], [0]);
+        _conversationList = conversationInfos;
+        if (force) {
+          _preloadConversationGroupAndChannel(conversationInfos);
+        }
+        notifyListeners();
+    });
   }
 
   removeConversation(Conversation conversation, [bool clearMessage = false]) {

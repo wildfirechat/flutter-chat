@@ -46,7 +46,7 @@ class ConversationListWidget extends StatelessWidget {
                     itemBuilder: (context, i) {
                       ConversationInfo info = conversationListViewModel.conversationList[i];
                       var key =
-                          '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}-${info.timestamp}';
+                          '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
                       return ConversationListItem(
                         info,
                         key: ValueKey(key),
@@ -166,14 +166,15 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     _userInfoUpdatedSubscription?.cancel();
   }
 
-  // @override
-  // void didUpdateWidget(ConversationListItem oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   // 如果会话更新了，重新加载数据
-  //   if (oldWidget.conversationInfo.conversationInfo.timestamp != widget.conversationInfo.conversationInfo.timestamp) {
-  //     _loadData();
-  //   }
-  // }
+  @override
+  void didUpdateWidget(ConversationListItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 如果会话更新了，重新加载数据
+    if (oldWidget.conversationInfo.lastMessage?.messageUid != widget.conversationInfo.lastMessage?.messageUid ||
+        oldWidget.conversationInfo.timestamp != widget.conversationInfo.timestamp) {
+      _loadLastMessageDigest();
+    }
+  }
 
   // 未使用 futureBuilder
   Future<void> _loadLastMessageDigest() async {

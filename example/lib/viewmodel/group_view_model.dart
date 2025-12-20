@@ -22,15 +22,21 @@ class GroupViewModel extends ChangeNotifier {
     });
   }
 
+  final Set<String> _fetchingGroupIds = {};
+
   GroupInfo? getGroupInfo(String groupId) {
     var groupInfo = GroupRepo.getGroupInfo(groupId);
     if (groupInfo == null) {
-      Imclient.getGroupInfo(groupId).then((info) {
-        if (info != null && info.updateDt > 0) {
-          GroupRepo.putGroupInfo(info);
-          notifyListeners();
-        }
-      });
+      if (!_fetchingGroupIds.contains(groupId)) {
+        _fetchingGroupIds.add(groupId);
+        Imclient.getGroupInfo(groupId).then((info) {
+          _fetchingGroupIds.remove(groupId);
+          if (info != null && info.updateDt > 0) {
+            GroupRepo.putGroupInfo(info);
+            notifyListeners();
+          }
+        });
+      }
     }
     return groupInfo;
   }
