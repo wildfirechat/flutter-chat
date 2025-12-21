@@ -1,7 +1,9 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:imclient/model/conversation.dart';
@@ -72,6 +74,10 @@ class PluginBoard extends StatelessWidget {
         }
         break;
       case "camera":
+        if(!['android', 'ios'].contains(Platform.operatingSystem) ){
+          Fluttertoast.showToast(msg: '当前平台暂不支持');
+          return;
+        }
         CameraPicker.pickFromCamera(context, pickerConfig: const CameraPickerConfig(enableRecording: true, resolutionPreset: ResolutionPreset.high)).then((entity) {
           if (entity != null) {
             if (entity.type == AssetType.image) {
@@ -97,9 +103,14 @@ class PluginBoard extends StatelessWidget {
         break;
       case "call":
         // _pressCallBtnCallback();
+        if(!['android', 'ios'].contains(Platform.operatingSystem) ){
+          Fluttertoast.showToast(msg: '当前平台暂不支持');
+          return;
+        }
         conversationController.onPressCallBtn(context, conversation);
         break;
       case "location":
+        Fluttertoast.showToast(msg: '暂不支持');
         break;
       case "file":
         FilePicker.platform.pickFiles().then((value) {
