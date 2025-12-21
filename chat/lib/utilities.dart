@@ -139,13 +139,13 @@ class Utilities {
     String title = '';
     switch (conversation.conversationType) {
       case ConversationType.Single:
-        title = userInfo?.getReadableName() ?? '单聊<${conversation.target}>';
+        title = userInfo?.getReadableName().emptyToNull ?? '单聊<${conversation.target}>';
         break;
       case ConversationType.Group:
         title = groupInfo?.remark.emptyToNull ?? groupInfo?.name.emptyToNull ?? '群聊<${conversation.target}>';
         break;
       case ConversationType.Channel:
-        title = channelInfo?.name ?? '频道<${conversation.target}>';
+        title = channelInfo?.name.emptyToNull ?? '频道<${conversation.target}>';
         break;
       case ConversationType.Chatroom:
         title = '聊天室-<${conversation.target}>';
