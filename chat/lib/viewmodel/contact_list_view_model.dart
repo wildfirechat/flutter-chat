@@ -50,6 +50,13 @@ class ContactListViewModel extends ChangeNotifier {
     _loadFriendRequestListAndNotify();
   }
 
+  void reset() {
+    _contactList = [];
+    _newFriendRequestList = [];
+    _unreadFriendRequestCount = 0;
+    notifyListeners();
+  }
+
   List<UIContactInfo> get contactList => _contactList;
 
   List<FriendRequest> get newFriendRequestList => _newFriendRequestList;

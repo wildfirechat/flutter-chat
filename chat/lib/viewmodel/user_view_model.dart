@@ -29,6 +29,12 @@ class UserViewModel extends ChangeNotifier {
     });
   }
 
+  void reset() {
+    _fetchingUserIds.clear();
+    UserRepo.clear();
+    notifyListeners();
+  }
+
   final Set<String> _fetchingUserIds = {};
 
   UserInfo? getUserInfo(String userId, {String? groupId}) {

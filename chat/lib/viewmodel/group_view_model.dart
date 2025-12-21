@@ -22,6 +22,12 @@ class GroupViewModel extends ChangeNotifier {
     });
   }
 
+  void reset() {
+    _fetchingGroupIds.clear();
+    GroupRepo.clear();
+    notifyListeners();
+  }
+
   final Set<String> _fetchingGroupIds = {};
 
   GroupInfo? getGroupInfo(String groupId) {

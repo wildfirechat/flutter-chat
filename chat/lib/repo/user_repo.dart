@@ -13,6 +13,7 @@ mixin UserRepo {
 
   static void clear() {
     _userMap.clear();
+    _friendUserMap.clear();
     _groupUserMap.clear();
   }
 

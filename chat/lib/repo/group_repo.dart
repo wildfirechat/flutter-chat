@@ -7,7 +7,7 @@ class GroupRepo {
 
   static void clear() {
     _groupMap.clear();
-    _conversationGroupInfosLoaded = true;
+    _conversationGroupInfosLoaded = false;
   }
 
   static void loadConversationGroupInfos(List<String> groupIds) async {

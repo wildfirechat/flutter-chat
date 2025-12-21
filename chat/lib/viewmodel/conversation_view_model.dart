@@ -48,6 +48,24 @@ class ConversationViewModel extends ChangeNotifier {
 
   List<UIMessage> get conversationMessageList => _conversationMessageList;
 
+  void reset() {
+    _conversationMessageList = [];
+    _currentConversation = null;
+    _currentConversationInfo = null;
+    _draft = '';
+    _isHiddenConversationMemberName = false;
+    _isLoading = false;
+    _noMoreLocalHistoryMsg = false;
+    _noMoreRemoteHistoryMsg = false;
+    _noMoreNewerMsg = false;
+    focusMessageIndex = 0;
+    _conversationTypingStatus = null;
+    _typingUserTime.clear();
+    _isMultiSelectMode = false;
+    _selectedMessageIds.clear();
+    notifyListeners();
+  }
+
   bool get noMoreNewerMsg => _noMoreNewerMsg;
 
   String get draft => _draft;
