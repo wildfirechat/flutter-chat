@@ -1786,6 +1786,9 @@ ImclientPlugin *gIMClientInstance;
 }
 
 - (WFCCConversation *)conversationFromDict:(NSDictionary *)conversation {
+    if(!conversation || !conversation[@"type"]) {
+        return nil;
+    }
     int type = [conversation[@"type"] intValue];
     NSString *target = conversation[@"target"];
     int line = [conversation[@"line"] intValue];

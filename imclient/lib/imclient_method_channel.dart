@@ -1245,7 +1245,14 @@ class ImclientPlatform extends PlatformInterface {
     FileRecord record = FileRecord();
     record.conversation = map.containsKey("conversation") ? _convertProtoConversation(map['conversation']): _convertProtoConversation(map);
     record.userId = map['userId'];
-    record.messageUid = map['messageUid'] is int ? map['messageUid'] : map['messageUid'].toInt();
+    if(map['messageUid'] is int) {
+      record.messageUid = map['messageUid'];
+    } else if(map['messageUid'] is String) {
+      record.messageUid = int.parse(map['messageUid']);
+    } else {
+      record.messageUid = map['messageUid'].toInt();
+    }
+
     record.name = map['name'];
     record.url = map['url'];
     record.size = map['size'];
