@@ -47,7 +47,7 @@
 ## 常见问题
 
 1. `Execution failed for task ':video_player_android:compileDebugJavaWithJavac'.`
-    1. 查看 `example/.flutter-plugins` 找到 `video_player_android` 的位置，macos 时，位置如下: `video_player_android=/Users/your-user-name/.pub-cache/hosted/pub.flutter-io.cn/video_player_android-2.7.1/`
+    1. 查看 `chat/.flutter-plugins` 找到 `video_player_android` 的位置，macos 时，位置如下: `video_player_android=/Users/your-user-name/.pub-cache/hosted/pub.flutter-io.cn/video_player_android-2.7.1/`
     2. 参考[Remove -Werror from Android build](https://github.com/flutter/packages/pull/7776/files) 修改`android/build.gradle`
 2. 鸿蒙上提示包找不到，请从 [flutter_packages](https://gitcode.com/openharmony-tpc/flutter_packages) 查询已适配鸿蒙平台的版本，并固定为该版本
 
@@ -67,9 +67,9 @@
 ### 终端运行
 进入到项目工程目录下，依次执行下述命令：
 
-1. ``` cd example && flutter packages get && cd .. ```
-2. ``` cd example/ios/ && pod install && cd ..``` (仅iOS平台需要)
-3. ``` cd example && flutter run --debug -d ${设备 id}```
+1. ``` cd chat && flutter packages get && cd .. ```
+2. ``` cd chat/ios/ && pod install && cd ..``` (仅iOS平台需要)
+3. ``` cd chat && flutter run --debug -d ${设备 id}```
 
 ### Android Studio运行
 1. 配置 `Flutter SDK Path` 和 `Dart SDK Path` 为鸿蒙适配版的对应路径
@@ -126,7 +126,7 @@
     ```
 
 3. 项目目录下执行 ``` flutter packages get``` 命令。
-4. 如果有iOS平台，执行 ``` cd example/ios/ && pod install ``` 命令。
+4. 如果有iOS平台，执行 ``` cd chat/ios/ && pod install ``` 命令。
 5. 分别运行iOS平台和Android平台。
 6. Android 平台，集成音视频的时候，需要在`AndroidManifest.xml`入口`activity`的配置里面添加如下`intent-filter`
    ```xml
