@@ -30,6 +30,10 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   String _currentLetter = '';
   bool _isTouchingIndex = false;
 
+  List<UIContactInfo>? _cachedContactList;
+  int _cachedHeaderCount = 0;
+  Map<String, double> _cachedOffsets = {};
+
   final List fixHeaderList = [
     ['assets/images/contact_new_friend.png', '新好友', 'new_friend'],
     ['assets/images/contact_fav_group.png', '收藏群组', 'fav_group'],
@@ -37,40 +41,87 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     // ['assets/images/contact_organization.png', '组织架构', 'organization'],
   ];
 
+  Map<String, double> _getOffsets(List<UIContactInfo> contactList, int headerCount) {
+    if (_cachedContactList == contactList && _cachedHeaderCount == headerCount) {
+      return _cachedOffsets;
+    }
+    _cachedContactList = contactList;
+    _cachedHeaderCount = headerCount;
+    _cachedOffsets = _calculateIndexOffsets(contactList, headerCount);
+    return _cachedOffsets;
+  }
+
+  Map<String, double> _calculateIndexOffsets(List<UIContactInfo> contactList, int headerCount) {
+    Map<String, double> offsets = {};
+    double offset = headerCount * 52.5;
+    for (var contact in contactList) {
+      if (contact.showCategory) {
+        String category = contact.category;
+        if (category == '{') category = '#';
+        if (!offsets.containsKey(category)) {
+          offsets[category] = offset;
+        }
+      }
+      offset += contact.showCategory ? 70.5 : 52.5;
+    }
+    return offsets;
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<OrganizationViewModel>(
-        create: (_) {
-          // Initialize OrganizationViewModel to handle organization-related logic
-          var organizationViewModel = OrganizationViewModel();
-          organizationViewModel.loadMyOrganizations();
-          return organizationViewModel;
-        },
-        child: Selector2<ContactListViewModel, OrganizationViewModel,
-                ({List<UIContactInfo> contactList, int unreadFriendRequestCount, List<Organization> rootOrgs, List<Organization> myOrgs})>(
-            builder: (_, record, __) {
-              List<String> indexList = _getIndexList(record.contactList);
-              return Scaffold(
-                body: SafeArea(
-                  child: Stack(
+      create: (_) {
+        // Initialize OrganizationViewModel to handle organization-related logic
+        var organizationViewModel = OrganizationViewModel();
+        organizationViewModel.loadMyOrganizations();
+        return organizationViewModel;
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Selector2<ContactListViewModel, OrganizationViewModel,
+                  ({List<UIContactInfo> contactList, int unreadFriendRequestCount, List<Organization> rootOrgs, List<Organization> myOrgs})>(
+                builder: (_, record, __) {
+                  List<String> indexList = _getIndexList(record.contactList);
+                  int headerCount = fixHeaderList.length + record.rootOrgs.length + record.myOrgs.length;
+                  Map<String, double> indexOffsets = _getOffsets(record.contactList, headerCount);
+
+                  return Stack(
                     children: [
                       ListView.builder(
                           controller: _scrollController,
-                          itemCount: fixHeaderList.length + record.contactList.length + record.rootOrgs.length + record.myOrgs.length,
+                          itemCount: headerCount + record.contactList.length,
                           // 使用key帮助ListView正确处理数据更新
                           key: ValueKey('contact_list_${record.contactList.length}'),
-                          cacheExtent: 1024,
+                          cacheExtent: 200,
+                          addRepaintBoundaries: true,
+                          addAutomaticKeepAlives: false,
+                          itemExtentBuilder: (index, dimensions) {
+                            if (index < headerCount) {
+                              return 52.5;
+                            } else {
+                              final contactInfo = record.contactList[index - headerCount];
+                              return contactInfo.showCategory ? 70.5 : 52.5;
+                            }
+                          },
                           itemBuilder: (context, i) {
                             if (i < fixHeaderList.length) {
                               return _contactListFixHeader(context, i, record.unreadFriendRequestCount);
                             } else if (i < fixHeaderList.length + record.rootOrgs.length) {
                               var org = record.rootOrgs[i - fixHeaderList.length];
                               return _contactListOrgHeader(context, org, true);
-                            } else if (i < fixHeaderList.length + record.rootOrgs.length + record.myOrgs.length) {
+                            } else if (i < headerCount) {
                               var org = record.myOrgs[i - fixHeaderList.length - record.rootOrgs.length];
                               return _contactListOrgHeader(context, org, false);
                             } else {
-                              var contactInfo = record.contactList[i - fixHeaderList.length - record.rootOrgs.length - record.myOrgs.length];
+                              var contactInfo = record.contactList[i - headerCount];
                               return ContactListItem(
                                 contactInfo,
                                 key: ValueKey('contact_${contactInfo.userInfo.userId}-${contactInfo.userInfo.updateDt}'),
@@ -81,44 +132,53 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                         SidebarIndex(
                           indexList: indexList,
                           onIndexSelected: (tag) {
-                            _jumpToTag(tag, record.contactList, fixHeaderList.length + record.rootOrgs.length + record.myOrgs.length);
+                            final offset = tag == '↑' ? 0.0 : indexOffsets[tag];
+                            if (offset != null && _scrollController.hasClients) {
+                              _scrollController.jumpTo(offset);
+                            }
                           },
                           onTouch: (tag, isTouching) {
-                            setState(() {
-                              _currentLetter = tag;
-                              _isTouchingIndex = isTouching;
-                            });
+                            if (_currentLetter != tag || _isTouchingIndex != isTouching) {
+                              setState(() {
+                                _currentLetter = tag;
+                                _isTouchingIndex = isTouching;
+                              });
+                            }
                           },
                         ),
-                      if (_isTouchingIndex)
-                        Center(
-                          child: Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: Colors.black54,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            alignment: Alignment.center,
-                            child: _currentLetter == '↑'
-                                ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
-                                : Text(
-                                    _currentLetter,
-                                    style: const TextStyle(color: Colors.white, fontSize: 40),
-                                  ),
-                          ),
-                        ),
                     ],
-                  ),
-                ),
-              );
-            },
-            selector: (_, contactListViewModel, organizationViewModel) => (
+                  );
+                },
+                selector: (_, contactListViewModel, organizationViewModel) => (
                   contactList: contactListViewModel.contactList,
                   unreadFriendRequestCount: contactListViewModel.unreadFriendRequestCount,
                   rootOrgs: organizationViewModel.rootOrganizations,
                   myOrgs: organizationViewModel.myOrganizations
-                )));
+                ),
+              ),
+              if (_isTouchingIndex)
+                Center(
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    alignment: Alignment.center,
+                    child: _currentLetter == '↑'
+                        ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
+                        : Text(
+                            _currentLetter,
+                            style: const TextStyle(color: Colors.white, fontSize: 40),
+                          ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   List<String> _getIndexList(List<UIContactInfo> contactList) {
@@ -135,24 +195,6 @@ class _ContactListWidgetState extends State<ContactListWidget> {
       }
     }
     return indexList;
-  }
-
-  void _jumpToTag(String tag, List<UIContactInfo> contactList, int headerCount) {
-    if (tag == '↑') {
-      _scrollController.jumpTo(0.0);
-      return;
-    }
-    String targetCategory = tag;
-    if (tag == '#') targetCategory = '{';
-
-    double offset = headerCount * 52.5;
-    for (var contact in contactList) {
-      if (contact.category == targetCategory) {
-        _scrollController.jumpTo(offset);
-        return;
-      }
-      offset += contact.showCategory ? 70.5 : 52.5;
-    }
   }
 
   Widget _contactListFixHeader(BuildContext context, int index, int unreadFriendRequestCount) {
@@ -264,49 +306,35 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   }
 }
 
-class ContactListItem extends StatefulWidget {
+class ContactListItem extends StatelessWidget {
   final UIContactInfo contactInfo;
 
   const ContactListItem(this.contactInfo, {super.key});
 
   @override
-  State<ContactListItem> createState() => _ContactListItemState();
-}
-
-class _ContactListItemState extends State<ContactListItem> with AutomaticKeepAliveClientMixin {
-  // @override
-  // void didUpdateWidget(ContactListItem oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-  //   if (oldWidget.contactInfo.userInfo.updateDt != widget.contactInfo.userInfo.updateDt) {
-  //   do something
-  //   }
-  // }
-
-  @override
   Widget build(BuildContext context) {
-    super.build(context);
-
     // 获取显示名称
-    final displayName = widget.contactInfo.userInfo.friendAlias ?? widget.contactInfo.userInfo.displayName ?? '<${widget.contactInfo.userInfo.userId}>';
+    final displayName = contactInfo.userInfo.friendAlias ?? contactInfo.userInfo.displayName ?? '<${contactInfo.userInfo.userId}>';
 
-    return GestureDetector(
+    return RepaintBoundary(
+      child: GestureDetector(
       onTap: () => _toUserInfoPage(context),
       child: Column(
         children: <Widget>[
           // 分类标题
           Container(
-            height: widget.contactInfo.showCategory ? 18 : 0,
+            height: contactInfo.showCategory ? 18 : 0,
             width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
             color: const Color(0xffebebeb),
             padding: const EdgeInsets.only(left: 16),
-            child: widget.contactInfo.showCategory ? Text(widget.contactInfo.category == '{' ? '#' : widget.contactInfo.category) : null,
+            child: contactInfo.showCategory ? Text(contactInfo.category == '{' ? '#' : contactInfo.category) : null,
           ),
           Container(
             height: 52.0,
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                Portrait(widget.contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
+                Portrait(contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
                 Container(
                   margin: const EdgeInsets.only(left: 16),
                 ),
@@ -325,16 +353,14 @@ class _ContactListItemState extends State<ContactListItem> with AutomaticKeepAli
           ),
         ],
       ),
+      ),
     );
   }
-
-  @override
-  bool get wantKeepAlive => true;
 
   _toUserInfoPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => UserInfoWidget(widget.contactInfo.userInfo.userId)),
+      MaterialPageRoute(builder: (context) => UserInfoWidget(contactInfo.userInfo.userId)),
     );
   }
 }
