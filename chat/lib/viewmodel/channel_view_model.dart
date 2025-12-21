@@ -15,6 +15,12 @@ class ChannelViewModel extends ChangeNotifier {
     });
   }
 
+  void reset() {
+    _fetchingChannelIds.clear();
+    ChannelRepo.clear();
+    notifyListeners();
+  }
+
   final Set<String> _fetchingChannelIds = {};
 
   ChannelInfo? getChannelInfo(String channelId) {

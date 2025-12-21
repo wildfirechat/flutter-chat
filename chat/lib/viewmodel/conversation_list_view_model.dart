@@ -185,6 +185,11 @@ class ConversationListViewModel extends ChangeNotifier {
     });
   }
 
+  void reset() {
+    _conversationList = [];
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     super.dispose();

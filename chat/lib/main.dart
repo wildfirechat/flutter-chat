@@ -38,7 +38,17 @@ import 'internal/app_state.dart';
 import 'login_screen.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider<UserViewModel>(create: (_) => UserViewModel()),
+      ChangeNotifierProvider<GroupViewModel>(create: (_) => GroupViewModel()),
+      ChangeNotifierProvider<ChannelViewModel>(create: (_) => ChannelViewModel()),
+      ChangeNotifierProvider<ConversationViewModel>(create: (_) => ConversationViewModel()),
+      ChangeNotifierProvider<ConversationListViewModel>(create: (_) => ConversationListViewModel()),
+      ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatefulWidget {
@@ -158,8 +168,18 @@ class _MyAppState extends State<MyApp> {
         SharedPreferences.getInstance().then((value) {
           value.remove('userId');
           value.remove('token');
+          value.remove('app_server_auth_token');
           value.commit();
         });
+
+        if (mounted) {
+          context.read<UserViewModel>().reset();
+          context.read<GroupViewModel>().reset();
+          context.read<ChannelViewModel>().reset();
+          context.read<ConversationViewModel>().reset();
+          context.read<ConversationListViewModel>().reset();
+          context.read<ContactListViewModel>().reset();
+        }
 
         isLogined = false;
         navKey.currentState?.pushAndRemoveUntil(
@@ -277,18 +297,9 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-        providers: [
-          ChangeNotifierProvider<UserViewModel>(create: (_) => UserViewModel()),
-          ChangeNotifierProvider<GroupViewModel>(create: (_) => GroupViewModel()),
-          ChangeNotifierProvider<ChannelViewModel>(create: (_) => ChannelViewModel()),
-          ChangeNotifierProvider<ConversationViewModel>(create: (_) => ConversationViewModel()),
-          ChangeNotifierProvider<ConversationListViewModel>(create: (_) => ConversationListViewModel()),
-          ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
-        ],
-        child: MaterialApp(
-          navigatorKey: navKey,
-          home: isLogined == null ? const SplashScreen() : (isLogined! ? const HomeTabBar() : const LoginScreen()),
-        ));
+    return MaterialApp(
+      navigatorKey: navKey,
+      home: isLogined == null ? const SplashScreen() : (isLogined! ? const HomeTabBar() : const LoginScreen()),
+    );
   }
 }
