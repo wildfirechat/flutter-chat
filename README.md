@@ -40,7 +40,7 @@
 3. 由于 gradle 版本和 flutter 版本有依赖关系，会使用对应的 gradle 版本，目前是 `8.7`
 
 ## 关于鸿蒙的重要说明
-1. 鸿蒙版所依赖的 sdk 是需要付费的
+1. 鸿蒙版所依赖的 野火IM 鸿蒙SDK 是需要付费的
 2. 鸿蒙版，有一些功能异常，正在适配中
 
 
@@ -52,13 +52,28 @@
 2. 鸿蒙上提示包找不到，请从 [flutter_packages](https://gitcode.com/openharmony-tpc/flutter_packages) 查询已适配鸿蒙平台的版本，并固定为该版本
 
 ## 运行
-> 鸿蒙平台时，先参考[这儿](https://gitcode.com/openharmony-tpc/flutter_flutter)进行相关配置
+>  由于本项目，同时支持 Android、iOS 和鸿蒙，故只能使用已适配鸿蒙的 flutter 版本
+>
+> 请参考 [这儿](https://gitcode.com/openharmony-tpc/flutter_flutter) 安装和配置 flutter，请使用 `oh-3.27.0-release` 分支
+>
+> 配置成功后，`flutter --version`的输出如下：
+>
+>
+    Flutter 3.27.4 • channel [user-branch] • unknown source
+    Framework • revision d8a9f9a52e (11 个月前) • 2025-01-31 16:07:18 -0500
+    Engine • revision 82bd5b7209
+    Tools • Dart 3.6.2 • DevTools 2.40.3
 
+### 终端运行
 进入到项目工程目录下，依次执行下述命令：
 
 1. ``` cd example && flutter packages get && cd .. ```
-2. ``` cd example/ios/ && pod install && cd ..```(仅iOS平台需要)
-3. ``` cd example && flutter run ```(鸿蒙平台时，需要添加 --debug -d 设备id)
+2. ``` cd example/ios/ && pod install && cd ..``` (仅iOS平台需要)
+3. ``` cd example && flutter run --debug -d ${设备 id}```
+
+### Android Studio运行
+1. 配置 `Flutter SDK Path` 和 `Dart SDK Path` 为鸿蒙适配版的对应路径
+2. 运行
 
 ## 集成到flutter应用
 
