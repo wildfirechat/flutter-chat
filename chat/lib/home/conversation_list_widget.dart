@@ -139,11 +139,14 @@ class ConversationListItem extends StatefulWidget {
   State<ConversationListItem> createState() => _ConversationListItemState();
 }
 
-class _ConversationListItemState extends State<ConversationListItem> {
+class _ConversationListItemState extends State<ConversationListItem> with AutomaticKeepAliveClientMixin {
   String lastMsgDigest = '';
   bool isLoading = true;
 
   StreamSubscription<UserInfoUpdatedEvent>? _userInfoUpdatedSubscription;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -203,13 +206,10 @@ class _ConversationListItemState extends State<ConversationListItem> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     var conversationInfo = widget.conversationInfo;
     bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
-
-    // 如果数据正在加载中，显示占位UI
-    // if (isLoading) {
-    //   return _buildPlaceholder(conversationInfo);
-    // }
 
     return RepaintBoundary(
       child: GestureDetector(
