@@ -1,5 +1,13 @@
 import { FlutterEngine, Log } from '@ohos/flutter_ohos';
+import FluttertoastPlugin from 'fluttertoast';
+import ImagePickerPlugin from 'image_picker_ohos';
+import PathProviderPlugin from 'path_provider_ohos';
+import VideoPlayerPlugin from 'video_player_ohos';
 import SharedPreferencesPlugin from 'shared_preferences_ohos';
+import PermissionHandlerPlugin from 'permission_handler_ohos';
+import FlutterSoundPlugin from 'flutter_sound';
+import FilePickerPlugin from 'file_picker';
+import FlutterLocalNotificationsPlugin from 'flutter_local_notifications';
 import PhotoManagerPlugin from 'photo_manager';
 import ImclientPlugin from 'imclient';
 
@@ -15,7 +23,15 @@ export class GeneratedPluginRegistrant {
 
   static registerWith(flutterEngine: FlutterEngine) {
     try {
+      flutterEngine.getPlugins()?.add(new FluttertoastPlugin());
+      flutterEngine.getPlugins()?.add(new ImagePickerPlugin());
+      flutterEngine.getPlugins()?.add(new PathProviderPlugin());
+      flutterEngine.getPlugins()?.add(new VideoPlayerPlugin());
       flutterEngine.getPlugins()?.add(new SharedPreferencesPlugin());
+      flutterEngine.getPlugins()?.add(new PermissionHandlerPlugin());
+      flutterEngine.getPlugins()?.add(new FlutterSoundPlugin());
+      flutterEngine.getPlugins()?.add(new FilePickerPlugin());
+      flutterEngine.getPlugins()?.add(new FlutterLocalNotificationsPlugin());
       flutterEngine.getPlugins()?.add(new PhotoManagerPlugin());
       flutterEngine.getPlugins()?.add(new ImclientPlugin());
     } catch (e) {
