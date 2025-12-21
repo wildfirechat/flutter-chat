@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
+import '../login_screen.dart';
 
 class GeneralSettings extends StatelessWidget {
   GeneralSettings({Key? key}) : super(key: key);
@@ -65,6 +66,12 @@ class GeneralSettings extends StatelessWidget {
     ],),
       onTap: () {
         if(key == "quit") {
+          Fluttertoast.showToast(msg: "账号将退出");
+
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+            (Route<dynamic> route) => false,
+          );
           Imclient.disconnect();
         } else {
           Fluttertoast.showToast(msg: "方法没有实现");
