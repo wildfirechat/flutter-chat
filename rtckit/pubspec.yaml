@@ -20,8 +20,16 @@ dependencies:
     path: ../imclient/
 
   plugin_platform_interface: ^2.0.2
-  permission_handler: ^10.2.0
-  fluttertoast: ^8.2.1
+  permission_handler: ^11.3.1
+  permission_handler_ohos:
+      git:
+          url: https://gitcode.com/openharmony-sig/flutter_permission_handler.git
+          path: permission_handler_ohos
+          ref: br_permission_handler_v11.3.1_ohos
+  fluttertoast:
+      git:
+          url: https://gitcode.com/openharmony-sig/flutter_fluttertoast.git
+          ref: br_8.2.8_ohos
 
 dev_dependencies:
   flutter_test:

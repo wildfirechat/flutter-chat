@@ -24,6 +24,18 @@
           ]
         }
       ]
+    },
+    {
+      "name": "file_picker_ohos",
+      "srcPath": "../../../../../.pub-cache/git/fluttertpc_file_picker-2d732270bd172e7bf2b803ebff03d3f05f4e1595/ohos/ohos",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
     }
   ]
 }

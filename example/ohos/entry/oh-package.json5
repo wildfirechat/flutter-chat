@@ -9,6 +9,15 @@
     "imclient": "file:../har/imclient.har",
     "shared_preferences_ohos": "file:../har/shared_preferences_ohos.har",
     "@ohos/flutter_ohos": "har/flutter.har",
-    "photo_manager": "file:../har/photo_manager.har"
+    "photo_manager": "file:../har/photo_manager.har",
+    "permission_handler_ohos": "file:../har/permission_handler_ohos.har",
+    "file_picker_ohos": "file:../har/file_picker_ohos.har",
+    "file_picker": "file:../har/file_picker.har",
+    "fluttertoast": "file:../har/fluttertoast.har",
+    "image_picker_ohos": "file:../har/image_picker_ohos.har",
+    "path_provider_ohos": "file:../har/path_provider_ohos.har",
+    "video_player_ohos": "file:../har/video_player_ohos.har",
+    "flutter_sound": "file:../har/flutter_sound.har",
+    "flutter_local_notifications": "file:../har/flutter_local_notifications.har"
   }
 }
