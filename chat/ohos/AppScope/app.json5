@@ -1,9 +1,9 @@
 {
   "app": {
-    "bundleName": "cn.wildfirechat.example",
-    "vendor": "example",
+    "bundleName": "cn.wildfirechat.chat",
+    "vendor": "wf",
     "versionCode": 1000000,
-    "versionName": "0.0.1",
+    "versionName": "0.1.1",
     "icon": "$media:app_icon",
     "label": "$string:app_name"
   }
