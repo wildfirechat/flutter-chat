@@ -43,6 +43,9 @@ class ConversationListWidget extends StatelessWidget {
                     // 使用 ListView.builder 的 key 参数确保列表项在顺序变化时能正确更新
                     itemExtent: 64.5,
                     key: ValueKey<int>(conversationListViewModel.conversationList.length),
+                    cacheExtent: 200,
+                    addRepaintBoundaries: true,
+                    addAutomaticKeepAlives: false,
                     itemBuilder: (context, i) {
                       ConversationInfo info = conversationListViewModel.conversationList[i];
                       var key =
@@ -136,14 +139,11 @@ class ConversationListItem extends StatefulWidget {
   State<ConversationListItem> createState() => _ConversationListItemState();
 }
 
-class _ConversationListItemState extends State<ConversationListItem> with AutomaticKeepAliveClientMixin {
+class _ConversationListItemState extends State<ConversationListItem> {
   String lastMsgDigest = '';
   bool isLoading = true;
 
   StreamSubscription<UserInfoUpdatedEvent>? _userInfoUpdatedSubscription;
-
-  @override
-  bool get wantKeepAlive => true; // 保持状态，防止滚动时重建
 
   @override
   void initState() {
@@ -203,8 +203,6 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-
     var conversationInfo = widget.conversationInfo;
     bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
 
@@ -213,7 +211,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     //   return _buildPlaceholder(conversationInfo);
     // }
 
-    return GestureDetector(
+    return RepaintBoundary(
+      child: GestureDetector(
       child: Container(
           color: conversationInfo.isTop > 0 ? CupertinoColors.secondarySystemBackground : CupertinoColors.systemBackground,
           child: Column(
@@ -328,6 +327,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
         }
       },
       onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
+      ),
     );
   }
 
