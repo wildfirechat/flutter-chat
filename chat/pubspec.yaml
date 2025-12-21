@@ -1,6 +1,6 @@
 name: chat
-description: Demonstrates how to use the imclient and rtckit plugin.
-version: 0.0.1
+description: 野火IM flutter 客户端，支持 Android、iOS 和 HarmonyOS
+version: 0.1.1
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
