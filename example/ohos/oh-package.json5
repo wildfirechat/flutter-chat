@@ -19,7 +19,6 @@
     "shared_preferences_ohos": "file:./har/shared_preferences_ohos.har",
     "photo_manager": "file:./har/photo_manager.har",
     "permission_handler_ohos": "file:./har/permission_handler_ohos.har",
-    "file_picker_ohos": "../../../../../.pub-cache/git/fluttertpc_file_picker-2d732270bd172e7bf2b803ebff03d3f05f4e1595/ohos/ohos",
     "file_picker": "file:./har/file_picker.har",
     "fluttertoast": "file:./har/fluttertoast.har",
     "image_picker_ohos": "file:./har/image_picker_ohos.har",
