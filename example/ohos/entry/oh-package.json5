@@ -11,7 +11,6 @@
     "@ohos/flutter_ohos": "har/flutter.har",
     "photo_manager": "file:../har/photo_manager.har",
     "permission_handler_ohos": "file:../har/permission_handler_ohos.har",
-    "file_picker_ohos": "file:../har/file_picker_ohos.har",
     "file_picker": "file:../har/file_picker.har",
     "fluttertoast": "file:../har/fluttertoast.har",
     "image_picker_ohos": "file:../har/image_picker_ohos.har",
