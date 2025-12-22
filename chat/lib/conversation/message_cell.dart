@@ -9,6 +9,7 @@ import 'package:imclient/message/streaming_text_generated_message_content.dart';
 import 'package:imclient/message/streaming_text_generating_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
+import 'package:imclient/message/sticker_message_content.dart';
 import 'package:imclient/message/composite_message_content.dart';
 import 'cell_builder/call_start_cell_builder.dart';
 import 'cell_builder/card_cell_builder.dart';
@@ -21,6 +22,7 @@ import 'cell_builder/text_cell_builder.dart';
 import 'cell_builder/unknown_cell_builder.dart';
 import 'cell_builder/video_cell_builder.dart';
 import 'cell_builder/voice_cell_builder.dart';
+import 'cell_builder/sticker_cell_builder.dart';
 import 'cell_builder/composite_cell_builder.dart';
 import '../ui_model/ui_message.dart';
 
@@ -49,6 +51,8 @@ class _MessageCellState extends State<MessageCell> with AutomaticKeepAliveClient
       _cellBuilder = TextCellBuilder(context, widget.model);
     } else if (widget.model.message.content is ImageMessageContent) {
       _cellBuilder = ImageCellBuilder(context, widget.model);
+    } else if (widget.model.message.content is StickerMessageContent) {
+      _cellBuilder = StickerCellBuilder(context, widget.model);
     } else if (widget.model.message.content is CallStartMessageContent) {
       _cellBuilder = CallStartCellBuilder(context, widget.model);
     } else if (widget.model.message.content is SoundMessageContent) {

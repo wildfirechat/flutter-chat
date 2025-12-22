@@ -1,7 +1,14 @@
+import 'dart:io';
+import 'dart:ui';
+import 'dart:convert';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
+import 'package:imclient/message/sticker_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
@@ -42,6 +49,7 @@ class MessageInputBarController extends ChangeNotifier {
   double _keyboardHeight = 0;
 
   int _sendTypingTime = 0;
+  final Map<String, String> _remoteUrlCache = {};
 
   MessageInputBarController({
     required this.conversation,
@@ -50,6 +58,7 @@ class MessageInputBarController extends ChangeNotifier {
   }) : _status = initialStatus {
     // 设置焦点监听器
     focusNode.addListener(_onFocusChanged);
+    _loadRemoteUrlCache();
 
     Imclient.getConversationInfo(conversation).then((conversationInfo) {
       if (conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty) {
@@ -295,6 +304,95 @@ class MessageInputBarController extends ChangeNotifier {
     _sendTypingTime = 0;
   }
 
+  void _loadRemoteUrlCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonStr = prefs.getString('wfc_sticker_remote_urls');
+      if (jsonStr != null) {
+        final Map<String, dynamic> map = json.decode(jsonStr);
+        map.forEach((key, value) {
+          _remoteUrlCache[key] = value.toString();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading remote url cache: $e');
+    }
+  }
+
+  void _saveRemoteUrl(String stickerPath, String remoteUrl) async {
+    _remoteUrlCache[stickerPath] = remoteUrl;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('wfc_sticker_remote_urls', json.encode(_remoteUrlCache));
+    } catch (e) {
+      debugPrint('Error saving remote url: $e');
+    }
+  }
+
+  final Map<String, _StickerInfo> _stickerCache = {};
+
+  Future<void> sendSticker(String stickerPath) async {
+    try {
+      StickerMessageContent content = StickerMessageContent();
+      
+      // 1. Check if we have a remoteUrl persisted
+      if (_remoteUrlCache.containsKey(stickerPath)) {
+        content.remoteUrl = _remoteUrlCache[stickerPath];
+        // We still need width/height if possible, check stickerCache
+        _StickerInfo? info = _stickerCache[stickerPath];
+        if (info != null) {
+          content.width = info.width;
+          content.height = info.height;
+        } else {
+          // If not in memory cache, we might want to load it once to get dimensions
+          final byteData = await rootBundle.load(stickerPath);
+          final image = await decodeImageFromList(byteData.buffer.asUint8List());
+          content.width = image.width;
+          content.height = image.height;
+          _stickerCache[stickerPath] = _StickerInfo(path: '', width: image.width, height: image.height);
+        }
+        conversationViewModel.sendMessage(content);
+        return;
+      }
+
+      // 2. No remoteUrl, use localPath and upload
+      _StickerInfo? info = _stickerCache[stickerPath];
+      if (info == null || info.path.isEmpty) {
+        final byteData = await rootBundle.load(stickerPath);
+        final tempDir = await getTemporaryDirectory();
+        final fileName = stickerPath.split('/').last;
+        final file = File('${tempDir.path}/$fileName');
+        
+        if (!await file.exists()) {
+          await file.writeAsBytes(byteData.buffer.asUint8List());
+        }
+        
+        int width = 0;
+        int height = 0;
+        try {
+          final image = await decodeImageFromList(byteData.buffer.asUint8List());
+          width = image.width;
+          height = image.height;
+        } catch (e) {
+          debugPrint('Error decoding image: $e');
+        }
+        
+        info = _StickerInfo(path: file.path, width: width, height: height);
+        _stickerCache[stickerPath] = info;
+      }
+      
+      content.localPath = info.path;
+      content.width = info.width;
+      content.height = info.height;
+
+      conversationViewModel.sendMediaMessage(content, uploadedCallback: (remoteUrl) {
+        _saveRemoteUrl(stickerPath, remoteUrl);
+      });
+    } catch (e) {
+      debugPrint('Error sending sticker: $e');
+    }
+  }
+
   void _sendTyping(String text) {
     if (DateTime.now().second - _sendTypingTime > 12 && text.isNotEmpty) {
       _sendTypingTime = DateTime.now().microsecondsSinceEpoch;
@@ -407,4 +505,12 @@ class MessageInputBarController extends ChangeNotifier {
     focusNode.removeListener(_onFocusChanged);
     focusNode.dispose();
   }
+}
+
+class _StickerInfo {
+  final String path;
+  final int width;
+  final int height;
+
+  _StickerInfo({required this.path, required this.width, required this.height});
 }

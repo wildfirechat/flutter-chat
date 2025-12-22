@@ -285,7 +285,7 @@ class ConversationViewModel extends ChangeNotifier {
           if (userInfo != null) {
             TipNotificationContent tip = TipNotificationContent();
             tip.tip = '欢迎 ${userInfo.displayName} 加入聊天室';
-            _sendMessage(tip);
+            sendMessage(tip);
           }
         });
       }, (errorCode) {
@@ -505,16 +505,20 @@ class ConversationViewModel extends ChangeNotifier {
     return completer.future;
   }
 
-  void _sendMessage(MessageContent messageContent) {
+  void sendMediaMessage(MessageContent messageContent, {Function(String remoteUrl)? uploadedCallback}) {
     if (_currentConversation == null) {
       return;
     }
-    Imclient.sendMediaMessage(_currentConversation!, messageContent, successCallback: (int messageUid, int timestamp) {}, errorCallback: (int errorCode) {},
+    Imclient.sendMediaMessage(_currentConversation!, messageContent,
+        successCallback: (int messageUid, int timestamp) {},
+        errorCallback: (int errorCode) {},
         progressCallback: (int uploaded, int total) {
-      debugPrint("progressCallback:$uploaded,$total");
-    }, uploadedCallback: (String remoteUrl) {
-      debugPrint("uploadedCallback:$remoteUrl");
-    });
+          debugPrint("progressCallback:$uploaded,$total");
+        },
+        uploadedCallback: (String remoteUrl) {
+          debugPrint("uploadedCallback:$remoteUrl");
+          uploadedCallback?.call(remoteUrl);
+        });
   }
 
   void sendMessage(MessageContent messageContent) {
