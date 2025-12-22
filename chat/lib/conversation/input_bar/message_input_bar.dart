@@ -47,6 +47,8 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
   ChatInputBarStatus? _previousBoardStatus;
   /// 面板→键盘过渡期间保持面板可见
   bool _keepBoardVisible = false;
+  /// 收起动画时显示的面板类型
+  ChatInputBarStatus? _animatingBoardStatus;
   /// 持久化的键盘高度
   double _savedKeyboardHeight = 0;
   /// 上一次的键盘高度（用于检测稳定）
@@ -119,6 +121,7 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
   Widget build(BuildContext context) {
     final controller = Provider.of<MessageInputBarController>(context);
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
 
     final bool isInBoardMode = controller.status == ChatInputBarStatus.emojiStatus ||
         controller.status == ChatInputBarStatus.pluginStatus;
@@ -153,13 +156,27 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
     final bool showBoard = isInBoardMode || _keepBoardVisible;
 
     // 底部高度计算
+    // 当没有键盘和面板时，需要添加安全区高度（因为SafeArea bottom: false）
     final double bottomHeight;
     if (isInBoardMode) {
       bottomHeight = targetBoardHeight;
     } else if (_keepBoardVisible) {
       bottomHeight = max(keyboardHeight, targetBoardHeight);
-    } else {
+    } else if (keyboardHeight > 0) {
       bottomHeight = keyboardHeight;
+    } else {
+      // 无键盘无面板时，添加安全区高度
+      bottomHeight = bottomPadding;
+    }
+
+    // 判断是否使用动画：
+    // 只有"纯面板显示/隐藏"才用动画（即：当前无键盘、上一帧也无键盘、且不在过渡中）
+    // 所有涉及键盘的场景都不用动画
+    final bool useAnimation = keyboardHeight == 0 && _lastKeyboardHeight == 0 && !_keepBoardVisible;
+
+    // 记录当前显示的面板类型，用于收起动画
+    if (isInBoardMode) {
+      _animatingBoardStatus = controller.status;
     }
 
     return Column(
@@ -167,14 +184,21 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
       children: [
         _buildInputBar(controller),
         ClipRect(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.fastOutSlowIn,
-            height: bottomHeight,
-            child: (showBoard || (bottomHeight > keyboardHeight && bottomHeight > 0))
-                ? _buildBoardsStack(controller, targetBoardHeight)
-                : const SizedBox.shrink(),
-          ),
+          child: useAnimation
+              ? AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
+                  height: bottomHeight,
+                  child: showBoard
+                      ? _buildBoardsStack(controller, targetBoardHeight)
+                      : null,
+                )
+              : Container(
+                  height: bottomHeight,
+                  child: showBoard
+                      ? _buildBoardsStack(controller, targetBoardHeight)
+                      : null,
+                ),
         ),
       ],
     );
@@ -276,13 +300,46 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
     );
   }
 
-  /// 构建面板
-  Widget _buildBoardsStack(MessageInputBarController controller, double height) {
+  /// 构建面板（用于动画，使用记录的面板类型）
+  Widget _buildBoardsStackForAnimation(MessageInputBarController controller, double height) {
+    // 使用记录的面板类型，确保收起动画显示正确的面板
     int index = 0;
-    if (controller.status == ChatInputBarStatus.pluginStatus ||
-        (_keepBoardVisible && _previousBoardStatus == ChatInputBarStatus.pluginStatus)) {
+    final statusToUse = _animatingBoardStatus ?? controller.status;
+    if (statusToUse == ChatInputBarStatus.pluginStatus) {
       index = 1;
     }
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        height: height,
+        child: IndexedStack(
+          index: index,
+          children: [
+            EmojiBoard(
+              emojis,
+              pickerEmojiCallback: (emoji) => controller.insertText(emoji),
+              delEmojiCallback: () => controller.backspace(emojis),
+              pickerStickerCallback: (stickerPath) => controller.sendSticker(stickerPath),
+              height: height,
+            ),
+            PluginBoard(controller.conversation, height: height),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 构建面板
+  Widget _buildBoardsStack(MessageInputBarController controller, double height) {
+    // 优先用 _previousBoardStatus 或 _keepBoardVisible 时的面板类型，保证收起动画期间显示正确面板
+    ChatInputBarStatus? statusToShow;
+    if (_keepBoardVisible && _previousBoardStatus != null) {
+      statusToShow = _previousBoardStatus;
+    } else if (controller.status == ChatInputBarStatus.emojiStatus || controller.status == ChatInputBarStatus.pluginStatus) {
+      statusToShow = controller.status;
+    }
+    int index = (statusToShow == ChatInputBarStatus.pluginStatus) ? 1 : 0;
 
     return Align(
       alignment: Alignment.topCenter,
