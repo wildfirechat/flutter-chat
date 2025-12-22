@@ -413,23 +413,23 @@ class ImclientPlatform extends PlatformInterface {
           var muid = args['messageUid'];
           int messageUid = muid is String ? int.parse(muid) : muid;
           int timestamp = args['timestamp'];
+
+          var callback = _sendMessageSuccessCallbackMap[requestId];
+          if (callback != null) {
+            callback(messageUid, timestamp);
+          }
+          _removeSendMessageCallback(requestId);
+
           Message? message = _sendingMessages[requestId];
-          if(message != null) {
-            message.messageUid = messageUid;
-            message.serverTime = timestamp;
-            message.status = MessageStatus.Message_Status_Sent;
-            _sendingMessages.remove(requestId);
+          if(message == null){
+            return;
           }
+          message.messageUid = messageUid;
+          message.serverTime = timestamp;
+          message.status = MessageStatus.Message_Status_Sent;
+          _sendingMessages.remove(requestId);
 
-          if(requestId > 0) {
-            var callback = _sendMessageSuccessCallbackMap[requestId];
-            if (callback != null) {
-              callback(messageUid, timestamp);
-            }
-            _removeSendMessageCallback(requestId);
-          }
-
-          _eventBus.fire(SendMessageSuccessEvent(messageId, messageUid, timestamp));
+          _eventBus.fire(SendMessageSuccessEvent(message, messageId, messageUid, timestamp));
           break;
         case 'onSendMediaMessageProgress':
           Map<dynamic, dynamic> args = call.arguments;
@@ -441,26 +441,32 @@ class ImclientPlatform extends PlatformInterface {
           if (callback != null) {
             callback(uploaded, total);
           }
-          _eventBus.fire(SendMessageProgressEvent(messageId, total, uploaded));
+          Message? message = _sendingMessages[requestId];
+          if(message == null){
+            return;
+          }
+          _eventBus.fire(SendMessageProgressEvent(message, messageId, total, uploaded));
           break;
         case 'onSendMediaMessageUploaded':
           Map<dynamic, dynamic> args = call.arguments;
           int requestId = args['requestId'];
           int messageId = args['messageId'];
           String remoteUrl = args['remoteUrl'];
-          if(messageId > 0) {
-            Message? message = _sendingMessages[requestId];
-            if(message != null && message.content is MediaMessageContent) {
-              MediaMessageContent mediaCnt = message.content as MediaMessageContent;
-              mediaCnt.remoteUrl = remoteUrl;
-            }
-          }
 
           var callback = _sendMediaMessageUploadedCallbackMap[requestId];
           if (callback != null) {
             callback(remoteUrl);
           }
-          _eventBus.fire(SendMessageMediaUploadedEvent(messageId, remoteUrl));
+
+          Message? message = _sendingMessages[requestId];
+          if(message == null){
+            return;
+          }
+          if(message.content is MediaMessageContent) {
+            MediaMessageContent mediaCnt = message.content as MediaMessageContent;
+            mediaCnt.remoteUrl = remoteUrl;
+          }
+          _eventBus.fire(SendMessageMediaUploadedEvent(message!, messageId, remoteUrl));
           break;
         case 'onSendMessageFailure':
           Map<dynamic, dynamic> args = call.arguments;
@@ -468,23 +474,20 @@ class ImclientPlatform extends PlatformInterface {
           int messageId = args['messageId'];
           int errorCode = args['errorCode'];
 
-          if(messageId > 0) {
-            Message? message = _sendingMessages[requestId];
-            if(message != null) {
-              message.status = MessageStatus.Message_Status_Send_Failure;
-              _sendingMessages.remove(requestId);
-
-              if(requestId > 0) {
-                var callback = _errorCallbackMap[requestId];
-                if (callback != null) {
-                  callback(errorCode);
-                }
-                _removeAllOperationCallback(requestId);
-              }
-            }
+          var callback = _errorCallbackMap[requestId];
+          if (callback != null) {
+            callback(errorCode);
           }
+          _removeAllOperationCallback(requestId);
 
-          _eventBus.fire(SendMessageFailureEvent(messageId, errorCode));
+          Message? message = _sendingMessages[requestId];
+          if(message == null){
+            return;
+          }
+          message.status = MessageStatus.Message_Status_Send_Failure;
+          _sendingMessages.remove(requestId);
+
+          _eventBus.fire(SendMessageFailureEvent(message, messageId, errorCode));
           break;
         case 'onUploadMediaUploaded':
           Map<dynamic, dynamic> args = call.arguments;

@@ -35,4 +35,11 @@ class ConversationInfo {
       unreadCount.hashCode ^
       isTop.hashCode ^
       isSilent.hashCode;
+
+  int compareTo(ConversationInfo other) {
+    if (isTop != other.isTop) {
+      return other.isTop.compareTo(isTop);
+    }
+    return other.timestamp.compareTo(timestamp);
+  }
 }
