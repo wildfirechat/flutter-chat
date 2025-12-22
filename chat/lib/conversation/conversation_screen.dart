@@ -177,6 +177,7 @@ class _State extends State<ConversationScreen> {
             actions: actions,
           ),
           body: SafeArea(
+            bottom: false,
             child: Stack(
               children: [
                 Column(
