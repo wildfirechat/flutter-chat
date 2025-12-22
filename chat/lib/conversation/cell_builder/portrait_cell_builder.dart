@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/sound_message_content.dart';
+import 'package:imclient/message/sticker_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
@@ -76,7 +77,9 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isSendMessage ? Colors.green : Colors.white,
+                      color: model.message.content is StickerMessageContent
+                          ? Colors.transparent
+                          : (isSendMessage ? Colors.green : Colors.white),
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(8),
                         topLeft: Radius.circular(8),

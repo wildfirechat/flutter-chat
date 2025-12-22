@@ -156,6 +156,9 @@ flutter:
     - assets/images/file_type/
     - assets/images/input/
     - assets/images/input/voice/
+    - assets/sticker/
+    - assets/sticker/B数/
+    - assets/sticker/程序员/
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

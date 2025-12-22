@@ -291,6 +291,7 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
               emojis,
               pickerEmojiCallback: (emoji) => controller.insertText(emoji),
               delEmojiCallback: () => controller.backspace(emojis),
+              pickerStickerCallback: (stickerPath) => controller.sendSticker(stickerPath),
               height: height,
             ),
             PluginBoard(controller.conversation, height: height),
