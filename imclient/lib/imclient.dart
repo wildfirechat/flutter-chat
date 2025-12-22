@@ -277,33 +277,37 @@ class SendMessageStartEvent {
 }
 
 class SendMessageSuccessEvent {
+  Message message;
   int messageId;
   int messageUid;
   int timestamp;
 
-  SendMessageSuccessEvent(this.messageId, this.messageUid, this.timestamp);
+  SendMessageSuccessEvent(this.message, this.messageId, this.messageUid, this.timestamp);
 }
 
 class SendMessageProgressEvent {
+  Message message;
   int messageId;
   int total;
   int uploaded;
 
-  SendMessageProgressEvent(this.messageId, this.total, this.uploaded);
+  SendMessageProgressEvent(this.message, this.messageId, this.total, this.uploaded);
 }
 
 class SendMessageMediaUploadedEvent {
+  Message message;
   int messageId;
   String mediaUrl;
 
-  SendMessageMediaUploadedEvent(this.messageId, this.mediaUrl);
+  SendMessageMediaUploadedEvent(this.message, this.messageId, this.mediaUrl);
 }
 
 class SendMessageFailureEvent {
+  Message message;
   int messageId;
   int errorCode;
 
-  SendMessageFailureEvent(this.messageId, this.errorCode);
+  SendMessageFailureEvent(this.message, this.messageId, this.errorCode);
 }
 
 class ConversationDraftUpdatedEvent {

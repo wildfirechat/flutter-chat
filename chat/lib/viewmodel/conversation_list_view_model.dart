@@ -93,16 +93,26 @@ class ConversationListViewModel extends ChangeNotifier {
       _loadConversationList();
     });
     _sendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
-      _loadConversationList();
+      debugPrint('jyj to _loadConversationList 10');
+      if (event.message.messageId != 0) {
+        _reloadConversation(event.message.conversation, insertWhenNotFound: true);
+      }
     });
     _sendMessageSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
-      _loadConversationList();
+      debugPrint('jyj to _loadConversationList 11');
+      if (event.message.messageId != 0) {
+        _reloadConversation(event.message.conversation, insertWhenNotFound: true);
+      }
     });
     _sendMessageFailureSubscription = _eventBus.on<SendMessageFailureEvent>().listen((event) {
-      _loadConversationList();
+      debugPrint('jyj to _loadConversationList 12');
+      if (event.message.messageId != 0) {
+        _reloadConversation(event.message.conversation, insertWhenNotFound: true);
+      }
     });
     _clearMessagesSubscription = _eventBus.on<ClearMessagesEvent>().listen((event) {
-      _loadConversationList();
+      debugPrint('jyj to _loadConversationList 13');
+      _reloadConversation(event.conversation);
     });
     _draftUpdatedSubscription = _eventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
       _reloadConversation(event.conversation);
@@ -136,7 +146,7 @@ class ConversationListViewModel extends ChangeNotifier {
     // }
   }
 
-  _reloadConversation(Conversation conversation) async {
+  _reloadConversation(Conversation conversation, {bool insertWhenNotFound = false}) async {
     var info = await Imclient.getConversationInfo(conversation);
     if (info != null) {
       bool found = false;
@@ -148,6 +158,10 @@ class ConversationListViewModel extends ChangeNotifier {
         }
       }
       if (found) {
+        notifyListeners();
+      } else if (!found && insertWhenNotFound) {
+        _conversationList.add(info);
+        _conversationList.sort((a, b) => a.compareTo(b));
         notifyListeners();
       }
     }
