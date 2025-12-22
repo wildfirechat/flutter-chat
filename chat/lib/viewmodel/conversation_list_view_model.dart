@@ -87,7 +87,7 @@ class ConversationListViewModel extends ChangeNotifier {
       _loadConversationList();
     });
     _clearConversationUnreadSubscription = _eventBus.on<ClearConversationUnreadEvent>().listen((event) {
-      _loadConversationList();
+      _reloadConversation(event.conversation);
     });
     _clearConversationsUnreadSubscription = _eventBus.on<ClearConversationsUnreadEvent>().listen((event) {
       _loadConversationList();
@@ -105,7 +105,7 @@ class ConversationListViewModel extends ChangeNotifier {
       _loadConversationList();
     });
     _draftUpdatedSubscription = _eventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
-      _loadConversationList();
+      _reloadConversation(event.conversation);
     });
     _silentUpdatedSubscription = _eventBus.on<ConversationSilentUpdatedEvent>().listen((event) {
       _loadConversationList();
@@ -134,6 +134,23 @@ class ConversationListViewModel extends ChangeNotifier {
     // for (var channelId in targetChannels) {
     //   ChannelRepo.getChannelInfo(channelId);
     // }
+  }
+
+  _reloadConversation(Conversation conversation) async {
+    var info = await Imclient.getConversationInfo(conversation);
+    if (info != null) {
+      bool found = false;
+      for (int i = 0; i < _conversationList.length; i++) {
+        if (_conversationList[i].conversation == conversation) {
+          _conversationList[i] = info;
+          found = true;
+          break;
+        }
+      }
+      if (found) {
+        notifyListeners();
+      }
+    }
   }
 
   _loadConversationList({bool force = false}) async {

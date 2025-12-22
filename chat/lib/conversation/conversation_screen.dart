@@ -510,7 +510,9 @@ class _State extends State<ConversationScreen> {
   void deactivate() {
     // 使用controller获取草稿
     String draft = _inputBarController.getDraft();
-    Imclient.setConversationDraft(widget.conversation, draft);
+    if(draft.isNotEmpty){
+      Imclient.setConversationDraft(widget.conversation, draft);
+    }
     super.deactivate();
   }
 
