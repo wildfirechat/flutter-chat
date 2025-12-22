@@ -158,6 +158,7 @@ class _State extends State<ConversationScreen> {
           }),
         ],
         child: Scaffold(
+          resizeToAvoidBottomInset: false,
           backgroundColor: const Color.fromARGB(255, 232, 232, 232),
           appBar: AppBar(
             title: ConversationAppbarTitle(widget.conversation),
