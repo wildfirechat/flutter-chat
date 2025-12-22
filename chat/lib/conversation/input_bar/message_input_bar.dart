@@ -139,12 +139,13 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
       _previousBoardStatus = controller.status;
       _keepBoardVisible = false;
     } else if (controller.status == ChatInputBarStatus.keyboardStatus &&
+        controller.focusNode.hasFocus &&
         _previousBoardStatus != null &&
         keyboardHeight < targetBoardHeight * 0.5) {
       // 从面板切换到键盘，保持面板可见直到键盘弹出
       _keepBoardVisible = true;
-    } else if (controller.status != ChatInputBarStatus.keyboardStatus) {
-      // 非面板非键盘状态，清除记录
+    } else if (controller.status != ChatInputBarStatus.keyboardStatus || !controller.focusNode.hasFocus) {
+      // 非面板非键盘状态，或键盘失去焦点（收起全部），清除记录
       _previousBoardStatus = null;
       _keepBoardVisible = false;
     }
@@ -165,12 +166,15 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildInputBar(controller),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 100),
-          height: bottomHeight,
-          child: showBoard
-              ? _buildBoardsStack(controller, targetBoardHeight)
-              : const SizedBox.shrink(),
+        ClipRect(
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.fastOutSlowIn,
+            height: bottomHeight,
+            child: (showBoard || (bottomHeight > keyboardHeight && bottomHeight > 0))
+                ? _buildBoardsStack(controller, targetBoardHeight)
+                : const SizedBox.shrink(),
+          ),
         ),
       ],
     );

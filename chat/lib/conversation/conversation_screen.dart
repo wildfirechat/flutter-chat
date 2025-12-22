@@ -35,6 +35,7 @@ class ConversationScreen extends StatefulWidget {
 class _State extends State<ConversationScreen> {
   late ConversationViewModel _conversationViewModel;
   late MessageInputBarController _inputBarController;
+  final ScrollController _scrollController = ScrollController();
   double _pullDistance = 0.0;
   bool _isDragging = false;
   bool _isLoading = false;
@@ -56,8 +57,7 @@ class _State extends State<ConversationScreen> {
 
   @override
   void dispose() {
-    super.dispose();
-
+    _scrollController.dispose();
     _conversationViewModel.setConversation(null);
     if (widget.conversation.conversationType == ConversationType.Chatroom) {
       Imclient.quitChatroom(widget.conversation.target, () {
@@ -76,6 +76,7 @@ class _State extends State<ConversationScreen> {
     if (notification is ScrollStartNotification) {
       if (notification.dragDetails != null) {
         _isDragging = true;
+        _inputBarController.resetStatus();
       }
     } else if (notification is ScrollUpdateNotification) {
       if (notification.metrics.pixels > notification.metrics.maxScrollExtent) {
@@ -124,6 +125,16 @@ class _State extends State<ConversationScreen> {
     return false;
   }
 
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Widget> actions = [];
@@ -154,6 +165,7 @@ class _State extends State<ConversationScreen> {
           ChangeNotifierProvider<MessageInputBarController>(create: (_) {
             _inputBarController = MessageInputBarController(conversation: widget.conversation, conversationViewModel: conversationViewModel);
             _inputBarController.onMentionTriggered = _onMentionTriggered;
+            _inputBarController.onSend = _scrollToBottom;
             return _inputBarController;
           }),
         ],
@@ -174,6 +186,7 @@ class _State extends State<ConversationScreen> {
                         child: NotificationListener(
                           onNotification: notificationFunction,
                           child: CustomScrollView(
+                            controller: _scrollController,
                             center: _centerKey,
                             anchor: conversationViewModel.focusMessageIndex > 0 ? 0.5 : 0.0,
                             reverse: true,

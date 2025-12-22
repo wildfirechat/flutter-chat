@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -44,6 +43,7 @@ class MessageInputBarController extends ChangeNotifier {
   Message? _quotedMessage;
   ChannelInfo? channelInfo;
   Function(Conversation conversation)? onMentionTriggered;
+  VoidCallback? onSend;
   final List<Mention> _mentionsList = [];
   String _lastText = "";
   double _keyboardHeight = 0;
@@ -77,7 +77,9 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   ChatInputBarStatus get status => _status;
+
   Message? get quotedMessage => _quotedMessage;
+
   double get keyboardHeight => _keyboardHeight;
 
   void updateKeyboardHeight(double height) {
@@ -96,8 +98,8 @@ class MessageInputBarController extends ChangeNotifier {
     // 当输入框获得焦点时，切换到键盘状态
     if (focusNode.hasFocus && _status != ChatInputBarStatus.keyboardStatus) {
       _status = ChatInputBarStatus.keyboardStatus;
-      notifyListeners();
     }
+    notifyListeners();
   }
 
   void setStatus(ChatInputBarStatus newStatus) {
@@ -110,9 +112,7 @@ class MessageInputBarController extends ChangeNotifier {
       if (!focusNode.hasFocus) {
         focusNode.requestFocus();
       }
-    } else if (newStatus == ChatInputBarStatus.pluginStatus ||
-               newStatus == ChatInputBarStatus.emojiStatus ||
-               newStatus == ChatInputBarStatus.menuStatus) {
+    } else if (newStatus == ChatInputBarStatus.pluginStatus || newStatus == ChatInputBarStatus.emojiStatus || newStatus == ChatInputBarStatus.menuStatus) {
       if (focusNode.hasFocus) {
         focusNode.unfocus();
       }
@@ -168,6 +168,7 @@ class MessageInputBarController extends ChangeNotifier {
       _quotedMessage = null;
       _mentionsList.clear();
       _lastText = "";
+      onSend?.call();
       notifyListeners();
     }
   }
@@ -285,7 +286,7 @@ class MessageInputBarController extends ChangeNotifier {
     _lastText = textEditingController.text;
   }
 
-  void _sendTextMessage(Conversation conversation, String text) async{
+  void _sendTextMessage(Conversation conversation, String text) async {
     TextMessageContent txt = TextMessageContent(text);
     if (_quotedMessage != null) {
       txt.quoteInfo = await QuoteInfo.fromMessage(_quotedMessage!);
@@ -334,7 +335,7 @@ class MessageInputBarController extends ChangeNotifier {
   Future<void> sendSticker(String stickerPath) async {
     try {
       StickerMessageContent content = StickerMessageContent();
-      
+
       // 1. Check if we have a remoteUrl persisted
       if (_remoteUrlCache.containsKey(stickerPath)) {
         content.remoteUrl = _remoteUrlCache[stickerPath];
@@ -352,6 +353,7 @@ class MessageInputBarController extends ChangeNotifier {
           _stickerCache[stickerPath] = _StickerInfo(path: '', width: image.width, height: image.height);
         }
         conversationViewModel.sendMessage(content);
+        onSend?.call();
         return;
       }
 
@@ -362,11 +364,11 @@ class MessageInputBarController extends ChangeNotifier {
         final tempDir = await getTemporaryDirectory();
         final fileName = stickerPath.split('/').last;
         final file = File('${tempDir.path}/$fileName');
-        
+
         if (!await file.exists()) {
           await file.writeAsBytes(byteData.buffer.asUint8List());
         }
-        
+
         int width = 0;
         int height = 0;
         try {
@@ -376,11 +378,11 @@ class MessageInputBarController extends ChangeNotifier {
         } catch (e) {
           debugPrint('Error decoding image: $e');
         }
-        
+
         info = _StickerInfo(path: file.path, width: width, height: height);
         _stickerCache[stickerPath] = info;
       }
-      
+
       content.localPath = info.path;
       content.width = info.width;
       content.height = info.height;
@@ -388,6 +390,7 @@ class MessageInputBarController extends ChangeNotifier {
       conversationViewModel.sendMediaMessage(content, uploadedCallback: (remoteUrl) {
         _saveRemoteUrl(stickerPath, remoteUrl);
       });
+      onSend?.call();
     } catch (e) {
       debugPrint('Error sending sticker: $e');
     }
