@@ -20,9 +20,10 @@ class _PluginItem {
 }
 
 class PluginBoard extends StatelessWidget {
-  PluginBoard(this.conversation, {super.key});
+  PluginBoard(this.conversation, {super.key, this.height});
 
   final Conversation conversation;
+  final double? height;
 
   final List<_PluginItem> _line1 = [
     _PluginItem('assets/images/input/album.png', "相册", "album"),
@@ -132,8 +133,9 @@ class PluginBoard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double boardHeight = height ?? 250;
     return SizedBox(
-        height: 250,
+        height: boardHeight,
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisExtent: 120),
           itemCount: _line1.length,

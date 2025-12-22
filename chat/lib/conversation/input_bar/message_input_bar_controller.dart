@@ -39,6 +39,7 @@ class MessageInputBarController extends ChangeNotifier {
   Function(Conversation conversation)? onMentionTriggered;
   final List<Mention> _mentionsList = [];
   String _lastText = "";
+  double _keyboardHeight = 0;
 
   int _sendTypingTime = 0;
 
@@ -68,6 +69,14 @@ class MessageInputBarController extends ChangeNotifier {
 
   ChatInputBarStatus get status => _status;
   Message? get quotedMessage => _quotedMessage;
+  double get keyboardHeight => _keyboardHeight;
+
+  void updateKeyboardHeight(double height) {
+    if (height > 0 && _keyboardHeight != height) {
+      _keyboardHeight = height;
+      notifyListeners();
+    }
+  }
 
   void setQuotedMessage(Message? message) {
     _quotedMessage = message;
@@ -75,6 +84,7 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void _onFocusChanged() {
+    // 当输入框获得焦点时，切换到键盘状态
     if (focusNode.hasFocus && _status != ChatInputBarStatus.keyboardStatus) {
       _status = ChatInputBarStatus.keyboardStatus;
       notifyListeners();
@@ -91,7 +101,9 @@ class MessageInputBarController extends ChangeNotifier {
       if (!focusNode.hasFocus) {
         focusNode.requestFocus();
       }
-    } else if (newStatus == ChatInputBarStatus.pluginStatus || newStatus == ChatInputBarStatus.emojiStatus || newStatus == ChatInputBarStatus.menuStatus) {
+    } else if (newStatus == ChatInputBarStatus.pluginStatus ||
+               newStatus == ChatInputBarStatus.emojiStatus ||
+               newStatus == ChatInputBarStatus.menuStatus) {
       if (focusNode.hasFocus) {
         focusNode.unfocus();
       }
