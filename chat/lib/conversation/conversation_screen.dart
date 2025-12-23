@@ -57,6 +57,7 @@ class _State extends State<ConversationScreen> {
 
   @override
   void dispose() {
+    super.dispose();
     _scrollController.dispose();
     _conversationViewModel.setConversation(null);
     if (widget.conversation.conversationType == ConversationType.Chatroom) {
