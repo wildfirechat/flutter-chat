@@ -29,32 +29,26 @@
 
 我们有核心研发工程师轮流值班处理issue和论坛，会及时处理的，疑难Bug的修改和新需求的开发我们也会尽快解决。
 
-# WFC Flutter Plugins
+# flutter-chat
 
-野火Flutter插件，包含即时通讯插件和实时音视频插件，包含Flutter Demo。
+野火Flutter版 demo， 支持 Android、iOS 和原生鸿蒙，包含即时通讯插件和实时音视频插件。
 
-## 关于 flutter 、Android Studio、gradle 版本的重要说明
+## 关于 Flutter 、Android Studio、Gradle 版本的重要说明
 
-1. 为了能够兼容鸿蒙原生系统，flutter 版本会跟随鸿蒙原生已适配的flutter 版本进行升级，目前鸿蒙原生已适配的flutter版本是`3.27.4`
+1. 为了能够兼容原生鸿蒙，Flutter 版本会跟随原生鸿蒙已适配的Flutter 版本进行升级，目前鸿蒙原生已适配的Flutter版本是`3.27.4`
 2. Android Studio 会跟随官方更新，一直使用最新版本
 3. 由于 gradle 版本和 flutter 版本有依赖关系，会使用对应的 gradle 版本，目前是 `8.7`
 
 ## 关于鸿蒙的重要说明
 1. 鸿蒙版所依赖的 野火IM 鸿蒙SDK 是需要付费的
 2. 鸿蒙版，有一些功能异常，正在适配中
+3. 鸿蒙端，暂不支持音视频通话
 
-
-## 常见问题
-
-1. `Execution failed for task ':video_player_android:compileDebugJavaWithJavac'.`
-    1. 查看 `chat/.flutter-plugins` 找到 `video_player_android` 的位置，macos 时，位置如下: `video_player_android=/Users/your-user-name/.pub-cache/hosted/pub.flutter-io.cn/video_player_android-2.7.1/`
-    2. 参考[Remove -Werror from Android build](https://github.com/flutter/packages/pull/7776/files) 修改`android/build.gradle`
-2. 鸿蒙上提示包找不到，请从 [flutter_packages](https://gitcode.com/openharmony-tpc/flutter_packages) 查询已适配鸿蒙平台的版本，并固定为该版本
 
 ## 运行
->  由于本项目，同时支持 Android、iOS 和鸿蒙，故只能使用已适配鸿蒙的 flutter 版本
+>  由于本项目，同时支持 Android、iOS 和鸿蒙，故只能使用已适配鸿蒙的 Flutter 版本
 >
-> 请参考 [这儿](https://gitcode.com/openharmony-tpc/flutter_flutter) 安装和配置 flutter，请使用 `oh-3.27.0-release` 分支
+> 请参考 [这儿](https://gitcode.com/openharmony-tpc/flutter_flutter) 安装和配置 Flutter，请使用 `oh-3.27.0-release` 分支
 >
 > 配置成功后，`flutter --version`的输出如下：
 >
@@ -250,7 +244,7 @@ Imclient.setDeviceToken(pushType, deviceToken);
 ### 5 使用个推
 
 实际上可以选用任意一个或者多个推送服务商，这里给出一个使用个推的介绍。
-[对接个推](https://gitee.com/wfchat/wfc_flutter_plugins/issues/I6P16V?from=project-issue)
+[对接个推](https://gitee.com/wfchat/flutter-chat/issues/I6P16V?from=project-issue)
 
 ## 音视频的历史问题
 野火在flutter项目上的音视频的实现有2个方案：
@@ -294,6 +288,14 @@ Rtckit.enableCallkit()
 多人视频通话
 
 <img alt="多人视频通话" height="640" src="./screenshots/video_call_multi.png" width="295"/>
+
+## 常见问题
+
+1. `Execution failed for task ':video_player_android:compileDebugJavaWithJavac'.`
+    1. 查看 `chat/.flutter-plugins` 找到 `video_player_android` 的位置，macos 时，位置如下: `video_player_android=/Users/your-user-name/.pub-cache/hosted/pub.flutter-io.cn/video_player_android-2.7.1/`
+    2. 参考[Remove -Werror from Android build](https://github.com/flutter/packages/pull/7776/files) 修改`android/build.gradle`
+2. 鸿蒙上提示包找不到，请从 [flutter_packages](https://gitcode.com/openharmony-tpc/flutter_packages) 查询已适配鸿蒙平台的版本，并固定为该版本
+
 
 
 ## 一些知识要点
