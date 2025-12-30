@@ -46,6 +46,7 @@ class MessageInputBarController extends ChangeNotifier {
   VoidCallback? onSend;
   final List<Mention> _mentionsList = [];
   String _lastText = "";
+  bool _isInsertingMention = false;
   double _keyboardHeight = 0;
 
   int _sendTypingTime = 0;
@@ -174,10 +175,22 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void onTextChanged(String text) {
-    if (text.isNotEmpty && text.endsWith('@')) {
-      if (text.length > _lastText.length && text.substring(text.length - 1) == '@') {
-        if (onMentionTriggered != null) {
-          onMentionTriggered!(conversation);
+    if (_isInsertingMention) {
+      if (text != _lastText) {
+        debugPrint('Spurious text change detected ("$text"). Restoring to "$_lastText"');
+        textEditingController.value = TextEditingValue(
+          text: _lastText,
+          selection: TextSelection.fromPosition(TextPosition(offset: _lastText.length)),
+        );
+        return;
+      }
+    } else {
+      // Regular logic for triggering mention picker on user input
+      if (text.isNotEmpty && text.endsWith('@')) {
+        if (text.length > _lastText.length && text.substring(text.length - 1) == '@') {
+          if (onMentionTriggered != null) {
+            onMentionTriggered!(conversation);
+          }
         }
       }
     }
@@ -273,17 +286,31 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void addMention(UserInfo user) {
-    String name = user.displayName ?? user.userId;
-    int selectionStart = textEditingController.selection.start;
-    int mentionStart = selectionStart;
+    _isInsertingMention = true;
 
-    if (selectionStart > 0 && textEditingController.text[selectionStart - 1] == '@') {
-      mentionStart = selectionStart - 1;
-    }
+    final String name = user.displayName ?? user.userId;
+    final TextEditingValue currentVal = textEditingController.value;
+    final String currentText = currentVal.text;
+    final int selectionStart = currentVal.selection.start;
 
-    insertText("$name ");
-    _mentionsList.add(Mention(user.userId, name, mentionStart, mentionStart + 1 + name.length));
-    _lastText = textEditingController.text;
+    final int atSignIndex = selectionStart - 1;
+
+    final String textToInsert = "@$name ";
+    final String newText = currentText.replaceRange(atSignIndex, selectionStart, textToInsert);
+    final int newCursorPos = atSignIndex + textToInsert.length;
+
+    textEditingController.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.fromPosition(TextPosition(offset: newCursorPos)),
+    );
+
+    _lastText = newText;
+    final mentionEnd = newCursorPos - 1; // -1 to exclude the trailing space
+    _mentionsList.add(Mention(user.userId, name, atSignIndex, mentionEnd));
+
+    Future.delayed(const Duration(milliseconds: 150), () {
+      _isInsertingMention = false;
+    });
   }
 
   void _sendTextMessage(Conversation conversation, String text) async {
