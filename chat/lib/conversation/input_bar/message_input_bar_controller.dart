@@ -46,6 +46,7 @@ class MessageInputBarController extends ChangeNotifier {
   VoidCallback? onSend;
   final List<Mention> _mentionsList = [];
   String _lastText = "";
+  String _conversationDraft = "";
   bool _isInsertingMention = false;
   double _keyboardHeight = 0;
 
@@ -168,6 +169,10 @@ class MessageInputBarController extends ChangeNotifier {
       textEditingController.clear();
       _quotedMessage = null;
       _mentionsList.clear();
+      if (_conversationDraft.isNotEmpty) {
+        Imclient.setConversationDraft(conversation, '');
+        _conversationDraft = '';
+      }
       _lastText = "";
       onSend?.call();
       notifyListeners();
@@ -441,6 +446,7 @@ class MessageInputBarController extends ChangeNotifier {
     textEditingController.text = draft;
     textEditingController.selection = TextSelection(baseOffset: draft.length, extentOffset: draft.length);
     _lastText = draft;
+    _conversationDraft = draft;
     notifyListeners();
   }
 
