@@ -117,6 +117,10 @@ dependencies:
   path: any
   pinyin: ^3.3.0
   flutter_popup: ^3.3.9
+  mobile_scanner:
+      git:
+          url: "https://gitcode.com/openharmony-sig/fluttertpc_mobile_scanner"
+          ref: br_v6.0.10_ohos
 dependency_overrides:
   uuid: ^4.4.2
   path_provider:

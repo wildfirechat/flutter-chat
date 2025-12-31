@@ -645,6 +645,15 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.0.0"
+  mobile_scanner:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: "br_v6.0.10_ohos"
+      resolved-ref: ada6c1488c4a74ecd5f76a6e6ed1884c23b4bde1
+      url: "https://gitcode.com/openharmony-sig/fluttertpc_mobile_scanner"
+    source: git
+    version: "6.0.10"
   nested:
     dependency: transitive
     description:

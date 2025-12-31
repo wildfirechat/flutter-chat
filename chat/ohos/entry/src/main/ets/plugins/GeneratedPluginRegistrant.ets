@@ -8,6 +8,7 @@ import PermissionHandlerPlugin from 'permission_handler_ohos';
 import FlutterSoundPlugin from 'flutter_sound';
 import FilePickerPlugin from 'file_picker';
 import FlutterLocalNotificationsPlugin from 'flutter_local_notifications';
+import MobileScannerPlugin from 'mobile_scanner';
 import PhotoManagerPlugin from 'photo_manager';
 import ImclientPlugin from 'imclient';
 
@@ -32,6 +33,7 @@ export class GeneratedPluginRegistrant {
       flutterEngine.getPlugins()?.add(new FlutterSoundPlugin());
       flutterEngine.getPlugins()?.add(new FilePickerPlugin());
       flutterEngine.getPlugins()?.add(new FlutterLocalNotificationsPlugin());
+      flutterEngine.getPlugins()?.add(new MobileScannerPlugin());
       flutterEngine.getPlugins()?.add(new PhotoManagerPlugin());
       flutterEngine.getPlugins()?.add(new ImclientPlugin());
     } catch (e) {
