@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
@@ -16,9 +17,9 @@ class WFPortraitProvider extends DefaultPortraitProvider {
   }
 
   @override
-  String groupDefaultPortrait(GroupInfo groupInfo, List<UserInfo> userInfos) {
-    if (groupInfo.portrait != null && groupInfo.portrait!.isNotEmpty) {
-      return groupInfo.portrait!;
+  String? groupDefaultPortrait(GroupInfo groupInfo, List<UserInfo> userInfos) {
+    if ((groupInfo.portrait != null && groupInfo.portrait!.isNotEmpty) || userInfos.isEmpty) {
+      return groupInfo.portrait;
     } else {
       List<Map<String, String>> reqMembers = [];
       for (var userInfo in userInfos) {
