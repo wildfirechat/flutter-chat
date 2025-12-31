@@ -68,7 +68,7 @@ dependencies:
   event_bus: ^2.0.0
   image: ^4.0.15
   badges: ^3.0.3
-  intl: ^0.20.2
+  intl: ^0.19.0
   #  file_picker: ^8.0.7
   file_picker:
     git:
@@ -100,6 +100,9 @@ dependencies:
       url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
       path: "packages/url_launcher/url_launcher"
       ref: br_url_launcher-v6.3.0_ohos
+  flutter_localization:
+      git:
+          url: "https://gitcode.com/openharmony-sig/flutter_localization"
   flutter_dynamic_icon: ^2.1.0
   provider: ^6.1.4
   webview_flutter: ^4.7.0
@@ -132,6 +135,10 @@ dependency_overrides:
           url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
           path: "packages/video_player/video_player"
           ref: br_video_player-v2.10.0_ohos
+  shared_preferences:
+      git:
+          url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+          path: "packages/shared_preferences/shared_preferences"
 
 dev_dependencies:
   flutter_test:
@@ -149,6 +156,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

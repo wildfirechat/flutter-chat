@@ -28,6 +28,7 @@ import 'package:chat/user_info_widget.dart';
 
 import 'package:chat/wfc_scheme.dart';
 import 'package:chat/pc/pc_login_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../contact/contact_list_widget.dart';
 import '../conversation/conversation_screen.dart';
@@ -42,7 +43,7 @@ class HomeTabBar extends StatefulWidget {
 }
 
 class HomeTabBarState extends State<HomeTabBar> {
-  final appBarTitles = ['信息', '联系人', '工作台', '发现', '我的'];
+  late List<String> appBarTitles;
   final tabTextStyleSelected = const TextStyle(color: Color(0xff3B9AFF));
   final tabTextStyleNormal = const TextStyle(color: Color(0xff969696));
 
@@ -74,6 +75,18 @@ class HomeTabBarState extends State<HomeTabBar> {
       pages.removeAt(2);
       tabImages.removeAt(2);
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    appBarTitles = [
+      AppLocalizations.of(context)!.tabChat,
+      AppLocalizations.of(context)!.tabContact,
+      AppLocalizations.of(context)!.tabWork,
+      AppLocalizations.of(context)!.tabDiscovery,
+      AppLocalizations.of(context)!.tabMe
+    ];
   }
 
   TextStyle getTabTextStyle(int curIndex) {
@@ -125,7 +138,7 @@ class HomeTabBarState extends State<HomeTabBar> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => PickUserScreen(title: '发起群聊', (context, members) async {
+          builder: (context) => PickUserScreen(title: AppLocalizations.of(context)!.startChat, (context, members) async {
                 if (members.isEmpty) {
                   Fluttertoast.showToast(msg: "请选择一位或者多位好友发起聊天");
                 } else if (members.length == 1) {
@@ -179,10 +192,14 @@ class HomeTabBarState extends State<HomeTabBar> {
       );
 
       if (result != null && result is String) {
-        _handleQrCode(result);
+        if (mounted) {
+          _handleQrCode(result);
+        }
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: '扫描失败: $e');
+      if (mounted) {
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.scanFail(e.toString()));
+      }
     }
   }
 
@@ -202,7 +219,7 @@ class HomeTabBarState extends State<HomeTabBar> {
         value = qrcode.substring(lastSlashIndex + 1);
       }
     } else {
-      Fluttertoast.showToast(msg: "无效的二维码: $qrcode");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.invalidQrCode(qrcode));
       return;
     }
 
@@ -227,14 +244,14 @@ class HomeTabBarState extends State<HomeTabBar> {
         break;
       case WfcScheme.qrCodePrefixChannel:
         // TODO: Implement Channel
-        Fluttertoast.showToast(msg: "频道功能暂未支持");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.channelNotSupport);
         break;
       case WfcScheme.qrCodePrefixConference:
         // TODO: Implement Conference
-        Fluttertoast.showToast(msg: "会议功能暂未支持");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.conferenceNotSupport);
         break;
       default:
-        Fluttertoast.showToast(msg: "扫描结果: $qrcode");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.scanResult(qrcode));
         break;
     }
   }
@@ -262,25 +279,25 @@ class HomeTabBarState extends State<HomeTabBar> {
                 offset: const Offset(10, 60),
                 itemBuilder: (context) {
                   return [
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: "chat",
                       child: ListTile(
-                        leading: Icon(Icons.chat_bubble_rounded),
-                        title: Text("发起聊天"),
+                        leading: const Icon(Icons.chat_bubble_rounded),
+                        title: Text(AppLocalizations.of(context)!.startChat),
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: "add",
                       child: ListTile(
-                        leading: Icon(Icons.contact_phone_rounded),
-                        title: Text("添加好友"),
+                        leading: const Icon(Icons.contact_phone_rounded),
+                        title: Text(AppLocalizations.of(context)!.addFriend),
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: "scan",
                       child: ListTile(
-                        leading: Icon(Icons.qr_code_scanner_rounded),
-                        title: Text("扫描二维码"),
+                        leading: const Icon(Icons.qr_code_scanner_rounded),
+                        title: Text(AppLocalizations.of(context)!.scanQrCode),
                       ),
                     ),
                   ];
