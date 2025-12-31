@@ -333,7 +333,7 @@ class ConversationSilentUpdatedEvent {
 
 abstract class DefaultPortraitProvider {
   String userDefaultPortrait(UserInfo userInfo);
-  String groupDefaultPortrait(GroupInfo groupInfo, List<UserInfo> userInfos);
+  String? groupDefaultPortrait(GroupInfo groupInfo, List<UserInfo> userInfos);
 }
 
 class Imclient {
