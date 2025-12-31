@@ -124,6 +124,7 @@ dependencies:
       git:
           url: "https://gitcode.com/openharmony-sig/fluttertpc_mobile_scanner"
           ref: br_v6.0.10_ohos
+  qr_flutter: ^4.1.0
 dependency_overrides:
   uuid: ^4.4.2
   path_provider:
