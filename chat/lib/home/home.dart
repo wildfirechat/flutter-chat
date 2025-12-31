@@ -27,6 +27,7 @@ import 'package:chat/group/group_info_screen.dart';
 import 'package:chat/user_info_widget.dart';
 
 import 'package:chat/wfc_scheme.dart';
+import 'package:chat/pc/pc_login_screen.dart';
 
 import '../contact/contact_list_widget.dart';
 import '../conversation/conversation_screen.dart';
@@ -222,8 +223,7 @@ class HomeTabBarState extends State<HomeTabBar> {
             MaterialPageRoute(builder: (context) => GroupInfoScreen(groupId: value, from: from)));
         break;
       case WfcScheme.qrCodePrefixPcSession:
-        // TODO: Implement PC Login
-        Fluttertoast.showToast(msg: "PC登录暂未支持");
+        Navigator.push(context, MaterialPageRoute(builder: (context) => PCLoginScreen(token: value)));
         break;
       case WfcScheme.qrCodePrefixChannel:
         // TODO: Implement Channel
