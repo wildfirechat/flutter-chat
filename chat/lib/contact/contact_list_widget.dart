@@ -1,6 +1,7 @@
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
@@ -34,12 +35,6 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   int _cachedHeaderCount = 0;
   Map<String, double> _cachedOffsets = {};
 
-  final List fixHeaderList = [
-    ['assets/images/contact_new_friend.png', '新好友', 'new_friend'],
-    ['assets/images/contact_fav_group.png', '收藏群组', 'fav_group'],
-    ['assets/images/contact_subscribed_channel.png', '频道', 'subscribed_channel'],
-    // ['assets/images/contact_organization.png', '组织架构', 'organization'],
-  ];
 
   Map<String, double> _getOffsets(List<UIContactInfo> contactList, int headerCount) {
     if (_cachedContactList == contactList && _cachedHeaderCount == headerCount) {
@@ -75,6 +70,12 @@ class _ContactListWidgetState extends State<ContactListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final List fixHeaderList = [
+      ['assets/images/contact_new_friend.png', AppLocalizations.of(context)!.newFriend, 'new_friend'],
+      ['assets/images/contact_fav_group.png', AppLocalizations.of(context)!.favGroup, 'fav_group'],
+      ['assets/images/contact_subscribed_channel.png', AppLocalizations.of(context)!.subscribedChannel, 'subscribed_channel'],
+      // ['assets/images/contact_organization.png', AppLocalizations.of(context)!.organization, 'organization'],
+    ];
     return ChangeNotifierProvider<OrganizationViewModel>(
       create: (_) {
         // Initialize OrganizationViewModel to handle organization-related logic
@@ -113,7 +114,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                           },
                           itemBuilder: (context, i) {
                             if (i < fixHeaderList.length) {
-                              return _contactListFixHeader(context, i, record.unreadFriendRequestCount);
+                              return _contactListFixHeader(context, i, record.unreadFriendRequestCount, fixHeaderList);
                             } else if (i < fixHeaderList.length + record.rootOrgs.length) {
                               var org = record.rootOrgs[i - fixHeaderList.length];
                               return _contactListOrgHeader(context, org, true);
@@ -197,7 +198,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     return indexList;
   }
 
-  Widget _contactListFixHeader(BuildContext context, int index, int unreadFriendRequestCount) {
+  Widget _contactListFixHeader(BuildContext context, int index, int unreadFriendRequestCount, List<dynamic> fixHeaderList) {
     String imagePath = fixHeaderList[index][0];
     String title = fixHeaderList[index][1];
     String key = fixHeaderList[index][2];
@@ -221,7 +222,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
             MaterialPageRoute(builder: (context) => const SubscribedChannelsPage()),
           );
         } else {
-          Fluttertoast.showToast(msg: "方法没有实现");
+          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
           if (kDebugMode) {
             print("on tap item $index");
           }

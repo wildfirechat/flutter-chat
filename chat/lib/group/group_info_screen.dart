@@ -9,6 +9,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/app_server.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class GroupInfoScreen extends StatefulWidget {
   final String groupId;
@@ -62,12 +63,12 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       builder: (context, groupInfo, child) {
         if (groupInfo == null || groupInfo.updateDt == 0) {
           return Scaffold(
-            appBar: AppBar(title: const Text("群组信息")),
+            appBar: AppBar(title: Text(AppLocalizations.of(context)!.groupInfo)),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
         return Scaffold(
-          appBar: AppBar(title: const Text("群组信息")),
+          appBar: AppBar(title: Text(AppLocalizations.of(context)!.groupInfo)),
           body: _buildBody(context, groupInfo),
         );
       },
@@ -105,6 +106,11 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
             name,
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
+          const SizedBox(height: 8),
+          Text(
+            "群号: ${widget.groupId}",
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
+          ),
           const SizedBox(height: 40),
           _buildActionButton(groupInfo),
         ],
@@ -117,11 +123,11 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     bool isJoined = false;
 
     if (groupInfo.memberDt < -1) {
-      buttonText = "加入群聊";
+      buttonText = AppLocalizations.of(context)!.joinGroup;
     } else if (groupInfo.memberDt == -1) {
-      buttonText = "加入群聊";
+      buttonText = AppLocalizations.of(context)!.joinGroup;
     } else {
-      buttonText = "进入群聊";
+      buttonText = AppLocalizations.of(context)!.enterGroup;
       isJoined = true;
     }
 
@@ -184,7 +190,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
         setState(() {
           _isLoading = false;
         });
-        Fluttertoast.showToast(msg: "加入失败: $errorCode");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.joinFail(errorCode));
       }
     });
   }

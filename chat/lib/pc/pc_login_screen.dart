@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:chat/app_server.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PCLoginScreen extends StatefulWidget {
   final String token;
@@ -31,13 +32,13 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
             _canConfirm = true;
           });
         } else {
-          Fluttertoast.showToast(msg: "PC端状态异常: $status");
+          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.pcStatusError(status));
           Navigator.of(context).pop();
         }
       }
     }, (error) {
       if (mounted) {
-        Fluttertoast.showToast(msg: "网络错误: $error");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.networkError);
         Navigator.of(context).pop();
       }
     });
@@ -49,7 +50,7 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
     });
     AppServer.confirmPCLogin(widget.token, Imclient.currentUserId, () {
       if (mounted) {
-        Fluttertoast.showToast(msg: "登录成功");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.loginSuccess);
         Navigator.of(context).pop();
       }
     }, (error) {
@@ -57,7 +58,7 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
         setState(() {
           _isLoading = false;
         });
-        Fluttertoast.showToast(msg: "登录失败: $error");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.loginFail(error));
       }
     });
   }
@@ -78,7 +79,7 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("登录确认"),
+        title: Text(AppLocalizations.of(context)!.loginConfirm),
       ),
       body: Center(
         child: Column(
@@ -86,9 +87,9 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
           children: [
             const Icon(Icons.computer, size: 100, color: Colors.grey),
             const SizedBox(height: 20),
-            const Text(
-              "Windows/Mac 电脑登录确认",
-              style: TextStyle(fontSize: 18),
+             Text(
+              AppLocalizations.of(context)!.pcLoginConfirmDesc,
+              style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 40),
             if (_isLoading)
@@ -101,12 +102,12 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
                     ),
-                    child: const Text("登录"),
+                    child: Text(AppLocalizations.of(context)!.login),
                   ),
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: _cancelPCLogin,
-                    child: const Text("取消登录"),
+                    child: Text(AppLocalizations.of(context)!.cancelLogin),
                   ),
                 ],
               ),

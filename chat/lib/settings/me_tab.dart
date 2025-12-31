@@ -10,6 +10,7 @@ import 'package:chat/settings/general_settings.dart';
 import 'package:chat/settings/message_notification_settings.dart';
 import 'package:chat/settings/favorite_list_screen.dart';
 import 'package:chat/settings/file_records_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_item.dart';
@@ -32,7 +33,7 @@ class MeTab extends StatelessWidget {
               const SelfProfile(),
               const SectionDivider(),
               OptionItem(
-                '消息通知',
+                AppLocalizations.of(context)!.messageNotification,
                 leftImage: Image.asset('assets/images/setting_message_notification.png', width: 20.0, height: 20.0),
                 onTap: () {
                   Navigator.push(
@@ -43,7 +44,7 @@ class MeTab extends StatelessWidget {
               ),
               const SectionDivider(),
               OptionItem(
-                '收藏',
+                AppLocalizations.of(context)!.favorites,
                 leftImage: Image.asset('assets/images/setting_favorite.png', width: 20.0, height: 20.0),
                 onTap: () {
                   Navigator.push(
@@ -54,7 +55,7 @@ class MeTab extends StatelessWidget {
               ),
               const SectionDivider(),
               OptionItem(
-                '文件',
+                AppLocalizations.of(context)!.files,
                 leftImage: Image.asset('assets/images/setting_file.png', width: 20.0, height: 20.0),
                 onTap: () {
                   Navigator.push(
@@ -65,7 +66,7 @@ class MeTab extends StatelessWidget {
               ),
               const SectionDivider(),
               OptionItem(
-                '账户安全',
+                AppLocalizations.of(context)!.accountSafety,
                 leftImage: Image.asset('assets/images/setting_safety.png', width: 20.0, height: 20.0),
                 onTap: () {
                   Fluttertoast.showToast(msg: "方法没有实现");
@@ -73,7 +74,7 @@ class MeTab extends StatelessWidget {
               ),
               const SectionDivider(),
               OptionItem(
-                '设置',
+                AppLocalizations.of(context)!.settings,
                 leftImage: Image.asset('assets/images/setting_general.png', width: 20.0, height: 20.0),
                 showBottomDivider: true,
                 onTap: () {
@@ -94,20 +95,20 @@ class MeTab extends StatelessWidget {
 class SelfProfile extends StatelessWidget {
   const SelfProfile({Key? key}) : super(key: key);
 
-  void _pickImage(ImageSource source) async {
+  void _pickImage(ImageSource source, BuildContext context) async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: source);
     if (image != null) {
       Imclient.uploadMediaFile(image.path, MediaType.Media_Type_PORTRAIT, (url) {
         Imclient.modifyMyInfo({ModifyMyInfoType.Modify_Portrait: url}, () {
-          Fluttertoast.showToast(msg: "修改头像成功");
+          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.modifyPortraitSuccess);
         }, (code) {
-          Fluttertoast.showToast(msg: "修改头像失败: $code");
+          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.modifyPortraitFail(code.toString()));
         });
       }, (uploaded, total) {
         // progress
       }, (code) {
-        Fluttertoast.showToast(msg: "上传头像失败: $code");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.uploadPortraitFail(code.toString()));
       });
     }
   }
@@ -121,7 +122,7 @@ class SelfProfile extends StatelessWidget {
           return Container(
             height: 80,
             alignment: Alignment.center,
-            child: const Text("加载中。。。"),
+            child: Text(AppLocalizations.of(context)!.loading),
           );
         } else {
           return Container(
@@ -144,18 +145,18 @@ class SelfProfile extends StatelessWidget {
                               children: <Widget>[
                                 ListTile(
                                   leading: const Icon(Icons.camera_alt),
-                                  title: const Text('拍摄'),
+                                  title: Text(AppLocalizations.of(context)!.takePhoto),
                                   onTap: () {
                                     Navigator.pop(context);
-                                    _pickImage(ImageSource.camera);
+                                    _pickImage(ImageSource.camera, context);
                                   },
                                 ),
                                 ListTile(
                                   leading: const Icon(Icons.photo_library),
-                                  title: const Text('从相册选择'),
+                                  title: Text(AppLocalizations.of(context)!.selectFromAlbum),
                                   onTap: () {
                                     Navigator.pop(context);
-                                    _pickImage(ImageSource.gallery);
+                                    _pickImage(ImageSource.gallery, context);
                                   },
                                 ),
                               ],
@@ -182,7 +183,7 @@ class SelfProfile extends StatelessWidget {
                           Container(
                             constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 100),
                             child: Text(
-                              '野火号:${userInfo.name}',
+                              AppLocalizations.of(context)!.wildfireId(userInfo.name!),
                               textAlign: TextAlign.left,
                               style: const TextStyle(
                                 fontSize: 12,

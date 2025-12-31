@@ -13,6 +13,7 @@ import 'package:chat/conversation/input_bar/message_input_bar.dart';
 import 'package:chat/conversation/conversation_appbar_title.dart';
 import 'package:chat/conversation/single_conversation_info_screen.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:chat/conversation/pick_conversation_screen.dart';
 import 'package:imclient/message/composite_message_content.dart';
@@ -48,7 +49,7 @@ class _State extends State<ConversationScreen> {
 
     _conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
     _conversationViewModel.setConversation(widget.conversation, toFocusMessageId: widget.toFocusMessageId, joinChatroomErrorCallback: (err) {
-      Fluttertoast.showToast(msg: "网络错误！加入聊天室失败!");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.joinChatroomFail);
       Navigator.pop(context);
     });
 
@@ -65,7 +66,7 @@ class _State extends State<ConversationScreen> {
         Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
           if (userInfo != null) {
             TipNotificationContent tip = TipNotificationContent();
-            tip.tip = '${userInfo.displayName} 离开了聊天室';
+            tip.tip = AppLocalizations.of(context)!.userLeftChatroom(userInfo.displayName!);
             _conversationViewModel.sendMessage(tip);
           }
         });
@@ -316,23 +317,23 @@ class _State extends State<ConversationScreen> {
 
   void _handleDeleteSelected(BuildContext context, ConversationViewModel viewModel) {
     if (viewModel.getSelectedMessages().isEmpty) {
-      Fluttertoast.showToast(msg: "请选择消息");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.selectMessage);
       return;
     }
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Text('删除消息'),
+          title: Text(AppLocalizations.of(context)!.deleteMessage),
           children: <Widget>[
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context);
                 _deleteMessages(context, viewModel, false);
               },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('删除本地消息'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(AppLocalizations.of(context)!.deleteLocalMessage),
               ),
             ),
             SimpleDialogOption(
@@ -340,9 +341,9 @@ class _State extends State<ConversationScreen> {
                 Navigator.pop(context);
                 _deleteMessages(context, viewModel, true);
               },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('删除远程消息'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(AppLocalizations.of(context)!.deleteRemoteMessage),
               ),
             ),
           ],
@@ -357,7 +358,7 @@ class _State extends State<ConversationScreen> {
       if (isRemote) {
         if (msg.messageUid != null && msg.messageUid! > 0) {
           Imclient.deleteRemoteMessage(msg.messageUid!, () {}, (errorCode) {
-            Fluttertoast.showToast(msg: "删除远程消息失败: $errorCode");
+            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.deleteRemoteMessageFail(errorCode.toString()));
           });
         } else {
           viewModel.deleteMessage(msg.messageId);
@@ -372,7 +373,7 @@ class _State extends State<ConversationScreen> {
   void _handleForward(BuildContext context, ConversationViewModel viewModel) {
     var selected = viewModel.getSelectedMessages();
     if (selected.isEmpty) {
-      Fluttertoast.showToast(msg: "请选择消息");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.selectMessage);
       return;
     }
 
@@ -385,7 +386,7 @@ class _State extends State<ConversationScreen> {
             children: <Widget>[
               ListTile(
                 leading: const Icon(Icons.send),
-                title: const Text('逐条转发'),
+                title: Text(AppLocalizations.of(context)!.forwardOneByOne),
                 onTap: () {
                   Navigator.pop(context);
                   _forwardMessages(context, viewModel, selected, false);
@@ -393,7 +394,7 @@ class _State extends State<ConversationScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.merge_type),
-                title: const Text('合并转发'),
+                title: Text(AppLocalizations.of(context)!.forwardCombined),
                 onTap: () {
                   Navigator.pop(context);
                   _forwardMessages(context, viewModel, selected, true);
@@ -427,27 +428,27 @@ class _State extends State<ConversationScreen> {
     messages.sort((a, b) => a.serverTime.compareTo(b.serverTime));
     for (var msg in messages) {
       Imclient.sendMessage(target, msg.content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {
-        Fluttertoast.showToast(msg: "发送失败！");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sendFail);
       });
     }
     viewModel.toggleMultiSelectMode();
     Navigator.pop(context);
-    Fluttertoast.showToast(msg: "已发送");
+    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sent);
   }
 
   void _sendCompositeMessage(BuildContext context, Conversation target, List<Message> messages, ConversationViewModel viewModel) {
     CompositeMessageContent content = CompositeMessageContent();
-    content.title = "聊天记录";
+    content.title = AppLocalizations.of(context)!.chatHistory;
     messages.sort((a, b) => a.serverTime.compareTo(b.serverTime));
     content.messages = messages;
 
     Imclient.sendMessage(target, content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {
-      Fluttertoast.showToast(msg: "发送失败！");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sendFail);
     });
 
     viewModel.toggleMultiSelectMode();
     Navigator.pop(context);
-    Fluttertoast.showToast(msg: "已发送");
+    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sent);
   }
 
   void _onMentionTriggered(Conversation conversation) async {
@@ -487,7 +488,7 @@ class _State extends State<ConversationScreen> {
               if(pickedUsers[0] == 'All') {
                 UserInfo all = UserInfo();
                 all.userId = 'All';
-                all.displayName = '所有人';
+                all.displayName = AppLocalizations.of(context)!.allMembers;
                 _inputBarController.addMention(all);
               } else {
                 Imclient.getUserInfo(pickedUsers[0]).then((userInfo) {

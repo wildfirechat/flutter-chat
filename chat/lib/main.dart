@@ -36,6 +36,8 @@ import 'default_portrait_provider.dart';
 import 'home/home.dart';
 import 'internal/app_state.dart';
 import 'login_screen.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() {
   runApp(MultiProvider(
@@ -298,8 +300,29 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', ''), // English, no country code
+        Locale('zh', ''), // Chinese, no country code
+      ],
       navigatorKey: navKey,
-      home: isLogined == null ? const SplashScreen() : (isLogined! ? const HomeTabBar() : const LoginScreen()),
+      home: _buildHome(),
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
     );
+  }
+
+  Widget _buildHome() {
+    if (isLogined == null) {
+      return const SplashScreen();
+    } else {
+      return isLogined! ? const HomeTabBar() : const LoginScreen();
+    }
   }
 }
