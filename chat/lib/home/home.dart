@@ -22,6 +22,11 @@ import 'package:chat/viewmodel/conversation_list_view_model.dart';
 import 'package:chat/viewmodel/group_conversation_info_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/workspace/work_space.dart';
+import 'package:chat/scanner/qr_scanner_screen.dart';
+import 'package:chat/group/group_info_screen.dart';
+import 'package:chat/user_info_widget.dart';
+
+import 'package:chat/wfc_scheme.dart';
 
 import '../contact/contact_list_widget.dart';
 import '../conversation/conversation_screen.dart';
@@ -165,7 +170,74 @@ class HomeTabBarState extends State<HomeTabBar> {
     showSearch(context: context, delegate: SearchUserDelegate());
   }
 
-  void _scanQrCode() {}
+  void _scanQrCode() async {
+    try {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const QRScannerScreen()),
+      );
+
+      if (result != null && result is String) {
+        _handleQrCode(result);
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: '扫描失败: $e');
+    }
+  }
+
+  void _handleQrCode(String qrcode) {
+    if (qrcode.isEmpty) return;
+
+    String prefix;
+    String value;
+
+    int lastSlashIndex = qrcode.lastIndexOf('/');
+    if (lastSlashIndex >= 0 && lastSlashIndex < qrcode.length - 1) {
+      prefix = qrcode.substring(0, lastSlashIndex + 1);
+      int questionMarkIndex = qrcode.indexOf('?');
+      if (questionMarkIndex > lastSlashIndex) {
+        value = qrcode.substring(lastSlashIndex + 1, questionMarkIndex);
+      } else {
+        value = qrcode.substring(lastSlashIndex + 1);
+      }
+    } else {
+      Fluttertoast.showToast(msg: "无效的二维码: $qrcode");
+      return;
+    }
+
+    switch (prefix) {
+      case WfcScheme.qrCodePrefixUser:
+        Navigator.push(context, MaterialPageRoute(builder: (context) => UserInfoWidget(value)));
+        break;
+      case WfcScheme.qrCodePrefixGroup:
+        // Parse from parameter if exists
+        String? from;
+        try {
+          Uri uri = Uri.parse(qrcode);
+          from = uri.queryParameters['from'];
+        } catch (e) {
+          // ignore
+        }
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => GroupInfoScreen(groupId: value, from: from)));
+        break;
+      case WfcScheme.qrCodePrefixPcSession:
+        // TODO: Implement PC Login
+        Fluttertoast.showToast(msg: "PC登录暂未支持");
+        break;
+      case WfcScheme.qrCodePrefixChannel:
+        // TODO: Implement Channel
+        Fluttertoast.showToast(msg: "频道功能暂未支持");
+        break;
+      case WfcScheme.qrCodePrefixConference:
+        // TODO: Implement Conference
+        Fluttertoast.showToast(msg: "会议功能暂未支持");
+        break;
+      default:
+        Fluttertoast.showToast(msg: "扫描结果: $qrcode");
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
