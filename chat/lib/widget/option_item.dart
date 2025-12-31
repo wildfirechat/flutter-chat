@@ -19,15 +19,10 @@ class OptionItem extends StatelessWidget {
     return GestureDetector(
       child: Column(
         children: [
-          // Container(
-          //   height: showTopDividerSection ? 18 : 0,
-          //   width: View.of(context).physicalSize.width,
-          //   color: const Color(0xffebebeb),
-          // ),
           Container(
             margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
             height: 36,
-            child: (Row(
+            child: Row(
               children: [
                 leftImage != null || leftIcon != null
                     ? Container(
@@ -37,9 +32,25 @@ class OptionItem extends StatelessWidget {
                         child: leftImage ?? Icon(leftIcon),
                       )
                     : const SizedBox.shrink(),
-                Text(title),
-                Expanded(child: Container(color: Colors.transparent /*为了实现点击效果*/)),
-                desc != null && desc!.isNotEmpty ? Text(desc!) : Container(),
+                Expanded(
+                  child: Text(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+                desc != null && desc!.isNotEmpty
+                    ? Container(
+                        constraints: const BoxConstraints(maxWidth: 200),
+                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          desc!,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(color: Colors.grey, fontSize: 14),
+                        ),
+                      )
+                    : Container(),
                 rightImage != null || rightIcon != null
                     ? Container(
                         height: 20,
@@ -48,9 +59,9 @@ class OptionItem extends StatelessWidget {
                         child: rightImage ?? Icon(rightIcon),
                       )
                     : const SizedBox.shrink(),
-                showRightArrow ? const Icon(Icons.chevron_right, color: Colors.grey) : Container()
+                showRightArrow ? const Icon(Icons.chevron_right, color: Colors.grey) : Container(),
               ],
-            )),
+            ),
           ),
           showBottomDivider
               ? Container(
