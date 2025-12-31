@@ -97,7 +97,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
       }),
       OptionItem('群二维码', rightIcon: Icons.qr_code, onTap: () {
         if (groupInfo != null) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => GroupQRCodeScreen(groupInfo: groupInfo)));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => GroupQrCodeScreen(groupInfo: groupInfo)));
         }
       }),
       OptionItem('群公告', desc: groupConversationInfoViewModel.groupAnnouncement ?? '点击查看', onTap: () {
