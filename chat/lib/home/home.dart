@@ -256,6 +256,26 @@ class HomeTabBarState extends State<HomeTabBar> {
     }
   }
 
+  Widget _buildBadge(int count, Widget child) {
+    if (count == 0) {
+      return child;
+    }
+
+    return badge.Badge(
+      position: badge.BadgePosition.topEnd(top: 0, end: -12),
+      badgeContent: count == -1 // Friend request indicator
+          ? null
+          : Text(
+        count > 99 ? '99+' : '$count',
+        style: const TextStyle(color: Colors.white, fontSize: 10),
+      ),
+      badgeStyle: const badge.BadgeStyle(
+        badgeColor: Colors.red
+      ),
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     _body = IndexedStack(
@@ -327,22 +347,16 @@ class HomeTabBarState extends State<HomeTabBar> {
                 return BottomNavigationBarItem(
                     icon: Selector<ConversationListViewModel, int>(
                       selector: (_, model) => model.unreadMessageCount,
-                      builder: (context, unreadCount, child) => badge.Badge(
-                        badgeContent: Text('$unreadCount'),
-                        showBadge: unreadCount > 0,
-                        child: getTabIcon(0),
-                      ),
+                      builder: (context, unreadCount, child) =>
+                          _buildBadge(unreadCount, getTabIcon(0)),
                     ),
                     label: getTabTitle(0));
               } else if (index == 1) {
                 return BottomNavigationBarItem(
                     icon: Selector<ContactListViewModel, int>(
                       selector: (_, model) => model.unreadFriendRequestCount,
-                      builder: (context, unreadFriendRequestCount, child) => badge.Badge(
-                        badgeContent: Text('$unreadFriendRequestCount'),
-                        showBadge: unreadFriendRequestCount > 0,
-                        child: getTabIcon(1),
-                      ),
+                      builder: (context, unreadFriendRequestCount, child) =>
+                          _buildBadge(unreadFriendRequestCount > 0 ? -1 : 0, getTabIcon(1)),
                     ),
                     label: getTabTitle(1));
               } else {
