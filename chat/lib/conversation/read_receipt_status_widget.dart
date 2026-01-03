@@ -81,13 +81,13 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
   void _updateSingleReadStatus() async {
     Map<String, int> readMap = await Imclient.getConversationRead(widget.message.conversation);
     int? readTime = readMap[widget.message.conversation.target];
-    if (mounted) {
+    bool read = readTime != null && readTime >= widget.message.serverTime;
+    if (mounted && _isSingleConversationRead != read) {
       setState(() {
-        _isSingleConversationRead = readTime != null && readTime >= widget.message.serverTime;
+        _isSingleConversationRead = read;
       });
     }
   }
-
   void _updateGroupReadStatus() async {
     String groupId = widget.message.conversation.target;
     List<GroupMember>? members = await Imclient.getGroupMembers(groupId);
@@ -108,7 +108,7 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
       }
     }
 
-    if (mounted) {
+    if (mounted && _groupTotalCount != validMembers.length && _groupReadCount != readCount) {
       setState(() {
         _groupTotalCount = validMembers.length;
         _groupReadCount = readCount;
