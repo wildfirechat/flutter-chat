@@ -45,9 +45,10 @@ class CallStartMessageContent extends MediaMessageContent {
   /*
   CallStartEndStatus
    */
-  late int status;
-  late int type;
-  late bool audioOnly;
+  int status = 0;
+  int sdkType = 0;
+  bool audioOnly = false;
+  String pin = '';
 
   @override
   MessageContentMeta get meta => callStartContentMeta;
@@ -60,7 +61,8 @@ class CallStartMessageContent extends MediaMessageContent {
       Map<dynamic, dynamic> map = json.decode(
           utf8.decode(payload.binaryContent!));
       status = map['s']??0;
-      type = map['ty']??0;
+      sdkType = map['ty']??0;
+      pin = map['p'] ?? '';
       if(map['a'] == null) {
         audioOnly = false;
       } else {
@@ -87,9 +89,10 @@ class CallStartMessageContent extends MediaMessageContent {
       'c': connectTime??0,
       'e': endTime??0,
       's': status,
-      'ty': type,
-      'a' : audioOnly,
-      'ts': targetIds??[]
+      'ty': sdkType,
+      'a' : audioOnly ? 1: 0,
+      'ts': targetIds??[],
+      'p': pin
     })));
     return payload;
   }
