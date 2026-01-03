@@ -2171,6 +2171,27 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         result.success(ChatManager.Instance().isEnableUserOnlineState());
     }
 
+    private void sendConferenceRequest(@NonNull MethodCall call, @NonNull Result result) {
+        int requestId = call.argument("requestId");
+        long sessionId = getLongPara(call, "sessionId");
+        String roomId = call.argument("roomId");
+        String request = call.argument("request");
+        boolean advanced = call.argument("advanced") != null && (Boolean) call.argument("advanced");
+        String data = call.argument("data");
+
+        ChatManager.Instance().sendConferenceRequest(sessionId, roomId, request, advanced, data, new GeneralCallback2() {
+            @Override
+            public void onSuccess(String s) {
+                callbackBuilder(requestId).put("result", s).success("onSendConferenceRequestSuccess");
+            }
+
+            @Override
+            public void onFail(int i) {
+                callbackBuilder(requestId).put("errorCode", i).success("onSendConferenceRequestFailure");
+            }
+        });
+        result.success(null);
+    }
     //- (void)isEnableUserOnlineState:(NSDictionary *)dict result:(FlutterResult)result {
 //        WFCCUserCustomState *customState = [[WFCCIMService sharedWFCIMService] getMyCustomState];
 //        result(@([[WFCCIMService sharedWFCIMService] isEnableUserOnlineState]));
@@ -2961,6 +2982,9 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
                         case "onConferenceEvent": {
                             String confEvent = (String) args[0];
+                            Map data = new HashMap();
+                            data.put("event", confEvent);
+                            callback2UI("onConferenceEvent", data);
                             break;
                         }
 //                        @Override

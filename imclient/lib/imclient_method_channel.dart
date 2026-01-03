@@ -311,6 +311,9 @@ class ImclientPlatform extends PlatformInterface {
           }
           break;
         case 'onConferenceEvent':
+          Map<dynamic, dynamic> args = call.arguments;
+          String event = args['event'];
+          _eventBus.fire(ConferenceEvent(event));
           break;
         case 'onGroupInfoUpdated':
           Map<dynamic, dynamic> args = call.arguments;
@@ -488,6 +491,26 @@ class ImclientPlatform extends PlatformInterface {
           _sendingMessages.remove(requestId);
 
           _eventBus.fire(SendMessageFailureEvent(message, messageId, errorCode));
+          break;
+        case 'onSendConferenceRequestSuccess':
+          Map<dynamic, dynamic> args = call.arguments;
+          int requestId = args['requestId'];
+          String result = args['result'];
+          var callback = _operationSuccessCallbackMap[requestId];
+          if (callback != null) {
+            callback(result);
+          }
+          _removeOperationCallback(requestId);
+          break;
+        case 'onSendConferenceRequestFailure':
+          Map<dynamic, dynamic> args = call.arguments;
+          int requestId = args['requestId'];
+          int errorCode = args['errorCode'];
+          var callback = _errorCallbackMap[requestId];
+          if (callback != null) {
+            callback(errorCode);
+          }
+          _removeOperationCallback(requestId);
           break;
         case 'onUploadMediaUploaded':
           Map<dynamic, dynamic> args = call.arguments;
@@ -3286,6 +3309,28 @@ class ImclientPlatform extends PlatformInterface {
 
   Future<bool> isEnableUserOnlineState() async {
     return await methodChannel.invokeMethod("isEnableUserOnlineState");
+  }
+
+  void sendConferenceRequest(
+      int sessionId,
+      String roomId,
+      String request,
+      bool advanced,
+      String data,
+      OperationSuccessStringCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+
+    methodChannel.invokeMethod("sendConferenceRequest", {
+      "requestId": requestId,
+      "sessionId": sessionId,
+      "roomId": roomId,
+      "request": request,
+      "advanced": advanced,
+      "data": data,
+    });
   }
 
   ///获取会话文件记录
