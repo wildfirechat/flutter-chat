@@ -16,14 +16,14 @@ function initProto(dbPath: string): void {
         genWfcEventListener('onMessageRead'));
     clientModule.setConferenceEventListener(genWfcEventListener('onConferenceEvent'));
     clientModule.setOnlineEventListener(genWfcEventListener('onUserOnlineEvent'));
-    clientModule.setUserInfoUpdateListener(genWfcEventListener('onUserInfoUpdate'));
-    clientModule.setFriendUpdateListener(genWfcEventListener('onFriendListUpdate'));
-    clientModule.setFriendRequestListener(genWfcEventListener('onFriendRequestUpdate'));
-    clientModule.setGroupInfoUpdateListener(genWfcEventListener('onGroupInfoUpdate'));
-    clientModule.setSettingUpdateListener(genWfcEventListener('onSettingUpdate'));
-    clientModule.setChannelInfoUpdateListener(genWfcEventListener('onChannelInfoUpdate'));
-    clientModule.setGroupMemberUpdateListener(genWfcEventListener('onGroupMembersUpdate'));
-    console.log('xxxxxxxxxxxxxx initProto end')
+    clientModule.setUserInfoUpdateListener(genWfcEventListener('onUserInfoUpdated'));
+    clientModule.setFriendUpdateListener(genWfcEventListener('onFriendListUpdated'));
+    clientModule.setFriendRequestListener(genWfcEventListener('onFriendRequestUpdated'));
+    clientModule.setGroupInfoUpdateListener(genWfcEventListener('onGroupInfoUpdated'));
+    clientModule.setSettingUpdateListener(genWfcEventListener('onSettingUpdated'));
+    clientModule.setChannelInfoUpdateListener(genWfcEventListener('onChannelInfoUpdated'));
+    clientModule.setGroupMemberUpdateListener(genWfcEventListener('onGroupMemberUpdated'));
+    console.log('initProto end')
 }
 function setWfcEventListener(listener: (args: object) => void) {
     wfcEventListener = listener;

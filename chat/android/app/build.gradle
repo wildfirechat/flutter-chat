@@ -68,7 +68,6 @@ android {
         coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
         // wfc kit start
         implementation fileTree(dir: "../../../imclient/android/android_client_aars", include: ["*.aar"])
-        implementation fileTree(dir: "../../../rtckit/android/android_avclient_aars", include: ["*.aar"])
         //implementation fileTree(dir: "../../../android_moment_aars", include: ["*.aar"])
 
         // 添加multidex支持

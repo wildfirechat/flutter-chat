@@ -18,9 +18,8 @@ import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
-import 'package:rtckit/group_video_call.dart';
-import 'package:rtckit/rtckit.dart';
-import 'package:rtckit/single_voice_call.dart';
+import 'package:avenginekit/engine/call_state.dart';
+import 'package:avenginekit/internal/avenginekit_impl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/picture_overview.dart';
 import 'package:chat/conversation/video_player_view.dart';
@@ -64,8 +63,7 @@ class ConversationController extends ChangeNotifier {
       return;
     }
 
-    Rtckit.currentCallSession().then((currentSession) {
-      if (currentSession == null || currentSession.state == kWFAVEngineStateIdle) {
+    if (avEngineKit.currentSession == null || avEngineKit.currentSession!.status == CallState.STATUS_IDLE) {
         if (conversation.conversationType == ConversationType.Single) {
           final double centerX = MediaQuery.of(context).size.width / 2;
           final double centerY = MediaQuery.of(context).size.height / 2;
@@ -101,8 +99,8 @@ class ConversationController extends ChangeNotifier {
             }
 
             bool isAudioOnly = value == 'voice';
-            SingleVideoCallView callView = SingleVideoCallView(userId: conversation.target, audioOnly: isAudioOnly);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
+            avEngineKit.startCall(conversation, [conversation.target], isAudioOnly);
+            // Navigation will be handled by AVEngineCallback.onStartCall
           });
         } else if (conversation.conversationType == ConversationType.Group) {
           Imclient.getGroupMembers(conversation.target).then((groupMembers) {
@@ -120,14 +118,11 @@ class ConversationController extends ChangeNotifier {
                           if (members.isEmpty) {
                             Fluttertoast.showToast(msg: "请选择一位或者多位成员发起通话");
                           } else {
-                            GroupVideoCallView callView = GroupVideoCallView(groupId: conversation.target, participants: members);
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(builder: (context) => callView),
-                            );
+                            // Group call not implemented yet in this session
+                            Fluttertoast.showToast(msg: "群通话暂未实现");
                           }
                         },
-                        maxSelected: Rtckit.maxAudioCallCount,
+                        maxSelected: 9,
                         candidates: members,
                         disabledCheckedUsers: [Imclient.currentUserId],
                       )),
@@ -137,7 +132,6 @@ class ConversationController extends ChangeNotifier {
       } else {
         Fluttertoast.showToast(msg: "正在通话中，无法再次发起！");
       }
-    });
   }
 
   void onPressCardBtn(BuildContext context, Conversation conversation) {
@@ -268,12 +262,12 @@ class ConversationController extends ChangeNotifier {
       }
     } else if (model.message.content is CallStartMessageContent) {
       CallStartMessageContent callContent = model.message.content as CallStartMessageContent;
-      if (model.message.conversation.conversationType == ConversationType.Single) {
-        SingleVideoCallView callView = SingleVideoCallView(userId: conversation.target, audioOnly: callContent.audioOnly);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
-      } else if (model.message.conversation.conversationType == ConversationType.Group) {
-        onPressCallBtn(context, model.message.conversation);
-      }
+      // if (model.message.conversation.conversationType == ConversationType.Single) {
+      //   SingleVideoCallView callView = SingleVideoCallView(userId: conversation.target, audioOnly: callContent.audioOnly);
+      //   Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
+      // } else if (model.message.conversation.conversationType == ConversationType.Group) {
+      //   onPressCallBtn(context, model.message.conversation);
+      // }
     }
   }
 
