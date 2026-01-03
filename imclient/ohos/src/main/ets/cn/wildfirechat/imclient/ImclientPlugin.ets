@@ -28,6 +28,7 @@ import {
 import { UIAbility } from '@kit.AbilityKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { window } from '@kit.ArkUI';
+import buffer  from '@ohos.buffer';
 import {
     initProto,
     setWfcEventListener,
@@ -1751,10 +1752,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         "isGlobalDisableSyncDraft": this._isGlobalDisableSyncDraft,
     }
 
-    __callback2UI(method:
-        string, args:
-        object
-    ) {
+    __callback2UI(method: string, args: object ) {
         this.channel?.invokeMethod(method, args)
     }
 
@@ -1804,10 +1802,18 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         return obj
     }
     __map2record = (map: Map<string, Object>): Record<string, Object> => {
-
         let obj = {} as Record<string, Object>
         for (let entry of map.entries()) {
-            obj[entry[0]] = entry[1]
+            if (entry[1] instanceof Uint8Array) {
+                try {
+                    let str = buffer.from(entry[1]).toString('base64')
+                    obj[entry[0]] = str;
+                } catch (error) {
+                    console.error(error)
+                }
+            } else {
+                obj[entry[0]] = entry[1]
+            }
         }
         return obj
     }
