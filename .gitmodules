@@ -1,0 +1,3 @@
+[submodule "avenginekit"]
+	path = avenginekit
+	url = git@github.com:imndx/flutter-avenginekit.git
