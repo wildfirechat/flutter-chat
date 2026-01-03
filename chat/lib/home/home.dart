@@ -61,6 +61,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   @override
   void initState() {
     super.initState();
+    appBarTitles = [];
     pages = <Widget>[const ConversationListWidget(), ContactListWidget(), const WorkSpace(), const DiscoveryTab(), const MeTab()];
     tabImages = [
       [getTabImage('assets/images/tabbar_chat.png'), getTabImage('assets/images/tabbar_chat_cover.png')],
@@ -69,12 +70,6 @@ class HomeTabBarState extends State<HomeTabBar> {
       [getTabImage('assets/images/tabbar_discover.png'), getTabImage('assets/images/tabbar_discover_cover.png')],
       [getTabImage('assets/images/tabbar_me.png'), getTabImage('assets/images/tabbar_me_cover.png')]
     ];
-
-    if (Config.WORKSPACE_URL.isEmpty) {
-      appBarTitles.removeAt(2);
-      pages.removeAt(2);
-      tabImages.removeAt(2);
-    }
   }
 
   @override
@@ -87,6 +82,18 @@ class HomeTabBarState extends State<HomeTabBar> {
       AppLocalizations.of(context)!.tabDiscovery,
       AppLocalizations.of(context)!.tabMe
     ];
+
+    if (Config.WORKSPACE_URL.isEmpty) {
+      if (appBarTitles.length > 2) {
+        appBarTitles.removeAt(2);
+      }
+      if (pages.length > 2) {
+        pages.removeAt(2);
+      }
+      if (tabImages.length > 2) {
+        tabImages.removeAt(2);
+      }
+    }
   }
 
   TextStyle getTabTextStyle(int curIndex) {
