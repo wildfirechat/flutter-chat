@@ -330,6 +330,11 @@ class ConversationSilentUpdatedEvent {
 
   ConversationSilentUpdatedEvent(this.conversation, this.silent);
 }
+class ConferenceEvent{
+  String event;
+
+  ConferenceEvent(this.event);
+}
 
 abstract class DefaultPortraitProvider {
   String userDefaultPortrait(UserInfo userInfo);
@@ -1652,6 +1657,19 @@ class Imclient {
   ///服务是否开启用户在线状态
   static Future<bool> isEnableUserOnlineState() async {
     return ImclientPlatform.instance.isEnableUserOnlineState();
+  }
+
+  ///发送会议请求
+  static void sendConferenceRequest(
+      int sessionId,
+      String roomId,
+      String request,
+      bool advanced,
+      String data,
+      OperationSuccessStringCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.sendConferenceRequest(
+        sessionId, roomId, request, advanced, data, successCallback, errorCallback);
   }
 
   ///获取会话文件记录
