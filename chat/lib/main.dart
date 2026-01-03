@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:avenginekit/engine/call_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,11 +15,13 @@ import 'package:imclient/model/read_report.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:imclient/model/user_online_state.dart';
 import 'package:provider/provider.dart';
-import 'package:rtckit/group_video_call.dart';
+import 'package:avenginekit/engine/avengine_callback.dart';
+import 'package:avenginekit/engine/call_session.dart';
+import 'package:avenginekit/engine/call_end_reason.dart';
+import 'package:avenginekit/internal/avenginekit_impl.dart';
+import 'package:chat/call/voip_call_screen.dart';
 
 // import 'package:momentclient/momentclient.dart';
-import 'package:rtckit/rtckit.dart';
-import 'package:rtckit/single_voice_call.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/splash.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
@@ -65,12 +68,15 @@ class _MyAppState extends State<MyApp> {
 
   bool? isLogined;
   bool _isBackground = false;
+  late MainAVEngineCallback _avEngineCallback;
 
   @override
   void initState() {
     super.initState();
     _initIMClient();
     _initRepo();
+    _avEngineCallback = MainAVEngineCallback(navKey);
+    avEngineKit.init(_avEngineCallback);
     WfcNotificationManager().init();
 
     SystemChannels.lifecycle.setMessageHandler((message) async {
@@ -101,53 +107,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initIMClient() async {
-    Rtckit.init(didReceiveCallCallback: (callSession) {
-      //收到来电请求后，延迟100毫秒，判断是否来电已经结束，解决离线时先拨打再挂掉的问题。
-      Future.delayed(const Duration(milliseconds: 100), () {
-        //收到来电通知，原生代码会自动弹出来电界面。如果在后台，这里要弹出本地通知，本地通知带上震铃声。
-        debugPrint('didReceiveCallCallback: ${callSession.callId}');
-        Rtckit.currentCallSession().then((cs) {
-          if (cs != null && cs.state != kWFAVEngineStateIdle) {
-            if (cs.conversation!.conversationType == ConversationType.Single) {
-              SingleVideoCallView callView = SingleVideoCallView(callSession: cs);
-              navKey.currentState!.pushAndRemoveUntil(MaterialPageRoute(builder: (context) => callView, settings: const RouteSettings(name: "singleCall")),(Route<dynamic> route) =>
-              route.settings.name != 'singleCall');
-            } else if (cs.conversation!.conversationType == ConversationType.Group) {
-              GroupVideoCallView callView = GroupVideoCallView(callSession: cs);
-              navKey.currentState!.pushAndRemoveUntil(MaterialPageRoute(builder: (context) => callView, settings: const RouteSettings(name: "multiCall")),(Route<dynamic> route) =>
-              route.settings.name != 'multiCall');
-            }
-          }
-        });
-      });
-    }, shouldStartRingCallback: (incoming) {
-      //原生代码通知上层播放铃声。如果在后台就开始震动，如果在前台就播放铃声。这样做的原因是有些系统限制后台播放声音。
-      debugPrint('shouldStartRingCallback: $incoming');
-    }, shouldStopRingCallback: () {
-      //原生代码通知上层停止铃声和震动。
-      debugPrint('shouldStopRingCallback');
-    }, didEndCallCallback: (reason, duration) {
-      //原生代码通知上层通话结束。
-      debugPrint('didEndCallCallback: $reason, $duration');
-    });
-    //Rtckit.enableCallkit();
-    Rtckit.seEnableProximitySensor(true);
-    for (int i = 0; i < Config.ICE_SERVERS.length; i++) {
-      var iceServer = Config.ICE_SERVERS[i];
-      Rtckit.addICEServer(iceServer[0], iceServer[1], iceServer[2]);
-    }
-
-    Rtckit.defaultUserPortrait = Config.defaultUserPortrait;
-    Rtckit.selectMembersDelegate = (BuildContext context, List<String> candidates, List<String>? disabledCheckedUsers, List<String>? disabledUncheckedUsers,
-        int maxSelected, void Function(List<String> selectedMembers) callback) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => PickUserScreen((context, members) async {
-                  callback(members);
-                }, maxSelected: maxSelected, candidates: candidates, disabledCheckedUsers: disabledCheckedUsers, disabledUncheckedUsers: disabledUncheckedUsers)),
-      );
-    };
 
     Imclient.setDefaultPortraitProvider(WFPortraitProvider.instance);
 
@@ -326,3 +285,55 @@ class _MyAppState extends State<MyApp> {
     }
   }
 }
+class MainAVEngineCallback implements AVEngineCallback {
+  final GlobalKey<NavigatorState> navKey;
+
+  MainAVEngineCallback(this.navKey);
+
+  @override
+  void didCallEnded(CallEndReason reason, int duration) {
+    debugPrint('didCallEnded: $reason, $duration');
+  }
+
+  @override
+  void onJoinConference(CallSession session) {
+    // TODO: implement onJoinConference
+  }
+
+  @override
+  void onReceiveCall(CallSession session) {
+    debugPrint('onReceiveCall: ${session.callId}');
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (session.status != CallState.STATUS_IDLE) {
+        if (session.conversation!.conversationType == ConversationType.Single) {
+          VoipCallScreen callView = VoipCallScreen(session: session);
+          navKey.currentState!.pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => callView, settings: const RouteSettings(name: "singleCall")),
+              (Route<dynamic> route) => route.settings.name != 'singleCall');
+        }
+      }
+    });
+  }
+
+  @override
+  void onStartCall(CallSession session) {
+    debugPrint('onStartCall: ${session.callId}');
+    if (session.conversation!.conversationType == ConversationType.Single) {
+      VoipCallScreen callView = VoipCallScreen(session: session);
+      navKey.currentState!.pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => callView, settings: const RouteSettings(name: "singleCall")),
+          (Route<dynamic> route) => route.settings.name != 'singleCall');
+    }
+  }
+
+  @override
+  void shouldStartRing(bool isIncoming) {
+    debugPrint('shouldStartRing: $isIncoming');
+  }
+
+  @override
+  void shouldStopRing() {
+    debugPrint('shouldStopRing');
+  }
+}
+

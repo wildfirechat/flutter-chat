@@ -7,7 +7,6 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:rtckit/single_voice_call.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/invite_friend.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -78,8 +77,8 @@ class UserInfoWidget extends StatelessWidget {
                           );
                         }),
                         OptionButtonItem('视频聊天', () {
-                          SingleVideoCallView callView = SingleVideoCallView(userId: userId, audioOnly: false);
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
+                          // SingleVideoCallView callView = SingleVideoCallView(userId: userId, audioOnly: false);
+                          // Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
                         }),
                       ] else ...[
                         const SectionDivider(),

@@ -25,6 +25,9 @@
     "path_provider_ohos": "file:./har/path_provider_ohos.har",
     "video_player_ohos": "file:./har/video_player_ohos.har",
     "flutter_sound": "file:./har/flutter_sound.har",
-    "flutter_local_notifications": "file:./har/flutter_local_notifications.har"
+    "flutter_local_notifications": "file:./har/flutter_local_notifications.har",
+    "flutter_webrtc": "file:./har/flutter_webrtc.har",
+    "flutter_localization": "file:./har/flutter_localization.har",
+    "mobile_scanner": "file:./har/mobile_scanner.har"
   }
 }

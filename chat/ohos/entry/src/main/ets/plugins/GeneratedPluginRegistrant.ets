@@ -12,6 +12,7 @@ import FlutterLocalNotificationsPlugin from 'flutter_local_notifications';
 import MobileScannerPlugin from 'mobile_scanner';
 import PhotoManagerPlugin from 'photo_manager';
 import ImclientPlugin from 'imclient';
+import FlutterWebRTCPlugin from 'flutter_webrtc';
 
 /**
  * Generated file. Do not edit.
@@ -38,6 +39,7 @@ export class GeneratedPluginRegistrant {
       flutterEngine.getPlugins()?.add(new MobileScannerPlugin());
       flutterEngine.getPlugins()?.add(new PhotoManagerPlugin());
       flutterEngine.getPlugins()?.add(new ImclientPlugin());
+      flutterEngine.getPlugins()?.add(new FlutterWebRTCPlugin());
     } catch (e) {
       Log.e(
         TAG,

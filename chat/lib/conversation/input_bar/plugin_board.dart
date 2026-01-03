@@ -104,10 +104,10 @@ class PluginBoard extends StatelessWidget {
         break;
       case "call":
         // _pressCallBtnCallback();
-        if(!['android', 'ios'].contains(Platform.operatingSystem) ){
-          Fluttertoast.showToast(msg: '当前平台暂不支持');
-          return;
-        }
+        // if(!['android', 'ios'].contains(Platform.operatingSystem) ){
+        //   Fluttertoast.showToast(msg: '当前平台暂不支持');
+        //   return;
+        // }
         conversationController.onPressCallBtn(context, conversation);
         break;
       case "location":

@@ -41,6 +41,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "2.11.0"
+  avenginekit:
+    dependency: "direct main"
+    description:
+      path: "../avenginekit"
+      relative: true
+    source: path
+    version: "0.0.1"
   badges:
     dependency: "direct main"
     description:
@@ -217,6 +224,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.0.1"
+  dart_webrtc:
+    dependency: transitive
+    description:
+      name: dart_webrtc
+      sha256: cc4017139de4135905a5094081d0ce281bbb6e1d5b959a196390522f310cd597
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.2.0"
   dbus:
     dependency: transitive
     description:
@@ -433,6 +448,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_webrtc:
+    dependency: transitive
+    description:
+      path: "../../fluttertpc_flutter_webrtc"
+      relative: true
+    source: path
+    version: "0.9.48+hotfix.1"
   fluttertoast:
     dependency: "direct main"
     description:
@@ -579,6 +601,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.19.0"
+  js:
+    dependency: transitive
+    description:
+      name: js
+      sha256: f2c445dce49627136094980615a031419f7f3eb393237e4ecd97ac15dea343f3
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "0.6.7"
   leak_tracker:
     dependency: transitive
     description:
@@ -872,6 +902,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.1.6"
+  platform_detect:
+    dependency: transitive
+    description:
+      name: platform_detect
+      sha256: a62f99417fc4fa2d099ce0ccdbb1bd3977920f2a64292c326271f049d4bc3a4f
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "2.1.0"
   plugin_platform_interface:
     dependency: transitive
     description:
@@ -928,13 +966,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "4.1.0"
-  rtckit:
-    dependency: "direct main"
-    description:
-      path: "../rtckit"
-      relative: true
-    source: path
-    version: "0.0.1"
   rxdart:
     dependency: transitive
     description:
@@ -1305,6 +1336,14 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.5.1"
+  webrtc_interface:
+    dependency: transitive
+    description:
+      name: webrtc_interface
+      sha256: "2efbd3e4e5ebeb2914253bcc51dafd3053c4b87b43f3076c74835a9deecbae3a"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.1.2"
   webview_flutter:
     dependency: "direct main"
     description:
