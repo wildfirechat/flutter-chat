@@ -252,13 +252,29 @@ class ImclientPlatform extends PlatformInterface {
           Map<dynamic, dynamic> args = call.arguments;
           int messageUid = args['messageUid'];
           _recallMessageCallback(messageUid);
-          _eventBus.fire(RecallMessageEvent(messageUid));
+
+          Future(() async {
+            Message? msg = await getMessageByUid(messageUid);
+            Conversation? conv;
+            if (msg != null) {
+              conv = msg.conversation;
+              _eventBus.fire(RecallMessageEvent(messageUid, conversation: conv));
+            }
+          });
           break;
         case 'onDeleteMessage':
           Map<dynamic, dynamic> args = call.arguments;
           int messageUid = args['messageUid'];
           _deleteMessageCallback(messageUid);
-          _eventBus.fire(DeleteMessageEvent(messageUid: messageUid));
+
+          Future(() async {
+            Message? msg = await getMessageByUid(messageUid);
+            Conversation? conv;
+            if (msg != null) {
+              conv = msg.conversation;
+              _eventBus.fire(DeleteMessageEvent(messageUid: messageUid, conversation: conv));
+            }
+          });
           break;
         case 'onMessageDelivered':
           Map<dynamic, dynamic> args = call.arguments;

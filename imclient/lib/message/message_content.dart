@@ -138,9 +138,6 @@ enum MediaType {
 
 typedef MessageContentCreator = MessageContent Function();
 
-MessageContent UnknownContentCreator() {
-  return UnknownMessageContent();
-}
 
 class MessageContentMeta {
   const MessageContentMeta(this.type, this.flag, this.creator);
@@ -150,7 +147,7 @@ class MessageContentMeta {
   final MessageContentCreator creator;
 }
 
-class MessageContent {
+abstract class MessageContent {
   MessageContent({this.mentionedType = 0});
 
   ///0 普通消息；1 提醒mentionedTargets用户；2 提醒所有用户。
@@ -178,5 +175,5 @@ class MessageContent {
     return '未知消息';
   }
 
-  MessageContentMeta get meta => const MessageContentMeta(0, MessageFlag.NOT_PERSIST, UnknownContentCreator);
+ MessageContentMeta get meta ;
 }

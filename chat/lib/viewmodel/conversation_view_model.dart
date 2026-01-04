@@ -162,6 +162,11 @@ class ConversationViewModel extends ChangeNotifier {
               }
             }
           } else {
+            if(msg.content.meta.type == 80){
+              // recall
+              // do nothing
+              return;
+            }
             _typingUserTime.remove(msg.fromUser);
             if (msg.content is StreamingTextGeneratedMessageContent) {
               var content = msg.content as StreamingTextGeneratedMessageContent;
