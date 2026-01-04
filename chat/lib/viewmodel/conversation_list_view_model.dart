@@ -81,10 +81,10 @@ class ConversationListViewModel extends ChangeNotifier {
       _loadConversationList();
     });
     _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) {
-      _loadConversationList();
+      _reloadConversation(event.conversation!);
     });
     _deleteMessageSubscription = _eventBus.on<DeleteMessageEvent>().listen((event) {
-      _loadConversationList();
+      _reloadConversation(event.conversation!);
     });
     _clearConversationUnreadSubscription = _eventBus.on<ClearConversationUnreadEvent>().listen((event) {
       _reloadConversation(event.conversation);
@@ -171,7 +171,7 @@ class ConversationListViewModel extends ChangeNotifier {
     if (!force && _connectionStatus != kConnectionStatusConnected) {
       return;
     }
-    
+
     if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 100), () async {
         var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);

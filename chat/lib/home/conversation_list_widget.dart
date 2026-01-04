@@ -170,11 +170,10 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   }
 
   @override
-  void didUpdateWidget(ConversationListItem oldWidget) {
+  void didUpdateWidget(ConversationListItem oldWidget){
     super.didUpdateWidget(oldWidget);
-    // 如果会话更新了，重新加载数据
-    if (oldWidget.conversationInfo.lastMessage?.messageUid != widget.conversationInfo.lastMessage?.messageUid ||
-        oldWidget.conversationInfo.timestamp != widget.conversationInfo.timestamp) {
+    // 只要会话信息对象改变了，就重新加载 digest
+    if (oldWidget.conversationInfo != widget.conversationInfo) {
       _loadLastMessageDigest();
     }
   }

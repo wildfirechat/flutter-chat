@@ -20,6 +20,7 @@ class ConversationInfo {
               runtimeType == other.runtimeType &&
               conversation == other.conversation &&
               lastMessage == other.lastMessage &&
+              (lastMessage != null ? lastMessage!.content == other.lastMessage!.content : other.lastMessage == null) &&
               draft == other.draft &&
               timestamp == other.timestamp &&
               isTop == other.isTop &&
@@ -30,6 +31,7 @@ class ConversationInfo {
   int get hashCode =>
       conversation.hashCode ^
       lastMessage.hashCode ^
+      (lastMessage != null ? lastMessage!.content.hashCode : 0) ^
       draft.hashCode ^
       timestamp.hashCode ^
       unreadCount.hashCode ^

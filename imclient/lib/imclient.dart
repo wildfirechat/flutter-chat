@@ -177,15 +177,17 @@ class ReceiveMessagesEvent {
 
 class RecallMessageEvent {
   int messageUid;
+  Conversation? conversation;
 
-  RecallMessageEvent(this.messageUid);
+  RecallMessageEvent(this.messageUid, {this.conversation});
 }
 
 class DeleteMessageEvent {
   int? messageUid;
   int? messageId;
+  Conversation? conversation;
 
-  DeleteMessageEvent({this.messageId, this.messageUid});
+  DeleteMessageEvent({this.messageId, this.messageUid, this.conversation});
 }
 
 class MessageDeliveriedEvent {

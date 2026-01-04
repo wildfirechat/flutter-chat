@@ -2,7 +2,7 @@
 import '../model/message_payload.dart';
 import 'message_content.dart';
 
-class MediaMessageContent extends MessageContent {
+abstract class MediaMessageContent extends MessageContent {
   String? localPath;
   String? remoteUrl;
 
