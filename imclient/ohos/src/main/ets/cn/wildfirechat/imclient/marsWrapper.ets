@@ -23,7 +23,7 @@ function initProto(dbPath: string): void {
     clientModule.setSettingUpdateListener(genWfcEventListener('onSettingUpdate'));
     clientModule.setChannelInfoUpdateListener(genWfcEventListener('onChannelInfoUpdate'));
     clientModule.setGroupMemberUpdateListener(genWfcEventListener('onGroupMembersUpdate'));
-    console.log('xxxxxxxxxxxxxx initProto end')
+    console.log('initProto end')
 }
 function setWfcEventListener(listener: (args: object) => void) {
     wfcEventListener = listener;

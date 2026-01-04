@@ -208,19 +208,134 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
             let args = (value as Record<string, Object>)['args'] as Object[]
             let event = args[0] as string
             switch (event) {
-                case 'onConnectionStatusChange':
+                case 'onConnectionStatusChange': {
                     this.__callback2UI('onConnectionStatusChanged', args[1])
                     break
-                case 'onReceiveMessage':
+                }
+                case 'onReceiveMessage': {
                     let value = {
                         'messages': json.parse(args[1] as string),
                         'hasMore': args[2] === 1
                     } as Record<string, Object>
                     this.__callback2UI('onReceiveMessage', value)
                     break
-                default:
+                }
+                case 'onRecallMessage': {
+                    let data = {
+                        'messageUid': args[1]
+                    } as Record<string, Object>
+                    this.__callback2UI('onRecallMessage', data)
+                    break
+                }
+                case 'onDeleteMessage': {
+                    let data = {
+                        'messageUid': args[1]
+                    } as Record<string, Object>
+                    this.__callback2UI('onDeleteMessage', data)
+                    break
+                }
+                case 'onMessageDelivered': {
+                    this.__callback2UI('onMessageDelivered', args[1])
+                    break
+                }
+                case 'onMessageRead': {
+                    let data = {
+                        'readeds': args[1]
+                    } as Record<string, Object>
+                    this.__callback2UI('onMessageReaded', data)
+                    break
+                }
+                case 'onSettingUpdate': {
+                    this.__callback2UI('onSettingUpdated', {} as Record<string, Object>)
+                    break
+                }
+                case 'onUserInfoUpdate': {
+                    let data = {
+                        'users': args[1]
+                    } as Record<string, Object>
+                    this.__callback2UI('onUserInfoUpdated', data)
+                    break
+                }
+                case 'onUserOnlineEvent': {
+                    let data = {
+                        'states': args[1]
+                    } as Record<string, Object>
+                    this.__callback2UI('onUserOnlineEvent', data)
+                    break
+                }
+                case 'onFriendListUpdate': {
+                    let data = {
+                        'friends': args[1]
+                    } as Record<string, Object>
+                    this.__callback2UI('onFriendListUpdated', data)
+                    break
+                }
+                case 'onFriendRequestUpdate': {
+                    let data = {
+                        'requests': args[1]
+                    } as Record<string, Object>
+                    this.__callback2UI('onFriendRequestUpdated', data)
+                    break
+                }
+                case 'onGroupInfoUpdate': {
+                    let data = {
+                        'groups': args[1]
+                    } as Record<string, Object>
+                    this.__callback2UI('onGroupInfoUpdated', data)
+                    break
+                }
+                case 'onGroupMembersUpdate': {
+                    let data = {
+                        'groupId': args[1],
+                        'members': args[2]
+                    } as Record<string, Object>
+                    this.__callback2UI('onGroupMemberUpdated', data)
+                    break
+                }
+                case 'onChannelInfoUpdate': {
+                    let data = {
+                        'channels': args[1]
+                    } as Record<string, Object>
+                    this.__callback2UI('onChannelInfoUpdated', data)
+                    break
+                }
+                case 'onConferenceEvent': {
+                    let data = {
+                        'event': args[1]
+                    } as Record<string, Object>
+                    this.__callback2UI('onConferenceEvent', data)
+                    break
+                }
+                case 'onMessageUpdate': {
+                    let data = {
+                        'messageId': args[1]
+                    } as Record<string, Object>
+                    this.__callback2UI('onMessageUpdated', data)
+                    break
+                }
+                case 'onSendPrepare': {
+                    let data = {
+                        'requestId': args[1],
+                        'messageId': args[2],
+                        'message': args[3]
+                    } as Record<string, Object>
+                    this.__callback2UI('onSendMessageStart', data)
+                    break
+                }
+                case 'onTrafficData':
+                case 'onConversationTopUpdate':
+                case 'onConversationSilentUpdate':
+                case 'onClearMessage':
+                case 'onProgress':
+                case 'onMediaUpload':
+                case 'onSendSuccess': {
+                    //ignore these events
+                    break
+                }
+                default: {
                     console.log('unknown event', event, args)
                     break
+                }
             }
         })
         // binding.getPlatformViewRegistry()
