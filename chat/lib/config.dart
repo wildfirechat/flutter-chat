@@ -39,4 +39,10 @@ class Config {
   static const String defaultUserPortrait = 'assets/images/user_avatar_default.png';
   static const String defaultGroupPortrait = 'assets/images/group_avatar_default.png';
   static const String defaultChannelPortrait = 'assets/images/channel_avatar_default.png';
+
+  // 用户协议地址
+  static const String USER_AGREEMENT_URL = "https://example.com/user_agreement.html";
+
+  //  隐私协议地址
+  static const String PRIVACY_AGREEMENT_URL = "https://example.com/user_privacy.html";
 }
