@@ -24,8 +24,9 @@ import 'forward_confirmation_sheet.dart';
 class PickForwardTargetPage extends StatefulWidget {
   final Function(List<Conversation>) onSelected;
   final List<Message>? messages;
+  final bool oneByOne;
 
-  const PickForwardTargetPage({super.key, required this.onSelected, this.messages});
+  const PickForwardTargetPage({super.key, required this.onSelected, this.messages, this.oneByOne = false});
 
   @override
   State<PickForwardTargetPage> createState() => _PickForwardTargetPageState();
@@ -103,6 +104,7 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
         return ForwardConfirmationSheet(
           targets: targets,
           messages: widget.messages,
+          oneByOne: widget.oneByOne,
           onConfirm: (comment) {
             widget.onSelected(targets);
           },
@@ -115,7 +117,7 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('选择'),
+        title: Text( _isMultiSelect ? '选择多个聊天' : '选择一个聊天'),
         // default leading back button
         actions: [
            TextButton(
@@ -366,8 +368,9 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
           border: Border(top: BorderSide(color: Color(0xFFEBEBEB))),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            Text('已选择${_selectedConversations.length}个聊天'),
+            const Spacer(),
             ElevatedButton(
               onPressed: _selectedConversations.isNotEmpty
                   ? () => _showConfirmationDialog(_selectedConversations)

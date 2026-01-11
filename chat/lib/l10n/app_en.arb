@@ -91,6 +91,7 @@
   "deleteLocalMessage": "Delete Local Message",
   "deleteRemoteMessage": "Delete Remote Message",
   "deleteRemoteMessageFail": "Failed to delete remote message: {error}",
+  "forward": "Forward",
   "forwardOneByOne": "Forward One by One",
   "forwardCombined": "Forward Combined",
   "sendFail": "Send failed!",
