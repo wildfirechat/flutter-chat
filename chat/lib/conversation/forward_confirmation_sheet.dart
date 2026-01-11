@@ -22,6 +22,7 @@ import 'package:chat/utilities.dart';
 class ForwardConfirmationSheet extends StatefulWidget {
   final List<Conversation> targets;
   final List<Message>? messages; // Original messages for preview
+  final bool oneByOne;
   final Function(String? comment) onConfirm;
 
   const ForwardConfirmationSheet({
@@ -29,6 +30,7 @@ class ForwardConfirmationSheet extends StatefulWidget {
     required this.targets,
     required this.onConfirm,
     this.messages,
+    this.oneByOne = false,
   });
 
   @override
@@ -266,7 +268,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
       );
     }
 
-    String previewText = '[逐条转发] 共${messages.length}条消息';
+    String previewText = '${widget.oneByOne? '[逐条转发]' : '[合并转发]'} 共${messages.length}条消息';
     if (messages.first.content is CompositeMessageContent) {
       previewText = '[聊天记录]';
     }

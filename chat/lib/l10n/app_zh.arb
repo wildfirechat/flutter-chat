@@ -91,6 +91,7 @@
   "deleteLocalMessage": "删除本地消息",
   "deleteRemoteMessage": "删除远程消息",
   "deleteRemoteMessageFail": "删除远程消息失败: {error}",
+  "forward": "转发",
   "forwardOneByOne": "逐条转发",
   "forwardCombined": "合并转发",
   "sendFail": "发送失败！",

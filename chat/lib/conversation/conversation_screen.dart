@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/message/message.dart';
+import 'package:imclient/message/notification/notification_message_content.dart';
 import 'package:imclient/message/notification/tip_notificiation_content.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
@@ -291,8 +292,9 @@ class _State extends State<ConversationScreen> {
 
   Widget _buildMultiSelectToolBar(BuildContext context, ConversationViewModel viewModel) {
     return Container(
-      height: 50,
+      height: 60,
       color: const Color(0xFFF5F5F5),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
@@ -377,31 +379,33 @@ class _State extends State<ConversationScreen> {
       return;
     }
 
-    showModalBottomSheet(
+    showDialog(
       context: context,
       builder: (BuildContext context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ListTile(
-                leading: const Icon(Icons.send),
-                title: Text(AppLocalizations.of(context)!.forwardOneByOne),
-                onTap: () {
-                  Navigator.pop(context);
-                  _forwardMessages(context, viewModel, selected, false);
-                },
+        return SimpleDialog(
+          title: Text(AppLocalizations.of(context)!.forward),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                _forwardMessages(context, viewModel, selected, false);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(AppLocalizations.of(context)!.forwardOneByOne),
               ),
-              ListTile(
-                leading: const Icon(Icons.merge_type),
-                title: Text(AppLocalizations.of(context)!.forwardCombined),
-                onTap: () {
-                  Navigator.pop(context);
-                  _forwardMessages(context, viewModel, selected, true);
-                },
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                _forwardMessages(context, viewModel, selected, true);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(AppLocalizations.of(context)!.forwardCombined),
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );
@@ -531,12 +535,13 @@ class _State extends State<ConversationScreen> {
         },
         child: Row(
           children: [
-            Checkbox(
-              value: conversationViewModel.isMessageSelected(msg.message.messageId),
-              onChanged: (bool? value) {
-                conversationViewModel.toggleMessageSelection(msg.message.messageId);
-              },
-            ),
+            if (msg.message.content is! NotificationMessageContent)
+              Checkbox(
+                value: conversationViewModel.isMessageSelected(msg.message.messageId),
+                onChanged: (bool? value) {
+                  conversationViewModel.toggleMessageSelection(msg.message.messageId);
+                },
+              ),
             Expanded(
               child: AbsorbPointer(
                 child: cell,

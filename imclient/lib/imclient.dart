@@ -1,11 +1,12 @@
 
-import 'dart:typed_data';
-
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/services.dart';
+import 'package:imclient/message/call_start_message_content.dart';
+import 'package:imclient/message/notification/call_add_participants_notificiation_content.dart';
+import 'package:imclient/model/friend.dart';
+import 'package:imclient/model/user_online_state.dart';
 
 import 'imclient_method_channel.dart';
-import 'message/call_start_message_content.dart';
 import 'message/card_message_content.dart';
 import 'message/composite_message_content.dart';
 import 'message/file_message_content.dart';
@@ -14,7 +15,6 @@ import 'message/link_message_content.dart';
 import 'message/location_message_content.dart';
 import 'message/message.dart';
 import 'message/message_content.dart';
-import 'message/notification/call_add_participants_notificiation_content.dart';
 import 'message/notification/delete_message_content.dart';
 import 'message/notification/friend_added_message_content.dart';
 import 'message/notification/friend_greeting_message_content.dart';
@@ -51,7 +51,6 @@ import 'model/conversation.dart';
 import 'model/conversation_info.dart';
 import 'model/conversation_search_info.dart';
 import 'model/file_record.dart';
-import 'model/friend.dart';
 import 'model/friend_request.dart';
 import 'model/group_info.dart';
 import 'model/group_member.dart';
@@ -62,7 +61,6 @@ import 'model/pc_online_info.dart';
 import 'model/read_report.dart';
 import 'model/unread_count.dart';
 import 'model/user_info.dart';
-import 'model/user_online_state.dart';
 
 
 typedef ConnectionStatusChangedCallback = void Function(int status);
