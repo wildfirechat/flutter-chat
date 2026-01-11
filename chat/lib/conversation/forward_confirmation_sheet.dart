@@ -1,13 +1,16 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:imclient/message/message.dart';
-import 'package:imclient/message/text_message_content.dart';
+import 'package:imclient/message/message_content.dart';
+import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/composite_message_content.dart';
+import 'package:image/image.dart' as img;
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:provider/provider.dart';
@@ -30,6 +33,20 @@ class ForwardConfirmationSheet extends StatefulWidget {
 
   @override
   State<ForwardConfirmationSheet> createState() => _ForwardConfirmationSheetState();
+}
+
+class _MessagePreviewData {
+  final String text;
+  final Uint8List? thumbnail;
+  final bool isVideo;
+  final String? remoteImageUrl;
+
+  const _MessagePreviewData({
+    required this.text,
+    this.thumbnail,
+    this.isVideo = false,
+    this.remoteImageUrl,
+  });
 }
 
 class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
@@ -95,7 +112,9 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                           ),
                         ),
                       ),
-                      const Divider(color: Color(0xFFEBEBEB),),
+                      const Divider(
+                        color: Color(0xFFEBEBEB),
+                      ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -132,7 +151,11 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
       child: ListView.separated(
         shrinkWrap: true,
         itemCount: widget.targets.length,
-        separatorBuilder: (_, __) => const Divider(height: 0.4, indent: 68, color: Colors.white70,),
+        separatorBuilder: (_, __) => const Divider(
+          height: 0.4,
+          indent: 68,
+          color: Colors.white70,
+        ),
         itemBuilder: (context, index) {
           return _buildSingleTarget(widget.targets[index]);
         },
@@ -177,7 +200,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
         conversation.conversationType == ConversationType.Channel ? channelViewModel.getChannelInfo(conversation.target) : null,
       ),
       builder: (context, rec, child) {
-         String portrait = switch (conversation.conversationType) {
+        String portrait = switch (conversation.conversationType) {
           ConversationType.Single => rec.$1?.portrait ?? Config.defaultUserPortrait,
           ConversationType.Group => rec.$2?.portrait ?? Config.defaultGroupPortrait,
           ConversationType.Channel => rec.$3?.portrait ?? Config.defaultChannelPortrait,
@@ -196,39 +219,129 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
   Widget _buildMessagePreview() {
     if (widget.messages == null || widget.messages!.isEmpty) {
       return const SizedBox.shrink();
-    }
-
-    String previewText = '';
-    if (widget.messages!.length == 1) {
-      var msg = widget.messages!.first;
-      if (msg.content is TextMessageContent) {
-        previewText = (msg.content as TextMessageContent).text ?? '';
-      } else if (msg.content is ImageMessageContent) {
-        previewText = '[图片]';
-      } else {
-        previewText = '[消息]';
-      }
     } else {
-      previewText = '[逐条转发] 共${widget.messages!.length}条消息';
-      // Or composite
-      if (widget.messages!.first.content is CompositeMessageContent) {
-        previewText = '[聊天记录]';
-      }
+      return FutureBuilder<_MessagePreviewData>(
+        future: _loadPreviewData(),
+        builder: (context, snap) {
+          final preview = snap.data ?? const _MessagePreviewData(text: '[消息]');
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.all(12),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F5F5),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (preview.thumbnail != null || preview.remoteImageUrl != null) _buildThumbnailWidget(preview),
+                if (preview.thumbnail != null || preview.remoteImageUrl != null) const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    preview.text,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  Future<_MessagePreviewData> _loadPreviewData() async {
+    final messages = widget.messages!;
+    if (messages.length == 1) {
+      final message = messages.first;
+      final text = await message.content.digest(message);
+      return _MessagePreviewData(
+        text: text,
+        thumbnail: _extractThumbnail(message.content),
+        isVideo: message.content is VideoMessageContent,
+        remoteImageUrl: _resolveRemoteImageUrl(message.content),
+      );
     }
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      padding: const EdgeInsets.all(12),
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Text(
-        previewText,
-        maxLines: 3,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(color: Colors.grey, fontSize: 14),
+    String previewText = '[逐条转发] 共${messages.length}条消息';
+    if (messages.first.content is CompositeMessageContent) {
+      previewText = '[聊天记录]';
+    }
+
+    final firstContent = messages.first.content;
+    return _MessagePreviewData(
+      text: previewText,
+      thumbnail: _extractThumbnail(firstContent),
+      isVideo: firstContent is VideoMessageContent,
+      remoteImageUrl: _resolveRemoteImageUrl(firstContent),
+    );
+  }
+
+  Uint8List? _extractThumbnail(MessageContent content) {
+    if (content is ImageMessageContent) {
+      return _encodeThumbnail(content.thumbnail);
+    }
+    if (content is VideoMessageContent) {
+      return _encodeThumbnail(content.thumbnail);
+    }
+    return null;
+  }
+
+  Uint8List? _encodeThumbnail(img.Image? thumbnail) {
+    if (thumbnail == null) return null;
+    return Uint8List.fromList(img.encodeJpg(thumbnail, quality: 70));
+  }
+
+  String? _resolveRemoteImageUrl(MessageContent content) {
+    if (content is ImageMessageContent) {
+      return content.remoteUrl;
+    }
+    return null;
+  }
+
+  Widget _buildThumbnailWidget(_MessagePreviewData preview) {
+    Widget? baseImage;
+    if (preview.thumbnail != null) {
+      baseImage = Image.memory(
+        preview.thumbnail!,
+        width: 64,
+        height: 64,
+        fit: BoxFit.cover,
+      );
+    } else if (preview.remoteImageUrl != null) {
+      baseImage = Image.network(
+        preview.remoteImageUrl!,
+        width: 64,
+        height: 64,
+        fit: BoxFit.cover,
+      );
+    }
+
+    if (baseImage == null) {
+      return const SizedBox.shrink();
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: SizedBox(
+        width: 64,
+        height: 64,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            baseImage,
+            if (preview.isVideo)
+              Container(
+                color: Colors.black26,
+                child: const Center(
+                  child: Icon(Icons.play_circle_outline, color: Colors.white, size: 28),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

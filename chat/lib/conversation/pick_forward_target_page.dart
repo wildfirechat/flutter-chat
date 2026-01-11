@@ -342,7 +342,7 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
         title: Text(title ?? ''),
         trailing: (_isMultiSelect && showCheckbox)
             ? (selected
-                ? const Icon(Icons.check_circle, color: Colors.green)
+                ? const Icon(Icons.check_circle, color: Color(0xFF3B62E0))
                 : const Icon(Icons.radio_button_unchecked, color: Colors.grey))
             : null,
       );
