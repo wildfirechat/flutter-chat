@@ -31,7 +31,7 @@ import 'package:chat/model/favorite_item.dart';
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
 import '../ui_model/ui_message.dart';
-import 'pick_conversation_screen.dart';
+import 'pick_forward_target_page.dart';
 import 'package:provider/provider.dart';
 import 'input_bar/message_input_bar_controller.dart';
 
@@ -434,9 +434,13 @@ class ConversationController extends ChangeNotifier {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PickConversationScreen(
-              onConversationSelected: (ctx, conversation) {
-                _showForwardDialog(ctx, conversation, model.message);
+            builder: (context) => PickForwardTargetPage(
+              messages: [model.message],
+              onSelected: (conversations) {
+                for (var conversation in conversations) {
+                  _performForward(conversation, model.message, "");
+                }
+                Navigator.pop(context); // Close PickForwardTargetPage
               },
             ),
           ),

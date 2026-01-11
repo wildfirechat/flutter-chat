@@ -69,7 +69,7 @@ class _SearchConversationResultViewState extends State<SearchConversationResultV
         title: TextField(
           controller: _controller,
           decoration: const InputDecoration(
-            hintText: '搜索',
+            hintText: '输入开始搜索',
             border: InputBorder.none,
           ),
           onChanged: (value) {
