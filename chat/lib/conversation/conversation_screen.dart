@@ -15,7 +15,7 @@ import 'package:chat/conversation/single_conversation_info_screen.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import 'package:chat/conversation/pick_conversation_screen.dart';
+import 'pick_forward_target_page.dart';
 import 'package:imclient/message/composite_message_content.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/config.dart';
@@ -411,32 +411,36 @@ class _State extends State<ConversationScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PickConversationScreen(
-          onConversationSelected: (ctx, conversation) {
-            if (isMerge && messages.length > 1) {
-              _sendCompositeMessage(ctx, conversation, messages, viewModel);
-            } else {
-              _sendOneByOneMessage(ctx, conversation, messages, viewModel);
+        builder: (context) => PickForwardTargetPage(
+          messages: messages,
+          onSelected: (conversations) {
+            Navigator.pop(context);
+            viewModel.toggleMultiSelectMode();
+
+            for (var target in conversations) {
+              if (isMerge && messages.length > 1) {
+                _sendCompositeMessage(context, target, messages);
+              } else {
+                _sendOneByOneMessage(context, target, messages);
+              }
             }
+            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sent);
           },
         ),
       ),
     );
   }
 
-  void _sendOneByOneMessage(BuildContext context, Conversation target, List<Message> messages, ConversationViewModel viewModel) {
+  void _sendOneByOneMessage(BuildContext context, Conversation target, List<Message> messages) {
     messages.sort((a, b) => a.serverTime.compareTo(b.serverTime));
     for (var msg in messages) {
       Imclient.sendMessage(target, msg.content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {
         Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sendFail);
       });
     }
-    viewModel.toggleMultiSelectMode();
-    Navigator.pop(context);
-    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sent);
   }
 
-  void _sendCompositeMessage(BuildContext context, Conversation target, List<Message> messages, ConversationViewModel viewModel) {
+  void _sendCompositeMessage(BuildContext context, Conversation target, List<Message> messages) {
     CompositeMessageContent content = CompositeMessageContent();
     content.title = AppLocalizations.of(context)!.chatHistory;
     messages.sort((a, b) => a.serverTime.compareTo(b.serverTime));
@@ -445,10 +449,6 @@ class _State extends State<ConversationScreen> {
     Imclient.sendMessage(target, content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {
       Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sendFail);
     });
-
-    viewModel.toggleMultiSelectMode();
-    Navigator.pop(context);
-    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sent);
   }
 
   void _onMentionTriggered(Conversation conversation) async {
