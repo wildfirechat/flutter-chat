@@ -119,7 +119,6 @@ dependencies:
   logger: any
   path: any
   pinyin: ^3.3.0
-  flutter_popup: ^3.3.9
   mobile_scanner:
       git:
           url: "https://gitcode.com/openharmony-sig/fluttertpc_mobile_scanner"
