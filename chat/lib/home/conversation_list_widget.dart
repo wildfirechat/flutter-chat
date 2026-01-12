@@ -388,7 +388,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context, listen: false);
     showMenu(
       context: context,
-      position: RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy),
+      position: RelativeRect.fromLTRB(position.dx - 120, position.dy, position.dx, position.dy),
       items: items,
     ).then((selected) {
       if (selected != null) {
