@@ -12,6 +12,7 @@ class ContactListViewModel extends ChangeNotifier {
   List<UIContactInfo> _contactList = [];
   List<FriendRequest> _newFriendRequestList = [];
   int _unreadFriendRequestCount = 0;
+  bool _isFirstConnected = true;
 
   late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
   late StreamSubscription<FriendUpdateEvent> _friendUpdatedSubscription;
@@ -40,14 +41,15 @@ class ContactListViewModel extends ChangeNotifier {
     });
 
     _connectionStatusSubscription = Imclient.IMEventBus.on<ConnectionStatusChangedEvent>().listen((event) {
-      if(event.connectionStatus == kConnectionStatusConnected) {
+      if(event.connectionStatus == kConnectionStatusConnected && _isFirstConnected) {
+        _isFirstConnected = false;
         _loadContactList(true);
-        notifyListeners();
+        _loadFriendRequestListAndNotify();
       }
     });
 
-    _loadContactList(true);
-    _loadFriendRequestListAndNotify();
+    debugPrint('jyj viewmodel');
+    _loadContactList(false);
   }
 
   void reset() {

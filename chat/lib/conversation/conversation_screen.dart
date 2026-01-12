@@ -490,7 +490,7 @@ class _State extends State<ConversationScreen> {
           (context, pickedUsers) {
             if (pickedUsers.isNotEmpty) {
               if(pickedUsers[0] == 'All') {
-                UserInfo all = UserInfo();
+                UserInfo all = UserInfo('all');
                 all.userId = 'All';
                 all.displayName = AppLocalizations.of(context)!.allMembers;
                 _inputBarController.addMention(all);

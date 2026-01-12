@@ -1070,9 +1070,8 @@ class ImclientPlatform extends PlatformInterface {
   static Future<GroupInfo?> _convertProtoGroupInfo(Map<dynamic, dynamic>? map) async {
     if (map == null || map['target'] == null) return null;
 
-    GroupInfo groupInfo = GroupInfo();
+    GroupInfo groupInfo = GroupInfo(map['target']);
     groupInfo.type = GroupType.values[map['type']];
-    groupInfo.target = map['target'];
     groupInfo.name = map['name'];
     groupInfo.extra = map['extra'];
     groupInfo.remark = map['remark'];
@@ -1149,8 +1148,7 @@ class ImclientPlatform extends PlatformInterface {
     if (map == null || map['uid'] == null) {
       return null;
     }
-    UserInfo userInfo = UserInfo();
-    userInfo.userId = map['uid'];
+    UserInfo userInfo = UserInfo(map['uid']);
     userInfo.name = map['name'];
     userInfo.displayName = map['displayName'];
     if (map['gender'] != null) userInfo.gender = map['gender'];

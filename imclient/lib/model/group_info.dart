@@ -2,6 +2,7 @@ enum GroupType { Normal, Free, Restricted, Organization }
 
 class GroupInfo {
   GroupInfo(
+      this.target,
       {this.type = GroupType.Restricted,
       this.memberCount = 0,
       this.mute = 0,
@@ -14,7 +15,7 @@ class GroupInfo {
       this.deleted = 0,
       this.memberDt = 0,
       this.updateDt = 0});
-  late String target;
+  String target;
   GroupType type;
   String? name;
   String? portrait;
