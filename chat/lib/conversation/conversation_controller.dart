@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_popup/flutter_popup.dart';
 import 'package:imclient/message/call_start_message_content.dart';
 import 'package:logger/logger.dart' show Level, Logger;
 import 'package:flutter_sound/flutter_sound.dart';
@@ -27,6 +26,7 @@ import 'package:chat/conversation/video_player_view.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/model/favorite_item.dart';
+import 'package:chat/widget/popup_menu_overlay.dart';
 
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
@@ -307,8 +307,8 @@ class ConversationController extends ChangeNotifier {
     debugPrint("on double taped cell");
   }
 
-  void onLongPressedCell(BuildContext context, UIMessage model, Offset postion) {
-    _showPopupMenu(context, model, postion);
+  void onLongPressedCell(BuildContext context, UIMessage model, Rect? bubbleRect) {
+    _showPopupMenu(context, model, bubbleRect);
   }
 
   void onPortraitTaped(BuildContext context, UIMessage model) {
@@ -332,7 +332,7 @@ class ConversationController extends ChangeNotifier {
     debugPrint("on taped readed");
   }
 
-  void _showPopupMenu(BuildContext context, UIMessage model, Offset position) {
+  void _showPopupMenu(BuildContext context, UIMessage model, Rect? bubbleRect) {
     final messageInputBarController = Provider.of<MessageInputBarController>(context, listen: false);
     List<Map<String, dynamic>> menuItems = [
       {'label': '删除', 'value': 'delete', 'icon': Icons.delete},
@@ -356,70 +356,21 @@ class ConversationController extends ChangeNotifier {
       {'label': '收藏', 'value': 'favorite', 'icon': Icons.favorite},
     ]);
 
-    Navigator.push(
-      context,
-      PageRouteBuilder(
-        opaque: false,
-        barrierColor: Colors.transparent,
-        pageBuilder: (context, animation, secondaryAnimation) {
-          return Stack(
-            children: [
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  color: Colors.transparent,
-                ),
-              ),
-              Positioned(
-                left: position.dx,
-                top: position.dy,
-                child: _buildPopup(context, menuItems, model, messageInputBarController),
-              ),
-            ],
-          );
-        },
-      ),
+    // 如果没有bubbleRect，使用屏幕中心
+    final screenSize = MediaQuery.of(context).size;
+    final targetRect = bubbleRect ?? Rect.fromCenter(
+      center: Offset(screenSize.width / 2, screenSize.height / 2),
+      width: 100,
+      height: 50,
     );
-  }
 
-  Widget _buildPopup(BuildContext context, List<Map<String, dynamic>> items, UIMessage model, MessageInputBarController messageInputBarController) {
-    final GlobalKey<CustomPopupState> popupKey = GlobalKey<CustomPopupState>();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      popupKey.currentState?.show();
-    });
-
-    const double popupWidth = 250;
-    const double padding = 10;
-    const int crossAxisCount = 4;
-    const double itemWidth = (popupWidth - padding * 2) / crossAxisCount;
-
-    return CustomPopup(
-      key: popupKey,
-      backgroundColor: const Color(0xFF4C4C4C),
-      arrowColor: const Color(0xFF4C4C4C),
-      barrierColor: Colors.transparent,
-      showArrow: true,
-      content: Container(
-        width: popupWidth,
-        padding: const EdgeInsets.all(padding),
-        child: Wrap(
-          alignment: WrapAlignment.start,
-          children: items.map((item) {
-            return _PopupMenuItem(
-              item: item,
-              width: itemWidth,
-              onTap: () {
-                Navigator.pop(context);
-                _handleMenuItemTap(context, item['value'], model, messageInputBarController);
-              },
-            );
-          }).toList(),
-        ),
-      ),
-      child: const SizedBox(width: 1, height: 1),
+    PopupMenuOverlay.show(
+      context: context,
+      targetRect: targetRect,
+      menuItems: menuItems,
+      onItemTap: (value) {
+        _handleMenuItemTap(context, value, model, messageInputBarController);
+      },
     );
   }
 
@@ -589,55 +540,6 @@ class ConversationController extends ChangeNotifier {
     if (_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
     }
-  }
-}
-
-class _PopupMenuItem extends StatefulWidget {
-  final Map<String, dynamic> item;
-  final double width;
-  final VoidCallback onTap;
-
-  const _PopupMenuItem({
-    Key? key,
-    required this.item,
-    required this.width,
-    required this.onTap,
-  }) : super(key: key);
-
-  @override
-  State<_PopupMenuItem> createState() => _PopupMenuItemState();
-}
-
-class _PopupMenuItemState extends State<_PopupMenuItem> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onTap,
-      child: Container(
-        width: widget.width,
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        decoration: BoxDecoration(
-          color: _isPressed ? Colors.black26 : Colors.transparent,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(widget.item['icon'], color: Colors.white, size: 24),
-            const SizedBox(height: 5),
-            Text(
-              widget.item['label'],
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 

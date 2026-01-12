@@ -61,6 +61,8 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     );
   }
 
+  final GlobalKey _bubbleKey = GlobalKey();
+
   Widget _messageContentContainer(BuildContext context, UserInfo? senderUserInfo, bool isHiddenGroupMemberName) {
     return Flexible(
       child: Column(
@@ -75,6 +77,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
               Flexible(
                 child: GestureDetector(
                   child: Container(
+                    key: _bubbleKey,
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: model.message.content is StickerMessageContent
@@ -91,7 +94,15 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                   ),
                   onTap: () => conversationController?.onTapedCell(context, model),
                   onDoubleTap: () => conversationController?.onDoubleTapedCell(model),
-                  onLongPressStart: (details) => conversationController?.onLongPressedCell(context, model, details.globalPosition),
+                  onLongPressStart: (details) {
+                    final RenderBox? renderBox = _bubbleKey.currentContext?.findRenderObject() as RenderBox?;
+                    Rect? bubbleRect;
+                    if (renderBox != null) {
+                      final offset = renderBox.localToGlobal(Offset.zero);
+                      bubbleRect = offset & renderBox.size;
+                    }
+                    conversationController?.onLongPressedCell(context, model, bubbleRect);
+                  },
                 ),
               ),
               _playStatus(),
