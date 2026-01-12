@@ -88,8 +88,7 @@ class Employee {
   }
 
   UserInfo toUserInfo() {
-    return UserInfo()
-      ..userId = employeeId!
+    return UserInfo(employeeId)
       ..displayName = name
       ..portrait = portraitUrl
       ..mobile = mobile!

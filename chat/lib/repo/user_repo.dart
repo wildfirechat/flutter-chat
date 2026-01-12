@@ -31,9 +31,15 @@ mixin UserRepo {
     return userInfos;
   }
 
-  static UserInfo? getUserInfo(String userId, {String? groupId}) {
+  static UserInfo getUserInfo(String userId, {String? groupId}) {
     var targetMap = _targetMap(userId, groupId: groupId);
-    return targetMap[userId];
+    var userInfo = targetMap[userId];
+    if(userInfo == null){
+      // for reactive
+      userInfo = UserInfo(userId, updateDt: 0);
+      targetMap[userId] = userInfo;
+    }
+    return userInfo;
   }
 
   static List<UserInfo>? getGroupMemberUserInfos(String groupId) {
@@ -73,7 +79,7 @@ mixin UserRepo {
       _groupUserMap.forEach((groupId, groupCache) {
         var oldGroupUser = groupCache[userInfo.userId];
         if (oldGroupUser != null) {
-          UserInfo newGroupUser = UserInfo();
+          UserInfo newGroupUser = UserInfo(userInfo.userId);
           newGroupUser.userId = userInfo.userId;
           newGroupUser.name = userInfo.name;
           newGroupUser.displayName = userInfo.displayName;

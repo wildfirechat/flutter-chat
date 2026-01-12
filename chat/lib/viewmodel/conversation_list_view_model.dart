@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
@@ -130,6 +131,8 @@ class ConversationListViewModel extends ChangeNotifier {
   _preloadConversationGroupAndChannel(List<ConversationInfo> infos) async {
     Set<String> targetGroups = {};
     Set<String> targetChannels = {};
+    // 只预加载最新100 个会话
+    infos = infos.sublist(0, min(100, infos.length));
     for (var info in infos) {
       if (info.conversation.conversationType == ConversationType.Single) {
       } else if (info.conversation.conversationType == ConversationType.Group) {

@@ -30,9 +30,9 @@ class GroupViewModel extends ChangeNotifier {
 
   final Set<String> _fetchingGroupIds = {};
 
-  GroupInfo? getGroupInfo(String groupId) {
+  GroupInfo getGroupInfo(String groupId) {
     var groupInfo = GroupRepo.getGroupInfo(groupId);
-    if (groupInfo == null) {
+    if (groupInfo.updateDt == 0) {
       if (!_fetchingGroupIds.contains(groupId)) {
         _fetchingGroupIds.add(groupId);
         Imclient.getGroupInfo(groupId).then((info) {

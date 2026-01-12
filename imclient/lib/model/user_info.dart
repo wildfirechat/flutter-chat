@@ -1,5 +1,5 @@
 class UserInfo {
-  UserInfo({this.gender = 0, this.updateDt = 0, this.type = 0, this.deleted = 0});
+  UserInfo(this.userId, {this.gender = 0, this.updateDt = 0, this.type = 0, this.deleted = 0});
 
   //用户ID
   late String userId;

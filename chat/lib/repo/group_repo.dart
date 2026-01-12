@@ -19,8 +19,12 @@ class GroupRepo {
     _conversationGroupInfosLoaded = true;
   }
 
-  static GroupInfo? getGroupInfo(String groupId) {
+  static GroupInfo getGroupInfo(String groupId) {
     var info = _groupMap[groupId];
+    if (info == null) {
+      info = GroupInfo(groupId, updateDt: 0);
+      _groupMap[groupId] = info;
+    }
     return info;
   }
 

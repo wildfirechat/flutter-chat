@@ -37,10 +37,10 @@ class UserViewModel extends ChangeNotifier {
 
   final Set<String> _fetchingUserIds = {};
 
-  UserInfo? getUserInfo(String userId, {String? groupId}) {
+  UserInfo getUserInfo(String userId, {String? groupId}) {
     // debugPrint('getUserInfo $userId groupId $groupId');
     var info = UserRepo.getUserInfo(userId, groupId: groupId);
-    if (info == null) {
+    if (info.updateDt == 0 ) {
       String key = groupId != null ? "$userId@$groupId" : userId;
       if (!_fetchingUserIds.contains(key)) {
         _fetchingUserIds.add(key);

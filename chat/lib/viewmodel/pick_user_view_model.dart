@@ -57,7 +57,7 @@ class PickUserViewModel extends ChangeNotifier {
 
     _users = [];
     if (showMentionAll) {
-      UserInfo all = UserInfo();
+      UserInfo all = UserInfo('all');
       all.userId = 'All';
       all.displayName = '所有人';
       _users.add(UIPickUserInfo("", false, all));
