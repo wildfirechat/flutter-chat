@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'dart:convert';
 import 'package:image/image.dart';
 
 import '../model/message_payload.dart';
@@ -11,12 +11,12 @@ MessageContent ImageMessageContentCreator() {
   return ImageMessageContent();
 }
 
-const imageContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_IMAGE,
-    MessageFlag.PERSIST_AND_COUNT, ImageMessageContentCreator);
-
+const imageContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_IMAGE, MessageFlag.PERSIST_AND_COUNT, ImageMessageContentCreator);
 
 class ImageMessageContent extends MediaMessageContent {
   Image? thumbnail;
+  int width = 0;
+  int height = 0;
 
   @override
   MessageContentMeta get meta => imageContentMeta;
@@ -25,15 +25,27 @@ class ImageMessageContent extends MediaMessageContent {
   void decode(MessagePayload payload) {
     super.decode(payload);
     if (payload.binaryContent != null) thumbnail = decodeJpg(payload.binaryContent!);
+
+    if (payload.content != null) {
+      try {
+        Map<String, dynamic> json = jsonDecode(payload.content!);
+        width = json['w'] ?? 0;
+        height = json['h'] ?? 0;
+      } catch (e) {
+        // ignore
+      }
+    }
   }
 
   @override
   MessagePayload encode() {
     MessagePayload payload = super.encode();
     payload.searchableContent = '[图片]';
-    if(thumbnail != null) {
+    if (thumbnail != null) {
       payload.binaryContent = encodeJpg(thumbnail!, quality: 35);
     }
+    // TODO
+    // width and height
 
     return payload;
   }

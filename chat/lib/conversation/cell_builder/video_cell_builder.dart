@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as image;
@@ -10,41 +11,36 @@ import '../../ui_model/ui_message.dart';
 
 class VideoCellBuilder extends PortraitCellBuilder {
   late VideoMessageContent videoMessageContent;
-  ui.Image? uiImage;
+  Uint8List? thumbnailData;
 
   VideoCellBuilder(BuildContext cell, UIMessage model) : super(cell, model) {
     videoMessageContent = model.message.content as VideoMessageContent;
     if(videoMessageContent.thumbnail != null) {
-      if(model.thumbnailImage != null) {
-        uiImage = model.thumbnailImage;
-      } else {
-        // TODO
-        // ui.instantiateImageCodec(
-        //     image.encodePng(videoMessageContent.thumbnail!))
-        //     .then((codec) {
-        //   codec.getNextFrame().then((frameInfo) {
-        //     setState(() {
-        //       uiImage = frameInfo.image;
-        //       model.thumbnailImage = uiImage;
-        //     });
-        //   });
-        // });
+      if (videoMessageContent.thumbnail != null) {
+        thumbnailData = Uint8List.fromList(image.encodeJpg(videoMessageContent.thumbnail!, quality: 70));
       }
     }
   }
 
   @override
   Widget buildMessageContent(BuildContext context) {
-    if(uiImage != null) {
+    double width = 200;
+    double height = 200;
+    if(thumbnailData != null) {
       return SizedBox(
-        width: uiImage!.width.toDouble(),
-        height: uiImage!.height.toDouble(),
+        width: width,
+        height: height,
         child: Stack(
           children: [
-            RawImage(image: uiImage,),
+            thumbnailData != null ?  Image.memory(
+              thumbnailData!,
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
+            ): const SizedBox(),
             Center(child: Image.asset("assets/images/video_msg_cover.png", width: 40, height: 40,),),
             Container(
-              margin: EdgeInsets.fromLTRB(uiImage!.width.toDouble() - 30, uiImage!.height.toDouble() - 20, 8, 8),
+              margin: EdgeInsets.fromLTRB(width - 30, height - 20, 8, 8),
               child: Text('${videoMessageContent.duration}s', style: const TextStyle(color: Colors.white),),
             )
           ],
