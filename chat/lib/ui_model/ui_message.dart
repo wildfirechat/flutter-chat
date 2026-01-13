@@ -1,7 +1,6 @@
-import 'dart:ui' as ui;
-import 'package:imclient/message/image_message_content.dart';
+
+import 'package:flutter/widgets.dart';
 import 'package:imclient/message/message.dart';
-import 'package:image/image.dart' as image;
 
 class UIMessage {
   Message message;
@@ -18,7 +17,7 @@ class UIMessage {
   bool selecting;
   bool selected;
 
-  ui.Image? thumbnailImage;
+  Image? thumbnailImage;
 
   UIMessage(this.message,
       {this.showTimeLabel = false,
@@ -32,18 +31,7 @@ class UIMessage {
       this.deliveryRate = 0,
       this.readRate = 0,
       this.selecting = false,
-      this.selected = false}) {
-    if (message.content is ImageMessageContent) {
-      var imageMessageContent = message.content as ImageMessageContent;
-      if (imageMessageContent.thumbnail != null) {
-        ui.instantiateImageCodec(image.encodePng(imageMessageContent.thumbnail!)).then((codec) {
-          codec.getNextFrame().then((frameInfo) {
-            thumbnailImage = frameInfo.image;
-          });
-        });
-      }
-    }
-  }
+      this.selected = false});
 
   @override
   bool operator ==(Object other) {
