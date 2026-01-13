@@ -199,48 +199,56 @@ class ConversationController extends ChangeNotifier {
   void onTapedCell(BuildContext context, UIMessage model) {
     var conversation = model.message.conversation;
     if (model.message.content is ImageMessageContent) {
-      Imclient.getMessages(conversation, model.message.messageId, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value1) {
-        Imclient.getMessages(conversation, model.message.messageId, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value2) {
+      Imclient.getMessages(conversation, model.message.messageId, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((eldMsgs) {
+        Imclient.getMessages(conversation, model.message.messageId, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((newerMsgs) {
           List<Message> list = [];
-          list.addAll(value2);
+          list.addAll(eldMsgs.reversed);
           list.add(model.message);
-          list.addAll(value1);
-          int index = 0;
-          for (int i = 0; i < list.length; i++) {
-            if (list[i].messageId == model.message.messageId) {
-              index = i;
-              break;
-            }
-          }
+          list.addAll(newerMsgs);
+          int index = eldMsgs.length;
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => PictureOverview(
-                      list,
-                      defaultIndex: index,
-                      pageToEnd: (fromIndex, tail) {
-                        if (tail) {
-                          Imclient.getMessages(conversation, fromIndex, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
-                            if (value.isNotEmpty) {
-                              _pictureOverviewKey.currentState!.onLoadMore(value, false);
-                            }
-                          });
-                        } else {
-                          Imclient.getMessages(conversation, fromIndex, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
-                            if (value.isNotEmpty) {
-                              _pictureOverviewKey.currentState!.onLoadMore(value, true);
-                            }
-                          });
-                        }
-                      },
-                      key: _pictureOverviewKey,
-                    )),
+            PageRouteBuilder(
+              opaque: false,
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  PictureOverview(
+                list,
+                defaultIndex: index,
+                pageToEnd: (fromIndex, tail) {
+                  if (tail) {
+                    Imclient.getMessages(conversation, fromIndex, -10,
+                        contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
+                      if (value.isNotEmpty) {
+                        _pictureOverviewKey.currentState!
+                            .onLoadMore(value, false);
+                      }
+                    });
+                  } else {
+                    Imclient.getMessages(conversation, fromIndex, 10,
+                        contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
+                      if (value.isNotEmpty) {
+                        _pictureOverviewKey.currentState!
+                            .onLoadMore(value, true);
+                      }
+                    });
+                  }
+                },
+                key: _pictureOverviewKey,
+              ),
+            ),
           );
         });
       });
     } else if (model.message.content is VideoMessageContent) {
       VideoMessageContent videoContent = model.message.content as VideoMessageContent;
-      Navigator.push(context, MaterialPageRoute(builder: (context) => VideoPlayerView(videoContent.remoteUrl!)));
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          opaque: false,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              VideoPlayerView(videoContent.remoteUrl!),
+        ),
+      );
     } else if (model.message.content is FileMessageContent) {
       FileMessageContent fileContent = model.message.content as FileMessageContent;
       canLaunchUrl(Uri.parse(fileContent.remoteUrl!)).then((value) {
