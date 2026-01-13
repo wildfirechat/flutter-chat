@@ -40,8 +40,10 @@ class TextCellBuilder extends PortraitCellBuilder {
                   if (context.mounted) {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => PictureOverview(
+                      PageRouteBuilder(
+                        opaque: false,
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            PictureOverview(
                           [message],
                           defaultIndex: 0,
                           pageToEnd: (fromIndex, tail) {},
@@ -54,8 +56,10 @@ class TextCellBuilder extends PortraitCellBuilder {
                   if (context.mounted) {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => VideoPlayerView(videoContent.remoteUrl!),
+                      PageRouteBuilder(
+                        opaque: false,
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            VideoPlayerView(videoContent.remoteUrl!),
                       ),
                     );
                   }

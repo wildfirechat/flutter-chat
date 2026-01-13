@@ -84,8 +84,10 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
     if (message.content is ImageMessageContent) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => PictureOverview(
+        PageRouteBuilder(
+          opaque: false,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              PictureOverview(
             [message],
             defaultIndex: 0,
             pageToEnd: (fromIndex, tail) {},
@@ -95,8 +97,11 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
     } else if (message.content is VideoMessageContent) {
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => VideoPlayerView((message.content as VideoMessageContent).remoteUrl!),
+        PageRouteBuilder(
+          opaque: false,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              VideoPlayerView(
+                  (message.content as VideoMessageContent).remoteUrl!),
         ),
       );
     } else if (message.content is FileMessageContent) {
