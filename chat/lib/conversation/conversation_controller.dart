@@ -34,6 +34,8 @@ import '../ui_model/ui_message.dart';
 import 'pick_forward_target_page.dart';
 import 'package:provider/provider.dart';
 import 'input_bar/message_input_bar_controller.dart';
+import 'package:chat/event_bus.dart';
+import 'package:chat/conversation/cell_builder/voice_cell_builder.dart';
 
 class ConversationController extends ChangeNotifier {
   late ConversationViewModel conversationViewModel;
@@ -289,25 +291,23 @@ class ConversationController extends ChangeNotifier {
     if (_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
     }
-    // TODO
-    //_eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, false));
+    eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, false));
     _playingMessageId = 0;
   }
 
-  void startPlayVoiceMessage(UIMessage model) {
+  void startPlayVoiceMessage(UIMessage model) async {
     SoundMessageContent soundContent = model.message.content as SoundMessageContent;
     if (model.message.direction == MessageDirection.MessageDirection_Receive && model.message.status == MessageStatus.Message_Status_Readed) {
       Imclient.updateMessageStatus(model.message.messageId, MessageStatus.Message_Status_Played);
       model.message.status = MessageStatus.Message_Status_Played;
     }
-    _soundPlayer.openPlayer();
-    _soundPlayer.startPlayer(
+    await _soundPlayer.openPlayer();
+    await _soundPlayer.startPlayer(
         fromURI: soundContent.remoteUrl!,
         whenFinished: () {
           stopPlayVoiceMessage(model);
         });
-    // TODO
-    //_eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, true));
+    eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, true));
     _playingMessageId = model.message.messageId;
   }
 

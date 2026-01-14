@@ -24,7 +24,6 @@ class RecordWidget extends StatefulWidget {
 class RecordState extends State<RecordWidget> {
   FlutterSoundRecorder? _recorder;
   StreamSubscription? _recorderSubscription;
-  StreamSubscription<double>? dbPeakSubscription;
   bool _isRecording = false;
   bool _isReleaseCancel = false;
   int _recordStartTime = 0;
@@ -37,6 +36,24 @@ class RecordState extends State<RecordWidget> {
   String soundTitleText = "松开发送";
 
   late ConversationController conversationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _initRecorder();
+  }
+
+  Future<void> _initRecorder() async {
+    _recorder = FlutterSoundRecorder(logLevel: Level.warning);
+    await _recorder!.openRecorder();
+  }
+
+  @override
+  void dispose() {
+    _recorder!.closeRecorder();
+    _recorder = null;
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,44 +88,55 @@ class RecordState extends State<RecordWidget> {
   String? _recordPath;
 
   void _startRecord(BuildContext context) async {
-    var status = Permission.byValue(Permission.microphone.value).request();
-    if (!await status.isGranted && !await status.isLimited) {
+    var status = await Permission.microphone.request();
+    if (!status.isGranted) {
       Fluttertoast.showToast(msg: "没有权限，请开启权限!");
       return;
     }
 
+    if (_recorder == null) {
+      await _initRecorder();
+    }
+
+    if (_recorder == null) {
+        return;
+    }
+
     var direction = await getTemporaryDirectory();
-    _recordPath = '${direction.path}/record-${DateTime.now().millisecondsSinceEpoch}.wav';
+    _recordPath = '${direction.path}/record-${DateTime.now().millisecondsSinceEpoch}.aac';
     setState(() {
       _isRecording = true;
     });
-    _recorder = FlutterSoundRecorder(logLevel: Level.wtf);
-    await _recorder!.openRecorder();
-    if (_isRecording) {
-      await _recorder!.startRecorder(
-        codec: Codec.pcm16WAV,
-        sampleRate: 8000,
+
+    try {
+        await _recorder!.startRecorder(
+        codec: Codec.aacADTS,
+        sampleRate: 16000,
         numChannels: 1,
         toFile: _recordPath,
-      );
-      _recordStartTime = DateTime.now().millisecondsSinceEpoch;
-      _recorder?.setSubscriptionDuration(const Duration(milliseconds: 250));
-      _recorderSubscription = _recorder!.onProgress?.listen((RecordingDisposition event) {
+        );
+        _recordStartTime = DateTime.now().millisecondsSinceEpoch;
+        _recorder?.setSubscriptionDuration(const Duration(milliseconds: 100));
+        _recorderSubscription = _recorder!.onProgress?.listen((RecordingDisposition event) {
         if (event.decibels != null) {
-          _audioLevel = event.decibels! ~/ 16;
-          if (_audioLevel > 6) {
+            _audioLevel = event.decibels! ~/ 16;
+            if (_audioLevel > 6) {
             _audioLevel = 6;
-          }
-          if (overlayEntry != null) {
+            }
+            if (overlayEntry != null) {
             overlayEntry!.markNeedsBuild();
-          }
+            }
         }
-      });
-      buildOverLayView(context);
+        });
+        buildOverLayView(context);
+    } catch (e) {
+        _isRecording = false;
+        if (mounted) setState(() {});
+        Fluttertoast.showToast(msg: "录音失败: $e");
     }
   }
 
-  void _stopRecord(bool send) {
+  void _stopRecord(bool send) async {
     if (_recorder == null) {
       return;
     }
@@ -120,16 +148,24 @@ class RecordState extends State<RecordWidget> {
     } else {
       _isRecording = false;
     }
-    if (_recorder != null) {
-      _recorder!.stopRecorder().then((value) {
-        if (send && !_isReleaseCancel) {
-          int duration = (DateTime.now().millisecondsSinceEpoch - _recordStartTime + 500) ~/ 1000;
-          conversationController.onSoundRecorded(widget.conversation, _recordPath!, duration);
+
+    try {
+        if (_recorder!.isRecording) {
+            await _recorder!.stopRecorder();
         }
-        _recorder = null;
-      });
-      _recorderSubscription?.cancel();
-      _recorderSubscription = null;
+        _recorderSubscription?.cancel();
+        _recorderSubscription = null;
+
+        if (send && !_isReleaseCancel) {
+        int duration = (DateTime.now().millisecondsSinceEpoch - _recordStartTime + 500) ~/ 1000;
+        if (duration < 1) {
+            Fluttertoast.showToast(msg: "录音时间太短");
+        } else {
+            conversationController.onSoundRecorded(widget.conversation, _recordPath!, duration);
+        }
+        }
+    } catch (e) {
+        debugPrint("stop record error: $e");
     }
 
     if (overlayEntry != null) {
@@ -205,12 +241,6 @@ class RecordState extends State<RecordWidget> {
       });
       Overlay.of(context).insert(overlayEntry!);
     }
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _stopRecord(false);
   }
 
   void _onVoiceLongPressDown() {}
