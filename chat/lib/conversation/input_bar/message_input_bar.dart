@@ -1,13 +1,17 @@
 import 'dart:math';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:chat/conversation/input_bar/plugin_board.dart';
 import 'package:chat/conversation/input_bar/record_widget.dart';
 import 'package:chat/conversation/input_bar/channel_menu_widget.dart';
+import 'package:imclient/message/image_message_content.dart';
+import 'package:imclient/message/video_message_content.dart';
 
 import 'message_input_bar_controller.dart';
 
@@ -88,8 +92,8 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
 
   @override
   void didChangeMetrics() {
-    final keyboardHeight = WidgetsBinding.instance.platformDispatcher.views.first.viewInsets.bottom /
-        WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
+    final keyboardHeight =
+        WidgetsBinding.instance.platformDispatcher.views.first.viewInsets.bottom / WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
 
     // 检测键盘高度是否稳定
     if (keyboardHeight == _lastKeyboardHeight && keyboardHeight > 0) {
@@ -123,8 +127,7 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
 
-    final bool isInBoardMode = controller.status == ChatInputBarStatus.emojiStatus ||
-        controller.status == ChatInputBarStatus.pluginStatus;
+    final bool isInBoardMode = controller.status == ChatInputBarStatus.emojiStatus || controller.status == ChatInputBarStatus.pluginStatus;
 
     // 键盘高度稳定时保存（避免动画过程中的中间值）
     if (keyboardHeight > 0 && keyboardHeight == _lastKeyboardHeight) {
@@ -189,23 +192,83 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
                   duration: const Duration(milliseconds: 250),
                   curve: Curves.easeOutCubic,
                   height: bottomHeight,
-                  child: showBoard
-                      ? _buildBoardsStack(controller, targetBoardHeight)
-                      : null,
+                  child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
                 )
               : Container(
                   height: bottomHeight,
-                  child: showBoard
-                      ? _buildBoardsStack(controller, targetBoardHeight)
-                      : null,
+                  child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
                 ),
         ),
       ],
     );
   }
 
+  /// 构建引用消息组件
+  Widget _buildQuoteWidget(MessageInputBarController controller) {
+    final content = controller.quotedMessage!.content;
+    Widget? thumbnail;
+
+    // 如果是图片消息，显示缩略图
+    if (content is ImageMessageContent) {
+      if (content.thumbnail != null) {
+        thumbnail = ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Image.memory(content.thumbnail!, width: 40, height: 40, fit: BoxFit.cover),
+        );
+      }
+    }
+    // 如果是视频消息，显示缩略图
+    else if (content is VideoMessageContent) {
+      if (content.thumbnail != null) {
+        thumbnail = ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Image.memory(content.thumbnail!, width: 40, height: 40, fit: BoxFit.cover),
+        );
+      }
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+      decoration: const BoxDecoration(
+        color: Color(0xFFEDEDED),
+        border: Border(
+          top: BorderSide(width: 0.5, color: Color(0xFFDDDDDD)),
+        ),
+      ),
+      child: Row(
+        children: [
+          if (thumbnail != null) ...[
+            thumbnail,
+            const SizedBox(width: 8),
+          ],
+          Expanded(
+            child: FutureBuilder<String>(
+              future: content.digest(controller.quotedMessage!),
+              builder: (context, snapshot) {
+                return Text(
+                  snapshot.data ?? '',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Color(0xFF666666), fontSize: 13),
+                );
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => controller.setQuotedMessage(null),
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              child: const Icon(Icons.close, size: 18, color: Color(0xFF999999)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInputBar(MessageInputBarController controller) {
-    double iconSize = 32;
+    const double iconSize = 32;
     bool showMenu = controller.channelInfo?.menus != null && controller.channelInfo!.menus!.isNotEmpty;
 
     return Container(
@@ -219,20 +282,17 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               controller.status == ChatInputBarStatus.recordStatus
                   ? IconButton(
-                      icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize),
-                      onPressed: controller.onKeyboardButton)
-                  : IconButton(
-                      icon: Image.asset('assets/images/input/chat_input_bar_voice.png', width: iconSize, height: iconSize),
-                      onPressed: controller.onVoiceButton),
+                      icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
+                  : IconButton(icon: Image.asset('assets/images/input/chat_input_bar_voice.png', width: iconSize, height: iconSize), onPressed: controller.onVoiceButton),
               if (showMenu)
                 IconButton(
                     icon: controller.status == ChatInputBarStatus.menuStatus
                         ? Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize)
-                        : const Icon(Icons.menu, size: 32, color: Color(0xFF7f7f7f)),
+                        : const Icon(Icons.menu, size: iconSize, color: Color(0xFF7f7f7f)),
                     onPressed: controller.onMenuButton),
               Expanded(
                 child: showMenu && controller.status == ChatInputBarStatus.menuStatus
@@ -241,60 +301,41 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
                         ? RecordWidget(controller.conversation)
                         : Padding(
                             padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
-                            child: CupertinoTextField(
-                              maxLines: 3,
-                              minLines: 1,
-                              controller: controller.textEditingController,
-                              focusNode: controller.focusNode,
-                              onSubmitted: (_) => controller.onSendButton(),
-                              onChanged: controller.onTextChanged,
-                            ),
-                          )),
+                            child: Column(
+                              children: [
+                                CupertinoTextField(
+                                  maxLines: 3,
+                                  minLines: 1,
+                                  controller: controller.textEditingController,
+                                  focusNode: controller.focusNode,
+                                  onSubmitted: (_) => controller.onSendButton(),
+                                  onChanged: controller.onTextChanged,
+                                ),
+                                if (controller.quotedMessage != null)
+                                  Padding(
+                                      padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: _buildQuoteWidget(controller),
+                                      ))
+                              ],
+                            ))),
               ),
               if (controller.status != ChatInputBarStatus.menuStatus) ...[
                 controller.status == ChatInputBarStatus.emojiStatus
                     ? IconButton(
-                        icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize),
-                        onPressed: controller.onKeyboardButton)
+                        icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
                     : IconButton(
-                        icon: Image.asset('assets/images/input/chat_input_bar_emoji.png', width: iconSize, height: iconSize),
-                        onPressed: controller.onEmojiButton),
+                        icon: Image.asset('assets/images/input/chat_input_bar_emoji.png', width: iconSize, height: iconSize), onPressed: controller.onEmojiButton),
                 controller.textEditingController.text.isNotEmpty &&
                         controller.status != ChatInputBarStatus.recordStatus &&
                         controller.status != ChatInputBarStatus.pluginStatus
                     ? ElevatedButton(onPressed: controller.onSendButton, child: const Text("发送"))
                     : IconButton(
-                        icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize),
-                        onPressed: controller.onPluginButton),
+                        icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize), onPressed: controller.onPluginButton),
               ]
             ],
           ),
-          if (controller.quotedMessage != null)
-            Container(
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-              color: const Color(0xFFF5F5F5),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: FutureBuilder<String>(
-                      future: controller.quotedMessage!.content.digest(controller.quotedMessage!),
-                      builder: (context, snapshot) {
-                        return Text(
-                          "引用: ${snapshot.data ?? ''}",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(color: Color(0xFF666666), fontSize: 12),
-                        );
-                      },
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => controller.setQuotedMessage(null),
-                    child: const Icon(Icons.close, size: 16, color: Color(0xFF999999)),
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );
