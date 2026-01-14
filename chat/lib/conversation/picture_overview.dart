@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
@@ -74,18 +77,44 @@ class PictureOverviewState extends State<PictureOverview> {
                 scrollPhysics: const BouncingScrollPhysics(),
                 builder: (BuildContext context, int index) {
                   Message message = widget.imageItems[index];
-                  String url =
-                      (message.content as ImageMessageContent).remoteUrl!;
+                  ImageMessageContent imageContent = message.content as ImageMessageContent;
+                  
+                  // 优先检查本地文件
+                  if (imageContent.localPath != null && imageContent.localPath!.isNotEmpty) {
+                    File localFile = File(imageContent.localPath!);
+                    if (localFile.existsSync()) {
+                      return PhotoViewGalleryPageOptions(
+                        imageProvider: FileImage(localFile),
+                        minScale: PhotoViewComputedScale.contained,
+                        maxScale: PhotoViewComputedScale.covered * 2.5,
+                        onScaleEnd: (context, details, controllerValue) {
+                          setState(() {
+                            isZoomed = controllerValue.scale! > 1.05;
+                          });
+                        },
+                      );
+                    }
+                  }
+                  
+                  // 使用网络图片（带缓存）
+                  if (imageContent.remoteUrl != null && imageContent.remoteUrl!.isNotEmpty) {
+                    return PhotoViewGalleryPageOptions(
+                      imageProvider: CachedNetworkImageProvider(imageContent.remoteUrl!),
+                      minScale: PhotoViewComputedScale.contained,
+                      maxScale: PhotoViewComputedScale.covered * 2.5,
+                      onScaleEnd: (context, details, controllerValue) {
+                        setState(() {
+                          isZoomed = controllerValue.scale! > 1.05;
+                        });
+                      },
+                    );
+                  }
+                  
+                  // 默认占位符
                   return PhotoViewGalleryPageOptions(
-                    imageProvider: NetworkImage(url),
+                    imageProvider: const AssetImage('assets/images/placeholder.png'),
                     minScale: PhotoViewComputedScale.contained,
                     maxScale: PhotoViewComputedScale.covered * 2.5,
-                    onScaleEnd: (context, details, controllerValue) {
-                      setState(() {
-                        // Check if scale is greater than 1.0 (with some tolerance)
-                        isZoomed = controllerValue.scale! > 1.05;
-                      });
-                    },
                   );
                 },
                 scrollDirection: widget.direction,

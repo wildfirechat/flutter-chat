@@ -178,7 +178,7 @@ class ConversationController extends ChangeNotifier {
     VideoMessageContent videoContent = VideoMessageContent();
     videoContent.duration = duration;
     videoContent.localPath = videoPath;
-    videoContent.thumbnail = thumbnail;
+    videoContent.thumbnail = img.encodeJpg(thumbnail!, quality: 30);
     _sendMessage(conversation, videoContent);
   }
 

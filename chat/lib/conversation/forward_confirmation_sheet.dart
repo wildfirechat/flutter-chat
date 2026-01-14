@@ -284,17 +284,12 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
 
   Uint8List? _extractThumbnail(MessageContent content) {
     if (content is ImageMessageContent) {
-      return _encodeThumbnail(content.thumbnail);
+      return content.thumbnail;
     }
     if (content is VideoMessageContent) {
-      return _encodeThumbnail(content.thumbnail);
+      return content.thumbnail;
     }
     return null;
-  }
-
-  Uint8List? _encodeThumbnail(img.Image? thumbnail) {
-    if (thumbnail == null) return null;
-    return Uint8List.fromList(img.encodeJpg(thumbnail, quality: 70));
   }
 
   String? _resolveRemoteImageUrl(MessageContent content) {

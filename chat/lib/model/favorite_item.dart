@@ -83,7 +83,7 @@ class FavoriteItem {
     } else if (content is ImageMessageContent) {
       item.url = content.remoteUrl ?? '';
       if (content.thumbnail != null) {
-        Uint8List thumbBytes = img.encodePng(content.thumbnail!);
+        Uint8List thumbBytes = content.thumbnail!;
         String thumb = base64Encode(thumbBytes);
         dataMap['thumb'] = thumb;
         item.data = json.encode(dataMap);
@@ -91,7 +91,7 @@ class FavoriteItem {
     } else if (content is VideoMessageContent) {
       item.url = content.remoteUrl ?? '';
       if (content.thumbnail != null) {
-        Uint8List thumbBytes = img.encodePng(content.thumbnail!);
+        Uint8List thumbBytes = content.thumbnail!;
         String thumb = base64Encode(thumbBytes);
         dataMap['thumb'] = thumb;
         dataMap['duration'] = content.duration;
@@ -168,7 +168,7 @@ class FavoriteItem {
             var map = json.decode(data);
             var thumb = map['thumb'];
             if (thumb != null) {
-              content.thumbnail = img.decodeImage(base64Decode(thumb));
+              content.thumbnail = base64Decode(thumb);
             }
           } catch (e) {}
         }
@@ -182,7 +182,7 @@ class FavoriteItem {
             var map = json.decode(data);
             var thumb = map['thumb'];
             if (thumb != null) {
-              content.thumbnail = img.decodeImage(base64Decode(thumb));
+              content.thumbnail = base64Decode(thumb);
             }
             content.duration = map['duration'] ?? 0;
           } catch (e) {}
