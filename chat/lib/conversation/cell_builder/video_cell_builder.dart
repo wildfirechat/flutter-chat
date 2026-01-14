@@ -65,9 +65,17 @@ class VideoCellBuilder extends PortraitCellBuilder {
                     fit: BoxFit.cover,
                   ),
                   Center(child: Image.asset("assets/images/video_msg_cover.png", width: 40, height: 40,),),
-                  Container(
-                    margin: EdgeInsets.fromLTRB(width - 30, height - 20, 8, 8),
-                    child: Text('${videoMessageContent.duration}s', style: const TextStyle(color: Colors.white),),
+                  Positioned(
+                    bottom: 4,
+                    right: 4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                      child: Text('${videoMessageContent.duration}s', style: const TextStyle(color: Colors.white, fontSize: 12),),
+                    ),
                   )
                 ],
               ),
@@ -98,11 +106,19 @@ class VideoCellBuilder extends PortraitCellBuilder {
                   height: 40,
                 ),
               ),
-              Container(
-                margin: EdgeInsets.fromLTRB(width - 30, height - 20, 8, 8),
-                child: Text(
-                  '${videoMessageContent.duration}s',
-                  style: const TextStyle(color: Colors.white),
+              Positioned(
+                bottom: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Text(
+                    '${videoMessageContent.duration}s',
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
                 ),
               )
             ],
@@ -115,11 +131,30 @@ class VideoCellBuilder extends PortraitCellBuilder {
         height: height / dpr,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Container(
-            color: Colors.grey[300],
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
+          child: Stack(
+            children: [
+              Container(
+                color: Colors.grey[300],
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+              Positioned(
+                bottom: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Text(
+                    '${videoMessageContent.duration}s',
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+              )
+            ],
           ),
         ),
       );

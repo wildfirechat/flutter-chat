@@ -21,8 +21,7 @@ import 'package:rtckit/group_video_call.dart';
 import 'package:rtckit/rtckit.dart';
 import 'package:rtckit/single_voice_call.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:chat/conversation/picture_overview.dart';
-import 'package:chat/conversation/video_player_view.dart';
+import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/model/favorite_item.dart';
@@ -42,7 +41,7 @@ class ConversationController extends ChangeNotifier {
 
   ConversationController(this.conversationViewModel);
 
-  final GlobalKey<PictureOverviewState> _pictureOverviewKey = GlobalKey();
+  final GlobalKey<MMPreviewViewState> _mmPreviewKey = GlobalKey();
 
   int _playingMessageId = 0;
   final FlutterSoundPlayer _soundPlayer = FlutterSoundPlayer(logLevel: Level.error);
@@ -200,9 +199,9 @@ class ConversationController extends ChangeNotifier {
 
   void onTapedCell(BuildContext context, UIMessage model) {
     var conversation = model.message.conversation;
-    if (model.message.content is ImageMessageContent) {
-      Imclient.getMessages(conversation, model.message.messageId, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((eldMsgs) {
-        Imclient.getMessages(conversation, model.message.messageId, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((newerMsgs) {
+    if (model.message.content is ImageMessageContent || model.message.content is VideoMessageContent) {
+      Imclient.getMessages(conversation, model.message.messageId, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE, MESSAGE_CONTENT_TYPE_VIDEO]).then((eldMsgs) {
+        Imclient.getMessages(conversation, model.message.messageId, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE, MESSAGE_CONTENT_TYPE_VIDEO]).then((newerMsgs) {
           List<Message> list = [];
           list.addAll(eldMsgs.reversed);
           list.add(model.message);
@@ -212,45 +211,30 @@ class ConversationController extends ChangeNotifier {
             context,
             PageRouteBuilder(
               opaque: false,
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  PictureOverview(
+              pageBuilder: (context, animation, secondaryAnimation) => MMPreviewView(
                 list,
                 defaultIndex: index,
                 pageToEnd: (fromIndex, tail) {
                   if (tail) {
-                    Imclient.getMessages(conversation, fromIndex, -10,
-                        contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
+                    Imclient.getMessages(conversation, fromIndex, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE, MESSAGE_CONTENT_TYPE_VIDEO]).then((value) {
                       if (value.isNotEmpty) {
-                        _pictureOverviewKey.currentState!
-                            .onLoadMore(value, false);
+                        _mmPreviewKey.currentState!.onLoadMore(value, false);
                       }
                     });
                   } else {
-                    Imclient.getMessages(conversation, fromIndex, 10,
-                        contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE]).then((value) {
+                    Imclient.getMessages(conversation, fromIndex, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE, MESSAGE_CONTENT_TYPE_VIDEO]).then((value) {
                       if (value.isNotEmpty) {
-                        _pictureOverviewKey.currentState!
-                            .onLoadMore(value, true);
+                        _mmPreviewKey.currentState!.onLoadMore(value, true);
                       }
                     });
                   }
                 },
-                key: _pictureOverviewKey,
+                key: _mmPreviewKey,
               ),
             ),
           );
         });
       });
-    } else if (model.message.content is VideoMessageContent) {
-      VideoMessageContent videoContent = model.message.content as VideoMessageContent;
-      Navigator.push(
-        context,
-        PageRouteBuilder(
-          opaque: false,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              VideoPlayerView(videoContent.remoteUrl!),
-        ),
-      );
     } else if (model.message.content is FileMessageContent) {
       FileMessageContent fileContent = model.message.content as FileMessageContent;
       canLaunchUrl(Uri.parse(fileContent.remoteUrl!)).then((value) {
@@ -366,11 +350,12 @@ class ConversationController extends ChangeNotifier {
 
     // 如果没有bubbleRect，使用屏幕中心
     final screenSize = MediaQuery.of(context).size;
-    final targetRect = bubbleRect ?? Rect.fromCenter(
-      center: Offset(screenSize.width / 2, screenSize.height / 2),
-      width: 100,
-      height: 50,
-    );
+    final targetRect = bubbleRect ??
+        Rect.fromCenter(
+          center: Offset(screenSize.width / 2, screenSize.height / 2),
+          width: 100,
+          height: 50,
+        );
 
     PopupMenuOverlay.show(
       context: context,
@@ -431,12 +416,12 @@ class ConversationController extends ChangeNotifier {
     if (target.conversationType == ConversationType.Single) {
       var userInfo = await Imclient.getUserInfo(target.target);
       if (userInfo != null) {
-        targetName = userInfo.displayName??'<${target.target}';
+        targetName = userInfo.displayName ?? '<${target.target}';
       }
     } else if (target.conversationType == ConversationType.Group) {
       var groupInfo = await Imclient.getGroupInfo(target.target);
       if (groupInfo != null) {
-        targetName = groupInfo.name??'群聊<${groupInfo.target}>';
+        targetName = groupInfo.name ?? '群聊<${groupInfo.target}>';
       }
     }
 
@@ -550,4 +535,3 @@ class ConversationController extends ChangeNotifier {
     }
   }
 }
-

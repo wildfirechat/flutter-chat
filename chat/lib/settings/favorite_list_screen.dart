@@ -13,8 +13,7 @@ import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/conversation/composite_message_detail_screen.dart';
-import 'package:chat/conversation/picture_overview.dart';
-import 'package:chat/conversation/video_player_view.dart';
+import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/model/favorite_item.dart';
 import 'package:chat/utilities.dart';
 
@@ -87,7 +86,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
         PageRouteBuilder(
           opaque: false,
           pageBuilder: (context, animation, secondaryAnimation) =>
-              PictureOverview(
+              MMPreviewView(
             [message],
             defaultIndex: 0,
             pageToEnd: (fromIndex, tail) {},
@@ -100,8 +99,11 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
         PageRouteBuilder(
           opaque: false,
           pageBuilder: (context, animation, secondaryAnimation) =>
-              VideoPlayerView(
-                  (message.content as VideoMessageContent).remoteUrl!),
+              MMPreviewView(
+                  [message],
+                  defaultIndex: 0,
+                  pageToEnd: (fromIndex, tail) {},
+              ),
         ),
       );
     } else if (message.content is FileMessageContent) {
