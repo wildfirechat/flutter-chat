@@ -69,7 +69,7 @@ class RecordState extends State<RecordWidget> {
     } else {
       btn = OutlinedButton(
           style: OutlinedButton.styleFrom(
-            backgroundColor: Colors.grey,
+            backgroundColor: Colors.white38,
           ),
           onPressed: () {},
           child: const Text("按下说话"));
