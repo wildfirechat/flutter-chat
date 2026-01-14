@@ -5,11 +5,9 @@ import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
-import 'package:chat/conversation/picture_overview.dart';
-import 'package:chat/conversation/video_player_view.dart';
 
-import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
+import '../mm_preview_view.dart';
 
 class TextCellBuilder extends PortraitCellBuilder {
   late TextMessageContent textMessageContent;
@@ -42,8 +40,7 @@ class TextCellBuilder extends PortraitCellBuilder {
                       context,
                       PageRouteBuilder(
                         opaque: false,
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            PictureOverview(
+                        pageBuilder: (context, animation, secondaryAnimation) => MMPreviewView(
                           [message],
                           defaultIndex: 0,
                           pageToEnd: (fromIndex, tail) {},
@@ -58,8 +55,10 @@ class TextCellBuilder extends PortraitCellBuilder {
                       context,
                       PageRouteBuilder(
                         opaque: false,
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            VideoPlayerView(videoContent.remoteUrl!),
+                        pageBuilder: (context, animation, secondaryAnimation) => MMPreviewView(
+                          [message],
+                          defaultIndex: 0,
+                        ),
                       ),
                     );
                   }
