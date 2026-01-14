@@ -1,32 +1,53 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:chat/utilities.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as image;
 
 import 'package:imclient/message/image_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
+import 'package:imclient/tools.dart';
 
 import '../../ui_model/ui_message.dart';
 
 class ImageCellBuilder extends PortraitCellBuilder {
   late ImageMessageContent imageMessageContent;
-  Uint8List? thumbnailData;
+  Uint8List? thumbnail;
 
   ImageCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
     imageMessageContent = model.message.content as ImageMessageContent;
     if (imageMessageContent.thumbnail != null) {
-      thumbnailData = Uint8List.fromList(image.encodeJpg(imageMessageContent.thumbnail!, quality: 70));
+      thumbnail = imageMessageContent.thumbnail!;
     }
   }
 
   @override
   Widget buildMessageContent(BuildContext context) {
-    Size imageSize = Utilities.getImageSizeByOrgSizeToWeChat(imageMessageContent.width, imageMessageContent.height);
+    Size imageSize = Tools.getImageSizeByOrgSizeToWeChat(imageMessageContent.width, imageMessageContent.height);
     double width = imageSize.width > 0 ? imageSize.width : 200;
     double height = imageSize.height > 0 ? imageSize.height : 200;
 
     double dpr = MediaQuery.of(context).devicePixelRatio;
+
+    // 优先检查本地文件
+    if (imageMessageContent.localPath != null && imageMessageContent.localPath!.isNotEmpty) {
+      File localFile = File(imageMessageContent.localPath!);
+      if (localFile.existsSync()) {
+        return SizedBox(
+          width: width / dpr,
+          height: height / dpr,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.file(
+              localFile,
+              width: width,
+              height: height,
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
+      }
+    }
 
     // 如果有原图 URL，使用 CachedNetworkImage 加载并缓存
     if (imageMessageContent.remoteUrl != null) {
@@ -42,9 +63,9 @@ class ImageCellBuilder extends PortraitCellBuilder {
             fit: BoxFit.cover,
             placeholder: (context, url) {
               // 加载中显示缩略图或占位符
-              if (thumbnailData != null) {
+              if (thumbnail != null) {
                 return Image.memory(
-                  thumbnailData!,
+                  thumbnail!,
                   width: width,
                   height: height,
                   fit: BoxFit.cover,
@@ -57,9 +78,9 @@ class ImageCellBuilder extends PortraitCellBuilder {
             },
             errorWidget: (context, url, error) {
               // 加载失败显示缩略图或错误占位符
-              if (thumbnailData != null) {
+              if (thumbnail != null) {
                 return Image.memory(
-                  thumbnailData!,
+                  thumbnail!,
                   width: width,
                   height: height,
                   fit: BoxFit.cover,
@@ -74,7 +95,7 @@ class ImageCellBuilder extends PortraitCellBuilder {
           ),
         ),
       );
-    } else if (thumbnailData != null) {
+    } else if (thumbnail != null) {
       // 只有缩略图，没有原图
       return SizedBox(
         width: width / dpr,
@@ -82,7 +103,7 @@ class ImageCellBuilder extends PortraitCellBuilder {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: Image.memory(
-            thumbnailData!,
+            thumbnail!,
             width: width,
             height: height,
             fit: BoxFit.cover,

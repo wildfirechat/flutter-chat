@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:image/image.dart';
 import '../model/message_payload.dart';
 import 'media_message_content.dart';
@@ -15,7 +16,7 @@ const videoContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_VIDEO,
     MessageFlag.PERSIST_AND_COUNT, VideoMessageContentCreator);
 
 class VideoMessageContent extends MediaMessageContent {
-  Image? thumbnail;
+  Uint8List? thumbnail;
   late int duration;
 
   @override
@@ -25,7 +26,7 @@ class VideoMessageContent extends MediaMessageContent {
   void decode(MessagePayload payload) {
     super.decode(payload);
     if (payload.binaryContent != null) {
-      thumbnail = decodeJpg(payload.binaryContent!);
+      thumbnail = payload.binaryContent!;
     }
     duration = 0;
     if (payload.content != null) {
@@ -40,7 +41,7 @@ class VideoMessageContent extends MediaMessageContent {
     MessagePayload payload = super.encode();
     payload.searchableContent = '[视频]';
     if(thumbnail != null) {
-      payload.binaryContent = encodeJpg(thumbnail!, quality: 35);
+      payload.binaryContent = thumbnail;
     }
     payload.content = json.encode({'duration': duration, 'd': duration});
     return payload;
