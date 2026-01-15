@@ -19,6 +19,7 @@
     "flutter_sound": "file:../har/flutter_sound.har",
     "flutter_local_notifications": "file:../har/flutter_local_notifications.har",
     "flutter_localization": "file:../har/flutter_localization.har",
-    "mobile_scanner": "file:../har/mobile_scanner.har"
+    "mobile_scanner": "file:../har/mobile_scanner.har",
+    "webview_flutter_ohos": "file:../har/webview_flutter_ohos.har"
   }
 }

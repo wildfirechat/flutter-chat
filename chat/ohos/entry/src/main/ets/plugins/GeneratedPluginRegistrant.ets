@@ -2,6 +2,7 @@ import { FlutterEngine, Log } from '@ohos/flutter_ohos';
 import FluttertoastPlugin from 'fluttertoast';
 import FlutterLocalizationPlugin from 'flutter_localization';
 import ImagePickerPlugin from 'image_picker_ohos';
+import WebViewFlutterPlugin from 'webview_flutter_ohos';
 import PathProviderPlugin from 'path_provider_ohos';
 import VideoPlayerPlugin from 'video_player_ohos';
 import SharedPreferencesPlugin from 'shared_preferences_ohos';
@@ -28,6 +29,7 @@ export class GeneratedPluginRegistrant {
       flutterEngine.getPlugins()?.add(new FluttertoastPlugin());
       flutterEngine.getPlugins()?.add(new FlutterLocalizationPlugin());
       flutterEngine.getPlugins()?.add(new ImagePickerPlugin());
+      flutterEngine.getPlugins()?.add(new WebViewFlutterPlugin());
       flutterEngine.getPlugins()?.add(new PathProviderPlugin());
       flutterEngine.getPlugins()?.add(new VideoPlayerPlugin());
       flutterEngine.getPlugins()?.add(new SharedPreferencesPlugin());
