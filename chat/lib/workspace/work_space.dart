@@ -5,6 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:imclient/imclient.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:chat/config.dart';
 import 'package:chat/workspace/js_api.dart';
@@ -26,6 +28,7 @@ class _WorkSpaceState extends State<WorkSpace> {
     super.initState();
 
     final DWebViewController controller = DWebViewController();
+    _clearInvalidWebViewCookies(controller);
 
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -84,5 +87,18 @@ class _WorkSpaceState extends State<WorkSpace> {
         ),
       ),
     );
+  }
+
+  void _clearInvalidWebViewCookies(DWebViewController controller) async {
+    var sp = await SharedPreferences.getInstance();
+    var webViewUserId = sp.getString('webview-userId');
+    if (webViewUserId == null) {
+      sp.setString('webview-userId', Imclient.currentUserId);
+      return;
+    } else if (webViewUserId == Imclient.currentUserId) {
+      return;
+    }
+    controller.clearCache();
+    controller.clearLocalStorage();
   }
 }
