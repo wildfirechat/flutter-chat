@@ -16,7 +16,7 @@ class Config {
   /// 如果不想显示工作台，置为 '' 即可
   /// static String WORKSPACE_URL = "https://open.wildfirechat.cn/work.html";
   /// 鸿蒙暂不支持
-  static String WORKSPACE_URL = ['android', 'ios'].contains(Platform.operatingSystem) ? "https://open.wildfirechat.cn/work.html" : "";
+  static String WORKSPACE_URL = "https://open.wildfirechat.cn/work.html";
 
   /// 音视频通话所用的turn server配置，详情参考 https://docs.wildfirechat.net/webrtc/
   /// <br>
