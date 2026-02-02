@@ -4,8 +4,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 
 class InviteFriendPage extends StatefulWidget {
-  InviteFriendPage(this.userId, {Key? key}) : super(key: key);
-  String userId;
+  const InviteFriendPage(this.userId, {super.key});
+  final String userId;
 
   @override
   State<StatefulWidget> createState() => InviteFriendPageState();
@@ -25,8 +25,9 @@ class InviteFriendPageState extends State<InviteFriendPage> {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          TextButton(onPressed: () =>_sendInvite(context), child: Text("发送", style: TextStyle(color: fieldController.value.text.isEmpty?Colors.grey:Colors.white),)),
+          TextButton(onPressed: () =>_sendInvite(context), child: Text("发送", style: TextStyle(color: fieldController.value.text.isEmpty?Colors.grey:Colors.black),)),
         ],
+        title:  const Text('添加好友'),
       ),
       body: SafeArea(
         child: Column(
