@@ -80,12 +80,22 @@ class ContactListViewModel extends ChangeNotifier {
     List<UIContactInfo> contactList = [];
     var userInfos = await UserRepo.getFriendUserInfos(refresh : refresh);
     for (var userInfo in userInfos) {
-      userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
-      var runes = userInfo.displayName!.runes.toList();
+      var displayName = userInfo.friendAlias ?? userInfo.displayName ?? '<${userInfo.userId}>';
+      var runes = displayName.runes.toList();
       var firstWordPinyinLetter = '{';
-      if (runes.isNotEmpty && ChineseHelper.isChinese(String.fromCharCode(runes[0]))) {
-        var firstWordPinyin = PinyinHelper.getFirstWordPinyin(userInfo.displayName!);
-        firstWordPinyinLetter = firstWordPinyin.isNotEmpty ? firstWordPinyin.substring(0, 1).toUpperCase() : '{';
+      if (runes.isNotEmpty) {
+        var firstChar = String.fromCharCode(runes[0]);
+        if (ChineseHelper.isChinese(firstChar)) {
+          // 中文字符，使用拼音首字母
+          var firstWordPinyin = PinyinHelper.getFirstWordPinyin(displayName);
+          firstWordPinyinLetter = firstWordPinyin.isNotEmpty ? firstWordPinyin.substring(0, 1).toUpperCase() : '#';
+        } else if (RegExp(r'^[a-zA-Z]$').hasMatch(firstChar)) {
+          // 英文字母，使用大写
+          firstWordPinyinLetter = firstChar.toUpperCase();
+        } else {
+          // 数字或其他字符，统一归类到 '#'
+          firstWordPinyinLetter = '{';
+        }
       }
 
       contactList.add(UIContactInfo(firstWordPinyinLetter, false, userInfo));
