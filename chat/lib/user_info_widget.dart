@@ -17,10 +17,25 @@ import 'package:chat/widget/section_divider.dart';
 
 import 'conversation/conversation_screen.dart';
 
-class UserInfoWidget extends StatelessWidget {
+class UserInfoWidget extends StatefulWidget {
   const UserInfoWidget(this.userId, {this.inGroupId, Key? key}) : super(key: key);
   final String userId;
   final String? inGroupId;
+
+  @override
+  State<UserInfoWidget> createState() => _UserInfoWidgetState();
+}
+
+class _UserInfoWidgetState extends State<UserInfoWidget> {
+  @override
+  void initState() {
+    super.initState();
+    _refreshUserInfo();
+  }
+
+  Future<void> _refreshUserInfo() async {
+    await Imclient.getUserInfo(widget.userId, refresh: true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,16 +45,16 @@ class UserInfoWidget extends StatelessWidget {
       ),
       body: SafeArea(
         child: Selector<UserViewModel, UserInfo?>(
-          selector: (context, viewModel) => viewModel.getUserInfo(userId, groupId: inGroupId),
+          selector: (context, viewModel) => viewModel.getUserInfo(widget.userId, groupId: widget.inGroupId),
           builder: (context, userInfo, child) {
             return FutureBuilder<bool>(
-              future: _isFriend(userId),
+              future: _isFriend(widget.userId),
               builder: (context, snapshot) {
                 if (userInfo == null || !snapshot.hasData) {
                   return const Center(child: Text("加载中。。。"));
                 }
                 bool isFriend = snapshot.data!;
-                bool isMe = userId == Imclient.currentUserId;
+                bool isMe = widget.userId == Imclient.currentUserId;
 
                 return SingleChildScrollView(
                   child: Column(
@@ -55,7 +70,7 @@ class UserInfoWidget extends StatelessWidget {
                         }),
                         const SectionDivider(),
                         OptionButtonItem('发送消息', () {
-                          Conversation conversation = Conversation(conversationType: ConversationType.Single, target: userId);
+                          Conversation conversation = Conversation(conversationType: ConversationType.Single, target: widget.userId);
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
@@ -71,14 +86,14 @@ class UserInfoWidget extends StatelessWidget {
                         }),
                         const SectionDivider(),
                         OptionButtonItem('发送消息', () {
-                          Conversation conversation = Conversation(conversationType: ConversationType.Single, target: userId);
+                          Conversation conversation = Conversation(conversationType: ConversationType.Single, target: widget.userId);
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
                           );
                         }),
                         OptionButtonItem('视频聊天', () {
-                          SingleVideoCallView callView = SingleVideoCallView(userId: userId, audioOnly: false);
+                          SingleVideoCallView callView = SingleVideoCallView(userId: widget.userId, audioOnly: false);
                           Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
                         }),
                       ] else ...[
@@ -90,7 +105,7 @@ class UserInfoWidget extends StatelessWidget {
                         OptionButtonItem('添加好友', () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => InviteFriendPage(userId)),
+                            MaterialPageRoute(builder: (context) => InviteFriendPage(widget.userId)),
                           );
                         }),
                       ]
