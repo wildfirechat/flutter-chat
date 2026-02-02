@@ -118,6 +118,7 @@ dependencies:
   logger: any
   path: any
   pinyin: ^3.3.0
+  flutter_linkify: ^6.0.0
   mobile_scanner:
       git:
           url: "https://gitcode.com/openharmony-sig/fluttertpc_mobile_scanner"
