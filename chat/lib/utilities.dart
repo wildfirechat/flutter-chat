@@ -1,10 +1,14 @@
 
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
+import 'package:url_launcher/url_launcher.dart';
+import 'package:chat/workspace/wf_webview_screen.dart';
 
 extension EmptyStringToNull on String? {
   String? get emptyToNull {
@@ -154,6 +158,30 @@ class Utilities {
         break;
     }
     return title;
+  }
+
+  static Future<void> openLink(BuildContext context, String url) async {
+    var resolvedUrl = url;
+    if (!resolvedUrl.contains('://') && resolvedUrl.startsWith('www.')) {
+      resolvedUrl = 'https://$resolvedUrl';
+    }
+    final uri = Uri.parse(resolvedUrl);
+    if (uri.scheme == 'http' || uri.scheme == 'https') {
+      if (!context.mounted) {
+        return;
+      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => WFWebViewScreen(resolvedUrl)),
+      );
+      return;
+    }
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      Fluttertoast.showToast(msg: "无法打开链接");
+    }
   }
 
 

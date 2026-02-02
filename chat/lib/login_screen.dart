@@ -6,11 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'app_server.dart';
 import 'config.dart';
 import 'home/home.dart';
+import 'utilities.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -69,13 +69,6 @@ class LoginScreenState extends State<LoginScreen> {
 
   final phoneFieldController = TextEditingController();
   final codeOrPwdFieldController = TextEditingController();
-
-  void _launchUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri)) {
-      Fluttertoast.showToast(msg: 'Could not launch $url');
-    }
-  }
 
   void _toggleLoginMode() {
     setState(() {
@@ -192,7 +185,7 @@ class LoginScreenState extends State<LoginScreen> {
                           style: const TextStyle(color: Colors.blue),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
-                              _launchUrl(Config.USER_AGREEMENT_URL);
+                              Utilities.openLink(context, Config.USER_AGREEMENT_URL);
                             },
                         ),
                         const TextSpan(text: ' 和 '),
@@ -201,7 +194,7 @@ class LoginScreenState extends State<LoginScreen> {
                           style: const TextStyle(color: Colors.blue),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
-                              _launchUrl(Config.PRIVACY_AGREEMENT_URL);
+                              Utilities.openLink(context, Config.PRIVACY_AGREEMENT_URL);
                             },
                         ),
                       ],

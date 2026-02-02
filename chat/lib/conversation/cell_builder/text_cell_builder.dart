@@ -5,6 +5,8 @@ import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
+import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:chat/utilities.dart';
 
 import '../../ui_model/ui_message.dart';
 import '../mm_preview_view.dart';
@@ -22,11 +24,10 @@ class TextCellBuilder extends PortraitCellBuilder {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+         Text(
             textMessageContent.text,
             overflow: TextOverflow.ellipsis,
-            maxLines: 1000,
-            style: const TextStyle(fontSize: 16),
+            maxLines: 3,
           ),
           const SizedBox(height: 6),
           GestureDetector(
@@ -49,7 +50,6 @@ class TextCellBuilder extends PortraitCellBuilder {
                     );
                   }
                 } else if (message.content is VideoMessageContent) {
-                  var videoContent = message.content as VideoMessageContent;
                   if (context.mounted) {
                     Navigator.push(
                       context,
@@ -86,11 +86,19 @@ class TextCellBuilder extends PortraitCellBuilder {
         ],
       );
     }
-    return Text(
-      textMessageContent.text,
-      overflow: TextOverflow.ellipsis,
-      maxLines: 1000,
+    return Linkify(
+      onOpen: (link) => Utilities.openLink(context, link.url),
+      text: textMessageContent.text,
       style: const TextStyle(fontSize: 16),
+      linkStyle: const TextStyle(
+        fontSize: 16,
+        color: Colors.blue,
+        decoration: TextDecoration.underline,
+      ),
+      options: const LinkifyOptions(
+        humanize: false,
+      ),
     );
   }
+
 }
