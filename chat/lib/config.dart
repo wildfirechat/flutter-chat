@@ -18,6 +18,9 @@ class Config {
   /// 鸿蒙暂不支持
   static String WORKSPACE_URL = "https://open.wildfirechat.cn/work.html";
 
+  // 语音转文字服务地址，如果没有部署语音转文字服务，或者不需要语音转文字的话，可置为 null
+  static String ASR_SERVER = 'https://app.wildfirechat.net/asr/api/recognize';
+
   /// 音视频通话所用的turn server配置，详情参考 https://docs.wildfirechat.net/webrtc/
   /// <br>
   /// <br>

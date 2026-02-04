@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:chat/event_bus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:imclient/imclient.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
 
@@ -17,15 +16,21 @@ class VoicePlayStatusChangedEvent {
   VoicePlayStatusChangedEvent(this.messageId, this.start);
 }
 
+class VoiceSpeechToTextUpdatedEvent {
+  int messageId;
+
+  VoiceSpeechToTextUpdatedEvent(this.messageId);
+}
+
 class VoiceCellBuilder extends PortraitCellBuilder {
   late SoundMessageContent soundMessageContent;
   late int messageId;
   bool _playing = false;
   StreamSubscription<VoicePlayStatusChangedEvent>? _playEventSubscription;
+  StreamSubscription<VoiceSpeechToTextUpdatedEvent>? _speechToTextSubscription;
 
   Timer? _timer;
   int _voiceLevel = 0;
-  final bool _notPlayed = false;
 
   VoiceCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
     soundMessageContent = model.message.content as SoundMessageContent;
@@ -42,6 +47,13 @@ class VoiceCellBuilder extends PortraitCellBuilder {
            }
            setState(() {});
         }
+      }
+    });
+
+    // 监听转文字更新事件
+    _speechToTextSubscription = eventBus.on<VoiceSpeechToTextUpdatedEvent>().listen((event) {
+      if(event.messageId == messageId) {
+        setState(() {});
       }
     });
   }
@@ -76,7 +88,8 @@ class VoiceCellBuilder extends PortraitCellBuilder {
       width: 5,
     );
 
-    return Row(
+    // 构建语音气泡
+    Widget voiceContent = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         isSendMessage ? paddingEnd : padding,
@@ -86,12 +99,66 @@ class VoiceCellBuilder extends PortraitCellBuilder {
         isSendMessage ? padding : paddingEnd,
       ],
     );
+
+    // 如果有转文字内容，在语音气泡下方显示
+    if (soundMessageContent.speechText != null && soundMessageContent.speechText!.isNotEmpty) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          voiceContent,
+          const SizedBox(height: 6),
+          Text(
+            soundMessageContent.speechText!,
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      );
+    }
+
+    // 如果正在转文字，显示进度
+    if (soundMessageContent.speechToTextInProgress) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          voiceContent,
+          const SizedBox(height: 6),
+          const SizedBox(
+            height: 20,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                  ),
+                ),
+                SizedBox(width: 6),
+                Text(
+                  '转文字中...',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return voiceContent;
   }
 
   @override
   void dispose() {
     super.dispose();
     _playEventSubscription?.cancel();
+    _speechToTextSubscription?.cancel();
     _stopTimer();
   }
 }
