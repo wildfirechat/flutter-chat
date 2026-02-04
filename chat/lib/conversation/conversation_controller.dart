@@ -286,7 +286,7 @@ class ConversationController extends ChangeNotifier {
 
   void startPlayVoiceMessage(UIMessage model) async {
     SoundMessageContent soundContent = model.message.content as SoundMessageContent;
-    if (model.message.direction == MessageDirection.MessageDirection_Receive && model.message.status == MessageStatus.Message_Status_Readed) {
+    if (model.message.direction == MessageDirection.MessageDirection_Receive) {
       Imclient.updateMessageStatus(model.message.messageId, MessageStatus.Message_Status_Played);
       model.message.status = MessageStatus.Message_Status_Played;
     }
@@ -587,6 +587,8 @@ class ConversationController extends ChangeNotifier {
   @override
   void dispose() {
     super.dispose();
+    // 关闭任何打开的弹出菜单
+    PopupMenuOverlay.dismiss();
     if (_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
     }
