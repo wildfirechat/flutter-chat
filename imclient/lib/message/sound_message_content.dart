@@ -17,6 +17,17 @@ const soundContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_SOUND,
 class SoundMessageContent extends MediaMessageContent {
   late int duration;
 
+  //  UI 层使用
+  String? _speechText;
+  bool _speechToTextInProgress = false;
+
+  String? get speechText => _speechText;
+  set speechText(String? value) => _speechText = value;
+
+  bool get speechToTextInProgress => _speechToTextInProgress;
+  set speechToTextInProgress(bool value) => _speechToTextInProgress = value;
+  //  end
+
   @override
   MessageContentMeta get meta => soundContentMeta;
 

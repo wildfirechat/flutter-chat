@@ -24,8 +24,11 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/app_server.dart';
+import 'package:chat/config.dart';
 import 'package:chat/model/favorite_item.dart';
 import 'package:chat/widget/popup_menu_overlay.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
@@ -336,6 +339,14 @@ class ConversationController extends ChangeNotifier {
       menuItems.add({'label': '复制', 'value': 'copy', 'icon': Icons.copy});
     }
 
+    // 为语音消息添加转文字菜单
+    if (model.message.content is SoundMessageContent) {
+      SoundMessageContent soundContent = model.message.content as SoundMessageContent;
+      if (soundContent.speechText == null || soundContent.speechText!.isEmpty) {
+        menuItems.add({'label': '转文字', 'value': 'speech_to_text', 'icon': Icons.subtitles});
+      }
+    }
+
     menuItems.add({'label': '转发', 'value': 'forward', 'icon': Icons.forward});
 
     if (model.message.direction == MessageDirection.MessageDirection_Send &&
@@ -376,6 +387,9 @@ class ConversationController extends ChangeNotifier {
         break;
       case "copy":
         break;
+      case "speech_to_text":
+        _performSpeechToText(model);
+        break;
       case "forward":
         Navigator.push(
           context,
@@ -411,62 +425,6 @@ class ConversationController extends ChangeNotifier {
         });
         break;
     }
-  }
-
-  void _showForwardDialog(BuildContext context, Conversation target, Message message) async {
-    String targetName = target.target;
-    if (target.conversationType == ConversationType.Single) {
-      var userInfo = await Imclient.getUserInfo(target.target);
-      if (userInfo != null) {
-        targetName = userInfo.displayName ?? '<${target.target}';
-      }
-    } else if (target.conversationType == ConversationType.Group) {
-      var groupInfo = await Imclient.getGroupInfo(target.target);
-      if (groupInfo != null) {
-        targetName = groupInfo.name ?? '群聊<${groupInfo.target}>';
-      }
-    }
-
-    if (!context.mounted) return;
-
-    TextEditingController controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text("发送给：$targetName"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text("确定转发这条消息吗？"),
-              const SizedBox(height: 10),
-              TextField(
-                controller: controller,
-                decoration: const InputDecoration(hintText: "给朋友留言"),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close Dialog
-                Navigator.pop(context); // Close PickConversationScreen
-              },
-              child: const Text("取消"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close Dialog
-                _performForward(target, message, controller.text);
-                Navigator.pop(context); // Close PickConversationScreen
-              },
-              child: const Text("发送"),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   void _performForward(Conversation target, Message message, String extraText) {
@@ -527,6 +485,103 @@ class ConversationController extends ChangeNotifier {
 
   void _deleteMessage(int messageId) {
     conversationViewModel.deleteMessage(messageId);
+  }
+
+  Future<void> _performSpeechToText(UIMessage model) async {
+    SoundMessageContent audioMessage = model.message.content as SoundMessageContent;
+    
+    // 检查是否已有转文字结果
+    if (audioMessage.speechText != null && audioMessage.speechText!.isNotEmpty) {
+      return;
+    }
+
+    // 设置转文字进行中的状态
+    audioMessage.speechToTextInProgress = true;
+    audioMessage.speechText = ''; // 初始化为空字符串
+    eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
+
+    try {
+      // 获取音频文件的远程URL
+      if (audioMessage.remoteUrl == null || audioMessage.remoteUrl!.isEmpty) {
+        Fluttertoast.showToast(msg: "音频文件不可用");
+        audioMessage.speechToTextInProgress = false;
+        eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
+        return;
+      }
+
+      await _makeAsrRequest(audioMessage.remoteUrl!, (resultChunk) {
+        // 回调函数：每接收到结果片段就更新
+        audioMessage.speechText = (audioMessage.speechText ?? '') + resultChunk;
+        eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
+      });
+      
+      audioMessage.speechToTextInProgress = false;
+      eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
+      
+      if (audioMessage.speechText == null || audioMessage.speechText!.isEmpty) {
+        audioMessage.speechText = '转换失败';
+        Fluttertoast.showToast(msg: "语音转文字失败");
+      } else {
+        Fluttertoast.showToast(msg: "转文字成功");
+      }
+    } catch (error) {
+      debugPrint('语音转文字异常: $error');
+      audioMessage.speechText = '转换失败';
+      audioMessage.speechToTextInProgress = false;
+      eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
+      Fluttertoast.showToast(msg: "语音转文字异常: $error");
+    }
+  }
+
+  Future<void> _makeAsrRequest(String audioUrl, Function(String) onChunk) async {
+    try {
+      final request = http.Request(
+        'POST',
+        Uri.parse(Config.ASR_SERVER),
+      );
+      
+      request.headers.addAll({
+        'Content-Type': 'application/json',
+        'Accept': '*/*',
+      });
+      
+      request.body = jsonEncode({
+        'url': audioUrl,
+        'noReuse': false,
+        'noLlm': false,
+      });
+
+      final streamResponse = await request.send();
+
+      if (!streamResponse.statusCode.toString().startsWith('2')) {
+        debugPrint('ASR API 错误: ${streamResponse.statusCode}');
+        return;
+      }
+
+      // 处理流式响应
+      await streamResponse.stream.transform(utf8.decoder).listen(
+        (chunk) {
+          // 处理接收到的数据块
+          List<String> lines = chunk.split('\n');
+          for (String line in lines) {
+            line = line.replaceAll('\r', '').trim();
+            if (line.isNotEmpty) {
+              String text = line.replaceAll('data:', '').trim();
+              if (text.isNotEmpty) {
+                // 实时回调返回文本片段
+                onChunk(text);
+              }
+            }
+          }
+        },
+        onError: (error) {
+          debugPrint('流处理错误: $error');
+        },
+        cancelOnError: false,
+      ).asFuture();
+    } catch (e) {
+      debugPrint('ASR 请求异常: $e');
+    }
   }
 
   @override
