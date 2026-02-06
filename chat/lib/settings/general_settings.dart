@@ -68,10 +68,17 @@ class GeneralSettings extends StatelessWidget {
         if(key == "quit") {
           Fluttertoast.showToast(msg: "账号将退出");
 
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-            (Route<dynamic> route) => false,
-          );
+          bool topIsLogin = false;
+          Navigator.of(context).popUntil((route) {
+            topIsLogin = route.settings.name == 'login';
+            return true;
+          });
+          if (!topIsLogin) {
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const LoginScreen(), settings: const RouteSettings(name: 'login')),
+              (Route<dynamic> route) => false,
+            );
+          }
           Imclient.disconnect();
         } else {
           Fluttertoast.showToast(msg: "方法没有实现");

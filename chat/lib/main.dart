@@ -184,10 +184,17 @@ class _MyAppState extends State<MyApp> {
         }
 
         isLogined = false;
-        navKey.currentState?.pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const LoginScreen(), maintainState: true),
-          (Route<dynamic> route) => false,
-        );
+        bool topIsLogin = false;
+        navKey.currentState?.popUntil((route) {
+          topIsLogin = route.settings.name == 'login';
+          return true;
+        });
+        if (!topIsLogin) {
+          navKey.currentState?.pushAndRemoveUntil(
+            MaterialPageRoute(builder: (context) => const LoginScreen(), settings: const RouteSettings(name: 'login'), maintainState: true),
+            (Route<dynamic> route) => false,
+          );
+        }
       }
     }, (List<Message> messages, bool hasMore) {
       if (kDebugMode) {
