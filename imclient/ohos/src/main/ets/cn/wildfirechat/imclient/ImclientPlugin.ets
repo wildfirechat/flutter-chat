@@ -176,7 +176,8 @@ import {
     getMessageByUid,
     getGroupMember,
     getGroupInfoEx,
-    setDisableSyncDraft
+    setDisableSyncDraft,
+    kickoffPCClient
 } from './marsWrapper';
 import json from '@ohos.util.json';
 import map from '@hms.core.map.map';
@@ -1503,8 +1504,10 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         console.error(`${call.method} is not implement`);
     }
     _kickoffPCClient = (call: MethodCall, result: MethodResult) => {
-        // TODO
-        console.error(`${call.method} is not implement`);
+        let requestId = call.argument("requestId") as number
+        let clientId = call.argument("clientId") as string
+        kickoffPCClient(clientId, this.__generalVoidCallback(requestId),
+            this.__generalFailCallback(requestId))
     }
     _isMuteNotificationWhenPcOnline = (call: MethodCall, result: MethodResult) => {
         // TODO
