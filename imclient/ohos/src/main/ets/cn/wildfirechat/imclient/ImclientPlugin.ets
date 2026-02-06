@@ -410,8 +410,6 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let token: string = call.argument("token");
         let userId: string = call.argument("userId");
         connect('', userId, token)
-        // TODO
-        // FIXME
         let lastConnectTime = 0
         this.userId = userId;
         result.success(lastConnectTime)
@@ -756,6 +754,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let disablePush = call.argument("disablePush") as boolean;
         let clearSession = call.argument("clearSession") as boolean
         disconnect(disablePush, clearSession)
+        this.userId = ''
         result.success(null)
     }
     _searchConversation = (call: MethodCall, result: MethodResult) => {
