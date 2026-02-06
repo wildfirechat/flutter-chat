@@ -6,7 +6,7 @@ class OptionItem extends StatelessWidget {
   final bool showRightArrow;
   final bool showBottomDivider;
   final Image? rightImage;
-  final Image? leftImage;
+  final Widget? leftImage;
   final IconData? rightIcon;
   final IconData? leftIcon;
   final GestureTapCallback? onTap;

@@ -35,7 +35,7 @@ class StatusNotificationViewModel extends ChangeNotifier {
 
   void refreshOnlineInfos() async {
     if (_connectionStatus == kConnectionStatusConnected) {
-      _pcOnlineInfos = await Imclient.getOnlineInfos();
+      _pcOnlineInfos = await Imclient.getPCOnlineInfos();
       notifyListeners();
     } else {
       _pcOnlineInfos = [];

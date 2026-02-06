@@ -10,6 +10,7 @@ import 'package:chat/settings/general_settings.dart';
 import 'package:chat/settings/message_notification_settings.dart';
 import 'package:chat/settings/favorite_list_screen.dart';
 import 'package:chat/settings/file_records_screen.dart';
+import 'package:chat/backup/backup_and_restore_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -65,6 +66,18 @@ class MeTab extends StatelessWidget {
                 },
               ),
               const SectionDivider(),
+              OptionItem(
+                "Backup & Restore",
+                leftImage: const Icon(Icons.backup, color: Colors.blue, size: 20),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const BackupAndRestoreScreen()),
+                  );
+                },
+              ),
+              const SectionDivider(),
+
               OptionItem(
                 AppLocalizations.of(context)!.accountSafety,
                 leftImage: Image.asset('assets/images/setting_safety.png', width: 20.0, height: 20.0),

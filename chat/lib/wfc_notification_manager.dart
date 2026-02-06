@@ -82,7 +82,7 @@ class WfcNotificationManager {
     if (await Imclient.isGlobalSilent()) return;
 
     if (await Imclient.isMuteNotificationWhenPcOnline()) {
-      List<PCOnlineInfo> onlineInfos = await Imclient.getOnlineInfos();
+      List<PCOnlineInfo> onlineInfos = await Imclient.getPCOnlineInfos();
       for (var info in onlineInfos) {
         if (info.isOnline) return;
       }
