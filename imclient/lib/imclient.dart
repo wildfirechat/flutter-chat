@@ -1,5 +1,6 @@
 
 import 'package:event_bus/event_bus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/message/notification/call_add_participants_notificiation_content.dart';
@@ -33,6 +34,8 @@ import 'message/notification/group/kickoff_group_member_notification_content.dar
 import 'message/notification/group/modify_group_member_alias_notification_content.dart';
 import 'message/notification/group/quit_group_notification_content.dart';
 import 'message/notification/group/transfer_group_owner_notification_content.dart';
+import 'message/notification/backup_request_notification_content.dart';
+import 'message/notification/backup_response_notification_content.dart';
 import 'message/notification/recall_notificiation_content.dart';
 import 'message/notification/tip_notificiation_content.dart';
 import 'message/pclogin_request_message_content.dart';
@@ -480,6 +483,9 @@ class Imclient {
     registerMessageContent(modifyGroupMemberAliasNotificationContentMeta);
     registerMessageContent(quitGroupNotificationContentMeta);
     registerMessageContent(transferGroupOwnerNotificationContentMeta);
+
+    registerMessageContent(backupRequestNotificationContentMeta);
+    registerMessageContent(backupResponseNotificationContentMeta);
 
     registerMessageContent(recallNotificationContentMeta);
     registerMessageContent(tipNotificationContentMeta);
@@ -1591,7 +1597,7 @@ class Imclient {
   }
 
   ///获取PC端在线状态
-  static Future<List<PCOnlineInfo>> getOnlineInfos() async {
+  static Future<List<PCOnlineInfo>> getPCOnlineInfos() async {
     return ImclientPlatform.instance.getOnlineInfos();
   }
 
