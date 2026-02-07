@@ -9,14 +9,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:chat/conversation/conversation_controller.dart';
 
 class _PluginItem {
   String iconPath;
-  String title;
   String key;
 
-  _PluginItem(this.iconPath, this.title, this.key);
+  _PluginItem(this.iconPath, this.key);
 }
 
 class PluginBoard extends StatelessWidget {
@@ -25,18 +25,40 @@ class PluginBoard extends StatelessWidget {
   final Conversation conversation;
   final double? height;
 
-  final List<_PluginItem> _line1 = [
-    _PluginItem('assets/images/input/album.png', "相册", "album"),
-    _PluginItem('assets/images/input/camera.png', "拍摄", "camera"),
-    _PluginItem('assets/images/input/call.png', "通话", "call"),
-    _PluginItem('assets/images/input/location.png', "位置", "location"),
-    _PluginItem('assets/images/input/file.png', "文件", "file"),
-    _PluginItem('assets/images/input/card.png', "名片", "card"),
-  ];
+  List<_PluginItem> _getPluginItems() {
+    return [
+      _PluginItem('assets/images/input/album.png',  "album"),
+      _PluginItem('assets/images/input/camera.png', "camera"),
+      _PluginItem('assets/images/input/call.png', "call"),
+      _PluginItem('assets/images/input/location.png', "location"),
+      _PluginItem('assets/images/input/file.png', "file"),
+      _PluginItem('assets/images/input/card.png', "card"),
+    ];
+  }
+
+  String _getPluginTitle(BuildContext context, String titleKey) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (titleKey) {
+      case "album":
+        return l10n.albumPicker;
+      case "camera":
+        return l10n.cameraCapture;
+      case "call":
+        return l10n.voiceCall;
+      case "location":
+        return l10n.location;
+      case "file":
+        return l10n.filePicker;
+      case "card":
+        return l10n.businessCard;
+      default:
+        return titleKey;
+    }
+  }
 
   Widget _pluginItemWidget(BuildContext context, _PluginItem item) {
     double width = View.of(context).physicalSize.width / View.of(context).devicePixelRatio;
-    double itemWidth = 54;
+    double itemWidth = 64;
     double padding = (width - 4 * itemWidth) / 4 / 2;
     return Row(
       children: [
@@ -52,17 +74,17 @@ class PluginBoard extends StatelessWidget {
                 height: itemWidth,
               ),
               const Padding(padding: EdgeInsets.only(top: 10)),
-              Text(item.title),
+              Text(_getPluginTitle(context, item.key)),
             ],
           ),
         ),
-        Padding(padding: EdgeInsets.only(left: padding))
       ],
     );
   }
 
   void _onClickItem(BuildContext context, String key) {
     var conversationController = Provider.of<ConversationController>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
     switch (key) {
       case "album":
         {
@@ -76,7 +98,7 @@ class PluginBoard extends StatelessWidget {
         break;
       case "camera":
         if(!['android', 'ios'].contains(Platform.operatingSystem) ){
-          Fluttertoast.showToast(msg: '当前平台暂不支持');
+          Fluttertoast.showToast(msg: l10n.notSupportedOnCurrentPlatform);
           return;
         }
         CameraPicker.pickFromCamera(context, pickerConfig: const CameraPickerConfig(enableRecording: true, resolutionPreset: ResolutionPreset.high)).then((entity) {
@@ -105,13 +127,13 @@ class PluginBoard extends StatelessWidget {
       case "call":
         // _pressCallBtnCallback();
         if(!['android', 'ios'].contains(Platform.operatingSystem) ){
-          Fluttertoast.showToast(msg: '当前平台暂不支持');
+          Fluttertoast.showToast(msg: l10n.notSupportedOnCurrentPlatform);
           return;
         }
         conversationController.onPressCallBtn(context, conversation);
         break;
       case "location":
-        Fluttertoast.showToast(msg: '暂不支持');
+        Fluttertoast.showToast(msg: l10n.notSupported);
         break;
       case "file":
         FilePicker.platform.pickFiles().then((value) {
@@ -134,13 +156,14 @@ class PluginBoard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double boardHeight = height ?? 250;
+    final pluginItems = _getPluginItems();
     return SizedBox(
         height: boardHeight,
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisExtent: 120),
-          itemCount: _line1.length,
+          itemCount: pluginItems.length,
           itemBuilder: (context, index) {
-            return _pluginItemWidget(context, _line1[index]);
+            return _pluginItemWidget(context, pluginItems[index]);
           },
         ));
     // return Column(

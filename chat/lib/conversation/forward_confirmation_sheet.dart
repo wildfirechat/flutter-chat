@@ -18,6 +18,7 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/utilities.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ForwardConfirmationSheet extends StatefulWidget {
   final List<Conversation> targets;
@@ -89,11 +90,11 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Padding(
-                        padding: EdgeInsets.all(16.0),
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
                         child: Text(
-                          '发送给：',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          AppLocalizations.of(context)!.sendTo,
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
                       _buildTargetsList(),
@@ -103,7 +104,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                         child: TextField(
                           controller: _commentController,
                           decoration: InputDecoration(
-                            hintText: '给朋友留言',
+                            hintText: AppLocalizations.of(context)!.leaveMessage,
                             filled: true,
                             fillColor: const Color(0xFFF5F5F5),
                             border: OutlineInputBorder(
@@ -122,14 +123,14 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                         children: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text('取消', style: TextStyle(color: Colors.black, fontSize: 16)),
+                            child: Text(AppLocalizations.of(context)!.cancel, style: const TextStyle(color: Colors.black, fontSize: 16)),
                           ),
                           TextButton(
                             onPressed: () {
                               Navigator.pop(context);
                               widget.onConfirm(_commentController.text.isEmpty ? null : _commentController.text);
                             },
-                            child: const Text('发送', style: TextStyle(color: Color(0xFF3B62E0), fontSize: 16, fontWeight: FontWeight.bold)),
+                            child: Text(AppLocalizations.of(context)!.send, style: const TextStyle(color: Color(0xFF3B62E0), fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
@@ -181,7 +182,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
               ),
               builder: (context, rec, child) {
                 return Text(
-                  Utilities.conversationTitle(conversation, rec.$1, rec.$2, rec.$3),
+                  Utilities.conversationTitle(context, conversation, rec.$1, rec.$2, rec.$3),
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -225,7 +226,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
       return FutureBuilder<_MessagePreviewData>(
         future: _loadPreviewData(),
         builder: (context, snap) {
-          final preview = snap.data ?? const _MessagePreviewData(text: '[消息]');
+          final preview = snap.data ?? _MessagePreviewData(text: AppLocalizations.of(context)!.messageTag);
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             padding: const EdgeInsets.all(12),
@@ -268,9 +269,9 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
       );
     }
 
-    String previewText = '${widget.oneByOne? '[逐条转发]' : '[合并转发]'} 共${messages.length}条消息';
+    String previewText = '${widget.oneByOne? '[${AppLocalizations.of(context)!.forwardOneByOne}]' : '[${AppLocalizations.of(context)!.forwardCombined}]'} ${AppLocalizations.of(context)!.totalMessages(messages.length.toString())}';
     if (messages.first.content is CompositeMessageContent) {
-      previewText = '[聊天记录]';
+      previewText = '[${AppLocalizations.of(context)!.chatHistory}]';
     }
 
     final firstContent = messages.first.content;

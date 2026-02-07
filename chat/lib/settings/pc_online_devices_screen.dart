@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/pc_online_info.dart';
 import 'package:chat/config.dart';
@@ -34,10 +35,10 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
 
   void _kickClient(PCOnlineInfo info) {
     Imclient.kickoffPCClient(info.clientId, () {
-      Fluttertoast.showToast(msg: "已强制下线");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.kickedOffline);
       _loadData();
     }, (err) {
-      Fluttertoast.showToast(msg: "操作失败: $err");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.operateFail(err.toString()));
     });
   }
 
@@ -47,7 +48,7 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
         _isMute = value;
       });
     }, (err) {
-      Fluttertoast.showToast(msg: "设置失败: $err");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.setFail(err.toString()));
       setState(() {
         _isMute = !_isMute;
       });
@@ -66,10 +67,10 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
   }
 
   String _getDeviceName(PCOnlineInfo info) {
-    if (info.type == 0) return "PC 客户端";
-    if (info.type == 1) return "Web 客户端";
-    if (info.type == 2) return "小程序";
-    return "未知设备";
+    if (info.type == 0) return AppLocalizations.of(context)!.pcClient;
+    if (info.type == 1) return AppLocalizations.of(context)!.webClient;
+    if (info.type == 2) return AppLocalizations.of(context)!.miniProgram;
+    return AppLocalizations.of(context)!.unknownDevice;
   }
 
   IconData _getDeviceIcon(PCOnlineInfo info) {
@@ -84,11 +85,11 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
     return Scaffold(
       backgroundColor: const Color(0xfff5f5f5),
       appBar: AppBar(
-        title: const Text("已登录设备"),
+        title: Text(AppLocalizations.of(context)!.pcOnlineDevices),
         elevation: 0,
       ),
       body: _onlineInfos.isEmpty
-          ? const Center(child: Text("当前没有其他设备登录"))
+          ? Center(child: Text(AppLocalizations.of(context)!.noPcOnline))
           : Column(
               children: [
                 const SizedBox(height: 20),
@@ -100,7 +101,7 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
                       const Icon(Icons.computer, size: 80, color: Colors.green),
                       const SizedBox(height: 16),
                       Text(
-                        "${_onlineInfos.length} 个设备已登录",
+                        AppLocalizations.of(context)!.pcOnlineDeviceCount(_onlineInfos.length.toString()),
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -117,8 +118,8 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
                       SwitchListTile(
                         value: _isMute,
                         onChanged: _toggleMute,
-                        title: const Text("手机静音"),
-                        subtitle: const Text("PC端登录时，手机端关闭通知提醒"),
+                        title: Text(AppLocalizations.of(context)!.mobileMute),
+                        subtitle: Text(AppLocalizations.of(context)!.mobileMuteDesc),
                       ),
                     ],
                   ),
@@ -138,14 +139,14 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
                         child: ListTile(
                           leading: Icon(_getDeviceIcon(info), size: 36, color: Colors.grey),
                           title: Text(_getDeviceName(info)),
-                          subtitle: Text("登录时间: ${DateTime.fromMillisecondsSinceEpoch(info.timestamp).toString().substring(0, 16)}"),
+                          subtitle: Text("${AppLocalizations.of(context)!.loginTime}${DateTime.fromMillisecondsSinceEpoch(info.timestamp).toString().substring(0, 16)}"),
                           trailing: OutlinedButton(
                             onPressed: () => _kickClient(info),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.red,
                               side: const BorderSide(color: Colors.red),
                             ),
-                            child: const Text("退出"),
+                            child: Text(AppLocalizations.of(context)!.logout),
                           ),
                         ),
                       );

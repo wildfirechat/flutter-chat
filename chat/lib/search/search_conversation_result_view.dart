@@ -7,6 +7,7 @@ import 'package:chat/config.dart';
 import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SearchConversationResultView extends StatefulWidget {
   final Conversation conversation;
@@ -68,8 +69,8 @@ class _SearchConversationResultViewState extends State<SearchConversationResultV
       appBar: AppBar(
         title: TextField(
           controller: _controller,
-          decoration: const InputDecoration(
-            hintText: '输入开始搜索',
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context)!.searchHint,
             border: InputBorder.none,
           ),
           onChanged: (value) {
@@ -81,7 +82,7 @@ class _SearchConversationResultViewState extends State<SearchConversationResultV
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _messages.isEmpty
-              ? const Center(child: Text('没有找到相关消息'))
+              ? Center(child: Text(AppLocalizations.of(context)!.noSearchResult))
               : ListView.separated(
                   itemCount: _messages.length,
                   separatorBuilder: (context, index) => const Divider(height: 1),
@@ -101,7 +102,7 @@ class _SearchConversationResultViewState extends State<SearchConversationResultV
                             children: [
                               Text(userInfo?.displayName ?? message.fromUser),
                               Text(
-                                Utilities.formatTime(message.serverTime),
+                                Utilities.formatTime(context, message.serverTime),
                                 style: const TextStyle(fontSize: 12, color: Colors.grey),
                               ),
                             ],

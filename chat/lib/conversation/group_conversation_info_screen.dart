@@ -7,6 +7,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/group_conversation_info_view_model.dart';
@@ -41,7 +42,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
         child: Consumer<GroupConversationInfoViewModel>(
             builder: (context, viewModel, child) => Scaffold(
                   appBar: AppBar(
-                    title: const Text('群会话详情'),
+                    title: Text(AppLocalizations.of(context)!.groupConversationDetails),
                   ),
                   body: SafeArea(
                     child: viewModel.groupMember == null
@@ -58,6 +59,8 @@ class GroupConversationInfoScreen extends StatelessWidget {
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationInfo = conversationViewModel.conversationInfo!;
     var groupInfo = groupViewModel.getGroupInfo(conversation.target);
+    final l10n = AppLocalizations.of(context)!;
+    
     return SingleChildScrollView(
         child: Column(children: [
       GroupConversationInfoMembersView(
@@ -83,24 +86,24 @@ class GroupConversationInfoScreen extends StatelessWidget {
         },
       ),
       const SectionDivider(),
-      OptionItem('成员列表', onTap: () {}),
-      OptionItem('群聊名称', desc: groupInfo?.name ?? '群聊', onTap: () {
+      OptionItem(l10n.groupMemberList, onTap: () {}),
+      OptionItem(l10n.groupNameLabel, desc: groupInfo?.name ?? '', onTap: () {
         if (groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager) {
-          _showEditDialog(context, '修改群名称', groupInfo?.name ?? '', (value) {
+          _showEditDialog(context, l10n.modifyGroupNameDialog, groupInfo?.name ?? '', (value) {
             Imclient.modifyGroupInfo(conversation.target, ModifyGroupInfoType.Modify_Group_Name, value, () {}, (errorCode) {
-              Fluttertoast.showToast(msg: "修改失败: $errorCode");
+              Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
             });
           });
         } else {
-          Fluttertoast.showToast(msg: "只有群主和管理员可以修改群名称");
+          Fluttertoast.showToast(msg: l10n.onlyOwnerManagerCanModify);
         }
       }),
-      OptionItem('群二维码', rightIcon: Icons.qr_code, onTap: () {
+      OptionItem(l10n.groupQrCode, rightIcon: Icons.qr_code, onTap: () {
         if (groupInfo != null) {
           Navigator.push(context, MaterialPageRoute(builder: (context) => GroupQrCodeScreen(groupInfo: groupInfo)));
         }
       }),
-      OptionItem('群公告', desc: groupConversationInfoViewModel.groupAnnouncement ?? '点击查看', onTap: () {
+      OptionItem(l10n.groupAnnouncement, desc: groupConversationInfoViewModel.groupAnnouncement ?? l10n.clickToCheck, onTap: () {
         Navigator.push(
             context,
             MaterialPageRoute(
@@ -110,22 +113,22 @@ class GroupConversationInfoScreen extends StatelessWidget {
           groupConversationInfoViewModel.refreshGroupAnnouncement(conversation.target);
         });
       }),
-      OptionItem('群备注', desc: groupInfo?.remark, onTap: () {
-        _showEditDialog(context, '修改群备注', groupInfo?.remark ?? '', (value) {
+      OptionItem(l10n.groupRemarkLabel, desc: groupInfo?.remark, onTap: () {
+        _showEditDialog(context, l10n.modifyGroupRemarkDialog, groupInfo?.remark ?? '', (value) {
           Imclient.setGroupRemark(conversation.target, value, () {}, (errorCode) {
-            Fluttertoast.showToast(msg: "修改失败: $errorCode");
+            Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
           });
         });
       }),
       groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner
-          ? OptionItem('群管理', onTap: () {
+          ? OptionItem(l10n.groupManagement, onTap: () {
               if (groupInfo != null) {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => GroupManageScreen(groupInfo: groupInfo)));
               }
             })
           : Container(),
       const SectionDivider(),
-      OptionItem('查找聊天内容', onTap: () {
+      OptionItem(l10n.searchChatContents, onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -136,7 +139,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
           ),
         );
       }),
-      OptionItem('会话文件', onTap: () {
+      OptionItem(l10n.chatFiles, onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -145,68 +148,69 @@ class GroupConversationInfoScreen extends StatelessWidget {
         );
       }),
       const SectionDivider(),
-      OptionSwitchItem('消息免打扰', conversationInfo.isSilent, (enable) {
+      OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
         conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
       }),
-      OptionSwitchItem('置顶聊天', conversationInfo.isTop > 0, (enable) {
+      OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0, (enable) {
         conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
       }),
-      OptionSwitchItem('保存到通讯录', groupConversationInfoViewModel.isFavGroup, (enable) {
+      OptionSwitchItem(l10n.favoriteGroup, groupConversationInfoViewModel.isFavGroup, (enable) {
         groupConversationInfoViewModel.setFavGroup(conversationInfo.conversation.target, enable);
       }),
       const SectionDivider(),
-      OptionItem('我在本群的昵称', desc: groupMember.alias, onTap: () {
-        _showEditDialog(context, '修改群昵称', groupMember.alias ?? '', (value) {
+      OptionItem(l10n.myAliasInGroupLabel, desc: groupMember.alias, onTap: () {
+        _showEditDialog(context, l10n.modifyGroupAliasDialog, groupMember.alias ?? '', (value) {
           Imclient.modifyGroupAlias(conversation.target, value, () {}, (errorCode) {
-            Fluttertoast.showToast(msg: "修改失败: $errorCode");
+            Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
           });
         });
       }),
-      OptionSwitchItem('显示群成员昵称', !conversationViewModel.isHiddenConversationMemberName, (enable) {
+      OptionSwitchItem(l10n.showGroupMemberNames, !conversationViewModel.isHiddenConversationMemberName, (enable) {
         conversationViewModel.setHideGroupMemberName(conversationInfo.conversation.target, !enable);
       }),
       const SectionDivider(),
-      OptionButtonItem('清空聊天记录', () {
+      OptionButtonItem(l10n.clearChatHistory, () {
         _showClearMessageDialog(context, conversation);
       }),
-      groupMember.type == GroupMemberType.Owner ? OptionButtonItem('转移群组', () {}) : Container(),
-      groupMember.type == GroupMemberType.Owner ? OptionButtonItem('解散群组', () {}) : Container(),
-      groupMember.type != GroupMemberType.Owner ? OptionButtonItem('退出群组', () {}) : Container(),
+      groupMember.type == GroupMemberType.Owner ? OptionButtonItem(l10n.transferGroup, () {}) : Container(),
+      groupMember.type == GroupMemberType.Owner ? OptionButtonItem(l10n.dissolveGroup, () {}) : Container(),
+      groupMember.type != GroupMemberType.Owner ? OptionButtonItem(l10n.quitGroupChat, () {}) : Container(),
       const SectionDivider(),
     ]));
   }
 
   void _showClearMessageDialog(BuildContext context, Conversation conversation) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Text('清空聊天记录'),
+          title: Text(l10n.clearChatHistory),
           children: <Widget>[
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context);
                 Imclient.clearMessages(conversation).then((value) {
-                  Fluttertoast.showToast(msg: "清理本地消息成功");
+                  Fluttertoast.showToast(msg: l10n.clearLocalMessagesSuccess);
                 });
               },
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('清空本地消息'),
+                child: Text(l10n.clearLocalMessages),
               ),
             ),
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context);
                 Imclient.clearRemoteConversationMessage(conversation, () {
-                  Fluttertoast.showToast(msg: "清理远程消息成功");
+                  Fluttertoast.showToast(msg: l10n.clearRemoteMessagesSuccess);
                 }, (errorCode) {
-                  Fluttertoast.showToast(msg: "清理远程消息失败: $errorCode");
+                  Fluttertoast.showToast(msg: l10n.clearRemoteMessagesFailed(errorCode.toString()));
                 });
               },
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('清空远程消息'),
+                child: Text(l10n.clearRemoteMessages),
               ),
             ),
           ],
@@ -216,6 +220,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
   }
 
   void _onRemoveConversationMember(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Imclient.getGroupMembers(conversation.target).then((value) {
       if (value.isNotEmpty) {
         List<String> memberIds = [];
@@ -226,7 +231,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
           context,
           MaterialPageRoute(
               builder: (context) => PickUserScreen(
-                    title: '移除群成员',
+                    title: l10n.removeGroupMembers,
                     (context, members) async {
                       if (members.isEmpty) {
                         Navigator.pop(context);
@@ -246,6 +251,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
   }
 
   void _onAddNewConversationMember(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (conversation.conversationType == ConversationType.Group) {
       Imclient.getGroupMembers(conversation.target).then((value) {
         if (value.isNotEmpty) {
@@ -257,7 +263,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
             context,
             MaterialPageRoute(
                 builder: (context) => PickUserScreen(
-                      title: '添加群成员',
+                      title: l10n.addGroupMembers,
                       (context, members) async {
                         if (members.isEmpty) {
                           Navigator.pop(context);
@@ -278,7 +284,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
         context,
         MaterialPageRoute(
             builder: (context) => PickUserScreen(
-                  title: '选择联系人',
+                  title: l10n.selectContacts,
                   (context, members) async {
                     Navigator.pop(context);
                     if (members.isNotEmpty) {
@@ -292,7 +298,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
                           MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue, line: 0))),
                         );
                       }, (errorCode) {
-                        Fluttertoast.showToast(msg: "网络错误");
+                        Fluttertoast.showToast(msg: l10n.networkError);
                       });
                     }
                   },
@@ -303,6 +309,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
   }
 
   void _showEditDialog(BuildContext context, String title, String initialValue, Function(String) onConfirm) {
+    final l10n = AppLocalizations.of(context)!;
     TextEditingController controller = TextEditingController(text: initialValue);
     showDialog(
       context: context,
@@ -318,14 +325,14 @@ class GroupConversationInfoScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('取消'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 onConfirm(controller.text);
               },
-              child: const Text('确定'),
+              child: Text(l10n.confirm),
             ),
           ],
         );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:chat/channel/channel_list.dart';
 import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/discovery/chatroom_list.dart';
@@ -12,13 +13,14 @@ class DiscoveryTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
               OptionItem(
-                '聊天室',
+                l10n.chatroom,
                 leftImage: Image.asset('assets/images/discover_chatroom.png', width: 20.0, height: 20.0),
                 onTap: () {
                   Navigator.push(
@@ -28,7 +30,7 @@ class DiscoveryTab extends StatelessWidget {
                 },
               ),
               OptionItem(
-                '机器人',
+                l10n.robot,
                 leftImage: Image.asset('assets/images/discover_robot.png', width: 20.0, height: 20.0),
                 onTap: () {
                   Navigator.push(
@@ -40,7 +42,7 @@ class DiscoveryTab extends StatelessWidget {
                 },
               ),
               OptionItem(
-                '频道',
+                l10n.channels,
                 leftImage: Image.asset('assets/images/discover_channel.png', width: 20.0, height: 20.0),
                 onTap: () {
                   Navigator.push(
@@ -50,7 +52,7 @@ class DiscoveryTab extends StatelessWidget {
                 },
               ),
               OptionItem(
-                '开发文档',
+                l10n.developmentDocumentation,
                 leftImage: Image.asset('assets/images/discover_devdocs.png', width: 20.0, height: 20.0),
                 onTap: () {
                   var url = 'https://docs.wildfirechat.cn';

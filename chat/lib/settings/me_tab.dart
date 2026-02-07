@@ -82,7 +82,7 @@ class MeTab extends StatelessWidget {
                 AppLocalizations.of(context)!.accountSafety,
                 leftImage: Image.asset('assets/images/setting_safety.png', width: 20.0, height: 20.0),
                 onTap: () {
-                  Fluttertoast.showToast(msg: "方法没有实现");
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
                 },
               ),
               const SectionDivider(),

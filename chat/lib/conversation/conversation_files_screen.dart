@@ -3,6 +3,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/file_record.dart';
 import 'package:chat/utilities.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ConversationFilesScreen extends StatefulWidget {
   final Conversation conversation;
@@ -65,7 +66,7 @@ class _ConversationFilesScreenState extends State<ConversationFilesScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('会话文件'),
+        title: Text(AppLocalizations.of(context)!.chatFiles),
       ),
       body: NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification scrollInfo) {
@@ -77,7 +78,7 @@ class _ConversationFilesScreenState extends State<ConversationFilesScreen> {
           return false;
         },
         child: _files.isEmpty
-            ? const Center(child: Text('没有文件'))
+            ? Center(child: Text(AppLocalizations.of(context)!.noFiles))
             : ListView.separated(
                 itemCount: _files.length + (_hasMore ? 1 : 0),
                 separatorBuilder: (context, index) => const Divider(height: 1),
@@ -88,9 +89,9 @@ class _ConversationFilesScreenState extends State<ConversationFilesScreen> {
                   var file = _files[index];
                   return ListTile(
                     leading: const Icon(Icons.insert_drive_file, size: 40),
-                    title: Text(file.name ?? 'Unknown File'),
+                    title: Text(file.name ?? AppLocalizations.of(context)!.unknownFile),
                     subtitle: Text(
-                        '${Utilities.formatSize(file.size)}  ${Utilities.formatTime(file.timestamp)}'),
+                        '${Utilities.formatSize(file.size)}  ${Utilities.formatTime(context, file.timestamp)}'),
                     onTap: () {
                       // TODO: Open or download file
                     },

@@ -1,15 +1,14 @@
 import 'dart:async';
 
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:logger/logger.dart' show Level, Logger;
 import 'package:flutter/material.dart';
 import 'package:flutter_sound/flutter_sound.dart';
-import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:chat/conversation/input_bar/message_input_bar.dart';
 
 import '../conversation_controller.dart';
 
@@ -43,6 +42,13 @@ class RecordState extends State<RecordWidget> {
     _initRecorder();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    soundTipsText = AppLocalizations.of(context)!.slideUpToCancel;
+    soundTitleText = AppLocalizations.of(context)!.releaseToSend;
+  }
+
   Future<void> _initRecorder() async {
     _recorder = FlutterSoundRecorder(logLevel: Level.warning);
     await _recorder!.openRecorder();
@@ -72,7 +78,7 @@ class RecordState extends State<RecordWidget> {
             backgroundColor: Colors.white38,
           ),
           onPressed: () {},
-          child: const Text("按下说话"));
+          child: Text(AppLocalizations.of(context)!.holdToTalk));
     }
 
     return GestureDetector(
@@ -90,7 +96,7 @@ class RecordState extends State<RecordWidget> {
   void _startRecord(BuildContext context) async {
     var status = await Permission.microphone.request();
     if (!status.isGranted) {
-      Fluttertoast.showToast(msg: "没有权限，请开启权限!");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.noMicrophonePermission);
       return;
     }
 
@@ -132,7 +138,7 @@ class RecordState extends State<RecordWidget> {
     } catch (e) {
         _isRecording = false;
         if (mounted) setState(() {});
-        Fluttertoast.showToast(msg: "录音失败: $e");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.recordFailed(e.toString()));
     }
   }
 
@@ -159,7 +165,7 @@ class RecordState extends State<RecordWidget> {
         if (send && !_isReleaseCancel) {
         int duration = (DateTime.now().millisecondsSinceEpoch - _recordStartTime + 500) ~/ 1000;
         if (duration < 1) {
-            Fluttertoast.showToast(msg: "录音时间太短");
+            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.recordTooShort);
         } else {
             conversationController.onSoundRecorded(widget.conversation, _recordPath!, duration);
         }
@@ -261,18 +267,18 @@ class RecordState extends State<RecordWidget> {
     double height = 25;
     double dy = details.localPosition.dy - 25;
     if (dy.abs() > height) {
-      if (mounted && soundTipsText != "松开取消") {
+      if (mounted && soundTipsText != AppLocalizations.of(context)!.releaseToCancel) {
         setState(() {
-          soundTipsText = "松开取消";
-          soundTitleText = "松开取消";
+          soundTipsText = AppLocalizations.of(context)!.releaseToCancel;
+          soundTitleText = AppLocalizations.of(context)!.releaseToCancel;
           _isReleaseCancel = true;
         });
       }
     } else {
-      if (mounted && soundTipsText == "松开取消") {
+      if (mounted && soundTipsText == AppLocalizations.of(context)!.releaseToCancel) {
         setState(() {
-          soundTipsText = "手指上滑，取消发送";
-          soundTitleText = "松开发送";
+          soundTipsText = AppLocalizations.of(context)!.slideUpToCancel;
+          soundTitleText = AppLocalizations.of(context)!.releaseToSend;
           _isReleaseCancel = false;
         });
       }

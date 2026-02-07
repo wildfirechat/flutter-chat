@@ -6,6 +6,7 @@ import 'package:chat/utilities.dart';
 import 'package:chat/conversation/pick_conversation_screen.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/widget/option_item.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class FileRecordsScreen extends StatelessWidget {
   const FileRecordsScreen({super.key});
@@ -14,40 +15,40 @@ class FileRecordsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('文件记录'),
+        title: Text(AppLocalizations.of(context)!.fileRecords),
       ),
       body: Column(
         children: [
           OptionItem(
-            '所有文件',
+            AppLocalizations.of(context)!.allFiles,
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const FileListScreen(
-                    title: '所有文件',
-                    child: FileListWidget(type: FileListType.all),
+                  builder: (context) => FileListScreen(
+                    title: AppLocalizations.of(context)!.allFiles,
+                    child: const FileListWidget(type: FileListType.all),
                   ),
                 ),
               );
             },
           ),
           OptionItem(
-            '我的文件',
+            AppLocalizations.of(context)!.myFiles,
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const FileListScreen(
-                    title: '我的文件',
-                    child: FileListWidget(type: FileListType.my),
+                  builder: (context) => FileListScreen(
+                    title: AppLocalizations.of(context)!.myFiles,
+                    child: const FileListWidget(type: FileListType.my),
                   ),
                 ),
               );
             },
           ),
           OptionItem(
-            '会话文件',
+            AppLocalizations.of(context)!.chatFiles,
             onTap: () {
               Navigator.push(
                 context,
@@ -58,7 +59,7 @@ class FileRecordsScreen extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => FileListScreen(
-                            title: '会话文件',
+                            title: AppLocalizations.of(context)!.chatFiles,
                             child: FileListWidget(
                               type: FileListType.conversation,
                               conversation: conversation,
@@ -73,7 +74,7 @@ class FileRecordsScreen extends StatelessWidget {
             },
           ),
           OptionItem(
-            '用户文件',
+            AppLocalizations.of(context)!.userFiles,
             onTap: () {
               Navigator.push(
                 context,
@@ -87,7 +88,7 @@ class FileRecordsScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (context) => FileListScreen(
-                              title: '用户文件',
+                              title: AppLocalizations.of(context)!.userFiles,
                               child: FileListWidget(
                                 type: FileListType.user,
                                 conversation: conversation,
@@ -227,7 +228,7 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
   Widget build(BuildContext context) {
     super.build(context);
     if (_files.isEmpty && !_isLoading) {
-      return const Center(child: Text('没有文件'));
+      return Center(child: Text(AppLocalizations.of(context)!.noFiles));
     }
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification scrollInfo) {
@@ -248,9 +249,9 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
           var file = _files[index];
           return ListTile(
             leading: const Icon(Icons.insert_drive_file, size: 40),
-            title: Text(file.name ?? 'Unknown File'),
+            title: Text(file.name ?? AppLocalizations.of(context)!.unknownFile),
             subtitle: Text(
-                '${Utilities.formatSize(file.size)}  ${Utilities.formatTime(file.timestamp)}'),
+                '${Utilities.formatSize(file.size)}  ${Utilities.formatTime(context, file.timestamp)}'),
             onTap: () {
               // TODO: Open or download file
             },

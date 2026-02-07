@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 extension EmptyStringToNull on String? {
   String? get emptyToNull {
@@ -20,7 +21,7 @@ extension EmptyStringToNull on String? {
 }
 
 class Utilities {
-  static String formatTime(int timestamp) {
+  static String formatTime(BuildContext context, int timestamp) {
     var now = DateTime.now();
     var date = DateTime.fromMicrosecondsSinceEpoch(timestamp * 1000);
     var diff = now.difference(date);
@@ -31,12 +32,12 @@ class Utilities {
       time = format.format(date);
     } else {
       if (diff.inDays == 1) {
-        time = '昨天';
+        time = AppLocalizations.of(context)!.yesterday;
       } else if (diff.inDays < 365) {
-        var format = DateFormat('MM月dd日');
+        var format = DateFormat(AppLocalizations.of(context)!.monthDayFormat);
         time = format.format(date);
       } else {
-        var format = DateFormat('yyyy年MM月dd日');
+        var format = DateFormat(AppLocalizations.of(context)!.yearMonthDayFormat);
         time = format.format(date);
       }
     }
@@ -44,7 +45,7 @@ class Utilities {
     return time;
   }
 
-  static String formatMessageTime(int timestamp) {
+  static String formatMessageTime(BuildContext context, int timestamp) {
     var now = DateTime.now();
     var date = DateTime.fromMicrosecondsSinceEpoch(timestamp * 1000);
     var diff = now.difference(date);
@@ -55,14 +56,14 @@ class Utilities {
     if (diff.inSeconds <= 0 || diff.inSeconds > 0 && diff.inMinutes == 0 || diff.inMinutes > 0 && diff.inHours == 0 || diff.inHours > 0 && diff.inDays == 0) {
     } else {
       if (diff.inDays == 1) {
-        var day = '昨天';
+        var day = AppLocalizations.of(context)!.yesterday;
         time = '$day $time';
       } else if (diff.inDays < 365) {
-        var dayformat = DateFormat('MM月dd日');
+        var dayformat = DateFormat(AppLocalizations.of(context)!.monthDayFormat);
         var day = dayformat.format(date);
         time = '$day $time';
       } else {
-        var dayformat = DateFormat('yyyy年MM月dd日');
+        var dayformat = DateFormat(AppLocalizations.of(context)!.yearMonthDayFormat);
         var day = dayformat.format(date);
         time = '$day $time';
       }
@@ -139,20 +140,20 @@ class Utilities {
     }
   }
 
-  static String conversationTitle(Conversation conversation, UserInfo? userInfo, GroupInfo? groupInfo, ChannelInfo? channelInfo) {
+  static String conversationTitle(BuildContext context, Conversation conversation, UserInfo? userInfo, GroupInfo? groupInfo, ChannelInfo? channelInfo) {
     String title = '';
     switch (conversation.conversationType) {
       case ConversationType.Single:
-        title = userInfo?.getReadableName().emptyToNull ?? '单聊<${conversation.target}>';
+        title = userInfo?.getReadableName().emptyToNull ?? AppLocalizations.of(context)!.singleChat(conversation.target);
         break;
       case ConversationType.Group:
-        title = groupInfo?.remark.emptyToNull ?? groupInfo?.name.emptyToNull ?? '群聊<${conversation.target}>';
+        title = groupInfo?.remark.emptyToNull ?? groupInfo?.name.emptyToNull ?? AppLocalizations.of(context)!.groupChatWithTarget(conversation.target);
         break;
       case ConversationType.Channel:
-        title = channelInfo?.name.emptyToNull ?? '频道<${conversation.target}>';
+        title = channelInfo?.name.emptyToNull ?? AppLocalizations.of(context)!.channelWithTarget(conversation.target);
         break;
       case ConversationType.Chatroom:
-        title = '聊天室-<${conversation.target}>';
+        title = AppLocalizations.of(context)!.chatroomWithTarget(conversation.target);
         break;
       case _:
         break;
@@ -180,7 +181,7 @@ class Utilities {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      Fluttertoast.showToast(msg: "无法打开链接");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.cannotOpenLink);
     }
   }
 
