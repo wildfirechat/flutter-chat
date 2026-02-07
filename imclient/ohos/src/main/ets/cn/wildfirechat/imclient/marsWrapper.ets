@@ -467,6 +467,11 @@ function getMessageByUid(messageUid: string): string {
 function getGroupMember(groupId: string, memberId: string): string {
     return clientModule.getGroupMember(groupId, memberId);
 }
+
+function kickoffPCClient(clientId: string, successCB: VoidCallback, failCB: FailCallback): string {
+    return clientModule.kickoffPCClient(clientId, voidCallback(successCB), numberCallback(failCB));
+}
+
 function voidCallback(cb: VoidCallback): (value: object) => void {
     return (_: object | null = null)=>{
         cb();
@@ -647,3 +652,4 @@ export { getMessage as getMessage };
 export { getMessageByUid as getMessageByUid };
 export { getGroupMember as getGroupMember };
 export { getGroupInfoEx as getGroupInfoEx };
+export { kickoffPCClient as kickoffPCClient };
