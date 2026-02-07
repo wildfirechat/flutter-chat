@@ -108,5 +108,10 @@
   "uploadPortraitFail": "Failed to upload portrait: {error}",
   "takePhoto": "Take Photo",
   "selectFromAlbum": "Select from Album",
-  "wildfireId": "Wildfire ID: {id}"
+  "wildfireId": "Wildfire ID: {id}",
+  "backup_and_restore": "Backup & Restore",
+  "language": "Language",
+  "chinese": "中文",
+  "english": "English",
+  "followSystem": "Follow System"
 }
