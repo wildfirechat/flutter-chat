@@ -67,7 +67,7 @@ class MeTab extends StatelessWidget {
               ),
               const SectionDivider(),
               OptionItem(
-                "Backup & Restore",
+                AppLocalizations.of(context)!.backup_and_restore,
                 leftImage: const Icon(Icons.backup, color: Colors.blue, size: 20),
                 onTap: () {
                   Navigator.push(

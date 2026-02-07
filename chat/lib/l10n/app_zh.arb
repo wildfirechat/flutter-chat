@@ -108,5 +108,10 @@
   "uploadPortraitFail": "上传头像失败: {error}",
   "takePhoto": "拍摄",
   "selectFromAlbum": "从相册选择",
-  "wildfireId": "野火号: {id}"
+  "wildfireId": "野火号: {id}",
+  "backup_and_restore": "备份与恢复",
+  "language": "语言",
+  "chinese": "中文",
+  "english": "English",
+  "followSystem": "跟随系统"
 }

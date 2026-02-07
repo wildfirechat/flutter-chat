@@ -26,6 +26,7 @@ import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
+import 'package:chat/viewmodel/locale_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/wfc_notification_manager.dart';
 
@@ -48,6 +49,7 @@ void main() {
       ChangeNotifierProvider<ConversationViewModel>(create: (_) => ConversationViewModel()),
       ChangeNotifierProvider<ConversationListViewModel>(create: (_) => ConversationListViewModel()),
       ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
+      ChangeNotifierProvider<LocaleViewModel>(create: (_) => LocaleViewModel()),
     ],
     child: const MyApp(),
   ));
@@ -306,22 +308,27 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('en', ''), // English, no country code
-        Locale('zh', ''), // Chinese, no country code
-      ],
-      navigatorKey: navKey,
-      home: _buildHome(),
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+    return Consumer<LocaleViewModel>(
+      builder: (context, localeViewModel, _) {
+        return MaterialApp(
+          locale: localeViewModel.locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('en', ''), // English, no country code
+            Locale('zh', ''), // Chinese, no country code
+          ],
+          navigatorKey: navKey,
+          home: _buildHome(),
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+        );
+      },
     );
   }
 
