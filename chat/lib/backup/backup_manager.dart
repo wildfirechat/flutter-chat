@@ -631,87 +631,29 @@ class BackupManager {
     // Alternative: Use http.Client().send(request).
     final client = http.Client();
     try {
-      // Start the stream adding in background? No, request.send() starts sending.
-      // Wait, StreamedRequest is intended to have data written to it.
+      final req = http.StreamedRequest('POST', url);
 
-      // If file is small, read all bytes.
-      if (false && fileLen < 10 * 1024 * 1024) {
-        // 10MB
-        final fileBytes = await file.readAsBytes();
-        final body = BytesBuilder();
-        body.add(header.buffer.asUint8List());
-        body.add(fileBytes);
+      // Don't await addStream? No, we should.
+      // But we must call client.send(req) to START the request.
+      // StreamedRequest logic:
+      // 1. Create request.
+      // 2. Call client.send(request). This returns a Future<StreamedResponse>.
+      // 3. Write to request.sink.
+      // 4. request.sink.close().
 
-        final req = http.Request('POST', url);
-        req.bodyBytes = body.toBytes();
-        final res = await client.send(req);
-        if (res.statusCode != 200) {
-          throw Exception("Upload failed: ${res.statusCode}");
-        }
-      } else {
-        // Large file, use StreamedRequest
-        final req = http.StreamedRequest('POST', url);
+      req.contentLength = header.lengthInBytes + fileLen;
 
-        // Don't await addStream? No, we should.
-        // But we must call client.send(req) to START the request.
-        // StreamedRequest logic:
-        // 1. Create request.
-        // 2. Call client.send(request). This returns a Future<StreamedResponse>.
-        // 3. Write to request.sink.
-        // 4. request.sink.close().
+      // Send request future
+      final responseFuture = client.send(req);
 
-        // WAIT! client.send(req) returns the response. It waits for the request to be sent?
-        // No, StreamedRequest allows sending data while response is being waited?
-        // Actually, typically send() waits for headers to be sent?
+      // Write data
+      req.sink.add(header.buffer.asUint8List());
+      await req.sink.addStream(file.openRead());
+      await req.sink.close();
 
-        // Correct usage of StreamedRequest:
-        // final response = await client.send(request);
-        // But if we await response, we haven't written body yet?
-        // No, StreamedRequest is special. The body is the stream.
-
-        // If we use standard http.post, we can't stream easily.
-
-        // Let's look at `http` package docs.
-        // "StreamedRequest ... allows the body to be uploaded as a Stream."
-        // "The sink property is used to add data to the body."
-
-        // The issue is likely that we are awaiting addStream BEFORE calling send().
-        // But we can't call send() before we set up the body?
-        // Actually, we can write to sink before send().
-
-        // If addStream hangs, maybe file.openRead() is not emitting?
-
-        // Let's try the approach where we combine streams and pass to a generic Request if possible? No.
-
-        // Back to the hang: "await controller.addStream(file.openRead())"
-        // This pipes file stream to controller.
-        // And controller.stream is passed to request.sink?
-        // request.sink.addStream(controller.stream) -> This is what we did: request.sink.addStream(controller.stream)
-
-        // Oh, in previous code:
-        // request.sink.addStream(controller.stream);
-        // This returns a Future. We didn't await it. We just added it.
-        // Then we added data to controller.
-
-        // If we await request.send(), it subscribes to request.sink?
-
-        // Let's try to do it without the intermediate StreamController.
-        // Just write to request.sink.
-
-        req.contentLength = header.lengthInBytes + fileLen;
-
-        // Send request future
-        final responseFuture = client.send(req);
-
-        // Write data
-        req.sink.add(header.buffer.asUint8List());
-        await req.sink.addStream(file.openRead());
-        await req.sink.close();
-
-        final response = await responseFuture;
-        if (response.statusCode != 200) {
-          throw Exception("Upload failed: ${response.statusCode}");
-        }
+      final response = await responseFuture;
+      if (response.statusCode != 200) {
+        throw Exception("Upload failed: ${response.statusCode}");
       }
     } finally {
       client.close();
