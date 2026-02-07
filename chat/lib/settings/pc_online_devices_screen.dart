@@ -22,7 +22,7 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
   }
 
   void _loadData() async {
-    var onlineInfos = await Imclient.getOnlineInfos();
+    var onlineInfos = await Imclient.getPCOnlineInfos();
     var isMute = await Imclient.isMuteNotificationWhenPcOnline();
     if (mounted) {
       setState(() {
