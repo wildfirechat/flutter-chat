@@ -1,4 +1,5 @@
 import 'package:chat/backup/pick_conversation_screen.dart';
+import 'package:chat/backup/pc_restore_progress_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -89,6 +90,13 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
       context,
       MaterialPageRoute(builder: (context) => const PickConversationScreen()),
     ).then((_) => _loadBackups()); // Reload backups when returning
+  }
+
+  void _restoreFromPC() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const PCRestoreProgressScreen()),
+    ).then((_) => _loadBackups());
   }
 
   Future<void> _restoreBackup(BackupMetadata backup) async {
@@ -297,15 +305,30 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: (_isBackingUp || _isRestoring) ? null : _createNewBackup,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: (_isBackingUp || _isRestoring) ? null : _createNewBackup,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: const Text("Create New Backup"),
+                      ),
                     ),
-                    child: const Text("Create New Backup"),
-                  ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: (_isBackingUp || _isRestoring) ? null : _restoreFromPC,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                        ),
+                        child: const Text("Restore from PC"),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

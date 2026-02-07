@@ -7,6 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:imclient/message/notification/backup_request_notification_content.dart';
 import 'package:imclient/message/notification/backup_response_notification_content.dart';
+import 'package:imclient/message/notification/restore_request_notification_content.dart';
+import 'package:imclient/message/notification/restore_response_notification_content.dart';
 import 'package:imclient/model/conversation_info.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
@@ -406,6 +408,62 @@ class BackupManager {
 
   // PC BACKUP & RESTORE
 
+  Future<void> sendRestoreRequest({
+    required Function(String ip, int port) onApproved,
+    required Function() onRejected,
+    required Function(String error) onError,
+  }) async {
+    _isCancelled = false;
+    try {
+      final content = RestoreRequestNotificationContent();
+
+      final currentUserId = Imclient.currentUserId;
+      if (currentUserId.isEmpty) throw Exception("Not logged in");
+
+      final conversation = Conversation(
+        conversationType: ConversationType.Single,
+        target: currentUserId,
+        line: 0,
+      );
+
+      await Imclient.sendMessage(conversation, content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
+
+      // Setup listener
+      StreamSubscription? subscription;
+      Timer? timeoutTimer;
+
+      void cleanup() {
+        subscription?.cancel();
+        timeoutTimer?.cancel();
+      }
+
+      // Timeout 30s
+      timeoutTimer = Timer(const Duration(seconds: 30), () {
+        cleanup();
+        if (!_isCancelled) {
+          onError("Timeout waiting for PC response");
+        }
+      });
+
+      subscription = Imclient.IMEventBus.on<ReceiveMessagesEvent>().listen((event) {
+        for (var m in event.messages) {
+          if (m.content is RestoreResponseNotificationContent) {
+            final response = m.content as RestoreResponseNotificationContent;
+            cleanup();
+            if (response.approved) {
+              onApproved(response.serverIP ?? "", response.serverPort);
+            } else {
+              onRejected();
+            }
+            return;
+          }
+        }
+      });
+    } catch (e) {
+      onError(e.toString());
+    }
+  }
+
   Future<void> sendBackupRequest({
     required List<ConversationInfo> conversationInfos,
     required bool includeMedia,
@@ -417,18 +475,8 @@ class BackupManager {
     try {
       int totalMessageCount = 0;
       for (var info in conversationInfos) {
-        // This relies on getMessageCount being synchronous or cached if available,
-        // but typically it is async. If Imclient has a synchronous version use it.
-        // Assuming Imclient.getMessageCount is not available directly, we might need
-        // to approximate or fetch async.
-        // For now, let's assume we can get it or just pass 0.
-        // Actually looking at Android code: ChatManager.Instance().getMessageCount(conversation)
-        // Check if Flutter Imclient has it.
-      }
-      // Note: Imclient.getMessagesCount is likely async. We can loop and await.
-      for (var info in conversationInfos) {
         // TODO: Improve performance?
-        // totalMessageCount += ...
+        totalMessageCount += await Imclient.getMessageCount(info.conversation);
       }
 
       final content = BackupRequestNotificationContent();
@@ -438,7 +486,6 @@ class BackupManager {
       content.timestamp = DateTime.now().millisecondsSinceEpoch;
 
       final currentUserId = Imclient.currentUserId;
-      if (currentUserId == null) throw Exception("Not logged in");
 
       final conversation = Conversation(
         conversationType: ConversationType.Single,
@@ -674,7 +721,9 @@ class BackupManager {
     try {
       final rootPath = await getBackupRootDirectory();
       // Ensure we use the same directory structure locally
-      final localBackupDir = Directory(path.join(rootPath, backupPathRemote));
+      // backupPathRemote might be absolute path from PC, we should only use the last part as dir name
+      String backupDirName = path.basename(backupPathRemote);
+      final localBackupDir = Directory(path.join(rootPath, backupDirName));
       if (!await localBackupDir.exists()) {
         await localBackupDir.create(recursive: true);
       }
@@ -682,7 +731,7 @@ class BackupManager {
       // 1. Download metadata
       final metadataUrl = Uri.http('$ip:$port', '/restore_metadata', {'path': backupPathRemote});
       final response = await http.get(metadataUrl);
-      if (response.statusCode != 200) throw Exception("Failed to get metadata");
+      if (response.statusCode != 200) throw Exception("Failed to get metadata ${response.statusCode}");
 
       final metadataFile = File(path.join(localBackupDir.path, METADATA_FILE_NAME));
       await metadataFile.writeAsBytes(response.bodyBytes);
