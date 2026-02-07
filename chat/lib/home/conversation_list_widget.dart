@@ -19,6 +19,7 @@ import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/viewmodel/status_notification_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/settings/pc_online_devices_screen.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../config.dart';
 import '../conversation/conversation_screen.dart';
@@ -79,23 +80,23 @@ class StatusNotificationHeader extends StatelessWidget {
             height: 40,
             color: Colors.red[100],
             alignment: Alignment.center,
-            child: const Text('连接中...', style: TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context)!.connecting, style: const TextStyle(color: Colors.red)),
           ));
         } else if (viewModel.connectionStatus < 0) {
           headers.add(Container(
             height: 40,
             color: Colors.red[100],
             alignment: Alignment.center,
-            child: const Text('连接失败', style: TextStyle(color: Colors.red)),
+            child: Text(AppLocalizations.of(context)!.connectionFailed, style: const TextStyle(color: Colors.red)),
           ));
         }
 
         if (viewModel.connectionStatus == kConnectionStatusConnected && viewModel.pcOnlineInfos.isNotEmpty) {
           String pcStatus = viewModel.pcOnlineInfos.map((e) {
-            if (e.type == 0) return "PC";
-            if (e.type == 1) return "Web";
-            if (e.type == 2) return "小程序";
-            return "PC";
+            if (e.type == 0) return AppLocalizations.of(context)!.pcClient;
+            if (e.type == 1) return AppLocalizations.of(context)!.webClient;
+            if (e.type == 2) return AppLocalizations.of(context)!.miniProgram;
+            return AppLocalizations.of(context)!.pcClient;
           }).toSet().join('/');
           headers.add(GestureDetector(
             onTap: () {
@@ -111,7 +112,7 @@ class StatusNotificationHeader extends StatelessWidget {
                 children: [
                   const Icon(Icons.computer, color: Colors.grey, size: 20),
                   const SizedBox(width: 8),
-                  Text('$pcStatus 已登录', style: const TextStyle(color: Colors.grey)),
+                  Text(AppLocalizations.of(context)!.pcLoggedIn(pcStatus), style: const TextStyle(color: Colors.grey)),
                   const Spacer(),
                   const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
                 ],
@@ -252,7 +253,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: <Widget>[
                                         Text(
-                                          Utilities.conversationTitle(conversationInfo.conversation, value.$1, value.$2, value.$3),
+                                          Utilities.conversationTitle(context, conversationInfo.conversation, value.$1, value.$2, value.$3),
                                           style: const TextStyle(fontSize: 15.0),
                                           maxLines: 1,
                                         ),
@@ -263,9 +264,9 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                           children: [
                                             _messageStatusIcon(),
                                             hasDraft
-                                                ? const Text(
-                                                    "[草稿]",
-                                                    style: TextStyle(fontSize: 12.0, color: Colors.red),
+                                                ? Text(
+                                                    AppLocalizations.of(context)!.draftTag,
+                                                    style: const TextStyle(fontSize: 12.0, color: Colors.red),
                                                   )
                                                 : Container(),
                                             Expanded(
@@ -289,7 +290,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                 Padding(
                                   padding: const EdgeInsets.fromLTRB(0.0, 15.0, 15.0, 0.0),
                                   child: Text(
-                                    Utilities.formatTime(conversationInfo.timestamp),
+                                    Utilities.formatTime(context, conversationInfo.timestamp),
                                     style: const TextStyle(
                                       fontSize: 10.0,
                                       color: Color(0xffaaaaaa),
@@ -355,33 +356,33 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
 
   void _onLongPressed(BuildContext context, ConversationInfo conversationInfo, Offset position) {
     List<PopupMenuItem> items = [
-      const PopupMenuItem(
+      PopupMenuItem(
         value: 'delete',
-        child: Text('删除会话'),
+        child: Text(AppLocalizations.of(context)!.deleteConversation),
       )
     ];
 
     if (conversationInfo.isTop > 0) {
-      items.add(const PopupMenuItem(
+      items.add(PopupMenuItem(
         value: 'untop',
-        child: Text('取消置顶'),
+        child: Text(AppLocalizations.of(context)!.untop),
       ));
     } else {
-      items.add(const PopupMenuItem(
+      items.add(PopupMenuItem(
         value: 'top',
-        child: Text('置顶'),
+        child: Text(AppLocalizations.of(context)!.top),
       ));
     }
 
     if (conversationInfo.unreadCount.unread + conversationInfo.unreadCount.unreadMention + conversationInfo.unreadCount.unreadMentionAll > 0) {
-      items.add(const PopupMenuItem(
+      items.add(PopupMenuItem(
         value: 'clear_unread',
-        child: Text('清除未读'),
+        child: Text(AppLocalizations.of(context)!.clearUnread),
       ));
     } else {
-      items.add(const PopupMenuItem(
+      items.add(PopupMenuItem(
         value: 'set_unread',
-        child: Text('设为未读'),
+        child: Text(AppLocalizations.of(context)!.setUnread),
       ));
     }
 

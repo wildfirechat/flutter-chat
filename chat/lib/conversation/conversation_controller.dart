@@ -29,6 +29,7 @@ import 'package:chat/model/favorite_item.dart';
 import 'package:chat/widget/popup_menu_overlay.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
@@ -84,18 +85,18 @@ class ConversationController extends ChangeNotifier {
             context: context,
             position: RelativeRect.fromLTRB(left, top, left + menuWidth, top + menuHeight),
             items: <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'voice',
                 child: SizedBox(
                   width: menuWidth,
-                  child: Text('音频通话'),
+                  child: Text(AppLocalizations.of(context)!.audioCallAction),
                 ),
               ),
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'video',
                 child: SizedBox(
                   width: menuWidth,
-                  child: Text('视频通话'),
+                  child: Text(AppLocalizations.of(context)!.videoCallAction),
                 ),
               ),
             ],
@@ -119,10 +120,10 @@ class ConversationController extends ChangeNotifier {
               context,
               MaterialPageRoute(
                   builder: (context) => PickUserScreen(
-                        title: '选择群成员',
+                        title: AppLocalizations.of(context)!.pickGroupMember,
                         (context, members) async {
                           if (members.isEmpty) {
-                            Fluttertoast.showToast(msg: "请选择一位或者多位成员发起通话");
+                            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.selectMemberToCall);
                           } else {
                             GroupVideoCallView callView = GroupVideoCallView(groupId: conversation.target, participants: members);
                             Navigator.pushReplacement(
@@ -139,7 +140,7 @@ class ConversationController extends ChangeNotifier {
           });
         }
       } else {
-        Fluttertoast.showToast(msg: "正在通话中，无法再次发起！");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.callInProgress);
       }
     });
   }
@@ -149,7 +150,7 @@ class ConversationController extends ChangeNotifier {
       context,
       MaterialPageRoute(
           builder: (context) => PickUserScreen(
-                title: '选择联系人',
+                title: AppLocalizations.of(context)!.pickContact,
                 (context, members) async {
                   if (members.isNotEmpty) {
                     UserInfo? userInfo = await Imclient.getUserInfo(members.first);
@@ -246,7 +247,7 @@ class ConversationController extends ChangeNotifier {
         if (value) {
           launchUrl(Uri.parse(fileContent.remoteUrl!));
         } else {
-          Fluttertoast.showToast(msg: '无法打开');
+          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.cannotOpen);
         }
       });
     } else if (model.message.content is SoundMessageContent) {
@@ -332,33 +333,33 @@ class ConversationController extends ChangeNotifier {
   void _showPopupMenu(BuildContext context, UIMessage model, Rect? bubbleRect) {
     final messageInputBarController = Provider.of<MessageInputBarController>(context, listen: false);
     List<Map<String, dynamic>> menuItems = [
-      {'label': '删除', 'value': 'delete', 'icon': Icons.delete},
+      {'label': AppLocalizations.of(context)!.delete, 'value': 'delete', 'icon': Icons.delete},
     ];
 
     if (model.message.content is TextMessageContent) {
-      menuItems.add({'label': '复制', 'value': 'copy', 'icon': Icons.copy});
+      menuItems.add({'label': AppLocalizations.of(context)!.copy, 'value': 'copy', 'icon': Icons.copy});
     }
 
     // 为语音消息添加转文字菜单
     if (model.message.content is SoundMessageContent) {
       SoundMessageContent soundContent = model.message.content as SoundMessageContent;
       if (soundContent.speechText == null || soundContent.speechText!.isEmpty) {
-        menuItems.add({'label': '转文字', 'value': 'speech_to_text', 'icon': Icons.subtitles});
+        menuItems.add({'label': AppLocalizations.of(context)!.speechToText, 'value': 'speech_to_text', 'icon': Icons.subtitles});
       }
     }
 
-    menuItems.add({'label': '转发', 'value': 'forward', 'icon': Icons.forward});
+    menuItems.add({'label': AppLocalizations.of(context)!.forward, 'value': 'forward', 'icon': Icons.forward});
 
     if (model.message.direction == MessageDirection.MessageDirection_Send &&
         model.message.status == MessageStatus.Message_Status_Sent &&
         DateTime.now().millisecondsSinceEpoch - model.message.serverTime < 120 * 1000) {
-      menuItems.add({'label': '撤回', 'value': 'recall', 'icon': Icons.undo});
+      menuItems.add({'label': AppLocalizations.of(context)!.recall, 'value': 'recall', 'icon': Icons.undo});
     }
 
     menuItems.addAll([
-      {'label': '多选', 'value': 'multi_select', 'icon': Icons.checklist},
-      {'label': '引用', 'value': 'quote', 'icon': Icons.format_quote},
-      {'label': '收藏', 'value': 'favorite', 'icon': Icons.favorite},
+      {'label': AppLocalizations.of(context)!.multiSelect, 'value': 'multi_select', 'icon': Icons.checklist},
+      {'label': AppLocalizations.of(context)!.quote, 'value': 'quote', 'icon': Icons.format_quote},
+      {'label': AppLocalizations.of(context)!.favoriteAction, 'value': 'favorite', 'icon': Icons.favorite},
     ]);
 
     // 如果没有bubbleRect，使用屏幕中心
@@ -388,7 +389,7 @@ class ConversationController extends ChangeNotifier {
       case "copy":
         break;
       case "speech_to_text":
-        _performSpeechToText(model);
+        _performSpeechToText(model, context);
         break;
       case "forward":
         Navigator.push(
@@ -419,9 +420,9 @@ class ConversationController extends ChangeNotifier {
       case "favorite":
         var item = await FavoriteItem.fromMessage(model.message);
         AppServer.addFavoriteItem(item, () {
-          Fluttertoast.showToast(msg: "收藏成功");
+          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.favoriteSuccess);
         }, (msg) {
-          Fluttertoast.showToast(msg: "收藏失败: $msg");
+          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.favoriteFail(msg));
         });
         break;
     }
@@ -445,26 +446,26 @@ class ConversationController extends ChangeNotifier {
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Text('删除消息'),
+          title: Text(AppLocalizations.of(context)!.deleteMessage),
           children: <Widget>[
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context);
                 _deleteMessage(model.message.messageId);
               },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('删除本地消息'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(AppLocalizations.of(context)!.deleteLocalMessage),
               ),
             ),
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context);
-                _deleteRemoteMessage(model.message);
+                _deleteRemoteMessage(model.message, context);
               },
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('删除远程消息'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(AppLocalizations.of(context)!.deleteRemoteMessage),
               ),
             ),
           ],
@@ -473,10 +474,10 @@ class ConversationController extends ChangeNotifier {
     );
   }
 
-  void _deleteRemoteMessage(Message message) {
+  void _deleteRemoteMessage(Message message, BuildContext context) {
     if (message.messageUid != null && message.messageUid! > 0) {
       Imclient.deleteRemoteMessage(message.messageUid!, () {}, (errorCode) {
-        Fluttertoast.showToast(msg: "删除远程消息失败: $errorCode");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.deleteRemoteMessageFail(errorCode.toString()));
       });
     } else {
       _deleteMessage(message.messageId);
@@ -487,9 +488,9 @@ class ConversationController extends ChangeNotifier {
     conversationViewModel.deleteMessage(messageId);
   }
 
-  Future<void> _performSpeechToText(UIMessage model) async {
+  Future<void> _performSpeechToText(UIMessage model, BuildContext context) async {
     SoundMessageContent audioMessage = model.message.content as SoundMessageContent;
-    
+
     // 检查是否已有转文字结果
     if (audioMessage.speechText != null && audioMessage.speechText!.isNotEmpty) {
       return;
@@ -503,7 +504,7 @@ class ConversationController extends ChangeNotifier {
     try {
       // 获取音频文件的远程URL
       if (audioMessage.remoteUrl == null || audioMessage.remoteUrl!.isEmpty) {
-        Fluttertoast.showToast(msg: "音频文件不可用");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.audioFileNotAvailable);
         audioMessage.speechToTextInProgress = false;
         eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
         return;
@@ -514,24 +515,25 @@ class ConversationController extends ChangeNotifier {
         audioMessage.speechText = (audioMessage.speechText ?? '') + resultChunk;
         eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
       });
-      
+
       audioMessage.speechToTextInProgress = false;
       eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
-      
+
       if (audioMessage.speechText == null || audioMessage.speechText!.isEmpty) {
-        audioMessage.speechText = '转换失败';
-        Fluttertoast.showToast(msg: "语音转文字失败");
+        audioMessage.speechText = AppLocalizations.of(context)!.convertFail;
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.speechToTextFail);
       } else {
-        Fluttertoast.showToast(msg: "转文字成功");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.speechToTextSuccess);
       }
     } catch (error) {
       debugPrint('语音转文字异常: $error');
-      audioMessage.speechText = '转换失败';
+      audioMessage.speechText = AppLocalizations.of(context)!.convertFail;
       audioMessage.speechToTextInProgress = false;
       eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
-      Fluttertoast.showToast(msg: "语音转文字异常: $error");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.speechToTextError(error.toString()));
     }
   }
+
 
   Future<void> _makeAsrRequest(String audioUrl, Function(String) onChunk) async {
     try {

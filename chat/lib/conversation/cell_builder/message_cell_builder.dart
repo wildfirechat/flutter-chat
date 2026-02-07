@@ -38,7 +38,7 @@ abstract class MessageCellBuilder {
               ? Padding(
                   padding: const EdgeInsets.all(3),
                   child: Text(
-                    Utilities.formatMessageTime(model.message.serverTime),
+                    Utilities.formatMessageTime(context, model.message.serverTime),
                     style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 )

@@ -12,6 +12,7 @@ import 'package:chat/config.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
 import 'package:chat/widget/group_list_view/list_view.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../conversation/conversation_screen.dart';
 import '../utilities.dart';
@@ -57,10 +58,10 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
             }));
 
           return groupedSearchResults.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
-                    '没有搜索到任何结果',
-                    style: TextStyle(fontSize: 16, color: Colors.black54),
+                    AppLocalizations.of(context)!.noSearchResult,
+                    style: const TextStyle(fontSize: 16, color: Colors.black54),
                   ),
                 )
               : GroupListView(
@@ -87,13 +88,13 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                   },
                   groupHeaderBuilder: (BuildContext context, int section) {
                     var sectionTitle = switch (groupedSearchResults.keys.toList()[section]) {
-                      SearchType.User => '用户',
-                      SearchType.Friend => '联系人',
-                      SearchType.Conversation => '聊天记录',
-                      SearchType.Group => '群组',
-                      SearchType.Channel => '频道',
+                      SearchType.User => AppLocalizations.of(context)!.user,
+                      SearchType.Friend => AppLocalizations.of(context)!.contact,
+                      SearchType.Conversation => AppLocalizations.of(context)!.chatHistory,
+                      SearchType.Group => AppLocalizations.of(context)!.group,
+                      SearchType.Channel => AppLocalizations.of(context)!.channel,
                       // TODO 根据类型显示不同的 cell
-                      _ => '其他'
+                      _ => AppLocalizations.of(context)!.others
                     };
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
@@ -204,9 +205,9 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
         builder: (context, rec, child) {
           return ListTile(
             leading: _buildConversationPortraitImage(conversation, rec.$1, rec.$2, rec.$3),
-            title: Text(Utilities.conversationTitle(conversation, rec.$1, rec.$2, rec.$3)),
+            title: Text(Utilities.conversationTitle(context, conversation, rec.$1, rec.$2, rec.$3)),
             subtitle: info.marchedCount > 1
-                ? Text('${info.marchedCount} 条消息')
+                ? Text(AppLocalizations.of(context)!.matchedMessageCount(info.marchedCount.toString()))
                 : info.marchedMessage == null
                     ? null
                     : FutureBuilder(

@@ -16,6 +16,7 @@ import 'package:chat/conversation/composite_message_detail_screen.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/model/favorite_item.dart';
 import 'package:chat/utilities.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class FavoriteListScreen extends StatefulWidget {
   const FavoriteListScreen({Key? key}) : super(key: key);
@@ -72,7 +73,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
       setState(() {
         _items.remove(item);
       });
-      Fluttertoast.showToast(msg: '删除成功');
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.deleteSuccess);
     }, (msg) {
       Fluttertoast.showToast(msg: msg);
     });
@@ -108,7 +109,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
       );
     } else if (message.content is FileMessageContent) {
       // TODO: Open file
-      Fluttertoast.showToast(msg: "文件: ${(message.content as FileMessageContent).name}");
+      Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.fileLabel}${(message.content as FileMessageContent).name}");
     } else if (message.content is CompositeMessageContent) {
       Navigator.push(
         context,
@@ -121,9 +122,9 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
       Fluttertoast.showToast(msg: (message.content as TextMessageContent).text);
     } else if (message.content is LinkMessageContent) {
       // TODO: Open link
-      Fluttertoast.showToast(msg: "链接: ${(message.content as LinkMessageContent).url}");
+      Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.linkLabel}${(message.content as LinkMessageContent).url}");
     } else {
-      Fluttertoast.showToast(msg: "不支持的消息类型");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.unsupportedMessageType);
     }
   }
 
@@ -172,17 +173,17 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
   String _getDefaultTitle(FavoriteItem item) {
     switch (item.favType) {
       case MESSAGE_CONTENT_TYPE_IMAGE:
-        return '[图片]';
+        return AppLocalizations.of(context)!.imageTag;
       case MESSAGE_CONTENT_TYPE_VIDEO:
-        return '[视频]';
+        return AppLocalizations.of(context)!.videoTag;
       case MESSAGE_CONTENT_TYPE_SOUND:
-        return '[语音]';
+        return AppLocalizations.of(context)!.voiceTag;
       case MESSAGE_CONTENT_TYPE_COMPOSITE_MESSAGE:
-        return '[聊天记录] ${item.title}';
+        return '${AppLocalizations.of(context)!.chatHistoryTag} ${item.title}';
       case MESSAGE_CONTENT_TYPE_FILE:
-        return '[文件] ${item.title}';
+        return '${AppLocalizations.of(context)!.fileTag} ${item.title}';
       case MESSAGE_CONTENT_TYPE_LINK:
-        return '[链接] ${item.title}';
+        return '${AppLocalizations.of(context)!.linkTag} ${item.title}';
       default:
         return item.title;
     }
@@ -195,19 +196,19 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('删除收藏'),
-            content: const Text('确定要删除这条收藏吗？'),
+            title: Text(AppLocalizations.of(context)!.deleteFavorite),
+            content: Text(AppLocalizations.of(context)!.deleteFavoriteConfirm),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('取消'),
+                child: Text(AppLocalizations.of(context)!.cancel),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
                   _deleteItem(item);
                 },
-                child: const Text('删除'),
+                child: Text(AppLocalizations.of(context)!.delete),
               ),
             ],
           ),
@@ -242,7 +243,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        Utilities.formatTime(item.timestamp),
+                        Utilities.formatTime(context, item.timestamp),
                         style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
@@ -260,7 +261,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('我的收藏'),
+        title: Text(AppLocalizations.of(context)!.myFavorites),
       ),
       body: _buildBody(),
     );
@@ -271,7 +272,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_items.isEmpty) {
-      return const Center(child: Text('暂无收藏'));
+      return Center(child: Text(AppLocalizations.of(context)!.noFavorites));
     }
     return ListView.builder(
       itemCount: _items.length + (_hasMore ? 1 : 0),

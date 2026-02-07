@@ -504,7 +504,7 @@ class _State extends State<ConversationScreen> {
             }
             Navigator.pop(context);
           },
-          title: '选择提醒的人',
+          title: AppLocalizations.of(context)!.pickRemindUser,
           maxSelected: 1,
           candidates: candidates,
           showMentionAll: showAll,

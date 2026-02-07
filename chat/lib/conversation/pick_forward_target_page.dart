@@ -20,6 +20,7 @@ import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/home/conversation_list_widget.dart';
 import 'forward_confirmation_sheet.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PickForwardTargetPage extends StatefulWidget {
   final Function(List<Conversation>) onSelected;
@@ -117,13 +118,13 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text( _isMultiSelect ? '选择多个聊天' : '选择一个聊天'),
+        title: Text( _isMultiSelect ? AppLocalizations.of(context)!.pickMultipleChats : AppLocalizations.of(context)!.pickOneChat),
         // default leading back button
         actions: [
            TextButton(
             onPressed: _toggleMultiSelect,
             child: Text(
-              _isMultiSelect ? '单选' : '多选',
+              _isMultiSelect ? AppLocalizations.of(context)!.singleSelect : AppLocalizations.of(context)!.multiSelect,
               style: const TextStyle(color: Colors.blue, fontSize: 16)
             ),
           ),
@@ -183,8 +184,8 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
                     child: TextField(
                       controller: _searchController,
                       focusNode: _searchFocusNode,
-                      decoration: const InputDecoration(
-                        hintText: '搜索',
+                      decoration: InputDecoration(
+                        hintText: AppLocalizations.of(context)!.search,
                         isDense: true,
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,
@@ -235,7 +236,7 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionHeader('最近聊天'),
+        _buildSectionHeader( AppLocalizations.of(context)!.recentChats),
         Expanded(
           child: ListView.builder(
             itemCount: conversationListViewModel.conversationList.length,
@@ -256,25 +257,25 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
 
     // Users
     if (vm.searchedUsers.isNotEmpty) {
-      resultWidgets.add(_buildSectionHeader('联系人'));
+      resultWidgets.add(_buildSectionHeader(AppLocalizations.of(context)!.contacts));
       resultWidgets.addAll(vm.searchedUsers.map((u) => _buildUserItem(u)).toList());
     }
 
     // Friends
     if (vm.searchedFriends.isNotEmpty) {
-      resultWidgets.add(_buildSectionHeader('好友'));
+      resultWidgets.add(_buildSectionHeader( AppLocalizations.of(context)!.friends));
       resultWidgets.addAll(vm.searchedFriends.map((u) => _buildUserItem(u)).toList());
     }
 
     // Groups
     if (vm.searchedGroupInfos.isNotEmpty) {
-      resultWidgets.add(_buildSectionHeader('群组'));
+      resultWidgets.add(_buildSectionHeader( AppLocalizations.of(context)!.group));
       List<GroupSearchInfo> groups = List<GroupSearchInfo>.from(vm.searchedGroupInfos);
       resultWidgets.addAll(groups.map((g) => _buildGroupItem(g)).toList());
     }
 
     if (resultWidgets.isEmpty) {
-      return const Center(child: Text('没有搜索到结果', style: TextStyle(color: Colors.grey)));
+      return Center(child: Text(AppLocalizations.of(context)!.noSearchResult, style: TextStyle(color: Colors.grey)));
     }
 
     return ListView(
@@ -329,7 +330,7 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
                       : Config.defaultChannelPortrait,
                 borderRadius: 4.0
               ),
-              title: Text(Utilities.conversationTitle(conversation, rec.$1, rec.$2, rec.$3)),
+              title: Text(Utilities.conversationTitle(context, conversation, rec.$1, rec.$2, rec.$3)),
               trailing: (_isMultiSelect && showCheckbox)
                   ? (selected
                       ? const Icon(Icons.check_circle, color: Color(0xFF3B62E0))
@@ -369,7 +370,7 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
         ),
         child: Row(
           children: [
-            Text('已选择${_selectedConversations.length}个聊天'),
+            Text(AppLocalizations.of(context)!.selectedChatsCount(_selectedConversations.length.toString())),
             const Spacer(),
             ElevatedButton(
               onPressed: _selectedConversations.isNotEmpty
@@ -381,7 +382,7 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
                 foregroundColor: Colors.white,
                 elevation: 0,
               ),
-              child: Text('发送(${_selectedConversations.length})'),
+              child: Text(AppLocalizations.of(context)!.sendWithCount(_selectedConversations.length.toString())),
             ),
           ],
         ),

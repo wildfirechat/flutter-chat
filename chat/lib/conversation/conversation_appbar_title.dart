@@ -20,8 +20,8 @@ class ConversationAppbarTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Selector4<ConversationViewModel, UserViewModel, GroupViewModel, ChannelViewModel,
         (String? typingStatus, UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? targetChannelInfo)>(
-      builder: (_, rec, __) {
-        return Text(rec.$1 ?? Utilities.conversationTitle(conversation, rec.$2, rec.$3, rec.$4));
+      builder: (context, rec, __) {
+        return Text(rec.$1 ?? Utilities.conversationTitle(context, conversation, rec.$2, rec.$3, rec.$4));
       },
       selector: (context, conversationViewModel, userViewModel, groupViewModel, channelViewModel) => (
         conversationViewModel.conversationTypingStatus,

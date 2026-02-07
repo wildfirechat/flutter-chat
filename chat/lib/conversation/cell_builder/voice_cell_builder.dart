@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:chat/event_bus.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/sound_message_content.dart';
@@ -126,12 +127,12 @@ class VoiceCellBuilder extends PortraitCellBuilder {
         children: [
           voiceContent,
           const SizedBox(height: 6),
-          const SizedBox(
+          SizedBox(
             height: 20,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 14,
                   height: 14,
                   child: CircularProgressIndicator(
@@ -139,10 +140,10 @@ class VoiceCellBuilder extends PortraitCellBuilder {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
                   ),
                 ),
-                SizedBox(width: 6),
+                const SizedBox(width: 6),
                 Text(
-                  '转文字中...',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  AppLocalizations.of(context)!.convertingToText,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
               ],
             ),

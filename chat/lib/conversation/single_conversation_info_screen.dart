@@ -1,23 +1,24 @@
 
+import 'package:chat/conversation/single_conversation_member_view.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:chat/conversation/conversation_screen.dart';
-import 'package:chat/conversation/single_conversation_member_view.dart';
-import 'package:chat/viewmodel/conversation_view_model.dart';
-import 'package:chat/viewmodel/user_view_model.dart';
-import 'package:chat/widget/option_button_item.dart';
-import 'package:chat/widget/option_item.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:chat/widget/option_switch_item.dart';
 import 'package:chat/widget/section_divider.dart';
 
 import '../contact/pick_user_screen.dart';
 import '../search/search_conversation_result_view.dart';
 import '../user_info_widget.dart';
+import '../viewmodel/conversation_view_model.dart';
+import '../viewmodel/user_view_model.dart';
+import '../widget/option_button_item.dart';
+import '../widget/option_item.dart';
 import 'conversation_files_screen.dart';
+import 'conversation_screen.dart';
 
 class SingleConversationInfoScreen extends StatelessWidget {
   const SingleConversationInfoScreen(this.conversation, {super.key});
@@ -30,7 +31,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
         builder: (context, userInfo, child) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('单聊会话详情'),
+              title: Text(AppLocalizations.of(context)!.singleConversationDetails),
             ),
             body: SafeArea(
               child: _buildSingleConversationInfoView(context, userInfo),
@@ -43,6 +44,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
   Widget _buildSingleConversationInfoView(BuildContext context, UserInfo? userInfo) {
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationInfo = conversationViewModel.conversationInfo!;
+    final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
         child: Column(children: [
       userInfo != null
@@ -61,7 +63,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
             )
           : Container(),
       const SectionDivider(),
-      OptionItem('查找聊天内容', onTap: () {
+      OptionItem(l10n.searchChatContents, onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -72,7 +74,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
           ),
         );
       }),
-      OptionItem('会话文件', onTap: () {
+      OptionItem(l10n.chatFiles, onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -81,14 +83,14 @@ class SingleConversationInfoScreen extends StatelessWidget {
         );
       }),
       const SectionDivider(),
-      OptionSwitchItem('消息免打扰', conversationInfo.isSilent, (enable) {
+      OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
         conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
       }),
-      OptionSwitchItem('置顶聊天', conversationInfo.isTop > 0, (enable) {
+      OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0, (enable) {
         conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
       }),
       const SectionDivider(),
-      OptionButtonItem('清空聊天记录', () {
+      OptionButtonItem(l10n.clearChatHistory, () {
         _showClearMessageDialog(context, conversation);
       }),
       const SectionDivider(),
@@ -96,36 +98,37 @@ class SingleConversationInfoScreen extends StatelessWidget {
   }
 
   void _showClearMessageDialog(BuildContext context, Conversation conversation) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return SimpleDialog(
-          title: const Text('清空聊天记录'),
+          title: Text(l10n.clearChatHistory),
           children: <Widget>[
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context);
                 Imclient.clearMessages(conversation).then((value) {
-                  Fluttertoast.showToast(msg: "清理本地消息成功");
+                  Fluttertoast.showToast(msg: l10n.clearLocalMessagesSuccess);
                 });
               },
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('清空本地消息'),
+                child: Text(l10n.clearLocalMessages),
               ),
             ),
             SimpleDialogOption(
               onPressed: () {
                 Navigator.pop(context);
                 Imclient.clearRemoteConversationMessage(conversation, () {
-                  Fluttertoast.showToast(msg: "清理远程消息成功");
+                  Fluttertoast.showToast(msg: l10n.clearRemoteMessagesSuccess);
                 }, (errorCode) {
-                  Fluttertoast.showToast(msg: "清理远程消息失败: $errorCode");
+                  Fluttertoast.showToast(msg: l10n.clearRemoteMessagesFailed(errorCode.toString()));
                 });
               },
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 8),
-                child: Text('清空远程消息'),
+                child: Text(l10n.clearRemoteMessages),
               ),
             ),
           ],
@@ -135,11 +138,12 @@ class SingleConversationInfoScreen extends StatelessWidget {
   }
 
   void _onAddNewConversationMember(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     Navigator.push(
       context,
       MaterialPageRoute(
           builder: (context) => PickUserScreen(
-                title: '选择联系人',
+                title: l10n.selectContacts,
                 (context, members) async {
                   Navigator.pop(context);
                   if (members.isNotEmpty) {
@@ -149,7 +153,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
                         MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue))),
                       );
                     }, (errorCode) {
-                      Fluttertoast.showToast(msg: "网络错误");
+                      Fluttertoast.showToast(msg: l10n.networkError);
                     });
                   }
                 },
