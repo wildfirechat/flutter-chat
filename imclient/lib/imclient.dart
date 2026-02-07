@@ -36,6 +36,8 @@ import 'message/notification/group/quit_group_notification_content.dart';
 import 'message/notification/group/transfer_group_owner_notification_content.dart';
 import 'message/notification/backup_request_notification_content.dart';
 import 'message/notification/backup_response_notification_content.dart';
+import 'message/notification/restore_request_notification_content.dart';
+import 'message/notification/restore_response_notification_content.dart';
 import 'message/notification/recall_notificiation_content.dart';
 import 'message/notification/tip_notificiation_content.dart';
 import 'message/pclogin_request_message_content.dart';
@@ -486,6 +488,9 @@ class Imclient {
 
     registerMessageContent(backupRequestNotificationContentMeta);
     registerMessageContent(backupResponseNotificationContentMeta);
+
+    registerMessageContent(restoreRequestNotificationContentMeta);
+    registerMessageContent(restoreResponseNotificationContentMeta);
 
     registerMessageContent(recallNotificationContentMeta);
     registerMessageContent(tipNotificationContentMeta);

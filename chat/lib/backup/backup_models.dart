@@ -338,24 +338,33 @@ class BackupMediaInfo {
 }
 
 class PCBackupInfo {
-  String? backupId;
-  String? backupTime;
-  String? userId;
-  String? deviceName;
+  String? name;
+  String? time;
+  String? path;
+  int fileCount;
+  int conversationCount;
+  int messageCount;
+  int mediaFileCount;
 
   PCBackupInfo({
-    this.backupId,
-    this.backupTime,
-    this.userId,
-    this.deviceName,
+    this.name,
+    this.time,
+    this.path,
+    this.fileCount = 0,
+    this.conversationCount = 0,
+    this.messageCount = 0,
+    this.mediaFileCount = 0,
   });
 
   factory PCBackupInfo.fromJson(Map<String, dynamic> json) {
     return PCBackupInfo(
-      backupId: json['backupId'],
-      backupTime: json['backupTime'],
-      userId: json['userId'],
-      deviceName: json['deviceName'],
+      name: json['name'],
+      time: json['time'],
+      path: json['path'],
+      fileCount: json['fileCount'] ?? 0,
+      conversationCount: json['conversationCount'] ?? 0,
+      messageCount: json['messageCount'] ?? 0,
+      mediaFileCount: json['mediaFileCount'] ?? 0,
     );
   }
 }
