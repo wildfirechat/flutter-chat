@@ -1,6 +1,3 @@
-
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
@@ -8,89 +5,96 @@ import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../login_screen.dart';
 import '../viewmodel/locale_view_model.dart';
+import '../widget/option_item.dart';
+import '../widget/section_divider.dart';
 
 class GeneralSettings extends StatelessWidget {
-  GeneralSettings({Key? key}) : super(key: key);
-
-  final List modelList = [
-    //标题，key，是否带有section，是否居中标红
-    ['隐私设置', 'privacy_settings', false, false],
-    ['语言', 'language', true, false],
-    ['主题', 'theme', true, false],
-    ['当前版本', 'version', true, false],
-    ['反馈', 'feedback', false, false],
-    ['关于野火', 'about', false, false],
-    ['用户协议', 'user_agreement', true, false],
-    ['隐私政策', 'privacy_policy', false, false],
-    ['投诉', 'complain', true, false],
-    ['诊断', 'diagnose', true, false],
-    ['退出', 'quit', true, true],
-  ];
-
+  const GeneralSettings({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('设置'),
+        title: Text(AppLocalizations.of(context)!.settings),
       ),
       body: SafeArea(
-        child: ListView.builder(
-          itemCount: modelList.length,
-          itemBuilder: (BuildContext context, int index) {
-            return _buildRow(context, index);
-          },
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SectionDivider(),
+              OptionItem(
+                AppLocalizations.of(context)!.privacySettings,
+                onTap: () {
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                },
+              ),
+              OptionItem(
+                AppLocalizations.of(context)!.language,
+                onTap: () {
+                  _showLanguageDialog(context);
+                },
+              ),
+              OptionItem(
+                AppLocalizations.of(context)!.theme,
+                onTap: () {
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                },
+              ),
+              const SectionDivider(),
+              OptionItem(
+                AppLocalizations.of(context)!.about,
+                onTap: () {
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                },
+              ),
+              const SectionDivider(),
+              OptionItem(
+                AppLocalizations.of(context)!.userAgreement,
+                onTap: () {
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                },
+              ),
+              OptionItem(
+                AppLocalizations.of(context)!.privacyPolicy,
+                onTap: () {
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                },
+              ),
+              OptionItem(
+                AppLocalizations.of(context)!.complaints,
+                onTap: () {
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                },
+              ),
+              const SectionDivider(),
+              OptionItem(
+                AppLocalizations.of(context)!.diagnostics,
+                onTap: () {
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                },
+              ),
+              const SectionDivider(),
+              GestureDetector(
+                onTap: () {
+                  _handleLogout(context);
+                },
+                child: Container(
+                  margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
+                  height: 36,
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of(context)!.logout,
+                      style: const TextStyle(color: Colors.red, fontSize: 16),
+                    ),
+                  ),
+                ),
+              ),
+              const SectionDivider(),
+            ],
+          ),
         ),
       ),
     );
-  }
-
-  Widget _buildRow(BuildContext context, int index) {
-    String title = modelList[index][0];
-    String key = modelList[index][1];
-    bool hasSection = modelList[index][2];
-    bool center = modelList[index][3];
-
-    return GestureDetector(child: Column(children: [
-      Container(
-        height: hasSection?18:0,
-        width:PlatformDispatcher.instance.views.first.physicalSize.width,
-        color: const Color(0xffebebeb),
-      ),
-      Container(
-        margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
-        height: 36,
-        child: center?Center(child: Text(title, style: const TextStyle(color: Colors.red),)):Row(children: [Expanded(child: Text(title)),],),
-      ),
-      Container(
-        margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-        height: 0.5,
-        color: const Color(0xdbdbdbdb),
-      ),
-    ],),
-      onTap: () {
-        if(key == "quit") {
-          Fluttertoast.showToast(msg: "账号将退出");
-
-          bool topIsLogin = false;
-          Navigator.of(context).popUntil((route) {
-            topIsLogin = route.settings.name == 'login';
-            return true;
-          });
-          if (!topIsLogin) {
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => const LoginScreen(), settings: const RouteSettings(name: 'login')),
-              (Route<dynamic> route) => false,
-            );
-          }
-          Imclient.disconnect();
-        } else if (key == "language") {
-          _showLanguageDialog(context);
-        } else {
-          Fluttertoast.showToast(msg: "方法没有实现");
-          print("on tap item $index");
-        }
-      },);
   }
 
   void _showLanguageDialog(BuildContext context) {
@@ -126,7 +130,7 @@ class GeneralSettings extends StatelessWidget {
                 },
               ),
               ListTile(
-                title: const Text('English'),
+                title: Text(l10n.english),
                 trailing: localeViewModel.localeMode == 'en'
                     ? const Icon(Icons.check, color: Colors.blue)
                     : null,
@@ -140,5 +144,25 @@ class GeneralSettings extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _handleLogout(BuildContext context) {
+    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.logoutConfirm);
+
+    bool topIsLogin = false;
+    Navigator.of(context).popUntil((route) {
+      topIsLogin = route.settings.name == 'login';
+      return true;
+    });
+    if (!topIsLogin) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+          settings: const RouteSettings(name: 'login'),
+        ),
+        (Route<dynamic> route) => false,
+      );
+    }
+    Imclient.disconnect();
   }
 }

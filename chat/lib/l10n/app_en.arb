@@ -113,5 +113,16 @@
   "language": "Language",
   "chinese": "中文",
   "english": "English",
-  "followSystem": "Follow System"
+  "followSystem": "Follow System",
+  "privacySettings": "Privacy Settings",
+  "theme": "Theme",
+  "currentVersion": "Current Version",
+  "feedback": "Feedback",
+  "about": "About Wildfire",
+  "userAgreement": "User Agreement",
+  "privacyPolicy": "Privacy Policy",
+  "complaints": "Complaints",
+  "diagnostics": "Diagnostics",
+  "logout": "Logout",
+  "logoutConfirm": "Account will logout"
 }
