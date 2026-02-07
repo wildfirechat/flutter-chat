@@ -113,5 +113,16 @@
   "language": "语言",
   "chinese": "中文",
   "english": "English",
-  "followSystem": "跟随系统"
+  "followSystem": "跟随系统",
+  "privacySettings": "隐私设置",
+  "theme": "主题",
+  "currentVersion": "当前版本",
+  "feedback": "反馈",
+  "about": "关于野火",
+  "userAgreement": "用户协议",
+  "privacyPolicy": "隐私政策",
+  "complaints": "投诉",
+  "diagnostics": "诊断",
+  "logout": "退出",
+  "logoutConfirm": "账号将退出"
 }
