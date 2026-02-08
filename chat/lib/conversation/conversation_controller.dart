@@ -323,7 +323,8 @@ class ConversationController extends ChangeNotifier {
 
   void onResendTaped(UIMessage model) {
     debugPrint("on taped resend");
-    Imclient.sendSavedMessage(model.message.messageId, successCallback: (l, ll) {}, errorCallback: (errorCode) {});
+    Imclient.deleteMessage(model.message.messageId);
+    Imclient.sendMessage(model.message.conversation, model.message.content, successCallback: (l, ll) {}, errorCallback: (errorCode) {});
   }
 
   void onReadedTaped(UIMessage model) {
