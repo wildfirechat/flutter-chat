@@ -40,6 +40,8 @@ import 'input_bar/message_input_bar_controller.dart';
 import 'package:chat/event_bus.dart';
 import 'package:chat/conversation/cell_builder/voice_cell_builder.dart';
 
+import 'package:chat/conversation/read_receipt_detail_screen.dart';
+
 class ConversationController extends ChangeNotifier {
   late ConversationViewModel conversationViewModel;
 
@@ -327,8 +329,16 @@ class ConversationController extends ChangeNotifier {
     Imclient.sendMessage(model.message.conversation, model.message.content, successCallback: (l, ll) {}, errorCallback: (errorCode) {});
   }
 
-  void onReadedTaped(UIMessage model) {
+  void onReadedTaped(BuildContext context, UIMessage model) {
     debugPrint("on taped readed");
+    if (model.message.conversation.conversationType == ConversationType.Group) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ReadReceiptDetailScreen(model.message),
+        ),
+      );
+    }
   }
 
   void _showPopupMenu(BuildContext context, UIMessage model, Rect? bubbleRect) {

@@ -311,5 +311,8 @@
   "allFiles": "所有文件",
   "myFiles": "我的文件",
   "userFiles": "用户文件",
-  "searchHint": "输入开始搜索"
+  "searchHint": "输入开始搜索",
+  "readReceiptDetail": "消息回执详情",
+  "readCount": "已读 ({count})",
+  "unreadCount": "未读 ({count})"
 }

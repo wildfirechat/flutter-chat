@@ -27,23 +27,24 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
   void initState() {
     super.initState();
     _checkStatus();
-    _readEventSubscription = Imclient.IMEventBus.on<MessageReadedEvent>().listen((event) {
-      if (!_isEnabled) return;
-      bool needUpdate = false;
-      for (var report in event.readedReports) {
-        if (report.conversation == widget.message.conversation) {
-          needUpdate = true;
-          break;
+    if (_isEnabled) {
+      _readEventSubscription = Imclient.IMEventBus.on<MessageReadedEvent>().listen((event) {
+        bool needUpdate = false;
+        for (var report in event.readedReports) {
+          if (report.conversation == widget.message.conversation) {
+            needUpdate = true;
+            break;
+          }
         }
-      }
-      if (needUpdate) {
-        if (widget.message.conversation.conversationType == ConversationType.Single) {
-          _updateSingleReadStatus();
-        } else if (widget.message.conversation.conversationType == ConversationType.Group) {
-          _updateGroupReadStatus();
+        if (needUpdate) {
+          if (widget.message.conversation.conversationType == ConversationType.Single) {
+            _updateSingleReadStatus();
+          } else if (widget.message.conversation.conversationType == ConversationType.Group) {
+            _updateGroupReadStatus();
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   @override
@@ -57,24 +58,16 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
     bool userEnabled = await Imclient.isUserEnableReceipt();
     bool singleReceiptEnabled = receiptEnabled && userEnabled;
     if (widget.message.conversation.conversationType == ConversationType.Single) {
-      if (mounted) {
-        setState(() {
-          _isEnabled = singleReceiptEnabled;
-        });
-      }
       if (singleReceiptEnabled) {
         _updateSingleReadStatus();
       }
+      _isEnabled = singleReceiptEnabled;
     } else if (widget.message.conversation.conversationType == ConversationType.Group) {
       bool groupReceiptEnabled = receiptEnabled && userEnabled && await Imclient.isGroupReceiptEnabled();
       if (groupReceiptEnabled) {
         _updateGroupReadStatus();
       }
-      if (mounted) {
-        setState(() {
-          _isEnabled = groupReceiptEnabled;
-        });
-      }
+      _isEnabled = groupReceiptEnabled;
     }
   }
 
@@ -88,6 +81,7 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
       });
     }
   }
+
   void _updateGroupReadStatus() async {
     String groupId = widget.message.conversation.target;
     List<GroupMember>? members = await Imclient.getGroupMembers(groupId);
@@ -108,7 +102,7 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
       }
     }
 
-    if (mounted && _groupTotalCount != validMembers.length && _groupReadCount != readCount) {
+    if (mounted && (_groupTotalCount != validMembers.length || _groupReadCount != readCount)) {
       setState(() {
         _groupTotalCount = validMembers.length;
         _groupReadCount = readCount;

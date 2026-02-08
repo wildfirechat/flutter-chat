@@ -6,6 +6,7 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/config.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ReadReceiptDetailScreen extends StatefulWidget {
   final Message message;
@@ -77,15 +78,21 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
   }
 
   @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('消息回执详情'),
+        title: Text(AppLocalizations.of(context)!.readReceiptDetail),
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: '已读 (${_readMembers.length})'),
-            Tab(text: '未读 (${_unreadMembers.length})'),
+            Tab(text: AppLocalizations.of(context)!.readCount(_readMembers.length.toString())),
+            Tab(text: AppLocalizations.of(context)!.unreadCount(_unreadMembers.length.toString())),
           ],
         ),
       ),
