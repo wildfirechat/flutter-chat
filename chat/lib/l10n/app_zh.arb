@@ -325,5 +325,7 @@
   "cancelStarredFriend": "取消星标朋友",
   "friendRequestSent": "好友请求已发送",
   "remark": "备注名",
-  "favFriend": "星标好友"
+  "favFriend": "星标好友",
+  "doneWithCount": "完成({count})",
+  "maxUserLimit": "超过最大人数限制"
 }

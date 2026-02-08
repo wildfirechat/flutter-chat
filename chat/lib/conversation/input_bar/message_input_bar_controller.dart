@@ -325,7 +325,7 @@ class MessageInputBarController extends ChangeNotifier {
     }
     List<String> mentionedUsers = _mentionsList.map((e) => e.userId).toList();
     if (mentionedUsers.isNotEmpty) {
-      if (mentionedUsers.contains('All')) {
+      if (mentionedUsers.contains('@all')) {
         txt.mentionedType = 2;
         txt.mentionedTargets = [];
       } else {

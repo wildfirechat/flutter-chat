@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:chat/config.dart';
 import 'package:chat/repo/user_repo.dart';
@@ -21,15 +22,8 @@ class PickUserScreen extends StatefulWidget {
   final List<String>? disabledUncheckedUsers;
   final bool showMentionAll;
 
-  const PickUserScreen(this.callback, {
-    this.title = '',
-    this.maxSelected = 1024,
-    this.candidates,
-    this.disabledCheckedUsers,
-    this.disabledUncheckedUsers,
-    this.showMentionAll = false,
-    super.key
-  });
+  const PickUserScreen(this.callback,
+      {this.title = '', this.maxSelected = 1024, this.candidates, this.disabledCheckedUsers, this.disabledUncheckedUsers, this.showMentionAll = false, super.key});
 
   @override
   State<PickUserScreen> createState() => _PickUserScreenState();
@@ -77,16 +71,12 @@ class _PickUserScreenState extends State<PickUserScreen> {
   }
 
   void _initData() async {
-    var userInfos = widget.candidates != null
-        ? await Imclient.getUserInfos(widget.candidates!)
-        : await UserRepo.getFriendUserInfos();
-    _pickUserViewModel.setup(
-      userInfos,
-      maxPickCount: widget.maxSelected,
-      uncheckableUserIds: widget.disabledUncheckedUsers,
-      disabledUserIds: widget.disabledCheckedUsers,
-      showMentionAll: widget.showMentionAll
-    );
+    var userInfos = widget.candidates != null ? await Imclient.getUserInfos(widget.candidates!) : await UserRepo.getFriendUserInfos();
+    _pickUserViewModel.setup(userInfos,
+        maxPickCount: widget.maxSelected,
+        uncheckableUserIds: widget.disabledUncheckedUsers,
+        disabledUserIds: widget.disabledCheckedUsers,
+        showMentionAll: widget.showMentionAll);
   }
 
   void _onPressedDone(BuildContext context) {
@@ -144,7 +134,7 @@ class _PickUserScreenState extends State<PickUserScreen> {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
                       child: Text(
-                        viewModel.pickedUsers.isNotEmpty ? '完成(${viewModel.pickedUsers.length})' : '取消',
+                        viewModel.pickedUsers.isNotEmpty ? AppLocalizations.of(context)!.doneWithCount(viewModel.pickedUsers.length.toString()) : AppLocalizations.of(context)!.cancel,
                         style: const TextStyle(fontSize: 18),
                       ),
                     ),
@@ -178,22 +168,25 @@ class _PickUserScreenState extends State<PickUserScreen> {
                                     scrollDirection: Axis.horizontal,
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: viewModel.pickedUsers.map((u) => Padding(
-                                        padding: const EdgeInsets.only(right: 4),
-                                        child: GestureDetector(
-                                          onTap: () => viewModel.pickUser(u, false),
-                                          child: Portrait(u.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 30, height: 30, borderRadius: 4),
-                                        ),
-                                      )).toList(),
+                                      children: viewModel.pickedUsers
+                                          .map((u) => Padding(
+                                                padding: const EdgeInsets.only(right: 4),
+                                                child: GestureDetector(
+                                                  onTap: () => viewModel.pickUser(u, false),
+                                                  child: Portrait(u.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait,
+                                                      width: 30, height: 30, borderRadius: 4),
+                                                ),
+                                              ))
+                                          .toList(),
                                     ),
                                   ),
                                 ),
                                 Expanded(
                                   child: TextField(
                                     controller: _searchController,
-                                    decoration: const InputDecoration(
+                                    decoration: InputDecoration(
                                       border: InputBorder.none,
-                                      hintText: '搜索',
+                                      hintText: AppLocalizations.of(context)!.search,
                                       isDense: true,
                                       contentPadding: EdgeInsets.zero,
                                     ),
@@ -299,20 +292,22 @@ class SelectableUserItem extends StatelessWidget {
               padding: const EdgeInsets.only(left: 16.0),
               child: Checkbox(
                 value: pickUserViewModel.isChecked(userInfo.userId),
-                onChanged: pickUserViewModel.isCheckable(userInfo.userId) ? (bool? value) {
-                  if (!pickUserViewModel.pickUser(userInfo, value!)) {
-                    Fluttertoast.showToast(msg: "超过最大人数限制");
-                  } else {
-                    if (value == true && onUserPicked != null) {
-                      onUserPicked!();
-                    }
-                  }
-                } : null,
+                onChanged: pickUserViewModel.isCheckable(userInfo.userId)
+                    ? (bool? value) {
+                        if (!pickUserViewModel.pickUser(userInfo, value!)) {
+                          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
+                        } else {
+                          if (value == true && onUserPicked != null) {
+                            onUserPicked!();
+                          }
+                        }
+                      }
+                    : null,
               ),
             ),
           Padding(
             padding: EdgeInsets.only(left: maxSelected > 1 ? 8.0 : 16.0),
-            child: userInfo.userId == 'All'
+            child: userInfo.userId == '@all'
                 ? Image.asset('assets/images/group_avatar_default.png', width: 40, height: 40)
                 : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
           ),
@@ -320,7 +315,7 @@ class SelectableUserItem extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.only(left: 12.0),
               child: Text(
-                userInfo.displayName ?? userInfo.userId,
+                userInfo.userId == '@all' ? AppLocalizations.of(context)!.allMembers: userInfo.displayName ?? userInfo.userId,
                 style: const TextStyle(fontSize: 15.0),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -341,7 +336,7 @@ class SelectableUserItem extends StatelessWidget {
             padding: const EdgeInsets.only(left: 16),
             alignment: Alignment.centerLeft,
             child: Text(
-              contactInfo.category == '{' ? '#' : contactInfo.category,
+              contactInfo.category == '{' ? '#' : (contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : contactInfo.category),
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ),
@@ -369,7 +364,7 @@ class SelectableUserItem extends StatelessWidget {
           if (pickUserViewModel.isCheckable(userInfo.userId)) {
             bool checked = pickUserViewModel.isChecked(userInfo.userId);
             if (!pickUserViewModel.pickUser(userInfo, !checked)) {
-              Fluttertoast.showToast(msg: "超过最大人数限制");
+              Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
             } else {
               if (!checked && onUserPicked != null) {
                 onUserPicked!();

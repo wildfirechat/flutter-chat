@@ -37,7 +37,7 @@ class PickUserViewModel extends ChangeNotifier {
       _filteredUsers = [];
     } else {
       _filteredUsers = _users.where((u) {
-        if (u.userInfo.userId == 'All') return false;
+        if (u.userInfo.userId == '@all') return false;
         String name = u.userInfo.displayName ?? '';
         String pinyin = PinyinHelper.getPinyinE(name, separator: "", defPinyin: '#', format: PinyinFormat.WITHOUT_TONE);
         String shortPinyin = PinyinHelper.getShortPinyin(name);
@@ -57,9 +57,8 @@ class PickUserViewModel extends ChangeNotifier {
 
     _users = [];
     if (showMentionAll) {
-      UserInfo all = UserInfo('all');
-      all.userId = 'All';
-      all.displayName = '所有人';
+      UserInfo all = UserInfo('@all');
+      all.displayName = 'All';
       _users.add(UIPickUserInfo("", false, all));
     }
 
@@ -68,7 +67,7 @@ class PickUserViewModel extends ChangeNotifier {
       var category = '{';
 
       if (Config.AI_ROBOTS.contains(userInfo.userId)) {
-        category = "AI 机器人";
+        category = "AI";
       } else {
         var runes = userInfo.displayName!.runes.toList();
         if (runes.isNotEmpty && ChineseHelper.isChinese(String.fromCharCode(runes[0]))) {
@@ -81,11 +80,11 @@ class PickUserViewModel extends ChangeNotifier {
     }
 
     _users.sort((a, b) {
-      if (a.userInfo.userId == 'All') return -1;
-      if (b.userInfo.userId == 'All') return 1;
+      if (a.userInfo.userId == '@all') return -1;
+      if (b.userInfo.userId == '@all') return 1;
 
-      if (a.category == "AI 机器人" && b.category != "AI 机器人") return -1;
-      if (a.category != "AI 机器人" && b.category == "AI 机器人") return 1;
+      if (a.category == "AI" && b.category != "AI") return -1;
+      if (a.category != "AI" && b.category == "AI") return 1;
 
       if (a.category == b.category) {
         return a.userInfo.displayName!.compareTo(b.userInfo.displayName!);
@@ -95,7 +94,7 @@ class PickUserViewModel extends ChangeNotifier {
 
     var lastCategory = "";
     for (var contactInfo in _users) {
-      if (contactInfo.userInfo.userId == 'All') {
+      if (contactInfo.userInfo.userId == '@all') {
         contactInfo.showCategory = false;
         continue;
       }
