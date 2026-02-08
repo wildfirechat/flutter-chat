@@ -311,5 +311,8 @@
   "allFiles": "All Files",
   "myFiles": "My Files",
   "userFiles": "User Files",
-  "searchHint": "Type to search"
+  "searchHint": "Type to search",
+  "readReceiptDetail": "Read Receipt Detail",
+  "readCount": "Read ({count})",
+  "unreadCount": "Unread ({count})"
 }
