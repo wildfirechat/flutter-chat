@@ -155,7 +155,7 @@
   "myAliasInGroupLabel": "我在本群的昵称",
   "showGroupMemberNames": "显示群成员昵称",
   "transferGroup": "转移群组",
-  "dissolveGroup": "解散群组",
+  "dismissGroup": "解散群组",
   "quitGroupChat": "退出群组",
   "removeGroupMembers": "移除群成员",
   "addGroupMembers": "添加群成员",
@@ -314,5 +314,7 @@
   "searchHint": "输入开始搜索",
   "readReceiptDetail": "消息回执详情",
   "readCount": "已读 ({count})",
-  "unreadCount": "未读 ({count})"
+  "unreadCount": "未读 ({count})",
+  "success": "成功",
+  "failed": "失败"
 }

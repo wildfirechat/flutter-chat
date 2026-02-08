@@ -155,7 +155,7 @@
   "myAliasInGroupLabel": "My Alias in Group",
   "showGroupMemberNames": "Show Group Member Names",
   "transferGroup": "Transfer Group",
-  "dissolveGroup": "Dissolve Group",
+  "dismissGroup": "Dissolve Group",
   "quitGroupChat": "Quit Group",
   "removeGroupMembers": "Remove Group Members",
   "addGroupMembers": "Add Group Members",
@@ -314,5 +314,7 @@
   "searchHint": "Type to search",
   "readReceiptDetail": "Read Receipt Detail",
   "readCount": "Read ({count})",
-  "unreadCount": "Unread ({count})"
+  "unreadCount": "Unread ({count})",
+  "success": "Success",
+  "failed": "Failed"
 }

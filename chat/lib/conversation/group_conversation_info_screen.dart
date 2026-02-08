@@ -172,9 +172,13 @@ class GroupConversationInfoScreen extends StatelessWidget {
       OptionButtonItem(l10n.clearChatHistory, () {
         _showClearMessageDialog(context, conversation);
       }),
-      groupMember.type == GroupMemberType.Owner ? OptionButtonItem(l10n.transferGroup, () {}) : Container(),
-      groupMember.type == GroupMemberType.Owner ? OptionButtonItem(l10n.dissolveGroup, () {}) : Container(),
-      groupMember.type != GroupMemberType.Owner ? OptionButtonItem(l10n.quitGroupChat, () {}) : Container(),
+      // groupMember.type == GroupMemberType.Owner ? OptionButtonItem(l10n.transferGroup, () {}) : Container(),
+      groupMember.type == GroupMemberType.Owner ? OptionButtonItem(l10n.dismissGroup, () {
+        _showDismissGroupConfirmDialog(context);
+      }) : Container(),
+      groupMember.type != GroupMemberType.Owner ? OptionButtonItem(l10n.quitGroupChat, () {
+        _showQuitGroupConfirmDialog(context);
+      }) : Container(),
       const SectionDivider(),
     ]));
   }
@@ -338,5 +342,90 @@ class GroupConversationInfoScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _showDismissGroupConfirmDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(l10n.dismissGroup),
+          content: Text('${l10n.dismissGroup}？'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _handleDismissGroup(context);
+              },
+              child: Text(l10n.confirm, style: const TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showQuitGroupConfirmDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(l10n.quitGroupChat),
+          content: Text('${l10n.quitGroupChat}？'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _handleQuitGroup(context);
+              },
+              child: Text(l10n.confirm, style: const TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _handleDismissGroup(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final navigator = Navigator.of(context);
+    
+    Imclient.dismissGroup(conversation.target, () {
+      Fluttertoast.showToast(msg: '${l10n.dismissGroup}成功');
+      Future.delayed(const Duration(milliseconds: 200), () {
+        navigator.popUntil((r) => r.isFirst);
+      });
+    }, (errorCode) {
+      Fluttertoast.showToast(msg: '${l10n.dismissGroup}失败: $errorCode');
+    });
+  }
+
+  void _handleQuitGroup(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final navigator = Navigator.of(context);
+    
+    Imclient.quitGroup(conversation.target, () {
+      Fluttertoast.showToast(msg: '${l10n.quitGroupChat}成功');
+      // 延迟后返回到会话列表
+      Future.delayed(const Duration(milliseconds: 200), () {
+        navigator.popUntil((r) => r.isFirst);
+      });
+    }, (errorCode) {
+      Fluttertoast.showToast(msg: '${l10n.quitGroupChat}失败: $errorCode');
+    });
   }
 }
