@@ -17,6 +17,8 @@ import 'package:chat/widget/section_divider.dart';
 
 import 'conversation/conversation_screen.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 class UserInfoWidget extends StatefulWidget {
   const UserInfoWidget(this.userId, {this.inGroupId, Key? key}) : super(key: key);
   final String userId;
@@ -27,21 +29,78 @@ class UserInfoWidget extends StatefulWidget {
 }
 
 class _UserInfoWidgetState extends State<UserInfoWidget> {
+  bool _isBlacklisted = false;
+  bool _isStarred = false;
+
   @override
   void initState() {
     super.initState();
     _refreshUserInfo();
+    _checkRelation();
   }
 
   Future<void> _refreshUserInfo() async {
     await Imclient.getUserInfo(widget.userId, refresh: true);
   }
 
+  void _checkRelation() async {
+    bool isBlacklisted = await Imclient.isBlackListed(widget.userId);
+    bool isStarred = await Imclient.isFavUser(widget.userId);
+    if (mounted) {
+      setState(() {
+        _isBlacklisted = isBlacklisted;
+        _isStarred = isStarred;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('用户详情'),
+        title: Text(AppLocalizations.of(context)!.userInfo),
+        actions: [
+          FutureBuilder<bool>(
+            future: _isFriend(widget.userId),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) return Container();
+              bool isFriend = snapshot.data!;
+              bool isMe = widget.userId == Imclient.currentUserId;
+              if (isMe) return Container();
+
+              return PopupMenuButton<String>(
+                onSelected: (value) => _handleMenuSelection(value, isFriend),
+                itemBuilder: (BuildContext context) {
+                  List<PopupMenuEntry<String>> items = [];
+                  if (isFriend) {
+                    items.add(PopupMenuItem(
+                      value: 'blacklist',
+                      child: Text(_isBlacklisted ? AppLocalizations.of(context)!.removeFromBlacklist : AppLocalizations.of(context)!.addToBlacklist),
+                    ));
+                    items.add(PopupMenuItem(
+                      value: 'star',
+                      child: Text(_isStarred ? AppLocalizations.of(context)!.cancelStarredFriend : AppLocalizations.of(context)!.setStarredFriend),
+                    ));
+                    items.add(PopupMenuItem(
+                      value: 'delete',
+                      child: Text(AppLocalizations.of(context)!.deleteFriend),
+                    ));
+                  } else {
+                    items.add(PopupMenuItem(
+                      value: 'blacklist',
+                      child: Text(_isBlacklisted ? AppLocalizations.of(context)!.removeFromBlacklist : AppLocalizations.of(context)!.addToBlacklist),
+                    ));
+                    items.add(PopupMenuItem(
+                      value: 'add_friend',
+                      child: Text(AppLocalizations.of(context)!.addFriend),
+                    ));
+                  }
+                  return items;
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Selector<UserViewModel, UserInfo?>(
@@ -61,15 +120,15 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                     children: [
                       _buildHeader(context, userInfo, isFriend),
                       if (isMe) ...[
-                        OptionItem('修改昵称', onTap: () {
+                        OptionItem(AppLocalizations.of(context)!.modifyAlias, onTap: () {
                           _showSetDisplayNameDialog(context, userInfo);
                         }),
                         const SectionDivider(),
-                        OptionItem('更多信息', onTap: () {
-                          Fluttertoast.showToast(msg: "方法没有实现");
+                        OptionItem(AppLocalizations.of(context)!.moreInfo, onTap: () {
+                          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
                         }),
                         const SectionDivider(),
-                        OptionButtonItem('发送消息', () {
+                        OptionButtonItem(AppLocalizations.of(context)!.sendMsg, () {
                           Conversation conversation = Conversation(conversationType: ConversationType.Single, target: widget.userId);
                           Navigator.push(
                             context,
@@ -77,32 +136,32 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                           );
                         }),
                       ] else if (isFriend) ...[
-                        OptionItem('设置昵称或者别名', onTap: () {
+                        OptionItem(AppLocalizations.of(context)!.setAlias, onTap: () {
                           _showSetAliasDialog(context, userInfo);
                         }),
                         const SectionDivider(),
-                        OptionItem('更多信息', onTap: () {
-                          Fluttertoast.showToast(msg: "方法没有实现");
+                        OptionItem(AppLocalizations.of(context)!.moreInfo, onTap: () {
+                          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
                         }),
                         const SectionDivider(),
-                        OptionButtonItem('发送消息', () {
+                        OptionButtonItem(AppLocalizations.of(context)!.sendMsg, () {
                           Conversation conversation = Conversation(conversationType: ConversationType.Single, target: widget.userId);
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
                           );
                         }),
-                        OptionButtonItem('视频聊天', () {
+                        OptionButtonItem(AppLocalizations.of(context)!.videoCall, () {
                           SingleVideoCallView callView = SingleVideoCallView(userId: widget.userId, audioOnly: false);
                           Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
                         }),
                       ] else ...[
                         const SectionDivider(),
-                        OptionItem('更多信息', onTap: () {
-                          Fluttertoast.showToast(msg: "方法没有实现");
+                        OptionItem(AppLocalizations.of(context)!.moreInfo, onTap: () {
+                          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
                         }),
                         const SectionDivider(),
-                        OptionButtonItem('添加好友', () {
+                        OptionButtonItem(AppLocalizations.of(context)!.addFriend, () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => InviteFriendPage(widget.userId)),
@@ -133,10 +192,10 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('修改昵称'),
+          title: Text(AppLocalizations.of(context)!.modifyAlias),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(hintText: '请输入昵称'),
+            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.inputNickname),
             autofocus: true,
           ),
           actions: [
@@ -144,18 +203,18 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('取消'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 Imclient.modifyMyInfo({ModifyMyInfoType.Modify_DisplayName: controller.text}, () {
-                  Fluttertoast.showToast(msg: "修改成功");
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.modifySuccess);
                 }, (errorCode) {
-                  Fluttertoast.showToast(msg: "修改失败: $errorCode");
+                  Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.modifyFail}: $errorCode");
                 });
               },
-              child: const Text('确定'),
+              child: Text(AppLocalizations.of(context)!.confirm),
             ),
           ],
         );
@@ -169,10 +228,10 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('设置备注'),
+          title: Text(AppLocalizations.of(context)!.setAlias),
           content: TextField(
             controller: controller,
-            decoration: const InputDecoration(hintText: '请输入备注名'),
+            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.inputAlias),
             autofocus: true,
           ),
           actions: [
@@ -180,18 +239,18 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('取消'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 Imclient.setFriendAlias(userInfo.userId, controller.text, () {
-                  Fluttertoast.showToast(msg: "设置成功");
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.setSuccess);
                 }, (errorCode) {
-                  Fluttertoast.showToast(msg: "设置失败: $errorCode");
+                  Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.setFail}: $errorCode");
                 });
               },
-              child: const Text('确定'),
+              child: Text(AppLocalizations.of(context)!.confirm),
             ),
           ],
         );
@@ -217,7 +276,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     ));
     if (hasAlias) {
       nameList.add(Text(
-        '备注名:${userInfo.friendAlias!}',
+        '${AppLocalizations.of(context)!.remark}:${userInfo.friendAlias!}',
         textAlign: TextAlign.left,
         style: const TextStyle(fontSize: 12),
       ));
@@ -225,17 +284,26 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
         margin: EdgeInsets.only(top: hasAlias ? 3 : 6),
       ));
     }
-    nameList.add(Container(
-        constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 100),
-        child: Text(
-          '野火号:${userInfo.name}',
-          textAlign: TextAlign.left,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF3b3b3b),
+    nameList.add(Row(
+      children: [
+        Container(
+            constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 120),
+            child: Text(
+              '${AppLocalizations.of(context)!.wildfireId(userInfo.name)}',
+              textAlign: TextAlign.left,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF3b3b3b),
+              ),
+              overflow: TextOverflow.ellipsis,
+            )),
+        if (isFriend && _isStarred)
+          const Padding(
+            padding: EdgeInsets.only(left: 4),
+            child: Icon(Icons.star, color: Colors.amber, size: 16),
           ),
-          overflow: TextOverflow.ellipsis,
-        )));
+      ],
+    ));
 
     return Container(
       height: 80,
@@ -262,6 +330,80 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
           )
         ],
       ),
+    );
+  }
+
+  void _handleMenuSelection(String value, bool isFriend) {
+    switch (value) {
+      case 'blacklist':
+        _toggleBlacklist();
+        break;
+      case 'star':
+        _toggleStar();
+        break;
+      case 'delete':
+        _deleteFriend();
+        break;
+      case 'add_friend':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => InviteFriendPage(widget.userId)),
+        );
+        break;
+    }
+  }
+
+  void _toggleBlacklist() {
+    Imclient.setBlackList(widget.userId, !_isBlacklisted, () {
+      setState(() {
+        _isBlacklisted = !_isBlacklisted;
+      });
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.success);
+    }, (errorCode) {
+      Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.failed}: $errorCode");
+    });
+  }
+
+  void _toggleStar() {
+    Imclient.setFavUser(widget.userId, !_isStarred, () {
+      setState(() {
+        _isStarred = !_isStarred;
+      });
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.success);
+    }, (errorCode) {
+      Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.failed}: $errorCode");
+    });
+  }
+
+  void _deleteFriend() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.deleteFriend),
+          content: Text(AppLocalizations.of(context)!.deleteFriendConfirm),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(AppLocalizations.of(context)!.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Imclient.deleteFriend(widget.userId, () {
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.success);
+                  Navigator.pop(context);
+                }, (errorCode) {
+                  Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.failed}: $errorCode");
+                });
+              },
+              child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
     );
   }
 }

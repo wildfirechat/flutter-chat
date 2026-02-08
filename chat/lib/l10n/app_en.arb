@@ -316,5 +316,13 @@
   "readCount": "Read ({count})",
   "unreadCount": "Unread ({count})",
   "success": "Success",
-  "failed": "Failed"
+  "failed": "Failed",
+  "addToBlacklist": "Add to Blacklist",
+  "removeFromBlacklist": "Remove from Blacklist",
+  "deleteFriend": "Delete Friend",
+  "deleteFriendConfirm": "Deleting a friend will also delete the chat history with that friend.",
+  "setStarredFriend": "Set as Starred Friend",
+  "cancelStarredFriend": "Cancel Starred Friend",
+  "friendRequestSent": "Friend Request Sent",
+  "remark": "Remark"
 }
