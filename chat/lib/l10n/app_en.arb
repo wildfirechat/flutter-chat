@@ -97,7 +97,7 @@
   "sendFail": "Send failed!",
   "sent": "Sent",
   "chatHistory": "Chat History",
-  "allMembers": "All Members",
+  "allMembers": "All",
   "messageNotification": "Message Notification",
   "favorites": "Favorites",
   "files": "Files",
@@ -325,5 +325,7 @@
   "cancelStarredFriend": "Cancel Starred Friend",
   "friendRequestSent": "Friend Request Sent",
   "remark": "Remark",
-  "favFriend": "Starred Friends"
+  "favFriend": "Starred Friends",
+  "doneWithCount": "Done({count})",
+  "maxUserLimit": "Max user limit reached"
 }

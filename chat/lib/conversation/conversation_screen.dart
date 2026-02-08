@@ -489,9 +489,8 @@ class _State extends State<ConversationScreen> {
         builder: (context) => PickUserScreen(
           (context, pickedUsers) {
             if (pickedUsers.isNotEmpty) {
-              if(pickedUsers[0] == 'All') {
-                UserInfo all = UserInfo('all');
-                all.userId = 'All';
+              if(pickedUsers[0] == '@all') {
+                UserInfo all = UserInfo('@all');
                 all.displayName = AppLocalizations.of(context)!.allMembers;
                 _inputBarController.addMention(all);
               } else {
