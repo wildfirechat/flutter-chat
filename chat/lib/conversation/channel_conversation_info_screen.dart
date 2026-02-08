@@ -52,7 +52,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationInfo = conversationViewModel.conversationInfo!;
     final l10n = AppLocalizations.of(context)!;
-    
+
     return SingleChildScrollView(
         child: Column(children: [
       channelInfo != null
@@ -101,9 +101,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
         _showClearMessageDialog(context, conversation);
       }),
       OptionButtonItem(l10n.unsubscribeChannel, () {
-        Imclient.clearMessages(conversation).then((value) {
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.unsubscribeChannelSuccess);
-        });
+        _showUnsubscribeChannelConfirmDialog(context);
       }),
       const SectionDivider(),
     ]));
@@ -147,5 +145,46 @@ class ChannelConversationInfoScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _showUnsubscribeChannelConfirmDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(l10n.unsubscribeChannel),
+          content: Text('${l10n.unsubscribeChannel}？${l10n.confirm}'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _handleUnsubscribeChannel(context);
+              },
+              child: Text(l10n.confirm, style: const TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _handleUnsubscribeChannel(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    // 取消订阅频道 - 清除本地消息后返回列表
+    final navigator = Navigator.of(context);
+    Imclient.listenChannel(conversation.target, false, () {
+      Fluttertoast.showToast(msg: l10n.unsubscribeChannelSuccess);
+      Future.delayed(const Duration(milliseconds: 200), () {
+        // 返回到会话列表（需要pop两层：详情页 -> 会话页 -> 会话列表）
+        navigator.popUntil((r) => r.isFirst);
+      });
+    }, (int error) {});
   }
 }
