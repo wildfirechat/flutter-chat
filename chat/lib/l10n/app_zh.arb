@@ -324,5 +324,6 @@
   "setStarredFriend": "设为星标朋友",
   "cancelStarredFriend": "取消星标朋友",
   "friendRequestSent": "好友请求已发送",
-  "remark": "备注名"
+  "remark": "备注名",
+  "favFriend": "星标好友"
 }

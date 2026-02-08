@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:rtckit/single_voice_call.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/invite_friend.dart';
+import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_button_item.dart';
 import 'package:chat/widget/option_item.dart';
@@ -110,7 +111,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
               future: _isFriend(widget.userId),
               builder: (context, snapshot) {
                 if (userInfo == null || !snapshot.hasData) {
-                  return const Center(child: Text("加载中。。。"));
+                  return Center(child: Text(AppLocalizations.of(context)!.loading));
                 }
                 bool isFriend = snapshot.data!;
                 bool isMe = widget.userId == Imclient.currentUserId;
@@ -365,14 +366,12 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   }
 
   void _toggleStar() {
-    Imclient.setFavUser(widget.userId, !_isStarred, () {
-      setState(() {
-        _isStarred = !_isStarred;
-      });
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.success);
-    }, (errorCode) {
-      Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.failed}: $errorCode");
+    var contactListViewModel = Provider.of<ContactListViewModel>(context, listen: false);
+    contactListViewModel.setFavUser(widget.userId, !_isStarred);
+    setState(() {
+      _isStarred = !_isStarred;
     });
+    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.success);
   }
 
   void _deleteFriend() {

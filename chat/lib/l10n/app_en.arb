@@ -324,5 +324,6 @@
   "setStarredFriend": "Set as Starred Friend",
   "cancelStarredFriend": "Cancel Starred Friend",
   "friendRequestSent": "Friend Request Sent",
-  "remark": "Remark"
+  "remark": "Remark",
+  "favFriend": "Starred Friends"
 }
