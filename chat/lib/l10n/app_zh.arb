@@ -316,5 +316,13 @@
   "readCount": "已读 ({count})",
   "unreadCount": "未读 ({count})",
   "success": "成功",
-  "failed": "失败"
+  "failed": "失败",
+  "addToBlacklist": "加入黑名单",
+  "removeFromBlacklist": "移出黑名单",
+  "deleteFriend": "删除好友",
+  "deleteFriendConfirm": "删除好友后，将同时删除与该好友的聊天记录",
+  "setStarredFriend": "设为星标朋友",
+  "cancelStarredFriend": "取消星标朋友",
+  "friendRequestSent": "好友请求已发送",
+  "remark": "备注名"
 }
