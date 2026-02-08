@@ -318,6 +318,41 @@ class MessageInputBarController extends ChangeNotifier {
     });
   }
 
+  void insertMention(UserInfo user) {
+    _isInsertingMention = true;
+    final String name = user.displayName ?? user.userId;
+    final TextEditingValue currentVal = textEditingController.value;
+    final String currentText = currentVal.text;
+
+    int insertPos = currentVal.selection.start;
+    if (insertPos < 0) {
+      insertPos = currentText.length;
+    }
+
+    final String textToInsert = "@$name ";
+    final String newText = currentText.replaceRange(insertPos, insertPos, textToInsert);
+
+    // Shift existing mentions
+    if (_mentionsList.isNotEmpty) {
+      _handleMentionsChange(newText);
+    }
+
+    final int newCursorPos = insertPos + textToInsert.length;
+    textEditingController.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.fromPosition(TextPosition(offset: newCursorPos)),
+    );
+
+    _lastText = newText;
+    final mentionEnd = newCursorPos - 1; // -1 to exclude the trailing space
+    _mentionsList.add(Mention(user.userId, name, insertPos, mentionEnd));
+
+    Future.delayed(const Duration(milliseconds: 150), () {
+      _isInsertingMention = false;
+    });
+    notifyListeners();
+  }
+
   void _sendTextMessage(Conversation conversation, String text) async {
     TextMessageContent txt = TextMessageContent(text);
     if (_quotedMessage != null) {
@@ -452,7 +487,11 @@ class MessageInputBarController extends ChangeNotifier {
 
   void insertText(String text) {
     final currentText = textEditingController.text;
-    final selection = textEditingController.selection;
+    var selection = textEditingController.selection;
+    if (selection.start < 0) {
+      selection = TextSelection.collapsed(offset: currentText.length);
+    }
+
     final newText = currentText.replaceRange(
       selection.start,
       selection.end,

@@ -319,8 +319,25 @@ class ConversationController extends ChangeNotifier {
     );
   }
 
-  void onPortraitLongTaped(UIMessage model) {
+  void onPortraitLongTaped(BuildContext context, UIMessage model) {
     debugPrint("on long taped portrait");
+    String userId = model.message.fromUser;
+    var conversation = model.message.conversation;
+    if (conversation.conversationType == ConversationType.Group) {
+      Imclient.getUserInfo(userId, groupId: conversation.target).then((userInfo) {
+        if (userInfo != null) {
+          final messageInputBarController = Provider.of<MessageInputBarController>(context, listen: false);
+          messageInputBarController.insertMention(userInfo);
+        }
+      });
+    } else {
+      Imclient.getUserInfo(userId).then((userInfo) {
+        if (userInfo != null) {
+          final messageInputBarController = Provider.of<MessageInputBarController>(context, listen: false);
+          messageInputBarController.insertText("${userInfo.displayName} ");
+        }
+      });
+    }
   }
 
   void onResendTaped(UIMessage model) {

@@ -52,7 +52,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       child:
           Container(margin: const EdgeInsets.fromLTRB(8, 0, 8, 0), child: Portrait(portrait, Config.defaultUserPortrait, width: 44.0, height: 44.0, borderRadius: 6.0)),
       onTap: () => conversationController?.onPortraitTaped(context, model),
-      onLongPress: () => conversationController?.onPortraitLongTaped(model),
+      onLongPress: () => conversationController?.onPortraitLongTaped(context, model),
     );
   }
 
