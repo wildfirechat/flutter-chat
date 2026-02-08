@@ -35,7 +35,6 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   int _cachedHeaderCount = 0;
   Map<String, double> _cachedOffsets = {};
 
-
   Map<String, double> _getOffsets(List<UIContactInfo> contactList, int headerCount) {
     if (_cachedContactList == contactList && _cachedHeaderCount == headerCount) {
       return _cachedOffsets;
@@ -319,41 +318,47 @@ class ContactListItem extends StatelessWidget {
 
     return RepaintBoundary(
       child: GestureDetector(
-      onTap: () => _toUserInfoPage(context),
-      child: Column(
-        children: <Widget>[
-          // 分类标题
-          Container(
-            height: contactInfo.showCategory ? 18 : 0,
-            width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
-            color: const Color(0xffebebeb),
-            padding: const EdgeInsets.only(left: 16),
-            child: contactInfo.showCategory ? Text(contactInfo.category == '{' ? '#' : contactInfo.category) : null,
-          ),
-          Container(
-            height: 52.0,
-            margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
-            child: Row(
-              children: <Widget>[
-                Portrait(contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
-                Container(
-                  margin: const EdgeInsets.only(left: 16),
-                ),
-                Expanded(
-                    child: Text(
-                  displayName,
-                  style: const TextStyle(fontSize: 15.0),
-                )),
-              ],
+        onTap: () => _toUserInfoPage(context),
+        child: Column(
+          children: <Widget>[
+            // 分类标题
+            Container(
+              height: contactInfo.showCategory ? 18 : 0,
+              width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
+              color: const Color(0xffebebeb),
+              padding: const EdgeInsets.only(left: 16),
+              child: contactInfo.showCategory
+                  ? Text(contactInfo.category == '{'
+                      ? '#'
+                      : (contactInfo.category == '☆'
+                          ? AppLocalizations.of(context)!.favFriend
+                          : (contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : contactInfo.category)))
+                  : null,
             ),
-          ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-            height: 0.5,
-            color: const Color(0xffebebeb),
-          ),
-        ],
-      ),
+            Container(
+              height: 52.0,
+              margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
+              child: Row(
+                children: <Widget>[
+                  Portrait(contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
+                  Container(
+                    margin: const EdgeInsets.only(left: 16),
+                  ),
+                  Expanded(
+                      child: Text(
+                    displayName,
+                    style: const TextStyle(fontSize: 15.0),
+                  )),
+                ],
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+              height: 0.5,
+              color: const Color(0xffebebeb),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -365,6 +370,3 @@ class ContactListItem extends StatelessWidget {
     );
   }
 }
-
-
-

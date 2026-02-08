@@ -11,6 +11,7 @@ import 'package:chat/ui_model/ui_contact_info.dart';
 class ContactListViewModel extends ChangeNotifier {
   List<UIContactInfo> _contactList = [];
   List<FriendRequest> _newFriendRequestList = [];
+  List<String> _favUserIds = [];
   int _unreadFriendRequestCount = 0;
   bool _isFirstConnected = true;
 
@@ -48,6 +49,28 @@ class ContactListViewModel extends ChangeNotifier {
       }
     });
 
+    _userSettingUpdatedSubscription = Imclient.IMEventBus.on<UserSettingUpdatedEvent>().listen((event) {
+      Imclient.getFavUsers().then((favUserIds) {
+        favUserIds ??= [];
+        bool changed = false;
+        if (favUserIds!.length != _favUserIds.length) {
+          changed = true;
+        } else {
+          for (var id in favUserIds!) {
+            if (!_favUserIds.contains(id)) {
+              changed = true;
+              break;
+            }
+          }
+        }
+
+        if (changed) {
+          _loadContactList();
+          notifyListeners();
+        }
+      });
+    });
+
     debugPrint('jyj viewmodel');
     _loadContactList(false);
   }
@@ -76,10 +99,43 @@ class ContactListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setFavUser(String userId, bool fav) {
+    Imclient.setFavUser(userId, fav, () {
+      bool changed = false;
+      if (fav) {
+        if (!_favUserIds.contains(userId)) {
+          _favUserIds.add(userId);
+          changed = true;
+        }
+      } else {
+        if (_favUserIds.contains(userId)) {
+          _favUserIds.remove(userId);
+          changed = true;
+        }
+      }
+
+      if(changed) {
+        _loadContactList();
+        notifyListeners();
+      }
+    }, (error) {});
+  }
+
   void _loadContactList([bool refresh = false]) async {
     List<UIContactInfo> contactList = [];
     var userInfos = await UserRepo.getFriendUserInfos(refresh : refresh);
+    if(_favUserIds.isEmpty){
+      List<String>? favUserIds = await Imclient.getFavUsers();
+      _favUserIds = favUserIds ?? [];
+    }
+
     for (var userInfo in userInfos) {
+      // 检查是否是星标好友
+      if (_favUserIds.contains(userInfo.userId)) {
+        contactList.add(UIContactInfo("☆", false, userInfo));
+        continue;
+      }
+
       var displayName = userInfo.friendAlias ?? userInfo.displayName ?? '<${userInfo.userId}>';
       var runes = displayName.runes.toList();
       var firstWordPinyinLetter = '{';
@@ -106,14 +162,17 @@ class ContactListViewModel extends ChangeNotifier {
         var userInfo = await Imclient.getUserInfo(robotId, refresh: refresh);
         if (userInfo != null) {
           userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
-          contactList.add(UIContactInfo("AI 机器人", false, userInfo));
+          contactList.add(UIContactInfo("AI", false, userInfo));
         }
       }
     }
 
     contactList.sort((a, b) {
-      if (a.category == "AI 机器人" && b.category != "AI 机器人") return -1;
-      if (a.category != "AI 机器人" && b.category == "AI 机器人") return 1;
+      if (a.category == "☆" && b.category != "☆") return -1;
+      if (a.category != "☆" && b.category == "☆") return 1;
+
+      if (a.category == "AI" && b.category != "AI") return -1;
+      if (a.category != "AI" && b.category == "AI") return 1;
 
       if (a.category == b.category) {
         return a.userInfo.displayName!.compareTo(b.userInfo.displayName!);
@@ -142,5 +201,6 @@ class ContactListViewModel extends ChangeNotifier {
     _userInfoUpdatedSubscription.cancel();
     _clearFriendRequestSubscription.cancel();
     _connectionStatusSubscription.cancel();
+    _userSettingUpdatedSubscription.cancel();
   }
 }
