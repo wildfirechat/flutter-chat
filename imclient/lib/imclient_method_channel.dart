@@ -1150,7 +1150,7 @@ class ImclientPlatform extends PlatformInterface {
     }
     UserInfo userInfo = UserInfo(map['uid']);
     userInfo.name = map['name'];
-    userInfo.displayName = map['displayName'];
+    userInfo.displayName = map['displayName'] ?? '<${userInfo.userId}>';
     if (map['gender'] != null) userInfo.gender = map['gender'];
     userInfo.portrait = map['portrait'];
     if(userInfo.portrait == '') userInfo.portrait = null;
