@@ -9,13 +9,8 @@ import 'package:imclient/message/notification/tip_notificiation_content.dart';
 import 'package:imclient/message/streaming_text_generated_message_content.dart';
 import 'package:imclient/message/streaming_text_generating_message_content.dart';
 import 'package:imclient/message/typing_message_content.dart';
-import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
-import 'package:imclient/model/group_info.dart';
-import 'package:imclient/model/user_info.dart';
-import 'package:intl/intl.dart';
-import 'package:chat/repo/user_repo.dart';
 import 'package:chat/ui_model/ui_message.dart';
 
 class ConversationViewModel extends ChangeNotifier {
