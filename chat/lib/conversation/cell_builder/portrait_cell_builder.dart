@@ -85,7 +85,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                             ? const EdgeInsets.all(0)
                             : const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isSendMessage ? Colors.green : Colors.white,
+                      color: isSendMessage ? const Color(0xf0a8bdff): Colors.white,
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(8),
                         topLeft: Radius.circular(8),
