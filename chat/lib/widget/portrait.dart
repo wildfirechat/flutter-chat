@@ -11,7 +11,7 @@ class Portrait extends StatelessWidget {
   final double borderRadius;
   final GestureTapCallback? onTap;
 
-  const Portrait(this.portrait, this.assetPlaceHolder, {super.key, this.width = 40.0, this.height = 40.0, this.borderRadius = 4.0, this.onTap});
+  const Portrait(this.portrait, this.assetPlaceHolder, {super.key, this.width = 48.0, this.height = 48.0, this.borderRadius = 4.0, this.onTap});
 
   @override
   Widget build(BuildContext context) {
