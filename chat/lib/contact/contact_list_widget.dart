@@ -340,7 +340,7 @@ class ContactListItem extends StatelessWidget {
               margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
               child: Row(
                 children: <Widget>[
-                  Portrait(contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
+                  Portrait(contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40, height: 40,),
                   Container(
                     margin: const EdgeInsets.only(left: 16),
                   ),
