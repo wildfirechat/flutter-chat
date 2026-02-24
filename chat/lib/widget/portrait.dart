@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class Portrait extends StatelessWidget {
@@ -23,7 +24,9 @@ class Portrait extends StatelessWidget {
             width: width,
             height: height,
             fit: BoxFit.cover,
-            placeholder: (context, url) => Image.asset(assetPlaceHolder, width: width, height: height),
+            placeholder: (context, url) => Container(
+              color: Colors.grey[200],
+            ),
             errorWidget: (context, url, err) => Image.asset(assetPlaceHolder, width: width, height: height),
           )),
     );
