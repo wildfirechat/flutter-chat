@@ -25,6 +25,10 @@ class Config {
   // 示例：http://192.168.1.81:8081
   static String? COLLECTION_SERVER_ADDRESS = "https://jielong.wildfirechat.net";
 
+  // 投票服务地址，如果需要投票功能，请部署投票服务并配置地址；如果不需要投票功能，请置为 null
+  // 示例：http://192.168.1.81:8082
+  static String? POLL_SERVER_ADDRESS = "https://poll.wildfirechat.net";
+
   /// 音视频通话所用的turn server配置，详情参考 https://docs.wildfirechat.net/webrtc/
   /// <br>
   /// <br>

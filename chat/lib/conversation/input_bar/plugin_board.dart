@@ -14,6 +14,7 @@ import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:chat/collection/create_collection_screen.dart';
 import 'package:chat/collection/collection_icon.dart';
+import 'package:chat/poll/poll_home_screen.dart';
 import 'package:chat/conversation/conversation_controller.dart';
 
 class _PluginItem {
@@ -45,6 +46,13 @@ class PluginBoard extends StatelessWidget {
         Config.COLLECTION_SERVER_ADDRESS!.isNotEmpty) {
       items.add(_PluginItem('assets/images/input/collection.png', "collection"));
     }
+
+    // 群投票仅在群组中且配置了服务地址时显示
+    if (conversation.conversationType == ConversationType.Group && 
+        Config.POLL_SERVER_ADDRESS != null &&
+        Config.POLL_SERVER_ADDRESS!.isNotEmpty) {
+      items.add(_PluginItem('assets/images/input/poll.png', "poll"));
+    }
     
     return items;
   }
@@ -66,6 +74,8 @@ class PluginBoard extends StatelessWidget {
         return l10n.businessCard;
       case "collection":
         return l10n.collection;
+      case "poll":
+        return l10n.poll;
       default:
         return titleKey;
     }
@@ -98,11 +108,33 @@ class PluginBoard extends StatelessWidget {
     if (item.key == 'collection') {
       return CollectionIconWidget(size: size);
     }
+    // 投票图标使用自定义 Widget
+    if (item.key == 'poll') {
+      return _buildPollIcon(size);
+    }
     // 其他图标使用图片资源
     return Image.asset(
       item.iconPath,
       width: size,
       height: size,
+    );
+  }
+
+  Widget _buildPollIcon(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(size * 0.2),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.poll,
+          size: size * 0.5,
+          color: const Color(0xFF585858),
+        ),
+      ),
     );
   }
 
@@ -179,6 +211,14 @@ class PluginBoard extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => CreateCollectionScreen(conversation: conversation),
+          ),
+        );
+        break;
+      case "poll":
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PollHomeScreen(groupId: conversation.target),
           ),
         );
         break;
