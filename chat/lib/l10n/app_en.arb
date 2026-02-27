@@ -373,6 +373,8 @@
   "collectionNotInGroup": "You are not in this group",
   "collectionCreateSuccess": "Collection created",
   "collectionCreateFailed": "Failed to create collection",
+  "collectionEndTime": "End Time",
+  "collectionNoEndTime": "No deadline",
   "poll": "Poll",
   "createPoll": "Create Poll",
   "createPollSubtitle": "Create a new group poll",

@@ -373,6 +373,8 @@
   "collectionNotInGroup": "你已不在该群组中",
   "collectionCreateSuccess": "接龙创建成功",
   "collectionCreateFailed": "创建接龙失败",
+  "collectionEndTime": "截止时间",
+  "collectionNoEndTime": "无截止时间",
   "poll": "群投票",
   "createPoll": "发起投票",
   "createPollSubtitle": "创建一个新的群投票",
