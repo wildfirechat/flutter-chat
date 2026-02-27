@@ -9,6 +9,7 @@ import 'package:image/image.dart' as img;
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/card_message_content.dart';
 import 'package:imclient/message/collection_message_content.dart';
+import 'package:imclient/message/poll_message_content.dart';
 import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
@@ -33,6 +34,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../collection/collection_detail_screen.dart';
+import '../poll/poll_detail_screen.dart';
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
 import '../ui_model/ui_message.dart';
@@ -283,6 +285,13 @@ class ConversationController extends ChangeNotifier {
         context,
         MaterialPageRoute(
           builder: (context) => CollectionDetailScreen(message: model.message),
+        ),
+      );
+    } else if (model.message.content is PollMessageContent) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PollDetailScreen(message: model.message),
         ),
       );
     }
