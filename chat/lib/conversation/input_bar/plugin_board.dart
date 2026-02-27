@@ -6,10 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:chat/config.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/collection/create_collection_screen.dart';
+import 'package:chat/collection/collection_icon.dart';
 import 'package:chat/conversation/conversation_controller.dart';
 
 class _PluginItem {
@@ -26,7 +30,7 @@ class PluginBoard extends StatelessWidget {
   final double? height;
 
   List<_PluginItem> _getPluginItems() {
-    return [
+    final items = [
       _PluginItem('assets/images/input/album.png',  "album"),
       _PluginItem('assets/images/input/camera.png', "camera"),
       _PluginItem('assets/images/input/call.png', "call"),
@@ -34,6 +38,15 @@ class PluginBoard extends StatelessWidget {
       _PluginItem('assets/images/input/file.png', "file"),
       _PluginItem('assets/images/input/card.png', "card"),
     ];
+    
+    // 群接龙仅在群组中且配置了服务地址时显示
+    if (conversation.conversationType == ConversationType.Group && 
+        Config.COLLECTION_SERVER_ADDRESS != null &&
+        Config.COLLECTION_SERVER_ADDRESS!.isNotEmpty) {
+      items.add(_PluginItem('assets/images/input/collection.png', "collection"));
+    }
+    
+    return items;
   }
 
   String _getPluginTitle(BuildContext context, String titleKey) {
@@ -51,6 +64,8 @@ class PluginBoard extends StatelessWidget {
         return l10n.filePicker;
       case "card":
         return l10n.businessCard;
+      case "collection":
+        return l10n.collection;
       default:
         return titleKey;
     }
@@ -68,17 +83,26 @@ class PluginBoard extends StatelessWidget {
           child: Column(
             children: [
               Padding(padding: EdgeInsets.only(top: padding)),
-              Image.asset(
-                item.iconPath,
-                width: itemWidth,
-                height: itemWidth,
-              ),
+              _buildIcon(item, itemWidth),
               const Padding(padding: EdgeInsets.only(top: 10)),
               Text(_getPluginTitle(context, item.key)),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildIcon(_PluginItem item, double size) {
+    // 接龙图标使用自定义 Widget
+    if (item.key == 'collection') {
+      return CollectionIconWidget(size: size);
+    }
+    // 其他图标使用图片资源
+    return Image.asset(
+      item.iconPath,
+      width: size,
+      height: size,
     );
   }
 
@@ -149,6 +173,14 @@ class PluginBoard extends StatelessWidget {
       case "card":
         // _pressCardBtnCallback();
         conversationController.onPressCardBtn(context, conversation);
+        break;
+      case "collection":
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CreateCollectionScreen(conversation: conversation),
+          ),
+        );
         break;
     }
   }

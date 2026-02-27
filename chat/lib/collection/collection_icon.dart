@@ -1,0 +1,111 @@
+import 'package:flutter/material.dart';
+
+/// 群接龙图标
+/// 
+/// 与 Android 端 ic_collection.xml 对应的 Flutter 实现
+/// 使用 CustomPainter 绘制相同的图标样式
+class CollectionIcon extends StatelessWidget {
+  final double size;
+  final Color color;
+
+  const CollectionIcon({
+    super.key,
+    this.size = 24,
+    this.color = const Color(0xFF585858),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: Size(size, size),
+      painter: _CollectionIconPainter(color: color),
+    );
+  }
+}
+
+class _CollectionIconPainter extends CustomPainter {
+  final Color color;
+
+  _CollectionIconPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final width = size.width;
+    final height = size.height;
+
+    // 第一条线 (最上面，较短)
+    // M17,9H7V7h10V9z -> Android pathData
+    // 在 24x24 的 viewport 中，对应 Flutter 坐标
+    final line1Rect = Rect.fromLTWH(
+      width * 7 / 24,   // x = 7
+      height * 7 / 24,  // y = 7
+      width * 10 / 24,  // width = 10
+      height * 2 / 24,  // height = 2
+    );
+    canvas.drawRect(line1Rect, paint);
+
+    // 第二条线 (中间)
+    // M17,13H7v-2h10V13z
+    final line2Rect = Rect.fromLTWH(
+      width * 7 / 24,   // x = 7
+      height * 11 / 24, // y = 11 (13-2)
+      width * 10 / 24,  // width = 10
+      height * 2 / 24,  // height = 2
+    );
+    canvas.drawRect(line2Rect, paint);
+
+    // 第三条线 (最下面，最短)
+    // M12,17H7v-2h5V17z
+    final line3Rect = Rect.fromLTWH(
+      width * 7 / 24,   // x = 7
+      height * 15 / 24, // y = 15 (17-2)
+      width * 5 / 24,   // width = 5 (12-7)
+      height * 2 / 24,  // height = 2
+    );
+    canvas.drawRect(line3Rect, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// 接龙图标 Widget，用于插件面板
+/// 
+/// 显示为圆形背景 + 图标样式
+class CollectionIconWidget extends StatelessWidget {
+  final double size;
+  final Color? backgroundColor;
+  final Color? iconColor;
+
+  const CollectionIconWidget({
+    super.key,
+    this.size = 64,
+    this.backgroundColor,
+    this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bgColor = backgroundColor ?? Colors.grey[100]!;
+    final fgColor = iconColor ?? const Color(0xFF585858);
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(size * 0.2),
+      ),
+      child: Center(
+        child: CollectionIcon(
+          size: size * 0.8,
+          color: fgColor,
+        ),
+      ),
+    );
+  }
+}

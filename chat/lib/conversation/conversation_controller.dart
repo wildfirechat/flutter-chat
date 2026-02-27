@@ -8,6 +8,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image/image.dart' as img;
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/card_message_content.dart';
+import 'package:imclient/message/collection_message_content.dart';
 import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
@@ -31,6 +32,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../collection/collection_detail_screen.dart';
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
 import '../ui_model/ui_message.dart';
@@ -276,6 +278,13 @@ class ConversationController extends ChangeNotifier {
       } else if (model.message.conversation.conversationType == ConversationType.Group) {
         onPressCallBtn(context, model.message.conversation);
       }
+    } else if (model.message.content is CollectionMessageContent) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CollectionDetailScreen(message: model.message),
+        ),
+      );
     }
   }
 

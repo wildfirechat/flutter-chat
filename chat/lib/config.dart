@@ -21,6 +21,10 @@ class Config {
   // 语音转文字服务地址，如果没有部署语音转文字服务，或者不需要语音转文字的话，可置为 null
   static String ASR_SERVER = 'https://app.wildfirechat.net/asr/api/recognize';
 
+  // 接龙服务地址，如果需要接龙功能，请部署接龙服务并配置地址；如果不需要接龙功能，请置为 null
+  // 示例：http://192.168.1.81:8081
+  static String? COLLECTION_SERVER_ADDRESS = "https://jielong.wildfirechat.net";
+
   /// 音视频通话所用的turn server配置，详情参考 https://docs.wildfirechat.net/webrtc/
   /// <br>
   /// <br>
