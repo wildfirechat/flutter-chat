@@ -11,9 +11,10 @@ import 'app_server.dart';
 import 'config.dart';
 import 'home/home.dart';
 import 'utilities.dart';
+import 'widget/slide_verify_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   LoginScreenState createState() => LoginScreenState();
@@ -34,6 +35,10 @@ class LoginScreenState extends State<LoginScreen> {
   bool _isCodeOrPwdEmpty = true;
   bool _agreementChecked = false;
   bool _isPasswordLogin = false;
+
+  // 滑动验证相关状态
+  bool _hasSlideVerifiedForCode = false;
+  String? _cachedSlideVerifyToken;
 
   @override
   void initState() {
@@ -75,6 +80,9 @@ class LoginScreenState extends State<LoginScreen> {
       _isPasswordLogin = !_isPasswordLogin;
       codeOrPwdFieldController.clear();
       _isCodeOrPwdEmpty = true;
+      // 重置滑动验证状态
+      _hasSlideVerifiedForCode = false;
+      _cachedSlideVerifyToken = null;
       if (_isPasswordLogin) {
         // Reset timer if switching to password mode
         if (_timer != null) {
@@ -134,28 +142,7 @@ class LoginScreenState extends State<LoginScreen> {
                     ElevatedButton(
                       onPressed: _isPhoneEmpty || isSentCode
                           ? null
-                          : () {
-                              AppServer.sendCode(phoneFieldController.value.text,
-                                  () {
-                                Fluttertoast.showToast(
-                                    msg: "验证码发送成功，请在5分钟内进行验证!");
-                                const Duration duration = Duration(seconds: 1);
-                                _timer = Timer.periodic(duration, (timer) {
-                                  setState(() {
-                                    waitResendCount = waitResendCount + 1;
-                                    if (waitResendCount >= 60) {
-                                      isSentCode = false;
-                                      _timer!.cancel();
-                                    }
-                                  });
-                                });
-
-                                setState(() {
-                                  waitResendCount = 0;
-                                  isSentCode = true;
-                                });
-                              }, (msg) => Fluttertoast.showToast(msg: "发送验证码失败!"));
-                            },
+                          : _showSlideVerifyForSendCode,
                       child: isSentCode
                           ? Text('$waitResendCount s')
                           : const Text('发送验证码'),
@@ -204,9 +191,6 @@ class LoginScreenState extends State<LoginScreen> {
               ],
             ),
             ElevatedButton(
-              child: const Text(
-                '登录',
-              ),
               onPressed: (_isPhoneEmpty || _isCodeOrPwdEmpty)
                   ? null
                   : () {
@@ -218,21 +202,12 @@ class LoginScreenState extends State<LoginScreen> {
                       String codeOrPwd = codeOrPwdFieldController.value.text;
 
                       if (_isPasswordLogin) {
-                        AppServer.passwordLogin(phoneNum, codeOrPwd,
-                          (userId, token, isNewUser) {
-                          _handleLoginSuccess(userId, token);
-                        }, (msg) {
-                          Fluttertoast.showToast(msg: "登录失败: $msg");
-                        });
+                        _showSlideVerifyForPasswordLogin(phoneNum, codeOrPwd);
                       } else {
-                        AppServer.login(phoneNum, codeOrPwd,
-                            (userId, token, isNewUser) {
-                          _handleLoginSuccess(userId, token);
-                        }, (msg) {
-                          Fluttertoast.showToast(msg: "登录失败: $msg");
-                        });
+                        _showSlideVerifyForSmsLogin(phoneNum, codeOrPwd);
                       }
                     },
+              child: const Text('登录'),
             ),
             TextButton(
               onPressed: _toggleLoginMode,
@@ -253,7 +228,181 @@ class LoginScreenState extends State<LoginScreen> {
     SharedPreferences.getInstance().then((value) {
       value.setString("userId", userId);
       value.setString("token", token);
-      value.commit();
     });
+  }
+
+  /// 显示滑动验证对话框（用于发送验证码）
+  void _showSlideVerifyForSendCode() {
+    SlideVerifyDialog.show(
+      context: context,
+      listener: _SendCodeSlideVerifyListener(
+        phoneNumber: phoneFieldController.value.text,
+        onStartCountdown: () {
+          Fluttertoast.showToast(msg: "验证码发送成功，请在5分钟内进行验证!");
+          const Duration duration = Duration(seconds: 1);
+          _timer = Timer.periodic(duration, (timer) {
+            setState(() {
+              waitResendCount = waitResendCount + 1;
+              if (waitResendCount >= 60) {
+                isSentCode = false;
+                _timer!.cancel();
+              }
+            });
+          });
+
+          setState(() {
+            waitResendCount = 0;
+            isSentCode = true;
+          });
+        },
+        onError: (msg) => Fluttertoast.showToast(msg: "发送验证码失败: $msg"),
+        onSetSlideVerified: (token) {
+          setState(() {
+            _hasSlideVerifiedForCode = true;
+            _cachedSlideVerifyToken = token;
+          });
+        },
+      ),
+    );
+  }
+
+  /// 显示滑动验证对话框（用于密码登录）
+  void _showSlideVerifyForPasswordLogin(String phoneNum, String password) {
+    SlideVerifyDialog.show(
+      context: context,
+      listener: _LoginSlideVerifyListener(
+        isPasswordLogin: true,
+        phoneNumber: phoneNum,
+        password: password,
+        onLoginSuccess: (userId, token) => _handleLoginSuccess(userId, token),
+        onLoginError: (msg) => Fluttertoast.showToast(msg: "登录失败: $msg"),
+      ),
+    );
+  }
+
+  /// 显示滑动验证对话框（用于短信登录）
+  void _showSlideVerifyForSmsLogin(String phoneNum, String authCode) {
+    // 如果已经通过滑动验证（发送验证码时已验证），直接登录
+    if (_hasSlideVerifiedForCode && _cachedSlideVerifyToken != null) {
+      _performSmsLogin(phoneNum, authCode, null);
+      return;
+    }
+
+    SlideVerifyDialog.show(
+      context: context,
+      listener: _LoginSlideVerifyListener(
+        isPasswordLogin: false,
+        phoneNumber: phoneNum,
+        authCode: authCode,
+        onLoginSuccess: (userId, token) => _handleLoginSuccess(userId, token),
+        onLoginError: (msg) {
+          Fluttertoast.showToast(msg: "登录失败: $msg");
+          // 登录失败，重置验证标志
+          setState(() {
+            _hasSlideVerifiedForCode = false;
+            _cachedSlideVerifyToken = null;
+          });
+        },
+      ),
+    );
+  }
+
+  /// 执行短信登录
+  void _performSmsLogin(String phoneNum, String authCode, String? slideVerifyToken) {
+    AppServer.login(phoneNum, authCode,
+        (userId, token, isNewUser) {
+      _handleLoginSuccess(userId, token);
+    }, (msg) {
+      Fluttertoast.showToast(msg: "登录失败: $msg");
+      // 登录失败，重置验证标志
+      setState(() {
+        _hasSlideVerifiedForCode = false;
+        _cachedSlideVerifyToken = null;
+      });
+    }, slideVerifyToken: slideVerifyToken);
+  }
+}
+
+/// 发送验证码滑动验证监听器
+class _SendCodeSlideVerifyListener implements SlideVerifyListener {
+  final String phoneNumber;
+  final VoidCallback onStartCountdown;
+  final Function(String) onError;
+  final Function(String) onSetSlideVerified;
+
+  _SendCodeSlideVerifyListener({
+    required this.phoneNumber,
+    required this.onStartCountdown,
+    required this.onError,
+    required this.onSetSlideVerified,
+  });
+
+  @override
+  void onVerifySuccess(String token) {
+    // 发送验证码
+    AppServer.sendCode(phoneNumber, () {
+      onSetSlideVerified(token);
+      onStartCountdown();
+    }, (msg) {
+      onError(msg);
+    }, slideVerifyToken: token);
+  }
+
+  @override
+  void onVerifyFailed() {
+    // 验证失败，不处理，由对话框自动重置
+  }
+
+  @override
+  void onLoadFailed() {
+    // 加载失败，不处理
+  }
+}
+
+/// 登录滑动验证监听器
+class _LoginSlideVerifyListener implements SlideVerifyListener {
+  final bool isPasswordLogin;
+  final String phoneNumber;
+  final String? password;
+  final String? authCode;
+  final Function(String userId, String token) onLoginSuccess;
+  final Function(String msg) onLoginError;
+
+  _LoginSlideVerifyListener({
+    required this.isPasswordLogin,
+    required this.phoneNumber,
+    this.password,
+    this.authCode,
+    required this.onLoginSuccess,
+    required this.onLoginError,
+  });
+
+  @override
+  void onVerifySuccess(String token) {
+    if (isPasswordLogin) {
+      AppServer.passwordLogin(phoneNumber, password!,
+        (userId, token, isNewUser) {
+        onLoginSuccess(userId, token);
+      }, (msg) {
+        onLoginError(msg);
+      }, slideVerifyToken: token);
+    } else {
+      AppServer.login(phoneNumber, authCode!,
+          (userId, token, isNewUser) {
+        onLoginSuccess(userId, token);
+      }, (msg) {
+        onLoginError(msg);
+      }, slideVerifyToken: token);
+    }
+  }
+
+  @override
+  void onVerifyFailed() {
+    // 验证失败，不处理，由对话框自动重置
+  }
+
+  @override
+  void onLoadFailed() {
+    // 加载失败，不处理
   }
 }
