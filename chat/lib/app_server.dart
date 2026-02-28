@@ -1,11 +1,13 @@
 
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 import 'package:imclient/imclient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
 import 'model/favorite_item.dart';
+import 'widget/slide_verify_dialog.dart';
 
 typedef AppServerErrorCallback = Function(String msg);
 typedef AppServerLoginSuccessCallback = Function(String userId, String token, bool isNewUser);
@@ -13,8 +15,12 @@ typedef AppServerLoginSuccessCallback = Function(String userId, String token, bo
 typedef AppServerHTTPCallback = Function(String response);
 class AppServer {
   static String? _authToken;
-  static void sendCode(String phoneNum, Function successCallback, AppServerErrorCallback errorCallback) {
-    String jsonStr = json.encode({'mobile':phoneNum});
+  static void sendCode(String phoneNum, Function successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) {
+    Map<String, dynamic> body = {'mobile': phoneNum};
+    if (slideVerifyToken != null && slideVerifyToken.isNotEmpty) {
+      body['slideVerifyToken'] = slideVerifyToken;
+    }
+    String jsonStr = json.encode(body);
     postJson('/send_code', jsonStr, (response) {
       Map<dynamic, dynamic> map = json.decode(response);
       if(map['code'] == 0) {
@@ -25,8 +31,12 @@ class AppServer {
     }, errorCallback);
   }
 
-  static void sendResetCode(String phoneNum, Function successCallback, AppServerErrorCallback errorCallback) {
-    String jsonStr = json.encode({'mobile':phoneNum});
+  static void sendResetCode(String phoneNum, Function successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) {
+    Map<String, dynamic> body = {'mobile': phoneNum};
+    if (slideVerifyToken != null && slideVerifyToken.isNotEmpty) {
+      body['slideVerifyToken'] = slideVerifyToken;
+    }
+    String jsonStr = json.encode(body);
     postJson('/send_reset_code', jsonStr, (response) {
       Map<dynamic, dynamic> map = json.decode(response);
       if(map['code'] == 0) {
@@ -37,8 +47,12 @@ class AppServer {
     }, errorCallback);
   }
 
-  static void login(String phoneNum, String smsCode, AppServerLoginSuccessCallback successCallback, AppServerErrorCallback errorCallback) async {
-    String jsonStr = json.encode({'mobile':phoneNum, 'code':smsCode, 'clientId':await Imclient.clientId, 'platform': 10});
+  static void login(String phoneNum, String smsCode, AppServerLoginSuccessCallback successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) async {
+    Map<String, dynamic> body = {'mobile': phoneNum, 'code': smsCode, 'clientId': await Imclient.clientId, 'platform': 10};
+    if (slideVerifyToken != null && slideVerifyToken.isNotEmpty) {
+      body['slideVerifyToken'] = slideVerifyToken;
+    }
+    String jsonStr = json.encode(body);
     postJson('/login', jsonStr, (response) {
       Map<dynamic, dynamic> map = json.decode(response);
       if(map['code'] == 0) {
@@ -53,8 +67,12 @@ class AppServer {
     }, errorCallback);
   }
 
-  static void passwordLogin(String phoneNum, String password, AppServerLoginSuccessCallback successCallback, AppServerErrorCallback errorCallback) async {
-    String jsonStr = json.encode({'mobile':phoneNum, 'password':password, 'clientId':await Imclient.clientId, 'platform': 10});
+  static void passwordLogin(String phoneNum, String password, AppServerLoginSuccessCallback successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) async {
+    Map<String, dynamic> body = {'mobile': phoneNum, 'password': password, 'clientId': await Imclient.clientId, 'platform': 10};
+    if (slideVerifyToken != null && slideVerifyToken.isNotEmpty) {
+      body['slideVerifyToken'] = slideVerifyToken;
+    }
+    String jsonStr = json.encode(body);
     postJson('/login_pwd', jsonStr, (response) {
       Map<dynamic, dynamic> map = json.decode(response);
       if(map['code'] == 0) {
@@ -68,8 +86,12 @@ class AppServer {
     }, errorCallback);
   }
 
-  static void resetPassword(String mobile, String smsCode, String newPassword, Function successCallback, AppServerErrorCallback errorCallback) {
-    String jsonStr = json.encode({'mobile': mobile, 'resetCode': smsCode, 'newPassword': newPassword});
+  static void resetPassword(String mobile, String smsCode, String newPassword, Function successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) {
+    Map<String, dynamic> body = {'mobile': mobile, 'resetCode': smsCode, 'newPassword': newPassword};
+    if (slideVerifyToken != null && slideVerifyToken.isNotEmpty) {
+      body['slideVerifyToken'] = slideVerifyToken;
+    }
+    String jsonStr = json.encode(body);
     postJson('/reset_pwd', jsonStr, (response) {
       Map<dynamic, dynamic> map = json.decode(response);
       if(map['code'] == 0) {
@@ -80,8 +102,109 @@ class AppServer {
     }, errorCallback);
   }
 
-  static void changePassword(String oldPassword, String newPassword, Function successCallback, AppServerErrorCallback errorCallback) {
-    String jsonStr = json.encode({'oldPassword': oldPassword, 'newPassword': newPassword});
+  /// 生成滑动验证码
+  static Future<void> generateSlideVerifyCode({
+    required Function(SlideVerifyData) onSuccess,
+    required Function(String) onError,
+  }) async {
+    try {
+      final url = Uri.parse('${Config.APP_Server_Address}/slide_verify/generate');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({}),
+      );
+
+      if (response.statusCode != 200) {
+        onError('服务器错误: ${response.statusCode}');
+        return;
+      }
+
+      final Map<String, dynamic> result = json.decode(response.body);
+
+      if (result['code'] != 0) {
+        onError(result['message'] ?? '加载验证码失败');
+        return;
+      }
+
+      final data = result['result'] as Map<String, dynamic>?;
+      if (data == null ||
+          data['token'] == null ||
+          data['backgroundImage'] == null ||
+          data['sliderImage'] == null) {
+        onError('验证码数据不完整');
+        return;
+      }
+
+      final token = data['token'] as String;
+      final backgroundImageStr = data['backgroundImage'] as String;
+      final sliderImageStr = data['sliderImage'] as String;
+      final y = (data['y'] as num).toDouble();
+
+      // 解码 base64 图片
+      final backgroundBytes = base64.decode(_extractBase64(backgroundImageStr));
+      final sliderBytes = base64.decode(_extractBase64(sliderImageStr));
+
+      onSuccess(SlideVerifyData(
+        token: token,
+        backgroundImageBytes: backgroundBytes,
+        sliderImageBytes: sliderBytes,
+        y: y,
+      ));
+    } catch (e) {
+      onError('加载验证码失败');
+    }
+  }
+
+  /// 验证滑动验证码
+  static Future<void> verifySlideCode({
+    required String token,
+    required int x,
+    required Function onSuccess,
+    required Function onError,
+  }) async {
+    try {
+      final url = Uri.parse('${Config.APP_Server_Address}/slide_verify/verify');
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'token': token,
+          'x': x,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        onError();
+        return;
+      }
+
+      final result = json.decode(response.body);
+
+      if (result['code'] == 0) {
+        onSuccess();
+      } else {
+        onError();
+      }
+    } catch (e) {
+      onError();
+    }
+  }
+
+  /// 从 data URI 中提取 base64 数据
+  static String _extractBase64(String dataUri) {
+    if (dataUri.contains(',')) {
+      return dataUri.substring(dataUri.indexOf(',') + 1);
+    }
+    return dataUri;
+  }
+
+  static void changePassword(String oldPassword, String newPassword, Function successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) {
+    Map<String, dynamic> body = {'oldPassword': oldPassword, 'newPassword': newPassword};
+    if (slideVerifyToken != null && slideVerifyToken.isNotEmpty) {
+      body['slideVerifyToken'] = slideVerifyToken;
+    }
+    String jsonStr = json.encode(body);
     postJson('/change_pwd', jsonStr, (response) {
       Map<dynamic, dynamic> map = json.decode(response);
       if(map['code'] == 0) {
