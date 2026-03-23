@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:imclient/message/call_start_message_content.dart';
-import 'package:logger/logger.dart' show Level, Logger;
+import 'package:logger/logger.dart' show Level;
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image/image.dart' as img;
@@ -54,7 +55,8 @@ class ConversationController extends ChangeNotifier {
   final GlobalKey<MMPreviewViewState> _mmPreviewKey = GlobalKey();
 
   int _playingMessageId = 0;
-  final FlutterSoundPlayer _soundPlayer = FlutterSoundPlayer(logLevel: Level.error);
+  final FlutterSoundPlayer _soundPlayer =
+      FlutterSoundPlayer(logLevel: Level.error);
 
   void onPickImage(Conversation conversation, String imagePath) {
     ImageMessageContent imgCont = ImageMessageContent();
@@ -62,7 +64,8 @@ class ConversationController extends ChangeNotifier {
     _sendMessage(conversation, imgCont);
   }
 
-  void onPickFile(Conversation conversation, String filePath, String name, int size) {
+  void onPickFile(
+      Conversation conversation, String filePath, String name, int size) {
     FileMessageContent fileCnt = FileMessageContent();
     fileCnt.name = name;
     fileCnt.size = size;
@@ -71,12 +74,14 @@ class ConversationController extends ChangeNotifier {
   }
 
   void onPressCallBtn(BuildContext context, Conversation conversation) {
-    if (conversation.conversationType != ConversationType.Single && conversation.conversationType != ConversationType.Group) {
+    if (conversation.conversationType != ConversationType.Single &&
+        conversation.conversationType != ConversationType.Group) {
       return;
     }
 
     Rtckit.currentCallSession().then((currentSession) {
-      if (currentSession == null || currentSession.state == kWFAVEngineStateIdle) {
+      if (currentSession == null ||
+          currentSession.state == kWFAVEngineStateIdle) {
         if (conversation.conversationType == ConversationType.Single) {
           final double centerX = MediaQuery.of(context).size.width / 2;
           final double centerY = MediaQuery.of(context).size.height / 2;
@@ -89,7 +94,8 @@ class ConversationController extends ChangeNotifier {
 
           showMenu(
             context: context,
-            position: RelativeRect.fromLTRB(left, top, left + menuWidth, top + menuHeight),
+            position: RelativeRect.fromLTRB(
+                left, top, left + menuWidth, top + menuHeight),
             items: <PopupMenuEntry<String>>[
               PopupMenuItem<String>(
                 value: 'voice',
@@ -112,8 +118,10 @@ class ConversationController extends ChangeNotifier {
             }
 
             bool isAudioOnly = value == 'voice';
-            SingleVideoCallView callView = SingleVideoCallView(userId: conversation.target, audioOnly: isAudioOnly);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
+            SingleVideoCallView callView = SingleVideoCallView(
+                userId: conversation.target, audioOnly: isAudioOnly);
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => callView));
           });
         } else if (conversation.conversationType == ConversationType.Group) {
           Imclient.getGroupMembers(conversation.target).then((groupMembers) {
@@ -129,9 +137,13 @@ class ConversationController extends ChangeNotifier {
                         title: AppLocalizations.of(context)!.pickGroupMember,
                         (context, members) async {
                           if (members.isEmpty) {
-                            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.selectMemberToCall);
+                            Fluttertoast.showToast(
+                                msg: AppLocalizations.of(context)!
+                                    .selectMemberToCall);
                           } else {
-                            GroupVideoCallView callView = GroupVideoCallView(groupId: conversation.target, participants: members);
+                            GroupVideoCallView callView = GroupVideoCallView(
+                                groupId: conversation.target,
+                                participants: members);
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(builder: (context) => callView),
@@ -146,7 +158,8 @@ class ConversationController extends ChangeNotifier {
           });
         }
       } else {
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.callInProgress);
+        Fluttertoast.showToast(
+            msg: AppLocalizations.of(context)!.callInProgress);
       }
     });
   }
@@ -159,7 +172,8 @@ class ConversationController extends ChangeNotifier {
                 title: AppLocalizations.of(context)!.pickContact,
                 (context, members) async {
                   if (members.isNotEmpty) {
-                    UserInfo? userInfo = await Imclient.getUserInfo(members.first);
+                    UserInfo? userInfo =
+                        await Imclient.getUserInfo(members.first);
                     CardMessageContent cardCnt = CardMessageContent();
                     cardCnt.type = CardType.CardType_User;
                     cardCnt.targetId = members.first;
@@ -183,17 +197,19 @@ class ConversationController extends ChangeNotifier {
     _sendMessage(conversation, imgContent);
   }
 
-  void cameraCaptureVideo(Conversation conversation, String videoPath, img.Image? thumbnail, int duration) {
+  void cameraCaptureVideo(Conversation conversation, String videoPath,
+      img.Image? thumbnail, int duration) {
     VideoMessageContent videoContent = VideoMessageContent();
     videoContent.duration = duration;
     videoContent.localPath = videoPath;
-    if(thumbnail != null){
+    if (thumbnail != null) {
       videoContent.thumbnail = img.encodeJpg(thumbnail, quality: 30);
     }
     _sendMessage(conversation, videoContent);
   }
 
-  void onSoundRecorded(Conversation conversation, String soundPath, int duration) {
+  void onSoundRecorded(
+      Conversation conversation, String soundPath, int duration) {
     SoundMessageContent soundMessageContent = SoundMessageContent();
     soundMessageContent.localPath = soundPath;
     soundMessageContent.duration = duration;
@@ -201,7 +217,9 @@ class ConversationController extends ChangeNotifier {
   }
 
   void _sendMessage(Conversation conversation, MessageContent messageContent) {
-    Imclient.sendMediaMessage(conversation, messageContent, successCallback: (int messageUid, int timestamp) {}, errorCallback: (int errorCode) {},
+    Imclient.sendMediaMessage(conversation, messageContent,
+        successCallback: (int messageUid, int timestamp) {},
+        errorCallback: (int errorCode) {},
         progressCallback: (int uploaded, int total) {
       debugPrint("progressCallback:$uploaded,$total");
     }, uploadedCallback: (String remoteUrl) {
@@ -211,9 +229,18 @@ class ConversationController extends ChangeNotifier {
 
   void onTapedCell(BuildContext context, UIMessage model) {
     var conversation = model.message.conversation;
-    if (model.message.content is ImageMessageContent || model.message.content is VideoMessageContent) {
-      Imclient.getMessages(conversation, model.message.messageId, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE, MESSAGE_CONTENT_TYPE_VIDEO]).then((eldMsgs) {
-        Imclient.getMessages(conversation, model.message.messageId, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE, MESSAGE_CONTENT_TYPE_VIDEO]).then((newerMsgs) {
+    if (model.message.content is ImageMessageContent ||
+        model.message.content is VideoMessageContent) {
+      Imclient.getMessages(conversation, model.message.messageId, 10,
+          contentTypes: [
+            MESSAGE_CONTENT_TYPE_IMAGE,
+            MESSAGE_CONTENT_TYPE_VIDEO
+          ]).then((eldMsgs) {
+        Imclient.getMessages(conversation, model.message.messageId, -10,
+            contentTypes: [
+              MESSAGE_CONTENT_TYPE_IMAGE,
+              MESSAGE_CONTENT_TYPE_VIDEO
+            ]).then((newerMsgs) {
           List<Message> list = [];
           list.addAll(eldMsgs.reversed);
           list.add(model.message);
@@ -223,18 +250,27 @@ class ConversationController extends ChangeNotifier {
             context,
             PageRouteBuilder(
               opaque: false,
-              pageBuilder: (context, animation, secondaryAnimation) => MMPreviewView(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  MMPreviewView(
                 list,
                 defaultIndex: index,
                 pageToEnd: (fromIndex, tail) {
                   if (tail) {
-                    Imclient.getMessages(conversation, fromIndex, -10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE, MESSAGE_CONTENT_TYPE_VIDEO]).then((value) {
+                    Imclient.getMessages(conversation, fromIndex, -10,
+                        contentTypes: [
+                          MESSAGE_CONTENT_TYPE_IMAGE,
+                          MESSAGE_CONTENT_TYPE_VIDEO
+                        ]).then((value) {
                       if (value.isNotEmpty) {
                         _mmPreviewKey.currentState!.onLoadMore(value, false);
                       }
                     });
                   } else {
-                    Imclient.getMessages(conversation, fromIndex, 10, contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE, MESSAGE_CONTENT_TYPE_VIDEO]).then((value) {
+                    Imclient.getMessages(conversation, fromIndex, 10,
+                        contentTypes: [
+                          MESSAGE_CONTENT_TYPE_IMAGE,
+                          MESSAGE_CONTENT_TYPE_VIDEO
+                        ]).then((value) {
                       if (value.isNotEmpty) {
                         _mmPreviewKey.currentState!.onLoadMore(value, true);
                       }
@@ -248,7 +284,8 @@ class ConversationController extends ChangeNotifier {
         });
       });
     } else if (model.message.content is FileMessageContent) {
-      FileMessageContent fileContent = model.message.content as FileMessageContent;
+      FileMessageContent fileContent =
+          model.message.content as FileMessageContent;
       canLaunchUrl(Uri.parse(fileContent.remoteUrl!)).then((value) {
         if (value) {
           launchUrl(Uri.parse(fileContent.remoteUrl!));
@@ -273,11 +310,16 @@ class ConversationController extends ChangeNotifier {
         startPlayVoiceMessage(model);
       }
     } else if (model.message.content is CallStartMessageContent) {
-      CallStartMessageContent callContent = model.message.content as CallStartMessageContent;
-      if (model.message.conversation.conversationType == ConversationType.Single) {
-        SingleVideoCallView callView = SingleVideoCallView(userId: conversation.target, audioOnly: callContent.audioOnly);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
-      } else if (model.message.conversation.conversationType == ConversationType.Group) {
+      CallStartMessageContent callContent =
+          model.message.content as CallStartMessageContent;
+      if (model.message.conversation.conversationType ==
+          ConversationType.Single) {
+        SingleVideoCallView callView = SingleVideoCallView(
+            userId: conversation.target, audioOnly: callContent.audioOnly);
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => callView));
+      } else if (model.message.conversation.conversationType ==
+          ConversationType.Group) {
         onPressCallBtn(context, model.message.conversation);
       }
     } else if (model.message.content is CollectionMessageContent) {
@@ -306,9 +348,11 @@ class ConversationController extends ChangeNotifier {
   }
 
   void startPlayVoiceMessage(UIMessage model) async {
-    SoundMessageContent soundContent = model.message.content as SoundMessageContent;
+    SoundMessageContent soundContent =
+        model.message.content as SoundMessageContent;
     if (model.message.direction == MessageDirection.MessageDirection_Receive) {
-      Imclient.updateMessageStatus(model.message.messageId, MessageStatus.Message_Status_Played);
+      Imclient.updateMessageStatus(
+          model.message.messageId, MessageStatus.Message_Status_Played);
       model.message.status = MessageStatus.Message_Status_Played;
     }
     await _soundPlayer.openPlayer();
@@ -325,7 +369,8 @@ class ConversationController extends ChangeNotifier {
     debugPrint("on double taped cell");
   }
 
-  void onLongPressedCell(BuildContext context, UIMessage model, Rect? bubbleRect) {
+  void onLongPressedCell(
+      BuildContext context, UIMessage model, Rect? bubbleRect) {
     _showPopupMenu(context, model, bubbleRect);
   }
 
@@ -333,7 +378,8 @@ class ConversationController extends ChangeNotifier {
     debugPrint("on taped portrait");
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => UserInfoWidget(model.message.fromUser)),
+      MaterialPageRoute(
+          builder: (context) => UserInfoWidget(model.message.fromUser)),
     );
   }
 
@@ -342,16 +388,19 @@ class ConversationController extends ChangeNotifier {
     String userId = model.message.fromUser;
     var conversation = model.message.conversation;
     if (conversation.conversationType == ConversationType.Group) {
-      Imclient.getUserInfo(userId, groupId: conversation.target).then((userInfo) {
+      Imclient.getUserInfo(userId, groupId: conversation.target)
+          .then((userInfo) {
         if (userInfo != null) {
-          final messageInputBarController = Provider.of<MessageInputBarController>(context, listen: false);
+          final messageInputBarController =
+              Provider.of<MessageInputBarController>(context, listen: false);
           messageInputBarController.insertMention(userInfo);
         }
       });
     } else {
       Imclient.getUserInfo(userId).then((userInfo) {
         if (userInfo != null) {
-          final messageInputBarController = Provider.of<MessageInputBarController>(context, listen: false);
+          final messageInputBarController =
+              Provider.of<MessageInputBarController>(context, listen: false);
           messageInputBarController.insertText("${userInfo.displayName} ");
         }
       });
@@ -361,7 +410,8 @@ class ConversationController extends ChangeNotifier {
   void onResendTaped(UIMessage model) {
     debugPrint("on taped resend");
     Imclient.deleteMessage(model.message.messageId);
-    Imclient.sendMessage(model.message.conversation, model.message.content, successCallback: (l, ll) {}, errorCallback: (errorCode) {});
+    Imclient.sendMessage(model.message.conversation, model.message.content,
+        successCallback: (l, ll) {}, errorCallback: (errorCode) {});
   }
 
   void onReadedTaped(BuildContext context, UIMessage model) {
@@ -377,35 +427,70 @@ class ConversationController extends ChangeNotifier {
   }
 
   void _showPopupMenu(BuildContext context, UIMessage model, Rect? bubbleRect) {
-    final messageInputBarController = Provider.of<MessageInputBarController>(context, listen: false);
+    final messageInputBarController =
+        Provider.of<MessageInputBarController>(context, listen: false);
     List<Map<String, dynamic>> menuItems = [
-      {'label': AppLocalizations.of(context)!.delete, 'value': 'delete', 'icon': Icons.delete},
+      {
+        'label': AppLocalizations.of(context)!.delete,
+        'value': 'delete',
+        'icon': Icons.delete
+      },
     ];
 
     if (model.message.content is TextMessageContent) {
-      menuItems.add({'label': AppLocalizations.of(context)!.copy, 'value': 'copy', 'icon': Icons.copy});
+      menuItems.add({
+        'label': AppLocalizations.of(context)!.copy,
+        'value': 'copy',
+        'icon': Icons.copy
+      });
     }
 
     // 为语音消息添加转文字菜单
     if (model.message.content is SoundMessageContent) {
-      SoundMessageContent soundContent = model.message.content as SoundMessageContent;
+      SoundMessageContent soundContent =
+          model.message.content as SoundMessageContent;
       if (soundContent.speechText == null || soundContent.speechText!.isEmpty) {
-        menuItems.add({'label': AppLocalizations.of(context)!.speechToText, 'value': 'speech_to_text', 'icon': Icons.subtitles});
+        menuItems.add({
+          'label': AppLocalizations.of(context)!.speechToText,
+          'value': 'speech_to_text',
+          'icon': Icons.subtitles
+        });
       }
     }
 
-    menuItems.add({'label': AppLocalizations.of(context)!.forward, 'value': 'forward', 'icon': Icons.forward});
+    menuItems.add({
+      'label': AppLocalizations.of(context)!.forward,
+      'value': 'forward',
+      'icon': Icons.forward
+    });
 
     if (model.message.direction == MessageDirection.MessageDirection_Send &&
         model.message.status == MessageStatus.Message_Status_Sent &&
-        DateTime.now().millisecondsSinceEpoch - model.message.serverTime < 120 * 1000) {
-      menuItems.add({'label': AppLocalizations.of(context)!.recall, 'value': 'recall', 'icon': Icons.undo});
+        DateTime.now().millisecondsSinceEpoch - model.message.serverTime <
+            120 * 1000) {
+      menuItems.add({
+        'label': AppLocalizations.of(context)!.recall,
+        'value': 'recall',
+        'icon': Icons.undo
+      });
     }
 
     menuItems.addAll([
-      {'label': AppLocalizations.of(context)!.multiSelect, 'value': 'multi_select', 'icon': Icons.checklist},
-      {'label': AppLocalizations.of(context)!.quote, 'value': 'quote', 'icon': Icons.format_quote},
-      {'label': AppLocalizations.of(context)!.favoriteAction, 'value': 'favorite', 'icon': Icons.favorite},
+      {
+        'label': AppLocalizations.of(context)!.multiSelect,
+        'value': 'multi_select',
+        'icon': Icons.checklist
+      },
+      {
+        'label': AppLocalizations.of(context)!.quote,
+        'value': 'quote',
+        'icon': Icons.format_quote
+      },
+      {
+        'label': AppLocalizations.of(context)!.favoriteAction,
+        'value': 'favorite',
+        'icon': Icons.favorite
+      },
     ]);
 
     // 如果没有bubbleRect，使用屏幕中心
@@ -427,12 +512,18 @@ class ConversationController extends ChangeNotifier {
     );
   }
 
-  void _handleMenuItemTap(BuildContext context, String value, UIMessage model, MessageInputBarController messageInputBarController) async {
+  void _handleMenuItemTap(BuildContext context, String value, UIMessage model,
+      MessageInputBarController messageInputBarController) async {
     switch (value) {
       case "delete":
         _showDeleteOptions(context, model);
         break;
       case "copy":
+        if (model.message.content is TextMessageContent) {
+          final content = model.message.content as TextMessageContent;
+          await Clipboard.setData(ClipboardData(text: content.text));
+          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.copy);
+        }
         break;
       case "speech_to_text":
         _performSpeechToText(model, context);
@@ -466,20 +557,26 @@ class ConversationController extends ChangeNotifier {
       case "favorite":
         var item = await FavoriteItem.fromMessage(model.message);
         AppServer.addFavoriteItem(item, () {
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.favoriteSuccess);
+          Fluttertoast.showToast(
+              msg: AppLocalizations.of(context)!.favoriteSuccess);
         }, (msg) {
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.favoriteFail(msg));
+          Fluttertoast.showToast(
+              msg: AppLocalizations.of(context)!.favoriteFail(msg));
         });
         break;
     }
   }
 
   void _performForward(Conversation target, Message message, String extraText) {
-    Imclient.sendMessage(target, message.content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
+    Imclient.sendMessage(target, message.content,
+        successCallback: (messageUid, timestamp) {},
+        errorCallback: (errorCode) {});
     if (extraText.isNotEmpty) {
       TextMessageContent textContent = TextMessageContent(extraText);
       textContent.text = extraText;
-      Imclient.sendMessage(target, textContent, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
+      Imclient.sendMessage(target, textContent,
+          successCallback: (messageUid, timestamp) {},
+          errorCallback: (errorCode) {});
     }
   }
 
@@ -523,7 +620,9 @@ class ConversationController extends ChangeNotifier {
   void _deleteRemoteMessage(Message message, BuildContext context) {
     if (message.messageUid != null && message.messageUid! > 0) {
       Imclient.deleteRemoteMessage(message.messageUid!, () {}, (errorCode) {
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.deleteRemoteMessageFail(errorCode.toString()));
+        Fluttertoast.showToast(
+            msg: AppLocalizations.of(context)!
+                .deleteRemoteMessageFail(errorCode.toString()));
       });
     } else {
       _deleteMessage(message.messageId);
@@ -534,11 +633,14 @@ class ConversationController extends ChangeNotifier {
     conversationViewModel.deleteMessage(messageId);
   }
 
-  Future<void> _performSpeechToText(UIMessage model, BuildContext context) async {
-    SoundMessageContent audioMessage = model.message.content as SoundMessageContent;
+  Future<void> _performSpeechToText(
+      UIMessage model, BuildContext context) async {
+    SoundMessageContent audioMessage =
+        model.message.content as SoundMessageContent;
 
     // 检查是否已有转文字结果
-    if (audioMessage.speechText != null && audioMessage.speechText!.isNotEmpty) {
+    if (audioMessage.speechText != null &&
+        audioMessage.speechText!.isNotEmpty) {
       return;
     }
 
@@ -550,7 +652,8 @@ class ConversationController extends ChangeNotifier {
     try {
       // 获取音频文件的远程URL
       if (audioMessage.remoteUrl == null || audioMessage.remoteUrl!.isEmpty) {
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.audioFileNotAvailable);
+        Fluttertoast.showToast(
+            msg: AppLocalizations.of(context)!.audioFileNotAvailable);
         audioMessage.speechToTextInProgress = false;
         eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
         return;
@@ -567,32 +670,36 @@ class ConversationController extends ChangeNotifier {
 
       if (audioMessage.speechText == null || audioMessage.speechText!.isEmpty) {
         audioMessage.speechText = AppLocalizations.of(context)!.convertFail;
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.speechToTextFail);
+        Fluttertoast.showToast(
+            msg: AppLocalizations.of(context)!.speechToTextFail);
       } else {
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.speechToTextSuccess);
+        Fluttertoast.showToast(
+            msg: AppLocalizations.of(context)!.speechToTextSuccess);
       }
     } catch (error) {
       debugPrint('语音转文字异常: $error');
       audioMessage.speechText = AppLocalizations.of(context)!.convertFail;
       audioMessage.speechToTextInProgress = false;
       eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.speechToTextError(error.toString()));
+      Fluttertoast.showToast(
+          msg: AppLocalizations.of(context)!
+              .speechToTextError(error.toString()));
     }
   }
 
-
-  Future<void> _makeAsrRequest(String audioUrl, Function(String) onChunk) async {
+  Future<void> _makeAsrRequest(
+      String audioUrl, Function(String) onChunk) async {
     try {
       final request = http.Request(
         'POST',
         Uri.parse(Config.ASR_SERVER),
       );
-      
+
       request.headers.addAll({
         'Content-Type': 'application/json',
         'Accept': '*/*',
       });
-      
+
       request.body = jsonEncode({
         'url': audioUrl,
         'noReuse': false,
