@@ -1454,7 +1454,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let channelId = call.argument("channelId") as string
         let refresh = call.argument("refresh") as boolean
         let str = getChannelInfo(channelId, refresh)
-        result.success(str ? json.stringify(str) : null)
+        result.success(str ? json.parse(str) : null)
     }
     _modifyChannelInfo = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
