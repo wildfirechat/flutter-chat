@@ -61,6 +61,7 @@
 1. 为了能够兼容原生鸿蒙，Flutter 版本会跟随原生鸿蒙已适配的Flutter 版本进行升级，目前鸿蒙原生已适配的Flutter版本是`3.27.4`
 2. Android Studio 会跟随官方更新，一直使用最新版本
 3. 由于 gradle 版本和 flutter 版本有依赖关系，会使用对应的 gradle 版本，目前是 `8.7`
+4. 如果不需要支持鸿蒙，可使用`flutter-standard`分支
 
 ## 关于鸿蒙的重要说明
 1. 鸿蒙版所依赖的 野火IM 鸿蒙SDK 是需要付费的
@@ -69,8 +70,10 @@
 
 
 ## 运行
->  由于本项目，同时支持 Android、iOS 和鸿蒙，故只能使用已适配鸿蒙的 Flutter 版本
->
+> 由于本项目，同时支持 Android、iOS 和鸿蒙，故只能使用已适配鸿蒙的 Flutter 版本
+> 
+> 不需要支持鸿蒙时，使用`flutter-standard`分支，不需要配置鸿蒙适配版 Flutter
+> 
 > 请参考 [这儿](https://gitcode.com/openharmony-tpc/flutter_flutter) 安装和配置 Flutter，请使用 `oh-3.27.0-release` 分支
 >
 > 配置成功后，`flutter --version`的输出如下：
