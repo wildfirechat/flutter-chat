@@ -43,6 +43,12 @@ flutter:
         pluginClass: ImclientPlugin
       ohos:
         pluginClass: ImclientPlugin
+      windows:
+        pluginClass: ImclientPlugin
+      macos:
+        pluginClass: ImclientPlugin
+      linux:
+        pluginClass: ImclientPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

@@ -1,0 +1,94 @@
+PODS:
+  - file_selector_macos (0.0.1):
+    - FlutterMacOS
+  - flutter_local_notifications (0.0.1):
+    - FlutterMacOS
+  - flutter_localization (0.0.1):
+    - FlutterMacOS
+  - FlutterMacOS (1.0.0)
+  - imclient (0.0.1):
+    - FlutterMacOS
+  - mobile_scanner (6.0.2):
+    - FlutterMacOS
+  - path_provider_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - photo_manager (3.8.3):
+    - Flutter
+    - FlutterMacOS
+  - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - sqflite_darwin (0.0.4):
+    - Flutter
+    - FlutterMacOS
+  - url_launcher_macos (0.0.1):
+    - FlutterMacOS
+  - video_player_avfoundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - webview_flutter_wkwebview (0.0.1):
+    - Flutter
+    - FlutterMacOS
+
+DEPENDENCIES:
+  - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
+  - flutter_local_notifications (from `Flutter/ephemeral/.symlinks/plugins/flutter_local_notifications/macos`)
+  - flutter_localization (from `Flutter/ephemeral/.symlinks/plugins/flutter_localization/macos`)
+  - FlutterMacOS (from `Flutter/ephemeral`)
+  - imclient (from `Flutter/ephemeral/.symlinks/plugins/imclient/macos`)
+  - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos`)
+  - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
+  - photo_manager (from `Flutter/ephemeral/.symlinks/plugins/photo_manager/darwin`)
+  - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - sqflite_darwin (from `Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin`)
+  - url_launcher_macos (from `Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos`)
+  - video_player_avfoundation (from `Flutter/ephemeral/.symlinks/plugins/video_player_avfoundation/darwin`)
+  - webview_flutter_wkwebview (from `Flutter/ephemeral/.symlinks/plugins/webview_flutter_wkwebview/darwin`)
+
+EXTERNAL SOURCES:
+  file_selector_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos
+  flutter_local_notifications:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_local_notifications/macos
+  flutter_localization:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_localization/macos
+  FlutterMacOS:
+    :path: Flutter/ephemeral
+  imclient:
+    :path: Flutter/ephemeral/.symlinks/plugins/imclient/macos
+  mobile_scanner:
+    :path: Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos
+  path_provider_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
+  photo_manager:
+    :path: Flutter/ephemeral/.symlinks/plugins/photo_manager/darwin
+  shared_preferences_foundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin
+  sqflite_darwin:
+    :path: Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin
+  url_launcher_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/url_launcher_macos/macos
+  video_player_avfoundation:
+    :path: Flutter/ephemeral/.symlinks/plugins/video_player_avfoundation/darwin
+  webview_flutter_wkwebview:
+    :path: Flutter/ephemeral/.symlinks/plugins/webview_flutter_wkwebview/darwin
+
+SPEC CHECKSUMS:
+  file_selector_macos: 6280b52b459ae6c590af5d78fc35c7267a3c4b31
+  flutter_local_notifications: 7e5a17a1dbc00d83dc10d43c2c4c05f2ceed233c
+  flutter_localization: 3cda759884c7dab4466fe963d97fba723a492666
+  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  imclient: 77ec079bab47c6a8f2e63024f4cf753191ac2298
+  mobile_scanner: 0e365ed56cad24f28c0fd858ca04edefb40dfac3
+  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  photo_manager: fe4cbb0808b96f8be4af7ce6ae18dcd9c9b983c6
+  shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
+  sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
+  url_launcher_macos: 0fba8ddabfc33ce0a9afe7c5fef5aab3d8d2d673
+  video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
+  webview_flutter_wkwebview: 1821ceac936eba6f7984d89a9f3bcb4dea99ebb2
+
+PODFILE CHECKSUM: 66986206d6d7bf4d6664223e26ce7baff35b225d
+
+COCOAPODS: 1.16.2

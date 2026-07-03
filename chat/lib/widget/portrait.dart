@@ -15,20 +15,34 @@ class Portrait extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget image;
+    if (portrait.isEmpty || portrait.startsWith('assets/')) {
+      image = Image.asset(
+        portrait.isEmpty ? assetPlaceHolder : portrait,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(assetPlaceHolder, width: width, height: height),
+      );
+    } else {
+      image = CachedNetworkImage(
+        imageUrl: portrait,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: Colors.grey[200],
+        ),
+        errorWidget: (context, url, err) => Image.asset(assetPlaceHolder, width: width, height: height),
+      );
+    }
+
     return GestureDetector(
       onTap: onTap,
       child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadius),
-          child: CachedNetworkImage(
-            imageUrl: portrait,
-            width: width,
-            height: height,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              color: Colors.grey[200],
-            ),
-            errorWidget: (context, url, err) => Image.asset(assetPlaceHolder, width: width, height: height),
-          )),
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: image,
+      ),
     );
   }
 }

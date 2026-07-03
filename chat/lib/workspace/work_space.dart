@@ -30,9 +30,16 @@ class _WorkSpaceState extends State<WorkSpace> {
     final DWebViewController controller = DWebViewController();
     _clearInvalidWebViewCookies(controller);
 
+    // setBackgroundColor triggers `opaque is not implemented on macOS` on
+    // desktop WebKit. Catch and ignore so the workspace tab still builds.
+    try {
+      controller.setBackgroundColor(const Color(0x00000000));
+    } catch (e) {
+      debugPrint('setBackgroundColor skipped on this platform: $e');
+    }
+
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {

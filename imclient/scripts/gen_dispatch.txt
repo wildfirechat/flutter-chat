@@ -1,0 +1,10 @@
+  } else if (method == "batchDeleteMessages") {
+    HandleBatchdeletemessages(args, std::move(result));
+  } else if (method == "clearRemoteConversationMessage") {
+    HandleClearremoteconversationmessage(args, std::move(result));
+  } else if (method == "deleteRemoteMessage") {
+    HandleDeleteremotemessage(args, std::move(result));
+  } else if (method == "getRemoteMessage") {
+    HandleGetremotemessage(args, std::move(result));
+  } else if (method == "getMessageCount") {
+    HandleGetmessagecount(args, std::move(result));

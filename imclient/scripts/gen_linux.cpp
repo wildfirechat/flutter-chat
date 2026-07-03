@@ -1,0 +1,42 @@
+void HandleBatchdeletemessages(const flutter::EncodableMap *args,
+                       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+    int64_t messageUids = GetInt(args, "messageUids", 0);
+    int64_t messageUids_len = GetInt(args, "messageUids_len", 0);
+    bool ret = WFClient::batchDeleteMessages(messageUids, messageUids_len);
+    result->Success(flutter::EncodableValue(ret));
+}
+
+void HandleClearremoteconversationmessage(const flutter::EncodableMap *args,
+                       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+    int conversationType = static_cast<int>(GetInt(args, "conversationType", 0));
+    std::string ctarget = GetString(args, "ctarget");
+    int line = static_cast<int>(GetInt(args, "line", 0));
+    int objectDataType = static_cast<int>(GetInt(args, "objectDataType", 0));
+    WFClient::clearRemoteConversationMessage(conversationType, ctarget.c_str(), ctarget.size(), line, objectDataType);
+    result->Success();
+}
+
+void HandleDeleteremotemessage(const flutter::EncodableMap *args,
+                       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+    int64_t messageUid = GetInt(args, "messageUid", 0);
+    int64_t request_id = GetInt(args, "requestId", 0);
+    int objectDataType = static_cast<int>(GetInt(args, "objectDataType", 0));
+    WFClient::deleteRemoteMessage(messageUid, OnGeneralVoidSuccess, OnGeneralError, reinterpret_cast<void*>(request_id), 0, objectDataType);
+}
+
+void HandleGetremotemessage(const flutter::EncodableMap *args,
+                       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+    int64_t messageUid = GetInt(args, "messageUid", 0);
+    int64_t request_id = GetInt(args, "requestId", 0);
+    int objectDataType = static_cast<int>(GetInt(args, "objectDataType", 0));
+    WFClient::getRemoteMessage(messageUid, OnGeneralVoidSuccess, OnGeneralError, reinterpret_cast<void*>(request_id), 0, objectDataType);
+}
+
+void HandleGetmessagecount(const flutter::EncodableMap *args,
+                       std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result) {
+    int conversationType = static_cast<int>(GetInt(args, "conversationType", 0));
+    std::string ctarget = GetString(args, "ctarget");
+    int line = static_cast<int>(GetInt(args, "line", 0));
+    int64_t ret = WFClient::getMessageCount(conversationType, ctarget.c_str(), ctarget.size(), line);
+    result->Success(flutter::EncodableValue(ret));
+}

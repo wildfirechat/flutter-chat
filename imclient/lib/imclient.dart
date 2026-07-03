@@ -1714,7 +1714,7 @@ class Imclient {
   ///删除文件记录
   static void deleteFileRecord(
       int messageUid,
-      OperationSuccessFilesCallback successCallback,
+      OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     ImclientPlatform.instance.deleteFileRecord(messageUid, successCallback, errorCallback);
   }

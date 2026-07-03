@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
@@ -320,6 +321,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
             ],
           )),
       onTap: () {
+        debugPrint('[ConversationList] onTap conversation=${conversationInfo.conversation}');
         if (widget.onTap != null) {
           widget.onTap!(conversationInfo.conversation);
         } else {

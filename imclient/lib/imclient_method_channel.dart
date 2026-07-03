@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi';
 
@@ -88,6 +89,10 @@ class ImclientPlatform extends PlatformInterface {
   static final Map<int, dynamic> _operationSuccessCallbackMap = {};
 
   static final Map<int, Message> _sendingMessages = {};
+
+  static final Map<String, UserOnlineState> _useOnlineCacheMap = {};
+
+  static bool _defaultSilentWhenPCOnline = false;
 
   static final EventBus _eventBus = EventBus();
 
@@ -419,6 +424,7 @@ class ImclientPlatform extends PlatformInterface {
           for (var state in states) {
             UserOnlineState info = _convertProtoUserOnlineState(state);
             data.add(info);
+            _useOnlineCacheMap[info.userId] = info;
           }
           if(_onlineEventCallback != null) {
             _onlineEventCallback!(data);
@@ -651,6 +657,7 @@ class ImclientPlatform extends PlatformInterface {
           for (var state in states) {
             UserOnlineState info = _convertProtoUserOnlineState(state);
             data.add(info);
+            _useOnlineCacheMap[info.userId] = info;
           }
           var callback = _operationSuccessCallbackMap[requestId];
           if (callback != null) {
@@ -783,6 +790,10 @@ class ImclientPlatform extends PlatformInterface {
       return null;
     }
 
+    if ((map['messageId'] ?? 0) == -1) {
+      return null;
+    }
+
     Message msg = Message();
     msg.messageId = map['messageId'];
     if(map['messageUid'] is String) {
@@ -793,15 +804,15 @@ class ImclientPlatform extends PlatformInterface {
       msg.messageUid = map['messageUid'];
     }
 
-    msg.conversation = _convertProtoConversation(map['conversation']);
-    msg.fromUser = map.containsKey('sender') ? map['sender'] : map['from'];
-    if(map['toUsers'] != null) {
-      msg.toUsers = Tools.convertDynamicList(map['toUsers']);
-    }
+    // macOS SDK 返回的消息对象有独立的 conversation 字段（不同于会话信息的扁平结构），
+    // 优先使用嵌套字段，缺失时再回退到顶层。
+    msg.conversation = _convertProtoConversation(map['conversation'] ?? map);
+    msg.fromUser = map['fromUser'] ?? map['from'] ?? map['sender'] ?? '';
+    msg.toUsers = Tools.convertDynamicList(map['to']);
     msg.content =
         decodeMessageContent(_convertProtoMessageContent(map['content']));
-    msg.direction = MessageDirection.values[map['direction']];
-    msg.status = MessageStatus.values[map['status']];
+    msg.direction = MessageDirection.values[map['direction'] ?? 0];
+    msg.status = MessageStatus.values[map['status'] ?? 0];
     msg.serverTime = map.containsKey('serverTime') ? map['serverTime'] : map['timestamp'];
     msg.localExtra = map['localExtra'];
     return msg;
@@ -822,10 +833,13 @@ class ImclientPlatform extends PlatformInterface {
     return messages;
   }
 
-  static Conversation _convertProtoConversation(Map<dynamic, dynamic> map) {
+  static Conversation _convertProtoConversation(Map<dynamic, dynamic>? map) {
+    if (map == null) {
+      return Conversation();
+    }
     Conversation conversation = Conversation();
-    conversation.conversationType = ConversationType.values[map.containsKey('type') ? map['type'] : map['conversationType']];
-    conversation.target = map['target'];
+    conversation.conversationType = ConversationType.values[map.containsKey('type') ? map['type'] : map['conversationType'] ?? 0];
+    conversation.target = map['target'] ?? '';
     if (map['line'] == null) {
       conversation.line = 0;
     } else {
@@ -843,6 +857,9 @@ class ImclientPlatform extends PlatformInterface {
     List<ConversationInfo> infos = [];
     for (int i = 0; i < maps.length; ++i) {
       var element = maps[i];
+      if (element is! Map) {
+        continue;
+      }
       infos.add(_convertProtoConversationInfo(element));
     }
 
@@ -852,9 +869,17 @@ class ImclientPlatform extends PlatformInterface {
   ConversationInfo _convertProtoConversationInfo(
       Map<dynamic, dynamic> map) {
     ConversationInfo conversationInfo = ConversationInfo();
+    // macOS SDK 的会话信息直接在顶层携带 type/target/line，没有嵌套 conversation 字段。
     conversationInfo.conversation =
-        _convertProtoConversation(map['conversation']);
-    conversationInfo.lastMessage = _convertProtoMessage(map['lastMessage']);
+        _convertProtoConversation(map['conversation'] ?? map);
+    Map<dynamic, dynamic>? last_message = map['lastMessage'];
+    if (last_message != null) {
+      var messageId = last_message['messageId'];
+      if (messageId == null || messageId is! num || messageId <= 0) {
+        last_message = null;
+      }
+    }
+    conversationInfo.lastMessage = _convertProtoMessage(last_message);
     conversationInfo.draft = map['draft'];
     if (map['timestamp'] != null) conversationInfo.timestamp = map['timestamp'];
     if (map['isTop'] != null) conversationInfo.isTop = map['isTop'];
@@ -872,6 +897,9 @@ class ImclientPlatform extends PlatformInterface {
     List<ConversationSearchInfo> infos = [];
     for (int i = 0; i < maps.length; i++) {
       var element = maps[i];
+      if (element is! Map) {
+        continue;
+      }
       var info = _convertProtoConversationSearchInfo(element);
       info.keyword = keyword;
       infos.add(info);
@@ -884,7 +912,7 @@ class ImclientPlatform extends PlatformInterface {
       Map<dynamic, dynamic> map) {
     ConversationSearchInfo conversationInfo = ConversationSearchInfo();
     conversationInfo.conversation =
-        _convertProtoConversation(map['conversation']);
+        _convertProtoConversation(map['conversation'] ?? map);
     conversationInfo.marchedMessage =
     _convertProtoMessage(map['marchedMessage']);
     if (map['marchedCount'] != null) {
@@ -981,7 +1009,10 @@ class ImclientPlatform extends PlatformInterface {
     return unreadCount;
   }
 
-  static MessagePayload _convertProtoMessageContent(Map<dynamic, dynamic> map) {
+  static MessagePayload _convertProtoMessageContent(Map<dynamic, dynamic>? map) {
+    if (map == null) {
+      return MessagePayload();
+    }
     MessagePayload payload = MessagePayload();
     payload.contentType = map['type'];
     payload.searchableContent = map['searchableContent'];
@@ -1149,7 +1180,7 @@ class ImclientPlatform extends PlatformInterface {
       return null;
     }
     UserInfo userInfo = UserInfo(map['uid']);
-    userInfo.name = map['name'];
+    userInfo.name = map['name'] ?? '';
     userInfo.displayName = map['displayName'] ?? '<${userInfo.userId}>';
     if (map['gender'] != null) userInfo.gender = map['gender'];
     userInfo.portrait = map['portrait'];
@@ -1435,8 +1466,14 @@ class ImclientPlatform extends PlatformInterface {
   Future<ConversationInfo> getConversationInfo(
       Conversation conversation) async {
     var args = _convertConversation(conversation);
-    Map<dynamic, dynamic> datas =
-    await methodChannel.invokeMethod("getConversationInfo", args);
+    var datas =
+        await methodChannel.invokeMethod("getConversationInfo", args);
+    if (datas == null) {
+      // 桌面端 SDK 在会话信息不存在时可能返回空，构造一个默认对象避免崩溃。
+      ConversationInfo info = ConversationInfo();
+      info.conversation = conversation;
+      return info;
+    }
     ConversationInfo info = _convertProtoConversationInfo(datas);
     return info;
   }
@@ -1655,7 +1692,14 @@ class ImclientPlatform extends PlatformInterface {
     }
 
     List<dynamic> datas = await methodChannel.invokeMethod("getMessages", args);
-    return _convertProtoMessages(datas);
+    List<Message> messages = _convertProtoMessages(datas);
+    // 桌面端 SDK 返回的消息可能缺少 conversation 信息，用请求参数补全。
+    for (var msg in messages) {
+      if (msg.conversation.target.isEmpty) {
+        msg.conversation = conversation;
+      }
+    }
+    return messages;
   }
 
   ///根据消息状态获取会话的消息列表
@@ -1739,8 +1783,8 @@ class ImclientPlatform extends PlatformInterface {
       args["withUser"] = withUser;
     }
 
-    List<dynamic> datas =
-    await methodChannel.invokeMethod("getConversationsMessageByStatus", args);
+    List<dynamic> datas = await methodChannel
+        .invokeMethod("getConversationsMessageByStatus", args);
     return _convertProtoMessages(datas);
   }
 
@@ -2907,44 +2951,46 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   Future<bool> isVoipNotificationSilent() async {
-    return await methodChannel.invokeMethod("isVoipNotificationSilent");
+    String value = await getUserSetting(UserSettingScope.Voip_Silent, "");
+    return value == "1";
   }
 
   void setVoipNotificationSilent(
       bool isSilent,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _operationSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-    methodChannel.invokeMethod(
-        "setVoipNotificationSilent", {"requestId": requestId, "isSilent": isSilent});
+    setUserSetting(UserSettingScope.Voip_Silent, "", isSilent ? "1" : "0",
+        successCallback, errorCallback);
   }
 
   Future<bool> isEnableSyncDraft() async {
-    return await methodChannel.invokeMethod("isEnableSyncDraft");
+    String value = await getUserSetting(UserSettingScope.Disable_Sync_Draft, "");
+    return value != "1";
   }
 
   void setEnableSyncDraft(
       bool enable,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _operationSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-    methodChannel.invokeMethod(
-        "setEnableSyncDraft", {"requestId": requestId, "enable": enable});
+    setUserSetting(UserSettingScope.Disable_Sync_Draft, "", enable ? "0" : "1",
+        successCallback, errorCallback);
   }
 
   ///获取免打扰时间段
   void getNoDisturbingTimes(
       OperationSuccessIntPairCallback successCallback,
-      OperationFailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _operationSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-    methodChannel
-        .invokeMethod("getNoDisturbingTimes", {"requestId": requestId});
+      OperationFailureCallback errorCallback) async {
+    String value = await getUserSetting(UserSettingScope.No_Disturbing, "");
+    if (value.isNotEmpty) {
+      List<String> parts = value.split("|");
+      if (parts.length == 2) {
+        int startMins = int.tryParse(parts[0]) ?? 0;
+        int endMins = int.tryParse(parts[1]) ?? 0;
+        successCallback(startMins, endMins);
+        return;
+      }
+    }
+    errorCallback(-1);
   }
 
   ///设置免打扰时间段
@@ -2953,31 +2999,41 @@ class ImclientPlatform extends PlatformInterface {
       int endMins,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _operationSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-    methodChannel.invokeMethod("setNoDisturbingTimes",
-        {"requestId": requestId, "startMins": startMins, "endMins": endMins});
+    setUserSetting(UserSettingScope.No_Disturbing, "", "$startMins|$endMins",
+        successCallback, errorCallback);
   }
 
   ///取消免打扰时间段
   void clearNoDisturbingTimes(
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _operationSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-    methodChannel
-        .invokeMethod("clearNoDisturbingTimes", {"requestId": requestId});
+    setUserSetting(UserSettingScope.No_Disturbing, "", "", successCallback, errorCallback);
   }
 
   Future<bool> isNoDisturbing() async {
-    return await methodChannel.invokeMethod("isNoDisturbing");
+    String value = await getUserSetting(UserSettingScope.No_Disturbing, "");
+    if (value.isEmpty) {
+      return false;
+    }
+    List<String> parts = value.split("|");
+    if (parts.length != 2) {
+      return false;
+    }
+    int startMins = int.tryParse(parts[0]) ?? 0;
+    int endMins = int.tryParse(parts[1]) ?? 0;
+    final now = DateTime.now();
+    int nowMins = now.hour * 60 + now.minute;
+    if (endMins > startMins) {
+      return endMins > nowMins && nowMins > startMins;
+    } else {
+      return endMins > nowMins || nowMins > startMins;
+    }
   }
 
   ///是否推送隐藏详情
   Future<bool> isHiddenNotificationDetail() async {
-    return await methodChannel.invokeMethod("isHiddenNotificationDetail");
+    String value = await getUserSetting(UserSettingScope.Hidden_Notification_Detail, "");
+    return value == "1";
   }
 
   ///设置推送隐藏详情
@@ -2985,17 +3041,14 @@ class ImclientPlatform extends PlatformInterface {
       bool isHidden,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _operationSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-    methodChannel.invokeMethod("setHiddenNotificationDetail",
-        {"requestId": requestId, "isHidden": isHidden});
+    setUserSetting(UserSettingScope.Hidden_Notification_Detail, "", isHidden ? "1" : "0",
+        successCallback, errorCallback);
   }
 
   ///是否群组隐藏用户名
   Future<bool> isHiddenGroupMemberName(String groupId) async {
-    return await methodChannel
-        .invokeMethod("isHiddenGroupMemberName", {"groupId": groupId});
+    String value = await getUserSetting(UserSettingScope.Group_Hide_Nickname, groupId);
+    return value == "1";
   }
 
   ///设置是否群组隐藏用户名
@@ -3004,11 +3057,8 @@ class ImclientPlatform extends PlatformInterface {
       bool isHidden,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _operationSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-    methodChannel.invokeMethod("setHiddenGroupMemberName",
-        {"requestId": requestId, "groupId":groupId, "isHidden": isHidden});
+    setUserSetting(UserSettingScope.Group_Hide_Nickname, groupId, isHidden ? "1" : "0",
+        successCallback, errorCallback);
   }
 
   void getMyGroups(
@@ -3232,8 +3282,31 @@ class ImclientPlatform extends PlatformInterface {
 
   ///获取PC端在线状态
   Future<List<PCOnlineInfo>> getOnlineInfos() async {
-    List<dynamic> datas = await methodChannel.invokeMethod("getOnlineInfos");
-    return _convertProtoOnlineInfos(datas);
+    List<PCOnlineInfo> output = [];
+    Map<String, int> keys = {
+      "PC": 0,
+      "Web": 1,
+      "WX": 2,
+      "Pad": 3,
+    };
+    for (var entry in keys.entries) {
+      String strInfo = await getUserSetting(UserSettingScope.PC_Online, entry.key);
+      if (strInfo.isEmpty) {
+        continue;
+      }
+      PCOnlineInfo info = PCOnlineInfo();
+      info.type = entry.value;
+      info.isOnline = true;
+      List<String> parts = strInfo.split("|");
+      if (parts.length >= 4) {
+        info.timestamp = int.tryParse(parts[0]) ?? 0;
+        info.platform = int.tryParse(parts[1]) ?? 0;
+        info.clientId = parts[2];
+        info.clientName = parts[3];
+      }
+      output.add(info);
+    }
+    return output;
   }
 
   ///踢掉PC客户端
@@ -3250,11 +3323,15 @@ class ImclientPlatform extends PlatformInterface {
 
   ///是否设置当PC在线时停止手机通知
   Future<bool> isMuteNotificationWhenPcOnline() async {
-    return await methodChannel.invokeMethod("isMuteNotificationWhenPcOnline");
+    String value = await getUserSetting(UserSettingScope.Mute_When_PC_Online, "");
+    if (value == "1") {
+      return !_defaultSilentWhenPCOnline;
+    }
+    return _defaultSilentWhenPCOnline;
   }
 
-  void setDefaultSilentWhenPcOnline(bool defaultSilent) async {
-    return await methodChannel.invokeMethod("setDefaultSilentWhenPcOnline", {"silent":defaultSilent});
+  void setDefaultSilentWhenPcOnline(bool defaultSilent) {
+    _defaultSilentWhenPCOnline = defaultSilent;
   }
 
   ///设置/取消设置当PC在线时停止手机通知
@@ -3262,20 +3339,15 @@ class ImclientPlatform extends PlatformInterface {
       bool isMute,
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _operationSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-    methodChannel.invokeMethod("muteNotificationWhenPcOnline",
-        {"requestId": requestId, "isMute": isMute});
+    if (!_defaultSilentWhenPCOnline) {
+      isMute = !isMute;
+    }
+    setUserSetting(UserSettingScope.Mute_When_PC_Online, "", isMute ? "0" : "1",
+        successCallback, errorCallback);
   }
 
   Future<UserOnlineState?> getUserOnlineState(String userId) async {
-    Map<dynamic, dynamic>? map = await methodChannel.invokeMethod("getUserOnlineState", {"userId": userId});
-    if(map == null) {
-      return null;
-    } else {
-      return _convertProtoUserOnlineState(map);
-    }
+    return _useOnlineCacheMap[userId];
   }
 
   Future<CustomState> getMyCustomState() async {
@@ -3399,7 +3471,7 @@ class ImclientPlatform extends PlatformInterface {
   ///删除文件记录
   void deleteFileRecord(
       int messageUid,
-      OperationSuccessFilesCallback successCallback,
+      OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;

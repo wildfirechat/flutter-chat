@@ -7,7 +7,8 @@ AppLifecycleState parseStateFromString(String state) {
     AppLifecycleState.paused.toString(): AppLifecycleState.paused,
     AppLifecycleState.resumed.toString(): AppLifecycleState.resumed,
     AppLifecycleState.detached.toString(): AppLifecycleState.detached,
+    AppLifecycleState.hidden.toString(): AppLifecycleState.hidden,
   };
 
-  return values[state]!;
+  return values[state] ?? AppLifecycleState.inactive;
 }

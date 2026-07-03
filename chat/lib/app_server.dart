@@ -153,6 +153,7 @@ class AppServer {
       ));
     } catch (e) {
       onError('加载验证码失败');
+      print(e);
     }
   }
 

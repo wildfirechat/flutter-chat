@@ -50,6 +50,9 @@ class ConversationListViewModel extends ChangeNotifier {
     Imclient.connectionStatus.then((status) {
       _connectionStatus = status;
       debugPrint('connection status: $status');
+      if (status == kConnectionStatusConnected) {
+        _loadConversationList();
+      }
     });
     _connectionStatusSubscription = _eventBus.on<ConnectionStatusChangedEvent>().listen((event) {
       _connectionStatus = event.connectionStatus;

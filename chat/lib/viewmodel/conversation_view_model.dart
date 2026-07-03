@@ -262,6 +262,7 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   void setConversation(Conversation? conversation, {int? toFocusMessageId, Function(int err)? joinChatroomErrorCallback}) async {
+    debugPrint('[ConversationViewModel] setConversation conversation=$conversation');
     _noMoreRemoteHistoryMsg = false;
     _conversationMessageList = [];
     focusMessageIndex = 0;
