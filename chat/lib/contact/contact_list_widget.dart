@@ -62,6 +62,15 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    // 进入联系人列表时主动刷新一次，避免桌面端缺少事件回调导致空白。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ContactListViewModel>().refresh();
+    });
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();

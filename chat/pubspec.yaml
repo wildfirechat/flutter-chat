@@ -1,5 +1,5 @@
 name: chat
-description: 野火IM flutter 客户端，支持 Android、iOS 和 HarmonyOS
+description: 野火IM flutter 客户端，支持 Android、iOS、HarmonyOS、Windows、macOS 和 Linux
 version: 0.1.1
 
 # The following line prevents the package from being accidentally published to
@@ -59,11 +59,15 @@ dependencies:
   photo_view: ^0.15.0
   cached_network_image: ^3.2.3
   flutter_cache_manager: ^3.3.2
-  flutter_local_notifications:
-    git:
-      url: https://gitcode.com/openharmony-sig/fluttertpc_flutter_local_notifications.git
-      path: flutter_local_notifications
-      ref: br_flutter_local_notifications-v17.2.4_ohos
+  # 不支持 ohos
+  flutter_local_notifications: ^17.2.4
+  # ohos
+  # 需要支持鸿蒙时，需要切换到下面的依赖
+  #flutter_local_notifications:
+  #  git:
+  #    url: https://gitcode.com/openharmony-sig/fluttertpc_flutter_local_notifications.git
+  #    path: flutter_local_notifications
+  #    ref: br_flutter_local_notifications-v17.2.4_ohos
   http: ^1.2.1
   event_bus: ^2.0.0
   image: ^4.0.15
@@ -119,10 +123,15 @@ dependencies:
   path: any
   pinyin: ^3.3.0
   flutter_linkify: ^6.0.0
-  mobile_scanner:
-      git:
-          url: "https://gitcode.com/openharmony-sig/fluttertpc_mobile_scanner"
-          ref: br_v6.0.10_ohos
+
+  # 不支持 ohos
+  mobile_scanner: ^6.0.11
+  # ohos
+  # 需要支持鸿蒙时，切换到一下的依赖
+  #mobile_scanner:
+  #    git:
+  #        url: "https://gitcode.com/openharmony-sig/fluttertpc_mobile_scanner"
+  #        ref: br_v6.0.10_ohos
   qr_flutter: ^4.1.0
   pointycastle: ^4.0.0
 dependency_overrides:

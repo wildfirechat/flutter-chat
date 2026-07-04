@@ -4,11 +4,12 @@ version: 0.0.1
 homepage:
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
+  sdk: ">=3.1.0 <4.0.0"
   flutter: ">=1.20.0"
 
 dependencies:
   event_bus: ^2.0.0
+  ffi: ^2.1.0
   flutter:
     sdk: flutter
   image: ^4.0.15
@@ -43,6 +44,16 @@ flutter:
         pluginClass: ImclientPlugin
       ohos:
         pluginClass: ImclientPlugin
+      # 桌面端方法分发在 Dart 侧（lib/src/ffi/），原生只有共享垫片与打包：
+      # - Windows/Linux 以 ffiPlugin 参与构建（CMake 编译垫片 + 打包 SDK）；
+      # - macOS 保留 pluginClass（迷你 shim 注册 fluttertoast no-op 通道，
+      #   CocoaPods 负责编译垫片并嵌入 libMarsWrapper.dylib）。
+      windows:
+        ffiPlugin: true
+      macos:
+        pluginClass: ImclientPlugin
+      linux:
+        ffiPlugin: true
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

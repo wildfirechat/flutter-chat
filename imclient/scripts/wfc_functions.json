@@ -1,0 +1,1397 @@
+[
+  {
+    "return": "void",
+    "name": "releaseDllString",
+    "args": "const char *dllString"
+  },
+  {
+    "return": "void",
+    "name": "setAppName",
+    "args": "const char *cappName, size_t appName_len"
+  },
+  {
+    "return": "void",
+    "name": "setHeartBeatInterval",
+    "args": "int second"
+  },
+  {
+    "return": "void",
+    "name": "setAppDataPath",
+    "args": "const char *cpath, size_t path_len"
+  },
+  {
+    "return": "void",
+    "name": "setPackageName",
+    "args": "const char *cpackagename, size_t packagename_len"
+  },
+  {
+    "return": "void",
+    "name": "useDataVerify",
+    "args": "bool enabled"
+  },
+  {
+    "return": "void",
+    "name": "useEncryptMaxMinutes",
+    "args": "int minutes"
+  },
+  {
+    "return": "void",
+    "name": "setUseKcp",
+    "args": "int kcpPort, bool useKcp"
+  },
+  {
+    "return": "bool",
+    "name": "isUseKcp",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "useTls",
+    "args": "bool skipVerifyCert, const char** ccerts, const size_t* certLengths, size_t certCount"
+  },
+  {
+    "return": "void",
+    "name": "useSM4",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "useAES256",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "useTcpShortLink",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "isTcpShortLink",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "setLiteMode",
+    "args": "bool liteMode"
+  },
+  {
+    "return": "void",
+    "name": "setTimeOffset",
+    "args": "int second"
+  },
+  {
+    "return": "int",
+    "name": "getRoutePort",
+    "args": ""
+  },
+  {
+    "return": "const char*",
+    "name": "getHost",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "setDBPath",
+    "args": "const char *cpath, size_t path_len"
+  },
+  {
+    "return": "void",
+    "name": "setConnectionStatusListener",
+    "args": "fun_connection_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setReceiveMessageListener",
+    "args": "fun_receive_message_callback receiveCallback, fun_recall_message_callback recallCallback, fun_delete_message_callback deleteCallback, fun_global_string_callback deliveryCallback, fun_global_string_callback readedCallback"
+  },
+  {
+    "return": "void",
+    "name": "setUserInfoUpdateListener",
+    "args": "fun_global_string_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setGroupInfoUpdateListener",
+    "args": "fun_global_string_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setGroupMemberUpdateListener",
+    "args": "fun_global_string_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setFriendUpdateListener",
+    "args": "fun_global_string_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setFriendRequestListener",
+    "args": "fun_global_string_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setSettingUpdateListener",
+    "args": "fun_global_void_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setChannelInfoUpdateListener",
+    "args": "fun_global_string_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setJoinGroupRequestUpdateListener",
+    "args": "fun_global_void_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setDomainInfoUpdateListener",
+    "args": "fun_global_string_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setConnectToServerListener",
+    "args": "fun_connecting_to_server_callback connectingCB, fun_connected_to_server_callback connectedCB"
+  },
+  {
+    "return": "void",
+    "name": "setTrafficDataListener",
+    "args": "fun_global_int_int_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setErrorEventListener",
+    "args": "fun_global_int_sring_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setConferenceEventListener",
+    "args": "fun_global_string_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setOnlineEventListener",
+    "args": "fun_global_string_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setSecretChatStateListener",
+    "args": "fun_global_int_sring_callback callback"
+  },
+  {
+    "return": "void",
+    "name": "setSecretMessageBurnStateListener",
+    "args": "fun_global_int_sring_callback startBurnCB, fun_global_string_callback burnedCB"
+  },
+  {
+    "return": "const char*",
+    "name": "getClientId",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getProtoRevision",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "int64_t",
+    "name": "connect2Server",
+    "args": "const char *cuserId, size_t userId_len, const char *ctoken, size_t token_len"
+  },
+  {
+    "return": "void",
+    "name": "setProxyInfo",
+    "args": "const char *chost, size_t host_len, const char *cip, size_t ip_len, int port, const char *cname, size_t name_len, const char *cpassword, size_t password_len"
+  },
+  {
+    "return": "int WFCAPI",
+    "name": "getConnectionStatus",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "isLogin",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "disconnect",
+    "args": "int flag"
+  },
+  {
+    "return": "bool",
+    "name": "beginTransaction",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "commitTransaction",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "rollbackTransaction",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "setBackupAddressStrategy",
+    "args": "int strategy"
+  },
+  {
+    "return": "void",
+    "name": "setBackupAddress",
+    "args": "const char *caddress, size_t address_len, int port"
+  },
+  {
+    "return": "int",
+    "name": "getConnectedNetworkType",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "setUserAgent",
+    "args": "const char *cagent, size_t agent_len"
+  },
+  {
+    "return": "void",
+    "name": "addHttpHeader",
+    "args": "const char *cheader, size_t header_len, const char *cvalue, size_t value_len"
+  },
+  {
+    "return": "void",
+    "name": "onAppResume",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "onAppSuspend",
+    "args": ""
+  },
+  {
+    "return": "int64_t",
+    "name": "getServerDeltaTime",
+    "args": ""
+  },
+  {
+    "return": "const char*",
+    "name": "getCurrentUserId",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getLogFilesPath",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getConversationInfos",
+    "args": "const int atypes[], int types_len, const int als[], int ls_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "registerMessageFlag",
+    "args": "int type, int flag"
+  },
+  {
+    "return": "const char*",
+    "name": "getConversationInfo",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "searchConversation",
+    "args": "const int atypes[], int types_len, const int als[], int ls_len, const char *ckeyword, size_t keyword_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "searchConversationEx",
+    "args": "const int atypes[], int types_len, const int als[], int ls_len, const char *ckeyword, size_t keyword_len, int64_t start_time, int64_t end_time, bool desc, int limit, int offset, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "searchConversationEx2",
+    "args": "const int atypes[], int types_len, const int als[], int ls_len, const int acnttypes[], int cnttypes_len, const char *ckeyword, size_t keyword_len, int64_t start_time, int64_t end_time, bool desc, int limit, int offset, bool onlyMentionedMsg, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "removeConversation",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, bool clearMsg"
+  },
+  {
+    "return": "void",
+    "name": "setConversationTop",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, int isTop, fun_general_void_success_callback succCallback, fun_general_error_callback errCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "setConversationSlient",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, bool isSlient, fun_general_void_success_callback succCallback, fun_general_error_callback errCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isConversationSlient",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line"
+  },
+  {
+    "return": "void",
+    "name": "setConversationDraft",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const char *cdraft, size_t draft_len"
+  },
+  {
+    "return": "void",
+    "name": "setConversationTimestamp",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, int64_t timestamp"
+  },
+  {
+    "return": "const char*",
+    "name": "getUnreadCount",
+    "args": "const int atypes[], int types_len, const int als[], int ls_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getConversationUnreadCount",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, size_t *retlen"
+  },
+  {
+    "return": "bool",
+    "name": "clearUnreadStatus",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line"
+  },
+  {
+    "return": "bool",
+    "name": "clearUnreadStatusEx",
+    "args": "const int atypes[], int types_len, const int alines[], int lines_len"
+  },
+  {
+    "return": "bool",
+    "name": "clearAllUnreadStatus",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "clearMessageUnreadStatus",
+    "args": "int messageId"
+  },
+  {
+    "return": "bool",
+    "name": "clearMessageUnreadStatusBefore",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, int messageId"
+  },
+  {
+    "return": "int64_t",
+    "name": "setLastReceivedMessageUnRead",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, int64_t messageUid, int64_t timestamp"
+  },
+  {
+    "return": "long",
+    "name": "getConversationFirstUnreadMessageId",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line"
+  },
+  {
+    "return": "void",
+    "name": "clearRemoteConversationMessage",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, fun_general_void_success_callback succCallback, fun_general_error_callback errCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "setMediaMessagePlayed",
+    "args": "long messageId"
+  },
+  {
+    "return": "bool",
+    "name": "setMessageLocalExtra",
+    "args": "long messageId, const char *clocalExtra, size_t localExtra_len"
+  },
+  {
+    "return": "const char*",
+    "name": "getMessages",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const int acontTypes[], int contTypes_len, int64_t fromIndex, bool direction, int count, const char *cwithUser, size_t withUser_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "getMessagesV2",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const int acontTypes[], int contTypes_len, int64_t fromIndex, bool direction, int count, const char *cwithUser, size_t withUser_len, fun_general_string_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getMentionedMessages",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, int64_t fromIndex, bool direction, int count, fun_general_string_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getMessagesEx",
+    "args": "const int aconversationTypes[], int conversationTypes_len, const int alines[], int lines_len, const int acontTypes[], int contTypes_len, int64_t fromIndex, bool direction, int count, const char *cwithUser, size_t withUser_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "getMessagesExV2",
+    "args": "const int aconversationTypes[], int conversationTypes_len, const int alines[], int lines_len, const int acontTypes[], int contTypes_len, int64_t fromIndex, bool direction, int count, const char *cwithUser, size_t withUser_len, fun_general_string_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getMessagesByMessageStatus",
+    "args": "const int aconversationTypes[], int conversationTypes_len, const int alines[], int lines_len, const int amessageStatuses[], int messageStatuses_len, int64_t fromIndex, bool direction, int count, const char *cwithUser, size_t withUser_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "getMessagesByMessageStatusV2",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const int amessageStatuses[], int messageStatuses_len, int64_t fromIndex, bool direction, int count, const char *cwithUser, size_t withUser_len, fun_general_string_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getMessagesByTimestampV2",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const int acontTypes[], int contTypes_len, int64_t timestamp, bool direction, int count, const char *cwithUser, size_t withUser_len, fun_general_string_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getUserMessagesV2",
+    "args": "const char *cuserId, size_t userId_len, int conversationType, const char *ctarget, size_t target_len, int line, const int acontTypes[], int contTypes_len, int64_t fromIndex, bool direction, int count, fun_general_string_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getRemoteMessages",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const int acontentTypes[], int contentTypes_len, int64_t beforeUid, int count, fun_general_string_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getRemoteMessage",
+    "args": "int64_t messageUid, fun_general_string_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getMessage",
+    "args": "long messageId, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getMessageByUid",
+    "args": "int64_t messageUid, size_t *retlen"
+  },
+  {
+    "return": "long",
+    "name": "getFirstUnreadMessageId",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line"
+  },
+  {
+    "return": "const char*",
+    "name": "searchMessage",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const char *ckeyword, size_t keyword_len, bool desc, int limit, int offset, const char *cwithUser, size_t withUser_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "sendMessage",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const char *cstrcont, size_t strcont_len, const char** cusers, const size_t* userLengths, size_t userCount, int expireDuration, fun_sendMessage_success_callback successCallback, fun_sendMessage_error_callback errorCallback, fun_sendMessage_prepared_callback preparedCallback, fun_sendMessage_progress_callback progressCallback, fun_sendMessage_media_uploaded_callback uploadedCallback, void *pObject, int objectDataType, size_t *retlen"
+  },
+  {
+    "return": "bool",
+    "name": "sendSavedMessage",
+    "args": "long messageId, int expireDuration, fun_sendMessage_success_callback successCallback, fun_sendMessage_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "cancelSendingMessage",
+    "args": "long messageId"
+  },
+  {
+    "return": "void",
+    "name": "recallMessage",
+    "args": "int64_t messageUid, fun_general_void_success_callback succCallback, fun_general_error_callback errCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "uploadMedia",
+    "args": "const char *cstrName, size_t strName_len, const char *cdata, int dataLen, int mediaType, fun_general_string_success_callback successCB, fun_general_error_callback errorCB, fun_uploadMedia_progress_callback progressCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getUploadUrl",
+    "args": "const char *cstrName, size_t strName_len, int mediaType, const char *ccontentType, int contentType_Len, fun_general_string_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isSupportBigFilesUpload",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "isForceBigFilesUpload",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "deleteMessage",
+    "args": "long messageId"
+  },
+  {
+    "return": "bool",
+    "name": "batchDeleteMessages",
+    "args": "const int64_t messageUids[], int64_t messageUids_len"
+  },
+  {
+    "return": "void",
+    "name": "clearMessages",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line"
+  },
+  {
+    "return": "void",
+    "name": "clearMessagesBefore",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, int64_t before"
+  },
+  {
+    "return": "void",
+    "name": "clearMessagesKeep",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, int keepCount"
+  },
+  {
+    "return": "void",
+    "name": "clearUserMessagesBetween",
+    "args": "const char *cuser, size_t user_len, int64_t start, int64_t end"
+  },
+  {
+    "return": "void",
+    "name": "clearAllMessages",
+    "args": "bool removeAllConversation"
+  },
+  {
+    "return": "void",
+    "name": "deleteRemoteMessage",
+    "args": "int64_t messageUid, fun_general_void_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "updateRemoteMessage",
+    "args": "int64_t messageUid, const char *cstrcont, size_t strcont_len, bool distribute, bool updateLocal, fun_general_void_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "insertMessage",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const char *cstrfrom, size_t strfrom_len, const char *cstrcont, size_t strcont_len, int status, bool notify, int64_t serverTime, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "updateMessage",
+    "args": "long messageId, const char *cstrcont, size_t strcont_len"
+  },
+  {
+    "return": "void",
+    "name": "updateMessageContentAndTime",
+    "args": "long messageId, const char *cstrcont, size_t strcont_len, int64_t timestamp"
+  },
+  {
+    "return": "void",
+    "name": "updateMessageStatus",
+    "args": "long messageId, int messageStatus"
+  },
+  {
+    "return": "const char*",
+    "name": "getConversationRead",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getMessageDelivery",
+    "args": "int conversationType, const char *ctarget, size_t target_len, size_t *retlen"
+  },
+  {
+    "return": "int",
+    "name": "getMessageCount",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line"
+  },
+  {
+    "return": "int",
+    "name": "getConversationMessageCount",
+    "args": "const int atypes[], int types_len, const int als[], int ls_len"
+  },
+  {
+    "return": "const char*",
+    "name": "getMessageCountByDay",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const int acontentTypes[], int contentTypes_len, int64_t startTime, int64_t endTime, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getUserInfo",
+    "args": "const char *cuserId, size_t userId_len, bool refresh, const char *cgroupId, size_t groupId_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getUserInfos",
+    "args": "const char** cusers, const size_t* userLengths, size_t userCount, const char *cgroupId, size_t groupId_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "searchUser",
+    "args": "const char *ckeyword, size_t keyword_len, int searchType, int page, fun_general_string_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "searchUserEx",
+    "args": "const char *ckeyword, size_t keyword_len, const char *cdomainId, size_t domainId_len, int searchType, int userType, int page, fun_general_string_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isMyFriend",
+    "args": "const char *cuserId, size_t userId_len"
+  },
+  {
+    "return": "const char*",
+    "name": "getMyFriendList",
+    "args": "bool refresh, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "searchFriends",
+    "args": "const char *ckeyword, size_t keyword_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "searchGroups",
+    "args": "const char *ckeyword, size_t keyword_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getIncommingFriendRequest",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getOutgoingFriendRequest",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getFriendRequest",
+    "args": "const char *cuserId, size_t userId_len, bool incomming, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "loadFriendRequestFromRemote",
+    "args": ""
+  },
+  {
+    "return": "int",
+    "name": "getUnreadFriendRequestStatus",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "clearUnreadFriendRequestStatus",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "clearFriendRequest",
+    "args": "int direction, int64_t beforeTime"
+  },
+  {
+    "return": "bool",
+    "name": "deleteFriendRequest",
+    "args": "const char *cuserId, size_t userId_len, int direction"
+  },
+  {
+    "return": "void",
+    "name": "deleteFriend",
+    "args": "const char *cuserId, size_t userId_len, fun_general_void_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getFriendAlias",
+    "args": "const char *cuserId, size_t userId_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "setFriendAlias",
+    "args": "const char *cuserId, size_t userId_len, const char *calias, size_t alias_len, fun_general_void_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getFriendExtra",
+    "args": "const char *cuserId, size_t userId_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "sendFriendRequest",
+    "args": "const char *cuserId, size_t userId_len, const char *creason, size_t reason_len, const char *cextra, size_t extra_len, fun_general_void_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "handleFriendRequest",
+    "args": "const char *cuserId, size_t userId_len, bool accept, const char *cextra, size_t extra_len, fun_general_void_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isBlackListed",
+    "args": "const char *cuserId, size_t userId_len"
+  },
+  {
+    "return": "const char*",
+    "name": "getBlackList",
+    "args": "bool refresh, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "setBlackList",
+    "args": "const char *cuserId, size_t userId_len, bool isBlackListed, fun_general_void_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getGroupMembers",
+    "args": "const char *cgroupId, size_t groupId_len, bool refresh, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getGroupMembersByType",
+    "args": "const char *cgroupId, size_t groupId_len, int type, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getGroupMembersByCount",
+    "args": "const char *cgroupId, size_t groupId_len, int count, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getGroupInfo",
+    "args": "const char *cgroupId, size_t groupId_len, bool refresh, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getGroupMember",
+    "args": "const char *cgroupId, size_t groupId_len, const char *cmemberId, size_t memberId_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "createGroup",
+    "args": "const char *cgroupId, size_t groupId_len, int groupType, const char *cgroupName, size_t groupName_len, const char *cgroupPortrait, size_t groupPortrait_len, const char *cgroupExtra, size_t groupExtra_len, const char** cusers, const size_t* userLengths, size_t userCount, const char *cmemberExtra, size_t memberExtra_len, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_string_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "addMembers",
+    "args": "const char *cgroupId, size_t groupId_len, const char** cusers, const size_t* userLengths, size_t userCount, const char *cmemberExtra, size_t memberExtra_len, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "kickoffMembers",
+    "args": "const char *cgroupId, size_t groupId_len, const char** cusers, const size_t* userLengths, size_t userCount, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "quitGroup",
+    "args": "const char *cgroupId, size_t groupId_len, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "dismissGroup",
+    "args": "const char *cgroupId, size_t groupId_len, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "modifyGroupInfo",
+    "args": "const char *cgroupId, size_t groupId_len, int type, const char *cnewValue, size_t newValue_len, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "modifyGroupAlias",
+    "args": "const char *cgroupId, size_t groupId_len, const char *cnewAlias, size_t newAlias_len, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "modifyGroupMemberAlias",
+    "args": "const char *cgroupId, size_t groupId_len, const char *cmemberId, size_t memberId_len, const char *cnewAlias, size_t newAlias_len, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "modifyGroupMemberExtra",
+    "args": "const char *cgroupId, size_t groupId_len, const char *cmemberId, size_t memberId_len, const char *cnewExtra, size_t newExtra_len, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "transferGroup",
+    "args": "const char *cgroupId, size_t groupId_len, const char *cnewOwner, size_t newOwner_len, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "setGroupManager",
+    "args": "const char *cgroupId, size_t groupId_len, bool isSet, const char** cusers, const size_t* userLengths, size_t userCount, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "muteGroupMember",
+    "args": "const char *cgroupId, size_t groupId_len, bool isSet, const char** cusers, const size_t* userLengths, size_t userCount, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "allowGroupMember",
+    "args": "const char *cgroupId, size_t groupId_len, bool isSet, const char** cusers, const size_t* userLengths, size_t userCount, const int alines[], int lines_len, const char *cstrCont, size_t strCont_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getFavGroups",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "getMyGroups",
+    "args": "fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getCommonGroups",
+    "args": "const char *cuserId, size_t userId_len, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getUserSetting",
+    "args": "int scope, const char *ckey, size_t key_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getUserSettings",
+    "args": "int scope, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "setUserSetting",
+    "args": "int scope, const char *ckey, size_t key_len, const char *cvalue, size_t value_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isFavGroup",
+    "args": "const char *cgroupId, size_t groupId_len"
+  },
+  {
+    "return": "void",
+    "name": "setFavGroup",
+    "args": "const char *cgroupId, size_t groupId_len, bool fav, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isUserEnableReceipt",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "setUserEnableReceipt",
+    "args": "bool enable, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getFavUsers",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "bool",
+    "name": "isFavUser",
+    "args": "const char *cuserId, size_t userId_len"
+  },
+  {
+    "return": "void",
+    "name": "setFavUser",
+    "args": "const char *cuserId, size_t userId_len, bool fav, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "modifyMyInfo",
+    "args": "int type, const char *value, size_t len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isGlobalSilent",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "setGlobalSilent",
+    "args": "bool slient, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isHiddenNotificationDetail",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "setHiddenNotificationDetail",
+    "args": "bool hidden, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isHiddenGroupMemberName",
+    "args": "const char *cgroupId, size_t groupId_len"
+  },
+  {
+    "return": "void",
+    "name": "setHiddenGroupMemberName",
+    "args": "const char *cgroupId, size_t groupId_len, bool hidden, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isEnableSyncDraft",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "joinChatroom",
+    "args": "const char *cchatroomId, size_t chatroomId_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "quitChatroom",
+    "args": "const char *cchatroomId, size_t chatroomId_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getChatroomInfo",
+    "args": "const char *cchatroomId, size_t chatroomId_len, int64_t updateDt, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getChatroomMemberInfo",
+    "args": "const char *cchatroomId, size_t chatroomId_len, int maxCount, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getJoinedChatroomId",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "createChannel",
+    "args": "const char *cchannelName, size_t channelName_len, const char *cchannelPortrait, size_t channelPortrait_len, const char *cdesc, size_t desc_len, const char *cextra, size_t extra_len, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getChannelInfo",
+    "args": "const char *cchannelId, size_t channelId_len, bool refresh, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "modifyChannelInfo",
+    "args": "const char *cchannelId, size_t channelId_len, int type, const char *cnewValue, size_t newValue_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "searchChannel",
+    "args": "const char *ckeyword, size_t keyword_len, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isListenedChannel",
+    "args": "const char *cchannelId, size_t channelId_len"
+  },
+  {
+    "return": "void",
+    "name": "listenChannel",
+    "args": "const char *cchannelId, size_t channelId_len, bool listen, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getMyChannels",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getListenedChannels",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "getRemoteListenedChannels",
+    "args": "fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "destoryChannel",
+    "args": "const char *cchannelId, size_t channelId_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getAppPath",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getDomainInfo",
+    "args": "const char *cdomainId, size_t domainId_len, bool refresh, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "getRemoteDomains",
+    "args": "fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getConversationFiles",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const char *cfromUser, size_t fromUser_len, int64_t messageUid, int order, int count, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getMyFiles",
+    "args": "int64_t messageUid, int order, int count, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "deleteFileRecord",
+    "args": "int64_t messageUid, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "searchFiles",
+    "args": "const char *ckeyword, size_t keyword_len, int conversationType, const char *ctarget, size_t target_len, int line, const char *cfromUser, size_t fromUser_len, int64_t messageUid, int order, int count, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "searchMyFiles",
+    "args": "const char *ckeyword, size_t keyword_len, int64_t messageUid, int order, int count, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getAuthorizedMediaUrl",
+    "args": "long long messageUid, int mediaType, const char *cmediaPath, size_t mediaPath_len, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getAuthCode",
+    "args": "const char *capplicationId, size_t applicationId_len, int type, const char *chost, size_t host_len, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "configApplication",
+    "args": "const char *capplicationId, size_t applicationId_len, int type, int64_t timestamp, const char *nonce, size_t nonce_len, const char *csignature, size_t signature_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isCommercialServer",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "isReceiptEnabled",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "isGroupReceiptEnabled",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "isGlobalDisableSyncDraft",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "isMeshEnabled",
+    "args": ""
+  },
+  {
+    "return": "const char*",
+    "name": "getMyCustomState",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "setMyCustomState",
+    "args": "const char *cstate, size_t state_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "watchOnlineState",
+    "args": "int conversationType, const char** ctargets, const size_t* targetLengths, size_t targetCount, int watchDuration, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "unwatchOnlineState",
+    "args": "int conversationType, const char** ctargets, const size_t* targetLengths, size_t targetCount, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObj, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isEnableUserOnlineState",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "sendConferenceRequest",
+    "args": "long long sessionId, const char *croomId, size_t roomId_len, const char *crequest, size_t request_len, bool advance, const char *cdata, size_t data_len, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "requireLock",
+    "args": "const char *clockId, size_t lockId_len, int duration, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "releaseLock",
+    "args": "const char *clockId, size_t lockId_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getMessagesEx2",
+    "args": "const int aconversationTypes[], int conversationTypes_len, const int alines[], int lines_len, const int amessageStatuses[], int messageStatuses_len, int64_t fromIndex, bool direction, int count, const char *cwithUser, size_t withUser_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "getMessagesEx2V2",
+    "args": "const int aconversationTypes[], int conversationTypes_len, const int alines[], int lines_len, const int amessageStatuses[], int messageStatuses_len, int64_t fromIndex, bool direction, int count, const char *cwithUser, size_t withUser_len, fun_general_string_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getMessagesByTimestamp",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const int acontTypes[], int contTypes_len, int64_t timestamp, bool direction, int count, const char *cwithUser, size_t withUser_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getUserMessages",
+    "args": "const char *cuserId, size_t userId_len, int conversationType, const char *ctarget, size_t target_len, int line, const int acontTypes[], int contTypes_len, int64_t fromIndex, bool direction, int count, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getUserMessagesEx",
+    "args": "const char *cuserId, size_t userId_len, const int aconversationTypes[], int conversationTypes_len, const int alines[], int lines_len, const int acontTypes[], int contTypes_len, int64_t fromIndex, bool direction, int count, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "getUserMessagesExV2",
+    "args": "const char *cuserId, size_t userId_len, const int aconversationTypes[], int conversationTypes_len, const int alines[], int lines_len, const int acontTypes[], int contTypes_len, int64_t fromIndex, bool direction, int count, fun_general_string_success_callback successCallback, fun_general_error_callback errorCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "searchMentionedMessages",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const char *ckeyword, size_t keyword_len, bool desc, int limit, int offset, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "searchMessageEx",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const char *ckeyword, size_t keyword_len, bool desc, int limit, int offset, const char *cwithUser, size_t withUser_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "searchMessageByTypes",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const char *ckeyword, size_t keyword_len, const int acntTypes[], int cntTypes_len, bool desc, int limit, int offset, const char *cwithUser, size_t withUser_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "searchMessageByTypesAndTimes",
+    "args": "int conversationType, const char *ctarget, size_t target_len, int line, const char *ckeyword, size_t keyword_len, const int acntTypes[], int cntTypes_len, int64_t startTime, int64_t endTime, bool desc, int limit, int offset, const char *cwithUser, size_t withUser_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "searchMessageEx2",
+    "args": "const int aconversationTypes[], int conversationTypes_len, const int alines[], int lines_len, const int acntTypes[], int cntTypes_len, const char *ckeyword, size_t keyword_len, int64_t fromIndex, bool direction, int count, const char *cwithUser, size_t withUser_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "searchMentionedMessagesEx",
+    "args": "const int aconversationTypes[], int conversationTypes_len, const int alines[], int lines_len, const char *ckeyword, size_t keyword_len, bool desc, int limit, int offset, size_t *retlen"
+  },
+  {
+    "return": "bool",
+    "name": "sendSavedMessageEx",
+    "args": "long messageId, int conversationType, const char *ctarget, size_t target_len, int line, const char *cstrcont, size_t strcont_len, const char** cusers, const size_t* userLengths, size_t userCount, int expireDuration, fun_sendMessage_success_callback successCallback, fun_sendMessage_error_callback errorCallback, fun_sendMessage_prepared_callback preparedCallback, fun_sendMessage_progress_callback progressCallback, fun_sendMessage_media_uploaded_callback uploadedCallback, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "insertMessageEx",
+    "args": "int64_t messageUid, int conversationType, const char *ctarget, size_t target_len, int line, const char *cstrfrom, size_t strfrom_len, const char *cstrcont, size_t strcont_len, int status, int64_t serverTime, const char *clocalExtra, size_t localExtra_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "getUserInfoEx",
+    "args": "const char *cuserId, size_t userId_len, bool refresh, fun_general_string_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getUserInfosEx",
+    "args": "const char** cusers, const size_t* userLengths, size_t userCount, const char *cgroupId, size_t groupId_len, fun_general_string_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "setFriendExtra",
+    "args": "const char *cuserId, size_t userId_len, const char *cextra, size_t extra_len, fun_general_void_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getFriendList",
+    "args": "bool refresh, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "getGroupMembersEx",
+    "args": "const char *cgroupId, size_t groupId_len, bool refresh, fun_general_string_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "getGroupInfoEx",
+    "args": "const char *cgroupId, size_t groupId_len, bool refresh, fun_general_string_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getGroupInfos",
+    "args": "const char** cgroupIds, const size_t* groupIdLengths, size_t groupIdCount, bool refresh, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "getGroupMembersEx2",
+    "args": "const char *cgroupId, size_t groupId_len, const int atypes[], int types_len, int offset, int count, size_t *retlen"
+  },
+  {
+    "return": "int",
+    "name": "getGroupMembersCount",
+    "args": "const char *cgroupId, size_t groupId_len, const int atypes[], int types_len"
+  },
+  {
+    "return": "const char*",
+    "name": "getGroupMemberIds",
+    "args": "const char *cgroupId, size_t groupId_len, const int atypes[], int types_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "loadGroupMemberFromRemote",
+    "args": "const char *cgroupId, size_t groupId_len"
+  },
+  {
+    "return": "void",
+    "name": "setGroupRemark",
+    "args": "const char *cgroupId, size_t groupId_len, const char *cremark, size_t remark_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getGroupRemark",
+    "args": "const char *cgroupId, size_t groupId_len, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "sendJoinGroupRequest",
+    "args": "const char *cgroupId, size_t groupId_len, const char** cmembers, const size_t* memberLengths, size_t memberCount, const char *creason, size_t reason_len, const char *cextra, size_t extra_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "handleJoinGroupRequest",
+    "args": "const char *cgroupId, size_t groupId_len, const char *cmemberId, size_t memberId_len, const char *cinviterId, size_t inviterId_len, int status, const char *cmemberExtra, size_t memberExtra_len, const int alines[], int lines_len, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getJoinGroupRequests",
+    "args": "const char *cgroupId, size_t groupId_len, const char *cmemberId, size_t memberId_len, int status, size_t *retlen"
+  },
+  {
+    "return": "bool",
+    "name": "clearJoinGroupRequest",
+    "args": "const char *cgroupId, size_t groupId_len, const char *cmemberId, size_t memberId_len, const char *cinviterId, size_t inviterId_len"
+  },
+  {
+    "return": "int",
+    "name": "getAllJoinGroupRequestUnread",
+    "args": ""
+  },
+  {
+    "return": "int",
+    "name": "getJoinGroupRequestUnread",
+    "args": "const char *cgroupId, size_t groupId_len"
+  },
+  {
+    "return": "void",
+    "name": "clearJoinGroupRequestUnread",
+    "args": "const char *cgroupId, size_t groupId_len"
+  },
+  {
+    "return": "void",
+    "name": "clearRemoteJoinGroupRequest",
+    "args": "fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getImageThumbPara",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "bool",
+    "name": "forcePresignedUrlUpload",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "getUploadMediaUrl",
+    "args": "const char *cstrName, size_t strName_len, int mediaType, const char *ccontentType, size_t contentType_len, fun_general_string_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "encodedCid",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "encodeData",
+    "args": "const char *cdata, size_t data_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "decodeData",
+    "args": "const char *cdata, size_t data_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "screenShot",
+    "args": "size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "setLanguage",
+    "args": "const char *clanguage, size_t language_len"
+  },
+  {
+    "return": "void",
+    "name": "createSecretChat",
+    "args": "const char *ctargetId, size_t targetId_len, fun_general_string_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "void",
+    "name": "destroySecretChat",
+    "args": "const char *ctargetId, size_t targetId_len, fun_general_void_success_callback successCB, fun_general_error_callback errorCB, void *pObject, int objectDataType"
+  },
+  {
+    "return": "const char*",
+    "name": "getSecretChatInfo",
+    "args": "const char *ctargetId, size_t targetId_len, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "encodeSecretChatMediaData",
+    "args": "const char *ctargetId, size_t targetId_len, const unsigned char *cdata, int dataLen, size_t *retlen"
+  },
+  {
+    "return": "const char*",
+    "name": "decodeSecretChatMediaData",
+    "args": "const char *ctargetId, size_t targetId_len, const unsigned char *cdata, int dataLen, size_t *retlen"
+  },
+  {
+    "return": "void",
+    "name": "setSecretChatBurnTime",
+    "args": "const char *ctargetId, size_t targetId_len, int ms"
+  },
+  {
+    "return": "bool",
+    "name": "isEnableSecretChat",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "isUserEnableSecretChat",
+    "args": ""
+  },
+  {
+    "return": "void",
+    "name": "setUserEnableSecretChat",
+    "args": "bool enable, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType"
+  },
+  {
+    "return": "bool",
+    "name": "isEnableMesh",
+    "args": ""
+  },
+  {
+    "return": "bool",
+    "name": "isEnableRemoteControl",
+    "args": ""
+  }
+]

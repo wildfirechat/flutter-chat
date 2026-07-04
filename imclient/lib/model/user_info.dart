@@ -5,7 +5,7 @@ class UserInfo {
   late String userId;
 
   //名称
-  late String name;
+  String name = '';
 
   //显示的名称
   String? displayName;

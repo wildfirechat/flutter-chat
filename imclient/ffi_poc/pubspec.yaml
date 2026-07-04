@@ -1,0 +1,7 @@
+name: wfclient_ffi_poc
+description: dart:ffi 直接驱动 libMarsWrapper 的可行性验证，见 DESKTOP_REFACTOR_PLAN.md 第 3 节。
+publish_to: none
+version: 0.0.1
+
+environment:
+  sdk: ">=3.1.0 <4.0.0"

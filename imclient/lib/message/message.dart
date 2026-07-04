@@ -35,7 +35,7 @@ class Message {
   int messageId;
   int? messageUid;
   late Conversation conversation;
-  late String fromUser;
+  String fromUser = '';
   List<String>? toUsers;
   late MessageContent content;
   late MessageDirection direction;

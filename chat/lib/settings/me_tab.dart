@@ -186,7 +186,7 @@ class SelfProfile extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            userInfo.displayName!,
+                            userInfo.displayName ?? userInfo.name,
                             textAlign: TextAlign.left,
                             style: const TextStyle(fontSize: 18),
                           ),
@@ -196,7 +196,7 @@ class SelfProfile extends StatelessWidget {
                           Container(
                             constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 100),
                             child: Text(
-                              AppLocalizations.of(context)!.wildfireId(userInfo.name!),
+                              AppLocalizations.of(context)!.wildfireId(userInfo.name),
                               textAlign: TextAlign.left,
                               style: const TextStyle(
                                 fontSize: 12,

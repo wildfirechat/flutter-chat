@@ -13,7 +13,6 @@ class ContactListViewModel extends ChangeNotifier {
   List<FriendRequest> _newFriendRequestList = [];
   List<String> _favUserIds = [];
   int _unreadFriendRequestCount = 0;
-  bool _isFirstConnected = true;
 
   late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
   late StreamSubscription<FriendUpdateEvent> _friendUpdatedSubscription;
@@ -42,9 +41,9 @@ class ContactListViewModel extends ChangeNotifier {
     });
 
     _connectionStatusSubscription = Imclient.IMEventBus.on<ConnectionStatusChangedEvent>().listen((event) {
-      if(event.connectionStatus == kConnectionStatusConnected && _isFirstConnected) {
-        _isFirstConnected = false;
+      if(event.connectionStatus == kConnectionStatusConnected) {
         _loadContactList(true);
+        notifyListeners();
         _loadFriendRequestListAndNotify();
       }
     });
@@ -73,6 +72,14 @@ class ContactListViewModel extends ChangeNotifier {
 
     debugPrint('jyj viewmodel');
     _loadContactList(false);
+
+    // 构造时如果已经连接，直接刷新一次，避免错过连接成功事件。
+    Imclient.connectionStatus.then((status) {
+      if (status == kConnectionStatusConnected) {
+        _loadContactList(true);
+        _loadFriendRequestListAndNotify();
+      }
+    });
   }
 
   void reset() {
@@ -97,6 +104,11 @@ class ContactListViewModel extends ChangeNotifier {
     _newFriendRequestList = await Imclient.getIncommingFriendRequest();
     _unreadFriendRequestCount = await Imclient.getUnreadFriendRequestStatus();
     notifyListeners();
+  }
+
+  void refresh() {
+    _loadContactList(true);
+    _loadFriendRequestListAndNotify();
   }
 
   void setFavUser(String userId, bool fav) {
@@ -191,6 +203,7 @@ class ContactListViewModel extends ChangeNotifier {
     }
 
     _contactList = contactList;
+    notifyListeners();
   }
 
   @override

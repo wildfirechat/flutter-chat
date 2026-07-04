@@ -54,7 +54,9 @@
 
 # flutter-chat
 
-野火Flutter版 demo， 支持 Android、iOS 和原生鸿蒙，包含即时通讯插件和实时音视频插件。
+野火Flutter版 demo， 支持 Android、iOS、原生鸿蒙和桌面端（Windows、macOS、Linux），包含即时通讯插件和实时音视频插件。
+
+> 桌面端支持的详细状态、已知问题及 Flutter 版本要求，请参考 [DESKTOP_STATUS.md](./DESKTOP_STATUS.md)。
 
 ## 关于 Flutter 、Android Studio、Gradle 版本的重要说明
 
@@ -72,7 +74,7 @@
 ## 运行
 > 由于本项目，同时支持 Android、iOS 和鸿蒙，故只能使用已适配鸿蒙的 Flutter 版本
 > 
-> 不需要支持鸿蒙时，使用`flutter-standard`分支，不需要配置鸿蒙适配版 Flutter
+> 构建 Windows、macOS、Linux 桌面端时，请切换到对应平台的官方 Flutter SDK。使用`flutter-standard`分支，不需要配置鸿蒙适配版 Flutter
 > 
 > 请参考 [这儿](https://gitcode.com/openharmony-tpc/flutter_flutter) 安装和配置 Flutter，请使用 `oh-3.27.0-release` 分支
 >
@@ -90,6 +92,15 @@
 1. ``` cd chat && flutter packages get && cd .. ```
 2. ``` cd chat/ios/ && pod install && cd ..``` (仅iOS平台需要)
 3. ``` cd chat && flutter run --debug -d ${设备 id}```
+
+### 桌面端运行（Windows / macOS / Linux）
+1. 确保使用对应平台的官方 Flutter SDK。
+2. 进入 `chat` 目录执行 `flutter packages get`。
+3. 运行对应命令：
+   - macOS：`flutter run -d macos` 或 `flutter build macos`
+   - Windows：`flutter run -d windows` 或 `flutter build windows`
+   - Linux：`flutter run -d linux` 或 `flutter build linux`
+4. 桌面端目前仅支持基础 IM 功能，音视频通话、拍照等功能在桌面端会被禁用并提示“当前平台不支持”。
 
 ### Android Studio运行
 1. 配置 `Flutter SDK Path` 和 `Dart SDK Path` 为鸿蒙适配版的对应路径
@@ -147,7 +158,7 @@
 
 3. 项目目录下执行 ``` flutter packages get``` 命令。
 4. 如果有iOS平台，执行 ``` cd chat/ios/ && pod install ``` 命令。
-5. 分别运行iOS平台和Android平台。
+5. 分别运行 iOS、Android、鸿蒙或桌面端（Windows / macOS / Linux）平台。桌面端需要使用对应平台的官方 Flutter SDK 编译。
 6. Android 平台，集成音视频的时候，需要在`AndroidManifest.xml`入口`activity`的配置里面添加如下`intent-filter`
    ```xml
     <!-- 音视频通话，需要加入下面的 intent-filter-->

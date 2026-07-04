@@ -1,6 +1,7 @@
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:imclient/imclient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -152,6 +153,7 @@ class AppServer {
         y: y,
       ));
     } catch (e) {
+      debugPrint('loadCaptcha error: $e');
       onError('加载验证码失败');
     }
   }

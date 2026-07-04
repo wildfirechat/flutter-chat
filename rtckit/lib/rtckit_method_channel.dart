@@ -52,6 +52,12 @@ class RtckitPlatform extends PlatformInterface {
     _shouldStopRingCallback = shouldStopRingCallback;
     _didEndCallCallback = didEndCallCallback;
 
+    // 桌面端没有原生音视频插件，跳过 MethodChannel 调用，避免 MissingPluginException。
+    if (defaultTargetPlatform != TargetPlatform.android &&
+        defaultTargetPlatform != TargetPlatform.iOS) {
+      return;
+    }
+
     methodChannel.invokeMethod<String>('initProto');
     methodChannel.invokeMethod("getMaxAudioCallCount").then((value) => _maxAudioCallCount = value);
     methodChannel.invokeMethod("getMaxVideoCallCount").then((value) => _maxVideoCallCount = value);
@@ -304,6 +310,10 @@ class RtckitPlatform extends PlatformInterface {
 
   Future<void> seEnableProximitySensor(bool enable) async {
     _enableProximitySensor = enable;
+    if (defaultTargetPlatform != TargetPlatform.android &&
+        defaultTargetPlatform != TargetPlatform.iOS) {
+      return;
+    }
     return await methodChannel.invokeMethod("seEnableProximitySensor", {'enable':enable});
   }
 
@@ -316,6 +326,10 @@ class RtckitPlatform extends PlatformInterface {
   }
 
   Future<void> addICEServer(String url, String name, String password) async {
+    if (defaultTargetPlatform != TargetPlatform.android &&
+        defaultTargetPlatform != TargetPlatform.iOS) {
+      return;
+    }
     var args = {"url": url, "name": name, "password": password};
     return await methodChannel.invokeMethod("addICEServer", args);
   }

@@ -242,9 +242,15 @@ class _MyAppState extends State<MyApp> {
       if (kDebugMode) {
         print("on friend list updated $newFriendIds");
       }
+      if (mounted) {
+        context.read<ContactListViewModel>().refresh();
+      }
     }, friendRequestListUpdatedCallback: (List<String> newFriendRequests) {
       if (kDebugMode) {
         print("on friend request updated $newFriendRequests");
+      }
+      if (mounted) {
+        context.read<ContactListViewModel>().refresh();
       }
     }, onlineEventCallback: (List<UserOnlineState> onlineInfos) {
       if (kDebugMode) {
