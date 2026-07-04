@@ -69,6 +69,17 @@
 1. 鸿蒙版所依赖的 野火IM 鸿蒙SDK 是需要付费的
 2. 鸿蒙版，有一些功能异常，正在适配中
 3. 鸿蒙端，暂不支持音视频通话
+4. 配置镜像
+    > 由于目标是能兼容原生鸿蒙，有的包只能从镜像下载，不配置镜像的话，可能下载不到
+    ```
+   # Linux、macOS
+   export PUB_HOSTED_URL=https://pub.flutter-io.cn
+   export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+   
+   # windows 
+   setx PUB_HOSTED_URL "https://pub.flutter-io.cn"
+   setx FLUTTER_STORAGE_BASE_URL "https://storage.flutter-io.cn"
+   ```
 
 
 ## 运行
@@ -99,7 +110,9 @@
 3. 运行对应命令：
    - macOS：`flutter run -d macos` 或 `flutter build macos`
    - Windows：`flutter run -d windows` 或 `flutter build windows`
+     > 需安装 [Visual Studio](https://aka.ms/vs/16/release/vs_community.exe)，完整环境配置说明，请参考 [Set up Windows development](https://docs.flutter.dev/platform-integration/windows/setup)
    - Linux：`flutter run -d linux` 或 `flutter build linux`
+     > Linux 环境配置说明，请参考 [Setup Linux development](https://docs.flutter.dev/platform-integration/linux/setup)
 4. 桌面端目前仅支持基础 IM 功能，音视频通话、拍照等功能在桌面端会被禁用并提示“当前平台不支持”。
 
 ### Android Studio运行

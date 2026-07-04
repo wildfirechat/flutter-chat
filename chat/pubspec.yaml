@@ -109,14 +109,14 @@ dependencies:
           url: "https://gitcode.com/openharmony-sig/flutter_localization"
   flutter_dynamic_icon: ^2.1.0
   provider: ^6.1.4
-#  webview_flutter: ^4.7.0
+  webview_flutter: ^4.7.0
 #  切换到 ohos 已适配版本
-  webview_flutter:
-      git:
-          url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
-          path: "packages/webview_flutter/webview_flutter"
-          ref: br_webview_flutter-v4.13.0_ohos
-          # ref: br_webview_flutter-v4.8.0_ohos
+#  webview_flutter:
+#      git:
+#          url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+#          path: "packages/webview_flutter/webview_flutter"
+#          ref: br_webview_flutter-v4.13.0_ohos
+#          # ref: br_webview_flutter-v4.8.0_ohos
   dsbridge_flutter: 1.2.0
 
   logger: any
