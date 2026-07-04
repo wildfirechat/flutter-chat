@@ -44,3 +44,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Web SDK build artifacts
+/web/node_modules/
+/web/.npm-cache/
+/web/package-lock.json
+/web/wfc-sdk.js
+/web/wfc-sdk.js.LICENSE.txt

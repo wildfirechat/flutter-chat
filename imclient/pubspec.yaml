@@ -11,6 +11,8 @@ dependencies:
   event_bus: ^2.0.0
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   image: ^4.0.15
   plugin_platform_interface: ^2.1.4
 
@@ -43,6 +45,9 @@ flutter:
         pluginClass: ImclientPlugin
       ohos:
         pluginClass: ImclientPlugin
+      web:
+        pluginClass: ImclientWeb
+        fileName: imclient_web.dart
       windows:
         pluginClass: ImclientPlugin
       macos:

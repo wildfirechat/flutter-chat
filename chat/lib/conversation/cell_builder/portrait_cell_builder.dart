@@ -15,6 +15,7 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import '../../config.dart';
 import '../../ui_model/ui_message.dart';
 import '../../widget/portrait.dart';
+import '../message_cell.dart';
 import 'message_cell_builder.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
@@ -22,10 +23,15 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   ConversationController? conversationController;
 
   PortraitCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+    isSendMessage = model.message.direction == MessageDirection.MessageDirection_Send;
+  }
+
+  @override
+  void initState(State<MessageCell> s) {
+    super.initState(s);
     try {
       conversationController = Provider.of<ConversationController>(context, listen: false);
     } catch (e) {}
-    isSendMessage = model.message.direction == MessageDirection.MessageDirection_Send;
   }
 
   @override

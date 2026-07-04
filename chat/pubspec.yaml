@@ -150,6 +150,8 @@ dependency_overrides:
           url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
           path: "packages/webview_flutter/webview_flutter_platform_interface"
           ref: br_webview_flutter-v4.13.0_ohos
+  flutter_sound_web:
+    path: web_stubs/flutter_sound_web
 
 dev_dependencies:
   flutter_test:

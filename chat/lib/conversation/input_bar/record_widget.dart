@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:logger/logger.dart' show Level, Logger;
 import 'package:flutter/material.dart';
-import 'package:flutter_sound/flutter_sound.dart';
+import 'package:chat/audio/chat_sound_recorder.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +20,7 @@ class RecordWidget extends StatefulWidget {
 }
 
 class RecordState extends State<RecordWidget> {
-  FlutterSoundRecorder? _recorder;
+  ChatSoundRecorder? _recorder;
   StreamSubscription? _recorderSubscription;
   bool _isRecording = false;
   bool _isReleaseCancel = false;
@@ -50,7 +49,7 @@ class RecordState extends State<RecordWidget> {
   }
 
   Future<void> _initRecorder() async {
-    _recorder = FlutterSoundRecorder(logLevel: Level.warning);
+    _recorder = ChatSoundRecorderFactory.create();
     await _recorder!.openRecorder();
   }
 
@@ -115,16 +114,15 @@ class RecordState extends State<RecordWidget> {
     });
 
     try {
-        await _recorder!.startRecorder(
-        codec: Codec.aacADTS,
-        sampleRate: 16000,
-        numChannels: 1,
-        toFile: _recordPath,
-        );
+        await _recorder!.startRecorderWithConfig(RecorderConfig(
+          sampleRate: 16000,
+          numChannels: 1,
+          toFile: _recordPath,
+        ));
         _recordStartTime = DateTime.now().millisecondsSinceEpoch;
         _recorder?.setSubscriptionDuration(const Duration(milliseconds: 100));
-        _recorderSubscription = _recorder!.onProgress?.listen((RecordingDisposition event) {
-        if (event.decibels != null) {
+        _recorderSubscription = _recorder!.onProgress?.listen((dynamic event) {
+        if (event != null && event.decibels != null) {
             _audioLevel = event.decibels! ~/ 16;
             if (_audioLevel > 6) {
             _audioLevel = 6;

@@ -416,12 +416,11 @@ packages:
     source: hosted
     version: "9.28.0"
   flutter_sound_web:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: flutter_sound_web
-      sha256: "4e10c94a8574bd93bb8668af59bf76f5312a890bccd3778d73168a7133217dc5"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: "web_stubs/flutter_sound_web"
+      relative: true
+    source: path
     version: "9.28.0"
   flutter_test:
     dependency: "direct dev"

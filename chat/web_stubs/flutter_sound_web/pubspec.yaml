@@ -1,0 +1,21 @@
+name: flutter_sound_web
+description: Web stub for flutter_sound to avoid compilation issues.
+version: 9.28.0
+publish_to: 'none'
+
+environment:
+  sdk: ">=3.0.0"
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      web:
+        pluginClass: FlutterSoundPlugin
+        fileName: flutter_sound_web.dart

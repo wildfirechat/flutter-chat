@@ -3,8 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/message/call_start_message_content.dart';
-import 'package:logger/logger.dart' show Level;
-import 'package:flutter_sound/flutter_sound.dart';
+import 'package:chat/audio/chat_sound_player.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image/image.dart' as img;
 import 'package:imclient/imclient.dart';
@@ -55,8 +54,7 @@ class ConversationController extends ChangeNotifier {
   final GlobalKey<MMPreviewViewState> _mmPreviewKey = GlobalKey();
 
   int _playingMessageId = 0;
-  final FlutterSoundPlayer _soundPlayer =
-      FlutterSoundPlayer(logLevel: Level.error);
+  final ChatSoundPlayer _soundPlayer = ChatSoundPlayerFactory.create();
 
   void onPickImage(Conversation conversation, String imagePath) {
     ImageMessageContent imgCont = ImageMessageContent();

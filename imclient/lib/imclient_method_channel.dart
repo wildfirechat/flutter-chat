@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
@@ -233,7 +232,7 @@ class ImclientPlatform extends PlatformInterface {
     _onlineEventCallback = onlineEventCallback;
 
 
-    methodChannel.invokeMethod<Void>('initProto');
+    methodChannel.invokeMethod<void>('initProto');
     _initialized = true;
 
     methodChannel.setMethodCallHandler((MethodCall call) async {
@@ -785,7 +784,7 @@ class ImclientPlatform extends PlatformInterface {
     methodChannel.invokeMethod('registerMessage', map);
   }
 
-  Message? _convertProtoMessage(Map<dynamic, dynamic>? map) {
+  static Message? _convertProtoMessage(Map<dynamic, dynamic>? map) {
     if(map == null) {
       return null;
     }
@@ -810,7 +809,7 @@ class ImclientPlatform extends PlatformInterface {
     msg.fromUser = map['fromUser'] ?? map['from'] ?? map['sender'] ?? '';
     msg.toUsers = Tools.convertDynamicList(map['to']);
     msg.content =
-        decodeMessageContent(_convertProtoMessageContent(map['content']));
+        _decodeMessageContentStatic(_convertProtoMessageContent(map['content']));
     msg.direction = MessageDirection.values[map['direction'] ?? 0];
     msg.status = MessageStatus.values[map['status'] ?? 0];
     msg.serverTime = map.containsKey('serverTime') ? map['serverTime'] : map['timestamp'];
@@ -818,7 +817,7 @@ class ImclientPlatform extends PlatformInterface {
     return msg;
   }
 
-  List<Message> _convertProtoMessages(List<dynamic> datas) {
+  static List<Message> _convertProtoMessages(List<dynamic> datas) {
     if (datas.isEmpty) {
       return [];
     }
@@ -849,7 +848,7 @@ class ImclientPlatform extends PlatformInterface {
     return conversation;
   }
 
-  List<ConversationInfo> _convertProtoConversationInfos(
+  static List<ConversationInfo> _convertProtoConversationInfos(
       List<dynamic>? maps) {
     if (maps == null || maps.isEmpty) {
       return [];
@@ -866,7 +865,7 @@ class ImclientPlatform extends PlatformInterface {
     return infos;
   }
 
-  ConversationInfo _convertProtoConversationInfo(
+  static ConversationInfo _convertProtoConversationInfo(
       Map<dynamic, dynamic> map) {
     ConversationInfo conversationInfo = ConversationInfo();
     // macOS SDK 的会话信息直接在顶层携带 type/target/line，没有嵌套 conversation 字段。
@@ -1403,6 +1402,10 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   MessageContent decodeMessageContent(MessagePayload payload) {
+    return _decodeMessageContentStatic(payload);
+  }
+
+  static MessageContent _decodeMessageContentStatic(MessagePayload payload) {
     MessageContentMeta? meta = _contentMetaMap[payload.contentType];
     MessageContent content;
     if (meta == null) {
@@ -3629,4 +3632,29 @@ class ImclientPlatform extends PlatformInterface {
   Future<bool> isGlobalDisableSyncDraft() async {
     return await methodChannel.invokeMethod("isGlobalDisableSyncDraft");
   }
+
+  // Public converters exposed for the web implementation.
+  static Message? convertProtoMessage(Map<dynamic, dynamic>? map) => _convertProtoMessage(map);
+  static List<Message> convertProtoMessages(List<dynamic> datas) => _convertProtoMessages(datas);
+  static Conversation convertProtoConversation(Map<dynamic, dynamic> map) => _convertProtoConversation(map);
+  static ConversationInfo convertProtoConversationInfo(Map<dynamic, dynamic> map) => _convertProtoConversationInfo(map);
+  static List<ConversationInfo> convertProtoConversationInfos(List<dynamic>? datas) => _convertProtoConversationInfos(datas);
+  static UnreadCount convertProtoUnreadCount(Map<dynamic, dynamic>? map) => _convertProtoUnreadCount(map);
+  static UserInfo? convertProtoUserInfo(Map<dynamic, dynamic>? map) => _convertProtoUserInfo(map);
+  static List<UserInfo> convertProtoUserInfos(List<dynamic>? datas) => _convertProtoUserInfos(datas);
+  static Future<GroupInfo?> convertProtoGroupInfo(Map<dynamic, dynamic>? map) => _convertProtoGroupInfo(map);
+  static GroupMember? convertProtoGroupMember(Map<dynamic, dynamic> map) => _convertProtoGroupMember(map);
+  static List<GroupMember> convertProtoGroupMembers(List<dynamic> datas) => _convertProtoGroupMembers(datas);
+  static Friend convertProtoFriend(Map<dynamic, dynamic> map) => _convertProtoFriend(map);
+  static FriendRequest? convertProtoFriendRequest(Map<dynamic, dynamic>? data) => _convertProtoFriendRequest(data);
+  static List<FriendRequest> convertProtoFriendRequests(List<dynamic> datas) => _convertProtoFriendRequests(datas);
+  static ReadReport? convertProtoReadEntry(Map<dynamic, dynamic>? map) => _convertProtoReadEntry(map);
+  static ChannelInfo? convertProtoChannelInfo(Map<dynamic, dynamic>? map) => _convertProtoChannelInfo(map);
+  static List<ChannelInfo> convertProtoChannelInfos(List<dynamic> datas) => _convertProtoChannelInfos(datas);
+  static FileRecord convertProtoFileRecord(Map<dynamic, dynamic> map) => _convertProtoFileRecord(map);
+  static List<FileRecord> convertProtoFileRecords(List<dynamic> datas) => _convertProtoFileRecords(datas);
+  static Map<String, dynamic> convertMessageContent(MessageContent content) => _convertMessageContent(content);
+  static PCOnlineInfo convertProtoPcOnlineInfo(Map<dynamic, dynamic> data) => _convertProtoPcOnlineInfo(data);
+  static List<PCOnlineInfo> convertProtoOnlineInfos(List<dynamic> datas) => _convertProtoOnlineInfos(datas);
+  static UserOnlineState convertProtoUserOnlineState(Map<dynamic, dynamic> data) => _convertProtoUserOnlineState(data);
 }
