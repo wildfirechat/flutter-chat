@@ -7,6 +7,23 @@ typedef OnPickerEmojiCallback = void Function(String emoji);
 typedef OnDelEmojiCallback = void Function();
 typedef OnPickerStickerCallback = void Function(String stickerPath);
 
+/// 内置 emoji 列表,移动端输入栏与桌面端表情弹层共用。
+const List<String> kChatEmojis = [
+  '😊', '😨', '😍', '😳', '😎', '😭', '😌', '😵', '😴', '😢',
+  '😅', '😡', '😜', '😀', '😲', '😟', '😤', '😞', '😫', '😣',
+  '😈', '😉', '😯', '😕', '😰', '😋', '😝', '😓', '😃', '😂',
+  '😘', '😒', '😏', '😶', '😱', '😖', '😩', '😔', '😑', '😚',
+  '😪', '😇', '🙊', '👊', '👎', '☝', '✌', '😬', '😷', '🙈',
+  '👌', '👏', '✊', '💪', '😆', '☺', '🙉', '👍', '🙏', '✋',
+  '☀', '☕', '⛄', '📚', '🎁', '🎉', '🍦', '☁', '❄', '⚡',
+  '💰', '🎂', '🎓', '🍖', '☔', '⛅', '✏', '💩', '🎄', '🍷',
+  '🎤', '🏀', '🀄', '💣', '📢', '🌏', '🍫', '🎲', '🏂', '💡',
+  '💤', '🚫', '🌻', '🍻', '🎵', '🏡', '💢', '📞', '🚿', '🍚',
+  '👪', '👼', '💊', '🔫', '🌹', '🐶', '💄', '👫', '👽', '💋',
+  '🌙', '🍉', '🐷', '💔', '👻', '👿', '💍', '🌲', '🐴', '👑',
+  '🔥', '⭐', '⚽', '🕖', '⏰', '😁', '🚀', '⏳', '🏡'
+];
+
 class EmojiBoard extends StatefulWidget {
   final List<String> emojis;
   final OnPickerEmojiCallback pickerEmojiCallback;

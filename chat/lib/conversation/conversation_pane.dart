@@ -1,0 +1,571 @@
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:imclient/imclient.dart';
+import 'package:imclient/message/composite_message_content.dart';
+import 'package:imclient/message/message.dart';
+import 'package:imclient/message/notification/notification_message_content.dart';
+import 'package:imclient/message/notification/tip_notificiation_content.dart';
+import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/group_member.dart';
+import 'package:imclient/model/user_info.dart';
+import 'package:provider/provider.dart';
+import 'package:chat/config.dart';
+import 'package:chat/contact/pick_user_screen.dart';
+import 'package:chat/conversation/conversation_controller.dart';
+import 'package:chat/conversation/input_bar/message_input_bar.dart';
+import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
+import 'package:chat/conversation/message_cell.dart';
+import 'package:chat/conversation/pick_forward_target_page.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/viewmodel/conversation_view_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+/// 会话消息面板:消息列表 + 输入栏 + 多选工具栏,并承载进入/退出会话的完整生命周期
+/// (setConversation、清未读、聊天室加退、草稿保存)。
+///
+/// 移动端 [ConversationScreen] 与桌面右栏 PcConversationPane 共用本组件,
+/// 输入栏形态由壳注入:手机传 [MessageInputBar](默认),桌面传 PcMessageInputBar。
+class ConversationPane extends StatefulWidget {
+  final Conversation conversation;
+  final int? toFocusMessageId;
+  final Widget inputBar;
+
+  const ConversationPane(
+    this.conversation, {
+    super.key,
+    this.toFocusMessageId,
+    this.inputBar = const MessageInputBar(),
+  });
+
+  @override
+  State<ConversationPane> createState() => _ConversationPaneState();
+}
+
+class _ConversationPaneState extends State<ConversationPane> {
+  late ConversationViewModel _conversationViewModel;
+  late MessageInputBarController _inputBarController;
+  final ScrollController _scrollController = ScrollController();
+  double _pullDistance = 0.0;
+  bool _isDragging = false;
+  bool _isLoading = false;
+  bool _isLoadingNewer = false;
+  final Key _centerKey = UniqueKey();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
+    _conversationViewModel.setConversation(widget.conversation, toFocusMessageId: widget.toFocusMessageId, joinChatroomErrorCallback: (err) {
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.joinChatroomFail);
+      Navigator.of(context).maybePop();
+    });
+
+    Imclient.clearConversationUnreadStatus(widget.conversation);
+
+    if (isDesktopShell) {
+      // 桌面端没有触摸下拉手势,滚动接近历史侧末端时自动加载更早的消息;
+      // 首帧后主动触发一次,覆盖首屏消息不足一屏、无法产生滚动的情况。
+      _scrollController.addListener(_autoLoadHistoryIfNeeded);
+      WidgetsBinding.instance.addPostFrameCallback((_) => _autoLoadHistoryIfNeeded());
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.dispose();
+    // 桌面端右栏切换会话时,新会话页 initState 先于旧页 dispose 执行,
+    // 此时 viewModel 已指向新会话,不能清空;仅当自己仍是当前会话时才清。
+    if (_conversationViewModel.currentConversation == widget.conversation) {
+      _conversationViewModel.setConversation(null);
+    }
+    if (widget.conversation.conversationType == ConversationType.Chatroom) {
+      Imclient.quitChatroom(widget.conversation.target, () {
+        Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
+          if (userInfo != null) {
+            TipNotificationContent tip = TipNotificationContent();
+            tip.tip = AppLocalizations.of(context)!.userLeftChatroom(userInfo.displayName!);
+            _conversationViewModel.sendMessage(tip);
+          }
+        });
+      }, (errorCode) {});
+    }
+  }
+
+  @override
+  void deactivate() {
+    String draft = _inputBarController.getDraft();
+    if (draft.trim().isNotEmpty) {
+      Imclient.setConversationDraft(widget.conversation, draft);
+    }
+    super.deactivate();
+  }
+
+  /// 桌面端:reverse 列表的 maxScrollExtent 一侧是更早的消息,接近时触发加载。
+  /// loadHistoryMessage 内部有 loading 防重入,noMoreHistoryMsg 兜底终止。
+  /// 加载完成后下一帧再补判一次:若仍未填满一屏则继续加载。
+  void _autoLoadHistoryIfNeeded() {
+    if (!mounted || !_scrollController.hasClients) {
+      return;
+    }
+    if (_isLoading || _conversationViewModel.noMoreHistoryMsg) {
+      return;
+    }
+    final position = _scrollController.position;
+    if (position.maxScrollExtent - position.pixels < 200) {
+      setState(() {
+        _isLoading = true;
+      });
+      _conversationViewModel.loadHistoryMessage().then((_) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          WidgetsBinding.instance.addPostFrameCallback((_) => _autoLoadHistoryIfNeeded());
+        }
+      });
+    }
+  }
+
+  bool notificationFunction(Notification notification) {
+    if (notification is ScrollStartNotification) {
+      if (notification.dragDetails != null) {
+        _isDragging = true;
+        _inputBarController.resetStatus();
+      }
+    } else if (notification is ScrollUpdateNotification) {
+      if (notification.metrics.pixels > notification.metrics.maxScrollExtent) {
+        setState(() {
+          _pullDistance = (notification.metrics.pixels - notification.metrics.maxScrollExtent);
+        });
+      } else {
+        if (_pullDistance > 0) {
+          setState(() {
+            _pullDistance = 0.0;
+          });
+        }
+      }
+      if (notification.dragDetails == null && _isDragging) {
+        _isDragging = false;
+        if (_pullDistance > 50) {
+          setState(() {
+            _isLoading = true;
+          });
+          _conversationViewModel.loadHistoryMessage().then((value) {
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
+          });
+        }
+      }
+    } else if (notification is OverscrollNotification) {
+      if (notification.overscroll > 0) {
+        setState(() {
+          _pullDistance += notification.overscroll;
+        });
+      } else if (notification.overscroll < 0) {
+        setState(() {
+          _pullDistance += notification.overscroll;
+          if (_pullDistance < 0) _pullDistance = 0;
+        });
+      }
+    } else if (notification is ScrollEndNotification) {
+      _isDragging = false;
+      setState(() {
+        _pullDistance = 0.0;
+      });
+    }
+    return false;
+  }
+
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    var conversationViewModel = Provider.of<ConversationViewModel>(context);
+    var conversationMessageList = conversationViewModel.conversationMessageList;
+
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<ConversationController>(create: (_) => ConversationController(conversationViewModel)),
+        ChangeNotifierProvider<MessageInputBarController>(create: (_) {
+          _inputBarController = MessageInputBarController(conversation: widget.conversation, conversationViewModel: conversationViewModel);
+          _inputBarController.onMentionTriggered = _onMentionTriggered;
+          _inputBarController.onSend = _scrollToBottom;
+          return _inputBarController;
+        }),
+      ],
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  child: NotificationListener(
+                    onNotification: notificationFunction,
+                    child: CustomScrollView(
+                      controller: _scrollController,
+                      center: _centerKey,
+                      anchor: conversationViewModel.focusMessageIndex > 0 ? 0.5 : 0.0,
+                      reverse: true,
+                      // 桌面端滚轮/触控板没有回弹语义,用 clamping;历史加载走 _autoLoadHistoryIfNeeded
+                      physics: isDesktopShell
+                          ? const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics())
+                          : const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                      slivers: [
+                        if (conversationViewModel.focusMessageIndex > 0)
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                int focusIndex = conversationViewModel.focusMessageIndex;
+                                int newerCount = focusIndex;
+                                if (!conversationViewModel.noMoreNewerMsg) {
+                                  if (index == newerCount) {
+                                    if (!_isLoadingNewer) {
+                                      _isLoadingNewer = true;
+                                      _conversationViewModel.loadNewerMessage().then((value) {
+                                        if (mounted) {
+                                          setState(() {
+                                            _isLoadingNewer = false;
+                                          });
+                                        }
+                                      });
+                                    }
+                                    return Container(
+                                      padding: const EdgeInsets.all(10),
+                                      alignment: Alignment.center,
+                                      child: const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      ),
+                                    );
+                                  }
+                                }
+                                int listIndex = focusIndex - 1 - index;
+                                if (listIndex < 0) return null;
+                                return _buildMessageItem(context, listIndex, conversationViewModel);
+                              },
+                              childCount: conversationViewModel.focusMessageIndex + (!conversationViewModel.noMoreNewerMsg ? 1 : 0),
+                            ),
+                          ),
+                        SliverList(
+                          key: _centerKey,
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              int listIndex = conversationViewModel.focusMessageIndex + index;
+                              if (listIndex >= conversationMessageList.length) return null;
+                              return _buildMessageItem(context, listIndex, conversationViewModel);
+                            },
+                            childCount: conversationMessageList.length - conversationViewModel.focusMessageIndex,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  onTap: () {
+                    _inputBarController.resetStatus();
+                  },
+                ),
+              ),
+              conversationViewModel.isMultiSelectMode ? _buildMultiSelectToolBar(context, conversationViewModel) : widget.inputBar,
+            ],
+          ),
+          if (_pullDistance > 0 || _isLoading)
+            Positioned(
+              top: 10,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  width: 35,
+                  height: 35,
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withValues(alpha: 0.5),
+                        spreadRadius: 1,
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    value: _isLoading ? null : (_pullDistance / 50).clamp(0.0, 1.0),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMultiSelectToolBar(BuildContext context, ConversationViewModel viewModel) {
+    return Container(
+      height: 60,
+      color: const Color(0xFFF5F5F5),
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.forward),
+            onPressed: () {
+              _handleForward(context, viewModel);
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () {
+              _handleDeleteSelected(context, viewModel);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleDeleteSelected(BuildContext context, ConversationViewModel viewModel) {
+    if (viewModel.getSelectedMessages().isEmpty) {
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.selectMessage);
+      return;
+    }
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text(AppLocalizations.of(context)!.deleteMessage),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteMessages(context, viewModel, false);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(AppLocalizations.of(context)!.deleteLocalMessage),
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                _deleteMessages(context, viewModel, true);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(AppLocalizations.of(context)!.deleteRemoteMessage),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteMessages(BuildContext context, ConversationViewModel viewModel, bool isRemote) {
+    var selected = viewModel.getSelectedMessages();
+    for (var msg in selected) {
+      if (isRemote) {
+        if (msg.messageUid != null && msg.messageUid! > 0) {
+          Imclient.deleteRemoteMessage(msg.messageUid!, () {}, (errorCode) {
+            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.deleteRemoteMessageFail(errorCode.toString()));
+          });
+        } else {
+          viewModel.deleteMessage(msg.messageId);
+        }
+      } else {
+        viewModel.deleteMessage(msg.messageId);
+      }
+    }
+    viewModel.toggleMultiSelectMode();
+  }
+
+  void _handleForward(BuildContext context, ConversationViewModel viewModel) {
+    var selected = viewModel.getSelectedMessages();
+    if (selected.isEmpty) {
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.selectMessage);
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text(AppLocalizations.of(context)!.forward),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                _forwardMessages(context, viewModel, selected, false);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(AppLocalizations.of(context)!.forwardOneByOne),
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () {
+                Navigator.pop(context);
+                _forwardMessages(context, viewModel, selected, true);
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(AppLocalizations.of(context)!.forwardCombined),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _forwardMessages(BuildContext context, ConversationViewModel viewModel, List<Message> messages, bool isMerge) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PickForwardTargetPage(
+          messages: messages,
+          onSelected: (conversations) {
+            Navigator.pop(context);
+            viewModel.toggleMultiSelectMode();
+
+            for (var target in conversations) {
+              if (isMerge && messages.length > 1) {
+                _sendCompositeMessage(context, target, messages);
+              } else {
+                _sendOneByOneMessage(context, target, messages);
+              }
+            }
+            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sent);
+          },
+        ),
+      ),
+    );
+  }
+
+  void _sendOneByOneMessage(BuildContext context, Conversation target, List<Message> messages) {
+    messages.sort((a, b) => a.serverTime.compareTo(b.serverTime));
+    for (var msg in messages) {
+      Imclient.sendMessage(target, msg.content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sendFail);
+      });
+    }
+  }
+
+  void _sendCompositeMessage(BuildContext context, Conversation target, List<Message> messages) {
+    CompositeMessageContent content = CompositeMessageContent();
+    content.title = AppLocalizations.of(context)!.chatHistory;
+    messages.sort((a, b) => a.serverTime.compareTo(b.serverTime));
+    content.messages = messages;
+
+    Imclient.sendMessage(target, content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sendFail);
+    });
+  }
+
+  void _onMentionTriggered(Conversation conversation) async {
+    List<String> candidates = [];
+    bool showAll = false;
+    if (conversation.conversationType == ConversationType.Group) {
+      var members = await Imclient.getGroupMembers(conversation.target);
+      candidates.addAll(members.map((e) => e.memberId).toList());
+      var me = members.firstWhere((element) => element.memberId == Imclient.currentUserId, orElse: () => GroupMember());
+      if (me.type == GroupMemberType.Owner || me.type == GroupMemberType.Manager) {
+        showAll = true;
+      }
+    }
+    if (Config.AI_ROBOTS.isNotEmpty) {
+      candidates.addAll(Config.AI_ROBOTS);
+    }
+
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    // Remove self
+    candidates.remove(Imclient.currentUserId);
+
+    if (candidates.isEmpty) {
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PickUserScreen(
+          (context, pickedUsers) {
+            if (pickedUsers.isNotEmpty) {
+              if (pickedUsers[0] == '@all') {
+                UserInfo all = UserInfo('@all');
+                all.displayName = AppLocalizations.of(context)!.allMembers;
+                _inputBarController.addMention(all);
+              } else {
+                Imclient.getUserInfo(pickedUsers[0]).then((userInfo) {
+                  if (userInfo != null) {
+                    _inputBarController.addMention(userInfo);
+                  }
+                });
+              }
+            }
+            Navigator.pop(context);
+          },
+          title: AppLocalizations.of(context)!.pickRemindUser,
+          maxSelected: 1,
+          candidates: candidates,
+          showMentionAll: showAll,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessageItem(BuildContext context, int index, ConversationViewModel conversationViewModel) {
+    var conversationMessageList = conversationViewModel.conversationMessageList;
+    var msg = conversationMessageList[index];
+    var cell = MessageCell(msg);
+    if (conversationViewModel.isMultiSelectMode) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          conversationViewModel.toggleMessageSelection(msg.message.messageId);
+        },
+        child: Row(
+          children: [
+            if (msg.message.content is! NotificationMessageContent)
+              Checkbox(
+                value: conversationViewModel.isMessageSelected(msg.message.messageId),
+                onChanged: (bool? value) {
+                  conversationViewModel.toggleMessageSelection(msg.message.messageId);
+                },
+              ),
+            Expanded(
+              child: AbsorbPointer(
+                child: cell,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return cell;
+    }
+  }
+}

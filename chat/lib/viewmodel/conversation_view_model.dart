@@ -63,6 +63,9 @@ class ConversationViewModel extends ChangeNotifier {
 
   bool get noMoreNewerMsg => _noMoreNewerMsg;
 
+  /// 本地与远端历史消息都已取尽。桌面端滚动到顶自动加载时用它终止请求。
+  bool get noMoreHistoryMsg => _noMoreLocalHistoryMsg && _noMoreRemoteHistoryMsg;
+
   String get draft => _draft;
 
   int get unreadMessageCount {

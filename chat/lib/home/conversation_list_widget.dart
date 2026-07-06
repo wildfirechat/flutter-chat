@@ -12,6 +12,9 @@ import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
@@ -39,6 +42,8 @@ class ConversationListWidget extends StatelessWidget {
     return ChangeNotifierProvider<StatusNotificationViewModel>(
       create: (_) => StatusNotificationViewModel(),
       child: Scaffold(
+        // 桌面端中栏由 PCHome 铺 PcTheme.middleBg,列表本身透明
+        backgroundColor: isDesktopShell ? Colors.transparent : null,
         body: SafeArea(
           child: Column(
             children: [
@@ -98,7 +103,8 @@ class StatusNotificationHeader extends StatelessWidget {
           ));
         }
 
-        if (viewModel.connectionStatus == kConnectionStatusConnected && viewModel.pcOnlineInfos.isNotEmpty) {
+        // “PC 已登录”横幅只对手机端有意义,桌面端自身就是 PC
+        if (!isDesktopShell && viewModel.connectionStatus == kConnectionStatusConnected && viewModel.pcOnlineInfos.isNotEmpty) {
           String pcStatus = viewModel.pcOnlineInfos.map((e) {
             if (e.type == 0) return AppLocalizations.of(context)!.pcClient;
             if (e.type == 1) return AppLocalizations.of(context)!.webClient;
@@ -216,17 +222,40 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   Widget build(BuildContext context) {
     super.build(context);
 
+    if (isDesktopShell) {
+      return RepaintBoundary(
+        child: HoverBuilder(
+          cursor: SystemMouseCursors.click,
+          builder: (context, hovered) => _buildCell(context, hovered),
+        ),
+      );
+    }
+    return RepaintBoundary(child: _buildCell(context, false));
+  }
+
+  /// 桌面端:透明底衬在中栏暖灰上,hover/选中分别加深;置顶会话微微提亮。
+  /// 移动端:维持原 Cupertino 配色。
+  Color _cellBackground(bool hovered) {
+    var conversationInfo = widget.conversationInfo;
+    if (isDesktopShell) {
+      if (widget.isSelected) return PcTheme.cellSelected;
+      if (hovered) return PcTheme.cellHover;
+      return conversationInfo.isTop > 0 ? const Color(0xFFEFEEED) : Colors.transparent;
+    }
+    return widget.isSelected
+        ? const Color(0xffd6d6d6)
+        : conversationInfo.isTop > 0
+            ? CupertinoColors.secondarySystemBackground
+            : CupertinoColors.systemBackground;
+  }
+
+  Widget _buildCell(BuildContext context, bool hovered) {
     var conversationInfo = widget.conversationInfo;
     bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
 
-    return RepaintBoundary(
-      child: GestureDetector(
+    return GestureDetector(
       child: Container(
-          color: widget.isSelected
-              ? const Color(0xffd6d6d6)
-              : conversationInfo.isTop > 0
-                  ? CupertinoColors.secondarySystemBackground
-                  : CupertinoColors.systemBackground,
+          color: _cellBackground(hovered),
           child: Column(
             children: <Widget>[
               Container(
@@ -324,10 +353,11 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                           ],
                         )),
               ),
+              // 桌面端参照微信 PC 不加分隔线,由背景色区分;保留高度以维持 itemExtent
               Container(
                 margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
                 height: 0.5,
-                color: const Color(0xffebebeb),
+                color: isDesktopShell ? Colors.transparent : const Color(0xffebebeb),
               ),
             ],
           )),
@@ -339,7 +369,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
         }
       },
       onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
-      ),
+      // 桌面端右键弹出同一套会话操作菜单(置顶/删除/未读)
+      onSecondaryTapUp: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
     );
   }
 
@@ -401,7 +432,10 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context, listen: false);
     showMenu(
       context: context,
-      position: RelativeRect.fromLTRB(position.dx - 120, position.dy, position.dx, position.dy),
+      // 桌面端菜单直接从鼠标位置展开;移动端保留左偏,避免长按时菜单出屏
+      position: isDesktopShell
+          ? RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy)
+          : RelativeRect.fromLTRB(position.dx - 120, position.dy, position.dx, position.dy),
       items: items,
     ).then((selected) {
       if (selected != null) {

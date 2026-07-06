@@ -24,6 +24,7 @@ import 'package:avenginekit/engine/call_state.dart';
 import 'package:avenginekit/internal/avenginekit_impl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/config.dart';
@@ -463,6 +464,12 @@ class ConversationController extends ChangeNotifier {
       },
     ]);
 
+    // 桌面端:标准垂直上下文菜单,锚定鼠标/气泡位置,showMenu 自动避让窗口边缘
+    if (isDesktopShell) {
+      _showDesktopContextMenu(context, model, bubbleRect, menuItems, messageInputBarController);
+      return;
+    }
+
     // 如果没有bubbleRect，使用屏幕中心
     final screenSize = MediaQuery.of(context).size;
     final targetRect = bubbleRect ??
@@ -481,6 +488,38 @@ class ConversationController extends ChangeNotifier {
       },
     );
   }
+
+  void _showDesktopContextMenu(BuildContext context, UIMessage model, Rect? anchorRect, List<Map<String, dynamic>> menuItems,
+      MessageInputBarController messageInputBarController) {
+    // 会话页位于右栏嵌套 Navigator 中,showMenu 的 position 相对其 overlay 解析;
+    // anchorRect 是窗口全局坐标,必须先换算,否则菜单会向右偏移一个侧栏+中栏的宽度。
+    final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final globalAnchor = anchorRect?.center ?? overlayBox.localToGlobal(overlayBox.size.center(Offset.zero));
+    final localAnchor = overlayBox.globalToLocal(globalAnchor);
+    showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(localAnchor & Size.zero, Offset.zero & overlayBox.size),
+      constraints: const BoxConstraints(minWidth: 140),
+      items: menuItems
+          .map((item) => PopupMenuItem<String>(
+                value: item['value'],
+                height: 34,
+                child: Row(
+                  children: [
+                    Icon(item['icon'], size: 16, color: const Color(0xFF5C5C5C)),
+                    const SizedBox(width: 10),
+                    Text(item['label']),
+                  ],
+                ),
+              ))
+          .toList(),
+    ).then((value) {
+      if (value != null && context.mounted) {
+        _handleMenuItemTap(context, value, model, messageInputBarController);
+      }
+    });
+  }
+
 
   void _handleMenuItemTap(BuildContext context, String value, UIMessage model,
       MessageInputBarController messageInputBarController) async {

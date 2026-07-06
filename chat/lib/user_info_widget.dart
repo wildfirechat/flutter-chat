@@ -9,6 +9,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/invite_friend.dart';
+import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_button_item.dart';
@@ -31,6 +32,24 @@ class UserInfoWidget extends StatefulWidget {
 class _UserInfoWidgetState extends State<UserInfoWidget> {
   bool _isBlacklisted = false;
   bool _isStarred = false;
+
+  /// 发起单聊:桌面 Shell 内交给 PCShellViewModel 在右栏打开并同步选中态,
+  /// 移动端(无该 Provider)保持整页 push。
+  void _openSingleConversation(BuildContext context) {
+    Conversation conversation = Conversation(conversationType: ConversationType.Single, target: widget.userId);
+    PCShellViewModel? shell;
+    try {
+      shell = Provider.of<PCShellViewModel>(context, listen: false);
+    } catch (_) {}
+    if (shell != null) {
+      shell.openConversation(conversation);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -129,11 +148,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                         }),
                         const SectionDivider(),
                         OptionButtonItem(AppLocalizations.of(context)!.sendMsg, () {
-                          Conversation conversation = Conversation(conversationType: ConversationType.Single, target: widget.userId);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
-                          );
+                          _openSingleConversation(context);
                         }),
                       ] else if (isFriend) ...[
                         OptionItem(AppLocalizations.of(context)!.setAlias, onTap: () {
@@ -145,11 +160,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                         }),
                         const SectionDivider(),
                         OptionButtonItem(AppLocalizations.of(context)!.sendMsg, () {
-                          Conversation conversation = Conversation(conversationType: ConversationType.Single, target: widget.userId);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
-                          );
+                          _openSingleConversation(context);
                         }),
                         OptionButtonItem('视频聊天', () {
                           // SingleVideoCallView callView = SingleVideoCallView(userId: userId, audioOnly: false);

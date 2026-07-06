@@ -9,6 +9,10 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/conversation/read_receipt_status_widget.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_shell_view_model.dart';
+import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/pc/pc_user_card.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 
@@ -46,13 +50,38 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
             ));
   }
 
+  final GlobalKey _portraitKey = GlobalKey();
+
   Widget _portrait(BuildContext context, UserInfo? userInfo) {
     var portrait = userInfo?.portrait ?? Config.defaultUserPortrait;
     return GestureDetector(
-      child:
-          Container(margin: const EdgeInsets.fromLTRB(8, 0, 8, 0), child: Portrait(portrait, Config.defaultUserPortrait, width: 44.0, height: 44.0, borderRadius: 6.0)),
-      onTap: () => conversationController?.onPortraitTaped(context, model),
+      child: Container(
+          key: _portraitKey,
+          margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+          child: Portrait(portrait, Config.defaultUserPortrait, width: 44.0, height: 44.0, borderRadius: 6.0)),
+      // 桌面端点头像弹用户信息卡片(微信 PC 形态),移动端仍整页打开
+      onTap: () => isDesktopShell ? _showUserCard(context) : conversationController?.onPortraitTaped(context, model),
       onLongPress: () => conversationController?.onPortraitLongTaped(context, model),
+    );
+  }
+
+  void _showUserCard(BuildContext context) {
+    final renderBox = _portraitKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) {
+      return;
+    }
+    final anchor = renderBox.localToGlobal(Offset.zero) & renderBox.size;
+    // 卡片在根 Navigator 弹出,PCShellViewModel 只存在于 PCHome 子树,先在这里取好传入
+    PCShellViewModel? shell;
+    try {
+      shell = Provider.of<PCShellViewModel>(context, listen: false);
+    } catch (_) {}
+    showPcUserCard(
+      context: context,
+      anchor: anchor,
+      userId: model.message.fromUser,
+      groupId: model.message.conversation.conversationType == ConversationType.Group ? model.message.conversation.target : null,
+      shell: shell,
     );
   }
 
@@ -85,7 +114,10 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                             ? const EdgeInsets.all(0)
                             : const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isSendMessage ? const Color(0xf0a8bdff): Colors.white,
+                      // 桌面端用品牌蓝浅色调气泡(见 PcTheme),移动端维持原配色
+                      color: isSendMessage
+                          ? (isDesktopShell ? PcTheme.bubbleSent : const Color(0xf0a8bdff))
+                          : Colors.white,
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(8),
                         topLeft: Radius.circular(8),
@@ -105,6 +137,11 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                       bubbleRect = offset & renderBox.size;
                     }
                     conversationController?.onLongPressedCell(context, model, bubbleRect);
+                  },
+                  // 桌面端右键在鼠标位置弹出同一套消息菜单
+                  onSecondaryTapUp: (details) {
+                    conversationController?.onLongPressedCell(
+                        context, model, Rect.fromCenter(center: details.globalPosition, width: 4, height: 4));
                   },
                 ),
               ),

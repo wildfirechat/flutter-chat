@@ -27,7 +27,11 @@ import '../user_info_widget.dart';
 class SearchPortalResultView extends StatefulWidget {
   final String query;
 
-  const SearchPortalResultView(this.query, {super.key});
+  /// 桌面端 Shell 注入:点击结果时回调(替代默认的全屏 push)。移动端不传,保持原有行为。
+  final void Function(String userId)? onUserSelected;
+  final void Function(Conversation conversation, {int? focusMessageId})? onConversationSelected;
+
+  const SearchPortalResultView(this.query, {super.key, this.onUserSelected, this.onConversationSelected});
 
   @override
   State<SearchPortalResultView> createState() => _SearchPortalResultViewState();
@@ -124,18 +128,33 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
     );
   }
 
+  void _openUser(String userId) {
+    if (widget.onUserSelected != null) {
+      widget.onUserSelected!(userId);
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => UserInfoWidget(userId)),
+    );
+  }
+
+  void _openConversation(Conversation conversation, {int? focusMessageId}) {
+    if (widget.onConversationSelected != null) {
+      widget.onConversationSelected!(conversation, focusMessageId: focusMessageId);
+      return;
+    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ConversationScreen(conversation, toFocusMessageId: focusMessageId)),
+    );
+  }
+
   Widget _buildUserSearchResultItem(UserInfo userInfo) {
     return ListTile(
       leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
       title: Text(userInfo.getReadableName()),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => UserInfoWidget(userInfo.userId),
-          ),
-        );
-      },
+      onTap: () => _openUser(userInfo.userId),
     );
   }
 
@@ -143,14 +162,7 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
     return ListTile(
       leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
       title: Text(userInfo.getReadableName()),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => UserInfoWidget(userInfo.userId),
-          ),
-        );
-      },
+      onTap: () => _openUser(userInfo.userId),
     );
   }
 
@@ -164,16 +176,7 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
       subtitle: (info.marchType & 2 != 0 && info.marchedMemberNames != null && info.marchedMemberNames!.isNotEmpty)
           ? Text("包含成员: ${info.marchedMemberNames!.join(" ")}", maxLines: 1,)
           : null,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ConversationScreen(
-              Conversation(conversationType: ConversationType.Group, target: info.groupInfo!.target, line: 0),
-            ),
-          ),
-        );
-      },
+      onTap: () => _openConversation(Conversation(conversationType: ConversationType.Group, target: info.groupInfo!.target, line: 0)),
     );
   }
 
@@ -181,16 +184,7 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
     return ListTile(
       leading: Portrait(info.portrait ?? Config.defaultChannelPortrait, Config.defaultChannelPortrait),
       title: Text(info.name ?? 'Channel'),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ConversationScreen(
-              Conversation(conversationType: ConversationType.Channel, target: info.channelId, line:0),
-            ),
-          ),
-        );
-      },
+      onTap: () => _openConversation(Conversation(conversationType: ConversationType.Channel, target: info.channelId, line: 0)),
     );
   }
 
@@ -231,16 +225,13 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                         }),
             onTap: () {
               if (info.marchedCount == 1) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ConversationScreen(
-                      conversation,
-                      toFocusMessageId: info.marchedMessage?.messageId,
-                    ),
-                  ),
-                );
+                _openConversation(conversation, focusMessageId: info.marchedMessage?.messageId);
               } else if (info.marchedCount > 1) {
+                // 多条命中:桌面端暂直接打开会话(记录内检索是 M3 项),移动端进入次级检索页
+                if (widget.onConversationSelected != null) {
+                  widget.onConversationSelected!(conversation);
+                  return;
+                }
                 Navigator.push(
                   context,
                   MaterialPageRoute(
