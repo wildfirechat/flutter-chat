@@ -13,6 +13,7 @@ import 'package:chat/conversation/group_conversation_info_screen.dart';
 import 'package:chat/conversation/input_bar/message_input_bar.dart';
 import 'package:chat/conversation/conversation_appbar_title.dart';
 import 'package:chat/conversation/single_conversation_info_screen.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -61,7 +62,11 @@ class _State extends State<ConversationScreen> {
   void dispose() {
     super.dispose();
     _scrollController.dispose();
-    _conversationViewModel.setConversation(null);
+    // 桌面端右栏切换会话时,新会话页的 initState 先于本页 dispose 执行,
+    // 此时 viewModel 已指向新会话,不能清空;仅当自己仍是当前会话时才清。
+    if (_conversationViewModel.currentConversation == widget.conversation) {
+      _conversationViewModel.setConversation(null);
+    }
     if (widget.conversation.conversationType == ConversationType.Chatroom) {
       Imclient.quitChatroom(widget.conversation.target, () {
         Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
@@ -178,6 +183,8 @@ class _State extends State<ConversationScreen> {
           appBar: AppBar(
             title: ConversationAppbarTitle(widget.conversation),
             actions: actions,
+            // 桌面端会话页是右栏根页面,下面只有空占位页,不显示返回箭头
+            automaticallyImplyLeading: !isDesktopShell,
           ),
           body: SafeArea(
             bottom: false,

@@ -37,6 +37,8 @@ import 'default_portrait_provider.dart';
 import 'home/home.dart';
 import 'internal/app_state.dart';
 import 'login_screen.dart';
+import 'pc/pc_home.dart';
+import 'pc/pc_platform.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -341,8 +343,9 @@ class _MyAppState extends State<MyApp> {
   Widget _buildHome() {
     if (isLogined == null) {
       return const SplashScreen();
-    } else {
-      return isLogined! ? const HomeTabBar() : const LoginScreen();
+    } else if (!isLogined!) {
+      return const LoginScreen();
     }
+    return isDesktopShell ? const PCHome() : const HomeTabBar();
   }
 }

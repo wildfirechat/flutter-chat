@@ -26,7 +26,12 @@ import '../conversation/conversation_screen.dart';
 import '../viewmodel/user_view_model.dart';
 
 class ConversationListWidget extends StatelessWidget {
-  const ConversationListWidget({super.key});
+  /// 桌面端 Shell 注入:点击会话时回调(替代默认的全屏 push),并高亮选中会话。
+  /// 移动端不传,保持原有行为。
+  final Function(Conversation conversation)? onConversationSelected;
+  final Conversation? selectedConversation;
+
+  const ConversationListWidget({super.key, this.onConversationSelected, this.selectedConversation});
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +59,8 @@ class ConversationListWidget extends StatelessWidget {
                       return ConversationListItem(
                         info,
                         key: ValueKey(key),
+                        onTap: onConversationSelected,
+                        isSelected: info.conversation == selectedConversation,
                       );
                     }),
               ),
@@ -133,8 +140,9 @@ class StatusNotificationHeader extends StatelessWidget {
 class ConversationListItem extends StatefulWidget {
   final ConversationInfo conversationInfo;
   final Function(Conversation conversation)? onTap;
+  final bool isSelected;
 
-  const ConversationListItem(this.conversationInfo, {super.key, this.onTap});
+  const ConversationListItem(this.conversationInfo, {super.key, this.onTap, this.isSelected = false});
 
   @override
   State<ConversationListItem> createState() => _ConversationListItemState();
@@ -214,7 +222,11 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     return RepaintBoundary(
       child: GestureDetector(
       child: Container(
-          color: conversationInfo.isTop > 0 ? CupertinoColors.secondarySystemBackground : CupertinoColors.systemBackground,
+          color: widget.isSelected
+              ? const Color(0xffd6d6d6)
+              : conversationInfo.isTop > 0
+                  ? CupertinoColors.secondarySystemBackground
+                  : CupertinoColors.systemBackground,
           child: Column(
             children: <Widget>[
               Container(

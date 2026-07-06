@@ -27,8 +27,8 @@ class ConversationViewModel extends ChangeNotifier {
 
   //  消息倒序，第 0 条是最新消息，但UI 层list 进行了 reverse
   List<UIMessage> _conversationMessageList = [];
-  late Conversation? _currentConversation;
-  late ConversationInfo? _currentConversationInfo;
+  Conversation? _currentConversation;
+  ConversationInfo? _currentConversationInfo;
   late String _draft;
   bool _isHiddenConversationMemberName = false;
   bool _isLoading = false;
@@ -80,6 +80,10 @@ class ConversationViewModel extends ChangeNotifier {
   ConversationInfo? get conversationInfo {
     return _currentConversationInfo;
   }
+
+  /// 当前正在展示的会话。桌面端切换会话时,新会话页的 initState 先于旧会话页的
+  /// dispose 执行,旧页面 dispose 前需要据此判断自己是否仍是当前会话,避免误清。
+  Conversation? get currentConversation => _currentConversation;
 
   bool _isMultiSelectMode = false;
   final Set<int> _selectedMessageIds = {};

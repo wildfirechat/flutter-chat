@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'app_server.dart';
 import 'config.dart';
 import 'home/home.dart';
+import 'pc/pc_home.dart';
+import 'pc/pc_platform.dart';
 import 'utilities.dart';
 import 'widget/slide_verify_dialog.dart';
 
@@ -224,7 +226,7 @@ class LoginScreenState extends State<LoginScreen> {
     Navigator.replace(context,
         oldRoute: ModalRoute.of(context)!,
         newRoute: MaterialPageRoute(
-            builder: (context) => const HomeTabBar()));
+            builder: (context) => isDesktopShell ? const PCHome() : const HomeTabBar()));
     SharedPreferences.getInstance().then((value) {
       value.setString("userId", userId);
       value.setString("token", token);

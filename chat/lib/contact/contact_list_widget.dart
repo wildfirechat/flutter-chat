@@ -20,7 +20,10 @@ import 'fav_groups.dart';
 import 'subscribed_channels.dart';
 
 class ContactListWidget extends StatefulWidget {
-  const ContactListWidget({super.key});
+  /// 桌面端 Shell 注入:点击联系人时回调(替代默认的全屏 push)。移动端不传,保持原有行为。
+  final Function(String userId)? onUserSelected;
+
+  const ContactListWidget({super.key, this.onUserSelected});
 
   @override
   State<ContactListWidget> createState() => _ContactListWidgetState();
@@ -134,6 +137,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                               return ContactListItem(
                                 contactInfo,
                                 key: ValueKey('contact_${contactInfo.userInfo.userId}-${contactInfo.userInfo.updateDt}'),
+                                onTap: widget.onUserSelected,
                               );
                             }
                           }),
@@ -317,8 +321,9 @@ class _ContactListWidgetState extends State<ContactListWidget> {
 
 class ContactListItem extends StatelessWidget {
   final UIContactInfo contactInfo;
+  final Function(String userId)? onTap;
 
-  const ContactListItem(this.contactInfo, {super.key});
+  const ContactListItem(this.contactInfo, {super.key, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -327,7 +332,13 @@ class ContactListItem extends StatelessWidget {
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => _toUserInfoPage(context),
+        onTap: () {
+          if (onTap != null) {
+            onTap!(contactInfo.userInfo.userId);
+          } else {
+            _toUserInfoPage(context);
+          }
+        },
         child: Column(
           children: <Widget>[
             // 分类标题
