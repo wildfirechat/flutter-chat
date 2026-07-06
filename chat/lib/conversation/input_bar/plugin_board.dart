@@ -39,21 +39,21 @@ class PluginBoard extends StatelessWidget {
       _PluginItem('assets/images/input/file.png', "file"),
       _PluginItem('assets/images/input/card.png', "card"),
     ];
-    
+
     // 群接龙仅在群组中且配置了服务地址时显示
-    if (conversation.conversationType == ConversationType.Group && 
+    if (conversation.conversationType == ConversationType.Group &&
         Config.COLLECTION_SERVER_ADDRESS != null &&
         Config.COLLECTION_SERVER_ADDRESS!.isNotEmpty) {
       items.add(_PluginItem('assets/images/input/collection.png', "collection"));
     }
 
     // 群投票仅在群组中且配置了服务地址时显示
-    if (conversation.conversationType == ConversationType.Group && 
+    if (conversation.conversationType == ConversationType.Group &&
         Config.POLL_SERVER_ADDRESS != null &&
         Config.POLL_SERVER_ADDRESS!.isNotEmpty) {
       items.add(_PluginItem('assets/images/input/poll.png', "poll"));
     }
-    
+
     return items;
   }
 
@@ -182,10 +182,10 @@ class PluginBoard extends StatelessWidget {
         break;
       case "call":
         // _pressCallBtnCallback();
-        if(!['android', 'ios'].contains(Platform.operatingSystem) ){
-          Fluttertoast.showToast(msg: l10n.notSupportedOnCurrentPlatform);
-          return;
-        }
+        // if(!['android', 'ios'].contains(Platform.operatingSystem) ){
+        //   Fluttertoast.showToast(msg: '当前平台暂不支持');
+        //   return;
+        // }
         conversationController.onPressCallBtn(context, conversation);
         break;
       case "location":

@@ -3477,6 +3477,28 @@ class ImclientPlatform extends PlatformInterface {
     });
   }
 
+  void sendConferenceRequest(
+      int sessionId,
+      String roomId,
+      String request,
+      bool advanced,
+      String data,
+      OperationSuccessStringCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+
+    methodChannel.invokeMethod("sendConferenceRequest", {
+      "requestId": requestId,
+      "sessionId": sessionId,
+      "roomId": roomId,
+      "request": request,
+      "advanced": advanced,
+      "data": data,
+    });
+  }
+
   ///获取会话文件记录
   void getConversationFiles(
       int beforeMessageUid,

@@ -81,7 +81,6 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
       });
     }
   }
-
   void _updateGroupReadStatus() async {
     String groupId = widget.message.conversation.target;
     List<GroupMember>? members = await Imclient.getGroupMembers(groupId);

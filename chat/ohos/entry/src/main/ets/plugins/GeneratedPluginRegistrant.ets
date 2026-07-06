@@ -11,6 +11,7 @@ import FlutterSoundPlugin from 'flutter_sound';
 import FilePickerPlugin from 'file_picker';
 import PhotoManagerPlugin from 'photo_manager';
 import ImclientPlugin from 'imclient';
+import FlutterWebRTCPlugin from 'flutter_webrtc';
 
 /**
  * Generated file. Do not edit.
@@ -36,6 +37,7 @@ export class GeneratedPluginRegistrant {
       flutterEngine.getPlugins()?.add(new FilePickerPlugin());
       flutterEngine.getPlugins()?.add(new PhotoManagerPlugin());
       flutterEngine.getPlugins()?.add(new ImclientPlugin());
+      flutterEngine.getPlugins()?.add(new FlutterWebRTCPlugin());
     } catch (e) {
       Log.e(
         TAG,
