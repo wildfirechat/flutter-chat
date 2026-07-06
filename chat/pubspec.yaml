@@ -73,11 +73,11 @@ dependencies:
   image: ^4.0.15
   badges: ^3.0.3
   intl: ^0.19.0
-  #  file_picker: ^8.0.7
-  file_picker:
-    git:
-      url: https://gitcode.com/openharmony-sig/fluttertpc_file_picker.git
-      ref: br_v8.0.7_ohos
+  file_picker: ^8.0.7
+#  file_picker:
+#    git:
+#      url: https://gitcode.com/openharmony-sig/fluttertpc_file_picker.git
+#      ref: br_v8.0.7_ohos
   flutter_sound:
     git:
       url: https://gitcode.com/openharmony-sig/flutter_sound.git

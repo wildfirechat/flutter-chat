@@ -228,10 +228,10 @@ packages:
     dependency: transitive
     description:
       name: dart_webrtc
-      sha256: cc4017139de4135905a5094081d0ce281bbb6e1d5b959a196390522f310cd597
+      sha256: f6d615bddea5e458ce180a914f3055c234ffb52fb7397a51b3491e76d6d7edb2
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.2.0"
+    version: "1.8.1"
   dbus:
     dependency: transitive
     description:
@@ -283,12 +283,11 @@ packages:
   file_picker:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "br_v8.0.7_ohos"
-      resolved-ref: b0379814d24abf242bbd9cf74c6d97d2dedc6d2a
-      url: "https://gitcode.com/openharmony-sig/fluttertpc_file_picker.git"
-    source: git
-    version: "8.0.7"
+      name: file_picker
+      sha256: ab13ae8ef5580a411c458d6207b6774a6c237d77ac37011b13994879f68a8810
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "8.3.7"
   file_selector_linux:
     dependency: transitive
     description:
@@ -450,10 +449,11 @@ packages:
   flutter_webrtc:
     dependency: transitive
     description:
-      path: "../../fluttertpc_flutter_webrtc"
-      relative: true
-    source: path
-    version: "0.9.48+hotfix.1"
+      name: flutter_webrtc
+      sha256: "0f89dee7f4c35dab5611f351c3897a3bfe9f7057720cc7da209b52455af4316e"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.5.2"
   fluttertoast:
     dependency: "direct main"
     description:
@@ -908,14 +908,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.1.6"
-  platform_detect:
-    dependency: transitive
-    description:
-      name: platform_detect
-      sha256: a62f99417fc4fa2d099ce0ccdbb1bd3977920f2a64292c326271f049d4bc3a4f
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "2.1.0"
   plugin_platform_interface:
     dependency: transitive
     description:
@@ -1346,18 +1338,18 @@ packages:
     dependency: transitive
     description:
       name: web
-      sha256: "97da13628db363c635202ad97068d47c5b8aa555808e7a9411963c533b449b27"
+      sha256: "868d88a33d8a87b18ffc05f9f030ba328ffefba92d6c127917a2ba740f9cfe4a"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.5.1"
+    version: "1.1.1"
   webrtc_interface:
     dependency: transitive
     description:
       name: webrtc_interface
-      sha256: "2efbd3e4e5ebeb2914253bcc51dafd3053c4b87b43f3076c74835a9deecbae3a"
+      sha256: c6f100eac5057d9a817a60473126f9828c796d42884d498af4f339c97b21014f
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.1.2"
+    version: "1.5.1"
   webview_flutter:
     dependency: "direct main"
     description:

@@ -329,10 +329,10 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                  _isSwapped ? _localRenderer : _remoteRenderer,
                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                  mirror: _isSwapped ? true : false, // Mirror local if swapped
-                 onRendererUpdated: (data) {
-                   var r = _isSwapped ? _localRenderer : _remoteRenderer;
-                   r.surfaceId = data;
-                 }
+                 //onRendererUpdated: (data) {
+                 //  var r = _isSwapped ? _localRenderer : _remoteRenderer;
+                 //  r.surfaceId = data;
+                 //}
                ),
              ),
              // Local View (Small Window)
@@ -358,10 +358,10 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                         _isSwapped ? _remoteRenderer : _localRenderer,
                         objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                         mirror: !_isSwapped, // Mirror local if not swapped (default)
-                        onRendererUpdated: (data) {
-                          var r = _isSwapped ? _remoteRenderer : _localRenderer;
-                          r.surfaceId = data;
-                        }
+                        //onRendererUpdated: (data) {
+                        //  var r = _isSwapped ? _remoteRenderer : _localRenderer;
+                        //  r.surfaceId = data;
+                        //}
                      ),
                    ),
                  ),

@@ -1,10 +1,15 @@
 PODS:
+  - file_picker (0.0.1):
+    - FlutterMacOS
   - file_selector_macos (0.0.1):
     - FlutterMacOS
   - flutter_local_notifications (0.0.1):
     - FlutterMacOS
   - flutter_localization (0.0.1):
     - FlutterMacOS
+  - flutter_webrtc (1.4.0):
+    - FlutterMacOS
+    - WebRTC-SDK (= 144.7559.09)
   - FlutterMacOS (1.0.0)
   - imclient (0.0.1):
     - FlutterMacOS
@@ -27,14 +32,17 @@ PODS:
   - video_player_avfoundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - WebRTC-SDK (144.7559.09)
   - webview_flutter_wkwebview (0.0.1):
     - Flutter
     - FlutterMacOS
 
 DEPENDENCIES:
+  - file_picker (from `Flutter/ephemeral/.symlinks/plugins/file_picker/macos`)
   - file_selector_macos (from `Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos`)
   - flutter_local_notifications (from `Flutter/ephemeral/.symlinks/plugins/flutter_local_notifications/macos`)
   - flutter_localization (from `Flutter/ephemeral/.symlinks/plugins/flutter_localization/macos`)
+  - flutter_webrtc (from `Flutter/ephemeral/.symlinks/plugins/flutter_webrtc/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
   - imclient (from `Flutter/ephemeral/.symlinks/plugins/imclient/macos`)
   - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos`)
@@ -46,13 +54,21 @@ DEPENDENCIES:
   - video_player_avfoundation (from `Flutter/ephemeral/.symlinks/plugins/video_player_avfoundation/darwin`)
   - webview_flutter_wkwebview (from `Flutter/ephemeral/.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
+SPEC REPOS:
+  trunk:
+    - WebRTC-SDK
+
 EXTERNAL SOURCES:
+  file_picker:
+    :path: Flutter/ephemeral/.symlinks/plugins/file_picker/macos
   file_selector_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/file_selector_macos/macos
   flutter_local_notifications:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_local_notifications/macos
   flutter_localization:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_localization/macos
+  flutter_webrtc:
+    :path: Flutter/ephemeral/.symlinks/plugins/flutter_webrtc/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
   imclient:
@@ -75,9 +91,11 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/webview_flutter_wkwebview/darwin
 
 SPEC CHECKSUMS:
+  file_picker: 7584aae6fa07a041af2b36a2655122d42f578c1a
   file_selector_macos: 6280b52b459ae6c590af5d78fc35c7267a3c4b31
   flutter_local_notifications: 7e5a17a1dbc00d83dc10d43c2c4c05f2ceed233c
   flutter_localization: 3cda759884c7dab4466fe963d97fba723a492666
+  flutter_webrtc: fec3dc9284a1f6d21ec2caa91c90bb4c1824eb04
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   imclient: 7f16737688e0ae74172004a6f53a7ed68bf06ab3
   mobile_scanner: 0e365ed56cad24f28c0fd858ca04edefb40dfac3
@@ -87,6 +105,7 @@ SPEC CHECKSUMS:
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   url_launcher_macos: 0fba8ddabfc33ce0a9afe7c5fef5aab3d8d2d673
   video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
+  WebRTC-SDK: e6006119cd730d6315d875e4a421b6cc8bb88833
   webview_flutter_wkwebview: 1821ceac936eba6f7984d89a9f3bcb4dea99ebb2
 
 PODFILE CHECKSUM: 66986206d6d7bf4d6664223e26ce7baff35b225d
