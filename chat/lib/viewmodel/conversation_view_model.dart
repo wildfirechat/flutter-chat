@@ -245,9 +245,14 @@ class ConversationViewModel extends ChangeNotifier {
     });
     _sendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
       var msg = event.message;
-      if (_currentConversation == msg.conversation && msg.messageId != 0) {
-        _conversationMessageList.insert(0, UIMessage(msg));
-        notifyListeners();
+      if (_currentConversation == msg.conversation) {
+        // 使用 message.messageId 作为 key 去重,防止重复插入
+        final existingIndex = _conversationMessageList.indexWhere(
+            (uiMsg) => uiMsg.message.messageId == msg.messageId);
+        if (existingIndex == -1) {
+          _conversationMessageList.insert(0, UIMessage(msg));
+          notifyListeners();
+        }
       }
     });
     _sendMessageSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
@@ -532,7 +537,9 @@ class ConversationViewModel extends ChangeNotifier {
     if (_currentConversation == null) {
       return;
     }
-    Imclient.sendMessage(_currentConversation!, messageContent, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {});
+    Imclient.sendMessage(_currentConversation!, messageContent,
+        successCallback: (messageUid, timestamp) {},
+        errorCallback: (errorCode) {});
   }
 
   String _getTypingDot(int time) {

@@ -1,11 +1,12 @@
-import 'package:flutter/foundation.dart';
+import 'dart:convert';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/message/call_start_message_content.dart';
 import 'package:logger/logger.dart' show Level;
 import 'package:flutter_sound/flutter_sound.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image/image.dart' as img;
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/card_message_content.dart';
@@ -25,12 +26,12 @@ import 'package:avenginekit/internal/avenginekit_impl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/config.dart';
 import 'package:chat/model/favorite_item.dart';
 import 'package:chat/widget/popup_menu_overlay.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -133,12 +134,12 @@ class ConversationController extends ChangeNotifier {
                         title: AppLocalizations.of(context)!.pickGroupMember,
                         (context, members) async {
                           if (members.isEmpty) {
-                            Fluttertoast.showToast(
+                            showToast(
                                 msg: AppLocalizations.of(context)!
                                     .selectMemberToCall);
                           } else {
                             // Group call not implemented yet in this session
-                            Fluttertoast.showToast(msg: "群通话暂未实现");
+                            showToast(msg: "群通话暂未实现");
                           }
                         },
                         maxSelected: 9,
@@ -149,7 +150,7 @@ class ConversationController extends ChangeNotifier {
           });
         }
       } else {
-        Fluttertoast.showToast(
+        showToast(
             msg: AppLocalizations.of(context)!.callInProgress);
       }
   }
@@ -221,6 +222,26 @@ class ConversationController extends ChangeNotifier {
     var conversation = model.message.conversation;
     if (model.message.content is ImageMessageContent ||
         model.message.content is VideoMessageContent) {
+      // 桌面端 video_player 官方无 Windows/Linux 实现，视频消息降级为系统播放器打开
+      if (isDesktopShell && model.message.content is VideoMessageContent) {
+        final videoContent = model.message.content as VideoMessageContent;
+        final videoUrl = videoContent.localPath != null && videoContent.localPath!.isNotEmpty && File(videoContent.localPath!).existsSync()
+            ? Uri.file(videoContent.localPath!)
+            : (videoContent.remoteUrl != null ? Uri.parse(videoContent.remoteUrl!) : null);
+        if (videoUrl != null) {
+          canLaunchUrl(videoUrl).then((canLaunch) {
+            if (canLaunch) {
+              launchUrl(videoUrl, mode: LaunchMode.externalApplication);
+            } else {
+              showToast(msg: AppLocalizations.of(context)!.cannotOpen);
+            }
+          });
+        } else {
+          showToast(msg: AppLocalizations.of(context)!.cannotOpen);
+        }
+        return;
+      }
+
       Imclient.getMessages(conversation, model.message.messageId, 10,
           contentTypes: [
             MESSAGE_CONTENT_TYPE_IMAGE,
@@ -280,7 +301,7 @@ class ConversationController extends ChangeNotifier {
         if (value) {
           launchUrl(Uri.parse(fileContent.remoteUrl!));
         } else {
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.cannotOpen);
+          showToast(msg: AppLocalizations.of(context)!.cannotOpen);
         }
       });
     } else if (model.message.content is SoundMessageContent) {
@@ -531,7 +552,7 @@ class ConversationController extends ChangeNotifier {
         if (model.message.content is TextMessageContent) {
           final content = model.message.content as TextMessageContent;
           await Clipboard.setData(ClipboardData(text: content.text));
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.copy);
+          showToast(msg: AppLocalizations.of(context)!.copy);
         }
         break;
       case "speech_to_text":
@@ -566,10 +587,10 @@ class ConversationController extends ChangeNotifier {
       case "favorite":
         var item = await FavoriteItem.fromMessage(model.message);
         AppServer.addFavoriteItem(item, () {
-          Fluttertoast.showToast(
+          showToast(
               msg: AppLocalizations.of(context)!.favoriteSuccess);
         }, (msg) {
-          Fluttertoast.showToast(
+          showToast(
               msg: AppLocalizations.of(context)!.favoriteFail(msg));
         });
         break;
@@ -629,7 +650,7 @@ class ConversationController extends ChangeNotifier {
   void _deleteRemoteMessage(Message message, BuildContext context) {
     if (message.messageUid != null && message.messageUid! > 0) {
       Imclient.deleteRemoteMessage(message.messageUid!, () {}, (errorCode) {
-        Fluttertoast.showToast(
+        showToast(
             msg: AppLocalizations.of(context)!
                 .deleteRemoteMessageFail(errorCode.toString()));
       });
@@ -661,7 +682,7 @@ class ConversationController extends ChangeNotifier {
     try {
       // 获取音频文件的远程URL
       if (audioMessage.remoteUrl == null || audioMessage.remoteUrl!.isEmpty) {
-        Fluttertoast.showToast(
+        showToast(
             msg: AppLocalizations.of(context)!.audioFileNotAvailable);
         audioMessage.speechToTextInProgress = false;
         eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
@@ -679,10 +700,10 @@ class ConversationController extends ChangeNotifier {
 
       if (audioMessage.speechText == null || audioMessage.speechText!.isEmpty) {
         audioMessage.speechText = AppLocalizations.of(context)!.convertFail;
-        Fluttertoast.showToast(
+        showToast(
             msg: AppLocalizations.of(context)!.speechToTextFail);
       } else {
-        Fluttertoast.showToast(
+        showToast(
             msg: AppLocalizations.of(context)!.speechToTextSuccess);
       }
     } catch (error) {
@@ -690,7 +711,7 @@ class ConversationController extends ChangeNotifier {
       audioMessage.speechText = AppLocalizations.of(context)!.convertFail;
       audioMessage.speechToTextInProgress = false;
       eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
-      Fluttertoast.showToast(
+      showToast(
           msg: AppLocalizations.of(context)!
               .speechToTextError(error.toString()));
     }

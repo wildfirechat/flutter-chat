@@ -4,6 +4,8 @@ import 'package:imclient/imclient.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../login_screen.dart';
+import '../pc/pc_platform.dart';
+import '../pc/pc_qr_login_screen.dart';
 import '../viewmodel/locale_view_model.dart';
 import '../widget/option_item.dart';
 import '../widget/section_divider.dart';
@@ -157,7 +159,7 @@ class GeneralSettings extends StatelessWidget {
     if (!topIsLogin) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
+          builder: (context) => isDesktopShell ? const PCQRLoginScreen() : const LoginScreen(),
           settings: const RouteSettings(name: 'login'),
         ),
         (Route<dynamic> route) => false,

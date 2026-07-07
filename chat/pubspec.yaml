@@ -74,6 +74,9 @@ dependencies:
   badges: ^3.0.3
   intl: ^0.19.0
   file_picker: ^8.0.7
+  desktop_drop: ^0.5.0
+  super_clipboard: ^0.8.24
+  cross_file: ^0.3.4+2
 #  file_picker:
 #    git:
 #      url: https://gitcode.com/openharmony-sig/fluttertpc_file_picker.git

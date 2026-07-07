@@ -1,5 +1,6 @@
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -16,6 +17,16 @@ typedef AppServerLoginSuccessCallback = Function(String userId, String token, bo
 typedef AppServerHTTPCallback = Function(String response);
 class AppServer {
   static String? _authToken;
+
+  static int _detectClientPlatform() {
+    if (Platform.isAndroid) return 2;
+    if (Platform.isWindows) return 3;
+    if (Platform.isMacOS) return 4;
+    if (Platform.isIOS) return 1;
+    if (Platform.isLinux) return 7;
+    return 10; // unknown
+  }
+
   static void sendCode(String phoneNum, Function successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) {
     Map<String, dynamic> body = {'mobile': phoneNum};
     if (slideVerifyToken != null && slideVerifyToken.isNotEmpty) {
@@ -49,7 +60,7 @@ class AppServer {
   }
 
   static void login(String phoneNum, String smsCode, AppServerLoginSuccessCallback successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) async {
-    Map<String, dynamic> body = {'mobile': phoneNum, 'code': smsCode, 'clientId': await Imclient.clientId, 'platform': 10};
+    Map<String, dynamic> body = {'mobile': phoneNum, 'code': smsCode, 'clientId': await Imclient.clientId, 'platform': _detectClientPlatform()};
     if (slideVerifyToken != null && slideVerifyToken.isNotEmpty) {
       body['slideVerifyToken'] = slideVerifyToken;
     }
@@ -69,7 +80,7 @@ class AppServer {
   }
 
   static void passwordLogin(String phoneNum, String password, AppServerLoginSuccessCallback successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) async {
-    Map<String, dynamic> body = {'mobile': phoneNum, 'password': password, 'clientId': await Imclient.clientId, 'platform': 10};
+    Map<String, dynamic> body = {'mobile': phoneNum, 'password': password, 'clientId': await Imclient.clientId, 'platform': _detectClientPlatform()};
     if (slideVerifyToken != null && slideVerifyToken.isNotEmpty) {
       body['slideVerifyToken'] = slideVerifyToken;
     }
@@ -281,6 +292,45 @@ class AppServer {
            errorCallback('Status: $status');
         }
       } else {
+        errorCallback(map['message'] ?? '网络错误');
+      }
+    }, errorCallback);
+  }
+
+  static void createPcSession(int platform, Function(String token) successCallback, AppServerErrorCallback errorCallback) async {
+    String jsonStr = json.encode({'clientId': await Imclient.clientId, 'platform': platform});
+    postJson('/pc_session', jsonStr, (response) {
+      Map<dynamic, dynamic> map = json.decode(response);
+      if (map['code'] == 0) {
+        String token = map['result']['token'];
+        successCallback(token);
+      } else {
+        errorCallback(map['message'] ?? '网络错误');
+      }
+    }, errorCallback);
+  }
+
+  /// onScanned: 当二维码被扫码但尚未确认时回调,返回扫码用户信息(含 portrait)
+  static void pollPcSessionLogin(String token, Function(String userId, String token) successCallback,
+      Function(Map<String, dynamic> scannedUser)? onScanned,
+      AppServerErrorCallback errorCallback) {
+    postJson('/session_login/$token', '{}', (response) {
+      Map<dynamic, dynamic> map = json.decode(response);
+      if (map['code'] == 0) {
+        Map<dynamic, dynamic> result = map['result'];
+        String userId = result['userId'];
+        String imToken = result['token'];
+        successCallback(userId, imToken);
+      } else {
+        // 检查是否被扫码但未确认: 服务端 code=9 时返回 LoginResponse(userName, portrait)
+        // LoginResponse 中没有 status 字段,以 userName/portrait 存在作为判定条件
+        if (onScanned != null && map.containsKey('result') && map['result'] is Map) {
+          Map<dynamic, dynamic> result = map['result'];
+          if (result.containsKey('userName') || result.containsKey('portrait')) {
+            onScanned(Map<String, dynamic>.from(result));
+            return;
+          }
+        }
         errorCallback(map['message'] ?? '网络错误');
       }
     }, errorCallback);

@@ -7,6 +7,8 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/widget/drag_to_dismiss.dart';
 import 'package:video_player/video_player.dart';
 
@@ -229,7 +231,10 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    _initializeController();
+    // 桌面端 video_player 官方无 Windows/Linux 实现，直接降级为系统播放器打开
+    if (!isDesktopShell) {
+      _initializeController();
+    }
   }
 
   void _initializeController() {
@@ -250,14 +255,47 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
     });
   }
 
+  Future<void> _openWithSystemPlayer() async {
+    final videoUrl = widget.content.localPath != null && widget.content.localPath!.isNotEmpty && File(widget.content.localPath!).existsSync()
+        ? Uri.file(widget.content.localPath!)
+        : (widget.content.remoteUrl != null ? Uri.parse(widget.content.remoteUrl!) : null);
+    if (videoUrl != null && await canLaunchUrl(videoUrl)) {
+      await launchUrl(videoUrl, mode: LaunchMode.externalApplication);
+    }
+  }
+
   @override
   void dispose() {
-    _controller.dispose();
+    if (!isDesktopShell) {
+      _controller.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isDesktopShell) {
+      return GestureDetector(
+        onTap: _openWithSystemPlayer,
+        child: Container(
+          color: Colors.black,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.play_circle_outline, color: Colors.white.withOpacity(0.8), size: 64),
+                const SizedBox(height: 12),
+                Text(
+                  '点击用系统播放器打开',
+                  style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return GestureDetector(
       onTap: () {
         setState(() {

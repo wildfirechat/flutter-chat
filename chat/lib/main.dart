@@ -41,8 +41,10 @@ import 'internal/app_state.dart';
 import 'login_screen.dart';
 import 'pc/pc_home.dart';
 import 'pc/pc_platform.dart';
+import 'pc/pc_qr_login_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/utils/show_toast.dart';
 
 void main() {
   runApp(MultiProvider(
@@ -76,6 +78,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    setToastNavigatorKey(navKey);
     _initIMClient();
     _initRepo();
     _avEngineCallback = MainAVEngineCallback(navKey);
@@ -153,7 +156,7 @@ class _MyAppState extends State<MyApp> {
         });
         if (!topIsLogin) {
           navKey.currentState?.pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const LoginScreen(), settings: const RouteSettings(name: 'login'), maintainState: true),
+            MaterialPageRoute(builder: (context) => isDesktopShell ? const PCQRLoginScreen() : const LoginScreen(), settings: const RouteSettings(name: 'login'), maintainState: true),
             (Route<dynamic> route) => false,
           );
         }
@@ -302,7 +305,7 @@ class _MyAppState extends State<MyApp> {
     if (isLogined == null) {
       return const SplashScreen();
     } else if (!isLogined!) {
-      return const LoginScreen();
+      return isDesktopShell ? const PCQRLoginScreen() : const LoginScreen();
     }
     return isDesktopShell ? const PCHome() : const HomeTabBar();
   }

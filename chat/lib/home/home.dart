@@ -5,7 +5,6 @@
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
@@ -25,6 +24,7 @@ import 'package:chat/user_info_widget.dart';
 
 import 'package:chat/wfc_scheme.dart';
 import 'package:chat/pc/pc_login_screen.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../contact/contact_list_widget.dart';
@@ -144,7 +144,7 @@ class HomeTabBarState extends State<HomeTabBar> {
       MaterialPageRoute(
           builder: (context) => PickUserScreen(title: AppLocalizations.of(context)!.startChat, (context, members) async {
                 if (members.isEmpty) {
-                  Fluttertoast.showToast(msg: "请选择一位或者多位好友发起聊天");
+                  showToast(msg: "请选择一位或者多位好友发起聊天");
                 } else if (members.length == 1) {
                   Conversation conversation = Conversation(conversationType: ConversationType.Single, target: members[0]);
                   Navigator.pushReplacement(
@@ -177,7 +177,7 @@ class HomeTabBarState extends State<HomeTabBar> {
                     );
                   }, (errorCode) {
                     _dismissProcessingDialog(context);
-                    Fluttertoast.showToast(msg: '创建失败：$errorCode');
+                    showToast(msg: '创建失败：$errorCode');
                   });
                 }
               })),
@@ -202,7 +202,7 @@ class HomeTabBarState extends State<HomeTabBar> {
       }
     } catch (e) {
       if (mounted) {
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.scanFail(e.toString()));
+        showToast(msg: AppLocalizations.of(context)!.scanFail(e.toString()));
       }
     }
   }
@@ -223,7 +223,7 @@ class HomeTabBarState extends State<HomeTabBar> {
         value = qrcode.substring(lastSlashIndex + 1);
       }
     } else {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.invalidQrCode(qrcode));
+      showToast(msg: AppLocalizations.of(context)!.invalidQrCode(qrcode));
       return;
     }
 
@@ -248,14 +248,14 @@ class HomeTabBarState extends State<HomeTabBar> {
         break;
       case WfcScheme.qrCodePrefixChannel:
         // TODO: Implement Channel
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.channelNotSupport);
+        showToast(msg: AppLocalizations.of(context)!.channelNotSupport);
         break;
       case WfcScheme.qrCodePrefixConference:
         // TODO: Implement Conference
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.conferenceNotSupport);
+        showToast(msg: AppLocalizations.of(context)!.conferenceNotSupport);
         break;
       default:
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.scanResult(qrcode));
+        showToast(msg: AppLocalizations.of(context)!.scanResult(qrcode));
         break;
     }
   }

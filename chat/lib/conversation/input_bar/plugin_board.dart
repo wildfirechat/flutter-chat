@@ -3,12 +3,12 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
-import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/config.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -33,9 +33,9 @@ class PluginBoard extends StatelessWidget {
   List<_PluginItem> _getPluginItems() {
     final items = [
       _PluginItem('assets/images/input/album.png',  "album"),
-      _PluginItem('assets/images/input/camera.png', "camera"),
-      _PluginItem('assets/images/input/call.png', "call"),
-      _PluginItem('assets/images/input/location.png', "location"),
+      if (!isDesktopShell) _PluginItem('assets/images/input/camera.png', "camera"),
+      if (!isDesktopShell) _PluginItem('assets/images/input/call.png', "call"),
+      if (!isDesktopShell) _PluginItem('assets/images/input/location.png', "location"),
       _PluginItem('assets/images/input/file.png', "file"),
       _PluginItem('assets/images/input/card.png', "card"),
     ];
@@ -144,17 +144,25 @@ class PluginBoard extends StatelessWidget {
     switch (key) {
       case "album":
         {
-          var picker = ImagePicker();
-          picker.pickImage(source: ImageSource.gallery).then((value) {
-            if (value != null) {
-              conversationController.onPickImage(conversation, value.path);
-            }
-          });
+          if (isDesktopShell) {
+            FilePicker.platform.pickFiles(type: FileType.image).then((value) {
+              if (value != null && value.files.isNotEmpty) {
+                conversationController.onPickImage(conversation, value.files.first.path!);
+              }
+            });
+          } else {
+            var picker = ImagePicker();
+            picker.pickImage(source: ImageSource.gallery).then((value) {
+              if (value != null) {
+                conversationController.onPickImage(conversation, value.path);
+              }
+            });
+          }
         }
         break;
       case "camera":
         if(!['android', 'ios'].contains(Platform.operatingSystem) ){
-          Fluttertoast.showToast(msg: l10n.notSupportedOnCurrentPlatform);
+          showToast(msg: l10n.notSupportedOnCurrentPlatform);
           return;
         }
         CameraPicker.pickFromCamera(context, pickerConfig: const CameraPickerConfig(enableRecording: true, resolutionPreset: ResolutionPreset.high)).then((entity) {
@@ -181,15 +189,10 @@ class PluginBoard extends StatelessWidget {
         });
         break;
       case "call":
-        // _pressCallBtnCallback();
-        // if(!['android', 'ios'].contains(Platform.operatingSystem) ){
-        //   Fluttertoast.showToast(msg: '当前平台暂不支持');
-        //   return;
-        // }
         conversationController.onPressCallBtn(context, conversation);
         break;
       case "location":
-        Fluttertoast.showToast(msg: l10n.notSupported);
+        showToast(msg: l10n.notSupported);
         break;
       case "file":
         FilePicker.platform.pickFiles().then((value) {

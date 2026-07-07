@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,6 +11,7 @@ import 'config.dart';
 import 'home/home.dart';
 import 'pc/pc_home.dart';
 import 'pc/pc_platform.dart';
+import 'utils/show_toast.dart';
 import 'utilities.dart';
 import 'widget/slide_verify_dialog.dart';
 
@@ -197,7 +197,7 @@ class LoginScreenState extends State<LoginScreen> {
                   ? null
                   : () {
                       if (!_agreementChecked) {
-                        Fluttertoast.showToast(msg: "请先同意用户协议和隐私政策");
+                        showToast(msg: "请先同意用户协议和隐私政策");
                         return;
                       }
                       String phoneNum = phoneFieldController.value.text;
@@ -240,7 +240,7 @@ class LoginScreenState extends State<LoginScreen> {
       listener: _SendCodeSlideVerifyListener(
         phoneNumber: phoneFieldController.value.text,
         onStartCountdown: () {
-          Fluttertoast.showToast(msg: "验证码发送成功，请在5分钟内进行验证!");
+          showToast(msg: "验证码发送成功，请在5分钟内进行验证!");
           const Duration duration = Duration(seconds: 1);
           _timer = Timer.periodic(duration, (timer) {
             setState(() {
@@ -257,7 +257,7 @@ class LoginScreenState extends State<LoginScreen> {
             isSentCode = true;
           });
         },
-        onError: (msg) => Fluttertoast.showToast(msg: "发送验证码失败: $msg"),
+        onError: (msg) => showToast(msg: "发送验证码失败: $msg"),
         onSetSlideVerified: (token) {
           setState(() {
             _hasSlideVerifiedForCode = true;
@@ -277,7 +277,7 @@ class LoginScreenState extends State<LoginScreen> {
         phoneNumber: phoneNum,
         password: password,
         onLoginSuccess: (userId, token) => _handleLoginSuccess(userId, token),
-        onLoginError: (msg) => Fluttertoast.showToast(msg: "登录失败: $msg"),
+        onLoginError: (msg) => showToast(msg: "登录失败: $msg"),
       ),
     );
   }
@@ -298,7 +298,7 @@ class LoginScreenState extends State<LoginScreen> {
         authCode: authCode,
         onLoginSuccess: (userId, token) => _handleLoginSuccess(userId, token),
         onLoginError: (msg) {
-          Fluttertoast.showToast(msg: "登录失败: $msg");
+          showToast(msg: "登录失败: $msg");
           // 登录失败，重置验证标志
           setState(() {
             _hasSlideVerifiedForCode = false;
@@ -315,7 +315,7 @@ class LoginScreenState extends State<LoginScreen> {
         (userId, token, isNewUser) {
       _handleLoginSuccess(userId, token);
     }, (msg) {
-      Fluttertoast.showToast(msg: "登录失败: $msg");
+      showToast(msg: "登录失败: $msg");
       // 登录失败，重置验证标志
       setState(() {
         _hasSlideVerifiedForCode = false;

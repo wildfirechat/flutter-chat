@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:chat/app_server.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PCLoginScreen extends StatefulWidget {
@@ -32,13 +32,13 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
             _canConfirm = true;
           });
         } else {
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.pcStatusError(status));
+          showToast(msg: AppLocalizations.of(context)!.pcStatusError(status));
           Navigator.of(context).pop();
         }
       }
     }, (error) {
       if (mounted) {
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.networkError);
+        showToast(msg: AppLocalizations.of(context)!.networkError);
         Navigator.of(context).pop();
       }
     });
@@ -50,7 +50,7 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
     });
     AppServer.confirmPCLogin(widget.token, Imclient.currentUserId, () {
       if (mounted) {
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.loginSuccess);
+        showToast(msg: AppLocalizations.of(context)!.loginSuccess);
         Navigator.of(context).pop();
       }
     }, (error) {
@@ -58,7 +58,7 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
         setState(() {
           _isLoading = false;
         });
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.loginFail(error));
+        showToast(msg: AppLocalizations.of(context)!.loginFail(error));
       }
     });
   }

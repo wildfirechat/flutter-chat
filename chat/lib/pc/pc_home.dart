@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
@@ -21,6 +20,7 @@ import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/settings/me_tab.dart';
 import 'package:chat/user_info_widget.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -215,7 +215,7 @@ class _PCHomeState extends State<PCHome> {
           height: 560,
           child: PickUserScreen(title: AppLocalizations.of(context)!.startChat, (pickerContext, members) async {
             if (members.isEmpty) {
-              Fluttertoast.showToast(msg: "请选择一位或者多位好友发起聊天");
+              showToast(msg: "请选择一位或者多位好友发起聊天");
             } else if (members.length == 1) {
               Navigator.pop(pickerContext);
               _openConversation(Conversation(conversationType: ConversationType.Single, target: members[0]));
@@ -242,7 +242,7 @@ class _PCHomeState extends State<PCHome> {
                 _openConversation(Conversation(conversationType: ConversationType.Group, target: strValue));
               }, (errorCode) {
                 Navigator.pop(pickerContext);
-                Fluttertoast.showToast(msg: '创建失败：$errorCode');
+                showToast(msg: '创建失败：$errorCode');
               });
             }
           }),

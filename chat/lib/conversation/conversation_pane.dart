@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
+import 'package:desktop_drop/desktop_drop.dart';
+import 'package:cross_file/cross_file.dart';
 import 'package:imclient/message/composite_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/notification/notification_message_content.dart';
@@ -17,6 +20,7 @@ import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
 import 'package:chat/conversation/message_cell.dart';
 import 'package:chat/conversation/pick_forward_target_page.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -57,7 +61,7 @@ class _ConversationPaneState extends State<ConversationPane> {
 
     _conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
     _conversationViewModel.setConversation(widget.conversation, toFocusMessageId: widget.toFocusMessageId, joinChatroomErrorCallback: (err) {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.joinChatroomFail);
+      showToast(msg: AppLocalizations.of(context)!.joinChatroomFail);
       Navigator.of(context).maybePop();
     });
 
@@ -206,114 +210,167 @@ class _ConversationPaneState extends State<ConversationPane> {
           return _inputBarController;
         }),
       ],
-      child: Stack(
-        children: [
-          Column(
+      child: Builder(
+        builder: (innerContext) {
+          Widget content = Stack(
             children: [
-              Expanded(
-                child: GestureDetector(
-                  child: NotificationListener(
-                    onNotification: notificationFunction,
-                    child: CustomScrollView(
-                      controller: _scrollController,
-                      center: _centerKey,
-                      anchor: conversationViewModel.focusMessageIndex > 0 ? 0.5 : 0.0,
-                      reverse: true,
-                      // 桌面端滚轮/触控板没有回弹语义,用 clamping;历史加载走 _autoLoadHistoryIfNeeded
-                      physics: isDesktopShell
-                          ? const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics())
-                          : const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                      slivers: [
-                        if (conversationViewModel.focusMessageIndex > 0)
-                          SliverList(
-                            delegate: SliverChildBuilderDelegate(
-                              (context, index) {
-                                int focusIndex = conversationViewModel.focusMessageIndex;
-                                int newerCount = focusIndex;
-                                if (!conversationViewModel.noMoreNewerMsg) {
-                                  if (index == newerCount) {
-                                    if (!_isLoadingNewer) {
-                                      _isLoadingNewer = true;
-                                      _conversationViewModel.loadNewerMessage().then((value) {
-                                        if (mounted) {
-                                          setState(() {
-                                            _isLoadingNewer = false;
+              Column(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      child: NotificationListener(
+                        onNotification: notificationFunction,
+                        child: CustomScrollView(
+                          controller: _scrollController,
+                          center: _centerKey,
+                          anchor: conversationViewModel.focusMessageIndex > 0 ? 0.5 : 0.0,
+                          reverse: true,
+                          // 桌面端滚轮/触控板没有回弹语义,用 clamping;历史加载走 _autoLoadHistoryIfNeeded
+                          physics: isDesktopShell
+                              ? const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics())
+                              : const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                          slivers: [
+                            if (conversationViewModel.focusMessageIndex > 0)
+                              SliverList(
+                                delegate: SliverChildBuilderDelegate(
+                                  (context, index) {
+                                    int focusIndex = conversationViewModel.focusMessageIndex;
+                                    int newerCount = focusIndex;
+                                    if (!conversationViewModel.noMoreNewerMsg) {
+                                      if (index == newerCount) {
+                                        if (!_isLoadingNewer) {
+                                          _isLoadingNewer = true;
+                                          _conversationViewModel.loadNewerMessage().then((value) {
+                                            if (mounted) {
+                                              setState(() {
+                                                _isLoadingNewer = false;
+                                              });
+                                            }
                                           });
                                         }
-                                      });
+                                        return Container(
+                                          padding: const EdgeInsets.all(10),
+                                          alignment: Alignment.center,
+                                          child: const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                          ),
+                                        );
+                                      }
                                     }
-                                    return Container(
-                                      padding: const EdgeInsets.all(10),
-                                      alignment: Alignment.center,
-                                      child: const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
-                                      ),
-                                    );
-                                  }
-                                }
-                                int listIndex = focusIndex - 1 - index;
-                                if (listIndex < 0) return null;
-                                return _buildMessageItem(context, listIndex, conversationViewModel);
-                              },
-                              childCount: conversationViewModel.focusMessageIndex + (!conversationViewModel.noMoreNewerMsg ? 1 : 0),
+                                    int listIndex = focusIndex - 1 - index;
+                                    if (listIndex < 0) return null;
+                                    return _buildMessageItem(context, listIndex, conversationViewModel);
+                                  },
+                                  childCount: conversationViewModel.focusMessageIndex + (!conversationViewModel.noMoreNewerMsg ? 1 : 0),
+                                ),
+                              ),
+                            SliverList(
+                              key: _centerKey,
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  int listIndex = conversationViewModel.focusMessageIndex + index;
+                                  if (listIndex >= conversationMessageList.length) return null;
+                                  return _buildMessageItem(context, listIndex, conversationViewModel);
+                                },
+                                childCount: conversationMessageList.length - conversationViewModel.focusMessageIndex,
+                              ),
                             ),
-                          ),
-                        SliverList(
-                          key: _centerKey,
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              int listIndex = conversationViewModel.focusMessageIndex + index;
-                              if (listIndex >= conversationMessageList.length) return null;
-                              return _buildMessageItem(context, listIndex, conversationViewModel);
-                            },
-                            childCount: conversationMessageList.length - conversationViewModel.focusMessageIndex,
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
+                      onTap: () {
+                        _inputBarController.resetStatus();
+                      },
                     ),
                   ),
-                  onTap: () {
-                    _inputBarController.resetStatus();
-                  },
-                ),
+                  conversationViewModel.isMultiSelectMode ? _buildMultiSelectToolBar(context, conversationViewModel) : widget.inputBar,
+                ],
               ),
-              conversationViewModel.isMultiSelectMode ? _buildMultiSelectToolBar(context, conversationViewModel) : widget.inputBar,
-            ],
-          ),
-          if (_pullDistance > 0 || _isLoading)
-            Positioned(
-              top: 10,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: 35,
-                  height: 35,
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withValues(alpha: 0.5),
-                        spreadRadius: 1,
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
+              if (_pullDistance > 0 || _isLoading)
+                Positioned(
+                  top: 10,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      width: 35,
+                      height: 35,
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withValues(alpha: 0.5),
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    value: _isLoading ? null : (_pullDistance / 50).clamp(0.0, 1.0),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        value: _isLoading ? null : (_pullDistance / 50).clamp(0.0, 1.0),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-        ],
+            ],
+          );
+
+          if (isDesktopShell) {
+            return DropTarget(
+              onDragDone: (detail) => _handleDroppedFiles(innerContext, detail.files),
+              child: content,
+            );
+          }
+          return content;
+        },
       ),
     );
+  }
+
+  void _handleDroppedFiles(BuildContext context, List<XFile> files) {
+    if (files.isEmpty) {
+      return;
+    }
+    final fileNames = files.map((f) => f.name).toList();
+    final nameStr = fileNames.length == 1 ? fileNames.first : '${fileNames.length} 个文件';
+    showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('发送文件'),
+        content: Text('确定要发送 $nameStr 吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('发送'),
+          ),
+        ],
+      ),
+    ).then((confirmed) {
+      if (confirmed != true) return;
+      final controller = Provider.of<ConversationController>(context, listen: false);
+      final conversation = _inputBarController.conversation;
+      final imageExts = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'};
+      for (final file in files) {
+        final path = file.path;
+        final ext = path.toLowerCase().substring(path.lastIndexOf('.') >= 0 ? path.lastIndexOf('.') : 0);
+        if (imageExts.contains(ext)) {
+          controller.onPickImage(conversation, path);
+        } else {
+          final size = File(path).lengthSync();
+          controller.onPickFile(conversation, path, file.name, size);
+        }
+      }
+    });
   }
 
   Widget _buildMultiSelectToolBar(BuildContext context, ConversationViewModel viewModel) {
@@ -343,7 +400,7 @@ class _ConversationPaneState extends State<ConversationPane> {
 
   void _handleDeleteSelected(BuildContext context, ConversationViewModel viewModel) {
     if (viewModel.getSelectedMessages().isEmpty) {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.selectMessage);
+      showToast(msg: AppLocalizations.of(context)!.selectMessage);
       return;
     }
     showDialog(
@@ -384,7 +441,7 @@ class _ConversationPaneState extends State<ConversationPane> {
       if (isRemote) {
         if (msg.messageUid != null && msg.messageUid! > 0) {
           Imclient.deleteRemoteMessage(msg.messageUid!, () {}, (errorCode) {
-            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.deleteRemoteMessageFail(errorCode.toString()));
+            showToast(msg: AppLocalizations.of(context)!.deleteRemoteMessageFail(errorCode.toString()));
           });
         } else {
           viewModel.deleteMessage(msg.messageId);
@@ -399,7 +456,7 @@ class _ConversationPaneState extends State<ConversationPane> {
   void _handleForward(BuildContext context, ConversationViewModel viewModel) {
     var selected = viewModel.getSelectedMessages();
     if (selected.isEmpty) {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.selectMessage);
+      showToast(msg: AppLocalizations.of(context)!.selectMessage);
       return;
     }
 
@@ -452,7 +509,7 @@ class _ConversationPaneState extends State<ConversationPane> {
                 _sendOneByOneMessage(context, target, messages);
               }
             }
-            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sent);
+            showToast(msg: AppLocalizations.of(context)!.sent);
           },
         ),
       ),
@@ -463,7 +520,7 @@ class _ConversationPaneState extends State<ConversationPane> {
     messages.sort((a, b) => a.serverTime.compareTo(b.serverTime));
     for (var msg in messages) {
       Imclient.sendMessage(target, msg.content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sendFail);
+        showToast(msg: AppLocalizations.of(context)!.sendFail);
       });
     }
   }
@@ -475,7 +532,7 @@ class _ConversationPaneState extends State<ConversationPane> {
     content.messages = messages;
 
     Imclient.sendMessage(target, content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.sendFail);
+      showToast(msg: AppLocalizations.of(context)!.sendFail);
     });
   }
 
