@@ -282,6 +282,24 @@ class ImclientFfiChannel implements ImclientChannel {
     return v is Map ? v : <dynamic, dynamic>{};
   }
 
+  /// PC SDK 的 {key,value} 数组转 Map，与移动端原生 SDK 返回的 Map 格式保持一致。
+  static Map<dynamic, dynamic> _strLongMapFromList(String s) {
+    final v = _json(s);
+    final map = <dynamic, dynamic>{};
+    if (v is List) {
+      for (final item in v) {
+        if (item is Map && item['key'] != null) {
+          map[item['key']] = item['value'];
+        }
+      }
+    } else if (v is Map) {
+      v.forEach((key, value) {
+        map[key] = value;
+      });
+    }
+    return map;
+  }
+
   /// 读取 SDK 返回的字符串并按约定 releaseDllString 释放。
   String _takeDllString(Pointer<Char> p, int len) {
     if (p == nullptr) return '';
@@ -706,14 +724,14 @@ class ImclientFfiChannel implements ImclientChannel {
         return using((a) {
           final c = _conv(args);
           final target = _ns(a, c.target);
-          return _jsonMap(_outString((lp) => _wf.getConversationRead(
+          return _strLongMapFromList(_outString((lp) => _wf.getConversationRead(
               c.type, target.ptr, target.len, c.line, lp)));
         });
       case 'getMessageDelivery':
         return using((a) {
           final c = _conv(args);
           final target = _ns(a, c.target);
-          return _jsonMap(_outString((lp) =>
+          return _strLongMapFromList(_outString((lp) =>
               _wf.getMessageDelivery(c.type, target.ptr, target.len, lp)));
         });
 

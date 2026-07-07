@@ -1161,8 +1161,8 @@ class ImclientPlatform extends PlatformInterface {
 
     ReadReport report = ReadReport();
     report.conversation = _convertProtoConversation(map['conversation']);
-    report.userId = map['userId'];
-    report.readDt = map['timestamp'];
+    report.userId = map['userId'] ?? '';
+    report.readDt = map['timestamp'] ?? 0;
     return report;
   }
 
@@ -1724,7 +1724,7 @@ class ImclientPlatform extends PlatformInterface {
     Map<String, int> map = {};
     if(datas != null) {
       datas.forEach((key, value) {
-        map.putIfAbsent(key, () => value);
+        map[key] = value;
       });
     }
     return map;
@@ -1739,7 +1739,7 @@ class ImclientPlatform extends PlatformInterface {
     Map<String, int> map = {};
     if(datas != null) {
       datas.forEach((key, value) {
-        map.putIfAbsent(key, () => value);
+        map[key] = value;
       });
     }
     return map;
