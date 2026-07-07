@@ -6,12 +6,47 @@ import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:chat/config.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/repo/user_repo.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/widget/sidebar_index.dart';
 
 typedef OnPickUserCallback = void Function(BuildContext context, List<String> pickedUsers);
+
+/// 按平台形态呈现选人页:桌面居中 Dialog(420x560),移动端整页 push。
+/// 回调中的 Navigator.pop(context) 在两种形态下都会关闭选人 UI。
+Future<void> showPickUserScreen(
+  BuildContext context,
+  OnPickUserCallback callback, {
+  String title = '',
+  int maxSelected = 1024,
+  List<String>? candidates,
+  List<String>? disabledCheckedUsers,
+  List<String>? disabledUncheckedUsers,
+  bool showMentionAll = false,
+}) {
+  final picker = PickUserScreen(
+    callback,
+    title: title,
+    maxSelected: maxSelected,
+    candidates: candidates,
+    disabledCheckedUsers: disabledCheckedUsers,
+    disabledUncheckedUsers: disabledUncheckedUsers,
+    showMentionAll: showMentionAll,
+  );
+  if (isDesktopShell) {
+    return showDialog(
+      context: context,
+      builder: (dialogContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        clipBehavior: Clip.antiAlias,
+        child: SizedBox(width: 420, height: 560, child: picker),
+      ),
+    );
+  }
+  return Navigator.push(context, MaterialPageRoute(builder: (routeContext) => picker));
+}
 
 class PickUserScreen extends StatefulWidget {
   final String title;

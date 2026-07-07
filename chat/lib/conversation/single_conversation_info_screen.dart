@@ -19,7 +19,7 @@ import '../viewmodel/user_view_model.dart';
 import '../widget/option_button_item.dart';
 import '../widget/option_item.dart';
 import 'conversation_files_screen.dart';
-import 'conversation_screen.dart';
+import 'conversation_navigator.dart';
 
 class SingleConversationInfoScreen extends StatelessWidget {
   const SingleConversationInfoScreen(this.conversation, {this.onOpenPage, super.key});
@@ -141,25 +141,22 @@ class SingleConversationInfoScreen extends StatelessWidget {
 
   void _onAddNewConversationMember(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    _openPage(
+    // 桌面为居中 Dialog,移动端整页 push
+    showPickUserScreen(
       context,
-      PickUserScreen(
-        title: l10n.selectContacts,
-        (context, members) async {
-          Navigator.pop(context);
-          if (members.isNotEmpty) {
-            Imclient.createGroup(null, null, null, 2, members, (strValue) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue))),
-              );
-            }, (errorCode) {
-              Fluttertoast.showToast(msg: l10n.networkError);
-            });
-          }
-        },
-        disabledCheckedUsers: [conversation.target],
-      ),
+      title: l10n.selectContacts,
+      (pickerContext, members) async {
+        Navigator.pop(pickerContext);
+        if (members.isNotEmpty) {
+          Imclient.createGroup(null, null, null, 2, members, (strValue) {
+            // 用外层 context(详情页仍挂载):桌面右栏打开新群会话,移动端 push
+            navigateToConversation(context, Conversation(conversationType: ConversationType.Group, target: strValue));
+          }, (errorCode) {
+            Fluttertoast.showToast(msg: l10n.networkError);
+          });
+        }
+      },
+      disabledCheckedUsers: [conversation.target],
     );
   }
 }

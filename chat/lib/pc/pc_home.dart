@@ -9,7 +9,6 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/pick_user_screen.dart';
-import 'package:chat/contact/search_user.dart';
 import 'package:chat/home/conversation_list_widget.dart';
 import 'package:chat/pc/pc_contact_list.dart';
 import 'package:chat/pc/pc_conversation_pane.dart';
@@ -19,6 +18,7 @@ import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/settings/me_tab.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/user_info_widget.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
@@ -228,6 +228,46 @@ class _PCHomeState extends State<PCHome> {
     );
   }
 
+  static const String _kAddFriendHintShownKey = 'pc_add_friend_hint_shown';
+
+  /// 添加好友:不再 push 搜索页。首次弹说明对话框引导用搜索框;
+  /// 之后点击直接打开搜索浮层(输入框自动聚焦),搜索结果里的用户可加好友。
+  Future<void> _onAddFriend() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getBool(_kAddFriendHintShownKey) ?? false) {
+      _openSearchModal();
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.tips, textAlign: TextAlign.center),
+        content: Text(l10n.addFriendSearchHint),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            style: TextButton.styleFrom(foregroundColor: PcTheme.textSecondary),
+            child: Text(l10n.close),
+          ),
+          FilledButton(
+            onPressed: () {
+              prefs.setBool(_kAddFriendHintShownKey, true);
+              Navigator.pop(dialogContext);
+              _openSearchModal();
+            },
+            style: FilledButton.styleFrom(backgroundColor: PcTheme.accent),
+            child: Text(l10n.gotIt),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _startChat() {
     showDialog(
       context: context,
@@ -331,6 +371,7 @@ class _PCHomeState extends State<PCHome> {
               _MiddleColumnHeader(
                 onSearchTap: _openSearchModal,
                 onStartChat: _startChat,
+                onAddFriend: _onAddFriend,
               ),
               Expanded(
                 child: IndexedStack(
@@ -369,8 +410,9 @@ class _PCHomeState extends State<PCHome> {
 class _MiddleColumnHeader extends StatelessWidget {
   final VoidCallback onSearchTap;
   final VoidCallback onStartChat;
+  final VoidCallback onAddFriend;
 
-  const _MiddleColumnHeader({required this.onSearchTap, required this.onStartChat});
+  const _MiddleColumnHeader({required this.onSearchTap, required this.onStartChat, required this.onAddFriend});
 
   @override
   Widget build(BuildContext context) {
@@ -406,7 +448,7 @@ class _MiddleColumnHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          _PlusMenuButton(onStartChat: onStartChat),
+          _PlusMenuButton(onStartChat: onStartChat, onAddFriend: onAddFriend),
         ],
       ),
     );
@@ -415,8 +457,9 @@ class _MiddleColumnHeader extends StatelessWidget {
 
 class _PlusMenuButton extends StatelessWidget {
   final VoidCallback onStartChat;
+  final VoidCallback onAddFriend;
 
-  const _PlusMenuButton({required this.onStartChat});
+  const _PlusMenuButton({required this.onStartChat, required this.onAddFriend});
 
   @override
   Widget build(BuildContext context) {
@@ -453,7 +496,7 @@ class _PlusMenuButton extends StatelessWidget {
             onStartChat();
             break;
           case 'add':
-            showSearch(context: context, delegate: SearchUserDelegate());
+            onAddFriend();
             break;
         }
       },

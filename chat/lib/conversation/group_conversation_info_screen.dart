@@ -8,7 +8,7 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:chat/conversation/conversation_screen.dart';
+import 'package:chat/conversation/conversation_navigator.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/group_conversation_info_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
@@ -233,23 +233,21 @@ class GroupConversationInfoScreen extends StatelessWidget {
         for (var value1 in value) {
           memberIds.add(value1.memberId);
         }
-        _openPage(
+        // 桌面为居中 Dialog,移动端整页 push
+        showPickUserScreen(
           context,
-          PickUserScreen(
-            title: l10n.removeGroupMembers,
-            (context, members) async {
-              if (members.isEmpty) {
-                Navigator.pop(context);
-              } else {
-                Imclient.kickoffGroupMembers(conversation.target, members, () {
-                  Navigator.pop(context);
-                  Future.delayed(const Duration(milliseconds: 100), () {});
-                }, (errorCode) {});
-              }
-            },
-            disabledUncheckedUsers: [Imclient.currentUserId],
-            candidates: memberIds,
-          ),
+          title: l10n.removeGroupMembers,
+          (pickerContext, members) async {
+            if (members.isEmpty) {
+              Navigator.pop(pickerContext);
+            } else {
+              Imclient.kickoffGroupMembers(conversation.target, members, () {
+                Navigator.pop(pickerContext);
+              }, (errorCode) {});
+            }
+          },
+          disabledUncheckedUsers: [Imclient.currentUserId],
+          candidates: memberIds,
         );
       }
     });
@@ -264,49 +262,43 @@ class GroupConversationInfoScreen extends StatelessWidget {
           for (var value1 in value) {
             memberIds.add(value1.memberId);
           }
-          _openPage(
+          // 桌面为居中 Dialog,移动端整页 push
+          showPickUserScreen(
             context,
-            PickUserScreen(
-              title: l10n.addGroupMembers,
-              (context, members) async {
-                if (members.isEmpty) {
-                  Navigator.pop(context);
-                } else {
-                  Imclient.addGroupMembers(conversation.target, members, () {
-                    Navigator.pop(context);
-                    Future.delayed(const Duration(milliseconds: 100), () {});
-                  }, (errorCode) {});
-                }
-              },
-              disabledCheckedUsers: memberIds,
-            ),
+            title: l10n.addGroupMembers,
+            (pickerContext, members) async {
+              if (members.isEmpty) {
+                Navigator.pop(pickerContext);
+              } else {
+                Imclient.addGroupMembers(conversation.target, members, () {
+                  Navigator.pop(pickerContext);
+                }, (errorCode) {});
+              }
+            },
+            disabledCheckedUsers: memberIds,
           );
         }
       });
     } else {
-      _openPage(
+      showPickUserScreen(
         context,
-        PickUserScreen(
-          title: l10n.selectContacts,
-          (context, members) async {
-            Navigator.pop(context);
-            if (members.isNotEmpty) {
-              List<String> groupMembers = List.from(members);
-              if (!groupMembers.contains(conversation.target)) {
-                groupMembers.add(conversation.target);
-              }
-              Imclient.createGroup(null, null, null, 2, groupMembers, (strValue) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue, line: 0))),
-                );
-              }, (errorCode) {
-                Fluttertoast.showToast(msg: l10n.networkError);
-              });
+        title: l10n.selectContacts,
+        (pickerContext, members) async {
+          Navigator.pop(pickerContext);
+          if (members.isNotEmpty) {
+            List<String> groupMembers = List.from(members);
+            if (!groupMembers.contains(conversation.target)) {
+              groupMembers.add(conversation.target);
             }
-          },
-          disabledCheckedUsers: [conversation.target],
-        ),
+            Imclient.createGroup(null, null, null, 2, groupMembers, (strValue) {
+              // 用外层 context(详情页仍挂载):桌面右栏打开新群会话,移动端 push
+              navigateToConversation(context, Conversation(conversationType: ConversationType.Group, target: strValue, line: 0));
+            }, (errorCode) {
+              Fluttertoast.showToast(msg: l10n.networkError);
+            });
+          }
+        },
+        disabledCheckedUsers: [conversation.target],
       );
     }
   }

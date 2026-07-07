@@ -12,7 +12,8 @@ Future<T?> showPcSideSheet<T>({
     PageRouteBuilder<T>(
       opaque: false,
       barrierDismissible: true,
-      barrierColor: Colors.black.withValues(alpha: 0.25),
+      // 不做遮罩(微信形态):面板靠投影区分层次,点击面板外仍可关闭
+      barrierColor: Colors.transparent,
       transitionDuration: const Duration(milliseconds: 180),
       reverseTransitionDuration: const Duration(milliseconds: 150),
       pageBuilder: (context, animation, secondaryAnimation) => Align(
