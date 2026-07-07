@@ -1,9 +1,14 @@
 #include "my_application.h"
 
+#include <errno.h>
+#include <fcntl.h>
 #include <flutter_linux/flutter_linux.h>
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
 #endif
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "flutter/generated_plugin_registrant.h"
 
@@ -13,6 +18,22 @@ struct _MyApplication {
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
+
+// 单实例文件锁路径
+static const char* kSingleInstanceLockPath = "/tmp/wildfirechat_flutter_desktop.lock";
+
+static int _tryAcquireSingleInstanceLock() {
+  int fd = open(kSingleInstanceLockPath, O_RDWR | O_CREAT, 0666);
+  if (fd < 0) return -1;
+  int rc = flock(fd, LOCK_EX | LOCK_NB);
+  if (rc < 0) {
+    close(fd);
+    return -1;
+  }
+  return fd;
+}
+
+static int _singleInstanceLockFd = -1;
 
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
@@ -67,6 +88,14 @@ static gboolean my_application_local_command_line(GApplication* application, gch
   MyApplication* self = MY_APPLICATION(application);
   // Strip out the first argument as it is the binary name.
   self->dart_entrypoint_arguments = g_strdupv(*arguments + 1);
+
+  // 单实例检查
+  _singleInstanceLockFd = _tryAcquireSingleInstanceLock();
+  if (_singleInstanceLockFd < 0) {
+    g_warning("Another instance is already running.");
+    *exit_status = 0;
+    return TRUE;
+  }
 
   g_autoptr(GError) error = nullptr;
   if (!g_application_register(application, nullptr, &error)) {
@@ -125,6 +154,6 @@ MyApplication* my_application_new() {
 
   return MY_APPLICATION(g_object_new(my_application_get_type(),
                                      "application-id", APPLICATION_ID,
-                                     "flags", G_APPLICATION_NON_UNIQUE,
+                                     // 移除 G_APPLICATION_NON_UNIQUE,让 GApplication 自己再拦一道
                                      nullptr));
 }

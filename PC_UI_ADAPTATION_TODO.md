@@ -30,15 +30,15 @@
 
 ---
 
-## 三、P1 — 系统集成
+## 三、P1 — 系统集成（已完成）
 
-| 序号 | 界面/模块 | 需要做什么 | 涉及文件 |
+| 序号 | 界面/模块 | 完成内容 | 涉及文件 |
 |------|-----------|-----------|----------|
-| 7 | **窗口管理** | 新增 `window_manager`：最小尺寸 ~900×640、启动尺寸/位置记忆、最大化、关闭事件拦截 | 修改 `chat/pubspec.yaml`<br>修改 `chat/lib/main.dart`<br>可选修改 native runner（macOS/Windows/Linux） |
-| 8 | **托盘管理** | 新增 `tray_manager`：关闭进托盘、托盘菜单、点击托盘显示窗口、未读闪烁 | 新增依赖 `tray_manager`<br>新增 `chat/lib/pc/pc_tray_manager.dart`<br>修改 `chat/lib/main.dart` |
-| 9 | **桌面通知** | 统一 `WfcNotificationManager` 平台策略：macOS/Linux 用 `flutter_local_notifications`，Windows 补 `local_notifier`；点击通知激活窗口并跳转会话 | 修改 `chat/lib/wfc_notification_manager.dart`<br>修改 `chat/lib/main.dart`（接收 payload 并 `_openConversation`）<br>Windows 新增通知插件 |
-| 10 | **单实例** | 二次启动只激活已有窗口 | 新增依赖 `windows_single_instance`<br>修改 `chat/windows/runner/main.cpp`<br>macOS/Linux 各自方案 |
-| 11 | **Dock/任务栏 badge** | 收到消息时更新未读 badge | 修改 `chat/lib/main.dart`<br>macOS 原生 badge / Windows overlay icon |
+| 7 | **窗口管理** | 已集成 `window_manager`：最小尺寸 900×640、启动尺寸/位置记忆、最大化状态恢复、关闭事件拦截（隐藏窗口而非退出） | 新增 `chat/lib/pc/pc_window_manager.dart`<br>修改 `chat/lib/main.dart`<br>微调 `chat/macos/Runner/MainFlutterWindow.swift` |
+| 8 | **托盘管理** | 已集成 `tray_manager`：窗口关闭后收进托盘、托盘右键菜单（显示窗口/退出）、点击托盘图标显示窗口、未读消息托盘闪烁（通过 `setTitle`/`setToolTip` 切换模拟闪烁）。修复：关闭窗口不再销毁托盘；托盘显示窗口后清除未读状态。 | 新增 `chat/lib/pc/pc_tray_manager.dart`<br>修改 `chat/lib/pc/pc_window_manager.dart`<br>新增依赖 `tray_manager`、`menu_base` |
+| 9 | **桌面通知** | 已统一 `WfcNotificationManager` 平台策略：桌面端不依赖 PC 在线静音逻辑；Windows 先降级为 debug 日志；macOS/Linux 使用 `flutter_local_notifications`；点击通知激活窗口并打印 payload，会话跳转待 P2 右栏化后接入 | 修改 `chat/lib/wfc_notification_manager.dart`<br>修改 `chat/lib/main.dart` |
+| 10 | **单实例** | Windows 用互斥量 + 激活已有窗口；macOS 修改 AppDelegate 让二次点击 Dock 显示窗口；Linux 用文件锁 + GApplication 单实例 | 修改 `chat/windows/runner/main.cpp`<br>修改 `chat/macos/Runner/AppDelegate.swift`<br>修改 `chat/linux/runner/my_application.cc` |
+| 11 | **Dock/任务栏 badge** | iOS 保持原有 badge；桌面端通过托盘未读闪烁/ToolTip 模拟 badge；托盘未读数由通知管理器同步更新。修复：桌面端窗口隐藏/失去焦点时 `_isBackground` 通过 `pcAppInBackground` 同步，确保后台收到消息才触发托盘更新。 | 修改 `chat/lib/main.dart`<br>修改 `chat/lib/pc/pc_window_manager.dart`<br>修改 `chat/lib/pc/pc_tray_manager.dart` |
 
 ---
 

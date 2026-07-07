@@ -14,6 +14,7 @@ class MainFlutterWindow: NSWindow {
     self.titlebarAppearsTransparent = true
     self.styleMask.insert(.fullSizeContentView)
 
+    // window_manager 需要接管窗口,取消默认最小尺寸等限制
     RegisterGeneratedPlugins(registry: flutterViewController)
 
     super.awakeFromNib()

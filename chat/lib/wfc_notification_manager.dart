@@ -1,5 +1,9 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart' hide Message;
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
@@ -10,6 +14,8 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:imclient/model/pc_online_info.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_tray_manager.dart';
 
 class WfcNotificationManager {
   static final WfcNotificationManager _instance = WfcNotificationManager._internal();
@@ -19,6 +25,9 @@ class WfcNotificationManager {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   static const String wfcNotificationChannelId = "wfc_notification";
+
+  /// 通知点击回调,由 main.dart 注入。
+  void Function(String payload)? onNotificationTapped;
 
   final List<int> _notificationMessages = [];
   int _friendRequestNotificationId = 10000;
@@ -71,9 +80,11 @@ class WfcNotificationManager {
     final String? payload = notificationResponse.payload;
     if (payload != null) {
       debugPrint("Notification tapped with payload: $payload");
-      // TODO: Navigate to conversation
+      onNotificationTapped?.call(payload);
     }
   }
+
+  bool get _shouldShowDesktopNotification => isDesktopShell;
 
   Future<void> handleReceiveMessage(List<Message> messages) async {
     if (messages.isEmpty) return;
@@ -81,15 +92,19 @@ class WfcNotificationManager {
     if (await Imclient.isNoDisturbing()) return;
     if (await Imclient.isGlobalSilent()) return;
 
-    if (await Imclient.isMuteNotificationWhenPcOnline()) {
-      List<PCOnlineInfo> onlineInfos = await Imclient.getPCOnlineInfos();
-      for (var info in onlineInfos) {
-        if (info.isOnline) return;
+    if (!_shouldShowDesktopNotification) {
+      // 手机端保持原有逻辑:如果 PC 在线且开启静音,则手机端不通知
+      if (await Imclient.isMuteNotificationWhenPcOnline()) {
+        List<PCOnlineInfo> onlineInfos = await Imclient.getPCOnlineInfos();
+        for (var info in onlineInfos) {
+          if (info.isOnline) return;
+        }
       }
     }
 
     bool hiddenNotificationDetail = await Imclient.isHiddenNotificationDetail();
 
+    int totalUnread = 0;
     for (var message in messages) {
       if (message.direction == MessageDirection.MessageDirection_Send) continue;
 
@@ -107,6 +122,7 @@ class WfcNotificationManager {
       }
 
       int unreadCount = (await Imclient.getConversationUnreadCount(message.conversation)).unread;
+      totalUnread += unreadCount;
       if (unreadCount > 1) {
         pushContent = "[$unreadCount条]$pushContent";
       }
@@ -129,8 +145,21 @@ class WfcNotificationManager {
       }
 
       int id = _notificationId(message.messageUid ?? 0);
-      showNotification(id, title, pushContent, message.conversation.target);
+      showNotification(id, title, pushContent, _buildPayload(message));
     }
+
+    if (_shouldShowDesktopNotification) {
+      PCTrayManager().updateUnreadCount(totalUnread);
+    }
+  }
+
+  String _buildPayload(Message message) {
+    return jsonEncode({
+      'type': 'message',
+      'conversationType': message.conversation.conversationType.index,
+      'target': message.conversation.target,
+      'line': message.conversation.line,
+    });
   }
 
   Future<void> handleFriendRequest(List<String> friendRequests) async {
@@ -147,11 +176,22 @@ class WfcNotificationManager {
           String title = "好友申请";
 
           _friendRequestNotificationId++;
-          showNotification(_friendRequestNotificationId, title, text, "friend_request");
+          showNotification(_friendRequestNotificationId, title, text, _buildFriendRequestPayload(friendRequests[0]));
       }
   }
 
+  String _buildFriendRequestPayload(String userId) {
+    return jsonEncode({'type': 'friend_request', 'userId': userId});
+  }
+
   Future<void> showNotification(int id, String title, String body, String payload) async {
+    if (Platform.isWindows) {
+      // Windows: flutter_local_notifications 官方不支持,使用系统 toast 降级。
+      // 真实项目可接入 local_notifier / windows_notification。
+      debugPrint('Windows notification: $title - $body');
+      return;
+    }
+
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
             wfcNotificationChannelId,
@@ -160,11 +200,13 @@ class WfcNotificationManager {
             importance: Importance.high,
             priority: Priority.high,
             ticker: 'ticker',
-            // sound: RawResourceAndroidNotificationSound('receive_msg_notification'),
+            // sound: RawResourceAndroidSound('receive_msg_notification'),
         );
 
+    const DarwinNotificationDetails darwinNotificationDetails = DarwinNotificationDetails();
+
     const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidNotificationDetails);
+        NotificationDetails(android: androidNotificationDetails, iOS: darwinNotificationDetails, macOS: darwinNotificationDetails);
 
     await flutterLocalNotificationsPlugin.show(
         id, title, body, notificationDetails,

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:avenginekit/engine/call_state.dart';
 import 'package:flutter/foundation.dart';
@@ -20,6 +21,7 @@ import 'package:avenginekit/engine/call_session.dart';
 import 'package:avenginekit/engine/call_end_reason.dart';
 import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:chat/call/voip_call_screen.dart';
+import 'package:window_manager/window_manager.dart';
 
 // import 'package:momentclient/momentclient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,11 +44,17 @@ import 'login_screen.dart';
 import 'pc/pc_home.dart';
 import 'pc/pc_platform.dart';
 import 'pc/pc_qr_login_screen.dart';
+import 'pc/pc_tray_manager.dart';
+import 'pc/pc_window_manager.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:chat/utils/show_toast.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  if (isDesktopShell) {
+    await PCWindowManager().ensureInitialized();
+  }
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider<UserViewModel>(create: (_) => UserViewModel()),
@@ -62,7 +70,7 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   State createState() => _MyAppState();
@@ -79,11 +87,23 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     setToastNavigatorKey(navKey);
+    setPCWindowNavKey(navKey);
+    if (isDesktopShell) {
+      PCWindowManager().setupWindow();
+      // 桌面端没有 AppLifecycleState.paused，用窗口事件判断前后台
+      pcAppInBackground.addListener(() {
+        _isBackground = pcAppInBackground.value;
+        if (!_isBackground) {
+          updateAppBadge();
+        }
+      });
+    }
     _initIMClient();
     _initRepo();
     _avEngineCallback = MainAVEngineCallback(navKey);
     avEngineKit.init(_avEngineCallback);
     WfcNotificationManager().init();
+    WfcNotificationManager().onNotificationTapped = _handleNotificationTap;
 
     SystemChannels.lifecycle.setMessageHandler((message) async {
       final state = parseStateFromString(message!);
@@ -103,12 +123,41 @@ class _MyAppState extends State<MyApp> {
       if (_isBackground) {
         WfcNotificationManager().handleReceiveMessage(event.messages);
       }
+      // 前台也要更新托盘未读数
+      updateAppBadge();
     });
 
     Imclient.IMEventBus.on<FriendRequestUpdateEvent>().listen((event) {
       if (_isBackground) {
         WfcNotificationManager().handleFriendRequest(event.newUserRequests);
       }
+      // 好友请求也可能影响未读数,同步更新托盘
+      updateAppBadge();
+    });
+
+    Imclient.IMEventBus.on<UserSettingUpdatedEvent>().listen((event) {
+      // 设置更新(如静音、已读)后刷新托盘未读状态
+      updateAppBadge();
+    });
+
+    Imclient.IMEventBus.on<ClearMessagesEvent>().listen((event) {
+      // 清除会话消息后刷新托盘未读状态
+      updateAppBadge();
+    });
+
+    Imclient.IMEventBus.on<ClearConversationUnreadEvent>().listen((event) {
+      // 清除会话未读数后刷新托盘未读状态
+      updateAppBadge();
+    });
+
+    Imclient.IMEventBus.on<ClearConversationsUnreadEvent>().listen((event) {
+      // 清除多会话未读数后刷新托盘未读状态
+      updateAppBadge();
+    });
+
+    Imclient.IMEventBus.on<MessageReadedEvent>().listen((event) {
+      // 消息被已读后刷新托盘未读状态
+      updateAppBadge();
     });
   }
 
@@ -201,6 +250,8 @@ class _MyAppState extends State<MyApp> {
       if (kDebugMode) {
         print("on user settings updated");
       }
+      // IM SDK 回调里也要刷新,确保托盘未读数与设置同步
+      updateAppBadge();
     }, friendListUpdatedCallback: (List<String> newFriendIds) {
       if (kDebugMode) {
         print("on friend list updated $newFriendIds");
@@ -249,29 +300,70 @@ class _MyAppState extends State<MyApp> {
     // TODO: 是否需要优化，预加载一些数据
   }
 
+  void _handleNotificationTap(String payload) async {
+    if (!isDesktopShell) {
+      return;
+    }
+    try {
+      final data = jsonDecode(payload) as Map<String, dynamic>?;
+      if (data == null) return;
+      final type = data['type'] as String?;
+      if (type == 'message') {
+        final conversationTypeIndex = data['conversationType'] as int?;
+        final target = data['target'] as String?;
+        final line = data['line'] as int?;
+        if (conversationTypeIndex == null || target == null) return;
+        final conversation = Conversation(
+          conversationType: ConversationType.values[conversationTypeIndex],
+          target: target,
+          line: line ?? 0,
+        );
+        await windowManager.show();
+        await windowManager.focus();
+        // 通过 PCShellViewModel 切换当前会话（需要右栏 Navigator 支持）
+        // 目前先只做窗口激活,会话跳转待 P2 右栏 Navigator 完善后接入。
+        debugPrint('Notification tapped, conversation: \$conversation');
+      } else if (type == 'friend_request') {
+        await windowManager.show();
+        await windowManager.focus();
+        debugPrint('Notification tapped, friend request');
+      }
+    } catch (e) {
+      debugPrint('handle notification tap failed: \$e');
+    }
+  }
+
   void updateAppBadge() {
-    //只有iOS平台支持，android平台不支持。如果有其他支持android平台badge，请提issue给我们添加。
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
-      Imclient.isLogined.then((isLogined) {
-        if (isLogined) {
-          Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((value) {
-            int unreadCount = 0;
-            for (var element in value) {
-              if (!element.isSilent) {
-                unreadCount += element.unreadCount.unread;
-              }
-            }
-            Imclient.getUnreadFriendRequestStatus().then((unreadFriendRequest) {
-              unreadCount += unreadFriendRequest;
-              try {
-                FlutterDynamicIcon.setApplicationIconBadgeNumber(unreadCount);
-              } catch (e) {
-                debugPrint('unsupport app icon badge number platform');
-              }
-            });
-          });
+    Imclient.isLogined.then((isLogined) {
+      if (!isLogined) {
+        return;
+      }
+      Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((value) {
+        int unreadCount = 0;
+        for (var element in value) {
+          if (!element.isSilent) {
+            unreadCount += element.unreadCount.unread;
+          }
         }
+        Imclient.getUnreadFriendRequestStatus().then((unreadFriendRequest) {
+          unreadCount += unreadFriendRequest;
+          _updatePlatformBadge(unreadCount);
+        });
       });
+    });
+  }
+
+  void _updatePlatformBadge(int count) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      try {
+        FlutterDynamicIcon.setApplicationIconBadgeNumber(count);
+      } catch (e) {
+        debugPrint('unsupport app icon badge number platform');
+      }
+    } else if (isDesktopShell) {
+      // 桌面端:Dock(macOS)/任务栏(Windows) badge 目前通过托盘角标/标题模拟
+      // tray_manager 没有 setBadge API,先更新托盘 tooltip 和未读闪烁。
+      PCTrayManager().updateUnreadCount(count);
     }
   }
 

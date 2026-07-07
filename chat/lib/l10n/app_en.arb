@@ -193,6 +193,8 @@
   "send": "Send",
   "totalMessages": "Total {count} messages",
   "messageTag": "[Message]",
+  "open": "Open",
+  "exit": "Exit",
   "unsubscribeChannelSuccess": "Unsubscribe successfully",
   "pickRemindUser": "Pick user to remind",
   "slideUpToCancel": "Slide up to cancel",

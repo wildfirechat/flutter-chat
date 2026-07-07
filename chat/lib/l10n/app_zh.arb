@@ -193,6 +193,8 @@
   "send": "发送",
   "totalMessages": "共{count}条消息",
   "messageTag": "[消息]",
+  "open": "打开",
+  "exit": "退出",
   "unsubscribeChannelSuccess": "取消订阅成功",
   "pickRemindUser": "选择提醒的人",
   "slideUpToCancel": "手指上滑，取消发送",

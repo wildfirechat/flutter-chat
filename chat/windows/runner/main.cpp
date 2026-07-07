@@ -5,8 +5,23 @@
 #include "flutter_window.h"
 #include "utils.h"
 
+// 单实例互斥量名称
+const wchar_t* kSingleInstanceMutexName = L"WildfireChatFlutterDesktop";
+
 int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
                       _In_ wchar_t *command_line, _In_ int show_command) {
+  // 尝试创建单实例互斥量
+  HANDLE mutex = ::CreateMutexW(nullptr, FALSE, kSingleInstanceMutexName);
+  if (mutex == nullptr || ::GetLastError() == ERROR_ALREADY_EXISTS) {
+    // 已有实例运行,尝试激活已有窗口后退出
+    HWND existing = ::FindWindowW(nullptr, L"chat");
+    if (existing != nullptr) {
+      ::ShowWindow(existing, SW_RESTORE);
+      ::SetForegroundWindow(existing);
+    }
+    return EXIT_SUCCESS;
+  }
+
   // Attach to console when present (e.g., 'flutter run') or create a
   // new console when running with a debugger.
   if (!::AttachConsole(ATTACH_PARENT_PROCESS) && ::IsDebuggerPresent()) {
@@ -37,6 +52,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
     ::TranslateMessage(&msg);
     ::DispatchMessage(&msg);
   }
+
+  ::ReleaseMutex(mutex);
+  ::CloseHandle(mutex);
 
   ::CoUninitialize();
   return EXIT_SUCCESS;
