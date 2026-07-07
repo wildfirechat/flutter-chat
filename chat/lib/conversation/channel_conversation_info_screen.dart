@@ -6,31 +6,34 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:imclient/model/group_member.dart';
-import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:chat/conversation/conversation_screen.dart';
-import 'package:chat/conversation/single_conversation_member_view.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
-import 'package:chat/viewmodel/group_conversation_info_view_model.dart';
-import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_button_item.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/option_switch_item.dart';
 import 'package:chat/widget/section_divider.dart';
 
-import '../contact/pick_user_screen.dart';
+import '../pc/pc_platform.dart';
 import '../search/search_conversation_result_view.dart';
-import '../user_info_widget.dart';
 import 'conversation_files_screen.dart';
-import 'group_conversation_info_members_view.dart';
 
 class ChannelConversationInfoScreen extends StatelessWidget {
-  const ChannelConversationInfoScreen(this.conversation, {super.key});
+  const ChannelConversationInfoScreen(this.conversation, {this.onOpenPage, super.key});
 
   final Conversation conversation;
+  /// 桌面端用于在右栏打开二级页面；手机端可忽略。
+  final void Function(Widget page)? onOpenPage;
+
+  void _openPage(BuildContext context, Widget page) {
+    if (isDesktopShell && onOpenPage != null) {
+      Navigator.pop(context); // 关闭侧抽屉
+      onOpenPage!(page);
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => page));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,23 +74,16 @@ class ChannelConversationInfoScreen extends StatelessWidget {
             ),
       const SectionDivider(),
       OptionItem(l10n.searchChatContents, onTap: () {
-        Navigator.push(
+        _openPage(
           context,
-          MaterialPageRoute(
-            builder: (context) => SearchConversationResultView(
-              conversation: conversation,
-              keyword: '',
-            ),
+          SearchConversationResultView(
+            conversation: conversation,
+            keyword: '',
           ),
         );
       }),
       OptionItem(l10n.chatFiles, onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ConversationFilesScreen(conversation),
-          ),
-        );
+        _openPage(context, ConversationFilesScreen(conversation));
       }),
       const SectionDivider(),
       OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
@@ -123,7 +119,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
                 });
               },
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(l10n.clearLocalMessages),
               ),
             ),
@@ -137,7 +133,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
                 });
               },
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(l10n.clearRemoteMessages),
               ),
             ),

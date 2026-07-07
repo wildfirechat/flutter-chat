@@ -1,6 +1,7 @@
 
+import 'dart:io';
+
 import 'package:dsbridge_flutter/dsbridge_flutter.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -31,7 +32,6 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
 
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
@@ -61,6 +61,15 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
         ),
       )
       ..addJavaScriptObject(jsApi);
+
+    // macOS 版 webview_flutter 未实现 setOpaque,跳过 setBackgroundColor。
+    if (!Platform.isMacOS) {
+      try {
+        controller.setBackgroundColor(const Color(0x00000000));
+      } catch (e) {
+        debugPrint('WebView setBackgroundColor failed: $e');
+      }
+    }
 
     controller.loadRequest(Uri.parse(widget.url));
 

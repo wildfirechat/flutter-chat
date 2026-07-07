@@ -110,6 +110,10 @@ class ImclientPlatform extends PlatformInterface {
 
   static final Map<int, dynamic> _operationSuccessCallbackMap = {};
 
+  /// 桌面端撤回消息成功后 SDK 不主动分发 [onRecallMessage]，需要依据 requestId 补发。
+  /// key: requestId, value: messageUid
+  static final Map<int, int> _recallMessageRequestMap = {};
+
   static final Map<int, Message> _sendingMessages = {};
 
   ///在线状态事件缓存，仅作为桌面端（原生 SDK 未实现查询接口）的回退数据源。
@@ -583,6 +587,22 @@ class ImclientPlatform extends PlatformInterface {
           if (callback != null) {
             callback();
           }
+
+          // 桌面端 SDK 撤回成功后不回调 onRecallMessage，依据 requestId 补发通知。
+          if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+            int? recalledUid = _recallMessageRequestMap.remove(requestId);
+            if (recalledUid != null) {
+              _recallMessageCallback(recalledUid);
+              Future(() async {
+                Message? msg = await getMessageByUid(recalledUid);
+                if (msg != null) {
+                  _eventBus.fire(RecallMessageEvent(recalledUid,
+                      conversation: msg.conversation));
+                }
+              });
+            }
+          }
+
           _removeOperationCallback(requestId);
           break;
 
@@ -793,11 +813,13 @@ class ImclientPlatform extends PlatformInterface {
     _sendMediaMessageProgressCallbackMap.remove(requestId);
     _sendMediaMessageUploadedCallbackMap.remove(requestId);
     _operationSuccessCallbackMap.remove(requestId);
+    _recallMessageRequestMap.remove(requestId);
   }
 
   static void _removeOperationCallback(int requestId) {
     _errorCallbackMap.remove(requestId);
     _operationSuccessCallbackMap.remove(requestId);
+    _recallMessageRequestMap.remove(requestId);
   }
 
   void registerMessage(MessageContentMeta contentMeta) {
@@ -2035,6 +2057,10 @@ class ImclientPlatform extends PlatformInterface {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
+    // 桌面端 SDK 撤回成功后不保证回调 onRecallMessage，记录 requestId 用于补发通知。
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+      _recallMessageRequestMap[requestId] = messageUid;
+    }
     _channel.invokeMethod('recallMessage',
         {"requestId": requestId, "messageUid": messageUid});
   }

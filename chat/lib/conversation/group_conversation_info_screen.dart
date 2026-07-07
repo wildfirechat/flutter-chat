@@ -18,6 +18,7 @@ import 'package:chat/widget/option_switch_item.dart';
 import 'package:chat/widget/section_divider.dart';
 
 import '../contact/pick_user_screen.dart';
+import '../pc/pc_platform.dart';
 import '../search/search_conversation_result_view.dart';
 import '../user_info_widget.dart';
 import 'conversation_files_screen.dart';
@@ -27,9 +28,20 @@ import 'group_manage_screen.dart';
 import 'group_qrcode_screen.dart';
 
 class GroupConversationInfoScreen extends StatelessWidget {
-  const GroupConversationInfoScreen(this.conversation, {super.key});
+  const GroupConversationInfoScreen(this.conversation, {this.onOpenPage, super.key});
 
   final Conversation conversation;
+  /// 桌面端用于在右栏打开二级页面；手机端可忽略。
+  final void Function(Widget page)? onOpenPage;
+
+  void _openPage(BuildContext context, Widget page) {
+    if (isDesktopShell && onOpenPage != null) {
+      Navigator.pop(context); // 关闭侧抽屉
+      onOpenPage!(page);
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => page));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,10 +78,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
       GroupConversationInfoMembersView(
         conversation,
         onGroupMemberTap: (userInfo) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => UserInfoWidget(userInfo.userId)),
-          );
+          _openPage(context, UserInfoWidget(userInfo.userId, onOpenPage: onOpenPage));
         },
         onAddActionTap: () {
           _onAddNewConversationMember(context);
@@ -100,18 +109,18 @@ class GroupConversationInfoScreen extends StatelessWidget {
       }),
       OptionItem(l10n.groupQrCode, rightIcon: Icons.qr_code, onTap: () {
         if (groupInfo != null) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => GroupQrCodeScreen(groupInfo: groupInfo)));
+          _openPage(context, GroupQrCodeScreen(groupInfo: groupInfo));
         }
       }),
       OptionItem(l10n.groupAnnouncement, desc: groupConversationInfoViewModel.groupAnnouncement ?? l10n.clickToCheck, onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => GroupAnnouncementScreen(
-                    groupId: conversation.target,
-                    canEdit: groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager))).then((value) {
-          groupConversationInfoViewModel.refreshGroupAnnouncement(conversation.target);
-        });
+        _openPage(
+          context,
+          GroupAnnouncementScreen(
+            groupId: conversation.target,
+            canEdit: groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager,
+          ),
+        );
+        groupConversationInfoViewModel.refreshGroupAnnouncement(conversation.target);
       }),
       OptionItem(l10n.groupRemarkLabel, desc: groupInfo?.remark, onTap: () {
         _showEditDialog(context, l10n.modifyGroupRemarkDialog, groupInfo?.remark ?? '', (value) {
@@ -123,29 +132,22 @@ class GroupConversationInfoScreen extends StatelessWidget {
       groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner
           ? OptionItem(l10n.groupManagement, onTap: () {
               if (groupInfo != null) {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => GroupManageScreen(groupInfo: groupInfo)));
+                _openPage(context, GroupManageScreen(groupInfo: groupInfo));
               }
             })
           : Container(),
       const SectionDivider(),
       OptionItem(l10n.searchChatContents, onTap: () {
-        Navigator.push(
+        _openPage(
           context,
-          MaterialPageRoute(
-            builder: (context) => SearchConversationResultView(
-              conversation: conversation,
-              keyword: '',
-            ),
+          SearchConversationResultView(
+            conversation: conversation,
+            keyword: '',
           ),
         );
       }),
       OptionItem(l10n.chatFiles, onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ConversationFilesScreen(conversation),
-          ),
-        );
+        _openPage(context, ConversationFilesScreen(conversation));
       }),
       const SectionDivider(),
       OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
@@ -199,7 +201,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
                 });
               },
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(l10n.clearLocalMessages),
               ),
             ),
@@ -213,7 +215,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
                 });
               },
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(l10n.clearRemoteMessages),
               ),
             ),
@@ -231,24 +233,23 @@ class GroupConversationInfoScreen extends StatelessWidget {
         for (var value1 in value) {
           memberIds.add(value1.memberId);
         }
-        Navigator.push(
+        _openPage(
           context,
-          MaterialPageRoute(
-              builder: (context) => PickUserScreen(
-                    title: l10n.removeGroupMembers,
-                    (context, members) async {
-                      if (members.isEmpty) {
-                        Navigator.pop(context);
-                      } else {
-                        Imclient.kickoffGroupMembers(conversation.target, members, () {
-                          Navigator.pop(context);
-                          Future.delayed(const Duration(milliseconds: 100), () {});
-                        }, (errorCode) {});
-                      }
-                    },
-                    disabledUncheckedUsers: [Imclient.currentUserId],
-                    candidates: memberIds,
-                  )),
+          PickUserScreen(
+            title: l10n.removeGroupMembers,
+            (context, members) async {
+              if (members.isEmpty) {
+                Navigator.pop(context);
+              } else {
+                Imclient.kickoffGroupMembers(conversation.target, members, () {
+                  Navigator.pop(context);
+                  Future.delayed(const Duration(milliseconds: 100), () {});
+                }, (errorCode) {});
+              }
+            },
+            disabledUncheckedUsers: [Imclient.currentUserId],
+            candidates: memberIds,
+          ),
         );
       }
     });
@@ -263,51 +264,49 @@ class GroupConversationInfoScreen extends StatelessWidget {
           for (var value1 in value) {
             memberIds.add(value1.memberId);
           }
-          Navigator.push(
+          _openPage(
             context,
-            MaterialPageRoute(
-                builder: (context) => PickUserScreen(
-                      title: l10n.addGroupMembers,
-                      (context, members) async {
-                        if (members.isEmpty) {
-                          Navigator.pop(context);
-                        } else {
-                          Imclient.addGroupMembers(conversation.target, members, () {
-                            Navigator.pop(context);
-                            Future.delayed(const Duration(milliseconds: 100), () {});
-                          }, (errorCode) {});
-                        }
-                      },
-                      disabledCheckedUsers: memberIds,
-                    )),
+            PickUserScreen(
+              title: l10n.addGroupMembers,
+              (context, members) async {
+                if (members.isEmpty) {
+                  Navigator.pop(context);
+                } else {
+                  Imclient.addGroupMembers(conversation.target, members, () {
+                    Navigator.pop(context);
+                    Future.delayed(const Duration(milliseconds: 100), () {});
+                  }, (errorCode) {});
+                }
+              },
+              disabledCheckedUsers: memberIds,
+            ),
           );
         }
       });
     } else {
-      Navigator.push(
+      _openPage(
         context,
-        MaterialPageRoute(
-            builder: (context) => PickUserScreen(
-                  title: l10n.selectContacts,
-                  (context, members) async {
-                    Navigator.pop(context);
-                    if (members.isNotEmpty) {
-                      List<String> groupMembers = List.from(members);
-                      if (!groupMembers.contains(conversation.target)) {
-                        groupMembers.add(conversation.target);
-                      }
-                      Imclient.createGroup(null, null, null, 2, groupMembers, (strValue) {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue, line: 0))),
-                        );
-                      }, (errorCode) {
-                        Fluttertoast.showToast(msg: l10n.networkError);
-                      });
-                    }
-                  },
-                  disabledCheckedUsers: [conversation.target],
-                )),
+        PickUserScreen(
+          title: l10n.selectContacts,
+          (context, members) async {
+            Navigator.pop(context);
+            if (members.isNotEmpty) {
+              List<String> groupMembers = List.from(members);
+              if (!groupMembers.contains(conversation.target)) {
+                groupMembers.add(conversation.target);
+              }
+              Imclient.createGroup(null, null, null, 2, groupMembers, (strValue) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Group, target: strValue, line: 0))),
+                );
+              }, (errorCode) {
+                Fluttertoast.showToast(msg: l10n.networkError);
+              });
+            }
+          },
+          disabledCheckedUsers: [conversation.target],
+        ),
       );
     }
   }

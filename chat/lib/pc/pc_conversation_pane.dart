@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:provider/provider.dart';
 import 'package:chat/conversation/channel_conversation_info_screen.dart';
 import 'package:chat/conversation/conversation_appbar_title.dart';
 import 'package:chat/conversation/conversation_pane.dart';
 import 'package:chat/conversation/group_conversation_info_screen.dart';
 import 'package:chat/conversation/single_conversation_info_screen.dart';
 import 'package:chat/pc/pc_message_input_bar.dart';
+import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_side_sheet.dart';
@@ -21,13 +23,23 @@ class PcConversationPane extends StatelessWidget {
   /// 会话详情以右侧抽屉呈现(微信 PC 形态),不占满右栏;
   /// 详情内的二级页(成员列表等)仍在右栏嵌套 Navigator 中打开。
   void _openConversationInfo(BuildContext context) {
+    final shell = Provider.of<PCShellViewModel>(context, listen: false);
     showPcSideSheet(
       context: context,
       builder: (context) => conversation.conversationType == ConversationType.Single
-          ? SingleConversationInfoScreen(conversation)
+          ? SingleConversationInfoScreen(
+              conversation,
+              onOpenPage: shell.openPage,
+            )
           : conversation.conversationType == ConversationType.Channel
-              ? ChannelConversationInfoScreen(conversation)
-              : GroupConversationInfoScreen(conversation),
+              ? ChannelConversationInfoScreen(
+                  conversation,
+                  onOpenPage: shell.openPage,
+                )
+              : GroupConversationInfoScreen(
+                  conversation,
+                  onOpenPage: shell.openPage,
+                ),
     );
   }
 
