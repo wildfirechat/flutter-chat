@@ -16,6 +16,7 @@ import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
+import 'package:imclient/message/notification/recall_notificiation_content.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
@@ -503,6 +504,21 @@ class ConversationController extends ChangeNotifier {
       });
     }
 
+    // 为自己发送的撤回消息添加重新编辑菜单
+    if (model.message.content is RecallNotificationContent &&
+        model.message.direction == MessageDirection.MessageDirection_Send &&
+        model.message.fromUser == Imclient.currentUserId) {
+      final recallContent = model.message.content as RecallNotificationContent;
+      final hasOriginalText = recallContent.originalContentType == MESSAGE_CONTENT_TYPE_TEXT;
+      if (hasOriginalText) {
+        menuItems.add({
+          'label': AppLocalizations.of(context)!.reedit,
+          'value': 'reedit',
+          'icon': Icons.edit
+        });
+      }
+    }
+
     menuItems.addAll([
       {
         'label': AppLocalizations.of(context)!.multiSelect,
@@ -613,6 +629,9 @@ class ConversationController extends ChangeNotifier {
       case "recall":
         _recallMessage(model.message.messageId, model.message.messageUid!);
         break;
+      case "reedit":
+        _reeditRecalledMessage(context, model);
+        break;
       case "multi_select":
         conversationViewModel.toggleMultiSelectMode();
         conversationViewModel.toggleMessageSelection(model.message.messageId);
@@ -648,6 +667,28 @@ class ConversationController extends ChangeNotifier {
 
   void _recallMessage(int messageId, int messageUid) {
     Imclient.recallMessage(messageUid, () {}, (errorCode) {});
+  }
+
+  void _reeditRecalledMessage(BuildContext context, UIMessage model) async {
+    final content = model.message.content;
+    String? text;
+    if (content is RecallNotificationContent) {
+      if (content.originalContentType == MESSAGE_CONTENT_TYPE_TEXT &&
+          content.originalContent != null &&
+          content.originalContent!.isNotEmpty) {
+        text = content.originalContent;
+      } else if (content.originalSearchableContent != null &&
+          content.originalSearchableContent!.isNotEmpty) {
+        text = content.originalSearchableContent;
+      }
+    }
+    if (text == null || text.isEmpty) {
+      showToast(msg: AppLocalizations.of(context)!.recalledMessageNoContent);
+      return;
+    }
+    final messageInputBarController =
+        Provider.of<MessageInputBarController>(context, listen: false);
+    messageInputBarController.setDraft(text);
   }
 
   void _showDeleteOptions(BuildContext context, UIMessage model) {

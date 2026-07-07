@@ -332,7 +332,10 @@ class ConversationViewModel extends ChangeNotifier {
     if (targetMsg == null) {
       _noMoreNewerMsg = true;
       Imclient.getMessages(_currentConversation!, 0, 20).then((messages) {
-        _conversationMessageList = messages.map((message) => UIMessage(message)).toList();
+        _conversationMessageList = messages
+            .where((message) => message.messageId != 0)
+            .map((message) => UIMessage(message))
+            .toList();
         if (messages.length < 20) {
           _noMoreLocalHistoryMsg = true;
         }
@@ -345,11 +348,17 @@ class ConversationViewModel extends ChangeNotifier {
     var newerMsgs = await Imclient.getMessages(_currentConversation!, messageId, -20);
 
     List<UIMessage> list = [];
-    list.addAll(olderMsgs.reversed.toList().map((e) => UIMessage(e)));
+    list.addAll(olderMsgs.reversed
+        .where((msg) => msg.messageId != 0)
+        .toList()
+        .map((e) => UIMessage(e)));
     var uiTarget = UIMessage(targetMsg);
     uiTarget.highlighted = true;
     list.add(uiTarget);
-    list.addAll(newerMsgs.reversed.toList().map((e) => UIMessage(e)));
+    list.addAll(newerMsgs.reversed
+        .where((msg) => msg.messageId != 0)
+        .toList()
+        .map((e) => UIMessage(e)));
 
     // 因为 _conversationMessageList 是反的，最新的在最前面
     _conversationMessageList = list.reversed.toList();
@@ -385,7 +394,13 @@ class ConversationViewModel extends ChangeNotifier {
         completer.complete();
         return;
       }
-      var newMsgs = messages.map((msg) => UIMessage(msg));
+      var newMsgs = messages.where((msg) => msg.messageId != 0).map((msg) => UIMessage(msg)).toList();
+      if (newMsgs.isEmpty) {
+        _noMoreNewerMsg = true;
+        notifyListeners();
+        completer.complete();
+        return;
+      }
       _conversationMessageList.insertAll(0, newMsgs);
       focusMessageIndex += newMsgs.length;
       if (messages.length < 20) {
@@ -452,7 +467,10 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   void _insertMessages(int index, List<Message> msgs) {
-    var newMsgs = msgs.map((msg) => UIMessage(msg));
+    var newMsgs = msgs.where((msg) => msg.messageId != 0).map((msg) => UIMessage(msg)).toList();
+    if (newMsgs.isEmpty) {
+      return;
+    }
     _conversationMessageList.insertAll(index, newMsgs);
     notifyListeners();
   }

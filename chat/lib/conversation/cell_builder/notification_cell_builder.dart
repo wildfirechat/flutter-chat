@@ -1,10 +1,15 @@
 import 'dart:async';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:imclient/message/message.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/notification/notification_message_content.dart';
+import 'package:imclient/message/notification/recall_notificiation_content.dart';
 
+import '../input_bar/message_input_bar_controller.dart';
 import '../message_cell.dart';
 import 'message_cell_builder.dart';
 
@@ -36,22 +41,70 @@ class NotificationCellBuilder extends MessageCellBuilder {
 
   @override
   Widget buildContent(BuildContext context) {
+    final recallContent = model.message.content is RecallNotificationContent
+        ? model.message.content as RecallNotificationContent
+        : null;
+    final bool showReedit = recallContent != null &&
+        model.message.direction == MessageDirection.MessageDirection_Send &&
+        model.message.fromUser == Imclient.currentUserId &&
+        recallContent.originalContentType == MESSAGE_CONTENT_TYPE_TEXT;
+
+    final reeditWidget = showReedit
+        ? GestureDetector(
+      onTap: () => _onReeditTapped(context, recallContent!),
+      child: Text(
+        AppLocalizations.of(context)?.reedit ?? '重新编辑',
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 12, color: Colors.green),
+      ),
+    )
+        : null;
+
     return Container(
         padding: const EdgeInsets.fromLTRB(60, 0, 60, 0),
         child: notificaitonMsgDigest.isEmpty
             ? Container(
-                width: 200,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-              )
-            : Text(
-                notificaitonMsgDigest,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 12),
-              ));
+          width: 200,
+          height: 12,
+          decoration: BoxDecoration(
+            color: Colors.grey.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(4),
+          ),
+        )
+            : Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              notificaitonMsgDigest,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12),
+            ),
+            if (reeditWidget != null) ...[
+              const SizedBox(width: 6),
+              reeditWidget,
+            ],
+          ],
+        ));
+  }
+
+  void _onReeditTapped(BuildContext context, RecallNotificationContent recallContent) {
+    String? text;
+    if (recallContent.originalContent != null && recallContent.originalContent!.isNotEmpty) {
+      text = recallContent.originalContent;
+    } else if (recallContent.originalSearchableContent != null &&
+        recallContent.originalSearchableContent!.isNotEmpty) {
+      text = recallContent.originalSearchableContent;
+    }
+    if (text == null || text.isEmpty) {
+      return;
+    }
+    try {
+      final controller = Provider.of<MessageInputBarController>(context, listen: false);
+      controller.setDraft(text);
+    } catch (e) {
+      debugPrint('reedit: unable to find MessageInputBarController: $e');
+    }
   }
 
   // 未使用 futureBuilder

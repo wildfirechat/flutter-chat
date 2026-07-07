@@ -251,6 +251,8 @@
   "delete": "删除",
   "speechToText": "转文字",
   "recall": "撤回",
+  "reedit": "重新编辑",
+  "recalledMessageNoContent": "原消息内容已无法获取",
   "multiSelect": "多选",
   "quote": "引用",
   "favoriteAction": "收藏",

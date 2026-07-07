@@ -2005,7 +2005,7 @@ class ImclientPlatform extends PlatformInterface {
 
     // 桌面平台(FFI)不会通过 MethodChannel 回调 onSendMessageStart,
     // 需要在 sendMediaMessage 返回前主动发送 SendMessageStartEvent 通知 UI 层
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+    if (message.messageId != 0 && (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
       message.status = MessageStatus.Message_Status_Sending;
       _eventBus.fire(SendMessageStartEvent(message));
     }

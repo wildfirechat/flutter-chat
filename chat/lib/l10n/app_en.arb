@@ -251,6 +251,8 @@
   "delete": "Delete",
   "speechToText": "Speech to Text",
   "recall": "Recall",
+  "reedit": "Re-edit",
+  "recalledMessageNoContent": "The original message content is no longer available",
   "multiSelect": "Multi Select",
   "quote": "Quote",
   "favoriteAction": "Favorite",
