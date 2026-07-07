@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
 import 'package:chat/widget/portrait.dart';
@@ -7,12 +8,27 @@ import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import '../default_portrait_provider.dart';
 import '../user_info_widget.dart';
+import 'model/employee.dart';
+import 'model/organization.dart';
 import 'organization_view_model.dart';
 
 class OrganizationScreen extends StatefulWidget {
   final int? initialOrganizationId;
+  final bool selectMode;
+  final int maxSelected;
+  final List<String>? disabledUserIds;
+  final List<String>? initialSelectedUserIds;
+  final ValueChanged<List<String>>? onSelected;
 
-  const OrganizationScreen({super.key, this.initialOrganizationId});
+  const OrganizationScreen({
+    super.key,
+    this.initialOrganizationId,
+    this.selectMode = false,
+    this.maxSelected = 1024,
+    this.disabledUserIds,
+    this.initialSelectedUserIds,
+    this.onSelected,
+  });
 
   @override
   _OrganizationScreenState createState() => _OrganizationScreenState();
@@ -20,56 +36,322 @@ class OrganizationScreen extends StatefulWidget {
 
 class _OrganizationScreenState extends State<OrganizationScreen> {
   late OrganizationViewModel _viewModel;
+  final TextEditingController _searchController = TextEditingController();
+  late Set<String> _selectedUserIds;
 
   @override
   void initState() {
     super.initState();
+    _selectedUserIds = Set<String>.from(widget.initialSelectedUserIds ?? []);
     _viewModel = OrganizationViewModel();
     _viewModel.loadInitialData(organizationId: widget.initialOrganizationId);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _viewModel.dispose();
+    super.dispose();
   }
 
   Widget _buildBreadcrumbs() {
     return Consumer<OrganizationViewModel>(
       builder: (context, viewModel, child) {
-        if (viewModel.breadcrumbPath.isEmpty) return const SizedBox.shrink();
+        final path = viewModel.breadcrumbPath;
+        if (path.isEmpty) return const SizedBox.shrink();
 
-        List<Widget> breadcrumbWidgets = [];
-        for (int i = 0; i < viewModel.breadcrumbPath.length; i++) {
-          final org = viewModel.breadcrumbPath[i];
-          breadcrumbWidgets.add(
+        List<Widget> items = [];
+        // 根入口，点击关闭页面
+        items.add(
+          InkWell(
+            onTap: () => Navigator.of(context).maybePop(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
+              child: Text(
+                '组织架构',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        );
+        items.add(Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+          child: Icon(Icons.chevron_right, size: 18.0, color: Colors.grey[700]),
+        ));
+
+        for (int i = 0; i < path.length; i++) {
+          final org = path[i];
+          final isLast = i == path.length - 1;
+          items.add(
             InkWell(
-              onTap: () {
-                if (i < viewModel.breadcrumbPath.length - 1) {
-                  viewModel.navigateToOrganization(org);
-                }
-              },
+              onTap: isLast
+                  ? null
+                  : () => viewModel.navigateToOrganization(org),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
                 child: Text(
-                  org.name ?? 'Unnamed',
+                  org.name,
                   style: TextStyle(
-                    color: i == viewModel.breadcrumbPath.length - 1 ? Theme.of(context).textTheme.bodyLarge?.color : Theme.of(context).colorScheme.primary,
-                    fontWeight: i == viewModel.breadcrumbPath.length - 1 ? FontWeight.bold : FontWeight.normal,
+                    color: isLast
+                        ? Theme.of(context).textTheme.bodyLarge?.color
+                        : Theme.of(context).colorScheme.primary,
+                    fontWeight: isLast ? FontWeight.bold : FontWeight.normal,
+                    fontSize: 14,
                   ),
                 ),
               ),
             ),
           );
-          if (i < viewModel.breadcrumbPath.length - 1) {
-            breadcrumbWidgets.add(Padding(
+          if (!isLast) {
+            items.add(Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2.0),
               child: Icon(Icons.chevron_right, size: 18.0, color: Colors.grey[700]),
             ));
           }
         }
-        return SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            child: Row(children: breadcrumbWidgets),
+
+        return Container(
+          color: isDesktopShell ? PcTheme.chatBg : Colors.grey[100],
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              child: Row(children: items),
+            ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Consumer<OrganizationViewModel>(
+      builder: (context, viewModel, child) {
+        return Container(
+          color: isDesktopShell ? PcTheme.chatBg : null,
+          padding: EdgeInsets.symmetric(
+            horizontal: isDesktopShell ? 12.0 : 16.0,
+            vertical: isDesktopShell ? 8.0 : 12.0,
+          ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (value) => viewModel.search(value),
+            decoration: InputDecoration(
+              hintText: '搜索成员',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: viewModel.searchQuery.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _searchController.clear();
+                        viewModel.clearSearch();
+                      },
+                    )
+                  : null,
+              contentPadding: const EdgeInsets.symmetric(vertical: 0.0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(isDesktopShell ? 6.0 : 8.0),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+              fillColor: isDesktopShell ? Colors.white : Colors.grey[200],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+      alignment: Alignment.centerLeft,
+      color: isDesktopShell ? PcTheme.chatBg : Colors.grey[100],
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 13,
+          color: Colors.grey[600],
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  bool _isDisabled(String userId) {
+    return widget.disabledUserIds?.contains(userId) ?? false;
+  }
+
+  void _toggleEmployeeSelection(String userId) {
+    if (_selectedUserIds.contains(userId)) {
+      setState(() {
+        _selectedUserIds.remove(userId);
+      });
+      return;
+    }
+
+    if (_isDisabled(userId)) return;
+
+    if (_selectedUserIds.length >= widget.maxSelected) {
+      Fluttertoast.showToast(msg: '最多选择 ${widget.maxSelected} 人');
+      return;
+    }
+
+    setState(() {
+      _selectedUserIds.add(userId);
+    });
+  }
+
+  void _onDone() {
+    final result = _selectedUserIds.toList();
+    if (widget.onSelected != null) {
+      widget.onSelected!(result);
+    }
+    Navigator.of(context).pop(result);
+  }
+
+  Widget _buildSubOrgTile(Organization subOrg) {
+    final name = '${subOrg.name}(${subOrg.memberCount ?? 0})';
+    return ListTile(
+      leading: Icon(Icons.corporate_fare, color: Theme.of(context).colorScheme.secondary),
+      title: Text(name),
+      trailing: const Icon(Icons.chevron_right, size: 20),
+      visualDensity: isDesktopShell ? VisualDensity.compact : VisualDensity.standard,
+      onTap: () => _viewModel.navigateToOrganization(subOrg),
+    );
+  }
+
+  Widget _buildEmployeeTile(Employee emp) {
+    final isSelected = _selectedUserIds.contains(emp.employeeId);
+    final isDisabled = widget.selectMode && _isDisabled(emp.employeeId);
+
+    Widget? trailing;
+    VoidCallback? onTap;
+    if (widget.selectMode) {
+      trailing = Checkbox(
+        value: isSelected,
+        onChanged: isDisabled ? null : (_) => _toggleEmployeeSelection(emp.employeeId),
+      );
+      onTap = isDisabled ? null : () => _toggleEmployeeSelection(emp.employeeId);
+    } else {
+      onTap = () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => UserInfoWidget(emp.employeeId),
+          ),
+        );
+      };
+    }
+
+    return ListTile(
+      leading: Portrait(
+        emp.portraitUrl ?? WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()),
+        Config.defaultUserPortrait,
+      ),
+      title: Text(emp.name),
+      subtitle: (emp.title != null && emp.title!.isNotEmpty) ? Text(emp.title!) : null,
+      trailing: trailing,
+      visualDensity: isDesktopShell ? VisualDensity.compact : VisualDensity.standard,
+      onTap: onTap,
+    );
+  }
+
+  Widget _buildOrganizationList(OrganizationViewModel viewModel) {
+    final details = viewModel.currentOrganizationDetails;
+    if (details == null) {
+      return const Expanded(
+        child: Center(child: Text('No organization data available.')),
+      );
+    }
+
+    final subOrgs = details.subOrganizations ?? [];
+    final employees = details.employees ?? [];
+
+    if (subOrgs.isEmpty && employees.isEmpty) {
+      return Expanded(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 32.0),
+            child: Text(
+              '该部门暂无子部门或成员',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Expanded(
+      child: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 0.0),
+        children: [
+          if (subOrgs.isNotEmpty) ...[
+            _buildSectionHeader('子部门'),
+            ...subOrgs.map(_buildSubOrgTile),
+          ],
+          if (employees.isNotEmpty) ...[
+            _buildSectionHeader('成员'),
+            ...employees.map(_buildEmployeeTile),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchResults(OrganizationViewModel viewModel) {
+    if (viewModel.isSearching) {
+      return const Expanded(
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (viewModel.searchError != null) {
+      return Expanded(
+        child: Center(
+          child: Text(
+            viewModel.searchError!,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ),
+      );
+    }
+
+    if (viewModel.searchResults.isEmpty) {
+      return Expanded(
+        child: Center(
+          child: Text(
+            '未找到匹配的成员',
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+          ),
+        ),
+      );
+    }
+
+    return Expanded(
+      child: ListView(
+        padding: const EdgeInsets.symmetric(vertical: 0.0),
+        children: viewModel.searchResults.map(_buildEmployeeTile).toList(),
+      ),
+    );
+  }
+
+  Widget _buildDoneAction() {
+    final label = _selectedUserIds.isEmpty
+        ? '确定'
+        : '确定(${_selectedUserIds.length}/${widget.maxSelected})';
+    return TextButton(
+      onPressed: _onDone,
+      style: TextButton.styleFrom(
+        foregroundColor: isDesktopShell ? PcTheme.accent : null,
+        textStyle: isDesktopShell ? const TextStyle(fontSize: 14) : null,
+      ),
+      child: Text(label),
     );
   }
 
@@ -79,93 +361,61 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       value: _viewModel,
       child: Consumer<OrganizationViewModel>(
         builder: (context, viewModel, child) {
-          return Scaffold(
-            appBar: isDesktopShell
-                ? PcPageHeader(title: viewModel.appBarTitle ?? '组织结构')
-                : AppBar(
-                    title: Text(viewModel.appBarTitle ?? '组织结构'),
-                  ),
-            backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
-            body: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildBreadcrumbs(),
-                const Divider(height: 1),
-                if (viewModel.isLoading)
-                  const Expanded(child: Center(child: CircularProgressIndicator()))
-                else if (viewModel.error != null)
-                  Expanded(
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                            const SizedBox(height: 16),
-                            Text(viewModel.error!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 16)),
-                            const SizedBox(height: 20),
-                            ElevatedButton.icon(
-                              icon: const Icon(Icons.refresh),
-                              label: const Text('Retry'),
-                              onPressed: () => viewModel.retryLoadData(),
-                            )
-                          ],
+          return PopScope(
+            canPop: !_viewModel.canNavigateBackInHierarchy(),
+            onPopInvokedWithResult: (didPop, result) {
+              if (!didPop && _viewModel.canNavigateBackInHierarchy()) {
+                _viewModel.navigateBackInHierarchy();
+              }
+            },
+            child: Scaffold(
+              appBar: isDesktopShell
+                  ? PcPageHeader(
+                      title: viewModel.appBarTitle ?? '组织结构',
+                      onBack: () => Navigator.of(context).maybePop(),
+                      actions: widget.selectMode ? [_buildDoneAction()] : null,
+                    )
+                  : AppBar(
+                      title: Text(viewModel.appBarTitle ?? '组织结构'),
+                      actions: widget.selectMode ? [_buildDoneAction()] : null,
+                    ),
+              backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
+              body: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildBreadcrumbs(),
+                  const Divider(height: 1),
+                  _buildSearchBar(),
+                  if (viewModel.isLoading && viewModel.searchQuery.isEmpty)
+                    const Expanded(child: Center(child: CircularProgressIndicator()))
+                  else if (viewModel.error != null && viewModel.searchQuery.isEmpty)
+                    Expanded(
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.error_outline, color: Colors.red[400], size: 44),
+                              const SizedBox(height: 12),
+                              Text(viewModel.error!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 15)),
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.refresh),
+                                label: const Text('重新加载'),
+                                onPressed: () => viewModel.retryLoadData(),
+                              )
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  )
-                else if (viewModel.currentOrganizationDetails == null)
-                  const Expanded(child: Center(child: Text('No organization data available.')))
-                else
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(vertical: 8.0),
-                      children: [
-                        // List Sub-Organizations
-                        if (viewModel.currentOrganizationDetails!.subOrganizations != null && viewModel.currentOrganizationDetails!.subOrganizations!.isNotEmpty)
-                          ...viewModel.currentOrganizationDetails!.subOrganizations!.map((subOrg) {
-                            return ListTile(
-                              leading: Icon(Icons.corporate_fare, color: Theme.of(context).colorScheme.secondary),
-                              title: Text(subOrg.name),
-                              trailing: const Icon(Icons.chevron_right),
-                              onTap: () => viewModel.navigateToOrganization(subOrg),
-                            );
-                          }),
-
-                        // List Members
-                        if (viewModel.currentOrganizationDetails!.employees != null && viewModel.currentOrganizationDetails!.employees!.isNotEmpty)
-                          ...viewModel.currentOrganizationDetails!.employees!.map((emp) {
-                            return ListTile(
-                              leading: Portrait(emp.portraitUrl ?? WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()), Config.defaultUserPortrait),
-                              title: Text(emp.name),
-                              // subtitle: Text(emp.alias ?? emp.id?.toString() ?? 'No ID/Alias'),
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => UserInfoWidget(emp.employeeId),
-                                  ),
-                                );
-                              },
-                            );
-                          }),
-
-                        // Empty state if both are empty (or only one type exists and is empty)
-                        if ((viewModel.currentOrganizationDetails!.subOrganizations == null || viewModel.currentOrganizationDetails!.subOrganizations!.isEmpty) &&
-                            (viewModel.currentOrganizationDetails!.employees == null || viewModel.currentOrganizationDetails!.employees!.isEmpty))
-                          ListTile(
-                            title: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                                child: Text('No sub-units or members in this organization.', style: TextStyle(color: Colors.grey[600])),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-              ],
+                    )
+                  else if (viewModel.searchQuery.isNotEmpty)
+                    _buildSearchResults(viewModel)
+                  else
+                    _buildOrganizationList(viewModel),
+                ],
+              ),
             ),
           );
         },

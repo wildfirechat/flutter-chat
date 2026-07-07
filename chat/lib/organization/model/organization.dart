@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Organization {
   final int id;
   final int parentId;
@@ -63,5 +65,11 @@ class Organization {
       'updateDt': updateDt,
       'createDt': createDt,
     };
+  }
+
+  String toJsonString() => jsonEncode(toJson());
+
+  factory Organization.fromJsonString(String str) {
+    return Organization.fromJson(jsonDecode(str) as Map<String, dynamic>);
   }
 }

@@ -12,6 +12,7 @@ import 'package:chat/repo/user_repo.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/widget/sidebar_index.dart';
+import 'package:chat/organization/organization_screen.dart';
 
 typedef OnPickUserCallback = void Function(BuildContext context, List<String> pickedUsers);
 
@@ -117,6 +118,39 @@ class _PickUserScreenState extends State<PickUserScreen> {
     widget.callback(context, _pickUserViewModel.pickedUsers.map((u) => u.userId).toList());
   }
 
+  Future<void> _openOrganizationPicker(BuildContext context) async {
+    final remaining = widget.maxSelected - _pickUserViewModel.pickedUsers.length;
+    if (remaining <= 0) {
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
+      return;
+    }
+    final selected = _pickUserViewModel.pickedUsers.map((u) => u.userId).toList();
+    final disabled = <String>{
+      ...widget.disabledUncheckedUsers ?? [],
+      ...widget.disabledCheckedUsers ?? [],
+    }.toList();
+
+    final result = await Navigator.push<List<String>>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OrganizationScreen(
+          selectMode: true,
+          maxSelected: remaining,
+          initialSelectedUserIds: selected,
+          disabledUserIds: disabled,
+        ),
+      ),
+    );
+
+    if (result != null && result.isNotEmpty) {
+      final userInfos = await Imclient.getUserInfos(result);
+      for (final userInfo in userInfos) {
+        if (_pickUserViewModel.pickedUsers.length >= widget.maxSelected) break;
+        _pickUserViewModel.pickUser(userInfo, true);
+      }
+    }
+  }
+
   List<String> _getIndexList(List<UIPickUserInfo> userList) {
     List<String> indexList = [];
     indexList.add('↑');
@@ -178,6 +212,17 @@ class _PickUserScreenState extends State<PickUserScreen> {
             body: SafeArea(
               child: Column(
                 children: [
+                  ListTile(
+                    leading: Icon(Icons.corporate_fare, color: Theme.of(context).colorScheme.secondary),
+                    title: const Text('从组织架构选择'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _openOrganizationPicker(context),
+                  ),
+                  Container(
+                    height: 0.5,
+                    margin: const EdgeInsets.only(left: 16.0),
+                    color: const Color(0xffebebeb),
+                  ),
                   Container(
                     height: 56,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),

@@ -17,6 +17,13 @@ import 'package:chat/widget/option_button_item.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/section_divider.dart';
 
+import 'package:chat/event_bus.dart';
+import 'package:chat/organization/model/organization.dart';
+import 'package:chat/organization/model/organization_relationship.dart';
+import 'package:chat/organization/organization_cache.dart';
+import 'package:chat/organization/organization_screen.dart';
+import 'package:chat/organization/organization_service.dart';
+
 import 'package:chat/pc/widgets/pc_page_header.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -34,6 +41,14 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   bool _isBlacklisted = false;
   bool _isStarred = false;
 
+  List<OrganizationRelationship> _bottomRelationships = [];
+  final Map<int, Organization> _bottomOrganizations = {};
+  bool _loadingOrg = true;
+  StreamSubscription? _employeeExSub;
+  StreamSubscription? _orgUpdateSub;
+
+  /// 发起单聊:桌面 Shell 内交给 PCShellViewModel 在右栏打开并同步选中态,
+  /// 移动端(无该 Provider)保持整页 push。
   void _openSingleConversation(BuildContext context) {
     openConversation(context, Conversation(conversationType: ConversationType.Single, target: widget.userId));
   }
@@ -41,8 +56,69 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   @override
   void initState() {
     super.initState();
+    _employeeExSub = eventBus.on<EmployeeExUpdatedEvent>().listen((event) {
+      if (event.employeeId == widget.userId) {
+        _loadOrganizationInfo();
+      }
+    });
+    _orgUpdateSub = eventBus.on<OrganizationUpdatedEvent>().listen((event) {
+      if (_bottomOrganizations.containsKey(event.organizationId)) {
+        _loadOrganizationInfo();
+      }
+    });
     _refreshUserInfo();
     _checkRelation();
+    _loadOrganizationInfo();
+  }
+
+  @override
+  void dispose() {
+    _employeeExSub?.cancel();
+    _orgUpdateSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _loadOrganizationInfo() async {
+    if (!OrganizationService.instance.isServiceAvailable()) {
+      if (mounted) {
+        setState(() {
+          _loadingOrg = false;
+        });
+      }
+      return;
+    }
+
+    final ex = OrganizationCache.instance.getEmployeeEx(widget.userId, refresh: true);
+    final relationships = ex?.relationships ?? [];
+    final bottomRels = relationships.where((r) => r.bottom).toList();
+    final Map<int, Organization> orgs = {};
+    for (final rel in bottomRels) {
+      final org = OrganizationCache.instance.getOrganization(rel.organizationId, refresh: false);
+      if (org != null) {
+        orgs[rel.organizationId] = org;
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _bottomRelationships = bottomRels;
+        _bottomOrganizations.clear();
+        _bottomOrganizations.addAll(orgs);
+        _loadingOrg = false;
+      });
+    }
+  }
+
+  void _openOrganization(int organizationId) {
+    final page = OrganizationScreen(initialOrganizationId: organizationId);
+    if (isDesktopShell && widget.onOpenPage != null) {
+      widget.onOpenPage!(page);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => page),
+      );
+    }
   }
 
   Future<void> _refreshUserInfo() async {
@@ -130,6 +206,10 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                   child: Column(
                     children: [
                       _buildHeader(context, userInfo, isFriend),
+                      if (!_loadingOrg && _bottomRelationships.isNotEmpty) ...[
+                        const SectionDivider(),
+                        _buildOrganizationSection(),
+                      ],
                       if (isMe) ...[
                         OptionItem(AppLocalizations.of(context)!.modifyAlias, onTap: () {
                           _showSetDisplayNameDialog(context, userInfo);
@@ -176,6 +256,20 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildOrganizationSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: _bottomRelationships.map((rel) {
+        final org = _bottomOrganizations[rel.organizationId];
+        final title = org?.name ?? '部门 ${rel.organizationId}';
+        return OptionItem(
+          title,
+          onTap: () => _openOrganization(rel.organizationId),
+        );
+      }).toList(),
     );
   }
 

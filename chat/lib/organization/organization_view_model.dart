@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:chat/organization/model/organization_relationship.dart';
+import 'package:chat/organization/model/employee.dart';
 import 'model/organization.dart';
 import 'model/organization_ex.dart';
 import 'organization_service.dart';
@@ -16,6 +17,11 @@ class OrganizationViewModel extends ChangeNotifier {
   List<Organization> _rootOrganizations = [];
   List<Organization> _myOrganizations = [];
 
+  String _searchQuery = '';
+  List<Employee> _searchResults = [];
+  bool _isSearching = false;
+  String? _searchError;
+
   OrganizationEx? get currentOrganizationDetails => _currentOrganizationDetails;
 
   List<Organization> get breadcrumbPath => _breadcrumbPath;
@@ -24,11 +30,19 @@ class OrganizationViewModel extends ChangeNotifier {
 
   String? get error => _error;
 
-  String? get appBarTitle => _breadcrumbPath.isNotEmpty ? _breadcrumbPath.first.name : null;
+  String? get appBarTitle => _breadcrumbPath.isNotEmpty ? _breadcrumbPath.last.name : null;
 
   List<Organization> get myOrganizations => _myOrganizations;
 
   List<Organization> get rootOrganizations => _rootOrganizations;
+
+  String get searchQuery => _searchQuery;
+
+  List<Employee> get searchResults => _searchResults;
+
+  bool get isSearching => _isSearching;
+
+  String? get searchError => _searchError;
 
   Future<void> _ensureLoggedIn() async {
     if (!_service.isServiceAvailable()) {
@@ -55,6 +69,48 @@ class OrganizationViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> search(String keyword) async {
+    _searchQuery = keyword;
+    _searchError = null;
+
+    if (keyword.trim().isEmpty) {
+      _searchResults = [];
+      _isSearching = false;
+      notifyListeners();
+      return;
+    }
+
+    _isSearching = true;
+    notifyListeners();
+
+    try {
+      await _ensureLoggedIn();
+      final int orgId = _breadcrumbPath.isNotEmpty
+          ? _breadcrumbPath.last.id
+          : (_currentOrganizationDetails?.organizationId ?? 0);
+      if (orgId == 0) {
+        _searchResults = [];
+      } else {
+        _searchResults = await _service.searchEmployee(orgId, keyword.trim());
+      }
+    } catch (e) {
+      print('Error searching employees: $e');
+      _searchError = '搜索失败: $e';
+      _searchResults = [];
+    } finally {
+      _isSearching = false;
+      notifyListeners();
+    }
+  }
+
+  void clearSearch() {
+    _searchQuery = '';
+    _searchResults = [];
+    _searchError = null;
+    _isSearching = false;
+    notifyListeners();
+  }
+
   Future<void> loadInitialData({int? organizationId}) async {
     _isLoading = true;
     _error = null;
@@ -69,6 +125,7 @@ class OrganizationViewModel extends ChangeNotifier {
         // No specific org, load root organizations and pick the first one
         final rootOrgs = await _service.getRootOrganization();
         if (rootOrgs.isNotEmpty) {
+          _breadcrumbPath.add(rootOrgs.first);
           await _loadOrganizationDataInternal(rootOrgs.first.id, orgForBreadcrumb: rootOrgs.first, isInitialRoot: true);
         } else {
           throw Exception('No root organizations found.');
@@ -95,7 +152,10 @@ class OrganizationViewModel extends ChangeNotifier {
       _currentOrganizationDetails = details;
 
       if (isInitialRoot && orgForBreadcrumb != null) {
-        // _breadcrumbPath = [orgForBreadcrumb];
+        // Ensure the root organization is present in the breadcrumb path.
+        if (_breadcrumbPath.isEmpty || _breadcrumbPath.last.id != orgForBreadcrumb.id) {
+          _breadcrumbPath.add(orgForBreadcrumb);
+        }
       } else if (orgForBreadcrumb != null) {
         // This is a navigation to a sub-organization
         int existingIndex = _breadcrumbPath.indexWhere((o) => o.id == orgForBreadcrumb.id);

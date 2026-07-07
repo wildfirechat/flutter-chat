@@ -1,15 +1,19 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/config.dart';
 import 'package:chat/organization/model/organization.dart';
 import 'package:chat/organization/model/organization_ex.dart';
 import 'package:chat/organization/model/employee.dart';
 import 'package:chat/organization/model/employee_ex.dart';
 import 'package:chat/organization/model/organization_relationship.dart';
+import 'package:chat/organization/organization_cache.dart';
 import 'package:imclient/imclient.dart';
 
 class OrganizationService {
+  static const String _authTokenKey = 'org_server_auth_token';
+
   bool _isServiceAvailable = false;
   String? _orgAuthToken;
 
@@ -20,6 +24,16 @@ class OrganizationService {
 
   static OrganizationService get instance => _instance;
 
+  /// 从本地恢复已保存的 auth token。
+  Future<void> _restoreAuthToken() async {
+    if (_orgAuthToken != null && _orgAuthToken!.isNotEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString(_authTokenKey);
+    if (token != null && token.isNotEmpty) {
+      _orgAuthToken = token;
+    }
+  }
+
   String get _orgServerBaseUrl {
     if (Config.ORG_SERVER_ADDRESS == null || Config.ORG_SERVER_ADDRESS!.isEmpty) {
       throw Exception("ORG_SERVER_ADDRESS is not configured in config.dart");
@@ -29,6 +43,13 @@ class OrganizationService {
 
   Future<void> login() async {
     if (_isServiceAvailable) {
+      return;
+    }
+
+    await _restoreAuthToken();
+    if (_orgAuthToken != null && _orgAuthToken!.isNotEmpty) {
+      _isServiceAvailable = true;
+      print('OrganizationService restored auth token from cache');
       return;
     }
 
@@ -50,10 +71,13 @@ class OrganizationService {
       );
 
       if (response.statusCode == 200) {
-        // Assuming the login endpoint might return a token or session info
-        // If it just returns success, that's fine too.
-        // final responseData = jsonDecode(response.body);
-        _orgAuthToken ??= response.headers['authToken'] ?? response.headers['authtoken']; // authToken might be in lowercase
+        // The login endpoint returns the token in the response header.
+        final token = response.headers['authToken'] ?? response.headers['authtoken'];
+        if (token != null && token.isNotEmpty) {
+          _orgAuthToken = token;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_authTokenKey, token);
+        }
         _isServiceAvailable = true;
         print('OrganizationService login successful');
       } else {
@@ -84,8 +108,8 @@ class OrganizationService {
           }
         }
         final dynamic jsonData = jsonDecode(response.body);
-        // The API seems to wrap results in a 'result' field and includes 'code' and 'msg'
-        // { "code": 0, "msg": "success", "result": { ... } } or { "code": 0, "msg": "success", "result": [ ... ] }
+        // The API wraps results in a 'result' field and includes 'code' and 'message'
+        // { "code": 0, "message": "success", "result": { ... } } or { "code": 0, "message": "success", "result": [ ... ] }
         if (jsonData is Map<String, dynamic> && jsonData.containsKey('code')) {
           if (jsonData['code'] == 0) {
             if (jsonData['result'] == null) {
@@ -101,7 +125,7 @@ class OrganizationService {
             }
             return fromJson(jsonData['result']);
           } else {
-            throw Exception('API Error: ${jsonData['code']} - ${jsonData['msg']}');
+            throw Exception('API Error: ${jsonData['code']} - ${jsonData['message'] ?? jsonData['msg']}');
           }
         } else {
           // Fallback if the structure is not as expected, try to parse directly
@@ -132,7 +156,7 @@ class OrganizationService {
     if (!_isServiceAvailable) throw Exception('Service not available. Call login() first.');
     final response = await _post(
       '$_orgServerBaseUrl/api/organization/root',
-      {},
+      null,
     );
     return _handleResponse<List<Organization>>(response, (json) {
       return (json as List).map((item) => Organization.fromJson(item)).toList();
@@ -197,31 +221,45 @@ class OrganizationService {
       '$_orgServerBaseUrl/api/employee/query_ex',
       {'employeeId': employeeId},
     );
-    return _handleResponse<EmployeeEx>(response, (json) => EmployeeEx.fromJson(json));
+    return _handleResponse<EmployeeEx>(response, (json) {
+      final ex = EmployeeEx.fromJson(json);
+      return EmployeeEx(
+        employeeId: ex.employeeId ?? employeeId,
+        employee: ex.employee,
+        relationships: ex.relationships,
+      );
+    });
   }
 
   Future<List<Employee>> searchEmployee(int orgId, String keyword) async {
     if (!_isServiceAvailable) throw Exception('Service not available. Call login() first.');
     final response = await _post(
       '$_orgServerBaseUrl/api/employee/search',
-      {'organizationId': orgId, 'keyword': keyword},
+      {'organizationId': orgId, 'keyword': keyword, 'count': 50, 'page': 0},
     );
     return _handleResponse<List<Employee>>(response, (json) {
-      return (json as List).map((item) => Employee.fromJson(item)).toList();
+      // The search endpoint returns a paginated object with a 'contents' list.
+      final data = json is Map<String, dynamic> && json.containsKey('contents')
+          ? json['contents']
+          : json;
+      return (data as List).map((item) => Employee.fromJson(item)).toList();
     });
   }
 
-  _post(String url, Map<String, dynamic> body) async {
+  Future<http.Response> _post(String url, Map<String, dynamic>? body) async {
     return await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json', 'authToken': _orgAuthToken!},
-      body: jsonEncode(body),
+      body: body == null ? null : jsonEncode(body),
     );
   }
 
   void clearOrgServiceAuthInfos() {
     _isServiceAvailable = false;
     _orgAuthToken = null;
-    // Potentially clear other cached org data if necessary
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.remove(_authTokenKey);
+    });
+    OrganizationCache.instance.clearCaches();
   }
 }

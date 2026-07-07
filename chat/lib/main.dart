@@ -52,6 +52,8 @@ import 'pc/pc_window_manager.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:chat/utils/show_toast.dart';
+import 'package:chat/organization/organization_cache.dart';
+import 'package:chat/organization/organization_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -87,6 +89,7 @@ class _MyAppState extends State<MyApp> {
 
   bool? isLogined;
   bool _isBackground = false;
+  bool _firstConnected = false;
   late MainAVEngineCallback _avEngineCallback;
 
   /// 桌面 Shell 导航状态;移动端为 null。
@@ -180,6 +183,19 @@ class _MyAppState extends State<MyApp> {
       if (kDebugMode) {
         print(status);
       }
+      if (status == kConnectionStatusConnected) {
+        if (!_firstConnected) {
+          _firstConnected = true;
+          OrganizationService.instance.login().then((_) {
+            OrganizationCache.instance.loadMyOrganizationInfos();
+          }).catchError((e) {
+            if (kDebugMode) {
+              print('Organization service login failed after IM connected: $e');
+            }
+          });
+        }
+        return;
+      }
       if (status == kConnectionStatusSecretKeyMismatch ||
           status == kConnectionStatusTokenIncorrect ||
           status == kConnectionStatusRejected ||
@@ -197,6 +213,9 @@ class _MyAppState extends State<MyApp> {
           value.remove('token');
           value.remove('app_server_auth_token');
           value.commit();
+          OrganizationService.instance.clearOrgServiceAuthInfos();
+          OrganizationCache.instance.clearCaches();
+          _firstConnected = false;
         });
 
         if (mounted) {
@@ -277,6 +296,7 @@ class _MyAppState extends State<MyApp> {
 
     Imclient.startLog();
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    await OrganizationCache.instance.initialize();
     if (prefs.getString("userId") != null && prefs.getString("token") != null) {
       Imclient.connect(Config.IM_Host, prefs.getString("userId")!, prefs.getString("token")!);
       Future.delayed(const Duration(seconds: 1), () {

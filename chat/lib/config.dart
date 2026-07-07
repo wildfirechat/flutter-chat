@@ -9,7 +9,7 @@ class Config {
   static const String APP_Server_Address = 'https://app.wildfirechat.net';
 
   //组织通讯录服务地址，如果没有部署，可以设置为null
-  static String? ORG_SERVER_ADDRESS = "https://org.wildfirechat.cn"; // Example: replace with your actual org server address
+  static String? ORG_SERVER_ADDRESS = "https://org.wildfirechat.net"; // Example: replace with your actual org server address
 
   /// 工作台页面地址
   /// <p>
