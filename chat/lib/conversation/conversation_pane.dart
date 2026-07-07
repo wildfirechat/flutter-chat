@@ -208,7 +208,11 @@ class _ConversationPaneState extends State<ConversationPane> {
         ChangeNotifierProvider<ConversationController>(create: (_) => ConversationController(conversationViewModel)),
         ChangeNotifierProvider<MessageInputBarController>(create: (_) {
           _inputBarController = MessageInputBarController(conversation: widget.conversation, conversationViewModel: conversationViewModel);
-          _inputBarController.onMentionTriggered = _onMentionTriggered;
+          if (!isDesktopShell) {
+            // 移动端:键入 '@' 跳选人页(微信手机端交互);
+            // 桌面端不设置回调,由 PcMessageInputBar 的 @ 浮层就地选人(微信 PC 交互)
+            _inputBarController.onMentionTriggered = _onMentionTriggered;
+          }
           _inputBarController.onSend = _scrollToBottom;
           return _inputBarController;
         }),

@@ -13,6 +13,7 @@ import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
 import 'package:chat/pc/pc_av_call.dart';
+import 'package:chat/pc/pc_mention_popup.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_popover.dart';
@@ -21,6 +22,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// 桌面形态输入栏:工具条(表情/图片/文件/通话)+ 多行输入区 + 发送按钮。
 /// Enter 发送、Shift+Enter 换行;中文输入法组合期间的 Enter 交给输入法。
+/// 键入 '@' 弹出 [PcMentionOverlay] 就地选人(微信 PC 交互),浮层优先消费导航按键。
 /// 复用 [MessageInputBarController] 的文本/@提醒/引用/草稿逻辑,与手机形态共享一套状态。
 class PcMessageInputBar extends StatefulWidget {
   const PcMessageInputBar({super.key});
@@ -31,16 +33,42 @@ class PcMessageInputBar extends StatefulWidget {
 
 class _PcMessageInputBarState extends State<PcMessageInputBar> {
   final GlobalKey _emojiButtonKey = GlobalKey();
+  final LayerLink _inputBarLink = LayerLink();
   bool _isPickingFile = false;
   String _textBeforePaste = '';
 
+  MessageInputBarController? _boundController;
+  PcMentionOverlay? _mentionOverlay;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 会话切换会重建 controller,@ 浮层跟随重新绑定
+    final controller = Provider.of<MessageInputBarController>(context);
+    if (!identical(controller, _boundController)) {
+      _mentionOverlay?.dispose();
+      _boundController = controller;
+      _mentionOverlay = PcMentionOverlay(inputBarController: controller, layerLink: _inputBarLink)..attach(context);
+    }
+  }
+
+  @override
+  void dispose() {
+    _mentionOverlay?.dispose();
+    super.dispose();
+  }
+
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event, MessageInputBarController controller) {
+    // @ 浮层可见时优先消费 上下键/Enter/Tab/Esc
+    final KeyEventResult mentionResult = _mentionOverlay?.handleKeyEvent(event) ?? KeyEventResult.ignored;
+    if (mentionResult != KeyEventResult.ignored) {
+      return mentionResult;
+    }
     if (event is! KeyDownEvent) {
       return KeyEventResult.ignored;
     }
     // Ctrl/Cmd+V 粘贴:如果剪贴板里有图片则走确认后发送,否则交给输入框处理文本粘贴
-    if (event.logicalKey == LogicalKeyboardKey.keyV &&
-        (HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed)) {
+    if (event.logicalKey == LogicalKeyboardKey.keyV && (HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed)) {
       _textBeforePaste = controller.textEditingController.text;
       _handlePaste(controller);
       return KeyEventResult.ignored;
@@ -77,8 +105,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
       // 回退 TextField 粘入的图片元数据文本
       if (controller.textEditingController.text != _textBeforePaste) {
         controller.textEditingController.text = _textBeforePaste;
-        controller.textEditingController.selection =
-            TextSelection.collapsed(offset: _textBeforePaste.length);
+        controller.textEditingController.selection = TextSelection.collapsed(offset: _textBeforePaste.length);
       }
       // super_clipboard 的 getFile 使用回调模式
       reader.getFile(format, (file) async {
@@ -87,11 +114,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
           if (!mounted || bytes.isEmpty) {
             return;
           }
-          final ext = format == Formats.png
-              ? 'png'
-              : (format == Formats.gif
-                  ? 'gif'
-                  : 'jpg');
+          final ext = format == Formats.png ? 'png' : (format == Formats.gif ? 'gif' : 'jpg');
           final tempDir = await getTemporaryDirectory();
           final path = '${tempDir.path}/paste_${DateTime.now().millisecondsSinceEpoch}.$ext';
           await File(path).writeAsBytes(bytes);
@@ -228,106 +251,108 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     final l10n = AppLocalizations.of(context)!;
     final hasText = controller.textEditingController.text.trim().isNotEmpty;
 
-    return Container(
-      height: PcTheme.inputBarHeight,
-      decoration: const BoxDecoration(
-        color: PcTheme.chatBg,
-        border: Border(top: BorderSide(width: 0.5, color: PcTheme.hairline)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-            child: Row(
-              children: [
-                _ToolbarButton(
-                  key: _emojiButtonKey,
-                  icon: Icons.sentiment_satisfied_outlined,
-                  tooltip: l10n.emoji,
-                  onTap: () => _showEmojiPopover(controller),
-                ),
-                _ToolbarButton(
-                  icon: Icons.image_outlined,
-                  tooltip: l10n.image,
-                  onTap: () => _pickImage(conversationController, controller),
-                ),
-                _ToolbarButton(
-                  icon: Icons.folder_outlined,
-                  tooltip: l10n.filePicker,
-                  onTap: () => _pickFile(conversationController, controller),
-                ),
-                const Spacer(),
-                // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
-                // 单聊直接发起,群聊先弹选人对话框再发起(见 startAvCall)
-                if (controller.conversation.conversationType == ConversationType.Single ||
-                    controller.conversation.conversationType == ConversationType.Group) ...[
+    return CompositedTransformTarget(
+      link: _inputBarLink,
+      child: Container(
+        height: PcTheme.inputBarHeight,
+        decoration: const BoxDecoration(
+          color: PcTheme.chatBg,
+          border: Border(top: BorderSide(width: 0.5, color: PcTheme.hairline)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+              child: Row(
+                children: [
                   _ToolbarButton(
-                    icon: Icons.call_outlined,
-                    tooltip: l10n.audioCallAction,
-                    onTap: () => startAvCall(context, controller.conversation, audioOnly: true),
+                    key: _emojiButtonKey,
+                    icon: Icons.sentiment_satisfied_outlined,
+                    tooltip: l10n.emoji,
+                    onTap: () => _showEmojiPopover(controller),
                   ),
                   _ToolbarButton(
-                    icon: Icons.videocam_outlined,
-                    tooltip: l10n.videoCallAction,
-                    onTap: () => startAvCall(context, controller.conversation, audioOnly: false),
+                    icon: Icons.image_outlined,
+                    tooltip: l10n.image,
+                    onTap: () => _pickImage(conversationController, controller),
                   ),
+                  _ToolbarButton(
+                    icon: Icons.folder_outlined,
+                    tooltip: l10n.filePicker,
+                    onTap: () => _pickFile(conversationController, controller),
+                  ),
+                  const Spacer(),
+                  // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
+                  // 单聊直接发起,群聊先弹选人对话框再发起(见 startAvCall)
+                  if (controller.conversation.conversationType == ConversationType.Single || controller.conversation.conversationType == ConversationType.Group) ...[
+                    _ToolbarButton(
+                      icon: Icons.call_outlined,
+                      tooltip: l10n.audioCallAction,
+                      onTap: () => startAvCall(context, controller.conversation, audioOnly: true),
+                    ),
+                    _ToolbarButton(
+                      icon: Icons.videocam_outlined,
+                      tooltip: l10n.videoCallAction,
+                      onTap: () => startAvCall(context, controller.conversation, audioOnly: false),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          Expanded(
-            child: Focus(
-              onKeyEvent: (node, event) => _handleKeyEvent(node, event, controller),
-              child: TextField(
-                controller: controller.textEditingController,
-                focusNode: controller.focusNode,
-                onChanged: controller.onTextChanged,
-                maxLines: null,
-                expands: true,
-                textAlignVertical: TextAlignVertical.top,
-                keyboardType: TextInputType.multiline,
-                style: const TextStyle(fontSize: 14, height: 1.5, color: PcTheme.textPrimary),
-                decoration: const InputDecoration(
-                  isCollapsed: true,
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            Expanded(
+              child: Focus(
+                onKeyEvent: (node, event) => _handleKeyEvent(node, event, controller),
+                child: TextField(
+                  controller: controller.textEditingController,
+                  focusNode: controller.focusNode,
+                  onChanged: controller.onTextChanged,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  keyboardType: TextInputType.multiline,
+                  style: const TextStyle(fontSize: 14, height: 1.5, color: PcTheme.textPrimary),
+                  decoration: const InputDecoration(
+                    isCollapsed: true,
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
                 ),
               ),
             ),
-          ),
-          if (controller.quotedMessage != null)
+            if (controller.quotedMessage != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+                child: _QuoteChip(controller: controller),
+              ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
-              child: _QuoteChip(controller: controller),
-            ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-            child: Row(
-              children: [
-                const Spacer(),
-                Tooltip(
-                  message: l10n.enterToSendHint,
-                  child: ElevatedButton(
-                    onPressed: hasText ? controller.onSendButton : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: PcTheme.accent,
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: const Color(0xFFE3E2E1),
-                      disabledForegroundColor: PcTheme.textTertiary,
-                      elevation: 0,
-                      minimumSize: const Size(88, 30),
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                      textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+              child: Row(
+                children: [
+                  const Spacer(),
+                  Tooltip(
+                    message: l10n.enterToSendHint,
+                    child: ElevatedButton(
+                      onPressed: hasText ? controller.onSendButton : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: PcTheme.accent,
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: const Color(0xFFE3E2E1),
+                        disabledForegroundColor: PcTheme.textTertiary,
+                        elevation: 0,
+                        minimumSize: const Size(88, 30),
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                      ),
+                      child: Text(l10n.send),
                     ),
-                    child: Text(l10n.send),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

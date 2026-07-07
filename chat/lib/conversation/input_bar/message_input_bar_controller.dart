@@ -50,6 +50,12 @@ class MessageInputBarController extends ChangeNotifier {
   bool _isInsertingMention = false;
   double _keyboardHeight = 0;
 
+  // 进行中的 @ 会话:用户键入 '@' 开启,_mentionAtIndex 是 '@' 的下标(-1 表示无会话),
+  // _mentionQuery 是 '@' 与光标之间的过滤词。移动端经 onMentionTriggered 跳选人页,
+  // 桌面端由 @ 浮层监听 hasMentionSession/mentionQuery 就地过滤(微信 PC 交互)。
+  int _mentionAtIndex = -1;
+  String _mentionQuery = '';
+
   int _sendTypingTime = 0;
   final Map<String, String> _remoteUrlCache = {};
 
@@ -60,6 +66,8 @@ class MessageInputBarController extends ChangeNotifier {
   }) : _status = initialStatus {
     // 设置焦点监听器
     focusNode.addListener(_onFocusChanged);
+    // 纯光标移动不会触发 onTextChanged,需单独校验 @ 会话
+    textEditingController.addListener(_onEditingValueChanged);
     _loadRemoteUrlCache();
 
     Imclient.getConversationInfo(conversation).then((conversationInfo) {
@@ -81,6 +89,10 @@ class MessageInputBarController extends ChangeNotifier {
   ChatInputBarStatus get status => _status;
 
   Message? get quotedMessage => _quotedMessage;
+
+  bool get hasMentionSession => _mentionAtIndex >= 0;
+
+  String get mentionQuery => _mentionQuery;
 
   double get keyboardHeight => _keyboardHeight;
 
@@ -169,6 +181,7 @@ class MessageInputBarController extends ChangeNotifier {
       textEditingController.clear();
       _quotedMessage = null;
       _mentionsList.clear();
+      _endMentionSession();
       if (_conversationDraft.isNotEmpty) {
         Imclient.setConversationDraft(conversation, '');
         _conversationDraft = '';
@@ -190,14 +203,7 @@ class MessageInputBarController extends ChangeNotifier {
         return;
       }
     } else {
-      // Regular logic for triggering mention picker on user input
-      if (text.isNotEmpty && text.endsWith('@')) {
-        if (text.length > _lastText.length && text.substring(text.length - 1) == '@') {
-          if (onMentionTriggered != null) {
-            onMentionTriggered!(conversation);
-          }
-        }
-      }
+      _updateMentionSession(text);
     }
 
     if (_mentionsList.isNotEmpty) {
@@ -206,6 +212,103 @@ class MessageInputBarController extends ChangeNotifier {
 
     _lastText = text;
     _sendTyping(text);
+    notifyListeners();
+  }
+
+  /// 微信式 @ 会话跟踪:仅"单字符键入 '@'"开启会话(粘贴不触发);
+  /// 会话期间光标必须停在 '@' 之后、中间无空白,否则结束会话。
+  /// 在 onTextChanged 中调用,依赖 _lastText 是变化前的文本。
+  void _updateMentionSession(String text) {
+    final TextSelection selection = textEditingController.selection;
+    final int cursor = selection.isValid && selection.isCollapsed ? selection.start : -1;
+
+    if (text.length == _lastText.length + 1 && cursor > 0 && text[cursor - 1] == '@') {
+      // 确认是在光标处插入了单个 '@'(排除等长度的其他变化)
+      if (text.substring(0, cursor - 1) + text.substring(cursor) == _lastText) {
+        _mentionAtIndex = cursor - 1;
+        _mentionQuery = '';
+        onMentionTriggered?.call(conversation);
+        return;
+      }
+    }
+
+    if (_mentionAtIndex < 0) {
+      return;
+    }
+    if (cursor <= _mentionAtIndex || _mentionAtIndex >= text.length || text[_mentionAtIndex] != '@') {
+      _endMentionSession();
+      return;
+    }
+    final String query = text.substring(_mentionAtIndex + 1, cursor);
+    if (query.contains(RegExp(r'\s'))) {
+      _endMentionSession();
+      return;
+    }
+    _mentionQuery = query;
+  }
+
+  /// 纯光标移动(文本未变)时,光标离开查询串尾部即结束会话(微信:点击别处关闭浮层)。
+  /// 失焦时不结束:移动端 @ 后跳选人页会失焦,会话要保留到选人返回。
+  void _onEditingValueChanged() {
+    if (_mentionAtIndex < 0 || textEditingController.text != _lastText || !focusNode.hasFocus) {
+      return;
+    }
+    final TextSelection selection = textEditingController.selection;
+    final int expected = _mentionAtIndex + 1 + _mentionQuery.length;
+    if (!selection.isValid || !selection.isCollapsed || selection.start != expected) {
+      _endMentionSession();
+      notifyListeners();
+    }
+  }
+
+  void _endMentionSession() {
+    _mentionAtIndex = -1;
+    _mentionQuery = '';
+  }
+
+  /// 取消当前 @ 会话(Esc、切换会话等),已输入的文本保持原样。
+  void cancelMentionSession() {
+    if (_mentionAtIndex < 0) {
+      return;
+    }
+    _endMentionSession();
+    notifyListeners();
+  }
+
+  /// 用选中的用户完成当前 @ 会话:把 "@查询串" 替换为 "@显示名 " 并登记 mention。
+  void completeMention(UserInfo user) {
+    if (_mentionAtIndex < 0) {
+      return;
+    }
+    _isInsertingMention = true;
+
+    final String name = user.getReadableName();
+    final String text = textEditingController.text;
+    final int replaceEnd = (_mentionAtIndex + 1 + _mentionQuery.length).clamp(0, text.length);
+    final String textToInsert = '@$name ';
+    final String newText = text.replaceRange(_mentionAtIndex, replaceEnd, textToInsert);
+
+    // 替换区间长度变化,平移其后已登记的 mention
+    final int shift = textToInsert.length - (replaceEnd - _mentionAtIndex);
+    for (var mention in _mentionsList) {
+      if (mention.start >= replaceEnd) {
+        mention.start += shift;
+        mention.end += shift;
+      }
+    }
+    final int newCursorPos = _mentionAtIndex + textToInsert.length;
+    _mentionsList.add(Mention(user.userId, name, _mentionAtIndex, newCursorPos - 1)); // -1 排除末尾空格
+
+    _lastText = newText;
+    _endMentionSession();
+    textEditingController.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newCursorPos),
+    );
+
+    Future.delayed(const Duration(milliseconds: 150), () {
+      _isInsertingMention = false;
+    });
     notifyListeners();
   }
 
@@ -291,6 +394,12 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void addMention(UserInfo user) {
+    // 有进行中的 @ 会话(正常路径)直接复用;下面的旧逻辑只兜底
+    // "会话已丢失但光标仍紧跟 '@'"的场景。
+    if (_mentionAtIndex >= 0) {
+      completeMention(user);
+      return;
+    }
     _isInsertingMention = true;
 
     final String name = user.displayName ?? user.userId;
@@ -299,6 +408,10 @@ class MessageInputBarController extends ChangeNotifier {
     final int selectionStart = currentVal.selection.start;
 
     final int atSignIndex = selectionStart - 1;
+    if (atSignIndex < 0 || atSignIndex >= currentText.length || currentText[atSignIndex] != '@') {
+      _isInsertingMention = false;
+      return;
+    }
 
     final String textToInsert = "@$name ";
     final String newText = currentText.replaceRange(atSignIndex, selectionStart, textToInsert);
@@ -319,6 +432,7 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void insertMention(UserInfo user) {
+    _endMentionSession();
     _isInsertingMention = true;
     final String name = user.displayName ?? user.userId;
     final TextEditingValue currentVal = textEditingController.value;
@@ -478,6 +592,7 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void setDraft(String draft) {
+    _endMentionSession();
     textEditingController.text = draft;
     textEditingController.selection = TextSelection(baseOffset: draft.length, extentOffset: draft.length);
     _lastText = draft;
