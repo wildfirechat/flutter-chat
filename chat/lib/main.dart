@@ -22,6 +22,8 @@ import 'package:avenginekit/engine/call_end_reason.dart';
 import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:chat/call/voip_call_screen.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_shell_view_model.dart';
 
 // import 'package:momentclient/momentclient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -422,6 +424,10 @@ class MainAVEngineCallback implements AVEngineCallback {
     debugPrint('onReceiveCall: ${session.callId}');
     Future.delayed(const Duration(milliseconds: 100), () {
       if (session.status != CallState.STATUS_IDLE) {
+        if (isDesktopShell) {
+          PCShellViewModel.global?.startCallSession(session);
+          return;
+        }
         if (session.conversation!.conversationType == ConversationType.Single) {
           VoipCallScreen callView = VoipCallScreen(session: session);
           navKey.currentState!.pushAndRemoveUntil(
@@ -435,6 +441,10 @@ class MainAVEngineCallback implements AVEngineCallback {
   @override
   void onStartCall(CallSession session) {
     debugPrint('onStartCall: ${session.callId}');
+    if (isDesktopShell) {
+      PCShellViewModel.global?.startCallSession(session);
+      return;
+    }
     if (session.conversation!.conversationType == ConversationType.Single) {
       VoipCallScreen callView = VoipCallScreen(session: session);
       navKey.currentState!.pushAndRemoveUntil(

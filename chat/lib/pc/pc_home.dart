@@ -28,6 +28,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/workspace/work_space.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'pc_qr_login_screen.dart';
+import 'package:chat/call/voip_call_screen.dart';
 
 /// 桌面端三栏 Shell:侧栏(tab 切换)+ 中栏(搜索 + 各 tab 列表)+ 右栏(嵌套 Navigator 的详情区)。
 /// 会话/联系人/搜索结果点击通过回调注入,在右栏内打开;二级页面(群信息等)在右栏内部导航。
@@ -339,24 +340,126 @@ class _PCHomeState extends State<PCHome> {
       data: PcTheme.themeData(context),
       child: ChangeNotifierProvider<PCShellViewModel>.value(
         value: _shellViewModel,
-        child: Scaffold(
-          body: Row(
-            children: [
-              SizedBox(width: PcTheme.sideBarWidth, child: _PcSideBar(onTabSelected: _onTabSelected)),
-              SizedBox(width: PcTheme.middleColumnWidth, child: _buildMiddleColumn(context)),
-              Container(width: 0.5, color: PcTheme.hairline),
-              Expanded(
-                child: ClipRect(
-                  child: Navigator(
-                    key: _paneNavKey,
-                    onGenerateRoute: (settings) => _paneRoute(const _EmptyDetailPane(), settings),
+        child: Stack(
+          children: [
+            Scaffold(
+              body: Row(
+                children: [
+                  SizedBox(width: PcTheme.sideBarWidth, child: _PcSideBar(onTabSelected: _onTabSelected)),
+                  SizedBox(width: PcTheme.middleColumnWidth, child: _buildMiddleColumn(context)),
+                  Container(width: 0.5, color: PcTheme.hairline),
+                  Expanded(
+                    child: ClipRect(
+                      child: Navigator(
+                        key: _paneNavKey,
+                        onGenerateRoute: (settings) => _paneRoute(const _EmptyDetailPane(), settings),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+            _buildCallOverlay(),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCallOverlay() {
+    return Consumer<PCShellViewModel>(
+      builder: (context, model, _) {
+        final session = model.activeCallSession;
+        if (session == null) {
+          return const SizedBox.shrink();
+        }
+
+        return Positioned(
+          left: model.callWindowMinimized ? -9999.0 : model.callWindowPosition.dx,
+          top: model.callWindowMinimized ? -9999.0 : model.callWindowPosition.dy,
+          width: 320,
+          height: 480,
+          child: Material(
+            elevation: 16,
+            borderRadius: BorderRadius.circular(10),
+            clipBehavior: Clip.antiAlias,
+            color: Colors.black,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 1.0),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Stack(
+                children: [
+                  VoipCallScreen(session: session),
+                  // Draggable handle / Header bar
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    height: 38,
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.grab,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onPanUpdate: (details) {
+                          model.setCallWindowPosition(model.callWindowPosition + details.delta);
+                        },
+                        child: Container(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                '音视频通话',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  decoration: TextDecoration.none,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                              _buildMinimizeButton(model),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMinimizeButton(PCShellViewModel model) {
+    return HoverBuilder(
+      cursor: SystemMouseCursors.click,
+      builder: (context, hovered) {
+        return GestureDetector(
+          onTap: () {
+            model.minimizeCallWindow(true);
+          },
+          child: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: hovered ? Colors.white.withValues(alpha: 0.15) : Colors.transparent,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.remove_rounded,
+              color: Colors.white70,
+              size: 16,
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -575,6 +678,7 @@ class _PcSideBar extends StatelessWidget {
             onTabSelected: onTabSelected,
           ),
           const Spacer(),
+          _buildMinimizedCallTab(context, shell),
           _SideBarTab(
             tab: PCShellViewModel.tabMe,
             selectedIcon: Icons.person_rounded,
@@ -584,6 +688,23 @@ class _PcSideBar extends StatelessWidget {
           ),
           const SizedBox(height: 14),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMinimizedCallTab(BuildContext context, PCShellViewModel shell) {
+    if (shell.activeCallSession == null || !shell.callWindowMinimized) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Tooltip(
+        message: '通话中 - 点击恢复',
+        child: _PulsingCallButton(
+          onTap: () {
+            shell.minimizeCallWindow(false);
+          },
+        ),
       ),
     );
   }
@@ -706,6 +827,112 @@ class _EmptyDetailPane extends StatelessWidget {
         child: Opacity(
           opacity: 0.10,
           child: Image.asset('assets/images/app_icon.png', width: 72, height: 72),
+        ),
+      ),
+    );
+  }
+}
+
+class _PulsingCallButton extends StatefulWidget {
+  final VoidCallback onTap;
+  const _PulsingCallButton({required this.onTap});
+
+  @override
+  State<_PulsingCallButton> createState() => _PulsingCallButtonState();
+}
+
+class _PulsingCallButtonState extends State<_PulsingCallButton> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _pulseAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    )..repeat();
+
+    _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
+    );
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.08).chain(CurveTween(curve: Curves.easeOut)), weight: 50),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.08, end: 1.0).chain(CurveTween(curve: Curves.easeIn)), weight: 50),
+    ]).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Outer pulse ring 1
+            AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) {
+                return Container(
+                  width: 38 + (16 * _pulseAnimation.value),
+                  height: 38 + (16 * _pulseAnimation.value),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.green.withValues(alpha: 0.4 * (1.0 - _pulseAnimation.value)),
+                  ),
+                );
+              },
+            ),
+            // Outer pulse ring 2
+            AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) {
+                double val = (_pulseAnimation.value + 0.5) % 1.0;
+                return Container(
+                  width: 38 + (16 * val),
+                  height: 38 + (16 * val),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.green.withValues(alpha: 0.3 * (1.0 - val)),
+                  ),
+                );
+              },
+            ),
+            // Inner solid button
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF34C759), Color(0xFF248A3D)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.phone_in_talk_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ],
         ),
       ),
     );

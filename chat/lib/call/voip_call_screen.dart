@@ -11,6 +11,8 @@ import 'package:imclient/model/user_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_shell_view_model.dart';
 
 class VoipCallScreen extends StatefulWidget {
   final CallSession session;
@@ -44,15 +46,20 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     _session.setCallback(this);
     _loadTargetInfo();
     _updateStatusText();
-    _initRenderers();
-
-    if (_session.status == CallState.STATUS_CONNECTED) {
-      _startTimer();
-      _setupConnectedState();
-    }
+    
+    _initRenderers().then((_) {
+      if (mounted) {
+        if (_session.status == CallState.STATUS_CONNECTED) {
+          setState(() {
+            _startTimer();
+            _setupConnectedState();
+          });
+        }
+      }
+    });
   }
 
-  void _initRenderers() async {
+  Future<void> _initRenderers() async {
     await _localRenderer.initialize();
     await _remoteRenderer.initialize();
   }
@@ -212,7 +219,11 @@ class _VoipCallScreenState extends State<VoipCallScreen>
       });
       Future.delayed(const Duration(seconds: 1), () {
         if (mounted) {
-          Navigator.of(context).pop();
+          if (isDesktopShell && PCShellViewModel.global?.activeCallSession != null) {
+            PCShellViewModel.global?.endCallSession();
+          } else {
+            Navigator.of(context).pop();
+          }
         }
       });
     }

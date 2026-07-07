@@ -1,9 +1,24 @@
 import 'package:flutter/widgets.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:avenginekit/engine/call_session.dart';
 
 /// 桌面 Shell 的导航状态:侧栏选中的 tab 与会话列表选中的会话。
 /// 仅在 PCHome 子树中提供,移动端不使用。
 class PCShellViewModel extends ChangeNotifier {
+  static PCShellViewModel? global;
+
+  PCShellViewModel() {
+    global = this;
+  }
+
+  @override
+  void dispose() {
+    if (global == this) {
+      global = null;
+    }
+    super.dispose();
+  }
+
   static const int tabChat = 0;
   static const int tabContact = 1;
   static const int tabWork = 2;
@@ -17,6 +32,37 @@ class PCShellViewModel extends ChangeNotifier {
 
   int _selectedTab = tabChat;
   Conversation? _selectedConversation;
+
+  CallSession? _activeCallSession;
+  bool _callWindowMinimized = false;
+  Offset _callWindowPosition = const Offset(120, 80);
+
+  CallSession? get activeCallSession => _activeCallSession;
+  bool get callWindowMinimized => _callWindowMinimized;
+  Offset get callWindowPosition => _callWindowPosition;
+
+  void startCallSession(CallSession session) {
+    _activeCallSession = session;
+    _callWindowMinimized = false;
+    _callWindowPosition = const Offset(120, 80);
+    notifyListeners();
+  }
+
+  void endCallSession() {
+    _activeCallSession = null;
+    _callWindowMinimized = false;
+    notifyListeners();
+  }
+
+  void minimizeCallWindow(bool minimize) {
+    _callWindowMinimized = minimize;
+    notifyListeners();
+  }
+
+  void setCallWindowPosition(Offset position) {
+    _callWindowPosition = position;
+    notifyListeners();
+  }
 
   void openConversation(Conversation conversation, {int? toFocusMessageId}) {
     conversationOpener?.call(conversation, toFocusMessageId: toFocusMessageId);
