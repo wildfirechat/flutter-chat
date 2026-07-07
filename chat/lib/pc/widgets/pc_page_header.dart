@@ -36,6 +36,17 @@ class PcPageHeader extends StatelessWidget implements PreferredSizeWidget {
     }
   }
 
+  /// 返回按钮是否有去处:自定义返回始终显示;否则仅当聊天 tab 有选中会话时显示
+  /// (返回可回到该会话)。其余情况下(联系人/发现/我 等 tab 打开的详情页)其正下方
+  /// 就是空白占位欢迎页,返回无意义;这些 tab 的中栏列表始终可见,用户可经中栏/侧栏离开。
+  bool _showBack(BuildContext context) {
+    if (onBack != null) {
+      return true;
+    }
+    final shell = Provider.of<PCShellViewModel>(context, listen: false);
+    return shell.selectedTab == PCShellViewModel.tabChat && shell.selectedConversation != null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -47,26 +58,28 @@ class PcPageHeader extends StatelessWidget implements PreferredSizeWidget {
       ),
       child: Row(
         children: [
-          HoverBuilder(
-            cursor: SystemMouseCursors.click,
-            builder: (context, hovered) => GestureDetector(
-              onTap: () => _handleBack(context),
-              child: Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: hovered ? Colors.black.withValues(alpha: 0.04) : Colors.transparent,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 16,
-                  color: PcTheme.textPrimary,
+          if (_showBack(context)) ...[
+            HoverBuilder(
+              cursor: SystemMouseCursors.click,
+              builder: (context, hovered) => GestureDetector(
+                onTap: () => _handleBack(context),
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: hovered ? Colors.black.withValues(alpha: 0.04) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 16,
+                    color: PcTheme.textPrimary,
+                  ),
                 ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
+            const SizedBox(width: 12),
+          ],
           Expanded(
             child: Text(
               title,

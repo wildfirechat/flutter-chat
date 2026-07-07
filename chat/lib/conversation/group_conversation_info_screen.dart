@@ -19,6 +19,7 @@ import 'package:chat/widget/section_divider.dart';
 
 import '../contact/pick_user_screen.dart';
 import '../pc/pc_platform.dart';
+import '../pc/pc_user_card.dart';
 import '../search/search_conversation_result_view.dart';
 import '../user_info_widget.dart';
 import 'conversation_files_screen.dart';
@@ -69,8 +70,13 @@ class GroupConversationInfoScreen extends StatelessWidget {
       if (isDesktopShell) const SizedBox(height: 12.0),
       GroupConversationInfoMembersView(
         conversation,
-        onGroupMemberTap: (userInfo) {
-          openPage(context, UserInfoWidget(userInfo.userId));
+        onGroupMemberTap: (userInfo, anchor) {
+          // 桌面端点群成员弹用户信息卡片(与会话内点头像一致),移动端仍整页打开
+          if (isDesktopShell) {
+            showPcUserCard(context: context, anchor: anchor, userId: userInfo.userId, groupId: conversation.target);
+          } else {
+            openPage(context, UserInfoWidget(userInfo.userId));
+          }
         },
         onAddActionTap: () {
           _onAddNewConversationMember(context);

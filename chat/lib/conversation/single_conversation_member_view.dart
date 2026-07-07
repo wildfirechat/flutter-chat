@@ -6,6 +6,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/conversation/conversation_info_member_action_item.dart';
 import 'package:chat/conversation/conversation_info_member_item.dart';
+import 'package:chat/conversation/member_cell_anchor.dart';
 import 'package:chat/viewmodel/group_conversation_info_view_model.dart';
 
 import '../config.dart';
@@ -15,7 +16,7 @@ class SingleConversationMemberView extends StatelessWidget {
   final UserInfo userInfo;
 
   final void Function() onAddActionTap;
-  final void Function(UserInfo userInfo) onUserTap;
+  final void Function(UserInfo userInfo, Rect anchor) onUserTap;
 
   const SingleConversationMemberView(this.conversation, this.userInfo, {required this.onUserTap, required this.onAddActionTap, super.key});
 
@@ -44,11 +45,12 @@ class SingleConversationMemberView extends StatelessWidget {
               ),
               itemBuilder: (context, index) {
                 if (index < userInfos.length) {
-                  return GestureDetector(
-                    onTap: () {
-                      onUserTap(userInfos[index]);
-                    },
-                    child: ConversationInfoMemberItem(userInfos[index]),
+                  final memberInfo = userInfos[index];
+                  return Builder(
+                    builder: (itemContext) => GestureDetector(
+                      onTap: () => onUserTap(memberInfo, memberCellAnchor(itemContext)),
+                      child: ConversationInfoMemberItem(memberInfo),
+                    ),
                   );
                 } else {
                   return GestureDetector(

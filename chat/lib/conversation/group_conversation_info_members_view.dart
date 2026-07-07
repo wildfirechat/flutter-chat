@@ -8,13 +8,14 @@ import 'package:chat/viewmodel/group_view_model.dart';
 
 import 'conversation_info_member_action_item.dart';
 import 'conversation_info_member_item.dart';
+import 'member_cell_anchor.dart';
 
 class GroupConversationInfoMembersView extends StatelessWidget {
   final Conversation conversation;
 
   final void Function() onAddActionTap;
   final void Function() onRemoveActionTap;
-  final void Function(UserInfo userInfo) onGroupMemberTap;
+  final void Function(UserInfo userInfo, Rect anchor) onGroupMemberTap;
   final void Function()? onShowMoreGroupMemberTap;
 
   const GroupConversationInfoMembersView(this.conversation,
@@ -83,11 +84,12 @@ class GroupConversationInfoMembersView extends StatelessWidget {
               ),
               itemBuilder: (context, index) {
                 if (index < showGroupMemberUserInfos.length) {
-                  return GestureDetector(
-                    onTap: () {
-                      onGroupMemberTap(showGroupMemberUserInfos[index]);
-                    },
-                    child: ConversationInfoMemberItem(showGroupMemberUserInfos[index]),
+                  final memberInfo = showGroupMemberUserInfos[index];
+                  return Builder(
+                    builder: (itemContext) => GestureDetector(
+                      onTap: () => onGroupMemberTap(memberInfo, memberCellAnchor(itemContext)),
+                      child: ConversationInfoMemberItem(memberInfo),
+                    ),
                   );
                 } else {
                   if (showRemoveAction && index == memberCount - 1) {

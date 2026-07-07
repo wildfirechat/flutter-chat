@@ -95,9 +95,13 @@ class _PCHomeState extends State<PCHome> {
     if (exists) {
       _selectedSeenInList = true;
     } else if (_selectedSeenInList) {
+      // 选中的会话被删除:取消选中;若右栏正显示的正是该会话,清回占位欢迎页。
       _selectedSeenInList = false;
+      final wasShowingConversation = _paneShowsConversation;
       _shellViewModel.selectConversation(null);
-      _clearRightPane();
+      if (wasShowingConversation) {
+        _clearRightPane();
+      }
     }
   }
 
@@ -124,7 +128,10 @@ class _PCHomeState extends State<PCHome> {
     }
     _shellViewModel.selectTab(PCShellViewModel.tabChat);
     _shellViewModel.selectConversation(conversation);
-    _selectedSeenInList = false;
+    // 打开的若是列表中已存在的会话,立即标记为“已入列”,这样它被删除时能可靠清回占位页;
+    // 新建会话(尚未入列)保持 false,待其发出首条消息进入列表后由列表变更回调置真。
+    _selectedSeenInList = _conversationListViewModel.conversationList
+        .any((info) => info.conversation == conversation);
     _pushConversationPane(conversation, toFocusMessageId: toFocusMessageId);
   }
 
@@ -454,25 +461,32 @@ class _PCHomeState extends State<PCHome> {
         child: Stack(
           children: [
             Scaffold(
-              body: Row(
-                children: [
-                  SizedBox(
-                      width: PcTheme.sideBarWidth,
-                      child: _PcSideBar(onTabSelected: _onTabSelected)),
-                  SizedBox(
-                      width: PcTheme.middleColumnWidth,
-                      child: _buildMiddleColumn(context)),
-                  Container(width: 0.5, color: PcTheme.hairline),
-                  Expanded(
-                    child: ClipRect(
-                      child: Navigator(
-                        key: _paneNavKey,
-                        onGenerateRoute: (settings) =>
-                            _paneRoute(const _EmptyDetailPane(), settings),
+              // 工作台整栏展示网页,中栏只是占位,故此 tab 下收起中栏,改为侧栏 + 右栏两栏。
+              body: Selector<PCShellViewModel, bool>(
+                selector: (_, shell) =>
+                    shell.selectedTab == PCShellViewModel.tabWork,
+                builder: (context, isWorkTab, _) => Row(
+                  children: [
+                    SizedBox(
+                        width: PcTheme.sideBarWidth,
+                        child: _PcSideBar(onTabSelected: _onTabSelected)),
+                    if (!isWorkTab) ...[
+                      SizedBox(
+                          width: PcTheme.middleColumnWidth,
+                          child: _buildMiddleColumn(context)),
+                      Container(width: 0.5, color: PcTheme.hairline),
+                    ],
+                    Expanded(
+                      child: ClipRect(
+                        child: Navigator(
+                          key: _paneNavKey,
+                          onGenerateRoute: (settings) =>
+                              _paneRoute(const _EmptyDetailPane(), settings),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
             _buildCallOverlay(),
