@@ -8,6 +8,7 @@ import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/widget/option_button_item.dart';
@@ -20,20 +21,9 @@ import '../search/search_conversation_result_view.dart';
 import 'conversation_files_screen.dart';
 
 class ChannelConversationInfoScreen extends StatelessWidget {
-  const ChannelConversationInfoScreen(this.conversation, {this.onOpenPage, super.key});
+  const ChannelConversationInfoScreen(this.conversation, {super.key});
 
   final Conversation conversation;
-  /// 桌面端用于在右栏打开二级页面；手机端可忽略。
-  final void Function(Widget page)? onOpenPage;
-
-  void _openPage(BuildContext context, Widget page) {
-    if (isDesktopShell && onOpenPage != null) {
-      Navigator.pop(context); // 关闭侧抽屉
-      onOpenPage!(page);
-    } else {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => page));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +67,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
             ),
       const SectionDivider(),
       OptionItem(l10n.searchChatContents, onTap: () {
-        _openPage(
+        openPage(
           context,
           SearchConversationResultView(
             conversation: conversation,
@@ -86,7 +76,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
         );
       }),
       OptionItem(l10n.chatFiles, onTap: () {
-        _openPage(context, ConversationFilesScreen(conversation));
+        openPage(context, ConversationFilesScreen(conversation));
       }),
       const SectionDivider(),
       OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {

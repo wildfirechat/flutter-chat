@@ -7,10 +7,10 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/invite_friend.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_button_item.dart';
@@ -18,16 +18,13 @@ import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/section_divider.dart';
 
 import 'package:chat/pc/widgets/pc_page_header.dart';
-import 'conversation/conversation_screen.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class UserInfoWidget extends StatefulWidget {
-  const UserInfoWidget(this.userId, {this.inGroupId, this.onOpenPage, super.key});
+  const UserInfoWidget(this.userId, {this.inGroupId, super.key});
   final String userId;
   final String? inGroupId;
-  /// 桌面端用于在右栏打开二级页面（如 InviteFriendPage）。手机端可忽略。
-  final void Function(Widget page)? onOpenPage;
 
   @override
   State<UserInfoWidget> createState() => _UserInfoWidgetState();
@@ -37,15 +34,8 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   bool _isBlacklisted = false;
   bool _isStarred = false;
 
-  /// 发起单聊:桌面 Shell 内交给 PCShellViewModel 在右栏打开并同步选中态,
-  /// 移动端(无该 Provider)保持整页 push。
   void _openSingleConversation(BuildContext context) {
-    if (isDesktopShell) {
-      final shell = Provider.of<PCShellViewModel>(context, listen: false);
-      shell.openConversation(Conversation(conversationType: ConversationType.Single, target: widget.userId));
-    } else {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Single, target: widget.userId))));
-    }
+    openConversation(context, Conversation(conversationType: ConversationType.Single, target: widget.userId));
   }
 
   @override
@@ -361,12 +351,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   }
 
   void _openInviteFriendPage(BuildContext context) {
-    final page = InviteFriendPage(widget.userId);
-    if (isDesktopShell && widget.onOpenPage != null) {
-      widget.onOpenPage!(page);
-    } else {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => page));
-    }
+    openPage(context, InviteFriendPage(widget.userId));
   }
 
   void _toggleBlacklist() {

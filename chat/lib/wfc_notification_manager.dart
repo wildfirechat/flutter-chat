@@ -104,7 +104,7 @@ class WfcNotificationManager {
 
     bool hiddenNotificationDetail = await Imclient.isHiddenNotificationDetail();
 
-    int totalUnread = 0;
+    bool notified = false;
     for (var message in messages) {
       if (message.direction == MessageDirection.MessageDirection_Send) continue;
 
@@ -122,7 +122,6 @@ class WfcNotificationManager {
       }
 
       int unreadCount = (await Imclient.getConversationUnreadCount(message.conversation)).unread;
-      totalUnread += unreadCount;
       if (unreadCount > 1) {
         pushContent = "[$unreadCount条]$pushContent";
       }
@@ -146,10 +145,12 @@ class WfcNotificationManager {
 
       int id = _notificationId(message.messageUid ?? 0);
       showNotification(id, title, pushContent, _buildPayload(message));
+      notified = true;
     }
 
-    if (_shouldShowDesktopNotification) {
-      PCTrayManager().updateUnreadCount(totalUnread);
+    // 未读数由 main.dart 的 updateAppBadge 统一维护;这里只在真正弹了通知时触发托盘闪烁
+    if (notified && _shouldShowDesktopNotification) {
+      PCTrayManager().notifyNewMessage();
     }
   }
 
@@ -177,6 +178,9 @@ class WfcNotificationManager {
 
           _friendRequestNotificationId++;
           showNotification(_friendRequestNotificationId, title, text, _buildFriendRequestPayload(friendRequests[0]));
+          if (_shouldShowDesktopNotification) {
+            PCTrayManager().notifyNewMessage();
+          }
       }
   }
 

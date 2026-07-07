@@ -96,7 +96,7 @@ class PCWindowManager {
       }
       return _WindowState.fromJson(jsonDecode(jsonStr));
     } catch (e) {
-      debugPrint('load window state failed: \$e');
+      debugPrint('load window state failed: $e');
       return null;
     }
   }
@@ -113,7 +113,7 @@ class PCWindowManager {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_prefsKey, jsonEncode(state.toJson()));
     } catch (e) {
-      debugPrint('save window state failed: \$e');
+      debugPrint('save window state failed: $e');
     }
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/channel/channel_list.dart';
 import 'package:chat/discovery/chatroom_list.dart';
 import 'package:chat/pc/pc_theme.dart';
@@ -8,12 +9,9 @@ import 'package:chat/workspace/wf_webview_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// 桌面端“发现”中栏:与移动端 DiscoveryTab 同一组入口,
-/// 但列表页/网页在右栏打开,机器人直接打开会话。
+/// 但列表页/网页在右栏打开,机器人直接打开会话(经 app_navigator 统一跳转)。
 class PcDiscoveryList extends StatelessWidget {
-  final void Function(Conversation conversation) onConversationSelected;
-  final void Function(Widget page) onOpenPage;
-
-  const PcDiscoveryList({super.key, required this.onConversationSelected, required this.onOpenPage});
+  const PcDiscoveryList({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,22 +21,22 @@ class PcDiscoveryList extends StatelessWidget {
         _DiscoveryRow(
           iconAsset: 'assets/images/discover_chatroom.png',
           title: l10n.chatroom,
-          onTap: () => onOpenPage(ChatroomList()),
+          onTap: () => openPage(context, ChatroomList()),
         ),
         _DiscoveryRow(
           iconAsset: 'assets/images/discover_robot.png',
           title: l10n.robot,
-          onTap: () => onConversationSelected(Conversation(conversationType: ConversationType.Single, target: 'FireRobot')),
+          onTap: () => openConversation(context, Conversation(conversationType: ConversationType.Single, target: 'FireRobot')),
         ),
         _DiscoveryRow(
           iconAsset: 'assets/images/discover_channel.png',
           title: l10n.channels,
-          onTap: () => onOpenPage(const ChannelList()),
+          onTap: () => openPage(context, const ChannelList()),
         ),
         _DiscoveryRow(
           iconAsset: 'assets/images/discover_devdocs.png',
           title: l10n.developmentDocumentation,
-          onTap: () => onOpenPage(const WFWebViewScreen('https://docs.wildfirechat.cn')),
+          onTap: () => openPage(context, const WFWebViewScreen('https://docs.wildfirechat.cn')),
         ),
       ],
     );

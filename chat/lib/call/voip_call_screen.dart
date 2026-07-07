@@ -9,10 +9,12 @@ import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:provider/provider.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class VoipCallScreen extends StatefulWidget {
   final CallSession session;
@@ -33,7 +35,9 @@ class _VoipCallScreenState extends State<VoipCallScreen>
   bool _isSwapped = false;
   Duration _duration = Duration.zero;
   Timer? _timer;
-  String _statusText = '正在呼叫...';
+
+  /// 已收到结束回调、等待关闭页面期间,状态文案固定为“通话结束”。
+  bool _callEnded = false;
 
   // Video renderers
   final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
@@ -45,7 +49,6 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     _session = widget.session;
     _session.setCallback(this);
     _loadTargetInfo();
-    _updateStatusText();
     
     _initRenderers().then((_) {
       if (mounted) {
@@ -120,23 +123,21 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     }
   }
 
-  void _updateStatusText() {
+  String _statusLabel(AppLocalizations l10n) {
+    if (_callEnded) {
+      return l10n.callStatusEnded;
+    }
     switch (_session.status) {
       case CallState.STATUS_IDLE:
-        _statusText = '通话结束';
-        break;
+        return l10n.callStatusEnded;
       case CallState.STATUS_OUTGOING:
-        _statusText = '正在呼叫...';
-        break;
+        return l10n.callStatusCalling;
       case CallState.STATUS_INCOMING:
-        _statusText = '邀请你进行语音通话';
-        break;
+        return l10n.callIncomingInvite;
       case CallState.STATUS_CONNECTING:
-        _statusText = '连接中...';
-        break;
+        return l10n.callStatusConnecting;
       case CallState.STATUS_CONNECTED:
-        _statusText = '';
-        break;
+        return '';
     }
   }
 
@@ -214,16 +215,18 @@ class _VoipCallScreenState extends State<VoipCallScreen>
   void didCallEndWithReason(CallEndReason reason) {
     if (mounted) {
       setState(() {
-        // Show reason
-        _statusText = '通话结束'; // Could be more specific based on reason
+        _callEnded = true;
       });
       Future.delayed(const Duration(seconds: 1), () {
-        if (mounted) {
-          if (isDesktopShell && PCShellViewModel.global?.activeCallSession != null) {
-            PCShellViewModel.global?.endCallSession();
-          } else {
-            Navigator.of(context).pop();
-          }
+        if (!mounted) {
+          return;
+        }
+        // 桌面端通话在 Shell 浮窗中,收起浮窗;移动端整页 pop
+        final shell = isDesktopShell ? context.read<PCShellViewModel>() : null;
+        if (shell != null && shell.activeCallSession != null) {
+          shell.endCallSession();
+        } else {
+          Navigator.of(context).pop();
         }
       });
     }
@@ -233,7 +236,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
   void didChangeState(CallState state) {
     if (mounted) {
       setState(() {
-        _updateStatusText();
+        // 状态文案由 build 里的 _statusLabel 按最新 status 计算
       });
       if (state == CallState.STATUS_CONNECTED) {
         _startTimer();
@@ -253,9 +256,6 @@ class _VoipCallScreenState extends State<VoipCallScreen>
       });
     }
   }
-
-  @override
-  void didError(dynamic error) {}
 
   @override
   void didGetStats(List<StatsReport> reports) {}
@@ -428,7 +428,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                     Text(
                       _session.status == CallState.STATUS_CONNECTED
                           ? _formatDuration(_duration)
-                          : _statusText,
+                          : _statusLabel(AppLocalizations.of(context)!),
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 16,
@@ -519,7 +519,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
               icon: Icons.call_end,
               backgroundColor: const Color(0xFFFA5151), // WeChat Red
               onPressed: _onHangup,
-              label: '拒绝',
+              label: AppLocalizations.of(context)!.callDecline,
             ),
             _CallActionButton(
               icon: Icons.phone_in_talk_outlined,
@@ -527,13 +527,13 @@ class _VoipCallScreenState extends State<VoipCallScreen>
               onPressed: () {
                 _session.answerCall(true); // Answer as audio only
               },
-              label: '语音接听',
+              label: AppLocalizations.of(context)!.callAnswerAudio,
             ),
             _CallActionButton(
               icon: Icons.videocam,
               backgroundColor: const Color(0xFF07C160), // WeChat Green
               onPressed: _onAccept,
-              label: '视频接听',
+              label: AppLocalizations.of(context)!.callAnswerVideo,
             ),
           ],
         );
@@ -545,13 +545,13 @@ class _VoipCallScreenState extends State<VoipCallScreen>
               icon: Icons.call_end,
               backgroundColor: const Color(0xFFFA5151), // WeChat Red
               onPressed: _onHangup,
-              label: '拒绝',
+              label: AppLocalizations.of(context)!.callDecline,
             ),
             _CallActionButton(
               icon: Icons.call,
               backgroundColor: const Color(0xFF07C160), // WeChat Green
               onPressed: _onAccept,
-              label: '接听',
+              label: AppLocalizations.of(context)!.callAnswer,
             ),
           ],
         );
@@ -568,20 +568,20 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                 backgroundColor: _isMicMuted ? Colors.white : Colors.white.withValues(alpha: 0.1),
                 iconColor: _isMicMuted ? Colors.black87 : Colors.white,
                 onPressed: _onToggleMic,
-                label: '静音',
+                label: AppLocalizations.of(context)!.callMute,
               ),
               _CallActionButton(
                 icon: Icons.call_end,
                 backgroundColor: const Color(0xFFFA5151), // WeChat Red
                 onPressed: _onHangup,
-                label: '挂断',
+                label: AppLocalizations.of(context)!.callHangup,
               ),
               if (isVideoCall)
                 _CallActionButton(
                   icon: Icons.cameraswitch_outlined,
                   backgroundColor: Colors.white.withValues(alpha: 0.1),
                   onPressed: _onSwitchCamera,
-                  label: '翻转',
+                  label: AppLocalizations.of(context)!.callSwitchCamera,
                 )
               else
                 _CallActionButton(
@@ -589,7 +589,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                   backgroundColor: _isSpeakerOn ? Colors.white : Colors.white.withValues(alpha: 0.1),
                   iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
                   onPressed: _onToggleSpeaker,
-                  label: '免提',
+                  label: AppLocalizations.of(context)!.callSpeaker,
                 ),
             ],
           ),
@@ -604,7 +604,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
-                  _isCameraOff ? '开启摄像头' : '关闭摄像头',
+                  _isCameraOff ? AppLocalizations.of(context)!.callCameraOn : AppLocalizations.of(context)!.callCameraOff,
                   style: const TextStyle(color: Colors.white70, fontSize: 13),
                 ),
               ),
@@ -625,20 +625,20 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                 backgroundColor: _isMicMuted ? Colors.white : Colors.white.withValues(alpha: 0.1),
                 iconColor: _isMicMuted ? Colors.black87 : Colors.white,
                 onPressed: _onToggleMic,
-                label: '静音',
+                label: AppLocalizations.of(context)!.callMute,
               ),
               _CallActionButton(
                 icon: Icons.call_end,
                 backgroundColor: const Color(0xFFFA5151), // WeChat Red
                 onPressed: _onHangup,
-                label: '取消',
+                label: AppLocalizations.of(context)!.cancel,
               ),
               if (isVideoCall)
                 _CallActionButton(
                   icon: Icons.cameraswitch_outlined,
                   backgroundColor: Colors.white.withValues(alpha: 0.1),
                   onPressed: _onSwitchCamera,
-                  label: '翻转',
+                  label: AppLocalizations.of(context)!.callSwitchCamera,
                 )
               else
                 _CallActionButton(
@@ -646,7 +646,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                   backgroundColor: _isSpeakerOn ? Colors.white : Colors.white.withValues(alpha: 0.1),
                   iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
                   onPressed: _onToggleSpeaker,
-                  label: '免提',
+                  label: AppLocalizations.of(context)!.callSpeaker,
                 ),
             ],
           ),

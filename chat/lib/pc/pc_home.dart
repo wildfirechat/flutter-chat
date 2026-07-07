@@ -30,7 +30,6 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/workspace/work_space.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'pc_qr_login_screen.dart';
 import 'package:chat/call/voip_call_screen.dart';
 
 /// 桌面端三栏 Shell:侧栏(tab 切换)+ 中栏(搜索 + 各 tab 列表)+ 右栏(嵌套 Navigator 的详情区)。
@@ -45,7 +44,7 @@ class PCHome extends StatefulWidget {
 
 class _PCHomeState extends State<PCHome> {
   final GlobalKey<NavigatorState> _paneNavKey = GlobalKey<NavigatorState>();
-  final PCShellViewModel _shellViewModel = PCShellViewModel();
+  late PCShellViewModel _shellViewModel;
 
   late ConversationListViewModel _conversationListViewModel;
 
@@ -61,26 +60,38 @@ class _PCHomeState extends State<PCHome> {
   @override
   void initState() {
     super.initState();
+    // Shell 状态是应用级的(main.dart 注册),这里只做本次会话的初始化与打开器注入。
+    _shellViewModel = context.read<PCShellViewModel>();
+    _shellViewModel.reset();
     _shellViewModel.conversationOpener = _openConversation;
     _shellViewModel.pageOpener = _openPage;
-    _conversationListViewModel = Provider.of<ConversationListViewModel>(context, listen: false);
+    _conversationListViewModel =
+        Provider.of<ConversationListViewModel>(context, listen: false);
     _conversationListViewModel.addListener(_onConversationListChanged);
   }
 
   @override
   void dispose() {
     _conversationListViewModel.removeListener(_onConversationListChanged);
-    _shellViewModel.dispose();
+    // 路由替换时新 PCHome 先 initState、旧的后 dispose,只清掉仍属于自己的打开器
+    if (_shellViewModel.conversationOpener == _openConversation) {
+      _shellViewModel.conversationOpener = null;
+    }
+    if (_shellViewModel.pageOpener == _openPage) {
+      _shellViewModel.pageOpener = null;
+    }
     super.dispose();
   }
 
   /// 选中的会话被删除(在列表中出现过、现在消失了)时,清空右栏。
   void _onConversationListChanged() {
     final selected = _shellViewModel.selectedConversation;
-    if (selected == null || selected.conversationType == ConversationType.Chatroom) {
+    if (selected == null ||
+        selected.conversationType == ConversationType.Chatroom) {
       return;
     }
-    final exists = _conversationListViewModel.conversationList.any((info) => info.conversation == selected);
+    final exists = _conversationListViewModel.conversationList
+        .any((info) => info.conversation == selected);
     if (exists) {
       _selectedSeenInList = true;
     } else if (_selectedSeenInList) {
@@ -106,7 +117,9 @@ class _PCHomeState extends State<PCHome> {
   }
 
   void _openConversation(Conversation conversation, {int? toFocusMessageId}) {
-    if (_shellViewModel.selectedConversation == conversation && toFocusMessageId == null && _paneShowsConversation) {
+    if (_shellViewModel.selectedConversation == conversation &&
+        toFocusMessageId == null &&
+        _paneShowsConversation) {
       return;
     }
     _shellViewModel.selectTab(PCShellViewModel.tabChat);
@@ -115,24 +128,22 @@ class _PCHomeState extends State<PCHome> {
     _pushConversationPane(conversation, toFocusMessageId: toFocusMessageId);
   }
 
-  void _pushConversationPane(Conversation conversation, {int? toFocusMessageId}) {
+  void _pushConversationPane(Conversation conversation,
+      {int? toFocusMessageId}) {
     _paneShowsConversation = true;
     _paneNavKey.currentState!.pushAndRemoveUntil(
       _paneRoute(PcConversationPane(
         conversation,
         toFocusMessageId: toFocusMessageId,
-        key: ValueKey('pc-conv-${conversation.conversationType.index}-${conversation.target}-${conversation.line}-${toFocusMessageId ?? 0}'),
+        key: ValueKey(
+            'pc-conv-${conversation.conversationType.index}-${conversation.target}-${conversation.line}-${toFocusMessageId ?? 0}'),
       )),
       (route) => route.isFirst,
     );
   }
 
   void _openUser(String userId) {
-    _openPage(UserInfoWidget(
-      userId,
-      key: ValueKey('pc-user-$userId'),
-      onOpenPage: _openPage,
-    ));
+    _openPage(UserInfoWidget(userId, key: ValueKey('pc-user-$userId')));
   }
 
   /// 在右栏打开任意页面(用户详情/好友请求/组织架构/网页等)。
@@ -143,26 +154,6 @@ class _PCHomeState extends State<PCHome> {
       _paneRoute(page),
       (route) => route.isFirst,
     );
-  }
-
-  /// 桌面端登出：用根 Navigator 回到登录页。
-  void _logoutToLogin() {
-    final rootNav = Navigator.of(context, rootNavigator: true);
-    bool topIsLogin = false;
-    rootNav.popUntil((route) {
-      topIsLogin = route.settings.name == 'login';
-      return true;
-    });
-    if (!topIsLogin) {
-      rootNav.pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => const PCQRLoginScreen(),
-          settings: const RouteSettings(name: 'login'),
-        ),
-        (Route<dynamic> route) => false,
-      );
-    }
-    Imclient.disconnect();
   }
 
   /// 右栏内容跟随侧栏 tab:消息 tab 恢复上次选中的会话,
@@ -219,7 +210,8 @@ class _PCHomeState extends State<PCHome> {
                     },
                     onConversationSelected: (conversation, {focusMessageId}) {
                       Navigator.of(routeContext).pop();
-                      _openConversation(conversation, toFocusMessageId: focusMessageId);
+                      _openConversation(conversation,
+                          toFocusMessageId: focusMessageId);
                     },
                   ),
                 ),
@@ -293,13 +285,17 @@ class _PCHomeState extends State<PCHome> {
           children: [
             Text(
               l10n.tips,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: PcTheme.textPrimary),
+              style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: PcTheme.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               l10n.addFriendSearchHint,
-              style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary, height: 1.4),
+              style: const TextStyle(
+                  fontSize: 13, color: PcTheme.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 20),
             Row(
@@ -322,9 +318,11 @@ class _PCHomeState extends State<PCHome> {
                   },
                   style: FilledButton.styleFrom(
                     backgroundColor: PcTheme.accent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4)),
                     textStyle: const TextStyle(fontSize: 13),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
                   child: Text(l10n.gotIt),
                 ),
@@ -337,15 +335,18 @@ class _PCHomeState extends State<PCHome> {
   }
 
   void _startChat() {
+    final l10n = AppLocalizations.of(context)!;
     // 统一走 showPickUserScreen,与添加/移除群成员等选人弹窗保持同一形态与主题
-    showPickUserScreen(context, title: AppLocalizations.of(context)!.startChat, (pickerContext, members) async {
+    showPickUserScreen(context, title: l10n.startChat,
+        (pickerContext, members) async {
       if (members.isEmpty) {
-        showToast(msg: "请选择一位或者多位好友发起聊天");
+        showToast(msg: l10n.pickFriendsToStartChat);
       } else if (members.length == 1) {
         Navigator.pop(pickerContext);
-        _openConversation(Conversation(conversationType: ConversationType.Single, target: members[0]));
+        _openConversation(Conversation(
+            conversationType: ConversationType.Single, target: members[0]));
       } else {
-        _showProcessingDialog(pickerContext, "群组创建中...");
+        _showProcessingDialog(pickerContext, l10n.creatingGroup);
 
         List<UserInfo> userInfos = await Imclient.getUserInfos(members);
         UserInfo? creator = await Imclient.getUserInfo(Imclient.currentUserId);
@@ -353,7 +354,7 @@ class _PCHomeState extends State<PCHome> {
         for (var user in userInfos) {
           if (user.displayName != null) {
             if ('$groupName,${user.displayName}'.length > 24) {
-              groupName = '$groupName等';
+              groupName = l10n.groupNameEtc(groupName);
               break;
             } else {
               groupName = '$groupName,${user.displayName}';
@@ -361,13 +362,16 @@ class _PCHomeState extends State<PCHome> {
           }
         }
 
-        Imclient.createGroup(null, groupName, null, GroupType.Restricted.index, members, (strValue) {
+        Imclient.createGroup(
+            null, groupName, null, GroupType.Restricted.index, members,
+            (strValue) {
           Navigator.pop(pickerContext); // 关闭进度对话框
           Navigator.pop(pickerContext); // 关闭选人对话框
-          _openConversation(Conversation(conversationType: ConversationType.Group, target: strValue));
+          _openConversation(Conversation(
+              conversationType: ConversationType.Group, target: strValue));
         }, (errorCode) {
           Navigator.pop(pickerContext);
-          showToast(msg: '创建失败：$errorCode');
+          showToast(msg: l10n.createGroupFail('$errorCode'));
         });
       }
     });
@@ -388,12 +392,16 @@ class _PCHomeState extends State<PCHome> {
               const SizedBox(
                 width: 32,
                 height: 32,
-                child: CircularProgressIndicator(strokeWidth: 3, color: PcTheme.accent),
+                child: CircularProgressIndicator(
+                    strokeWidth: 3, color: PcTheme.accent),
               ),
               const SizedBox(height: 20),
               Text(
                 title,
-                style: const TextStyle(fontSize: 13, color: PcTheme.textPrimary, decoration: TextDecoration.none),
+                style: const TextStyle(
+                    fontSize: 13,
+                    color: PcTheme.textPrimary,
+                    decoration: TextDecoration.none),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -405,64 +413,70 @@ class _PCHomeState extends State<PCHome> {
 
   @override
   Widget build(BuildContext context) {
+    // PCShellViewModel 由根 MultiProvider(main.dart)提供,这里不再重复注册。
     return Theme(
       data: PcTheme.themeData(context),
-      child: ChangeNotifierProvider<PCShellViewModel>.value(
-        value: _shellViewModel,
-        child: Focus(
-          autofocus: true,
-          onKeyEvent: (node, event) {
-            if (event is! KeyDownEvent) {
-              return KeyEventResult.ignored;
-            }
-            final isControl = HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed;
-            
-            // Ctrl+F or Cmd+F: Open search
-            if (event.logicalKey == LogicalKeyboardKey.keyF && isControl) {
-              _openSearchModal();
-              return KeyEventResult.handled;
-            }
-            
-            // Ctrl+W or Cmd+W: Hide window
-            if (event.logicalKey == LogicalKeyboardKey.keyW && isControl) {
-              windowManager.hide();
-              return KeyEventResult.handled;
-            }
-            
-            // Arrow Up/Down to navigate conversations (only when input fields are not focused)
-            if (event.logicalKey == LogicalKeyboardKey.arrowDown && !_isInputFieldFocused()) {
-              _navigateConversation(true);
-              return KeyEventResult.handled;
-            }
-            if (event.logicalKey == LogicalKeyboardKey.arrowUp && !_isInputFieldFocused()) {
-              _navigateConversation(false);
-              return KeyEventResult.handled;
-            }
-            
+      child: Focus(
+        autofocus: true,
+        onKeyEvent: (node, event) {
+          if (event is! KeyDownEvent) {
             return KeyEventResult.ignored;
-          },
-          child: Stack(
-            children: [
-              Scaffold(
-                body: Row(
-                  children: [
-                    SizedBox(width: PcTheme.sideBarWidth, child: _PcSideBar(onTabSelected: _onTabSelected)),
-                    SizedBox(width: PcTheme.middleColumnWidth, child: _buildMiddleColumn(context)),
-                    Container(width: 0.5, color: PcTheme.hairline),
-                    Expanded(
-                      child: ClipRect(
-                        child: Navigator(
-                          key: _paneNavKey,
-                          onGenerateRoute: (settings) => _paneRoute(const _EmptyDetailPane(), settings),
-                        ),
+          }
+          final isControl = HardwareKeyboard.instance.isControlPressed ||
+              HardwareKeyboard.instance.isMetaPressed;
+
+          // Ctrl+F or Cmd+F: Open search
+          if (event.logicalKey == LogicalKeyboardKey.keyF && isControl) {
+            _openSearchModal();
+            return KeyEventResult.handled;
+          }
+
+          // Ctrl+W or Cmd+W: Hide window
+          if (event.logicalKey == LogicalKeyboardKey.keyW && isControl) {
+            windowManager.hide();
+            return KeyEventResult.handled;
+          }
+
+          // Arrow Up/Down to navigate conversations (only when input fields are not focused)
+          if (event.logicalKey == LogicalKeyboardKey.arrowDown &&
+              !_isInputFieldFocused()) {
+            _navigateConversation(true);
+            return KeyEventResult.handled;
+          }
+          if (event.logicalKey == LogicalKeyboardKey.arrowUp &&
+              !_isInputFieldFocused()) {
+            _navigateConversation(false);
+            return KeyEventResult.handled;
+          }
+
+          return KeyEventResult.ignored;
+        },
+        child: Stack(
+          children: [
+            Scaffold(
+              body: Row(
+                children: [
+                  SizedBox(
+                      width: PcTheme.sideBarWidth,
+                      child: _PcSideBar(onTabSelected: _onTabSelected)),
+                  SizedBox(
+                      width: PcTheme.middleColumnWidth,
+                      child: _buildMiddleColumn(context)),
+                  Container(width: 0.5, color: PcTheme.hairline),
+                  Expanded(
+                    child: ClipRect(
+                      child: Navigator(
+                        key: _paneNavKey,
+                        onGenerateRoute: (settings) =>
+                            _paneRoute(const _EmptyDetailPane(), settings),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              _buildCallOverlay(),
-            ],
-          ),
+            ),
+            _buildCallOverlay(),
+          ],
         ),
       ),
     );
@@ -477,8 +491,10 @@ class _PCHomeState extends State<PCHome> {
         }
 
         return Positioned(
-          left: model.callWindowMinimized ? -9999.0 : model.callWindowPosition.dx,
-          top: model.callWindowMinimized ? -9999.0 : model.callWindowPosition.dy,
+          left:
+              model.callWindowMinimized ? -9999.0 : model.callWindowPosition.dx,
+          top:
+              model.callWindowMinimized ? -9999.0 : model.callWindowPosition.dy,
           width: 320,
           height: 480,
           child: Material(
@@ -488,7 +504,8 @@ class _PCHomeState extends State<PCHome> {
             color: Colors.black,
             child: Container(
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 1.0),
+                border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.15), width: 1.0),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Stack(
@@ -505,7 +522,8 @@ class _PCHomeState extends State<PCHome> {
                       child: GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onPanUpdate: (details) {
-                          model.setCallWindowPosition(model.callWindowPosition + details.delta);
+                          model.setCallWindowPosition(
+                              model.callWindowPosition + details.delta);
                         },
                         child: Container(
                           color: Colors.black.withValues(alpha: 0.4),
@@ -513,14 +531,13 @@ class _PCHomeState extends State<PCHome> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                '音视频通话',
-                                style: TextStyle(
+                              Text(
+                                AppLocalizations.of(context)!.audioVideoCall,
+                                style: const TextStyle(
                                   color: Colors.white70,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                   decoration: TextDecoration.none,
-                                  fontFamily: 'Inter',
                                 ),
                               ),
                               _buildMinimizeButton(model),
@@ -551,7 +568,9 @@ class _PCHomeState extends State<PCHome> {
             width: 24,
             height: 24,
             decoration: BoxDecoration(
-              color: hovered ? Colors.white.withValues(alpha: 0.15) : Colors.transparent,
+              color: hovered
+                  ? Colors.white.withValues(alpha: 0.15)
+                  : Colors.transparent,
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -585,20 +604,10 @@ class _PCHomeState extends State<PCHome> {
                       onConversationSelected: _openConversation,
                       selectedConversation: shell.selectedConversation,
                     ),
-                    PcContactList(
-                      onUserSelected: _openUser,
-                      onConversationSelected: _openConversation,
-                      onOpenPage: _openPage,
-                    ),
+                    const PcContactList(),
                     const _WorkTabPlaceholder(),
-                    PcDiscoveryList(
-                      onConversationSelected: _openConversation,
-                      onOpenPage: _openPage,
-                    ),
-              MeTab(
-                onOpenPage: _openPage,
-                onLogout: _logoutToLogin,
-              ),
+                    const PcDiscoveryList(),
+                    const MeTab(),
                   ],
                 ),
               ),
@@ -616,7 +625,10 @@ class _MiddleColumnHeader extends StatelessWidget {
   final VoidCallback onStartChat;
   final VoidCallback onAddFriend;
 
-  const _MiddleColumnHeader({required this.onSearchTap, required this.onStartChat, required this.onAddFriend});
+  const _MiddleColumnHeader(
+      {required this.onSearchTap,
+      required this.onStartChat,
+      required this.onAddFriend});
 
   @override
   Widget build(BuildContext context) {
@@ -636,15 +648,20 @@ class _MiddleColumnHeader extends StatelessWidget {
                   height: 28,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
-                    color: hovered ? const Color(0xFFD5D4D3) : PcTheme.searchFieldBg,
+                    color: hovered
+                        ? const Color(0xFFD5D4D3)
+                        : PcTheme.searchFieldBg,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.search_rounded, size: 15, color: PcTheme.textSecondary),
+                      const Icon(Icons.search_rounded,
+                          size: 15, color: PcTheme.textSecondary),
                       const SizedBox(width: 4),
-                      Text(l10n.search, style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary)),
+                      Text(l10n.search,
+                          style: const TextStyle(
+                              fontSize: 12, color: PcTheme.textSecondary)),
                     ],
                   ),
                 ),
@@ -676,7 +693,8 @@ class _PlusMenuButton extends StatelessWidget {
           height: 36,
           child: Row(
             children: [
-              const Icon(Icons.chat_bubble_outline_rounded, size: 17, color: PcTheme.textSecondary),
+              const Icon(Icons.chat_bubble_outline_rounded,
+                  size: 17, color: PcTheme.textSecondary),
               const SizedBox(width: 10),
               Text(l10n.startChat),
             ],
@@ -687,7 +705,8 @@ class _PlusMenuButton extends StatelessWidget {
           height: 36,
           child: Row(
             children: [
-              const Icon(Icons.person_add_alt_outlined, size: 17, color: PcTheme.textSecondary),
+              const Icon(Icons.person_add_alt_outlined,
+                  size: 17, color: PcTheme.textSecondary),
               const SizedBox(width: 10),
               Text(l10n.addFriend),
             ],
@@ -801,7 +820,7 @@ class _PcSideBar extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Tooltip(
-        message: '通话中 - 点击恢复',
+        message: AppLocalizations.of(context)!.callOngoingClickRestore,
         child: _PulsingCallButton(
           onTap: () {
             shell.minimizeCallWindow(false);
@@ -880,7 +899,8 @@ class _SideBarTab extends StatelessWidget {
                       badgeCount > 99 ? '99+' : '$badgeCount',
                       style: const TextStyle(color: Colors.white, fontSize: 9),
                     ),
-              badgeStyle: const badge.BadgeStyle(badgeColor: PcTheme.badgeRed, padding: EdgeInsets.all(4)),
+              badgeStyle: const badge.BadgeStyle(
+                  badgeColor: PcTheme.badgeRed, padding: EdgeInsets.all(4)),
               child: icon,
             );
           }
@@ -890,7 +910,9 @@ class _SideBarTab extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: hovered && !selected ? Colors.white.withValues(alpha: 0.08) : Colors.transparent,
+                color: hovered && !selected
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Center(child: icon),
@@ -928,7 +950,8 @@ class _EmptyDetailPane extends StatelessWidget {
       child: Center(
         child: Opacity(
           opacity: 0.10,
-          child: Image.asset('assets/images/app_icon.png', width: 72, height: 72),
+          child:
+              Image.asset('assets/images/app_icon.png', width: 72, height: 72),
         ),
       ),
     );
@@ -943,7 +966,8 @@ class _PulsingCallButton extends StatefulWidget {
   State<_PulsingCallButton> createState() => _PulsingCallButtonState();
 }
 
-class _PulsingCallButtonState extends State<_PulsingCallButton> with SingleTickerProviderStateMixin {
+class _PulsingCallButtonState extends State<_PulsingCallButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _pulseAnimation;
   late Animation<double> _scaleAnimation;
@@ -960,8 +984,14 @@ class _PulsingCallButtonState extends State<_PulsingCallButton> with SingleTicke
       CurvedAnimation(parent: _controller, curve: Curves.easeOut),
     );
     _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.08).chain(CurveTween(curve: Curves.easeOut)), weight: 50),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.08, end: 1.0).chain(CurveTween(curve: Curves.easeIn)), weight: 50),
+      TweenSequenceItem(
+          tween: Tween<double>(begin: 1.0, end: 1.08)
+              .chain(CurveTween(curve: Curves.easeOut)),
+          weight: 50),
+      TweenSequenceItem(
+          tween: Tween<double>(begin: 1.08, end: 1.0)
+              .chain(CurveTween(curve: Curves.easeIn)),
+          weight: 50),
     ]).animate(_controller);
   }
 
@@ -989,7 +1019,8 @@ class _PulsingCallButtonState extends State<_PulsingCallButton> with SingleTicke
                   height: 38 + (16 * _pulseAnimation.value),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.green.withValues(alpha: 0.4 * (1.0 - _pulseAnimation.value)),
+                    color: Colors.green
+                        .withValues(alpha: 0.4 * (1.0 - _pulseAnimation.value)),
                   ),
                 );
               },

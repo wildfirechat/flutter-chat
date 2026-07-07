@@ -6,7 +6,7 @@ import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/settings/general_settings.dart';
 import 'package:chat/settings/message_notification_settings.dart';
 import 'package:chat/settings/favorite_list_screen.dart';
@@ -23,27 +23,7 @@ import '../config.dart';
 import '../user_info_widget.dart';
 
 class MeTab extends StatelessWidget {
-  /// 桌面端用于在右栏打开子页面;手机端可忽略。
-  final void Function(Widget page)? onOpenPage;
-  /// 桌面端登出回调，由 PCHome 用根 Navigator 切到登录页。
-  final VoidCallback? onLogout;
-
-  const MeTab({super.key, this.onOpenPage, this.onLogout});
-
-  static void _openPage(BuildContext context, Widget page, void Function(Widget page)? onOpenPage) {
-    if (isDesktopShell && onOpenPage != null) {
-      onOpenPage(page);
-    } else {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => page));
-    }
-  }
-
-  void _logout() {
-    if (isDesktopShell && onLogout != null) {
-      onLogout!();
-    }
-    // 手机端 GeneralSettings 内部自行处理登出。
-  }
+  const MeTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -52,13 +32,13 @@ class MeTab extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SelfProfile(onOpenPage: onOpenPage),
+              const SelfProfile(),
               const SectionDivider(),
               OptionItem(
                 AppLocalizations.of(context)!.messageNotification,
                 leftImage: Image.asset('assets/images/setting_message_notification.png', width: 20.0, height: 20.0),
                 onTap: () {
-                  _openPage(context, MessageNotificationSettings(), onOpenPage);
+                  openPage(context, MessageNotificationSettings());
                 },
               ),
               const SectionDivider(),
@@ -66,7 +46,7 @@ class MeTab extends StatelessWidget {
                 AppLocalizations.of(context)!.favorites,
                 leftImage: Image.asset('assets/images/setting_favorite.png', width: 20.0, height: 20.0),
                 onTap: () {
-                  _openPage(context, const FavoriteListScreen(), onOpenPage);
+                  openPage(context, const FavoriteListScreen());
                 },
               ),
               const SectionDivider(),
@@ -74,7 +54,7 @@ class MeTab extends StatelessWidget {
                 AppLocalizations.of(context)!.files,
                 leftImage: Image.asset('assets/images/setting_file.png', width: 20.0, height: 20.0),
                 onTap: () {
-                  _openPage(context, const FileRecordsScreen(), onOpenPage);
+                  openPage(context, const FileRecordsScreen());
                 },
               ),
               const SectionDivider(),
@@ -82,7 +62,7 @@ class MeTab extends StatelessWidget {
                 AppLocalizations.of(context)!.backup_and_restore,
                 leftImage: const Icon(Icons.backup, color: Colors.blue, size: 20),
                 onTap: () {
-                  _openPage(context, const BackupAndRestoreScreen(), onOpenPage);
+                  openPage(context, const BackupAndRestoreScreen());
                 },
               ),
               const SectionDivider(),
@@ -100,7 +80,7 @@ class MeTab extends StatelessWidget {
                 leftImage: Image.asset('assets/images/setting_general.png', width: 20.0, height: 20.0),
                 showBottomDivider: true,
                 onTap: () {
-                  _openPage(context, GeneralSettings(onLogout: _logout), onOpenPage);
+                  openPage(context, const GeneralSettings());
                 },
               ),
             ],
@@ -112,9 +92,7 @@ class MeTab extends StatelessWidget {
 }
 
 class SelfProfile extends StatelessWidget {
-  final void Function(Widget page)? onOpenPage;
-
-  const SelfProfile({super.key, this.onOpenPage});
+  const SelfProfile({super.key});
 
   void _pickImage(ImageSource source, BuildContext context) async {
     final ImagePicker picker = ImagePicker();
@@ -217,7 +195,7 @@ class SelfProfile extends StatelessWidget {
                       ),
                     ),
                     onTap: () {
-                      MeTab._openPage(context, UserInfoWidget(userInfo.userId), onOpenPage);
+                      openPage(context, UserInfoWidget(userInfo.userId));
                     },
                   )
                 ],

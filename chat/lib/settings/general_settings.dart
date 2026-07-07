@@ -3,9 +3,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../login_screen.dart';
+import '../app_navigator.dart';
 import '../pc/pc_platform.dart';
-import '../pc/pc_qr_login_screen.dart';
 import '../pc/pc_theme.dart';
 import '../pc/widgets/pc_page_header.dart';
 import '../viewmodel/locale_view_model.dart';
@@ -13,10 +12,7 @@ import '../widget/option_item.dart';
 import '../widget/section_divider.dart';
 
 class GeneralSettings extends StatelessWidget {
-  /// 桌面端登出回调。手机端可忽略。
-  final VoidCallback? onLogout;
-
-  const GeneralSettings({super.key, this.onLogout});
+  const GeneralSettings({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -158,28 +154,7 @@ class GeneralSettings extends StatelessWidget {
 
   void _handleLogout(BuildContext context) {
     Fluttertoast.showToast(msg: AppLocalizations.of(context)!.logoutConfirm);
-
-    if (isDesktopShell && onLogout != null) {
-      // 桌面端由 PCHome 用根 Navigator 切到登录页。
-      onLogout!();
-      Imclient.disconnect();
-      return;
-    }
-
-    bool topIsLogin = false;
-    Navigator.of(context).popUntil((route) {
-      topIsLogin = route.settings.name == 'login';
-      return true;
-    });
-    if (!topIsLogin) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (context) => isDesktopShell ? const PCQRLoginScreen() : const LoginScreen(),
-          settings: const RouteSettings(name: 'login'),
-        ),
-        (Route<dynamic> route) => false,
-      );
-    }
+    navigateToLogin(Navigator.of(context, rootNavigator: true));
     Imclient.disconnect();
   }
 }

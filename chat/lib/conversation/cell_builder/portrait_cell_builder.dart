@@ -10,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/conversation/read_receipt_status_widget.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/pc_user_card.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
@@ -71,17 +70,11 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       return;
     }
     final anchor = renderBox.localToGlobal(Offset.zero) & renderBox.size;
-    // 卡片在根 Navigator 弹出,PCShellViewModel 只存在于 PCHome 子树,先在这里取好传入
-    PCShellViewModel? shell;
-    try {
-      shell = Provider.of<PCShellViewModel>(context, listen: false);
-    } catch (_) {}
     showPcUserCard(
       context: context,
       anchor: anchor,
       userId: model.message.fromUser,
       groupId: model.message.conversation.conversationType == ConversationType.Group ? model.message.conversation.target : null,
-      shell: shell,
     );
   }
 

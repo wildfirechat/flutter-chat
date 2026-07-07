@@ -143,6 +143,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
   }
 
   Future<bool?> _showSendConfirmDialog(String fileName) async {
+    final l10n = AppLocalizations.of(context)!;
     return showPcDialog<bool>(
       context: context,
       width: 360,
@@ -153,14 +154,14 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              '发送文件',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: PcTheme.textPrimary),
+            Text(
+              l10n.sendFile,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: PcTheme.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
-              '确定要发送 "$fileName" 吗？',
+              l10n.confirmSendFile(fileName),
               style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 20),
@@ -170,7 +171,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(false),
                   style: TextButton.styleFrom(foregroundColor: PcTheme.textSecondary),
-                  child: const Text('取消'),
+                  child: Text(l10n.cancel),
                 ),
                 const SizedBox(width: 8),
                 FilledButton(
@@ -179,7 +180,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                     backgroundColor: PcTheme.accent,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                   ),
-                  child: const Text('发送'),
+                  child: Text(l10n.send),
                 ),
               ],
             ),

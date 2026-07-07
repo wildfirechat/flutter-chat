@@ -8,7 +8,7 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:chat/conversation/conversation_navigator.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/group_conversation_info_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
@@ -28,20 +28,9 @@ import 'group_manage_screen.dart';
 import 'group_qrcode_screen.dart';
 
 class GroupConversationInfoScreen extends StatelessWidget {
-  const GroupConversationInfoScreen(this.conversation, {this.onOpenPage, super.key});
+  const GroupConversationInfoScreen(this.conversation, {super.key});
 
   final Conversation conversation;
-  /// 桌面端用于在右栏打开二级页面；手机端可忽略。
-  final void Function(Widget page)? onOpenPage;
-
-  void _openPage(BuildContext context, Widget page) {
-    if (isDesktopShell && onOpenPage != null) {
-      Navigator.pop(context); // 关闭侧抽屉
-      onOpenPage!(page);
-    } else {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => page));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +70,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
       GroupConversationInfoMembersView(
         conversation,
         onGroupMemberTap: (userInfo) {
-          _openPage(context, UserInfoWidget(userInfo.userId, onOpenPage: onOpenPage));
+          openPage(context, UserInfoWidget(userInfo.userId));
         },
         onAddActionTap: () {
           _onAddNewConversationMember(context);
@@ -112,11 +101,11 @@ class GroupConversationInfoScreen extends StatelessWidget {
       }),
       OptionItem(l10n.groupQrCode, rightIcon: Icons.qr_code, onTap: () {
         if (groupInfo != null) {
-          _openPage(context, GroupQrCodeScreen(groupInfo: groupInfo));
+          openPage(context, GroupQrCodeScreen(groupInfo: groupInfo));
         }
       }),
       OptionItem(l10n.groupAnnouncement, desc: groupConversationInfoViewModel.groupAnnouncement ?? l10n.clickToCheck, onTap: () {
-        _openPage(
+        openPage(
           context,
           GroupAnnouncementScreen(
             groupId: conversation.target,
@@ -135,13 +124,13 @@ class GroupConversationInfoScreen extends StatelessWidget {
       groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner
           ? OptionItem(l10n.groupManagement, onTap: () {
               if (groupInfo != null) {
-                _openPage(context, GroupManageScreen(groupInfo: groupInfo));
+                openPage(context, GroupManageScreen(groupInfo: groupInfo));
               }
             })
           : Container(),
       const SectionDivider(),
       OptionItem(l10n.searchChatContents, onTap: () {
-        _openPage(
+        openPage(
           context,
           SearchConversationResultView(
             conversation: conversation,
@@ -150,7 +139,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
         );
       }),
       OptionItem(l10n.chatFiles, onTap: () {
-        _openPage(context, ConversationFilesScreen(conversation));
+        openPage(context, ConversationFilesScreen(conversation));
       }),
       const SectionDivider(),
       OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
@@ -295,7 +284,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
             }
             Imclient.createGroup(null, null, null, 2, groupMembers, (strValue) {
               // 用外层 context(详情页仍挂载):桌面右栏打开新群会话,移动端 push
-              navigateToConversation(context, Conversation(conversationType: ConversationType.Group, target: strValue, line: 0));
+              openConversation(context, Conversation(conversationType: ConversationType.Group, target: strValue, line: 0));
             }, (errorCode) {
               Fluttertoast.showToast(msg: l10n.networkError);
             });

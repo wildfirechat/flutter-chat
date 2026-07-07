@@ -6,8 +6,10 @@ import 'package:imclient/model/friend_request.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/contact_list_widget.dart';
+import 'package:chat/user_info_widget.dart';
 import 'package:chat/organization/model/organization.dart';
 import 'package:chat/organization/organization_screen.dart';
 import 'package:chat/organization/organization_view_model.dart';
@@ -21,24 +23,20 @@ import 'package:chat/widget/portrait.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// 桌面端联系人中栏(参照微信 PC):可折叠分类(新的朋友/收藏群组/订阅频道/组织)
-/// 默认收起,点击展开;条目在右栏打开。字母序联系人列表复用 [ContactListItem]。
+/// 默认收起,点击展开;条目经 app_navigator 在右栏打开。
+/// 字母序联系人列表复用 [ContactListItem]。
 class PcContactList extends StatefulWidget {
-  final void Function(String userId) onUserSelected;
-  final void Function(Conversation conversation) onConversationSelected;
-  final void Function(Widget page) onOpenPage;
-
-  const PcContactList({
-    super.key,
-    required this.onUserSelected,
-    required this.onConversationSelected,
-    required this.onOpenPage,
-  });
+  const PcContactList({super.key});
 
   @override
   State<PcContactList> createState() => _PcContactListState();
 }
 
 class _PcContactListState extends State<PcContactList> {
+  void _openUser(String userId) {
+    openPage(context, UserInfoWidget(userId, key: ValueKey('pc-user-$userId')));
+  }
+
   bool _newFriendExpanded = false;
   bool _groupsExpanded = false;
   bool _channelsExpanded = false;
@@ -148,7 +146,7 @@ class _PcContactListState extends State<PcContactList> {
                 ContactListItem(
                   record.contactList[i],
                   key: ValueKey('pc-contact-$i-${record.contactList[i].userInfo.userId}'),
-                  onTap: widget.onUserSelected,
+                  onTap: _openUser,
                 ),
             ],
           );
@@ -169,7 +167,7 @@ class _PcContactListState extends State<PcContactList> {
         .map((request) => _FriendRequestRow(
               request: request,
               userInfo: _requestUserInfos[request.target],
-              onTap: () => widget.onUserSelected(request.target),
+              onTap: () => _openUser(request.target),
               onAccepted: _loadFriendRequests,
             ))
         .toList();
@@ -188,7 +186,7 @@ class _PcContactListState extends State<PcContactList> {
             portrait: groupInfo.portrait,
             defaultPortrait: Config.defaultGroupPortrait,
             title: groupInfo.name ?? groupId,
-            onTap: () => widget.onConversationSelected(Conversation(conversationType: ConversationType.Group, target: groupId, line: 0)),
+            onTap: () => openConversation(context, Conversation(conversationType: ConversationType.Group, target: groupId, line: 0)),
           );
         },
       );
@@ -208,7 +206,7 @@ class _PcContactListState extends State<PcContactList> {
             portrait: channelInfo?.portrait,
             defaultPortrait: Config.defaultChannelPortrait,
             title: channelInfo?.name ?? channelId,
-            onTap: () => widget.onConversationSelected(Conversation(conversationType: ConversationType.Channel, target: channelId, line: 0)),
+            onTap: () => openConversation(context, Conversation(conversationType: ConversationType.Channel, target: channelId, line: 0)),
           );
         },
       );
@@ -219,7 +217,7 @@ class _PcContactListState extends State<PcContactList> {
     return _EntryRow(
       assetIcon: isRoot ? 'assets/images/contact_organization.png' : 'assets/images/contact_organization_expended.png',
       title: org.name,
-      onTap: () => widget.onOpenPage(OrganizationScreen(initialOrganizationId: org.id)),
+      onTap: () => openPage(context, OrganizationScreen(initialOrganizationId: org.id)),
     );
   }
 }

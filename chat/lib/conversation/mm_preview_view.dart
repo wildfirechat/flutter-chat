@@ -15,6 +15,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/widget/drag_to_dismiss.dart';
 import 'package:video_player/video_player.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 typedef PageToEnd = void Function(int messageId, bool tail);
 
@@ -238,7 +239,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                     child: IconButton(
                       icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 36),
                       onPressed: () => _goToPage(currentIndex - 1),
-                      tooltip: '上一张 (←)',
+                      tooltip: AppLocalizations.of(context)!.previousImage,
                     ),
                   ),
                 ),
@@ -258,7 +259,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                     child: IconButton(
                       icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 36),
                       onPressed: () => _goToPage(currentIndex + 1),
-                      tooltip: '下一张 (→)',
+                      tooltip: AppLocalizations.of(context)!.nextImage,
                     ),
                   ),
                 ),
@@ -290,7 +291,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                             _rotations[currentIndex] = ((_rotations[currentIndex] ?? 0) - 1 + 4) % 4;
                           });
                         },
-                        tooltip: '向左旋转',
+                        tooltip: AppLocalizations.of(context)!.rotateLeft,
                       ),
                       const SizedBox(width: 8),
                       // Rotate Right
@@ -301,14 +302,14 @@ class MMPreviewViewState extends State<MMPreviewView> {
                             _rotations[currentIndex] = ((_rotations[currentIndex] ?? 0) + 1) % 4;
                           });
                         },
-                        tooltip: '向右旋转',
+                        tooltip: AppLocalizations.of(context)!.rotateRight,
                       ),
                       const SizedBox(width: 8),
                       // Save As
                       IconButton(
                         icon: const Icon(Icons.download_rounded, color: Colors.white70, size: 20),
                         onPressed: _saveCurrentMedia,
-                        tooltip: '另存为...',
+                        tooltip: AppLocalizations.of(context)!.saveAs,
                       ),
                       const VerticalDivider(color: Colors.white24, width: 24, indent: 14, endIndent: 14),
                       Text(
@@ -383,6 +384,8 @@ class MMPreviewViewState extends State<MMPreviewView> {
   }
 
   Future<void> _saveCurrentMedia() async {
+    // 跨多个 await 使用,先取好文案
+    final l10n = AppLocalizations.of(context)!;
     final message = widget.mediaItems[currentIndex];
     String? sourcePath;
     String? remoteUrl;
@@ -414,26 +417,26 @@ class MMPreviewViewState extends State<MMPreviewView> {
 
     try {
       String? outputFile = await FilePicker.platform.saveFile(
-        dialogTitle: '保存文件',
+        dialogTitle: l10n.saveFile,
         fileName: fileName,
       );
       if (outputFile == null) return;
 
       if (sourcePath != null && File(sourcePath).existsSync()) {
         await File(sourcePath).copy(outputFile);
-        Fluttertoast.showToast(msg: '保存成功');
+        Fluttertoast.showToast(msg: l10n.saveSuccess);
       } else if (remoteUrl != null && remoteUrl.isNotEmpty) {
         final client = HttpClient();
         final request = await client.getUrl(Uri.parse(remoteUrl));
         final response = await request.close();
         final bytes = await response.fold<List<int>>([], (prev, element) => prev..addAll(element));
         await File(outputFile).writeAsBytes(bytes);
-        Fluttertoast.showToast(msg: '保存成功');
+        Fluttertoast.showToast(msg: l10n.saveSuccess);
       } else {
-        Fluttertoast.showToast(msg: '保存失败: 找不到源文件或链接');
+        Fluttertoast.showToast(msg: l10n.saveFailSourceMissing);
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: '保存失败: $e');
+      Fluttertoast.showToast(msg: l10n.saveFail('$e'));
     }
   }
 }

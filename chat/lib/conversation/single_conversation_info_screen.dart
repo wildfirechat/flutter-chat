@@ -19,23 +19,12 @@ import '../viewmodel/user_view_model.dart';
 import '../widget/option_button_item.dart';
 import '../widget/option_item.dart';
 import 'conversation_files_screen.dart';
-import 'conversation_navigator.dart';
+import 'package:chat/app_navigator.dart';
 
 class SingleConversationInfoScreen extends StatelessWidget {
-  const SingleConversationInfoScreen(this.conversation, {this.onOpenPage, super.key});
+  const SingleConversationInfoScreen(this.conversation, {super.key});
 
   final Conversation conversation;
-  /// 桌面端用于在右栏打开二级页面；手机端可忽略。
-  final void Function(Widget page)? onOpenPage;
-
-  void _openPage(BuildContext context, Widget page) {
-    if (isDesktopShell && onOpenPage != null) {
-      Navigator.pop(context); // 关闭侧抽屉
-      onOpenPage!(page);
-    } else {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => page));
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +56,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
               conversation,
               userInfo,
               onUserTap: (userInfo) {
-                _openPage(context, UserInfoWidget(userInfo.userId, onOpenPage: onOpenPage));
+                openPage(context, UserInfoWidget(userInfo.userId));
               },
               onAddActionTap: () {
                 _onAddNewConversationMember(context);
@@ -76,7 +65,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
           : Container(),
       const SectionDivider(),
       OptionItem(l10n.searchChatContents, onTap: () {
-        _openPage(
+        openPage(
           context,
           SearchConversationResultView(
             conversation: conversation,
@@ -85,7 +74,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
         );
       }),
       OptionItem(l10n.chatFiles, onTap: () {
-        _openPage(context, ConversationFilesScreen(conversation));
+        openPage(context, ConversationFilesScreen(conversation));
       }),
       const SectionDivider(),
       OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
@@ -153,7 +142,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
         if (members.isNotEmpty) {
           Imclient.createGroup(null, null, null, 2, members, (strValue) {
             // 用外层 context(详情页仍挂载):桌面右栏打开新群会话,移动端 push
-            navigateToConversation(context, Conversation(conversationType: ConversationType.Group, target: strValue));
+            openConversation(context, Conversation(conversationType: ConversationType.Group, target: strValue));
           }, (errorCode) {
             Fluttertoast.showToast(msg: l10n.networkError);
           });

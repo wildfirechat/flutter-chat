@@ -9,8 +9,10 @@ import 'package:chat/pc/pc_window_manager.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// 桌面端托盘管理。
-/// 负责：初始化托盘图标与菜单、点击托盘显示/隐藏窗口、
-/// 收到未读消息时闪烁托盘图标并在图标旁显示未读数字。
+/// - 托盘图标与菜单、点击托盘显示窗口;
+/// - 未读数展示在 title(macOS)/tooltip,由 [updateUnreadCount] 维护;
+/// - 闪烁只表示“后台期间有新消息”([notifyNewMessage] 触发),
+///   窗口回到前台或未读清零即停止,与未读数本身解耦。
 class PCTrayManager {
   static final PCTrayManager _instance = PCTrayManager._internal();
   factory PCTrayManager() => _instance;
@@ -18,9 +20,9 @@ class PCTrayManager {
 
   bool _initialized = false;
   int _unreadCount = 0;
-  bool _isFlashing = false;
-  bool _flashIconVisible = true;
   Timer? _flashTimer;
+  bool _flashIconVisible = true;
+  tm.TrayListener? _listener;
 
   int get unreadCount => _unreadCount;
 
@@ -39,22 +41,25 @@ class PCTrayManager {
     try {
       await tm.trayManager.setIcon(iconPath);
       await _setContextMenu();
-      tm.trayManager.addListener(_TrayListener());
+      _listener = _TrayListener();
+      tm.trayManager.addListener(_listener!);
+      // 窗口回到前台即停止闪烁(用户已看到消息入口)
+      pcAppInBackground.addListener(_onAppBackgroundChanged);
       _initialized = true;
     } catch (e) {
-      debugPrint('PCTrayManager init failed: \$e');
+      debugPrint('PCTrayManager init failed: $e');
+    }
+  }
+
+  void _onAppBackgroundChanged() {
+    if (!pcAppInBackground.value) {
+      _stopFlashing();
     }
   }
 
   String? _detectTrayIcon() {
-    if (Platform.isWindows) {
-      return 'assets/images/app_icon.png';
-    }
-    if (Platform.isMacOS) {
+    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
       // macOS 托盘图标建议为 16x16~22x22 的模板图,这里复用 app_icon
-      return 'assets/images/app_icon.png';
-    }
-    if (Platform.isLinux) {
       return 'assets/images/app_icon.png';
     }
     return null;
@@ -63,7 +68,8 @@ class PCTrayManager {
   Future<void> _setContextMenu() async {
     final l10n = _l10n;
     final menu = mb.Menu(items: [
-      mb.MenuItem(label: l10n?.open ?? '显示窗口', onClick: (_) => _showWindow()),
+      mb.MenuItem(
+          label: l10n?.showWindow ?? '显示窗口', onClick: (_) => _showWindow()),
       mb.MenuItem.separator(),
       mb.MenuItem(label: l10n?.exit ?? '退出', onClick: (_) => _quitApp()),
     ]);
@@ -83,68 +89,69 @@ class PCTrayManager {
   Future<void> _showWindow() async {
     await windowManager.show();
     await windowManager.focus();
-    // 打开窗口后清除托盘未读状态
-    updateUnreadCount(0);
   }
 
   Future<void> _quitApp() async {
-    await PCTrayManager().destroy();
+    await destroy();
     await PCWindowManager().closeWindow();
   }
 
-  /// 更新托盘未读状态。
-  /// macOS 在图标旁显示数字;所有平台有未读时托盘图标闪烁。
+  /// 更新托盘未读数展示(macOS 在图标旁显示数字,全平台更新 tooltip)。
+  /// 未读清零时同时停止闪烁(全部已读)。
   void updateUnreadCount(int count) async {
     _unreadCount = count;
-    if (count > 0 && !_isFlashing) {
-      _startFlashing();
-    } else if (count == 0 && _isFlashing) {
+    if (count == 0) {
       _stopFlashing();
     }
     try {
       if (Platform.isMacOS) {
         await tm.trayManager.setTitle(count > 0 ? '$count' : '');
       }
-      await tm.trayManager.setToolTip(count > 0 ? '野火IM $count 条未读消息' : '野火IM');
+      final l10n = _l10n;
+      final String appTitle = l10n?.appTitle ?? '野火IM';
+      await tm.trayManager.setToolTip(count > 0
+          ? (l10n?.trayUnreadTooltip(count) ?? '$appTitle $count')
+          : appTitle);
     } catch (e) {
-      debugPrint('PCTrayManager update title/tooltip failed: \$e');
+      debugPrint('PCTrayManager update title/tooltip failed: $e');
     }
   }
 
+  /// 后台收到需提醒的新消息时调用:开始闪烁,直到窗口回到前台或未读清零。
+  /// 前台收到消息不闪(用户正看着窗口)。
+  void notifyNewMessage() {
+    if (!_initialized || !pcAppInBackground.value || _flashTimer != null) {
+      return;
+    }
+    _startFlashing();
+  }
+
   void _startFlashing() {
-    _isFlashing = true;
     _flashIconVisible = true;
-    _flashTimer?.cancel();
     _flashTimer = Timer.periodic(const Duration(milliseconds: 500), (_) async {
       _flashIconVisible = !_flashIconVisible;
       try {
-        if (_flashIconVisible) {
-          final iconPath = _detectTrayIcon();
-          if (iconPath != null) {
-            await tm.trayManager.setIcon(iconPath);
-          }
-        } else {
-          // 空图标： macOS 可用透明模板图;Windows/Linux 没有内置透明图标,
-          // 先通过置空 title 模拟,实际效果取决于平台。
-          // 这里通过设置一个空白 title 占位,保持 title 数字由 updateUnreadCount 单独维护。
-          await tm.trayManager.setIcon('assets/images/transparent.png');
-        }
+        // 与透明占位图交替实现闪烁;title 数字由 updateUnreadCount 单独维护
+        await tm.trayManager.setIcon(_flashIconVisible
+            ? _detectTrayIcon()!
+            : 'assets/images/transparent.png');
       } catch (e) {
-        debugPrint('PCTrayManager flash failed: \$e');
+        debugPrint('PCTrayManager flash failed: $e');
       }
     });
   }
 
   void _stopFlashing() {
-    _isFlashing = false;
-    _flashTimer?.cancel();
+    if (_flashTimer == null) {
+      return;
+    }
+    _flashTimer!.cancel();
     _flashTimer = null;
     _flashIconVisible = true;
-    // 恢复默认图标
     final iconPath = _detectTrayIcon();
     if (iconPath != null) {
       tm.trayManager.setIcon(iconPath).catchError((e) {
-        debugPrint('PCTrayManager restore icon failed: \$e');
+        debugPrint('PCTrayManager restore icon failed: $e');
       });
     }
   }
@@ -155,7 +162,11 @@ class PCTrayManager {
       return;
     }
     _stopFlashing();
-    tm.trayManager.removeListener(_TrayListener());
+    pcAppInBackground.removeListener(_onAppBackgroundChanged);
+    if (_listener != null) {
+      tm.trayManager.removeListener(_listener!);
+      _listener = null;
+    }
     await tm.trayManager.destroy();
     _initialized = false;
   }
@@ -166,7 +177,6 @@ class _TrayListener extends tm.TrayListener {
   void onTrayIconMouseDown() async {
     await windowManager.show();
     await windowManager.focus();
-    PCTrayManager().updateUnreadCount(0);
   }
 
   @override

@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:chat/pc/pc_platform.dart';
 
 /// 全局 NavigatorKey，桌面端自绘 Toast 需要依附其 Overlay。
 /// 请在 [MaterialApp] 创建后通过 [setToastNavigatorKey] 注入。
@@ -11,8 +11,6 @@ GlobalKey<NavigatorState>? _toastNavigatorKey;
 void setToastNavigatorKey(GlobalKey<NavigatorState> key) {
   _toastNavigatorKey = key;
 }
-
-bool get _isDesktop => Platform.isWindows || Platform.isMacOS || Platform.isLinux;
 
 /// 跨平台显示 Toast：移动端走 fluttertoast，桌面端使用 Overlay 自绘。
 ///
@@ -23,7 +21,7 @@ void showToast({
   ToastGravity? gravity,
   Duration duration = const Duration(seconds: 2),
 }) {
-  if (!_isDesktop) {
+  if (!isDesktopShell) {
     Fluttertoast.showToast(
       msg: msg,
       toastLength: duration.inMilliseconds > 2500 ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT,

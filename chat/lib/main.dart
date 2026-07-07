@@ -37,6 +37,7 @@ import 'package:chat/viewmodel/locale_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/wfc_notification_manager.dart';
 
+import 'app_navigator.dart';
 import 'app_theme.dart';
 import 'config.dart';
 
@@ -66,6 +67,9 @@ void main() async {
       ChangeNotifierProvider<ConversationListViewModel>(create: (_) => ConversationListViewModel()),
       ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
       ChangeNotifierProvider<LocaleViewModel>(create: (_) => LocaleViewModel()),
+      // 桌面 Shell 的导航状态。仅桌面注册:共享代码经 app_navigator.dart 查找,
+      // 移动端取不到即走整页 push 路径。
+      if (isDesktopShell) ChangeNotifierProvider<PCShellViewModel>(create: (_) => PCShellViewModel()),
     ],
     child: const MyApp(),
   ));
@@ -85,12 +89,17 @@ class _MyAppState extends State<MyApp> {
   bool _isBackground = false;
   late MainAVEngineCallback _avEngineCallback;
 
+  /// 桌面 Shell 导航状态;移动端为 null。
+  PCShellViewModel? _shell;
+  Timer? _badgeRefreshTimer;
+
   @override
   void initState() {
     super.initState();
     setToastNavigatorKey(navKey);
     setPCWindowNavKey(navKey);
     if (isDesktopShell) {
+      _shell = context.read<PCShellViewModel>();
       PCWindowManager().setupWindow();
       // 桌面端没有 AppLifecycleState.paused，用窗口事件判断前后台
       pcAppInBackground.addListener(() {
@@ -102,7 +111,7 @@ class _MyAppState extends State<MyApp> {
     }
     _initIMClient();
     _initRepo();
-    _avEngineCallback = MainAVEngineCallback(navKey);
+    _avEngineCallback = MainAVEngineCallback(navKey, _shell);
     avEngineKit.init(_avEngineCallback);
     WfcNotificationManager().init();
     WfcNotificationManager().onNotificationTapped = _handleNotificationTap;
@@ -200,16 +209,8 @@ class _MyAppState extends State<MyApp> {
         }
 
         isLogined = false;
-        bool topIsLogin = false;
-        navKey.currentState?.popUntil((route) {
-          topIsLogin = route.settings.name == 'login';
-          return true;
-        });
-        if (!topIsLogin) {
-          navKey.currentState?.pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => isDesktopShell ? const PCQRLoginScreen() : const LoginScreen(), settings: const RouteSettings(name: 'login'), maintainState: true),
-            (Route<dynamic> route) => false,
-          );
+        if (navKey.currentState != null) {
+          navigateToLogin(navKey.currentState!);
         }
       }
     }, (List<Message> messages, bool hasMore) {
@@ -322,20 +323,24 @@ class _MyAppState extends State<MyApp> {
         );
         await windowManager.show();
         await windowManager.focus();
-        // 通过 PCShellViewModel 切换当前会话（需要右栏 Navigator 支持）
-        // 目前先只做窗口激活,会话跳转待 P2 右栏 Navigator 完善后接入。
-        debugPrint('Notification tapped, conversation: \$conversation');
+        _shell?.openConversation(conversation);
       } else if (type == 'friend_request') {
         await windowManager.show();
         await windowManager.focus();
-        debugPrint('Notification tapped, friend request');
+        _shell?.selectTab(PCShellViewModel.tabContact);
       }
     } catch (e) {
-      debugPrint('handle notification tap failed: \$e');
+      debugPrint('handle notification tap failed: $e');
     }
   }
 
+  /// 刷新未读角标。事件风暴期间(如初次同步)只在静默 300ms 后真正拉取一次。
   void updateAppBadge() {
+    _badgeRefreshTimer?.cancel();
+    _badgeRefreshTimer = Timer(const Duration(milliseconds: 300), _refreshAppBadge);
+  }
+
+  void _refreshAppBadge() {
     Imclient.isLogined.then((isLogined) {
       if (!isLogined) {
         return;
@@ -408,7 +413,10 @@ class _MyAppState extends State<MyApp> {
 class MainAVEngineCallback implements AVEngineCallback {
   final GlobalKey<NavigatorState> navKey;
 
-  MainAVEngineCallback(this.navKey);
+  /// 桌面端注入:通话在 Shell 浮窗中展示;移动端为 null,整页 push 通话页。
+  final PCShellViewModel? shell;
+
+  MainAVEngineCallback(this.navKey, this.shell);
 
   @override
   void didCallEnded(CallEndReason reason, int duration) {
@@ -420,30 +428,9 @@ class MainAVEngineCallback implements AVEngineCallback {
     // TODO: implement onJoinConference
   }
 
-  @override
-  void onReceiveCall(CallSession session) {
-    debugPrint('onReceiveCall: ${session.callId}');
-    Future.delayed(const Duration(milliseconds: 100), () {
-      if (session.status != CallState.STATUS_IDLE) {
-        if (isDesktopShell) {
-          PCShellViewModel.global?.startCallSession(session);
-          return;
-        }
-        if (session.conversation!.conversationType == ConversationType.Single) {
-          VoipCallScreen callView = VoipCallScreen(session: session);
-          navKey.currentState!.pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => callView, settings: const RouteSettings(name: "singleCall")),
-              (Route<dynamic> route) => route.settings.name != 'singleCall');
-        }
-      }
-    });
-  }
-
-  @override
-  void onStartCall(CallSession session) {
-    debugPrint('onStartCall: ${session.callId}');
-    if (isDesktopShell) {
-      PCShellViewModel.global?.startCallSession(session);
+  void _presentCall(CallSession session) {
+    if (shell != null) {
+      shell!.startCallSession(session);
       return;
     }
     if (session.conversation!.conversationType == ConversationType.Single) {
@@ -452,6 +439,22 @@ class MainAVEngineCallback implements AVEngineCallback {
           MaterialPageRoute(builder: (context) => callView, settings: const RouteSettings(name: "singleCall")),
           (Route<dynamic> route) => route.settings.name != 'singleCall');
     }
+  }
+
+  @override
+  void onReceiveCall(CallSession session) {
+    debugPrint('onReceiveCall: ${session.callId}');
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (session.status != CallState.STATUS_IDLE) {
+        _presentCall(session);
+      }
+    });
+  }
+
+  @override
+  void onStartCall(CallSession session) {
+    debugPrint('onStartCall: ${session.callId}');
+    _presentCall(session);
   }
 
   @override
