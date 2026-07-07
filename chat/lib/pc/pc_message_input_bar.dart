@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
+import 'package:imclient/model/conversation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
+import 'package:chat/pc/pc_av_call.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_popover.dart';
@@ -228,12 +230,22 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                   tooltip: l10n.filePicker,
                   onTap: () => _pickFile(conversationController, controller),
                 ),
-                _ToolbarButton(
-                  icon: Icons.call_outlined,
-                  tooltip: l10n.voiceCall,
-                  onTap: () => conversationController.onPressCallBtn(context, controller.conversation),
-                ),
                 const Spacer(),
+                // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
+                // 单聊直接发起,群聊先弹选人对话框再发起(见 startAvCall)
+                if (controller.conversation.conversationType == ConversationType.Single ||
+                    controller.conversation.conversationType == ConversationType.Group) ...[
+                  _ToolbarButton(
+                    icon: Icons.call_outlined,
+                    tooltip: l10n.audioCallAction,
+                    onTap: () => startAvCall(context, controller.conversation, audioOnly: true),
+                  ),
+                  _ToolbarButton(
+                    icon: Icons.videocam_outlined,
+                    tooltip: l10n.videoCallAction,
+                    onTap: () => startAvCall(context, controller.conversation, audioOnly: false),
+                  ),
+                ],
               ],
             ),
           ),

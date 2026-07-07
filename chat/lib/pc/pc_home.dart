@@ -187,28 +187,27 @@ class _PCHomeState extends State<PCHome> {
     }
   }
 
-  /// 搜索以浮层形态覆盖在中栏之上(微信 PC 形态),Esc/点击外部关闭。
+  /// 搜索浮层(微信 PC 形态):头部原位换成聚焦输入框,结果为浮起卡片,
+  /// 无遮罩、透出底下的中栏内容;Esc/点击外部关闭。
   void _openSearchModal() {
     Navigator.of(context, rootNavigator: true).push(
       PageRouteBuilder(
         opaque: false,
         barrierDismissible: true,
-        barrierColor: Colors.black.withValues(alpha: 0.12),
-        transitionDuration: const Duration(milliseconds: 120),
-        reverseTransitionDuration: const Duration(milliseconds: 100),
+        barrierColor: Colors.transparent,
+        transitionDuration: const Duration(milliseconds: 100),
+        reverseTransitionDuration: const Duration(milliseconds: 80),
         pageBuilder: (routeContext, animation, _) => Stack(
           children: [
             Positioned(
               left: PcTheme.sideBarWidth,
               top: 0,
               bottom: 0,
-              width: PcTheme.middleColumnWidth,
+              width: PcTheme.searchPanelWidth,
               child: FadeTransition(
                 opacity: animation,
                 child: Material(
-                  color: PcTheme.middleBg,
-                  elevation: 8,
-                  shadowColor: Colors.black.withValues(alpha: 0.3),
+                  type: MaterialType.transparency,
                   child: PcSearchView(
                     onClose: () => Navigator.of(routeContext).pop(),
                     onUserSelected: (userId) {

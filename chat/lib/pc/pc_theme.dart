@@ -19,6 +19,9 @@ class PcTheme {
   /// macOS 隐藏标题栏后红绿灯悬浮在侧栏顶部,首个元素需要下移避让。
   static const double sidebarTopInsetMac = 40;
 
+  /// 搜索浮层宽度:比中栏宽 40,结果卡片越过中栏、少量悬在右栏之上(微信形态)。
+  static const double searchPanelWidth = middleColumnWidth + 40;
+
   // ---- 品牌色 ----
   static const Color accent = Color(0xFF1F64E4);
   static const Color accentPressed = Color(0xFF1A55C2);

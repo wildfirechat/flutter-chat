@@ -146,10 +146,12 @@ class _PcContactListState extends State<PcContactList> {
               for (var org in record.rootOrgs) _buildOrgRow(context, org, true),
               for (var org in record.myOrgs) _buildOrgRow(context, org, false),
               const SizedBox(height: 4),
-              for (var contactInfo in record.contactList)
+              // key 必须带序号:星标/AI 分类会让同一用户在列表中出现两次,
+              // 仅用 userId 做 key 会在 children 更新时触发 Duplicate keys 异常(整个列表变 ErrorBox)
+              for (var i = 0; i < record.contactList.length; i++)
                 ContactListItem(
-                  contactInfo,
-                  key: ValueKey('pc-contact-${contactInfo.userInfo.userId}-${contactInfo.userInfo.updateDt}'),
+                  record.contactList[i],
+                  key: ValueKey('pc-contact-$i-${record.contactList[i].userInfo.userId}'),
                   onTap: widget.onUserSelected,
                 ),
             ],
