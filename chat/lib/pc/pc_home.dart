@@ -27,6 +27,7 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/workspace/work_space.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'pc_qr_login_screen.dart';
 
 /// 桌面端三栏 Shell:侧栏(tab 切换)+ 中栏(搜索 + 各 tab 列表)+ 右栏(嵌套 Navigator 的详情区)。
 /// 会话/联系人/搜索结果点击通过回调注入,在右栏内打开;二级页面(群信息等)在右栏内部导航。
@@ -123,7 +124,11 @@ class _PCHomeState extends State<PCHome> {
   }
 
   void _openUser(String userId) {
-    _openPage(UserInfoWidget(userId, key: ValueKey('pc-user-$userId')));
+    _openPage(UserInfoWidget(
+      userId,
+      key: ValueKey('pc-user-$userId'),
+      onOpenPage: _openPage,
+    ));
   }
 
   /// 在右栏打开任意页面(用户详情/好友请求/组织架构/网页等)。
@@ -134,6 +139,26 @@ class _PCHomeState extends State<PCHome> {
       _paneRoute(page),
       (route) => route.isFirst,
     );
+  }
+
+  /// 桌面端登出：用根 Navigator 回到登录页。
+  void _logoutToLogin() {
+    final rootNav = Navigator.of(context, rootNavigator: true);
+    bool topIsLogin = false;
+    rootNav.popUntil((route) {
+      topIsLogin = route.settings.name == 'login';
+      return true;
+    });
+    if (!topIsLogin) {
+      rootNav.pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const PCQRLoginScreen(),
+          settings: const RouteSettings(name: 'login'),
+        ),
+        (Route<dynamic> route) => false,
+      );
+    }
+    Imclient.disconnect();
   }
 
   /// 右栏内容跟随侧栏 tab:消息 tab 恢复上次选中的会话,
@@ -326,7 +351,10 @@ class _PCHomeState extends State<PCHome> {
                       onConversationSelected: _openConversation,
                       onOpenPage: _openPage,
                     ),
-                    const MeTab(),
+              MeTab(
+                onOpenPage: _openPage,
+                onLogout: _logoutToLogin,
+              ),
                   ],
                 ),
               ),

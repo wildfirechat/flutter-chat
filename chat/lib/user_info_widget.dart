@@ -9,6 +9,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/invite_friend.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -21,9 +22,11 @@ import 'conversation/conversation_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class UserInfoWidget extends StatefulWidget {
-  const UserInfoWidget(this.userId, {this.inGroupId, Key? key}) : super(key: key);
+  const UserInfoWidget(this.userId, {this.inGroupId, this.onOpenPage, super.key});
   final String userId;
   final String? inGroupId;
+  /// 桌面端用于在右栏打开二级页面（如 InviteFriendPage）。手机端可忽略。
+  final void Function(Widget page)? onOpenPage;
 
   @override
   State<UserInfoWidget> createState() => _UserInfoWidgetState();
@@ -173,10 +176,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                         }),
                         const SectionDivider(),
                         OptionButtonItem(AppLocalizations.of(context)!.addFriend, () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => InviteFriendPage(widget.userId)),
-                          );
+                          _openInviteFriendPage(context);
                         }),
                       ]
                     ],
@@ -300,7 +300,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
         Container(
             constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 120),
             child: Text(
-              '${AppLocalizations.of(context)!.wildfireId(userInfo.name)}',
+              AppLocalizations.of(context)!.wildfireId(userInfo.name),
               textAlign: TextAlign.left,
               style: const TextStyle(
                 fontSize: 12,
@@ -356,11 +356,17 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
         _deleteFriend();
         break;
       case 'add_friend':
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => InviteFriendPage(widget.userId)),
-        );
+        _openInviteFriendPage(context);
         break;
+    }
+  }
+
+  void _openInviteFriendPage(BuildContext context) {
+    final page = InviteFriendPage(widget.userId);
+    if (isDesktopShell && widget.onOpenPage != null) {
+      widget.onOpenPage!(page);
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => page));
     }
   }
 

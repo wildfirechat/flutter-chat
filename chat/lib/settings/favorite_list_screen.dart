@@ -8,18 +8,18 @@ import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/link_message_content.dart';
 import 'package:imclient/message/message_content.dart';
-import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/conversation/composite_message_detail_screen.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/model/favorite_item.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utilities.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class FavoriteListScreen extends StatefulWidget {
-  const FavoriteListScreen({Key? key}) : super(key: key);
+  const FavoriteListScreen({super.key});
 
   @override
   State<FavoriteListScreen> createState() => _FavoriteListScreenState();
@@ -81,32 +81,28 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
 
   void _onTapItem(FavoriteItem item) {
     var message = item.toMessage();
-    if (message.content is ImageMessageContent) {
-      Navigator.push(
-        context,
-        PageRouteBuilder(
-          opaque: false,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              MMPreviewView(
-            [message],
-            defaultIndex: 0,
-            pageToEnd: (fromIndex, tail) {},
+    if (message.content is ImageMessageContent || message.content is VideoMessageContent) {
+      final preview = MMPreviewView(
+        [message],
+        defaultIndex: 0,
+        pageToEnd: (fromIndex, tail) {},
+      );
+      if (isDesktopShell) {
+        showDialog(
+          context: context,
+          barrierColor: Colors.black,
+          useSafeArea: false,
+          builder: (_) => preview,
+        );
+      } else {
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            opaque: false,
+            pageBuilder: (context, animation, secondaryAnimation) => preview,
           ),
-        ),
-      );
-    } else if (message.content is VideoMessageContent) {
-      Navigator.push(
-        context,
-        PageRouteBuilder(
-          opaque: false,
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              MMPreviewView(
-                  [message],
-                  defaultIndex: 0,
-                  pageToEnd: (fromIndex, tail) {},
-              ),
-        ),
-      );
+        );
+      }
     } else if (message.content is FileMessageContent) {
       // TODO: Open file
       Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.fileLabel}${(message.content as FileMessageContent).name}");

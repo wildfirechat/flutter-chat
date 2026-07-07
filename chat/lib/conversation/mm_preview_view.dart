@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/video_message_content.dart';
@@ -34,6 +35,7 @@ class MMPreviewView extends StatefulWidget {
 
 class MMPreviewViewState extends State<MMPreviewView> {
   late int currentIndex;
+  late PageController _pageController;
   bool isZoomed = false; // Add zoomed state
   bool isDragging = false;
 
@@ -41,6 +43,13 @@ class MMPreviewViewState extends State<MMPreviewView> {
   void initState() {
     super.initState();
     currentIndex = widget.defaultIndex;
+    _pageController = PageController(initialPage: widget.defaultIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void onLoadMore(List<Message> moreItems, bool front) {
@@ -55,8 +64,170 @@ class MMPreviewViewState extends State<MMPreviewView> {
 
   @override
   Widget build(BuildContext context) {
-    // Wrap with DragToDismiss
-    // Enable drag only when NOT zoomed
+    final content = Material(
+      color: Colors.transparent,
+      child: Stack(
+        children: [
+          PhotoViewGallery.builder(
+              scrollPhysics: const BouncingScrollPhysics(),
+              builder: (BuildContext context, int index) {
+                Message message = widget.mediaItems[index];
+
+                if (message.content is ImageMessageContent) {
+                  ImageMessageContent imageContent = message.content as ImageMessageContent;
+
+                  // 优先检查本地文件
+                  if (imageContent.localPath != null && imageContent.localPath!.isNotEmpty) {
+                    File localFile = File(imageContent.localPath!);
+                    if (localFile.existsSync()) {
+                      return PhotoViewGalleryPageOptions(
+                        imageProvider: FileImage(localFile),
+                        minScale: PhotoViewComputedScale.contained,
+                        maxScale: PhotoViewComputedScale.covered * 2.5,
+                        onScaleEnd: (context, details, controllerValue) {
+                          setState(() {
+                            isZoomed = controllerValue.scale! > 1.05;
+                          });
+                        },
+                      );
+                    }
+                  }
+
+                  // 使用网络图片（带缓存）
+                  if (imageContent.remoteUrl != null && imageContent.remoteUrl!.isNotEmpty) {
+                    return PhotoViewGalleryPageOptions(
+                      imageProvider: CachedNetworkImageProvider(imageContent.remoteUrl!),
+                      minScale: PhotoViewComputedScale.contained,
+                      maxScale: PhotoViewComputedScale.covered * 2.5,
+                      onScaleEnd: (context, details, controllerValue) {
+                        setState(() {
+                          isZoomed = controllerValue.scale! > 1.05;
+                        });
+                      },
+                    );
+                  }
+
+                  // 默认占位符
+                  return PhotoViewGalleryPageOptions(
+                    imageProvider: const AssetImage('assets/images/placeholder.png'),
+                    minScale: PhotoViewComputedScale.contained,
+                    maxScale: PhotoViewComputedScale.covered * 2.5,
+                  );
+                } else if (message.content is VideoMessageContent) {
+                  VideoMessageContent videoContent = message.content as VideoMessageContent;
+                  return PhotoViewGalleryPageOptions.customChild(
+                    child: MMVideoPlayer(
+                      videoContent,
+                      onTap: () {
+                        // Toggle controls or whatever if needed, or handle in player
+                      },
+                    ),
+                    childSize: MediaQuery.of(context).size,
+                    initialScale: PhotoViewComputedScale.contained,
+                    minScale: PhotoViewComputedScale.contained,
+                    maxScale: PhotoViewComputedScale.contained, // Video usually doesn't zoom
+                    heroAttributes: PhotoViewHeroAttributes(tag: message.messageUid ?? message.messageId),
+                  );
+                }
+
+                return PhotoViewGalleryPageOptions(
+                    imageProvider: const AssetImage('assets/images/placeholder.png'),
+                );
+              },
+              scrollDirection: widget.direction,
+              itemCount: widget.mediaItems.length,
+              backgroundDecoration: widget.decoration ??
+                  const BoxDecoration(color: Colors.transparent),
+              pageController: _pageController,
+              onPageChanged: (index) => setState(() {
+                    currentIndex = index;
+                    isZoomed = false;
+                    if (widget.pageToEnd != null) {
+                      Message message = widget.mediaItems[index];
+                      if (index == 0) {
+                        widget.pageToEnd!(message.messageId, false);
+                      } else if (index == widget.mediaItems.length - 1) {
+                        widget.pageToEnd!(message.messageId, true);
+                      }
+                    }
+                  })),
+          if (!isDragging)
+            Positioned(
+              bottom: 20,
+              child: Container(
+                  alignment: Alignment.center,
+                  width: MediaQuery.of(context).size.width,
+                  child: Text(
+                      "${currentIndex + 1}/${widget.mediaItems.length}",
+                      style: const TextStyle(
+                        decoration: TextDecoration.none,
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        shadows: [
+                          Shadow(color: Colors.black, offset: Offset(1, 1)),
+                        ],
+                      ))),
+            ),
+          if (!isDragging)
+            Positioned(
+              //右上角关闭
+              top: isDesktopShell ? 40 : 60,
+              right: isDesktopShell ? 20 : 40,
+              child: Container(
+                alignment: Alignment.centerLeft,
+                width: 36,
+                height: 36,
+                child: GestureDetector(
+                  onTap: () {
+                    //隐藏预览
+                    Navigator.pop(context);
+                  },
+                  child: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
+                ),
+              ),
+            ),
+          if (!isDragging)
+            Positioned(
+              //数量显示
+              right: 20,
+              top: 20,
+              child: Text(
+                '${currentIndex + 1}/${widget.mediaItems.length}',
+                style: const TextStyle(
+                    color: Colors
+                        .white),
+              ),
+            )
+        ],
+      ),
+    );
+
+    if (isDesktopShell) {
+      // 桌面端：黑色背景、键盘翻页、禁用拖拽关闭
+      return CallbackShortcuts(
+        bindings: {
+          const SingleActivator(LogicalKeyboardKey.arrowLeft): () {
+            _goToPage(currentIndex - 1);
+          },
+          const SingleActivator(LogicalKeyboardKey.arrowRight): () {
+            _goToPage(currentIndex + 1);
+          },
+          const SingleActivator(LogicalKeyboardKey.escape): () {
+            Navigator.pop(context);
+          },
+        },
+        child: Focus(
+          autofocus: true,
+          child: Container(
+            color: Colors.black,
+            child: content,
+          ),
+        ),
+      );
+    }
+
+    // 手机端：保持拖拽关闭手势
     return DragToDismiss(
       enabled: !isZoomed,
       onDismiss: () {
@@ -72,144 +243,16 @@ class MMPreviewViewState extends State<MMPreviewView> {
           isDragging = false;
         });
       },
-      child: Material(
-        color: Colors.transparent, // Ensure Material is transparent
-        child: Stack(
-          children: [
-            PhotoViewGallery.builder(
-                scrollPhysics: const BouncingScrollPhysics(),
-                builder: (BuildContext context, int index) {
-                  Message message = widget.mediaItems[index];
+      child: content,
+    );
+  }
 
-                  if (message.content is ImageMessageContent) {
-                    ImageMessageContent imageContent = message.content as ImageMessageContent;
-
-                    // 优先检查本地文件
-                    if (imageContent.localPath != null && imageContent.localPath!.isNotEmpty) {
-                      File localFile = File(imageContent.localPath!);
-                      if (localFile.existsSync()) {
-                        return PhotoViewGalleryPageOptions(
-                          imageProvider: FileImage(localFile),
-                          minScale: PhotoViewComputedScale.contained,
-                          maxScale: PhotoViewComputedScale.covered * 2.5,
-                          onScaleEnd: (context, details, controllerValue) {
-                            setState(() {
-                              isZoomed = controllerValue.scale! > 1.05;
-                            });
-                          },
-                        );
-                      }
-                    }
-
-                    // 使用网络图片（带缓存）
-                    if (imageContent.remoteUrl != null && imageContent.remoteUrl!.isNotEmpty) {
-                      return PhotoViewGalleryPageOptions(
-                        imageProvider: CachedNetworkImageProvider(imageContent.remoteUrl!),
-                        minScale: PhotoViewComputedScale.contained,
-                        maxScale: PhotoViewComputedScale.covered * 2.5,
-                        onScaleEnd: (context, details, controllerValue) {
-                          setState(() {
-                            isZoomed = controllerValue.scale! > 1.05;
-                          });
-                        },
-                      );
-                    }
-
-                    // 默认占位符
-                    return PhotoViewGalleryPageOptions(
-                      imageProvider: const AssetImage('assets/images/placeholder.png'),
-                      minScale: PhotoViewComputedScale.contained,
-                      maxScale: PhotoViewComputedScale.covered * 2.5,
-                    );
-                  } else if (message.content is VideoMessageContent) {
-                    VideoMessageContent videoContent = message.content as VideoMessageContent;
-                    return PhotoViewGalleryPageOptions.customChild(
-                      child: MMVideoPlayer(
-                        videoContent,
-                        onTap: () {
-                          // Toggle controls or whatever if needed, or handle in player
-                        },
-                      ),
-                      childSize: MediaQuery.of(context).size,
-                      initialScale: PhotoViewComputedScale.contained,
-                      minScale: PhotoViewComputedScale.contained,
-                      maxScale: PhotoViewComputedScale.contained, // Video usually doesn't zoom
-                      heroAttributes: PhotoViewHeroAttributes(tag: message.messageUid ?? message.messageId),
-                    );
-                  }
-
-                  return PhotoViewGalleryPageOptions(
-                      imageProvider: const AssetImage('assets/images/placeholder.png'),
-                  );
-                },
-                scrollDirection: widget.direction,
-                itemCount: widget.mediaItems.length,
-                backgroundDecoration: widget.decoration ??
-                    const BoxDecoration(color: Colors.transparent),
-                pageController:
-                    PageController(initialPage: widget.defaultIndex),
-                onPageChanged: (index) => setState(() {
-                      currentIndex = index;
-                      isZoomed = false;
-                      if (widget.pageToEnd != null) {
-                        Message message = widget.mediaItems[index];
-                        if (index == 0) {
-                          widget.pageToEnd!(message.messageId, false);
-                        } else if (index == widget.mediaItems.length - 1) {
-                          widget.pageToEnd!(message.messageId, true);
-                        }
-                      }
-                    })),
-            if (!isDragging)
-              Positioned(
-                bottom: 20,
-                child: Container(
-                    alignment: Alignment.center,
-                    width: MediaQuery.of(context).size.width,
-                    child: Text(
-                        "${currentIndex + 1}/${widget.mediaItems.length}",
-                        style: const TextStyle(
-                          decoration: TextDecoration.none,
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          shadows: [
-                            Shadow(color: Colors.black, offset: Offset(1, 1)),
-                          ],
-                        ))),
-              ),
-            if (!isDragging)
-              Positioned(
-                //右上角关闭
-                top: 60,
-                right: 40,
-                child: Container(
-                  alignment: Alignment.centerLeft,
-                  width: 20,
-                  child: GestureDetector(
-                    onTap: () {
-                      //隐藏预览
-                      Navigator.pop(context);
-                    },
-                    child: const Icon(Icons.close_rounded, color: Colors.white),
-                  ),
-                ),
-              ),
-            if (!isDragging)
-              Positioned(
-                //数量显示
-                right: 20,
-                top: 20,
-                child: Text(
-                  '${currentIndex + 1}/${widget.mediaItems.length}',
-                  style: const TextStyle(
-                      color: Colors
-                          .white),
-                ),
-              )
-          ],
-        ),
-      ),
+  void _goToPage(int index) {
+    if (index < 0 || index >= widget.mediaItems.length) return;
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
     );
   }
 }
@@ -218,7 +261,7 @@ class MMVideoPlayer extends StatefulWidget {
   final VideoMessageContent content;
   final VoidCallback? onTap;
 
-  const MMVideoPlayer(this.content, {Key? key, this.onTap}) : super(key: key);
+  const MMVideoPlayer(this.content, {super.key, this.onTap});
 
   @override
   State<MMVideoPlayer> createState() => _MMVideoPlayerState();
@@ -283,11 +326,11 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.play_circle_outline, color: Colors.white.withOpacity(0.8), size: 64),
+                Icon(Icons.play_circle_outline, color: Colors.white.withValues(alpha: 0.8), size: 64),
                 const SizedBox(height: 12),
                 Text(
                   '点击用系统播放器打开',
-                  style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
                 ),
               ],
             ),
@@ -329,7 +372,7 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 0.5),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

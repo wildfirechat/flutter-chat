@@ -343,6 +343,7 @@
   "setStarredFriend": "Set as Starred Friend",
   "cancelStarredFriend": "Cancel Starred Friend",
   "friendRequestSent": "Friend Request Sent",
+  "viewAllFriendRequests": "View All Friend Requests",
   "remark": "Remark",
   "favFriend": "Starred Friends",
   "doneWithCount": "Done({count})",

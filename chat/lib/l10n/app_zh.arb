@@ -343,6 +343,7 @@
   "setStarredFriend": "设为星标朋友",
   "cancelStarredFriend": "取消星标朋友",
   "friendRequestSent": "好友请求已发送",
+  "viewAllFriendRequests": "查看全部好友请求",
   "remark": "备注名",
   "favFriend": "星标好友",
   "doneWithCount": "完成({count})",

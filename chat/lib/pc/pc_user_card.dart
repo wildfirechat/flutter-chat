@@ -137,7 +137,14 @@ class _PcUserCard extends StatelessWidget {
   /// 点击名字/头像查看完整资料:关卡片,右栏打开用户详情页。
   void _openProfile(BuildContext context) {
     Navigator.of(context).pop();
-    shell?.openPage(UserInfoWidget(userId, key: ValueKey('pc-user-$userId')));
+    final s = shell;
+    if (s != null) {
+      s.openPage(UserInfoWidget(
+        userId,
+        key: ValueKey('pc-user-$userId'),
+        onOpenPage: s.openPage,
+      ));
+    }
   }
 }
 

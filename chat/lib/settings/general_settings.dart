@@ -11,7 +11,10 @@ import '../widget/option_item.dart';
 import '../widget/section_divider.dart';
 
 class GeneralSettings extends StatelessWidget {
-  const GeneralSettings({Key? key}) : super(key: key);
+  /// 桌面端登出回调。手机端可忽略。
+  final VoidCallback? onLogout;
+
+  const GeneralSettings({super.key, this.onLogout});
 
   @override
   Widget build(BuildContext context) {
@@ -150,6 +153,13 @@ class GeneralSettings extends StatelessWidget {
 
   void _handleLogout(BuildContext context) {
     Fluttertoast.showToast(msg: AppLocalizations.of(context)!.logoutConfirm);
+
+    if (isDesktopShell && onLogout != null) {
+      // 桌面端由 PCHome 用根 Navigator 切到登录页。
+      onLogout!();
+      Imclient.disconnect();
+      return;
+    }
 
     bool topIsLogin = false;
     Navigator.of(context).popUntil((route) {

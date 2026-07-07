@@ -7,7 +7,7 @@ import 'package:imclient/model/user_info.dart';
 import '../config.dart';
 
 class FriendRequestPage extends StatefulWidget {
-  const FriendRequestPage({Key? key}) : super(key: key);
+  const FriendRequestPage({super.key});
 
   @override
   State<StatefulWidget> createState() => FriendRequestPageState();
@@ -50,7 +50,7 @@ class FriendRequestPageState extends State<FriendRequestPage> {
         actions: [
           GestureDetector(
             onTap: () => _clearAll(context),
-            child: Row(
+            child: const Row(
               children: [
                 Icon(Icons.delete_outline_rounded),
                 Padding(padding: EdgeInsets.only(left: 16)),

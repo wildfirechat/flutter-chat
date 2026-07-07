@@ -6,6 +6,7 @@ import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
 import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utilities.dart';
 
 import '../../ui_model/ui_message.dart';
@@ -35,32 +36,29 @@ class TextCellBuilder extends PortraitCellBuilder {
               var messageUid = textMessageContent.quoteInfo!.messageUid;
               var message = await Imclient.getMessageByUid(messageUid);
               if (message != null) {
-                if (message.content is ImageMessageContent) {
+                if (message.content is ImageMessageContent || message.content is VideoMessageContent) {
                   if (context.mounted) {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        opaque: false,
-                        pageBuilder: (context, animation, secondaryAnimation) => MMPreviewView(
-                          [message],
-                          defaultIndex: 0,
-                          pageToEnd: (fromIndex, tail) {},
-                        ),
-                      ),
+                    final preview = MMPreviewView(
+                      [message],
+                      defaultIndex: 0,
+                      pageToEnd: (fromIndex, tail) {},
                     );
-                  }
-                } else if (message.content is VideoMessageContent) {
-                  if (context.mounted) {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        opaque: false,
-                        pageBuilder: (context, animation, secondaryAnimation) => MMPreviewView(
-                          [message],
-                          defaultIndex: 0,
+                    if (isDesktopShell) {
+                      showDialog(
+                        context: context,
+                        barrierColor: Colors.black,
+                        useSafeArea: false,
+                        builder: (_) => preview,
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          opaque: false,
+                          pageBuilder: (context, animation, secondaryAnimation) => preview,
                         ),
-                      ),
-                    );
+                      );
+                    }
                   }
                 } else {
                   var digest = await message.content.digest(message);

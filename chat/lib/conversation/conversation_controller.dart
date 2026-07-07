@@ -257,12 +257,12 @@ class ConversationController extends ChangeNotifier {
           list.add(model.message);
           list.addAll(newerMsgs);
           int index = eldMsgs.length;
-          Navigator.push(
-            context,
-            PageRouteBuilder(
-              opaque: false,
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  MMPreviewView(
+          if (isDesktopShell) {
+            showDialog(
+              context: context,
+              barrierColor: Colors.black,
+              useSafeArea: false,
+              builder: (_) => MMPreviewView(
                 list,
                 defaultIndex: index,
                 pageToEnd: (fromIndex, tail) {
@@ -290,8 +290,44 @@ class ConversationController extends ChangeNotifier {
                 },
                 key: _mmPreviewKey,
               ),
-            ),
-          );
+            );
+          } else {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                opaque: false,
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    MMPreviewView(
+                  list,
+                  defaultIndex: index,
+                  pageToEnd: (fromIndex, tail) {
+                    if (tail) {
+                      Imclient.getMessages(conversation, fromIndex, -10,
+                          contentTypes: [
+                            MESSAGE_CONTENT_TYPE_IMAGE,
+                            MESSAGE_CONTENT_TYPE_VIDEO
+                          ]).then((value) {
+                        if (value.isNotEmpty) {
+                          _mmPreviewKey.currentState!.onLoadMore(value, false);
+                        }
+                      });
+                    } else {
+                      Imclient.getMessages(conversation, fromIndex, 10,
+                          contentTypes: [
+                            MESSAGE_CONTENT_TYPE_IMAGE,
+                            MESSAGE_CONTENT_TYPE_VIDEO
+                          ]).then((value) {
+                        if (value.isNotEmpty) {
+                          _mmPreviewKey.currentState!.onLoadMore(value, true);
+                        }
+                      });
+                    }
+                  },
+                  key: _mmPreviewKey,
+                ),
+              ),
+            );
+          }
         });
       });
     } else if (model.message.content is FileMessageContent) {
