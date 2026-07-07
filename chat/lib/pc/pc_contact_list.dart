@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
-import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/friend_request.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
@@ -10,10 +9,13 @@ import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/contact_list_widget.dart';
 import 'package:chat/user_info_widget.dart';
+import 'package:chat/group/group_info_screen.dart';
+import 'package:chat/channel/channel_info_widget.dart';
 import 'package:chat/organization/model/organization.dart';
 import 'package:chat/organization/organization_screen.dart';
 import 'package:chat/organization/organization_view_model.dart';
 import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/ui_model/ui_contact_info.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
@@ -34,6 +36,7 @@ class PcContactList extends StatefulWidget {
 
 class _PcContactListState extends State<PcContactList> {
   void _openUser(String userId) {
+    Provider.of<PCShellViewModel>(context, listen: false).selectContactItem('user-$userId');
     openPage(context, UserInfoWidget(userId, key: ValueKey('pc-user-$userId')));
   }
 
@@ -163,12 +166,14 @@ class _PcContactListState extends State<PcContactList> {
     if (requests.isEmpty) {
       return [_SectionEmptyRow(text: AppLocalizations.of(context)!.noSearchResult)];
     }
+    final selectedId = Provider.of<PCShellViewModel>(context).selectedContactItemId;
     return requests
         .map((request) => _FriendRequestRow(
               request: request,
               userInfo: _requestUserInfos[request.target],
               onTap: () => _openUser(request.target),
               onAccepted: _loadFriendRequests,
+              isSelected: selectedId == 'user-${request.target}',
             ))
         .toList();
   }
@@ -178,7 +183,11 @@ class _PcContactListState extends State<PcContactList> {
     if (groupIds == null) {
       return [const _SectionLoadingRow()];
     }
+    final shell = Provider.of<PCShellViewModel>(context);
+    final selectedId = shell.selectedContactItemId;
     return groupIds.map((groupId) {
+      final itemId = 'group-$groupId';
+      final isSelected = selectedId == itemId;
       return Consumer<GroupViewModel>(
         builder: (context, groupViewModel, _) {
           GroupInfo groupInfo = groupViewModel.getGroupInfo(groupId);
@@ -186,7 +195,11 @@ class _PcContactListState extends State<PcContactList> {
             portrait: groupInfo.portrait,
             defaultPortrait: Config.defaultGroupPortrait,
             title: groupInfo.name ?? groupId,
-            onTap: () => openConversation(context, Conversation(conversationType: ConversationType.Group, target: groupId, line: 0)),
+            isSelected: isSelected,
+            onTap: () {
+              shell.selectContactItem(itemId);
+              openPage(context, GroupInfoScreen(groupId: groupId));
+            },
           );
         },
       );
@@ -198,7 +211,11 @@ class _PcContactListState extends State<PcContactList> {
     if (channelIds == null) {
       return [const _SectionLoadingRow()];
     }
+    final shell = Provider.of<PCShellViewModel>(context);
+    final selectedId = shell.selectedContactItemId;
     return channelIds.map((channelId) {
+      final itemId = 'channel-$channelId';
+      final isSelected = selectedId == itemId;
       return Consumer<ChannelViewModel>(
         builder: (context, channelViewModel, _) {
           ChannelInfo? channelInfo = channelViewModel.getChannelInfo(channelId);
@@ -206,7 +223,11 @@ class _PcContactListState extends State<PcContactList> {
             portrait: channelInfo?.portrait,
             defaultPortrait: Config.defaultChannelPortrait,
             title: channelInfo?.name ?? channelId,
-            onTap: () => openConversation(context, Conversation(conversationType: ConversationType.Channel, target: channelId, line: 0)),
+            isSelected: isSelected,
+            onTap: () {
+              shell.selectContactItem(itemId);
+              openPage(context, ChannelInfoWidget(channelId: channelId, channelInfo: channelInfo));
+            },
           );
         },
       );
@@ -214,10 +235,17 @@ class _PcContactListState extends State<PcContactList> {
   }
 
   Widget _buildOrgRow(BuildContext context, Organization org, bool isRoot) {
+    final shell = Provider.of<PCShellViewModel>(context);
+    final itemId = 'org-${org.id}';
+    final isSelected = shell.selectedContactItemId == itemId;
     return _EntryRow(
       assetIcon: isRoot ? 'assets/images/contact_organization.png' : 'assets/images/contact_organization_expended.png',
       title: org.name,
-      onTap: () => openPage(context, OrganizationScreen(initialOrganizationId: org.id)),
+      isSelected: isSelected,
+      onTap: () {
+        shell.selectContactItem(itemId);
+        openPage(context, OrganizationScreen(initialOrganizationId: org.id));
+      },
     );
   }
 }
@@ -283,11 +311,25 @@ class _EntryRow extends StatelessWidget {
   final String? assetIcon;
   final String title;
   final VoidCallback onTap;
+  final bool isSelected;
 
-  const _EntryRow({this.portrait, this.defaultPortrait, this.assetIcon, required this.title, required this.onTap});
+  const _EntryRow({
+    this.portrait,
+    this.defaultPortrait,
+    this.assetIcon,
+    required this.title,
+    required this.onTap,
+    this.isSelected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    Color getBgColor(bool hovered) {
+      if (isSelected) return PcTheme.cellSelected;
+      if (hovered) return PcTheme.cellHover;
+      return Colors.transparent;
+    }
+
     return HoverBuilder(
       cursor: SystemMouseCursors.click,
       builder: (context, hovered) => GestureDetector(
@@ -296,7 +338,7 @@ class _EntryRow extends StatelessWidget {
         child: Container(
           height: 44,
           padding: const EdgeInsets.only(left: 36, right: 14),
-          color: hovered ? PcTheme.cellHover : Colors.transparent,
+          color: getBgColor(hovered),
           child: Row(
             children: [
               if (assetIcon != null)
@@ -318,11 +360,24 @@ class _FriendRequestRow extends StatelessWidget {
   final UserInfo? userInfo;
   final VoidCallback onTap;
   final VoidCallback onAccepted;
+  final bool isSelected;
 
-  const _FriendRequestRow({required this.request, this.userInfo, required this.onTap, required this.onAccepted});
+  const _FriendRequestRow({
+    required this.request,
+    this.userInfo,
+    required this.onTap,
+    required this.onAccepted,
+    this.isSelected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    Color getBgColor(bool hovered) {
+      if (isSelected) return PcTheme.cellSelected;
+      if (hovered) return PcTheme.cellHover;
+      return Colors.transparent;
+    }
+
     return HoverBuilder(
       cursor: SystemMouseCursors.click,
       builder: (context, hovered) => GestureDetector(
@@ -331,7 +386,7 @@ class _FriendRequestRow extends StatelessWidget {
         child: Container(
           height: 52,
           padding: const EdgeInsets.only(left: 36, right: 14),
-          color: hovered ? PcTheme.cellHover : Colors.transparent,
+          color: getBgColor(hovered),
           child: Row(
             children: [
               Portrait(userInfo?.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 32, height: 32, borderRadius: 4),

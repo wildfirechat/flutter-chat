@@ -44,6 +44,7 @@ class PCHome extends StatefulWidget {
 
 class _PCHomeState extends State<PCHome> {
   final GlobalKey<NavigatorState> _paneNavKey = GlobalKey<NavigatorState>();
+  final Map<int, Widget> _tabPages = {};
   late PCShellViewModel _shellViewModel;
 
   late ConversationListViewModel _conversationListViewModel;
@@ -150,6 +151,7 @@ class _PCHomeState extends State<PCHome> {
   }
 
   void _openUser(String userId) {
+    _shellViewModel.selectContactItem('user-$userId');
     _openPage(UserInfoWidget(userId, key: ValueKey('pc-user-$userId')));
   }
 
@@ -157,6 +159,7 @@ class _PCHomeState extends State<PCHome> {
   /// 不清除会话选中态:切回消息 tab 时按选中态恢复会话。
   void _openPage(Widget page) {
     _paneShowsConversation = false;
+    _tabPages[_shellViewModel.selectedTab] = page;
     _paneNavKey.currentState!.pushAndRemoveUntil(
       _paneRoute(page),
       (route) => route.isFirst,
@@ -185,7 +188,12 @@ class _PCHomeState extends State<PCHome> {
         _clearRightPane();
       }
     } else {
-      _clearRightPane();
+      final savedPage = _tabPages[tab];
+      if (savedPage != null) {
+        _openPage(savedPage);
+      } else {
+        _clearRightPane();
+      }
     }
   }
 

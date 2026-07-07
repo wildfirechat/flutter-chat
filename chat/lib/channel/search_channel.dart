@@ -81,7 +81,7 @@ class SearchChannelDelegate extends SearchDelegate<String> {
   void _toChannelInfoView(BuildContext context, ChannelInfo channelInfo) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ChannelInfoWidget(channelInfo)),
+      MaterialPageRoute(builder: (context) => ChannelInfoWidget(channelInfo: channelInfo)),
     );
   }
   

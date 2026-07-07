@@ -19,6 +19,7 @@ class PCShellViewModel extends ChangeNotifier {
 
   int _selectedTab = tabChat;
   Conversation? _selectedConversation;
+  String? _selectedContactItemId;
 
   CallSession? _activeCallSession;
   bool _callWindowMinimized = false;
@@ -29,10 +30,21 @@ class PCShellViewModel extends ChangeNotifier {
   void reset() {
     _selectedTab = tabChat;
     _selectedConversation = null;
+    _selectedContactItemId = null;
     _activeCallSession = null;
     _callWindowMinimized = false;
     conversationOpener = null;
     pageOpener = null;
+  }
+
+  String? get selectedContactItemId => _selectedContactItemId;
+
+  void selectContactItem(String? itemId) {
+    if (_selectedContactItemId == itemId) {
+      return;
+    }
+    _selectedContactItemId = itemId;
+    notifyListeners();
   }
 
   CallSession? get activeCallSession => _activeCallSession;

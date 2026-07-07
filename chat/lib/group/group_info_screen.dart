@@ -10,6 +10,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/app_server.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/app_navigator.dart';
+import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/pc/pc_platform.dart';
 
 class GroupInfoScreen extends StatefulWidget {
   final String groupId;
@@ -86,6 +89,42 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       portrait = _remotePortrait!;
     }
 
+    if (isDesktopShell) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6.0),
+              child: CachedNetworkImage(
+                imageUrl: portrait.isNotEmpty ? portrait : Config.defaultGroupPortrait,
+                width: 80,
+                height: 80,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Image.asset(Config.defaultGroupPortrait, width: 80, height: 80, color: Colors.grey),
+                errorWidget: (context, url, error) => Image.asset(Config.defaultGroupPortrait, width: 80, height: 80, color: Colors.grey),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              name,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: PcTheme.textPrimary),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "群号: ${widget.groupId}",
+              style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary),
+            ),
+            const SizedBox(height: 40),
+            const Divider(height: 1, thickness: 0.5, color: PcTheme.hairline),
+            const SizedBox(height: 36),
+            _buildActionButton(groupInfo),
+          ],
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -131,6 +170,32 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       isJoined = true;
     }
 
+    if (isDesktopShell) {
+      return SizedBox(
+        width: 120,
+        height: 36,
+        child: ElevatedButton(
+          onPressed: _isLoading ? null : () => _onAction(groupInfo, isJoined),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: PcTheme.accent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          ),
+          child: _isLoading
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                )
+              : Text(
+                  buttonText,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+                ),
+        ),
+      );
+    }
+
     return SizedBox(
       width: double.infinity,
       height: 48,
@@ -156,14 +221,18 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
   }
 
   void _enterGroupChat() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ConversationScreen(
-          Conversation(conversationType: ConversationType.Group, target: widget.groupId),
+    if (isDesktopShell) {
+      openConversation(context, Conversation(conversationType: ConversationType.Group, target: widget.groupId));
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ConversationScreen(
+            Conversation(conversationType: ConversationType.Group, target: widget.groupId),
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   void _joinGroup() {

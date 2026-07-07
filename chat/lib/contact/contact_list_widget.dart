@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
 import 'package:chat/organization/model/organization.dart';
 import 'package:chat/organization/organization_view_model.dart';
+import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/ui_model/ui_contact_info.dart';
 import 'package:chat/contact/friend_request_page.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
@@ -339,10 +340,19 @@ class _ContactListItemState extends State<ContactListItem> {
     // 获取显示名称
     final displayName = widget.contactInfo.userInfo.friendAlias ?? widget.contactInfo.userInfo.displayName ?? '<${widget.contactInfo.userInfo.userId}>';
 
+    Color getBgColor() {
+      if (!isDesktopShell) return Colors.transparent;
+      final selectedId = Provider.of<PCShellViewModel>(context).selectedContactItemId;
+      final isSelected = selectedId == 'user-${widget.contactInfo.userInfo.userId}';
+      if (isSelected) return PcTheme.cellSelected;
+      if (_hovered) return PcTheme.cellHover;
+      return Colors.transparent;
+    }
+
     Widget contactRow = Container(
       height: 52.0,
       padding: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
-      color: (isDesktopShell && _hovered) ? PcTheme.cellHover : Colors.transparent,
+      color: getBgColor(),
       child: Row(
         children: <Widget>[
           Portrait(widget.contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40, height: 40,),
