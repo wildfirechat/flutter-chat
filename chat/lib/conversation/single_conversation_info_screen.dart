@@ -42,9 +42,11 @@ class SingleConversationInfoScreen extends StatelessWidget {
     return Selector<UserViewModel, UserInfo?>(
         builder: (context, userInfo, child) {
           return Scaffold(
-            appBar: AppBar(
-              title: Text(AppLocalizations.of(context)!.singleConversationDetails),
-            ),
+            appBar: isDesktopShell
+                ? null
+                : AppBar(
+                    title: Text(AppLocalizations.of(context)!.singleConversationDetails),
+                  ),
             body: SafeArea(
               child: _buildSingleConversationInfoView(context, userInfo),
             ),
@@ -59,6 +61,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
         child: Column(children: [
+      if (isDesktopShell) const SizedBox(height: 12.0),
       userInfo != null
           ? SingleConversationMemberView(
               conversation,

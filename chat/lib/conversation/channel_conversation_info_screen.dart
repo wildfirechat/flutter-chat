@@ -40,9 +40,11 @@ class ChannelConversationInfoScreen extends StatelessWidget {
     return Selector<ChannelViewModel, ChannelInfo?>(
         builder: (context, channelInfo, child) {
           return Scaffold(
-            appBar: AppBar(
-              title: Text(AppLocalizations.of(context)!.channelDetails),
-            ),
+            appBar: isDesktopShell
+                ? null
+                : AppBar(
+                    title: Text(AppLocalizations.of(context)!.channelDetails),
+                  ),
             body: SafeArea(
               child: _buildSingleConversationInfoView(context, channelInfo),
             ),
@@ -58,6 +60,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
 
     return SingleChildScrollView(
         child: Column(children: [
+      if (isDesktopShell) const SizedBox(height: 12.0),
       channelInfo != null
           ? Column(
               children: [

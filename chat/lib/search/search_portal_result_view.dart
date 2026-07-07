@@ -31,7 +31,15 @@ class SearchPortalResultView extends StatefulWidget {
   final void Function(String userId)? onUserSelected;
   final void Function(Conversation conversation, {int? focusMessageId})? onConversationSelected;
 
-  const SearchPortalResultView(this.query, {super.key, this.onUserSelected, this.onConversationSelected});
+  final bool shrinkWrap;
+
+  const SearchPortalResultView(
+    this.query, {
+    super.key,
+    this.onUserSelected,
+    this.onConversationSelected,
+    this.shrinkWrap = false,
+  });
 
   @override
   State<SearchPortalResultView> createState() => _SearchPortalResultViewState();
@@ -62,13 +70,16 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
             }));
 
           return groupedSearchResults.isEmpty
-              ? Center(
+              ? Container(
+                  height: widget.shrinkWrap ? 80.0 : null,
+                  alignment: Alignment.center,
                   child: Text(
                     AppLocalizations.of(context)!.noSearchResult,
-                    style: const TextStyle(fontSize: 16, color: Colors.black54),
+                    style: const TextStyle(fontSize: 14, color: Colors.black54),
                   ),
                 )
               : GroupListView(
+                  shrinkWrap: widget.shrinkWrap,
                   keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.all(0),
                   sectionsCount: groupedSearchResults.keys.toList().length,

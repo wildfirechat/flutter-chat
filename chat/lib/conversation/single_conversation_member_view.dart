@@ -25,18 +25,23 @@ class SingleConversationMemberView extends StatelessWidget {
     int columnCount = 5;
     int memberCount = 2;
 
-    double screenWidth = MediaQuery.of(context).size.width;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double width = constraints.maxWidth;
+        double cellWidth = width / 5;
+        double cellHeight = 76.0;
+        double childAspectRatio = cellWidth / cellHeight;
 
-    int lines = (memberCount - 1) ~/ columnCount + 1;
-    double gridHeight = (screenWidth / 5) * lines;
-
-    return Column(
-      children: [
-        SizedBox(
-          height: gridHeight,
-          child: GridView.builder(
+        return Column(
+          children: [
+            GridView.builder(
+              shrinkWrap: true,
               itemCount: memberCount,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5,
+                childAspectRatio: childAspectRatio,
+              ),
               itemBuilder: (context, index) {
                 if (index < userInfos.length) {
                   return GestureDetector(
@@ -53,10 +58,12 @@ class SingleConversationMemberView extends StatelessWidget {
                     child: const ConversationInfoMemberActionItem(true),
                   );
                 }
-              }),
-        ),
-        const Padding(padding: EdgeInsets.only(top: 15)),
-      ],
+              },
+            ),
+            const Padding(padding: EdgeInsets.only(top: 15)),
+          ],
+        );
+      },
     );
   }
 }

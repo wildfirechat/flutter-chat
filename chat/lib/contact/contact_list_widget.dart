@@ -18,6 +18,8 @@ import 'package:chat/widget/sidebar_index.dart';
 import '../user_info_widget.dart';
 import 'fav_groups.dart';
 import 'subscribed_channels.dart';
+import '../pc/pc_platform.dart';
+import '../pc/pc_theme.dart';
 
 class ContactListWidget extends StatefulWidget {
   /// 桌面端 Shell 注入:点击联系人时回调(替代默认的全屏 push)。移动端不传,保持原有行为。
@@ -319,22 +321,58 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   }
 }
 
-class ContactListItem extends StatelessWidget {
+class ContactListItem extends StatefulWidget {
   final UIContactInfo contactInfo;
   final Function(String userId)? onTap;
 
   const ContactListItem(this.contactInfo, {super.key, this.onTap});
 
   @override
+  State<ContactListItem> createState() => _ContactListItemState();
+}
+
+class _ContactListItemState extends State<ContactListItem> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
     // 获取显示名称
-    final displayName = contactInfo.userInfo.friendAlias ?? contactInfo.userInfo.displayName ?? '<${contactInfo.userInfo.userId}>';
+    final displayName = widget.contactInfo.userInfo.friendAlias ?? widget.contactInfo.userInfo.displayName ?? '<${widget.contactInfo.userInfo.userId}>';
+
+    Widget contactRow = Container(
+      height: 52.0,
+      padding: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
+      color: (isDesktopShell && _hovered) ? PcTheme.cellHover : Colors.transparent,
+      child: Row(
+        children: <Widget>[
+          Portrait(widget.contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40, height: 40,),
+          Container(
+            margin: const EdgeInsets.only(left: 16),
+          ),
+          Expanded(
+              child: Text(
+            displayName,
+            style: const TextStyle(fontSize: 15.0),
+          )),
+        ],
+      ),
+    );
+
+    if (isDesktopShell) {
+      contactRow = MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _hovered = true),
+        onExit: (_) => setState(() => _hovered = false),
+        child: contactRow,
+      );
+    }
 
     return RepaintBoundary(
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () {
-          if (onTap != null) {
-            onTap!(contactInfo.userInfo.userId);
+          if (widget.onTap != null) {
+            widget.onTap!(widget.contactInfo.userInfo.userId);
           } else {
             _toUserInfoPage(context);
           }
@@ -343,35 +381,19 @@ class ContactListItem extends StatelessWidget {
           children: <Widget>[
             // 分类标题
             Container(
-              height: contactInfo.showCategory ? 18 : 0,
+              height: widget.contactInfo.showCategory ? 18 : 0,
               width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
               color: const Color(0xffebebeb),
               padding: const EdgeInsets.only(left: 16),
-              child: contactInfo.showCategory
-                  ? Text(contactInfo.category == '{'
+              child: widget.contactInfo.showCategory
+                  ? Text(widget.contactInfo.category == '{'
                       ? '#'
-                      : (contactInfo.category == '☆'
+                      : (widget.contactInfo.category == '☆'
                           ? AppLocalizations.of(context)!.favFriend
-                          : (contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : contactInfo.category)))
+                          : (widget.contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : widget.contactInfo.category)))
                   : null,
             ),
-            Container(
-              height: 52.0,
-              margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
-              child: Row(
-                children: <Widget>[
-                  Portrait(contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40, height: 40,),
-                  Container(
-                    margin: const EdgeInsets.only(left: 16),
-                  ),
-                  Expanded(
-                      child: Text(
-                    displayName,
-                    style: const TextStyle(fontSize: 15.0),
-                  )),
-                ],
-              ),
-            ),
+            contactRow,
             Container(
               margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
               height: 0.5,
@@ -386,7 +408,7 @@ class ContactListItem extends StatelessWidget {
   _toUserInfoPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => UserInfoWidget(contactInfo.userInfo.userId)),
+      MaterialPageRoute(builder: (context) => UserInfoWidget(widget.contactInfo.userInfo.userId)),
     );
   }
 }

@@ -336,6 +336,7 @@
   "myFiles": "My Files",
   "userFiles": "User Files",
   "searchHint": "Type to search",
+  "searchPrompt": "Enter content to search",
   "readReceiptDetail": "Read Receipt Detail",
   "readCount": "Read ({count})",
   "unreadCount": "Unread ({count})",

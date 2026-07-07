@@ -27,11 +27,28 @@ class PcSearchView extends StatefulWidget {
 
 class _PcSearchViewState extends State<PcSearchView> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
   String _query = '';
+  bool _isFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFocused = _focusNode.hasFocus;
+    _focusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    setState(() {
+      _isFocused = _focusNode.hasFocus;
+    });
+  }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -48,6 +65,7 @@ class _PcSearchViewState extends State<PcSearchView> {
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // 头部:与常规中栏头部同构且保持中栏宽度(原位覆盖),
           // 面板整体比中栏宽,头部右侧的空白区域透出右栏、点击走 barrier 关闭
@@ -77,6 +95,7 @@ class _PcSearchViewState extends State<PcSearchView> {
                           Expanded(
                             child: TextField(
                               controller: _controller,
+                              focusNode: _focusNode,
                               autofocus: true,
                               style: const TextStyle(fontSize: 13, color: PcTheme.textPrimary),
                               decoration: InputDecoration(
@@ -118,33 +137,69 @@ class _PcSearchViewState extends State<PcSearchView> {
               ),
             ),
           ),
-          // 结果卡片:圆角浮起,越过中栏、部分悬于右栏之上;无关键词时不显示
-          Expanded(
-            child: _query.isEmpty
-                ? const SizedBox.shrink()
-                : Container(
-                    margin: const EdgeInsets.fromLTRB(8, 2, 8, 12),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.18),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: SearchPortalResultView(
-                      _query,
-                      key: const ValueKey('pc-search-result'),
-                      onUserSelected: widget.onUserSelected,
-                      onConversationSelected: widget.onConversationSelected,
-                    ),
-                  ),
+          _buildBody(context, l10n),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, AppLocalizations l10n) {
+    if (_query.isEmpty) {
+      if (!_isFocused) {
+        return const SizedBox.shrink();
+      }
+      return Container(
+        margin: const EdgeInsets.fromLTRB(8, 2, 8, 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        child: Center(
+          child: Text(
+            l10n.searchPrompt,
+            style: const TextStyle(
+              fontSize: 13,
+              color: PcTheme.textSecondary,
+            ),
+          ),
+        ),
+      );
+    }
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final maxContentHeight = screenHeight - PcTheme.headerHeight - 24;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(8, 2, 8, 12),
+      constraints: BoxConstraints(
+        maxHeight: maxContentHeight,
+      ),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
+      ),
+      child: SearchPortalResultView(
+        _query,
+        key: const ValueKey('pc-search-result'),
+        shrinkWrap: true,
+        onUserSelected: widget.onUserSelected,
+        onConversationSelected: widget.onConversationSelected,
       ),
     );
   }

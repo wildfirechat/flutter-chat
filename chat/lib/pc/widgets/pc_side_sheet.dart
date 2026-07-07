@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:chat/pc/pc_theme.dart';
 
 /// 右栏内的右侧抽屉(参照微信 PC 的会话详情面板):
 /// 从右缘滑入固定宽度面板,浅色遮罩点击/Esc 关闭。
@@ -18,7 +19,8 @@ Future<T?> showPcSideSheet<T>({
       reverseTransitionDuration: const Duration(milliseconds: 150),
       pageBuilder: (context, animation, secondaryAnimation) => Align(
         alignment: Alignment.centerRight,
-        child: SizedBox(
+        child: Container(
+          margin: const EdgeInsets.only(top: PcTheme.headerHeight),
           width: width,
           child: Material(
             elevation: 16,

@@ -202,7 +202,6 @@ class _PCHomeState extends State<PCHome> {
             Positioned(
               left: PcTheme.sideBarWidth,
               top: 0,
-              bottom: 0,
               width: PcTheme.searchPanelWidth,
               child: FadeTransition(
                 opacity: animation,

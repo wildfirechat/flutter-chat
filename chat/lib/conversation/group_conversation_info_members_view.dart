@@ -64,19 +64,23 @@ class GroupConversationInfoMembersView extends StatelessWidget {
       hasMore = true;
     }
 
-    double screenWidth = MediaQuery.of(context).size.width;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double width = constraints.maxWidth;
+        double cellWidth = width / 5;
+        double cellHeight = 76.0;
+        double childAspectRatio = cellWidth / cellHeight;
 
-    int lines = (memberCount - 1) ~/ columnCount + 1;
-    double gridHeight = (screenWidth / 5) * lines;
-
-    return Column(
-      children: [
-        SizedBox(
-          height: gridHeight,
-          child: GridView.builder(
+        return Column(
+          children: [
+            GridView.builder(
+              shrinkWrap: true,
               itemCount: memberCount,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 5),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5,
+                childAspectRatio: childAspectRatio,
+              ),
               itemBuilder: (context, index) {
                 if (index < showGroupMemberUserInfos.length) {
                   return GestureDetector(
@@ -104,19 +108,21 @@ class GroupConversationInfoMembersView extends StatelessWidget {
                     return Container();
                   }
                 }
-              }),
-        ),
-        hasMore
-            ? Center(
-                child: TextButton(
-                  onPressed: () {
-                    onShowMoreGroupMemberTap?.call();
-                  },
-                  child: const Text("查看更多群成员 >"),
-                ),
-              )
-            : const Padding(padding: EdgeInsets.only(top: 15)),
-      ],
+              },
+            ),
+            hasMore
+                ? Center(
+                    child: TextButton(
+                      onPressed: () {
+                        onShowMoreGroupMemberTap?.call();
+                      },
+                      child: const Text("查看更多群成员 >"),
+                    ),
+                  )
+                : const Padding(padding: EdgeInsets.only(top: 15)),
+          ],
+        );
+      },
     );
   }
 }

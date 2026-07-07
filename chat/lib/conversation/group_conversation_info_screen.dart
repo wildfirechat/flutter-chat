@@ -53,9 +53,11 @@ class GroupConversationInfoScreen extends StatelessWidget {
         },
         child: Consumer<GroupConversationInfoViewModel>(
             builder: (context, viewModel, child) => Scaffold(
-                  appBar: AppBar(
-                    title: Text(AppLocalizations.of(context)!.groupConversationDetails),
-                  ),
+                  appBar: isDesktopShell
+                      ? null
+                      : AppBar(
+                          title: Text(AppLocalizations.of(context)!.groupConversationDetails),
+                        ),
                   body: SafeArea(
                     child: viewModel.groupMember == null
                         ? const Center(
@@ -75,6 +77,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
     
     return SingleChildScrollView(
         child: Column(children: [
+      if (isDesktopShell) const SizedBox(height: 12.0),
       GroupConversationInfoMembersView(
         conversation,
         onGroupMemberTap: (userInfo) {
