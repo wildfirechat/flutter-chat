@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 class InviteFriendPage extends StatefulWidget {
   const InviteFriendPage(this.userId, {super.key});
@@ -22,13 +25,31 @@ class InviteFriendPageState extends State<InviteFriendPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        actions: [
-          TextButton(onPressed: () =>_sendInvite(context), child: Text("发送", style: TextStyle(color: fieldController.value.text.isEmpty?Colors.grey:Colors.black),)),
-        ],
-        title:  const Text('添加好友'),
+    final actions = [
+      TextButton(
+        onPressed: () => _sendInvite(context),
+        child: Text(
+          "发送",
+          style: TextStyle(
+            color: fieldController.value.text.isEmpty
+                ? Colors.grey
+                : (isDesktopShell ? PcTheme.accent : Colors.black),
+          ),
+        ),
       ),
+    ];
+
+    return Scaffold(
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: '添加好友',
+              actions: actions,
+            )
+          : AppBar(
+              actions: actions,
+              title: const Text('添加好友'),
+            ),
+      backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

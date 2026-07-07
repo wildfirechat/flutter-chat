@@ -4,6 +4,9 @@ import 'package:imclient/model/group_info.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:chat/wfc_scheme.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 class GroupQrCodeScreen extends StatefulWidget {
   final GroupInfo groupInfo;
@@ -33,12 +36,14 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
     String qrCodeValue = WfcScheme.buildGroupScheme(widget.groupInfo.target, Imclient.currentUserId);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("群二维码"),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      backgroundColor: Colors.black,
+      appBar: isDesktopShell
+          ? const PcPageHeader(title: "群二维码")
+          : AppBar(
+              title: const Text("群二维码"),
+              backgroundColor: Colors.black,
+              foregroundColor: Colors.white,
+            ),
+      backgroundColor: isDesktopShell ? PcTheme.chatBg : Colors.black,
       body: Center(
         child: Card(
           color: Colors.white,

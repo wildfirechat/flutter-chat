@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:window_manager/window_manager.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
@@ -17,6 +19,7 @@ import 'package:chat/pc/pc_search_view.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
+import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/settings/me_tab.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/user_info_widget.dart';
@@ -228,6 +231,43 @@ class _PCHomeState extends State<PCHome> {
     );
   }
 
+  bool _isInputFieldFocused() {
+    final primaryFocus = FocusManager.instance.primaryFocus;
+    if (primaryFocus == null) return false;
+    final context = primaryFocus.context;
+    if (context == null) return false;
+    bool isEditable = false;
+    context.visitAncestorElements((element) {
+      if (element.widget is EditableText) {
+        isEditable = true;
+        return false;
+      }
+      return true;
+    });
+    return isEditable;
+  }
+
+  void _navigateConversation(bool next) {
+    if (_shellViewModel.selectedTab != PCShellViewModel.tabChat) {
+      return;
+    }
+    final list = _conversationListViewModel.conversationList;
+    if (list.isEmpty) return;
+    int index = -1;
+    final selected = _shellViewModel.selectedConversation;
+    if (selected != null) {
+      index = list.indexWhere((info) => info.conversation == selected);
+    }
+    if (next) {
+      index++;
+      if (index >= list.length || index < 0) index = 0;
+    } else {
+      index--;
+      if (index < 0) index = list.length - 1;
+    }
+    _openConversation(list[index].conversation);
+  }
+
   static const String _kAddFriendHintShownKey = 'pc_add_friend_hint_shown';
 
   /// 添加好友:不再 push 搜索页。首次弹说明对话框引导用搜索框;
@@ -242,28 +282,56 @@ class _PCHomeState extends State<PCHome> {
       return;
     }
     final l10n = AppLocalizations.of(context)!;
-    showDialog(
+    showPcDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.tips, textAlign: TextAlign.center),
-        content: Text(l10n.addFriendSearchHint),
-        actionsAlignment: MainAxisAlignment.center,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            style: TextButton.styleFrom(foregroundColor: PcTheme.textSecondary),
-            child: Text(l10n.close),
-          ),
-          FilledButton(
-            onPressed: () {
-              prefs.setBool(_kAddFriendHintShownKey, true);
-              Navigator.pop(dialogContext);
-              _openSearchModal();
-            },
-            style: FilledButton.styleFrom(backgroundColor: PcTheme.accent),
-            child: Text(l10n.gotIt),
-          ),
-        ],
+      width: 380,
+      builder: (dialogContext) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.tips,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: PcTheme.textPrimary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.addFriendSearchHint,
+              style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary, height: 1.4),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  style: TextButton.styleFrom(
+                    foregroundColor: PcTheme.textSecondary,
+                    textStyle: const TextStyle(fontSize: 13),
+                  ),
+                  child: Text(l10n.close),
+                ),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: () {
+                    prefs.setBool(_kAddFriendHintShownKey, true);
+                    Navigator.pop(dialogContext);
+                    _openSearchModal();
+                  },
+                  style: FilledButton.styleFrom(
+                    backgroundColor: PcTheme.accent,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                    textStyle: const TextStyle(fontSize: 13),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                  child: Text(l10n.gotIt),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -316,17 +384,28 @@ class _PCHomeState extends State<PCHome> {
   }
 
   void _showProcessingDialog(BuildContext context, String title) {
-    showDialog(
+    showPcDialog(
       context: context,
+      width: 240,
       barrierDismissible: false,
       builder: (context) {
-        return AlertDialog(
-          content: Column(
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+          child: Column(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(),
-              const SizedBox(height: 16),
-              Text(title),
+              const SizedBox(
+                width: 32,
+                height: 32,
+                child: CircularProgressIndicator(strokeWidth: 3, color: PcTheme.accent),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: const TextStyle(fontSize: 13, color: PcTheme.textPrimary, decoration: TextDecoration.none),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         );
@@ -340,27 +419,60 @@ class _PCHomeState extends State<PCHome> {
       data: PcTheme.themeData(context),
       child: ChangeNotifierProvider<PCShellViewModel>.value(
         value: _shellViewModel,
-        child: Stack(
-          children: [
-            Scaffold(
-              body: Row(
-                children: [
-                  SizedBox(width: PcTheme.sideBarWidth, child: _PcSideBar(onTabSelected: _onTabSelected)),
-                  SizedBox(width: PcTheme.middleColumnWidth, child: _buildMiddleColumn(context)),
-                  Container(width: 0.5, color: PcTheme.hairline),
-                  Expanded(
-                    child: ClipRect(
-                      child: Navigator(
-                        key: _paneNavKey,
-                        onGenerateRoute: (settings) => _paneRoute(const _EmptyDetailPane(), settings),
+        child: Focus(
+          autofocus: true,
+          onKeyEvent: (node, event) {
+            if (event is! KeyDownEvent) {
+              return KeyEventResult.ignored;
+            }
+            final isControl = HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed;
+            
+            // Ctrl+F or Cmd+F: Open search
+            if (event.logicalKey == LogicalKeyboardKey.keyF && isControl) {
+              _openSearchModal();
+              return KeyEventResult.handled;
+            }
+            
+            // Ctrl+W or Cmd+W: Hide window
+            if (event.logicalKey == LogicalKeyboardKey.keyW && isControl) {
+              windowManager.hide();
+              return KeyEventResult.handled;
+            }
+            
+            // Arrow Up/Down to navigate conversations (only when input fields are not focused)
+            if (event.logicalKey == LogicalKeyboardKey.arrowDown && !_isInputFieldFocused()) {
+              _navigateConversation(true);
+              return KeyEventResult.handled;
+            }
+            if (event.logicalKey == LogicalKeyboardKey.arrowUp && !_isInputFieldFocused()) {
+              _navigateConversation(false);
+              return KeyEventResult.handled;
+            }
+            
+            return KeyEventResult.ignored;
+          },
+          child: Stack(
+            children: [
+              Scaffold(
+                body: Row(
+                  children: [
+                    SizedBox(width: PcTheme.sideBarWidth, child: _PcSideBar(onTabSelected: _onTabSelected)),
+                    SizedBox(width: PcTheme.middleColumnWidth, child: _buildMiddleColumn(context)),
+                    Container(width: 0.5, color: PcTheme.hairline),
+                    Expanded(
+                      child: ClipRect(
+                        child: Navigator(
+                          key: _paneNavKey,
+                          onGenerateRoute: (settings) => _paneRoute(const _EmptyDetailPane(), settings),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            _buildCallOverlay(),
-          ],
+              _buildCallOverlay(),
+            ],
+          ),
         ),
       ),
     );

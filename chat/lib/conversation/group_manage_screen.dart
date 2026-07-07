@@ -3,6 +3,8 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:chat/widget/option_switch_item.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 class GroupManageScreen extends StatefulWidget {
   final GroupInfo groupInfo;
@@ -25,9 +27,11 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('群管理'),
-      ),
+      appBar: isDesktopShell
+          ? const PcPageHeader(title: '群管理')
+          : AppBar(
+              title: const Text('群管理'),
+            ),
       body: Column(
         children: [
           OptionSwitchItem('全员禁言', _groupInfo.mute == 1, (value) {

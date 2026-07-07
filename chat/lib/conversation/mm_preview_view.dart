@@ -9,7 +9,10 @@ import 'package:imclient/message/video_message_content.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/widget/drag_to_dismiss.dart';
 import 'package:video_player/video_player.dart';
 
@@ -38,6 +41,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
   late PageController _pageController;
   bool isZoomed = false; // Add zoomed state
   bool isDragging = false;
+  final Map<int, int> _rotations = {};
 
   @override
   void initState() {
@@ -80,8 +84,13 @@ class MMPreviewViewState extends State<MMPreviewView> {
                   if (imageContent.localPath != null && imageContent.localPath!.isNotEmpty) {
                     File localFile = File(imageContent.localPath!);
                     if (localFile.existsSync()) {
-                      return PhotoViewGalleryPageOptions(
-                        imageProvider: FileImage(localFile),
+                      final rotation = _rotations[index] ?? 0;
+                      return PhotoViewGalleryPageOptions.customChild(
+                        child: RotatedBox(
+                          quarterTurns: rotation,
+                          child: Image.file(localFile, fit: BoxFit.contain),
+                        ),
+                        childSize: MediaQuery.of(context).size,
                         minScale: PhotoViewComputedScale.contained,
                         maxScale: PhotoViewComputedScale.covered * 2.5,
                         onScaleEnd: (context, details, controllerValue) {
@@ -95,8 +104,24 @@ class MMPreviewViewState extends State<MMPreviewView> {
 
                   // 使用网络图片（带缓存）
                   if (imageContent.remoteUrl != null && imageContent.remoteUrl!.isNotEmpty) {
-                    return PhotoViewGalleryPageOptions(
-                      imageProvider: CachedNetworkImageProvider(imageContent.remoteUrl!),
+                    final rotation = _rotations[index] ?? 0;
+                    return PhotoViewGalleryPageOptions.customChild(
+                      child: RotatedBox(
+                        quarterTurns: rotation,
+                        child: CachedNetworkImage(
+                          imageUrl: imageContent.remoteUrl!,
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white30),
+                          ),
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.broken_image_rounded,
+                            color: Colors.white30,
+                            size: 48,
+                          ),
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                      childSize: MediaQuery.of(context).size,
                       minScale: PhotoViewComputedScale.contained,
                       maxScale: PhotoViewComputedScale.covered * 2.5,
                       onScaleEnd: (context, details, controllerValue) {
@@ -151,7 +176,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                       }
                     }
                   })),
-          if (!isDragging)
+          if (!isDesktopShell && !isDragging)
             Positioned(
               bottom: 20,
               child: Container(
@@ -187,7 +212,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                 ),
               ),
             ),
-          if (!isDragging)
+          if (!isDesktopShell && !isDragging)
             Positioned(
               //数量显示
               right: 20,
@@ -198,7 +223,108 @@ class MMPreviewViewState extends State<MMPreviewView> {
                     color: Colors
                         .white),
               ),
-            )
+            ),
+          // Left chevron button on desktop
+          if (isDesktopShell && currentIndex > 0)
+            Positioned(
+              left: 24,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: HoverBuilder(
+                  builder: (context, isHovered) => Material(
+                    color: isHovered ? Colors.black.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.25),
+                    shape: const CircleBorder(),
+                    child: IconButton(
+                      icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 36),
+                      onPressed: () => _goToPage(currentIndex - 1),
+                      tooltip: '上一张 (←)',
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          // Right chevron button on desktop
+          if (isDesktopShell && currentIndex < widget.mediaItems.length - 1)
+            Positioned(
+              right: 24,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: HoverBuilder(
+                  builder: (context, isHovered) => Material(
+                    color: isHovered ? Colors.black.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.25),
+                    shape: const CircleBorder(),
+                    child: IconButton(
+                      icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 36),
+                      onPressed: () => _goToPage(currentIndex + 1),
+                      tooltip: '下一张 (→)',
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          // Bottom toolbar on desktop
+          if (isDesktopShell)
+            Positioned(
+              bottom: 30,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.65),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 0.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Rotate Left
+                      IconButton(
+                        icon: const Icon(Icons.rotate_left_rounded, color: Colors.white70, size: 20),
+                        onPressed: () {
+                          setState(() {
+                            _rotations[currentIndex] = ((_rotations[currentIndex] ?? 0) - 1 + 4) % 4;
+                          });
+                        },
+                        tooltip: '向左旋转',
+                      ),
+                      const SizedBox(width: 8),
+                      // Rotate Right
+                      IconButton(
+                        icon: const Icon(Icons.rotate_right_rounded, color: Colors.white70, size: 20),
+                        onPressed: () {
+                          setState(() {
+                            _rotations[currentIndex] = ((_rotations[currentIndex] ?? 0) + 1) % 4;
+                          });
+                        },
+                        tooltip: '向右旋转',
+                      ),
+                      const SizedBox(width: 8),
+                      // Save As
+                      IconButton(
+                        icon: const Icon(Icons.download_rounded, color: Colors.white70, size: 20),
+                        onPressed: _saveCurrentMedia,
+                        tooltip: '另存为...',
+                      ),
+                      const VerticalDivider(color: Colors.white24, width: 24, indent: 14, endIndent: 14),
+                      Text(
+                        "${currentIndex + 1} / ${widget.mediaItems.length}",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -254,6 +380,61 @@ class MMPreviewViewState extends State<MMPreviewView> {
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
     );
+  }
+
+  Future<void> _saveCurrentMedia() async {
+    final message = widget.mediaItems[currentIndex];
+    String? sourcePath;
+    String? remoteUrl;
+    String fileName = 'file';
+
+    if (message.content is ImageMessageContent) {
+      final content = message.content as ImageMessageContent;
+      sourcePath = content.localPath;
+      remoteUrl = content.remoteUrl;
+      fileName = 'image_${message.messageUid ?? message.messageId}.jpg';
+      if (remoteUrl != null) {
+        final uri = Uri.parse(remoteUrl);
+        if (uri.pathSegments.isNotEmpty) {
+          fileName = uri.pathSegments.last;
+        }
+      }
+    } else if (message.content is VideoMessageContent) {
+      final content = message.content as VideoMessageContent;
+      sourcePath = content.localPath;
+      remoteUrl = content.remoteUrl;
+      fileName = 'video_${message.messageUid ?? message.messageId}.mp4';
+      if (remoteUrl != null) {
+        final uri = Uri.parse(remoteUrl);
+        if (uri.pathSegments.isNotEmpty) {
+          fileName = uri.pathSegments.last;
+        }
+      }
+    }
+
+    try {
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: '保存文件',
+        fileName: fileName,
+      );
+      if (outputFile == null) return;
+
+      if (sourcePath != null && File(sourcePath).existsSync()) {
+        await File(sourcePath).copy(outputFile);
+        Fluttertoast.showToast(msg: '保存成功');
+      } else if (remoteUrl != null && remoteUrl.isNotEmpty) {
+        final client = HttpClient();
+        final request = await client.getUrl(Uri.parse(remoteUrl));
+        final response = await request.close();
+        final bytes = await response.fold<List<int>>([], (prev, element) => prev..addAll(element));
+        await File(outputFile).writeAsBytes(bytes);
+        Fluttertoast.showToast(msg: '保存成功');
+      } else {
+        Fluttertoast.showToast(msg: '保存失败: 找不到源文件或链接');
+      }
+    } catch (e) {
+      Fluttertoast.showToast(msg: '保存失败: $e');
+    }
   }
 }
 

@@ -17,6 +17,7 @@ import 'package:chat/widget/option_button_item.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/section_divider.dart';
 
+import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'conversation/conversation_screen.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -39,18 +40,11 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   /// 发起单聊:桌面 Shell 内交给 PCShellViewModel 在右栏打开并同步选中态,
   /// 移动端(无该 Provider)保持整页 push。
   void _openSingleConversation(BuildContext context) {
-    Conversation conversation = Conversation(conversationType: ConversationType.Single, target: widget.userId);
-    PCShellViewModel? shell;
-    try {
-      shell = Provider.of<PCShellViewModel>(context, listen: false);
-    } catch (_) {}
-    if (shell != null) {
-      shell.openConversation(conversation);
+    if (isDesktopShell) {
+      final shell = Provider.of<PCShellViewModel>(context, listen: false);
+      shell.openConversation(Conversation(conversationType: ConversationType.Single, target: widget.userId));
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Single, target: widget.userId))));
     }
   }
 
@@ -78,52 +72,57 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.userInfo),
-        actions: [
-          FutureBuilder<bool>(
-            future: _isFriend(widget.userId),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return Container();
-              bool isFriend = snapshot.data!;
-              bool isMe = widget.userId == Imclient.currentUserId;
-              if (isMe) return Container();
+    final FutureBuilder<bool> actionsBuilder = FutureBuilder<bool>(
+      future: _isFriend(widget.userId),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return Container();
+        bool isFriend = snapshot.data!;
+        bool isMe = widget.userId == Imclient.currentUserId;
+        if (isMe) return Container();
 
-              return PopupMenuButton<String>(
-                onSelected: (value) => _handleMenuSelection(value, isFriend),
-                itemBuilder: (BuildContext context) {
-                  List<PopupMenuEntry<String>> items = [];
-                  if (isFriend) {
-                    items.add(PopupMenuItem(
-                      value: 'blacklist',
-                      child: Text(_isBlacklisted ? AppLocalizations.of(context)!.removeFromBlacklist : AppLocalizations.of(context)!.addToBlacklist),
-                    ));
-                    items.add(PopupMenuItem(
-                      value: 'star',
-                      child: Text(_isStarred ? AppLocalizations.of(context)!.cancelStarredFriend : AppLocalizations.of(context)!.setStarredFriend),
-                    ));
-                    items.add(PopupMenuItem(
-                      value: 'delete',
-                      child: Text(AppLocalizations.of(context)!.deleteFriend),
-                    ));
-                  } else {
-                    items.add(PopupMenuItem(
-                      value: 'blacklist',
-                      child: Text(_isBlacklisted ? AppLocalizations.of(context)!.removeFromBlacklist : AppLocalizations.of(context)!.addToBlacklist),
-                    ));
-                    items.add(PopupMenuItem(
-                      value: 'add_friend',
-                      child: Text(AppLocalizations.of(context)!.addFriend),
-                    ));
-                  }
-                  return items;
-                },
-              );
-            },
-          ),
-        ],
-      ),
+        return PopupMenuButton<String>(
+          onSelected: (value) => _handleMenuSelection(value, isFriend),
+          itemBuilder: (BuildContext context) {
+            List<PopupMenuEntry<String>> items = [];
+            if (isFriend) {
+              items.add(PopupMenuItem(
+                value: 'blacklist',
+                child: Text(_isBlacklisted ? AppLocalizations.of(context)!.removeFromBlacklist : AppLocalizations.of(context)!.addToBlacklist),
+              ));
+              items.add(PopupMenuItem(
+                value: 'star',
+                child: Text(_isStarred ? AppLocalizations.of(context)!.cancelStarredFriend : AppLocalizations.of(context)!.setStarredFriend),
+              ));
+              items.add(PopupMenuItem(
+                value: 'delete',
+                child: Text(AppLocalizations.of(context)!.deleteFriend),
+              ));
+            } else {
+              items.add(PopupMenuItem(
+                value: 'blacklist',
+                child: Text(_isBlacklisted ? AppLocalizations.of(context)!.removeFromBlacklist : AppLocalizations.of(context)!.addToBlacklist),
+              ));
+              items.add(PopupMenuItem(
+                value: 'add_friend',
+                child: Text(AppLocalizations.of(context)!.addFriend),
+              ));
+            }
+            return items;
+          },
+        );
+      },
+    );
+
+    return Scaffold(
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: AppLocalizations.of(context)!.userInfo,
+              actions: [actionsBuilder],
+            )
+          : AppBar(
+              title: Text(AppLocalizations.of(context)!.userInfo),
+              actions: [actionsBuilder],
+            ),
       body: SafeArea(
         child: Selector<UserViewModel, UserInfo?>(
           selector: (context, viewModel) => viewModel.getUserInfo(widget.userId, groupId: widget.inGroupId),

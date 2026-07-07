@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/app_server.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 class GroupAnnouncementScreen extends StatefulWidget {
   final String groupId;
@@ -64,28 +67,35 @@ class _GroupAnnouncementScreenState extends State<GroupAnnouncementScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final actions = [
+      if (widget.canEdit && !_isLoading)
+        TextButton(
+          onPressed: () {
+            if (_isEditing) {
+              _saveAnnouncement();
+            } else {
+              setState(() {
+                _isEditing = true;
+              });
+            }
+          },
+          child: Text(
+            _isEditing ? '完成' : '编辑',
+            style: TextStyle(color: isDesktopShell ? PcTheme.accent : Colors.white),
+          ),
+        ),
+    ];
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('群公告'),
-        actions: [
-          if (widget.canEdit && !_isLoading)
-            TextButton(
-              onPressed: () {
-                if (_isEditing) {
-                  _saveAnnouncement();
-                } else {
-                  setState(() {
-                    _isEditing = true;
-                  });
-                }
-              },
-              child: Text(
-                _isEditing ? '完成' : '编辑',
-                style: const TextStyle(color: Colors.white),
-              ),
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: '群公告',
+              actions: actions,
+            )
+          : AppBar(
+              title: const Text('群公告'),
+              actions: actions,
             ),
-        ],
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(

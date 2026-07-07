@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/contact/pick_user_screen.dart';
+import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// 桌面端发起音视频通话的统一入口(输入栏按钮与用户信息卡片共用):
@@ -39,31 +40,25 @@ Future<void> _pickGroupMembersAndStart(BuildContext context, Conversation conver
   if (!context.mounted || candidates.isEmpty) {
     return;
   }
-  showDialog(
+  showPcDialog(
     context: context,
-    builder: (dialogContext) => Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      clipBehavior: Clip.antiAlias,
-      child: SizedBox(
-        width: 420,
-        height: 560,
-        child: PickUserScreen(
-          title: AppLocalizations.of(context)!.pickGroupMember,
-          (pickerContext, members) {
-            // 排除自己(disabledCheckedUsers 预选项),得到真正的被邀请方
-            final participants = members.where((memberId) => memberId != Imclient.currentUserId).toList();
-            if (participants.isEmpty) {
-              Fluttertoast.showToast(msg: AppLocalizations.of(pickerContext)!.selectMemberToCall);
-              return;
-            }
-            Navigator.pop(pickerContext);
-            avEngineKit.startCall(conversation, participants, audioOnly);
-          },
-          maxSelected: 9,
-          candidates: candidates,
-          disabledCheckedUsers: [Imclient.currentUserId],
-        ),
-      ),
+    width: 420,
+    height: 560,
+    builder: (dialogContext) => PickUserScreen(
+      title: AppLocalizations.of(context)!.pickGroupMember,
+      (pickerContext, members) {
+        // 排除自己(disabledCheckedUsers 预选项),得到真正的被邀请方
+        final participants = members.where((memberId) => memberId != Imclient.currentUserId).toList();
+        if (participants.isEmpty) {
+          Fluttertoast.showToast(msg: AppLocalizations.of(pickerContext)!.selectMemberToCall);
+          return;
+        }
+        Navigator.pop(pickerContext);
+        avEngineKit.startCall(conversation, participants, audioOnly);
+      },
+      maxSelected: 9,
+      candidates: candidates,
+      disabledCheckedUsers: [Imclient.currentUserId],
     ),
   );
 }

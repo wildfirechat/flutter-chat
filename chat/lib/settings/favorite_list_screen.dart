@@ -15,6 +15,8 @@ import 'package:chat/conversation/composite_message_detail_screen.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/model/favorite_item.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utilities.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -256,9 +258,12 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.myFavorites),
-      ),
+      appBar: isDesktopShell
+          ? PcPageHeader(title: AppLocalizations.of(context)!.myFavorites)
+          : AppBar(
+              title: Text(AppLocalizations.of(context)!.myFavorites),
+            ),
+      backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
       body: _buildBody(),
     );
   }

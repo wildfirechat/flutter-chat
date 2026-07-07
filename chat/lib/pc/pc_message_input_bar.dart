@@ -16,6 +16,7 @@ import 'package:chat/pc/pc_av_call.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_popover.dart';
+import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// 桌面形态输入栏:工具条(表情/图片/文件/通话)+ 多行输入区 + 发送按钮。
@@ -119,22 +120,48 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
   }
 
   Future<bool?> _showSendConfirmDialog(String fileName) async {
-    return showDialog<bool>(
+    return showPcDialog<bool>(
       context: context,
+      width: 360,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('发送文件'),
-        content: Text('确定要发送 "$fileName" 吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('发送'),
-          ),
-        ],
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              '发送文件',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: PcTheme.textPrimary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '确定要发送 "$fileName" 吗？',
+              style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary, height: 1.4),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  style: TextButton.styleFrom(foregroundColor: PcTheme.textSecondary),
+                  child: const Text('取消'),
+                ),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: PcTheme.accent,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  ),
+                  child: const Text('发送'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

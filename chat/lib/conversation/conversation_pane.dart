@@ -5,6 +5,7 @@ import 'package:imclient/imclient.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:imclient/message/composite_message_content.dart';
+import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/notification/notification_message_content.dart';
 import 'package:imclient/message/notification/tip_notificiation_content.dart';
@@ -20,6 +21,8 @@ import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
 import 'package:chat/conversation/message_cell.dart';
 import 'package:chat/conversation/pick_forward_target_page.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -338,22 +341,48 @@ class _ConversationPaneState extends State<ConversationPane> {
     }
     final fileNames = files.map((f) => f.name).toList();
     final nameStr = fileNames.length == 1 ? fileNames.first : '${fileNames.length} 个文件';
-    showDialog<bool>(
+    showPcDialog<bool>(
       context: context,
+      width: 360,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('发送文件'),
-        content: Text('确定要发送 $nameStr 吗？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('发送'),
-          ),
-        ],
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              '发送文件',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: PcTheme.textPrimary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '确定要发送 $nameStr 吗？',
+              style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary, height: 1.4),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  style: TextButton.styleFrom(foregroundColor: PcTheme.textSecondary),
+                  child: const Text('取消'),
+                ),
+                const SizedBox(width: 8),
+                FilledButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: PcTheme.accent,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                  ),
+                  child: const Text('发送'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     ).then((confirmed) {
       if (confirmed != true) return;
@@ -493,13 +522,15 @@ class _ConversationPaneState extends State<ConversationPane> {
   }
 
   void _forwardMessages(BuildContext context, ConversationViewModel viewModel, List<Message> messages, bool isMerge) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PickForwardTargetPage(
+    if (isDesktopShell) {
+      showPcDialog(
+        context: context,
+        width: 680,
+        height: 540,
+        builder: (dialogContext) => PickForwardTargetPage(
           messages: messages,
-          onSelected: (conversations) {
-            Navigator.pop(context);
+          onSelected: (conversations, comment) {
+            Navigator.pop(dialogContext); // Close PickForwardTargetPage dialog
             viewModel.toggleMultiSelectMode();
 
             for (var target in conversations) {
@@ -508,12 +539,40 @@ class _ConversationPaneState extends State<ConversationPane> {
               } else {
                 _sendOneByOneMessage(context, target, messages);
               }
+              if (comment != null && comment.isNotEmpty) {
+                Imclient.sendMessage(target, TextMessageContent(comment), successCallback: (uid, ts) {}, errorCallback: (err) {});
+              }
             }
             showToast(msg: AppLocalizations.of(context)!.sent);
           },
         ),
-      ),
-    );
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PickForwardTargetPage(
+            messages: messages,
+            onSelected: (conversations, comment) {
+              Navigator.pop(context);
+              viewModel.toggleMultiSelectMode();
+
+              for (var target in conversations) {
+                if (isMerge && messages.length > 1) {
+                  _sendCompositeMessage(context, target, messages);
+                } else {
+                  _sendOneByOneMessage(context, target, messages);
+                }
+                if (comment != null && comment.isNotEmpty) {
+                  Imclient.sendMessage(target, TextMessageContent(comment), successCallback: (uid, ts) {}, errorCallback: (err) {});
+                }
+              }
+              showToast(msg: AppLocalizations.of(context)!.sent);
+            },
+          ),
+        ),
+      );
+    }
   }
 
   void _sendOneByOneMessage(BuildContext context, Conversation target, List<Message> messages) {

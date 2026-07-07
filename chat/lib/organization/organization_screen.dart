@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 import '../default_portrait_provider.dart';
 import '../user_info_widget.dart';
 import 'organization_view_model.dart';
@@ -77,9 +80,12 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       child: Consumer<OrganizationViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
-            appBar: AppBar(
-              title: Text(viewModel.appBarTitle ?? '组织结构'),
-            ),
+            appBar: isDesktopShell
+                ? PcPageHeader(title: viewModel.appBarTitle ?? '组织结构')
+                : AppBar(
+                    title: Text(viewModel.appBarTitle ?? '组织结构'),
+                  ),
+            backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

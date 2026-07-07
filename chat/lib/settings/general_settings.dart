@@ -6,6 +6,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../login_screen.dart';
 import '../pc/pc_platform.dart';
 import '../pc/pc_qr_login_screen.dart';
+import '../pc/pc_theme.dart';
+import '../pc/widgets/pc_page_header.dart';
 import '../viewmodel/locale_view_model.dart';
 import '../widget/option_item.dart';
 import '../widget/section_divider.dart';
@@ -19,9 +21,12 @@ class GeneralSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.settings),
-      ),
+      appBar: isDesktopShell
+          ? PcPageHeader(title: AppLocalizations.of(context)!.settings)
+          : AppBar(
+              title: Text(AppLocalizations.of(context)!.settings),
+            ),
+      backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(

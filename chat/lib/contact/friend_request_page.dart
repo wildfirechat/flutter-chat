@@ -3,6 +3,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/friend_request.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 import '../config.dart';
 
@@ -45,24 +48,34 @@ class FriendRequestPageState extends State<FriendRequestPage> {
 
   @override
   Widget build(BuildContext context) {
+    final actions = [
+      GestureDetector(
+        onTap: () => _clearAll(context),
+        child: const Row(
+          children: [
+            Icon(Icons.delete_outline_rounded),
+            Padding(padding: EdgeInsets.only(left: 16)),
+          ],
+        ),
+      )
+    ];
+
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          GestureDetector(
-            onTap: () => _clearAll(context),
-            child: const Row(
-              children: [
-                Icon(Icons.delete_outline_rounded),
-                Padding(padding: EdgeInsets.only(left: 16)),
-              ],
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: "好友请求",
+              actions: actions,
+            )
+          : AppBar(
+              actions: actions,
+              title: const Text("好友请求"),
             ),
-          )
-        ],
-        title: const Text("好友请求"),),
+      backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
       body: SafeArea(
         child: ListView.builder(
           itemCount: requests.length,
-            itemBuilder: _buildRow),
+          itemBuilder: _buildRow,
+        ),
       ),
     );
   }

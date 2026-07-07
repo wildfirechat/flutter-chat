@@ -27,6 +27,7 @@ import 'package:avenginekit/internal/avenginekit_impl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/app_server.dart';
@@ -611,20 +612,37 @@ class ConversationController extends ChangeNotifier {
         _performSpeechToText(model, context);
         break;
       case "forward":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PickForwardTargetPage(
+        if (isDesktopShell) {
+          showPcDialog(
+            context: context,
+            width: 680,
+            height: 540,
+            builder: (dialogContext) => PickForwardTargetPage(
               messages: [model.message],
-              onSelected: (conversations) {
+              onSelected: (conversations, comment) {
                 for (var conversation in conversations) {
-                  _performForward(conversation, model.message, "");
+                  _performForward(conversation, model.message, comment ?? "");
                 }
-                Navigator.pop(context); // Close PickForwardTargetPage
+                Navigator.pop(dialogContext); // Close PickForwardTargetPage dialog
               },
             ),
-          ),
-        );
+          );
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PickForwardTargetPage(
+                messages: [model.message],
+                onSelected: (conversations, comment) {
+                  for (var conversation in conversations) {
+                    _performForward(conversation, model.message, comment ?? "");
+                  }
+                  Navigator.pop(context); // Close PickForwardTargetPage
+                },
+              ),
+            ),
+          );
+        }
         break;
       case "recall":
         _recallMessage(model.message.messageId, model.message.messageUid!);

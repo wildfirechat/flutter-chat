@@ -8,7 +8,6 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/contact_list_widget.dart';
-import 'package:chat/contact/friend_request_page.dart';
 import 'package:chat/organization/model/organization.dart';
 import 'package:chat/organization/organization_screen.dart';
 import 'package:chat/organization/organization_view_model.dart';
@@ -125,10 +124,7 @@ class _PcContactListState extends State<PcContactList> {
                 badgeCount: record.unreadFriendRequestCount,
                 onTap: _toggleNewFriend,
               ),
-              if (_newFriendExpanded) ...[
-                _buildViewAllFriendRequests(context),
-                ..._buildFriendRequestRows(context),
-              ],
+              if (_newFriendExpanded) ..._buildFriendRequestRows(context),
               _SectionHeader(
                 iconAsset: 'assets/images/contact_fav_group.png',
                 title: l10n.favGroup,
@@ -177,32 +173,6 @@ class _PcContactListState extends State<PcContactList> {
               onAccepted: _loadFriendRequests,
             ))
         .toList();
-  }
-
-  Widget _buildViewAllFriendRequests(BuildContext context) {
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hovered) => GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => widget.onOpenPage(const FriendRequestPage()),
-        child: Container(
-          height: 40,
-          padding: const EdgeInsets.only(left: 36, right: 14),
-          color: hovered ? PcTheme.cellHover : Colors.transparent,
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  AppLocalizations.of(context)!.viewAllFriendRequests,
-                  style: const TextStyle(fontSize: 13, color: PcTheme.accent),
-                ),
-              ),
-              const Icon(Icons.chevron_right_rounded, size: 18, color: PcTheme.accent),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   List<Widget> _buildFavGroupRows(BuildContext context) {
