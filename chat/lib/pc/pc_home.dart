@@ -337,50 +337,40 @@ class _PCHomeState extends State<PCHome> {
   }
 
   void _startChat() {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        clipBehavior: Clip.antiAlias,
-        child: SizedBox(
-          width: 420,
-          height: 560,
-          child: PickUserScreen(title: AppLocalizations.of(context)!.startChat, (pickerContext, members) async {
-            if (members.isEmpty) {
-              showToast(msg: "请选择一位或者多位好友发起聊天");
-            } else if (members.length == 1) {
-              Navigator.pop(pickerContext);
-              _openConversation(Conversation(conversationType: ConversationType.Single, target: members[0]));
+    // 统一走 showPickUserScreen,与添加/移除群成员等选人弹窗保持同一形态与主题
+    showPickUserScreen(context, title: AppLocalizations.of(context)!.startChat, (pickerContext, members) async {
+      if (members.isEmpty) {
+        showToast(msg: "请选择一位或者多位好友发起聊天");
+      } else if (members.length == 1) {
+        Navigator.pop(pickerContext);
+        _openConversation(Conversation(conversationType: ConversationType.Single, target: members[0]));
+      } else {
+        _showProcessingDialog(pickerContext, "群组创建中...");
+
+        List<UserInfo> userInfos = await Imclient.getUserInfos(members);
+        UserInfo? creator = await Imclient.getUserInfo(Imclient.currentUserId);
+        String groupName = creator!.displayName!;
+        for (var user in userInfos) {
+          if (user.displayName != null) {
+            if ('$groupName,${user.displayName}'.length > 24) {
+              groupName = '$groupName等';
+              break;
             } else {
-              _showProcessingDialog(pickerContext, "群组创建中...");
-
-              List<UserInfo> userInfos = await Imclient.getUserInfos(members);
-              UserInfo? creator = await Imclient.getUserInfo(Imclient.currentUserId);
-              String groupName = creator!.displayName!;
-              for (var user in userInfos) {
-                if (user.displayName != null) {
-                  if ('$groupName,${user.displayName}'.length > 24) {
-                    groupName = '$groupName等';
-                    break;
-                  } else {
-                    groupName = '$groupName,${user.displayName}';
-                  }
-                }
-              }
-
-              Imclient.createGroup(null, groupName, null, GroupType.Restricted.index, members, (strValue) {
-                Navigator.pop(pickerContext); // 关闭进度对话框
-                Navigator.pop(pickerContext); // 关闭选人对话框
-                _openConversation(Conversation(conversationType: ConversationType.Group, target: strValue));
-              }, (errorCode) {
-                Navigator.pop(pickerContext);
-                showToast(msg: '创建失败：$errorCode');
-              });
+              groupName = '$groupName,${user.displayName}';
             }
-          }),
-        ),
-      ),
-    );
+          }
+        }
+
+        Imclient.createGroup(null, groupName, null, GroupType.Restricted.index, members, (strValue) {
+          Navigator.pop(pickerContext); // 关闭进度对话框
+          Navigator.pop(pickerContext); // 关闭选人对话框
+          _openConversation(Conversation(conversationType: ConversationType.Group, target: strValue));
+        }, (errorCode) {
+          Navigator.pop(pickerContext);
+          showToast(msg: '创建失败：$errorCode');
+        });
+      }
+    });
   }
 
   void _showProcessingDialog(BuildContext context, String title) {

@@ -7,6 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/repo/user_repo.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
@@ -36,13 +37,11 @@ Future<void> showPickUserScreen(
     showMentionAll: showMentionAll,
   );
   if (isDesktopShell) {
-    return showDialog(
+    return showPcDialog(
       context: context,
-      builder: (dialogContext) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        clipBehavior: Clip.antiAlias,
-        child: SizedBox(width: 420, height: 560, child: picker),
-      ),
+      width: 420,
+      height: 560,
+      builder: (dialogContext) => picker,
     );
   }
   return Navigator.push(context, MaterialPageRoute(builder: (routeContext) => picker));

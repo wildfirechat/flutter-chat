@@ -330,7 +330,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
   Widget build(BuildContext context) {
     bool isVideoCall = !_session.audioOnly;
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: const Color(0xFF0F121B),
       body: Stack(
         children: [
           if (isVideoCall) ...[
@@ -340,10 +340,6 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                  _isSwapped ? _localRenderer : _remoteRenderer,
                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                  mirror: _isSwapped ? true : false, // Mirror local if swapped
-                 //onRendererUpdated: (data) {
-                 //  var r = _isSwapped ? _localRenderer : _remoteRenderer;
-                 //  r.surfaceId = data;
-                 //}
                ),
              ),
              // Local View (Small Window)
@@ -360,19 +356,22 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                  },
                  child: Container(
                    decoration: BoxDecoration(
-                     border: Border.all(color: Colors.white, width: 1),
-                     borderRadius: BorderRadius.circular(8),
+                     border: Border.all(color: Colors.white24, width: 1),
+                     borderRadius: BorderRadius.circular(12),
+                     boxShadow: [
+                       BoxShadow(
+                         color: Colors.black.withValues(alpha: 0.3),
+                         blurRadius: 10,
+                         offset: const Offset(0, 4),
+                       )
+                     ],
                    ),
                    child: ClipRRect(
-                     borderRadius: BorderRadius.circular(8),
+                     borderRadius: BorderRadius.circular(12),
                      child: RTCVideoView(
                         _isSwapped ? _remoteRenderer : _localRenderer,
                         objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
                         mirror: !_isSwapped, // Mirror local if not swapped (default)
-                        //onRendererUpdated: (data) {
-                        //  var r = _isSwapped ? _remoteRenderer : _localRenderer;
-                        //  r.surfaceId = data;
-                        //}
                      ),
                    ),
                  ),
@@ -392,9 +391,9 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                     ),
                   ),
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                     child: Container(
-                      color: Colors.black.withOpacity(0.5),
+                      color: Colors.black.withValues(alpha: 0.6),
                     ),
                   ),
                 ),
@@ -402,24 +401,68 @@ class _VoipCallScreenState extends State<VoipCallScreen>
               if (_targetUserInfo == null ||
                   _targetUserInfo!.portrait == null ||
                   _targetUserInfo!.portrait!.isEmpty)
-                Container(color: Colors.grey[800]),
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF1E2638),
+                        Color(0xFF0F121B),
+                      ],
+                    ),
+                  ),
+                ),
           ],
 
           SafeArea(
             child: Column(
               children: [
                 if (!isVideoCall || _session.status != CallState.STATUS_CONNECTED) ...[
-                    const SizedBox(height: 60),
+                    const SizedBox(height: 80),
                     // User Info
                     _buildUserInfo(),
 
                      // Status / Duration
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                     Text(
                       _session.status == CallState.STATUS_CONNECTED
                           ? _formatDuration(_duration)
                           : _statusText,
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                ] else ...[
+                    // Connected video call: show duration in top left
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                color: Colors.black.withValues(alpha: 0.38),
+                                child: Text(
+                                  _formatDuration(_duration),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    fontFeatures: [FontFeature.tabularFigures()],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                 ],
 
@@ -427,7 +470,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
 
                 // Buttons
                 _buildActionButtons(isVideoCall),
-                const SizedBox(height: 60),
+                const SizedBox(height: 48),
               ],
             ),
           ),
@@ -438,23 +481,28 @@ class _VoipCallScreenState extends State<VoipCallScreen>
 
 
   Widget _buildUserInfo() {
+    final bool isPulsing = _session.status == CallState.STATUS_OUTGOING || _session.status == CallState.STATUS_CONNECTING;
     return Column(
       children: [
-        if (_targetUserInfo != null)
-          Portrait(
-            _targetUserInfo!.portrait ?? '',
-            Config.defaultUserPortrait,
-            width: 100,
-            height: 100,
-            borderRadius: 8,
-          ),
-        const SizedBox(height: 16),
+        _PulsingAvatar(
+          portraitUrl: _targetUserInfo?.portrait ?? '',
+          isPulsing: isPulsing,
+        ),
+        const SizedBox(height: 24),
         Text(
           _targetUserInfo?.getReadableName() ?? '',
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
+            fontSize: 26,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+            shadows: [
+              Shadow(
+                color: Colors.black45,
+                offset: Offset(0, 2),
+                blurRadius: 8,
+              ),
+            ],
           ),
         ),
       ],
@@ -463,148 +511,313 @@ class _VoipCallScreenState extends State<VoipCallScreen>
 
   Widget _buildActionButtons(bool isVideoCall) {
     if (_session.status == CallState.STATUS_INCOMING) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildCircleButton(
-            icon: Icons.call_end,
-            color: Colors.red,
-            onPressed: _onHangup,
-            label: '拒绝',
-          ),
-          _buildCircleButton(
-            icon: isVideoCall ? Icons.videocam : Icons.call,
-            color: Colors.green,
-            onPressed: _onAccept,
-            label: '接听',
-          ),
-        ],
-      );
+      if (isVideoCall) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _CallActionButton(
+              icon: Icons.call_end,
+              backgroundColor: const Color(0xFFFA5151), // WeChat Red
+              onPressed: _onHangup,
+              label: '拒绝',
+            ),
+            _CallActionButton(
+              icon: Icons.phone_in_talk_outlined,
+              backgroundColor: Colors.white.withValues(alpha: 0.15),
+              onPressed: () {
+                _session.answerCall(true); // Answer as audio only
+              },
+              label: '语音接听',
+            ),
+            _CallActionButton(
+              icon: Icons.videocam,
+              backgroundColor: const Color(0xFF07C160), // WeChat Green
+              onPressed: _onAccept,
+              label: '视频接听',
+            ),
+          ],
+        );
+      } else {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _CallActionButton(
+              icon: Icons.call_end,
+              backgroundColor: const Color(0xFFFA5151), // WeChat Red
+              onPressed: _onHangup,
+              label: '拒绝',
+            ),
+            _CallActionButton(
+              icon: Icons.call,
+              backgroundColor: const Color(0xFF07C160), // WeChat Green
+              onPressed: _onAccept,
+              label: '接听',
+            ),
+          ],
+        );
+      }
     } else if (_session.status == CallState.STATUS_CONNECTED) {
       return Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-           if (isVideoCall)
-             Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: Row(
-                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                   children: [
-                      _buildCircleButton(
-                         icon: Icons.cameraswitch,
-                         color: Colors.white24,
-                         onPressed: _onSwitchCamera,
-                         label: '翻转',
-                      ),
-                      _buildCircleButton(
-                         icon: _isCameraOff ? Icons.videocam_off : Icons.videocam,
-                         color: _isCameraOff ? Colors.white : Colors.white24,
-                         iconColor: _isCameraOff ? Colors.black : Colors.white,
-                         onPressed: _onToggleCamera,
-                         label: '摄像头',
-                      ),
-                   ],
-                ),
-             ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildCircleButton(
-                icon: _isMicMuted ? Icons.mic_off : Icons.mic,
-                color: _isMicMuted ? Colors.white : Colors.white24,
-                iconColor: _isMicMuted ? Colors.black : Colors.white,
+              _CallActionButton(
+                icon: _isMicMuted ? Icons.mic_off : Icons.mic_none,
+                backgroundColor: _isMicMuted ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                iconColor: _isMicMuted ? Colors.black87 : Colors.white,
                 onPressed: _onToggleMic,
-                label: '麦克风',
+                label: '静音',
               ),
-              _buildCircleButton(
+              _CallActionButton(
                 icon: Icons.call_end,
-                color: Colors.red,
+                backgroundColor: const Color(0xFFFA5151), // WeChat Red
                 onPressed: _onHangup,
                 label: '挂断',
               ),
-              _buildCircleButton(
-                icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_off,
-                color: _isSpeakerOn ? Colors.white : Colors.white24,
-                iconColor: _isSpeakerOn ? Colors.black : Colors.white,
-                onPressed: _onToggleSpeaker,
-                label: '扬声器',
-              ),
+              if (isVideoCall)
+                _CallActionButton(
+                  icon: Icons.cameraswitch_outlined,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  onPressed: _onSwitchCamera,
+                  label: '翻转',
+                )
+              else
+                _CallActionButton(
+                  icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_mute_outlined,
+                  backgroundColor: _isSpeakerOn ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                  iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
+                  onPressed: _onToggleSpeaker,
+                  label: '免提',
+                ),
             ],
           ),
+          if (isVideoCall) ...[
+            const SizedBox(height: 24),
+            GestureDetector(
+              onTap: _onToggleCamera,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  _isCameraOff ? '开启摄像头' : '关闭摄像头',
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ),
+            ),
+          ],
         ],
       );
     } else {
       // Outgoing, Connecting
       return Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          if (isVideoCall)
-             Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: _buildCircleButton(
-                   icon: Icons.cameraswitch,
-                   color: Colors.white24,
-                   onPressed: _onSwitchCamera,
-                   label: '翻转',
-                ),
-             ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildCircleButton(
-                icon: _isMicMuted ? Icons.mic_off : Icons.mic,
-                color: _isMicMuted ? Colors.white : Colors.white24,
-                iconColor: _isMicMuted ? Colors.black : Colors.white,
+              _CallActionButton(
+                icon: _isMicMuted ? Icons.mic_off : Icons.mic_none,
+                backgroundColor: _isMicMuted ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                iconColor: _isMicMuted ? Colors.black87 : Colors.white,
                 onPressed: _onToggleMic,
-                label: '麦克风',
+                label: '静音',
               ),
-              _buildCircleButton(
-                icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_off,
-                color: _isSpeakerOn ? Colors.white : Colors.white24,
-                iconColor: _isSpeakerOn ? Colors.black : Colors.white,
-                onPressed: _onToggleSpeaker,
-                label: '扬声器',
+              _CallActionButton(
+                icon: Icons.call_end,
+                backgroundColor: const Color(0xFFFA5151), // WeChat Red
+                onPressed: _onHangup,
+                label: '取消',
               ),
+              if (isVideoCall)
+                _CallActionButton(
+                  icon: Icons.cameraswitch_outlined,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  onPressed: _onSwitchCamera,
+                  label: '翻转',
+                )
+              else
+                _CallActionButton(
+                  icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_mute_outlined,
+                  backgroundColor: _isSpeakerOn ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                  iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
+                  onPressed: _onToggleSpeaker,
+                  label: '免提',
+                ),
             ],
-          ),
-          const SizedBox(height: 40),
-          _buildCircleButton(
-            icon: Icons.call_end,
-            color: Colors.red,
-            onPressed: _onHangup,
-            label: '取消',
           ),
         ],
       );
     }
   }
+}
 
+class _CallActionButton extends StatefulWidget {
+  final IconData icon;
+  final Color backgroundColor;
+  final Color iconColor;
+  final String label;
+  final VoidCallback onPressed;
+  final bool isActive;
 
-  Widget _buildCircleButton({
-    required IconData icon,
-    required Color color,
-    Color iconColor = Colors.white,
-    required VoidCallback onPressed,
-    required String label,
-  }) {
+  const _CallActionButton({
+    required this.icon,
+    required this.backgroundColor,
+    this.iconColor = Colors.white,
+    required this.label,
+    required this.onPressed,
+    this.isActive = true,
+  });
+
+  @override
+  State<_CallActionButton> createState() => _CallActionButtonState();
+}
+
+class _CallActionButtonState extends State<_CallActionButton> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         GestureDetector(
-          onTap: onPressed,
-          child: Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: color,
+          onTap: widget.onPressed,
+          child: MouseRegion(
+            onEnter: (_) => setState(() => _isHovered = true),
+            onExit: (_) => setState(() => _isHovered = false),
+            cursor: SystemMouseCursors.click,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 64,
+              height: 64,
+              transform: Matrix4.identity()..scale(_isHovered ? 1.06 : 1.0),
+              transformAlignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: widget.isActive 
+                    ? widget.backgroundColor 
+                    : Colors.white12,
+                boxShadow: [
+                  if (_isHovered)
+                    BoxShadow(
+                      color: widget.backgroundColor.withValues(alpha: 0.3),
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                    )
+                ],
+              ),
+              child: Icon(
+                widget.icon,
+                color: widget.isActive ? widget.iconColor : Colors.white60,
+                size: 28,
+              ),
             ),
-            child: Icon(icon, color: iconColor, size: 32),
           ),
         ),
         const SizedBox(height: 8),
         Text(
-          label,
-          style: const TextStyle(color: Colors.white, fontSize: 14),
+          widget.label,
+          style: TextStyle(
+            color: widget.isActive ? Colors.white70 : Colors.white38,
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+          ),
         ),
       ],
     );
   }
 }
+
+class _PulsingAvatar extends StatefulWidget {
+  final String portraitUrl;
+  final bool isPulsing;
+
+  const _PulsingAvatar({
+    required this.portraitUrl,
+    required this.isPulsing,
+  });
+
+  @override
+  State<_PulsingAvatar> createState() => _PulsingAvatarState();
+}
+
+class _PulsingAvatarState extends State<_PulsingAvatar>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+    if (widget.isPulsing) {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _PulsingAvatar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isPulsing && !_controller.isAnimating) {
+      _controller.repeat();
+    } else if (!widget.isPulsing && _controller.isAnimating) {
+      _controller.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        if (widget.isPulsing)
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return Container(
+                width: 100 + 40 * _controller.value,
+                height: 100 + 40 * _controller.value,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.15 * (1 - _controller.value)),
+                ),
+              );
+            },
+          ),
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 16,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Portrait(
+            widget.portraitUrl,
+            Config.defaultUserPortrait,
+            width: 100,
+            height: 100,
+            borderRadius: 50, // Circle
+          ),
+        ),
+      ],
+    );
+  }
+}
+

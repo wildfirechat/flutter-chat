@@ -37,6 +37,7 @@ import 'package:chat/viewmodel/locale_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/wfc_notification_manager.dart';
 
+import 'app_theme.dart';
 import 'config.dart';
 
 import 'default_portrait_provider.dart';
@@ -44,7 +45,6 @@ import 'home/home.dart';
 import 'internal/app_state.dart';
 import 'login_screen.dart';
 import 'pc/pc_home.dart';
-import 'pc/pc_platform.dart';
 import 'pc/pc_qr_login_screen.dart';
 import 'pc/pc_tray_manager.dart';
 import 'pc/pc_window_manager.dart';
@@ -389,6 +389,7 @@ class _MyAppState extends State<MyApp> {
           home: _buildHome(),
           theme: ThemeData(
             primarySwatch: Colors.blue,
+            checkboxTheme: AppTheme.checkboxTheme,
           ),
         );
       },

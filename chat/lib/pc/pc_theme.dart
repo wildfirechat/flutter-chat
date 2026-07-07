@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:chat/app_theme.dart';
+
 /// 桌面端设计令牌,布局骨架参照微信 PC:
 /// 三段灰度纵深(近黑侧栏 → 暖灰列表栏 → 浅灰聊天区)建立空间层次,
 /// 品牌蓝 #1F64E4 只出现在少数关键位置(选中 tab、发送按钮、光标/选区),
@@ -23,7 +25,7 @@ class PcTheme {
   static const double searchPanelWidth = middleColumnWidth + 40;
 
   // ---- 品牌色 ----
-  static const Color accent = Color(0xFF1F64E4);
+  static const Color accent = AppTheme.accent;
   static const Color accentPressed = Color(0xFF1A55C2);
   static const Color badgeRed = Color(0xFFFA5151);
 
@@ -100,14 +102,8 @@ class PcTheme {
         cursorColor: accent,
         selectionColor: accent.withValues(alpha: 0.25),
       ),
-      // 圆形勾选框(微信风格),选中品牌蓝
-      checkboxTheme: CheckboxThemeData(
-        shape: const CircleBorder(),
-        side: const BorderSide(color: Color(0xFFC0C0C0), width: 1.5),
-        fillColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected) ? accent : Colors.transparent,
-        ),
-        checkColor: WidgetStateProperty.all(Colors.white),
+      // 圆形勾选框全端统一(app_theme.dart),桌面端在此基础上收紧密度
+      checkboxTheme: AppTheme.checkboxTheme.copyWith(
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         visualDensity: VisualDensity.compact,
       ),
