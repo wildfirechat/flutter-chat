@@ -37,6 +37,37 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
 
+    # Fix for super_native_extensions: the ObjC static library target and
+    # the Rust build script both produce libsuper_native_extensions.a at the
+    # same path, causing "Multiple commands produce".
+    # Workaround:
+    #   1. Redirect Rust output to a unique file (librust_super_native_extensions.a)
+    #   2. Add -force_load for the Rust library in the Runner's linker flags
+    if target.name == 'super_native_extensions'
+      target.shell_script_build_phases.each do |phase|
+        if phase.name&.include?('Build SuperNativeExtensions')
+          # Clear output_paths but set to the RENAMED output file
+          # (different from libsuper_native_extensions.a, so no conflict)
+          phase.output_paths = ["${CONFIGURATION_BUILD_DIR}/librust_super_native_extensions.a"]
+
+          # Run the original build script, then rename the Rust output
+          # so it doesn't conflict with the ObjC static library
+          phase.shell_script = %q{
+sh "$PODS_TARGET_SRCROOT/../cargokit/build_pod.sh" ../rust super_native_extensions
+
+# Move Rust output to a unique name before ObjC compilation overwrites it
+if [ -f "${CONFIGURATION_BUILD_DIR}/libsuper_native_extensions.a" ]; then
+  mv "${CONFIGURATION_BUILD_DIR}/libsuper_native_extensions.a" \
+     "${CONFIGURATION_BUILD_DIR}/librust_super_native_extensions.a"
+  echo "Rust library renamed to librust_super_native_extensions.a"
+else
+  echo "WARNING: Rust library not found at expected path"
+fi
+}
+        end
+      end
+    end
+
     target.build_configurations.each do |config|
       # You can remove unused permissions here
       # for more infomation: https://github.com/BaseflowIT/flutter-permission-handler/blob/master/permission_handler/ios/Classes/PermissionHandlerEnums.h
@@ -62,6 +93,21 @@ post_install do |installer|
         ## dart: PermissionGroup.mediaLibrary
         'PERMISSION_MEDIA_LIBRARY=1',
       ]
+    end
+  end
+
+  # Add -force_load for the Rust-built super_native_extensions library
+  # to the EXISTING OTHER_LDFLAGS line (do NOT overwrite it)
+  xcconfig_dir = File.join(installer.sandbox.root, 'Target Support Files', 'Pods-Runner')
+  ['debug', 'release', 'profile'].each do |config|
+    path = File.join(xcconfig_dir, "Pods-Runner.#{config}.xcconfig")
+    next unless File.exist?(path)
+    content = File.read(path)
+    unless content.include?('librust_super_native_extensions')
+      # Append to the existing OTHER_LDFLAGS line, not overwrite it
+      content.sub!(/^(OTHER_LDFLAGS = .*)/,
+                   '\1 -force_load ${PODS_CONFIGURATION_BUILD_DIR}/super_native_extensions/librust_super_native_extensions.a')
+      File.write(path, content)
     end
   end
 end
