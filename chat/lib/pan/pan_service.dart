@@ -606,10 +606,17 @@ class PanSpace {
 
   factory PanSpace.fromJson(Map<String, dynamic> json) {
     final typeValue = json['spaceType'] ?? json['type'] ?? 0;
-    final typeIndex = typeValue is String ? int.tryParse(typeValue) ?? 0 : typeValue as int;
+    final PanSpaceType spaceType;
+    if (typeValue is String) {
+      spaceType = _parseSpaceType(typeValue);
+    } else if (typeValue is int) {
+      spaceType = PanSpaceType.values[typeValue.clamp(0, PanSpaceType.values.length - 1)];
+    } else {
+      spaceType = PanSpaceType.globalPublic;
+    }
     return PanSpace(
       spaceId: (json['spaceId'] ?? json['id'] as num?)?.toInt() ?? 0,
-      spaceType: PanSpaceType.values[typeIndex.clamp(0, PanSpaceType.values.length - 1)],
+      spaceType: spaceType,
       ownerId: json['ownerId'] ?? '',
       name: json['name'] ?? '',
       totalQuota: (json['totalQuota'] as num?)?.toInt() ?? 0,
@@ -620,6 +627,19 @@ class PanSpace {
       createdAt: json['createdAt'] ?? '',
       canManage: json['canManage'] ?? false,
     );
+  }
+
+  static PanSpaceType _parseSpaceType(String value) {
+    switch (value.toUpperCase()) {
+      case 'GLOBAL_PUBLIC':
+        return PanSpaceType.globalPublic;
+      case 'USER_PUBLIC':
+        return PanSpaceType.userPublic;
+      case 'USER_PRIVATE':
+        return PanSpaceType.userPrivate;
+      default:
+        return PanSpaceType.globalPublic;
+    }
   }
 }
 
