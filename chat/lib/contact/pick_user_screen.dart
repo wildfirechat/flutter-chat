@@ -7,6 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_pick_user_dialog.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/repo/user_repo.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
@@ -28,24 +29,53 @@ Future<void> showPickUserScreen(
   List<String>? disabledUncheckedUsers,
   bool showMentionAll = false,
 }) {
-  final picker = PickUserScreen(
-    callback,
-    title: title,
-    maxSelected: maxSelected,
-    candidates: candidates,
-    disabledCheckedUsers: disabledCheckedUsers,
-    disabledUncheckedUsers: disabledUncheckedUsers,
-    showMentionAll: showMentionAll,
-  );
+  // 桌面端多选走微信式分栏弹窗(左选人 / 右已选);单选仍用紧凑列表弹窗;移动端整页 push。
   if (isDesktopShell) {
+    if (maxSelected > 1) {
+      return showPcDialog(
+        context: context,
+        width: 640,
+        height: 520,
+        builder: (dialogContext) => PcPickUserView(
+          callback,
+          title: title,
+          maxSelected: maxSelected,
+          candidates: candidates,
+          disabledCheckedUsers: disabledCheckedUsers,
+          disabledUncheckedUsers: disabledUncheckedUsers,
+          showMentionAll: showMentionAll,
+        ),
+      );
+    }
     return showPcDialog(
       context: context,
       width: 420,
       height: 560,
-      builder: (dialogContext) => picker,
+      builder: (dialogContext) => PickUserScreen(
+        callback,
+        title: title,
+        maxSelected: maxSelected,
+        candidates: candidates,
+        disabledCheckedUsers: disabledCheckedUsers,
+        disabledUncheckedUsers: disabledUncheckedUsers,
+        showMentionAll: showMentionAll,
+      ),
     );
   }
-  return Navigator.push(context, MaterialPageRoute(builder: (routeContext) => picker));
+  return Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (routeContext) => PickUserScreen(
+        callback,
+        title: title,
+        maxSelected: maxSelected,
+        candidates: candidates,
+        disabledCheckedUsers: disabledCheckedUsers,
+        disabledUncheckedUsers: disabledUncheckedUsers,
+        showMentionAll: showMentionAll,
+      ),
+    ),
+  );
 }
 
 class PickUserScreen extends StatefulWidget {
