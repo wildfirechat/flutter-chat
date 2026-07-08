@@ -1935,6 +1935,10 @@ ImclientPlugin *gIMClientInstance;
 }
 
 #pragma mark - ConnectToServerDelegate
+- (void)onConnectToServer:(NSString *)host ip:(NSString *)ip port:(int)port {
+    // connecting 事件暂无业务消费
+}
+
 - (void)onConnected:(NSString *)host ip:(NSString *)ip port:(int)port mainNw:(BOOL)mainNw {
     [self.channel invokeMethod:@"onConnected" arguments:@{@"host":host ?: @"", @"ip":ip ?: @"", @"port":@(port), @"mainNetwork":@(mainNw)}];
 }
