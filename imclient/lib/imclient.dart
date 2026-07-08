@@ -51,6 +51,30 @@ import 'message/streaming_text_generated_message_content.dart';
 import 'message/text_message_content.dart';
 import 'message/typing_message_content.dart';
 import 'message/video_message_content.dart';
+import 'message/articles_message_content.dart';
+import 'message/channel_menu_event_message_content.dart';
+import 'message/mark_unread_sync_message_content.dart';
+import 'message/meeting_minutes_message_content.dart';
+import 'message/not_delivered_message_content.dart';
+import 'message/poll_result_message_content.dart';
+import 'message/ptt_voice_message_content.dart';
+import 'message/rich_notification_message_content.dart';
+import 'message/transcription_message_content.dart';
+import 'message/notification/conference_invite_message_content.dart';
+import 'message/notification/enter_channel_chat_message_content.dart';
+import 'message/notification/join_call_request_message_content.dart';
+import 'message/notification/leave_channel_chat_message_content.dart';
+import 'message/notification/multi_call_ongoing_message_content.dart';
+import 'message/notification/ptt_invite_message_content.dart';
+import 'message/notification/start_secret_chat_message_content.dart';
+import 'message/notification/group/kickoff_group_member_visible_notification_content.dart';
+import 'message/notification/group/modify_group_extra_notification_content.dart';
+import 'message/notification/group/modify_group_member_extra_notification_content.dart';
+import 'message/notification/group/modify_group_settings_notification_content.dart';
+import 'message/notification/group/quit_group_visible_notification_content.dart';
+import 'message/notification/group/reject_join_group_notification_content.dart';
+import 'message/things/things_data_content.dart';
+import 'message/things/things_lost_event_content.dart';
 import 'model/channel_info.dart';
 import 'model/chatroom_info.dart';
 import 'model/chatroom_member_info.dart';
@@ -531,6 +555,42 @@ class Imclient {
     registerMessageContent(videoContentMeta);
     registerMessageContent(collectionContentMeta);
     registerMessageContent(pollContentMeta);
+
+    // New message types
+    registerMessageContent(articlesContentMeta);
+    registerMessageContent(channelMenuEventContentMeta);
+    registerMessageContent(markUnreadSyncContentMeta);
+    registerMessageContent(meetingMinutesContentMeta);
+    registerMessageContent(notDeliveredContentMeta);
+    registerMessageContent(pollResultContentMeta);
+    registerMessageContent(pttVoiceContentMeta);
+    registerMessageContent(richNotificationContentMeta);
+    registerMessageContent(transcriptionContentMeta);
+
+    // Channel notification types
+    registerMessageContent(enterChannelChatContentMeta);
+    registerMessageContent(leaveChannelChatContentMeta);
+
+    // VoIP types
+    registerMessageContent(conferenceInviteContentMeta);
+    registerMessageContent(joinCallRequestContentMeta);
+    registerMessageContent(multiCallOngoingContentMeta);
+    registerMessageContent(pttInviteContentMeta);
+
+    // Group extended notification types
+    registerMessageContent(kickoffGroupMemberVisibleNotificationContentMeta);
+    registerMessageContent(modifyGroupExtraNotificationContentMeta);
+    registerMessageContent(modifyGroupMemberExtraNotificationContentMeta);
+    registerMessageContent(modifyGroupSettingsNotificationContentMeta);
+    registerMessageContent(quitGroupVisibleNotificationContentMeta);
+    registerMessageContent(rejectJoinGroupNotificationContentMeta);
+
+    // Secret chat
+    registerMessageContent(startSecretChatContentMeta);
+
+    // IoT/Things
+    registerMessageContent(thingsDataContentMeta);
+    registerMessageContent(thingsLostEventContentMeta);
 
     ImclientPlatform.instance.init(connectionStatusChangedCallback,
         receiveMessageCallback,

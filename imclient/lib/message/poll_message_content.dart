@@ -10,8 +10,6 @@ MessageContent PollMessageContentCreator() {
   return PollMessageContent();
 }
 
-const int MESSAGE_CONTENT_TYPE_POLL = 18;
-
 const pollContentMeta = MessageContentMeta(
   MESSAGE_CONTENT_TYPE_POLL,
   MessageFlag.PERSIST_AND_COUNT,
