@@ -10,6 +10,7 @@ import 'package:imclient/message/message_content.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
 
+import 'package:chat/pc/pc_platform.dart';
 import '../config.dart';
 import '../utils/media_url_redirector.dart';
 
@@ -244,7 +245,7 @@ class PanService {
     final mimeType = lookupMimeType(localPath) ?? 'application/octet-stream';
     debugPrint('Pan uploadFile mimeType: $mimeType');
 
-    final bool useLargeUpload = await _shouldUseLargeUpload(size);
+    final bool useLargeUpload = isDesktopShell ? await _shouldUseLargeUpload(size) : false;
     debugPrint('Pan uploadFile useLargeUpload: $useLargeUpload');
 
     final String storageUrl;

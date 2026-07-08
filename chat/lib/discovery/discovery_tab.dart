@@ -67,7 +67,7 @@ class DiscoveryTab extends StatelessWidget {
               if (Config.panServerAddress != null && Config.panServerAddress!.isNotEmpty)
                 OptionItem(
                   '云盘',
-                  leftImage: const Icon(Icons.cloud, color: Colors.blue, size: 20),
+                  leftImage: Image.asset('assets/images/net_disk.png', width: 20.0, height: 20.0),
                   onTap: () {
                     Navigator.push(
                       context,

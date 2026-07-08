@@ -42,7 +42,7 @@ class PcDiscoveryList extends StatelessWidget {
         ),
         if (Config.panServerAddress != null && Config.panServerAddress!.isNotEmpty)
           _DiscoveryRow(
-            iconAsset: 'assets/images/discover_devdocs.png',
+            iconAsset: 'assets/images/net_disk.png',
             title: '云盘',
             onTap: () => openPage(context, const PanHomeScreen()),
           ),

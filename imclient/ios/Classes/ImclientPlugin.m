@@ -550,7 +550,7 @@ ImclientPlugin *gIMClientInstance;
 }
 
 - (void)isForceBigFilesUpload:(NSDictionary *)dict result:(FlutterResult)result {
-    result(@(mars::stn::ForcePresignedUrlUpload()));
+    result(@(NO));
 }
 
 - (void)batchDeleteMessages:(NSDictionary *)dict result:(FlutterResult)result {
