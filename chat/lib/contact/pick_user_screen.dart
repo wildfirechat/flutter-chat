@@ -28,6 +28,7 @@ Future<void> showPickUserScreen(
   List<String>? disabledCheckedUsers,
   List<String>? disabledUncheckedUsers,
   bool showMentionAll = false,
+  bool showOrganizationEntry = true,
 }) {
   // 桌面端多选走微信式分栏弹窗(左选人 / 右已选);单选仍用紧凑列表弹窗;移动端整页 push。
   if (isDesktopShell) {
@@ -44,6 +45,7 @@ Future<void> showPickUserScreen(
           disabledCheckedUsers: disabledCheckedUsers,
           disabledUncheckedUsers: disabledUncheckedUsers,
           showMentionAll: showMentionAll,
+          showOrganizationEntry: showOrganizationEntry,
         ),
       );
     }
@@ -59,6 +61,7 @@ Future<void> showPickUserScreen(
         disabledCheckedUsers: disabledCheckedUsers,
         disabledUncheckedUsers: disabledUncheckedUsers,
         showMentionAll: showMentionAll,
+        showOrganizationEntry: showOrganizationEntry,
       ),
     );
   }
@@ -73,6 +76,7 @@ Future<void> showPickUserScreen(
         disabledCheckedUsers: disabledCheckedUsers,
         disabledUncheckedUsers: disabledUncheckedUsers,
         showMentionAll: showMentionAll,
+        showOrganizationEntry: showOrganizationEntry,
       ),
     ),
   );
@@ -86,9 +90,17 @@ class PickUserScreen extends StatefulWidget {
   final List<String>? disabledCheckedUsers;
   final List<String>? disabledUncheckedUsers;
   final bool showMentionAll;
+  final bool showOrganizationEntry;
 
   const PickUserScreen(this.callback,
-      {this.title = '', this.maxSelected = 1024, this.candidates, this.disabledCheckedUsers, this.disabledUncheckedUsers, this.showMentionAll = false, super.key});
+      {this.title = '',
+      this.maxSelected = 1024,
+      this.candidates,
+      this.disabledCheckedUsers,
+      this.disabledUncheckedUsers,
+      this.showMentionAll = false,
+      this.showOrganizationEntry = true,
+      super.key});
 
   @override
   State<PickUserScreen> createState() => _PickUserScreenState();
@@ -242,17 +254,19 @@ class _PickUserScreenState extends State<PickUserScreen> {
             body: SafeArea(
               child: Column(
                 children: [
-                  ListTile(
-                    leading: Icon(Icons.corporate_fare, color: Theme.of(context).colorScheme.secondary),
-                    title: const Text('从组织架构选择'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _openOrganizationPicker(context),
-                  ),
-                  Container(
-                    height: 0.5,
-                    margin: const EdgeInsets.only(left: 16.0),
-                    color: const Color(0xffebebeb),
-                  ),
+                  if (widget.showOrganizationEntry) ...[
+                    ListTile(
+                      leading: Icon(Icons.corporate_fare, color: Theme.of(context).colorScheme.secondary),
+                      title: const Text('从组织架构选择'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => _openOrganizationPicker(context),
+                    ),
+                    Container(
+                      height: 0.5,
+                      margin: const EdgeInsets.only(left: 16.0),
+                      color: const Color(0xffebebeb),
+                    ),
+                  ],
                   Container(
                     height: 56,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),

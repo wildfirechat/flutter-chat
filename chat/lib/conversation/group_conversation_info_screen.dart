@@ -246,6 +246,8 @@ class GroupConversationInfoScreen extends StatelessWidget {
           },
           disabledUncheckedUsers: [Imclient.currentUserId],
           candidates: memberIds,
+          // 移除成员的候选就是现有群成员,从组织架构选人无意义
+          showOrganizationEntry: false,
         );
       }
     });

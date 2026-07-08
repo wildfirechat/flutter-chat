@@ -118,16 +118,21 @@ class PickUserViewModel extends ChangeNotifier {
   }
 
   bool pickUser(UserInfo userInfo, bool pick) {
-    if (pick && _pickedUsers.length >= _maxPickCount) {
-      return false;
-    }
     if (_uncheckableUserIds.any((u) => u == userInfo.userId) || _disabledAndCheckedUserIds.any((u) => u == userInfo.userId)) {
       return false;
     }
-    if (pick && !_pickedUsers.contains(userInfo)) {
-      _pickedUsers.add(userInfo);
-    } else if (!pick && _pickedUsers.contains(userInfo)) {
-      _pickedUsers.remove(userInfo);
+    // 按 userId 判定是否已选:同一用户在好友列表与组织架构里可能是不同的 UserInfo 实例
+    // (updateDt/别名不同导致 == 不等),用 id 去重才能正确增删。
+    final index = _pickedUsers.indexWhere((u) => u.userId == userInfo.userId);
+    if (pick) {
+      if (index < 0) {
+        if (_pickedUsers.length >= _maxPickCount) {
+          return false;
+        }
+        _pickedUsers.add(userInfo);
+      }
+    } else if (index >= 0) {
+      _pickedUsers.removeAt(index);
     }
     notifyListeners();
     return true;
