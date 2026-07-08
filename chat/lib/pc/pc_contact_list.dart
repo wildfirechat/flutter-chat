@@ -7,7 +7,6 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
-import 'package:chat/contact/contact_list_widget.dart';
 import 'package:chat/user_info_widget.dart';
 import 'package:chat/group/group_info_screen.dart';
 import 'package:chat/channel/channel_info_widget.dart';
@@ -24,9 +23,18 @@ import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-/// 桌面端联系人中栏(参照微信 PC):可折叠分类(新的朋友/收藏群组/订阅频道/组织)
-/// 默认收起,点击展开;条目经 app_navigator 在右栏打开。
-/// 字母序联系人列表复用 [ContactListItem]。
+// ---- 中栏统一行度量(禁止散落硬编码,与 pc_theme 同一约定) ----
+// 分组头与子行的内容左缘对齐在 _kContentInset:分组头 = 14 边距 + 18 折叠箭头 + 4 间距。
+const double _kSectionHeaderHeight = 48;
+const double _kChildRowHeight = 52;
+const double _kGroupLabelHeight = 30;
+const double _kContentInset = 36; // 图标/头像左缘;子行文字随之落在 36 + 36 + 10 = 82
+const double _kIconBox = 36; // 图标/头像统一 36x36
+const double _kIconGap = 10;
+
+/// 桌面端联系人中栏(参照微信 PC):固定分类(新的朋友/收藏群组/订阅频道)+
+/// 可折叠的「组织架构」「联系人」。联系人下按 星标 / AI 机器人 / 字母序 分组内联铺开。
+/// 条目经 app_navigator 在右栏打开;所有行高、缩进、色值统一走本文件顶部常量与 [PcTheme]。
 class PcContactList extends StatefulWidget {
   const PcContactList({super.key});
 
@@ -43,6 +51,10 @@ class _PcContactListState extends State<PcContactList> {
   bool _newFriendExpanded = false;
   bool _groupsExpanded = false;
   bool _channelsExpanded = false;
+  // 「组织架构」默认展开(替代原先常驻的组织行)
+  bool _orgExpanded = true;
+  // 「联系人」(星标 / AI / 普通好友)默认展开
+  bool _contactExpanded = true;
 
   List<FriendRequest>? _friendRequests;
   final Map<String, UserInfo> _requestUserInfos = {};
@@ -116,6 +128,7 @@ class _PcContactListState extends State<PcContactList> {
           myOrgs: organizationViewModel.myOrganizations
         ),
         builder: (context, record, _) {
+          final hasOrg = record.rootOrgs.isNotEmpty || record.myOrgs.isNotEmpty;
           return ListView(
             children: [
               _SectionHeader(
@@ -140,17 +153,29 @@ class _PcContactListState extends State<PcContactList> {
                 onTap: _toggleChannels,
               ),
               if (_channelsExpanded) ..._buildChannelRows(context),
-              for (var org in record.rootOrgs) _buildOrgRow(context, org, true),
-              for (var org in record.myOrgs) _buildOrgRow(context, org, false),
-              const SizedBox(height: 4),
-              // key 必须带序号:星标/AI 分类会让同一用户在列表中出现两次,
-              // 仅用 userId 做 key 会在 children 更新时触发 Duplicate keys 异常(整个列表变 ErrorBox)
-              for (var i = 0; i < record.contactList.length; i++)
-                ContactListItem(
-                  record.contactList[i],
-                  key: ValueKey('pc-contact-$i-${record.contactList[i].userInfo.userId}'),
-                  onTap: _openUser,
+              // 「组织架构」可折叠分组
+              if (hasOrg) ...[
+                _SectionHeader(
+                  icon: Icons.account_tree_outlined,
+                  title: l10n.organization,
+                  expanded: _orgExpanded,
+                  onTap: () => setState(() => _orgExpanded = !_orgExpanded),
                 ),
+                if (_orgExpanded) ...[
+                  for (var org in record.rootOrgs) _buildOrgRow(context, org, true),
+                  for (var org in record.myOrgs) _buildOrgRow(context, org, false),
+                ],
+              ],
+              // 「联系人」可折叠分组:星标联系人 / AI 机器人 / 普通联系人(字母序)全部收入其下
+              if (record.contactList.isNotEmpty) ...[
+                _SectionHeader(
+                  icon: Icons.contacts_outlined,
+                  title: l10n.contactCategory,
+                  expanded: _contactExpanded,
+                  onTap: () => setState(() => _contactExpanded = !_contactExpanded),
+                ),
+                if (_contactExpanded) ..._buildContactRows(context, record.contactList),
+              ],
             ],
           );
         },
@@ -234,6 +259,47 @@ class _PcContactListState extends State<PcContactList> {
     }).toList();
   }
 
+  /// 「联系人」展开后的行:从 view model 的字母序 [contactList] 就地拆分为
+  /// 星标(category '☆') / AI 机器人(category 'AI') / 普通好友(字母)三段,
+  /// 各段前置一个分组小标题,成员用统一的 [_ContactRow] 渲染。
+  List<Widget> _buildContactRows(BuildContext context, List<UIContactInfo> contactList) {
+    final l10n = AppLocalizations.of(context)!;
+    final fav = <UIContactInfo>[];
+    final ai = <UIContactInfo>[];
+    final regular = <UIContactInfo>[];
+    for (final c in contactList) {
+      if (c.category == '☆') {
+        fav.add(c);
+      } else if (c.category == 'AI') {
+        ai.add(c);
+      } else {
+        regular.add(c);
+      }
+    }
+
+    final rows = <Widget>[];
+    if (fav.isNotEmpty) {
+      rows.add(_GroupLabel(title: l10n.starredContact));
+      for (final c in fav) {
+        rows.add(_ContactRow(key: ValueKey('pc-fav-${c.userInfo.userId}'), userInfo: c.userInfo, onTap: () => _openUser(c.userInfo.userId)));
+      }
+    }
+    if (ai.isNotEmpty) {
+      rows.add(_GroupLabel(title: l10n.aiRobot));
+      for (final c in ai) {
+        rows.add(_ContactRow(key: ValueKey('pc-ai-${c.userInfo.userId}'), userInfo: c.userInfo, onTap: () => _openUser(c.userInfo.userId)));
+      }
+    }
+    for (final c in regular) {
+      // showCategory 由 view model 按字母边界预置;拆出星标/AI 后首个普通好友仍为 true。
+      if (c.showCategory) {
+        rows.add(_GroupLabel(title: c.category == '{' ? '#' : c.category));
+      }
+      rows.add(_ContactRow(key: ValueKey('pc-contact-${c.userInfo.userId}'), userInfo: c.userInfo, onTap: () => _openUser(c.userInfo.userId)));
+    }
+    return rows;
+  }
+
   Widget _buildOrgRow(BuildContext context, Organization org, bool isRoot) {
     final shell = Provider.of<PCShellViewModel>(context);
     final itemId = 'org-${org.id}';
@@ -250,20 +316,24 @@ class _PcContactListState extends State<PcContactList> {
   }
 }
 
+/// 可折叠分组大标题:折叠箭头 + 图标(资源图或 IconData)+ 标题(+ 未读角标)。
+/// 图标框 36x36,左缘落在 [_kContentInset],使标题与子行文字对齐同一列。
 class _SectionHeader extends StatelessWidget {
-  final String iconAsset;
+  final String? iconAsset;
+  final IconData? icon;
   final String title;
   final bool expanded;
   final int badgeCount;
   final VoidCallback onTap;
 
   const _SectionHeader({
-    required this.iconAsset,
+    this.iconAsset,
+    this.icon,
     required this.title,
     required this.expanded,
     required this.onTap,
     this.badgeCount = 0,
-  });
+  }) : assert(iconAsset != null || icon != null);
 
   @override
   Widget build(BuildContext context) {
@@ -273,8 +343,8 @@ class _SectionHeader extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          height: 48,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          height: _kSectionHeaderHeight,
+          padding: const EdgeInsets.only(left: 14, right: 14),
           color: hovered ? PcTheme.cellHover : Colors.transparent,
           child: Row(
             children: [
@@ -284,8 +354,16 @@ class _SectionHeader extends StatelessWidget {
                 color: PcTheme.textTertiary,
               ),
               const SizedBox(width: 4),
-              Image.asset(iconAsset, width: 28, height: 28),
-              const SizedBox(width: 10),
+              SizedBox(
+                width: _kIconBox,
+                height: _kIconBox,
+                child: Center(
+                  child: icon != null
+                      ? Icon(icon, size: 24, color: PcTheme.accent)
+                      : Image.asset(iconAsset!, width: 28, height: 28),
+                ),
+              ),
+              const SizedBox(width: _kIconGap),
               Expanded(child: Text(title, style: PcTheme.cellTitle)),
               if (badgeCount > 0)
                 Container(
@@ -304,7 +382,27 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-/// 分类展开后的条目行(群组/频道/组织)。
+/// 分组小标题(星标联系人 / AI 机器人 / 字母),薄条,高度统一,文字左缘与头像对齐。
+class _GroupLabel extends StatelessWidget {
+  final String title;
+
+  const _GroupLabel({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: _kGroupLabelHeight,
+      padding: const EdgeInsets.only(left: _kContentInset, right: 14),
+      alignment: Alignment.centerLeft,
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary, fontWeight: FontWeight.w500),
+      ),
+    );
+  }
+}
+
+/// 分类展开后的条目行(群组/频道/组织):图标 + 标题,统一行高与缩进。
 class _EntryRow extends StatelessWidget {
   final String? portrait;
   final String? defaultPortrait;
@@ -336,17 +434,57 @@ class _EntryRow extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          height: 44,
-          padding: const EdgeInsets.only(left: 36, right: 14),
+          height: _kChildRowHeight,
+          padding: const EdgeInsets.only(left: _kContentInset, right: 14),
           color: getBgColor(hovered),
           child: Row(
             children: [
               if (assetIcon != null)
-                Image.asset(assetIcon!, width: 28, height: 28)
+                SizedBox(width: _kIconBox, height: _kIconBox, child: Center(child: Image.asset(assetIcon!, width: 28, height: 28)))
               else
-                Portrait(portrait ?? defaultPortrait!, defaultPortrait!, width: 28, height: 28, borderRadius: 4),
-              const SizedBox(width: 10),
+                Portrait(portrait ?? defaultPortrait!, defaultPortrait!, width: _kIconBox, height: _kIconBox, borderRadius: 4),
+              const SizedBox(width: _kIconGap),
               Expanded(child: Text(title, style: PcTheme.cellTitle, maxLines: 1, overflow: TextOverflow.ellipsis)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 联系人行(星标 / AI / 普通好友通用):头像 + 名称,支持悬停/选中态。
+class _ContactRow extends StatelessWidget {
+  final UserInfo userInfo;
+  final VoidCallback onTap;
+
+  const _ContactRow({super.key, required this.userInfo, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedId = Provider.of<PCShellViewModel>(context).selectedContactItemId;
+    final isSelected = selectedId == 'user-${userInfo.userId}';
+
+    Color getBgColor(bool hovered) {
+      if (isSelected) return PcTheme.cellSelected;
+      if (hovered) return PcTheme.cellHover;
+      return Colors.transparent;
+    }
+
+    return HoverBuilder(
+      cursor: SystemMouseCursors.click,
+      builder: (context, hovered) => GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          height: _kChildRowHeight,
+          padding: const EdgeInsets.only(left: _kContentInset, right: 14),
+          color: getBgColor(hovered),
+          child: Row(
+            children: [
+              Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
+              const SizedBox(width: _kIconGap),
+              Expanded(child: Text(userInfo.getReadableName(), style: PcTheme.cellTitle, maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
         ),
@@ -384,13 +522,13 @@ class _FriendRequestRow extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          height: 52,
-          padding: const EdgeInsets.only(left: 36, right: 14),
+          height: _kChildRowHeight,
+          padding: const EdgeInsets.only(left: _kContentInset, right: 14),
           color: getBgColor(hovered),
           child: Row(
             children: [
-              Portrait(userInfo?.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 32, height: 32, borderRadius: 4),
-              const SizedBox(width: 10),
+              Portrait(userInfo?.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
+              const SizedBox(width: _kIconGap),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -445,7 +583,7 @@ class _SectionLoadingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SizedBox(
-      height: 44,
+      height: _kChildRowHeight,
       child: Center(child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))),
     );
   }
@@ -459,7 +597,7 @@ class _SectionEmptyRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 44,
+      height: _kChildRowHeight,
       child: Center(child: Text(text, style: PcTheme.cellSubtitle)),
     );
   }

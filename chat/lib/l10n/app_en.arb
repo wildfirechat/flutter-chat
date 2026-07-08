@@ -344,6 +344,8 @@
   "viewAllFriendRequests": "View All Friend Requests",
   "remark": "Remark",
   "favFriend": "Starred Friends",
+  "contactCategory": "Contacts",
+  "starredContact": "Starred Contacts",
   "doneWithCount": "Done({count})",
   "maxUserLimit": "Max user limit reached",
   "selectFromOrganization": "Select from Organization",

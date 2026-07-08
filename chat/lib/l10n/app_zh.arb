@@ -344,6 +344,8 @@
   "viewAllFriendRequests": "查看全部好友请求",
   "remark": "备注名",
   "favFriend": "星标好友",
+  "contactCategory": "联系人",
+  "starredContact": "星标联系人",
   "doneWithCount": "完成({count})",
   "maxUserLimit": "超过最大人数限制",
   "selectFromOrganization": "从组织架构选择",
