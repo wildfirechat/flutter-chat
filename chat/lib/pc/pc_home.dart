@@ -11,15 +11,18 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/pick_user_screen.dart';
+import 'package:chat/conversation/pick_conversation_screen.dart';
 import 'package:chat/home/conversation_list_widget.dart';
 import 'package:chat/pc/pc_contact_list.dart';
 import 'package:chat/pc/pc_conversation_pane.dart';
 import 'package:chat/pc/pc_discovery_list.dart';
+import 'package:chat/pc/pc_file_records_list.dart';
 import 'package:chat/pc/pc_search_view.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
+import 'package:chat/settings/file_records_screen.dart';
 import 'package:chat/settings/me_tab.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/user_info_widget.dart';
@@ -48,6 +51,9 @@ class _PCHomeState extends State<PCHome> {
   late PCShellViewModel _shellViewModel;
 
   late ConversationListViewModel _conversationListViewModel;
+
+  /// 当前是否在中栏展示文件入口列表。
+  bool _showFileRecords = false;
 
   /// 右栏当前是否展示着会话页。用于:
   /// - 从其它 tab 切回消息 tab 时恢复上次会话;
@@ -171,6 +177,11 @@ class _PCHomeState extends State<PCHome> {
   void _onTabSelected(int tab) {
     final int previous = _shellViewModel.selectedTab;
     _shellViewModel.selectTab(tab);
+    if (_showFileRecords) {
+      setState(() {
+        _showFileRecords = false;
+      });
+    }
     if (tab == PCShellViewModel.tabWork) {
       _openPage(const WorkSpace());
       return;
@@ -426,6 +437,77 @@ class _PCHomeState extends State<PCHome> {
     );
   }
 
+  void _openFileRecordsScreen() {
+    setState(() {
+      _showFileRecords = true;
+    });
+    _clearRightPane();
+  }
+
+  void _openFileListScreen(FileListScreen screen) {
+    _paneShowsConversation = false;
+    _paneNavKey.currentState!.pushAndRemoveUntil(
+      _paneRoute(screen),
+      (route) => route.isFirst,
+    );
+  }
+
+  void _openConversationFilePicker() {
+    _paneShowsConversation = false;
+    _paneNavKey.currentState!.pushAndRemoveUntil(
+      _paneRoute(
+        PickConversationScreen(
+          onConversationSelected: (_, conversation) {
+            _paneNavKey.currentState!.push(
+              _paneRoute(
+                FileListScreen(
+                  title: AppLocalizations.of(context)!.chatFiles,
+                  child: FileListWidget(
+                    type: FileListType.conversation,
+                    conversation: conversation,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+      (route) => route.isFirst,
+    );
+  }
+
+  void _openUserFilePicker() {
+    _paneShowsConversation = false;
+    _paneNavKey.currentState!.pushAndRemoveUntil(
+      _paneRoute(
+        PickUserScreen(
+          (_, users) {
+            if (users.isEmpty) return;
+            final userId = users[0];
+            _paneNavKey.currentState!.push(
+              _paneRoute(
+                FileListScreen(
+                  title: AppLocalizations.of(context)!.userFiles,
+                  child: FileListWidget(
+                    type: FileListType.user,
+                    conversation: Conversation(
+                      conversationType: ConversationType.Single,
+                      target: userId,
+                      line: 0,
+                    ),
+                    userId: userId,
+                  ),
+                ),
+              ),
+            );
+          },
+          maxSelected: 1,
+        ),
+      ),
+      (route) => route.isFirst,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // PCShellViewModel 由根 MultiProvider(main.dart)提供,这里不再重复注册。
@@ -477,7 +559,10 @@ class _PCHomeState extends State<PCHome> {
                   children: [
                     SizedBox(
                         width: PcTheme.sideBarWidth,
-                        child: _PcSideBar(onTabSelected: _onTabSelected)),
+                        child: _PcSideBar(
+                          onTabSelected: _onTabSelected,
+                          onFileTap: _openFileRecordsScreen,
+                        )),
                     if (!isWorkTab) ...[
                       SizedBox(
                           width: PcTheme.middleColumnWidth,
@@ -609,33 +694,37 @@ class _PCHomeState extends State<PCHome> {
   Widget _buildMiddleColumn(BuildContext context) {
     return Container(
       color: PcTheme.middleBg,
-      child: Consumer<PCShellViewModel>(
-        builder: (context, shell, _) {
-          return Column(
-            children: [
-              _MiddleColumnHeader(
-                onSearchTap: _openSearchModal,
-                onStartChat: _startChat,
-                onAddFriend: _onAddFriend,
-              ),
-              Expanded(
-                child: IndexedStack(
-                  index: shell.selectedTab,
-                  children: [
-                    ConversationListWidget(
-                      onConversationSelected: _openConversation,
-                      selectedConversation: shell.selectedConversation,
+      child: Column(
+        children: [
+          _MiddleColumnHeader(
+            onSearchTap: _openSearchModal,
+            onStartChat: _startChat,
+            onAddFriend: _onAddFriend,
+          ),
+          Expanded(
+            child: _showFileRecords
+                ? PcFileRecordsList(
+                    onOpenFileList: _openFileListScreen,
+                    onOpenConversationPicker: _openConversationFilePicker,
+                    onOpenUserPicker: _openUserFilePicker,
+                  )
+                : Consumer<PCShellViewModel>(
+                    builder: (context, shell, _) => IndexedStack(
+                      index: shell.selectedTab,
+                      children: [
+                        ConversationListWidget(
+                          onConversationSelected: _openConversation,
+                          selectedConversation: shell.selectedConversation,
+                        ),
+                        const PcContactList(),
+                        const _WorkTabPlaceholder(),
+                        const PcDiscoveryList(),
+                        const MeTab(),
+                      ],
                     ),
-                    const PcContactList(),
-                    const _WorkTabPlaceholder(),
-                    const PcDiscoveryList(),
-                    const MeTab(),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
+                  ),
+          ),
+        ],
       ),
     );
   }
@@ -763,8 +852,12 @@ class _PlusMenuButton extends StatelessWidget {
 
 class _PcSideBar extends StatelessWidget {
   final void Function(int tab) onTabSelected;
+  final VoidCallback onFileTap;
 
-  const _PcSideBar({required this.onTabSelected});
+  const _PcSideBar({
+    required this.onTabSelected,
+    required this.onFileTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -801,6 +894,12 @@ class _PcSideBar extends StatelessWidget {
               badgeCount: unreadFriendRequestCount > 0 ? -1 : 0,
               onTabSelected: onTabSelected,
             ),
+          ),
+          const SizedBox(height: 6),
+          _SideBarIconButton(
+            icon: Icons.folder_outlined,
+            tooltip: l10n.files,
+            onTap: onFileTap,
           ),
           if ((Config.workspaceUrl ?? '').isNotEmpty) ...[
             const SizedBox(height: 6),
@@ -941,6 +1040,49 @@ class _SideBarTab extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// 侧栏非 tab 入口(如文件),视觉与 [_SideBarTab] 保持一致,点击直接打开页面而非切换 tab。
+class _SideBarIconButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const _SideBarIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: HoverBuilder(
+        cursor: SystemMouseCursors.click,
+        builder: (context, hovered) => GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: hovered
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Center(
+              child: Icon(
+                icon,
+                size: 22,
+                color: hovered ? PcTheme.sidebarIconHover : PcTheme.sidebarIcon,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

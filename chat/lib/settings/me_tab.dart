@@ -21,6 +21,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/widget/section_divider.dart';
 
 import '../config.dart';
+import '../pc/pc_platform.dart';
 import '../user_info_widget.dart';
 
 class MeTab extends StatelessWidget {
@@ -51,14 +52,15 @@ class MeTab extends StatelessWidget {
                 },
               ),
               const SectionDivider(),
-              OptionItem(
-                AppLocalizations.of(context)!.files,
-                leftImage: Image.asset('assets/images/setting_file.png', width: 20.0, height: 20.0),
-                onTap: () {
-                  openPage(context, const FileRecordsScreen());
-                },
-              ),
-              const SectionDivider(),
+              if (!isDesktopShell)
+                OptionItem(
+                  AppLocalizations.of(context)!.files,
+                  leftImage: Image.asset('assets/images/setting_file.png', width: 20.0, height: 20.0),
+                  onTap: () {
+                    openPage(context, const FileRecordsScreen());
+                  },
+                ),
+              if (!isDesktopShell) const SectionDivider(),
               OptionItem(
                 AppLocalizations.of(context)!.backup_and_restore,
                 leftImage: const Icon(Icons.backup, color: Colors.blue, size: 20),
