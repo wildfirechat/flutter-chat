@@ -1420,6 +1420,9 @@ class ImclientPlatform extends PlatformInterface {
     }
     List<FileRecord> list = [];
     for (var element in datas) {
+      if (element is String) {
+        element = jsonDecode(element);
+      }
       list.add(_convertProtoFileRecord(element));
     }
     return list;
