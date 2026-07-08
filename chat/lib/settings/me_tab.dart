@@ -44,14 +44,15 @@ class MeTab extends StatelessWidget {
                 },
               ),
               const SectionDivider(),
-              OptionItem(
-                AppLocalizations.of(context)!.favorites,
-                leftImage: Image.asset('assets/images/setting_favorite.png', width: 20.0, height: 20.0),
-                onTap: () {
-                  openPage(context, const FavoriteListScreen());
-                },
-              ),
-              const SectionDivider(),
+              if (!isDesktopShell)
+                OptionItem(
+                  AppLocalizations.of(context)!.favorites,
+                  leftImage: Image.asset('assets/images/setting_favorite.png', width: 20.0, height: 20.0),
+                  onTap: () {
+                    openPage(context, const FavoriteListScreen());
+                  },
+                ),
+              if (!isDesktopShell) const SectionDivider(),
               if (!isDesktopShell)
                 OptionItem(
                   AppLocalizations.of(context)!.files,

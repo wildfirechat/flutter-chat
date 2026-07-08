@@ -16,6 +16,8 @@ import 'package:chat/home/conversation_list_widget.dart';
 import 'package:chat/pc/pc_contact_list.dart';
 import 'package:chat/pc/pc_conversation_pane.dart';
 import 'package:chat/pc/pc_discovery_list.dart';
+import 'package:chat/pc/pc_favorite_categories_list.dart';
+import 'package:chat/pc/pc_favorite_list_widget.dart';
 import 'package:chat/pc/pc_file_records_list.dart';
 import 'package:chat/pc/pc_search_view.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
@@ -54,6 +56,9 @@ class _PCHomeState extends State<PCHome> {
 
   /// 当前是否在中栏展示文件入口列表。
   bool _showFileRecords = false;
+
+  /// 当前是否在中栏展示收藏分类入口列表。
+  bool _showFavorites = false;
 
   /// 右栏当前是否展示着会话页。用于:
   /// - 从其它 tab 切回消息 tab 时恢复上次会话;
@@ -177,9 +182,10 @@ class _PCHomeState extends State<PCHome> {
   void _onTabSelected(int tab) {
     final int previous = _shellViewModel.selectedTab;
     _shellViewModel.selectTab(tab);
-    if (_showFileRecords) {
+    if (_showFileRecords || _showFavorites) {
       setState(() {
         _showFileRecords = false;
+        _showFavorites = false;
       });
     }
     if (tab == PCShellViewModel.tabWork) {
@@ -508,6 +514,24 @@ class _PCHomeState extends State<PCHome> {
     );
   }
 
+  void _openFavoritesScreen() {
+    setState(() {
+      _showFavorites = true;
+    });
+    _clearRightPane();
+  }
+
+  void _openFavoriteList(FavoriteCategory category) {
+    _paneShowsConversation = false;
+    _paneNavKey.currentState!.pushAndRemoveUntil(
+      _paneRoute(FavoriteListWidget(
+        category: category,
+        isEmbedded: false,
+      )),
+      (route) => route.isFirst,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // PCShellViewModel 由根 MultiProvider(main.dart)提供,这里不再重复注册。
@@ -562,6 +586,7 @@ class _PCHomeState extends State<PCHome> {
                         child: _PcSideBar(
                           onTabSelected: _onTabSelected,
                           onFileTap: _openFileRecordsScreen,
+                          onFavoriteTap: _openFavoritesScreen,
                         )),
                     if (!isWorkTab) ...[
                       SizedBox(
@@ -708,21 +733,25 @@ class _PCHomeState extends State<PCHome> {
                     onOpenConversationPicker: _openConversationFilePicker,
                     onOpenUserPicker: _openUserFilePicker,
                   )
-                : Consumer<PCShellViewModel>(
-                    builder: (context, shell, _) => IndexedStack(
-                      index: shell.selectedTab,
-                      children: [
-                        ConversationListWidget(
-                          onConversationSelected: _openConversation,
-                          selectedConversation: shell.selectedConversation,
+                : _showFavorites
+                    ? PcFavoriteCategoriesList(
+                        onOpenFavoriteList: _openFavoriteList,
+                      )
+                    : Consumer<PCShellViewModel>(
+                        builder: (context, shell, _) => IndexedStack(
+                          index: shell.selectedTab,
+                          children: [
+                            ConversationListWidget(
+                              onConversationSelected: _openConversation,
+                              selectedConversation: shell.selectedConversation,
+                            ),
+                            const PcContactList(),
+                            const _WorkTabPlaceholder(),
+                            const PcDiscoveryList(),
+                            const MeTab(),
+                          ],
                         ),
-                        const PcContactList(),
-                        const _WorkTabPlaceholder(),
-                        const PcDiscoveryList(),
-                        const MeTab(),
-                      ],
-                    ),
-                  ),
+                      ),
           ),
         ],
       ),
@@ -853,10 +882,12 @@ class _PlusMenuButton extends StatelessWidget {
 class _PcSideBar extends StatelessWidget {
   final void Function(int tab) onTabSelected;
   final VoidCallback onFileTap;
+  final VoidCallback onFavoriteTap;
 
   const _PcSideBar({
     required this.onTabSelected,
     required this.onFileTap,
+    required this.onFavoriteTap,
   });
 
   @override
@@ -900,6 +931,12 @@ class _PcSideBar extends StatelessWidget {
             icon: Icons.folder_outlined,
             tooltip: l10n.files,
             onTap: onFileTap,
+          ),
+          const SizedBox(height: 6),
+          _SideBarIconButton(
+            icon: Icons.star_border_rounded,
+            tooltip: l10n.favorites,
+            onTap: onFavoriteTap,
           ),
           if ((Config.workspaceUrl ?? '').isNotEmpty) ...[
             const SizedBox(height: 6),
