@@ -93,6 +93,7 @@
   "favGroup": "Favorite Groups",
   "subscribedChannel": "Channels",
   "organization": "Organization",
+  "fileTransfer": "File Transfer",
   "joinChatroomFail": "Network error! Failed to join chatroom!",
   "userLeftChatroom": "{userName} left the chatroom",
   "selectMessage": "Please select a message",

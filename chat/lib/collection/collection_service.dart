@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:imclient/imclient.dart';
 
 import '../config.dart';
+import '../utils/media_url_redirector.dart';
 import 'collection_model.dart';
 
 /// 接龙服务工具类
@@ -23,17 +24,17 @@ class CollectionService {
 
   /// 检查接龙服务是否可用
   static bool get isAvailable {
-    return Config.COLLECTION_SERVER_ADDRESS != null && 
-           Config.COLLECTION_SERVER_ADDRESS!.isNotEmpty;
+    final url = Config.collectionServerAddress;
+    return url != null && url.isNotEmpty;
   }
 
   /// 获取服务基础地址
   static String get _baseUrl {
-    final url = Config.COLLECTION_SERVER_ADDRESS;
+    final url = Config.collectionServerAddress;
     if (url == null || url.isEmpty) {
       throw CollectionException(-1, '接龙服务未配置');
     }
-    return url;
+    return MediaUrlRedirector.redirect(url);
   }
 
   /// 从 URL 中提取 host

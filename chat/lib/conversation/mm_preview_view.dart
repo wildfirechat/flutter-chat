@@ -13,6 +13,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/widget/drag_to_dismiss.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -110,7 +111,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                       child: RotatedBox(
                         quarterTurns: rotation,
                         child: CachedNetworkImage(
-                          imageUrl: imageContent.remoteUrl!,
+                          imageUrl: MediaUrlRedirector.redirect(imageContent.remoteUrl!),
                           placeholder: (context, url) => const Center(
                             child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white30),
                           ),
@@ -397,6 +398,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
       remoteUrl = content.remoteUrl;
       fileName = 'image_${message.messageUid ?? message.messageId}.jpg';
       if (remoteUrl != null) {
+        remoteUrl = MediaUrlRedirector.redirect(remoteUrl);
         final uri = Uri.parse(remoteUrl);
         if (uri.pathSegments.isNotEmpty) {
           fileName = uri.pathSegments.last;
@@ -408,6 +410,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
       remoteUrl = content.remoteUrl;
       fileName = 'video_${message.messageUid ?? message.messageId}.mp4';
       if (remoteUrl != null) {
+        remoteUrl = MediaUrlRedirector.redirect(remoteUrl);
         final uri = Uri.parse(remoteUrl);
         if (uri.pathSegments.isNotEmpty) {
           fileName = uri.pathSegments.last;
@@ -468,7 +471,7 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
     if (widget.content.localPath != null && widget.content.localPath!.isNotEmpty && File(widget.content.localPath!).existsSync()) {
       _controller = VideoPlayerController.file(File(widget.content.localPath!));
     } else if (widget.content.remoteUrl != null && widget.content.remoteUrl!.isNotEmpty) {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.content.remoteUrl!));
+      _controller = VideoPlayerController.networkUrl(Uri.parse(MediaUrlRedirector.redirect(widget.content.remoteUrl!)));
     } else {
        // fallback or error handling
        _controller = VideoPlayerController.networkUrl(Uri.parse(""));
@@ -485,7 +488,7 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
   Future<void> _openWithSystemPlayer() async {
     final videoUrl = widget.content.localPath != null && widget.content.localPath!.isNotEmpty && File(widget.content.localPath!).existsSync()
         ? Uri.file(widget.content.localPath!)
-        : (widget.content.remoteUrl != null ? Uri.parse(widget.content.remoteUrl!) : null);
+        : (widget.content.remoteUrl != null ? Uri.parse(MediaUrlRedirector.redirect(widget.content.remoteUrl!)) : null);
     if (videoUrl != null && await canLaunchUrl(videoUrl)) {
       await launchUrl(videoUrl, mode: LaunchMode.externalApplication);
     }

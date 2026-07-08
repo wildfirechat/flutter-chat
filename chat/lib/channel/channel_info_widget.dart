@@ -6,6 +6,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 
 class ChannelInfoWidget extends StatefulWidget {
@@ -91,7 +92,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
                     borderRadius: BorderRadius.circular(6.0),
                     child: info.portrait != null && info.portrait!.isNotEmpty
                         ? Image.network(
-                            info.portrait!,
+                            MediaUrlRedirector.redirect(info.portrait!),
                             width: 72,
                             height: 72,
                             fit: BoxFit.cover,
@@ -225,7 +226,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     if(index == 0) {
       return Column(children: [
         const SizedBox(height: 20),
-        SizedBox(width: 80, height: 80, child: info.portrait != null && info.portrait!.isNotEmpty ? Image.network(info.portrait!) : Container(color: Colors.grey),),
+        SizedBox(width: 80, height: 80, child: info.portrait != null && info.portrait!.isNotEmpty ? Image.network(MediaUrlRedirector.redirect(info.portrait!)) : Container(color: Colors.grey),),
         const SizedBox(height: 20),
         Container(
           margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),

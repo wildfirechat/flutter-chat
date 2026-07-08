@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/config.dart';
 import 'package:chat/home/home.dart';
+import 'package:chat/main.dart';
 import 'package:chat/pc/pc_home.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -21,7 +22,7 @@ class LoginFormController extends ChangeNotifier {
   final phoneController = TextEditingController();
   final codeOrPwdController = TextEditingController();
 
-  bool _isPasswordLogin = false;
+  bool _isPasswordLogin = Config.Prefer_Password_Login;
   bool _agreementChecked = false;
   bool _isSentCode = false;
   int _waitResendCount = 0;
@@ -62,9 +63,20 @@ class LoginFormController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 发送验证码:先滑动验证,通过后由服务端发送并开始倒计时。
+  /// 发送验证码:若开启滑动验证则先验证,通过后由服务端发送并开始倒计时。
   void sendCode(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    if (!Config.ENABLE_SLIDE_VERIFY) {
+      AppServer.sendCode(
+        phoneController.text,
+        () {
+          showToast(msg: l10n.sendCodeSuccess);
+          _startResendCountdown();
+        },
+        (msg) => showToast(msg: l10n.sendCodeFailWithError(msg)),
+      );
+      return;
+    }
     SlideVerifyDialog.show(
       context: context,
       listener: _SendCodeSlideVerifyListener(
@@ -105,20 +117,27 @@ class LoginFormController extends ChangeNotifier {
     final String codeOrPwd = codeOrPwdController.text;
 
     if (_isPasswordLogin) {
-      SlideVerifyDialog.show(
-        context: context,
-        listener: _LoginSlideVerifyListener(
-          login: (verifyToken) => AppServer.passwordLogin(phone, codeOrPwd,
-              (userId, token, isNewUser) {
-            _onLoginSuccess(context, userId, token);
-          }, (msg) => showToast(msg: l10n.loginFail(msg)),
-              slideVerifyToken: verifyToken),
-        ),
-      );
+      if (Config.ENABLE_SLIDE_VERIFY) {
+        SlideVerifyDialog.show(
+          context: context,
+          listener: _LoginSlideVerifyListener(
+            login: (verifyToken) => AppServer.passwordLogin(phone, codeOrPwd,
+                (userId, token, isNewUser) {
+              _onLoginSuccess(context, userId, token);
+            }, (msg) => showToast(msg: l10n.loginFail(msg)),
+                slideVerifyToken: verifyToken),
+          ),
+        );
+      } else {
+        AppServer.passwordLogin(phone, codeOrPwd,
+            (userId, token, isNewUser) {
+          _onLoginSuccess(context, userId, token);
+        }, (msg) => showToast(msg: l10n.loginFail(msg)));
+      }
       return;
     }
 
-    if (_slideVerifiedForCode) {
+    if (_slideVerifiedForCode || !Config.ENABLE_SLIDE_VERIFY) {
       // 与既有服务端约定一致:发码阶段已滑动验证过,登录请求不再携带 verify token
       _smsLogin(context, phone, codeOrPwd, null);
       return;
@@ -150,6 +169,7 @@ class LoginFormController extends ChangeNotifier {
       prefs.setString('userId', userId);
       prefs.setString('token', token);
     });
+    MyApp.of(context)?.onLoginSuccess(userId);
     if (context.mounted) {
       showToast(msg: AppLocalizations.of(context)!.loginSuccess);
       Navigator.of(context).pushReplacement(

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+
+import '../utils/media_url_redirector.dart';
 
 class Portrait extends StatelessWidget {
   final String portrait;
@@ -25,8 +26,9 @@ class Portrait extends StatelessWidget {
         errorBuilder: (context, error, stackTrace) => Image.asset(assetPlaceHolder, width: width, height: height),
       );
     } else {
+      final redirectedUrl = MediaUrlRedirector.redirect(portrait);
       image = CachedNetworkImage(
-        imageUrl: portrait,
+        imageUrl: redirectedUrl,
         width: width,
         height: height,
         fit: BoxFit.cover,

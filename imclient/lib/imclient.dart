@@ -71,6 +71,7 @@ import 'model/user_info.dart';
 
 
 typedef ConnectionStatusChangedCallback = void Function(int status);
+typedef OnConnectedCallback = void Function(String host, String ip, int port, bool mainNetwork);
 typedef ReceiveMessageCallback = void Function(List<Message> messages, bool hasMore);
 
 typedef SendMessageSuccessCallback = void Function(int messageUid, int timestamp);
@@ -171,6 +172,15 @@ class ConnectionStatusChangedEvent {
   int connectionStatus;
 
   ConnectionStatusChangedEvent(this.connectionStatus);
+}
+
+class ConnectedToServerEvent {
+  String host;
+  String ip;
+  int port;
+  bool mainNetwork;
+
+  ConnectedToServerEvent(this.host, this.ip, this.port, this.mainNetwork);
 }
 
 class UserSettingUpdatedEvent {}
@@ -461,7 +471,8 @@ class Imclient {
       ReceiveMessageCallback receiveMessageCallback,
       RecallMessageCallback recallMessageCallback,
       DeleteMessageCallback deleteMessageCallback,
-      {MessageDeliveriedCallback? messageDeliveriedCallback,
+      {OnConnectedCallback? onConnectedCallback,
+        MessageDeliveriedCallback? messageDeliveriedCallback,
         MessageReadedCallback? messageReadedCallback,
         GroupInfoUpdatedCallback? groupInfoUpdatedCallback,
         GroupMemberUpdatedCallback? groupMemberUpdatedCallback,
@@ -525,6 +536,7 @@ class Imclient {
         receiveMessageCallback,
         recallMessageCallback,
         deleteMessageCallback,
+        onConnectedCallback: onConnectedCallback,
         messageDeliveriedCallback: messageDeliveriedCallback,
         messageReadedCallback: messageReadedCallback,
         groupInfoUpdatedCallback: groupInfoUpdatedCallback,

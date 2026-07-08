@@ -802,7 +802,7 @@ class _PcSideBar extends StatelessWidget {
               onTabSelected: onTabSelected,
             ),
           ),
-          if (Config.WORKSPACE_URL.isNotEmpty) ...[
+          if ((Config.workspaceUrl ?? '').isNotEmpty) ...[
             const SizedBox(height: 6),
             _SideBarTab(
               tab: PCShellViewModel.tabWork,

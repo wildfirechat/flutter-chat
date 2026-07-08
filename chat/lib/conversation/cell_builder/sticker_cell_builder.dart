@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/sticker_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import '../../ui_model/ui_message.dart';
 
 class StickerCellBuilder extends PortraitCellBuilder {
@@ -22,7 +23,7 @@ class StickerCellBuilder extends PortraitCellBuilder {
         imageWidget = Image.file(File(stickerContent.localPath!));
       }
     } else if (stickerContent.remoteUrl != null && stickerContent.remoteUrl!.isNotEmpty) {
-      imageWidget = Image.network(stickerContent.remoteUrl!);
+      imageWidget = Image.network(MediaUrlRedirector.redirect(stickerContent.remoteUrl!));
     } else {
       imageWidget = const Icon(Icons.broken_image, size: 64, color: Colors.grey);
     }

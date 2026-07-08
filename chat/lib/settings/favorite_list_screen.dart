@@ -18,6 +18,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utilities.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class FavoriteListScreen extends StatefulWidget {
@@ -129,7 +130,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
   Widget _buildIcon(FavoriteItem item) {
     if (item.favType == MESSAGE_CONTENT_TYPE_IMAGE || item.favType == MESSAGE_CONTENT_TYPE_VIDEO) {
       if (item.thumbUrl.isNotEmpty) {
-        return Image.network(item.thumbUrl, width: 50, height: 50, fit: BoxFit.cover);
+        return Image.network(MediaUrlRedirector.redirect(item.thumbUrl), width: 50, height: 50, fit: BoxFit.cover);
       } else if (item.data.isNotEmpty) {
         try {
           var map = json.decode(item.data);
@@ -159,7 +160,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
       return Container(width: 50, height: 50, color: Colors.green[100], child: const Icon(Icons.mic, color: Colors.green));
     } else if (item.favType == MESSAGE_CONTENT_TYPE_LINK) {
       if (item.thumbUrl.isNotEmpty) {
-        return Image.network(item.thumbUrl, width: 50, height: 50, fit: BoxFit.cover);
+        return Image.network(MediaUrlRedirector.redirect(item.thumbUrl), width: 50, height: 50, fit: BoxFit.cover);
       }
       return Container(width: 50, height: 50, color: Colors.blue[100], child: const Icon(Icons.link, color: Colors.blue));
     } else if (item.favType == MESSAGE_CONTENT_TYPE_COMPOSITE_MESSAGE) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/message/card_message_content.dart';
 import 'package:chat/config.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
 
 import '../message_cell.dart';
@@ -28,7 +29,7 @@ class CardCellBuilder extends PortraitCellBuilder {
     }
 
     Image image =
-        cardMessageContent.portrait != null ? Image.network(cardMessageContent.portrait!, width: 48.0, height: 48.0) : Image.asset(imagePath, width: 48.0, height: 48.0);
+        cardMessageContent.portrait != null ? Image.network(MediaUrlRedirector.redirect(cardMessageContent.portrait!), width: 48.0, height: 48.0) : Image.asset(imagePath, width: 48.0, height: 48.0);
     Text displayNameText = Text(
       cardMessageContent.displayName!,
       maxLines: 2,

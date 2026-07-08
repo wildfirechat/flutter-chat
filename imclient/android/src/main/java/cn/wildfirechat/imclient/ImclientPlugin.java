@@ -2997,6 +2997,19 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                             callback2UI("onConnectionStatusChanged", status);
                             break;
                         }
+                        case "onConnectToServer": {
+                            String host = (String) args[0];
+                            String ip = (String) args[1];
+                            int port = (int) args[2];
+                            boolean mainNetwork = ChatManager.Instance().isConnectedToMainNetwork();
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("host", host);
+                            data.put("ip", ip);
+                            data.put("port", port);
+                            data.put("mainNetwork", mainNetwork);
+                            callback2UI("onConnected", data);
+                            break;
+                        }
 //                        @Override
 //                        public void onConnectionStatusChanged(int i) {
 //                            updateConnectionStatus(i);

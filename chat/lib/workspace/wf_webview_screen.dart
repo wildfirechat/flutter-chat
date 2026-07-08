@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:chat/workspace/js_api.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 
 class WFWebViewScreen extends StatefulWidget {
   final String url;
@@ -71,7 +72,7 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
       }
     }
 
-    controller.loadRequest(Uri.parse(widget.url));
+    controller.loadRequest(Uri.parse(MediaUrlRedirector.redirect(widget.url)));
 
     _controller = controller;
   }

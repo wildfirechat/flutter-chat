@@ -93,6 +93,7 @@
   "favGroup": "收藏群组",
   "subscribedChannel": "频道",
   "organization": "组织架构",
+  "fileTransfer": "文件传输助手",
   "joinChatroomFail": "网络错误！加入聊天室失败!",
   "userLeftChatroom": "{userName} 离开了聊天室",
   "selectMessage": "请选择消息",

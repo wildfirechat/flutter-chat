@@ -7,7 +7,7 @@
 /// - 投票消息展示
 ///
 /// 配置方法：
-/// 在 Config.POLL_SERVER_ADDRESS 中配置投票服务地址，
+/// 在 Config.pollServerAddress 中配置投票服务地址，
 /// 配置后群聊插件面板会自动显示投票入口。
 ///
 /// 使用示例：

@@ -179,6 +179,28 @@ class ContactListViewModel extends ChangeNotifier {
       }
     }
 
+    if (Config.FILE_TRANSFER_ID.isNotEmpty) {
+      var userInfo = await Imclient.getUserInfo(Config.FILE_TRANSFER_ID, refresh: refresh);
+      if (userInfo != null) {
+        userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
+        var displayName = userInfo.displayName!;
+        var runes = displayName.runes.toList();
+        var firstWordPinyinLetter = '{';
+        if (runes.isNotEmpty) {
+          var firstChar = String.fromCharCode(runes[0]);
+          if (ChineseHelper.isChinese(firstChar)) {
+            var firstWordPinyin = PinyinHelper.getFirstWordPinyin(displayName);
+            firstWordPinyinLetter = firstWordPinyin.isNotEmpty ? firstWordPinyin.substring(0, 1).toUpperCase() : '#';
+          } else if (RegExp(r'^[a-zA-Z]$').hasMatch(firstChar)) {
+            firstWordPinyinLetter = firstChar.toUpperCase();
+          } else {
+            firstWordPinyinLetter = '{';
+          }
+        }
+        contactList.add(UIContactInfo(firstWordPinyinLetter, false, userInfo));
+      }
+    }
+
     contactList.sort((a, b) {
       if (a.category == "☆" && b.category != "☆") return -1;
       if (a.category != "☆" && b.category == "☆") return 1;

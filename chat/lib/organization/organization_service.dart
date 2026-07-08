@@ -9,6 +9,7 @@ import 'package:chat/organization/model/employee.dart';
 import 'package:chat/organization/model/employee_ex.dart';
 import 'package:chat/organization/model/organization_relationship.dart';
 import 'package:chat/organization/organization_cache.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:imclient/imclient.dart';
 
 class OrganizationService {
@@ -35,15 +36,22 @@ class OrganizationService {
   }
 
   String get _orgServerBaseUrl {
-    if (Config.ORG_SERVER_ADDRESS == null || Config.ORG_SERVER_ADDRESS!.isEmpty) {
+    final url = Config.orgServerAddress;
+    if (url == null || url.isEmpty) {
       throw Exception("ORG_SERVER_ADDRESS is not configured in config.dart");
     }
-    return Config.ORG_SERVER_ADDRESS!;
+    return MediaUrlRedirector.redirect(url);
   }
 
   Future<void> login() async {
     if (_isServiceAvailable) {
       return;
+    }
+
+    final orgServerUrl = Config.orgServerAddress;
+    if (orgServerUrl == null || orgServerUrl.isEmpty) {
+      print('OrganizationService login failed: org server not configured');
+      throw Exception('ORG_SERVER_ADDRESS is not configured');
     }
 
     await _restoreAuthToken();
@@ -60,12 +68,17 @@ class OrganizationService {
       Imclient.getAuthCode("admin", 2, Config.IM_Host, (str) {
         authCodeCompleter.complete(str);
       }, (err) {
-        print('OrganizationService login failed $err');
+        print('OrganizationService getAuthCode failed $err');
+        if (!authCodeCompleter.isCompleted) {
+          authCodeCompleter.completeError(
+            Exception('getAuthCode failed: $err'),
+          );
+        }
       });
 
       String authCode = await authCodeCompleter.future;
       final response = await http.post(
-        Uri.parse('$_orgServerBaseUrl/api/user_login'),
+        Uri.parse('$orgServerUrl/api/user_login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'authCode': authCode}),
       );

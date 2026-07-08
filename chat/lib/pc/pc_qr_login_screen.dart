@@ -10,10 +10,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/config.dart';
 import 'package:chat/login/login_form_controller.dart';
+import 'package:chat/main.dart';
 import 'package:chat/pc/pc_home.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/show_toast.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/wfc_scheme.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -181,6 +183,10 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
     Imclient.connect(Config.IM_Host, userId, imToken);
 
     if (mounted) {
+      MyApp.of(context)?.onLoginSuccess(userId);
+    }
+
+    if (mounted) {
       showToast(msg: AppLocalizations.of(context)!.loginSuccess);
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const PCHome()),
@@ -309,7 +315,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
           ClipOval(
             child: _scannedUserPortrait!.startsWith('http')
                 ? Image.network(
-                    _scannedUserPortrait!,
+                    MediaUrlRedirector.redirect(_scannedUserPortrait!),
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,

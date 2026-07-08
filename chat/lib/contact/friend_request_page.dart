@@ -8,6 +8,7 @@ import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 
 import '../config.dart';
+import '../utils/media_url_redirector.dart';
 
 class FriendRequestPage extends StatefulWidget {
   const FriendRequestPage({super.key});
@@ -95,7 +96,7 @@ class FriendRequestPageState extends State<FriendRequestPage> {
       padding: const EdgeInsets.all(8),
       child: Row(
         children: [
-          (userInfo == null || userInfo.portrait == null || userInfo.portrait!.isEmpty) ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(userInfo.portrait!, width: 40, height: 40,),
+          (userInfo == null || userInfo.portrait == null || userInfo.portrait!.isEmpty) ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(MediaUrlRedirector.redirect(userInfo.portrait!), width: 40, height: 40,),
           const Padding(padding: EdgeInsets.all(8)),
           Expanded(
               child: Column(

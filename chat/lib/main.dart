@@ -40,6 +40,7 @@ import 'package:chat/wfc_notification_manager.dart';
 import 'app_navigator.dart';
 import 'app_theme.dart';
 import 'config.dart';
+import 'utils/media_url_redirector.dart';
 
 import 'default_portrait_provider.dart';
 import 'home/home.dart';
@@ -52,6 +53,7 @@ import 'pc/pc_window_manager.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:chat/utils/show_toast.dart';
+import 'package:chat/widget/watermark_overlay.dart';
 import 'package:chat/organization/organization_cache.dart';
 import 'package:chat/organization/organization_service.dart';
 
@@ -82,6 +84,10 @@ class MyApp extends StatefulWidget {
 
   @override
   State createState() => _MyAppState();
+
+  static _MyAppState? of(BuildContext context) {
+    return context.findAncestorStateOfType<_MyAppState>();
+  }
 }
 
 class _MyAppState extends State<MyApp> {
@@ -95,6 +101,7 @@ class _MyAppState extends State<MyApp> {
   /// 桌面 Shell 导航状态;移动端为 null。
   PCShellViewModel? _shell;
   Timer? _badgeRefreshTimer;
+  String? _currentUserId;
 
   @override
   void initState() {
@@ -244,6 +251,8 @@ class _MyAppState extends State<MyApp> {
       if (kDebugMode) {
         print('delete message $messageUid');
       }
+    }, onConnectedCallback: (String host, String ip, int port, bool mainNetwork) {
+      MediaUrlRedirector.setConnectedToMainNetwork(mainNetwork);
     }, messageDeliveriedCallback: (Map<String, int> deliveryMap) {
       if (kDebugMode) {
         print('on message deliveried $deliveryMap');
@@ -297,8 +306,9 @@ class _MyAppState extends State<MyApp> {
     Imclient.startLog();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await OrganizationCache.instance.initialize();
-    if (prefs.getString("userId") != null && prefs.getString("token") != null) {
-      Imclient.connect(Config.IM_Host, prefs.getString("userId")!, prefs.getString("token")!);
+    _currentUserId = prefs.getString("userId");
+    if (_currentUserId != null && prefs.getString("token") != null) {
+      Imclient.connect(Config.IM_Host, _currentUserId!, prefs.getString("token")!);
       Future.delayed(const Duration(seconds: 1), () {
         setState(() {
           isLogined = true;
@@ -421,13 +431,30 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  void onLoginSuccess(String userId) {
+    setState(() {
+      _currentUserId = userId;
+      isLogined = true;
+    });
+  }
+
   Widget _buildHome() {
+    Widget home;
     if (isLogined == null) {
-      return const SplashScreen();
+      home = const SplashScreen();
     } else if (!isLogined!) {
-      return isDesktopShell ? const PCQRLoginScreen() : const LoginScreen();
+      home = isDesktopShell ? const PCQRLoginScreen() : const LoginScreen();
+    } else {
+      home = isDesktopShell ? const PCHome() : const HomeTabBar();
     }
-    return isDesktopShell ? const PCHome() : const HomeTabBar();
+    return Stack(
+      children: [
+        home,
+        Positioned.fill(
+          child: WatermarkOverlay(userId: _currentUserId),
+        ),
+      ],
+    );
   }
 }
 class MainAVEngineCallback implements AVEngineCallback {

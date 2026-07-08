@@ -26,6 +26,7 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'forward_confirmation_sheet.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -225,7 +226,7 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(4),
               image: DecorationImage(
-                image: CachedNetworkImageProvider(imgContent.remoteUrl!),
+                image: CachedNetworkImageProvider(MediaUrlRedirector.redirect(imgContent.remoteUrl!)),
                 fit: BoxFit.cover,
               ),
             ),

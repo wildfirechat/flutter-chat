@@ -13,6 +13,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 
 class GroupInfoScreen extends StatefulWidget {
   final String groupId;
@@ -84,9 +85,9 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     // 优先使用本地 GroupInfo 的 portrait，如果本地没有且未加入群组，则尝试使用远程 portrait
     String portrait = '';
     if (groupInfo.portrait != null && groupInfo.portrait!.isNotEmpty) {
-      portrait = groupInfo.portrait!;
+      portrait = MediaUrlRedirector.redirect(groupInfo.portrait!);
     } else if (_remotePortrait != null && _remotePortrait!.isNotEmpty) {
-      portrait = _remotePortrait!;
+      portrait = MediaUrlRedirector.redirect(_remotePortrait!);
     }
 
     if (isDesktopShell) {

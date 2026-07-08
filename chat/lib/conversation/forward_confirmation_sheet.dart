@@ -12,6 +12,7 @@ import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/composite_message_content.dart';
 import 'package:image/image.dart' as img;
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/config.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -311,7 +312,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
       );
     } else if (preview.remoteImageUrl != null) {
       baseImage = Image.network(
-        preview.remoteImageUrl!,
+        MediaUrlRedirector.redirect(preview.remoteImageUrl!),
         width: 64,
         height: 64,
         fit: BoxFit.cover,

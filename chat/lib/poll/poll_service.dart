@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:imclient/imclient.dart';
 
 import '../config.dart';
+import '../utils/media_url_redirector.dart';
 import 'poll_model.dart';
 
 /// 投票服务工具类
@@ -23,17 +24,17 @@ class PollService {
 
   /// 检查投票服务是否可用
   static bool get isAvailable {
-    return Config.POLL_SERVER_ADDRESS != null &&
-        Config.POLL_SERVER_ADDRESS!.isNotEmpty;
+    return Config.pollServerAddress != null &&
+        Config.pollServerAddress!.isNotEmpty;
   }
 
   /// 获取服务基础地址
   static String get _baseUrl {
-    final url = Config.POLL_SERVER_ADDRESS;
+    final url = Config.pollServerAddress;
     if (url == null || url.isEmpty) {
       throw PollException(-1, '投票服务未配置');
     }
-    return url;
+    return MediaUrlRedirector.redirect(url);
   }
 
   /// 从 URL 中提取 host

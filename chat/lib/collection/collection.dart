@@ -7,7 +7,7 @@
 /// - 接龙消息展示
 /// 
 /// 配置方法：
-/// 在 Config.COLLECTION_SERVER_ADDRESS 中配置接龙服务地址，
+/// 在 Config.collectionServerAddress 中配置接龙服务地址，
 /// 配置后群聊插件面板会自动显示接龙入口。
 ///
 /// 使用示例：

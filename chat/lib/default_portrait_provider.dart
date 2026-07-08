@@ -5,6 +5,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/config.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 
 class WFPortraitProvider extends DefaultPortraitProvider {
   WFPortraitProvider._internal();
@@ -30,7 +31,7 @@ class WFPortraitProvider extends DefaultPortraitProvider {
         }
       }
       String jsonStr = jsonEncode({"members": reqMembers});
-      return '${Config.APP_Server_Address}/avatar/group?request=$jsonStr';
+      return MediaUrlRedirector.redirect('${Config.appServerAddress}/avatar/group?request=$jsonStr');
     }
   }
 
@@ -39,7 +40,7 @@ class WFPortraitProvider extends DefaultPortraitProvider {
     if (userInfo.portrait != null && userInfo.portrait!.isNotEmpty) {
       return userInfo.portrait!;
     } else {
-      return '${Config.APP_Server_Address}/avatar?name=${userInfo.displayName}';
+      return MediaUrlRedirector.redirect('${Config.appServerAddress}/avatar?name=${userInfo.displayName}');
     }
   }
 }

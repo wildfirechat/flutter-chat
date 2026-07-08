@@ -7,6 +7,7 @@ import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/channel/search_channel.dart';
 import 'package:chat/config.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 
 import '../conversation/conversation_screen.dart';
 
@@ -111,7 +112,7 @@ class ChannelItemState extends State<ChannelItem> {
   Widget build(BuildContext context) {
     return Padding(padding: const EdgeInsets.all(8), child: Column(children: [
       Row(children: [
-        SizedBox(width: 40, height: 40, child: channelInfo == null || channelInfo!.portrait == null ? Image.asset(Config.defaultChannelPortrait) : Image.network(channelInfo!.portrait!),),
+        SizedBox(width: 40, height: 40, child: channelInfo == null || channelInfo!.portrait == null ? Image.asset(Config.defaultChannelPortrait) : Image.network(MediaUrlRedirector.redirect(channelInfo!.portrait!)),),
         const Padding(padding: EdgeInsets.all(8)),
         Expanded(child: Text(channelInfo == null || channelInfo!.name == null ? '频道<${widget.channelId}>' : channelInfo!.name!)),
       ],),

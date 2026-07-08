@@ -134,6 +134,14 @@ class ImclientFfiChannel implements ImclientChannel {
       case _BridgeTag.connectionStatus:
         _emit('onConnectionStatusChanged', message[1] as int);
         break;
+      case _BridgeTag.connectedToServer:
+        _emit('onConnected', {
+          'host': str(1),
+          'ip': str(2),
+          'port': message[3] as int,
+          'mainNetwork': message[4] as bool,
+        });
+        break;
       case _BridgeTag.receiveMessage:
         _emit('onReceiveMessage', {
           'messages': _jsonList(str(1)),
@@ -466,6 +474,10 @@ class ImclientFfiChannel implements ImclientChannel {
     });
 
     _wf.setConnectionStatusListener(_bridge.fn('wfc_on_connection_status'));
+    _wf.setConnectToServerListener(
+      _bridge.fn('wfc_on_connecting'),
+      _bridge.fn('wfc_on_connected'),
+    );
     _wf.setReceiveMessageListener(
       _bridge.fn('wfc_on_receive_message'),
       _bridge.fn('wfc_on_recall_message'),
@@ -2128,6 +2140,7 @@ class _BridgeTag {
   static const int sendMessageUploaded = 26;
   static const int sendMessageError = 27;
   static const int uploadMediaProgress = 28;
+  static const int connectedToServer = 29;
 }
 
 /// wfc_dart_bridge 导出符号绑定。

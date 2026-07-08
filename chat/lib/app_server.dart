@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
 import 'model/favorite_item.dart';
+import 'utils/media_url_redirector.dart';
 import 'widget/slide_verify_dialog.dart';
 
 typedef AppServerErrorCallback = Function(String msg);
@@ -26,6 +27,9 @@ class AppServer {
     if (Platform.isLinux) return 7;
     return 10; // unknown
   }
+
+  /// AppServer 地址，已兼容双网主备选择。
+  static String get appServerAddress => Config.appServerAddress;
 
   static void sendCode(String phoneNum, Function successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) {
     Map<String, dynamic> body = {'mobile': phoneNum};
@@ -120,7 +124,7 @@ class AppServer {
     required Function(String) onError,
   }) async {
     try {
-      final url = Uri.parse('${Config.APP_Server_Address}/slide_verify/generate');
+      final url = Uri.parse(MediaUrlRedirector.redirect('${Config.appServerAddress}/slide_verify/generate'));
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -177,7 +181,7 @@ class AppServer {
     required Function onError,
   }) async {
     try {
-      final url = Uri.parse('${Config.APP_Server_Address}/slide_verify/verify');
+      final url = Uri.parse(MediaUrlRedirector.redirect('${Config.appServerAddress}/slide_verify/verify'));
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
@@ -531,7 +535,7 @@ class AppServer {
             var obj = {};
             String portrait = member['portrait'] ?? '';
             String name = member['name'] ?? '';
-            if (portrait.isEmpty || portrait.startsWith(Config.APP_Server_Address)) {
+            if (portrait.isEmpty || portrait.startsWith(Config.appServerAddress)) {
                 obj['name'] = name;
             } else {
                 obj['avatarUrl'] = portrait;
@@ -539,7 +543,8 @@ class AppServer {
             reqMembers.add(obj);
         }
         request['members'] = reqMembers;
-        String url = "${Config.APP_Server_Address}/avatar/group?request=${Uri.encodeComponent(json.encode(request))}";
+        String url = "${Config.appServerAddress}/avatar/group?request=${Uri.encodeComponent(json.encode(request))}";
+        url = MediaUrlRedirector.redirect(url);
         successCallback(url);
     }, errorCallback);
   }
@@ -557,7 +562,8 @@ class AppServer {
   }
 
   static void postJson(String request, String jsonStr, AppServerHTTPCallback successCallback, AppServerErrorCallback errorCallback) async {
-    var url = Config.APP_Server_Address + request;
+    var url = Config.appServerAddress + request;
+    url = MediaUrlRedirector.redirect(url);
 
     if (_authToken == null) {
       SharedPreferences prefs = await SharedPreferences.getInstance();

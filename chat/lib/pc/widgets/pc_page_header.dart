@@ -21,6 +21,14 @@ class PcPageHeader extends StatelessWidget implements PreferredSizeWidget {
   @override
   Size get preferredSize => const Size.fromHeight(PcTheme.headerHeight);
 
+  PCShellViewModel? _tryGetShell(BuildContext context) {
+    try {
+      return Provider.of<PCShellViewModel>(context, listen: false);
+    } catch (_) {
+      return null;
+    }
+  }
+
   void _handleBack(BuildContext context) {
     if (onBack != null) {
       onBack!();
@@ -28,8 +36,10 @@ class PcPageHeader extends StatelessWidget implements PreferredSizeWidget {
     }
 
     // 默认返回逻辑: 如果是在聊天 Tab 且有选中的会话，则返回到会话面板
-    final shell = Provider.of<PCShellViewModel>(context, listen: false);
-    if (shell.selectedTab == PCShellViewModel.tabChat && shell.selectedConversation != null) {
+    final shell = _tryGetShell(context);
+    if (shell != null &&
+        shell.selectedTab == PCShellViewModel.tabChat &&
+        shell.selectedConversation != null) {
       shell.openConversation(shell.selectedConversation!);
     } else {
       Navigator.of(context).maybePop();
@@ -43,8 +53,10 @@ class PcPageHeader extends StatelessWidget implements PreferredSizeWidget {
     if (onBack != null) {
       return true;
     }
-    final shell = Provider.of<PCShellViewModel>(context, listen: false);
-    return shell.selectedTab == PCShellViewModel.tabChat && shell.selectedConversation != null;
+    final shell = _tryGetShell(context);
+    return shell != null &&
+        shell.selectedTab == PCShellViewModel.tabChat &&
+        shell.selectedConversation != null;
   }
 
   @override

@@ -638,6 +638,7 @@ class BackupManager {
 
   Future<void> _uploadFileToPC(String ip, int port, String relativePath, File file) async {
     final url = Uri.http('$ip:$port', '/backup');
+    final redirectedUrl = url;
 
     // Protocol: [4 bytes path len][path][8 bytes file len][file content]
     final pathBytes = utf8.encode(relativePath);
@@ -678,7 +679,7 @@ class BackupManager {
     // Alternative: Use http.Client().send(request).
     final client = http.Client();
     try {
-      final req = http.StreamedRequest('POST', url);
+      final req = http.StreamedRequest('POST', redirectedUrl);
 
       // Don't await addStream? No, we should.
       // But we must call client.send(req) to START the request.

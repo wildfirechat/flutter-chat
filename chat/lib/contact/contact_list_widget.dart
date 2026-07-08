@@ -88,7 +88,6 @@ class _ContactListWidgetState extends State<ContactListWidget> {
       ['assets/images/contact_new_friend.png', AppLocalizations.of(context)!.newFriend, 'new_friend'],
       ['assets/images/contact_fav_group.png', AppLocalizations.of(context)!.favGroup, 'fav_group'],
       ['assets/images/contact_subscribed_channel.png', AppLocalizations.of(context)!.subscribedChannel, 'subscribed_channel'],
-      // ['assets/images/contact_organization.png', AppLocalizations.of(context)!.organization, 'organization'],
     ];
     return ChangeNotifierProvider<OrganizationViewModel>(
       create: (_) {

@@ -42,15 +42,15 @@ class PluginBoard extends StatelessWidget {
 
     // 群接龙仅在群组中且配置了服务地址时显示
     if (conversation.conversationType == ConversationType.Group &&
-        Config.COLLECTION_SERVER_ADDRESS != null &&
-        Config.COLLECTION_SERVER_ADDRESS!.isNotEmpty) {
+        Config.collectionServerAddress != null &&
+        Config.collectionServerAddress!.isNotEmpty) {
       items.add(_PluginItem('assets/images/input/collection.png', "collection"));
     }
 
     // 群投票仅在群组中且配置了服务地址时显示
     if (conversation.conversationType == ConversationType.Group &&
-        Config.POLL_SERVER_ADDRESS != null &&
-        Config.POLL_SERVER_ADDRESS!.isNotEmpty) {
+        Config.pollServerAddress != null &&
+        Config.pollServerAddress!.isNotEmpty) {
       items.add(_PluginItem('assets/images/input/poll.png', "poll"));
     }
 

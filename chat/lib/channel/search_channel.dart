@@ -3,6 +3,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
 
 import '../config.dart';
+import '../utils/media_url_redirector.dart';
 import '../channel/channel_info_widget.dart';
 
 class SearchChannelDelegate extends SearchDelegate<String> {
@@ -64,7 +65,7 @@ class SearchChannelDelegate extends SearchDelegate<String> {
       child: Column(children: [
         Row(
           children: [
-            Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (channelInfo.portrait == null || channelInfo.portrait!.isEmpty)?Image.asset(Config.defaultChannelPortrait, width: 40.0, height: 40.0):Image.network(channelInfo.portrait!, width: 40, height: 40,),),),
+            Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (channelInfo.portrait == null || channelInfo.portrait!.isEmpty)?Image.asset(Config.defaultChannelPortrait, width: 40.0, height: 40.0):Image.network(MediaUrlRedirector.redirect(channelInfo.portrait!), width: 40, height: 40,),),),
             Expanded(child: Text(channelInfo.name!)),
           ],
         ),

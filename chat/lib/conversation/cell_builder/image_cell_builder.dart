@@ -6,6 +6,7 @@ import 'package:image/image.dart' as image;
 
 import 'package:imclient/message/image_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:imclient/tools.dart';
 
 import '../../ui_model/ui_message.dart';
@@ -57,7 +58,7 @@ class ImageCellBuilder extends PortraitCellBuilder {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: CachedNetworkImage(
-            imageUrl: imageMessageContent.remoteUrl!,
+            imageUrl: MediaUrlRedirector.redirect(imageMessageContent.remoteUrl!),
             width: width,
             height: height,
             fit: BoxFit.cover,

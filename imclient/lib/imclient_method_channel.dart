@@ -82,6 +82,7 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   static late ConnectionStatusChangedCallback _connectionStatusChangedCallback;
+  static OnConnectedCallback? _onConnectedCallback;
   static late ReceiveMessageCallback _receiveMessageCallback;
   static late RecallMessageCallback _recallMessageCallback;
   static late DeleteMessageCallback _deleteMessageCallback;
@@ -234,7 +235,8 @@ class ImclientPlatform extends PlatformInterface {
       ReceiveMessageCallback receiveMessageCallback,
       RecallMessageCallback recallMessageCallback,
       DeleteMessageCallback deleteMessageCallback,
-      {MessageDeliveriedCallback? messageDeliveriedCallback,
+      {OnConnectedCallback? onConnectedCallback,
+        MessageDeliveriedCallback? messageDeliveriedCallback,
         MessageReadedCallback? messageReadedCallback,
         GroupInfoUpdatedCallback? groupInfoUpdatedCallback,
         GroupMemberUpdatedCallback? groupMemberUpdatedCallback,
@@ -245,6 +247,7 @@ class ImclientPlatform extends PlatformInterface {
         ChannelInfoUpdatedCallback? channelInfoUpdatedCallback,
         OnlineEventCallback? onlineEventCallback}) async {
     _connectionStatusChangedCallback = connectionStatusChangedCallback;
+    _onConnectedCallback = onConnectedCallback;
     _receiveMessageCallback = receiveMessageCallback;
     _recallMessageCallback = recallMessageCallback;
     _deleteMessageCallback = deleteMessageCallback;
@@ -269,6 +272,17 @@ class ImclientPlatform extends PlatformInterface {
           int status = call.arguments;
           _connectionStatusChangedCallback(status);
           _eventBus.fire(ConnectionStatusChangedEvent(status));
+          break;
+        case 'onConnected':
+          Map<dynamic, dynamic> args = call.arguments;
+          String host = args['host'] ?? '';
+          String ip = args['ip'] ?? '';
+          int port = args['port'] ?? 0;
+          bool mainNetwork = args['mainNetwork'] ?? false;
+          if (_onConnectedCallback != null) {
+            _onConnectedCallback!(host, ip, port, mainNetwork);
+          }
+          _eventBus.fire(ConnectedToServerEvent(host, ip, port, mainNetwork));
           break;
         case 'onReceiveMessage':
           Map<dynamic, dynamic> args = call.arguments;

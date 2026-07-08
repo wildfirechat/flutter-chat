@@ -18,6 +18,7 @@ import 'package:chat/widget/section_divider.dart';
 
 import '../pc/pc_platform.dart';
 import '../search/search_conversation_result_view.dart';
+import '../utils/media_url_redirector.dart';
 import 'conversation_files_screen.dart';
 
 class ChannelConversationInfoScreen extends StatelessWidget {
@@ -55,7 +56,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
           ? Column(
               children: [
                 CachedNetworkImage(
-                  imageUrl: channelInfo.portrait!,
+                  imageUrl: MediaUrlRedirector.redirect(channelInfo.portrait!),
                   width: 80,
                   height: 80,
                 ),

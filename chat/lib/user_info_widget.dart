@@ -9,6 +9,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/contact/invite_friend.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
@@ -110,15 +111,10 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   }
 
   void _openOrganization(int organizationId) {
-    final page = OrganizationScreen(initialOrganizationId: organizationId);
-    if (isDesktopShell && widget.onOpenPage != null) {
-      widget.onOpenPage!(page);
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => page),
-      );
-    }
+    openPage(
+      context,
+      OrganizationScreen(initialOrganizationId: organizationId),
+    );
   }
 
   Future<void> _refreshUserInfo() async {
@@ -409,7 +405,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
               height: 60,
               width: 60,
               margin: const EdgeInsets.only(right: 16),
-              child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 32.0, height: 32.0) : Image.network(portrait, width: 32.0, height: 32.0),
+              child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 32.0, height: 32.0) : Image.network(MediaUrlRedirector.redirect(portrait), width: 32.0, height: 32.0),
             ),
             onTap: () {
               //show user portrait

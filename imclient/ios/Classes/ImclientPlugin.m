@@ -1,7 +1,7 @@
 #import "ImclientPlugin.h"
 #import <WFChatClient/WFCChatClient.h>
 
-@interface ImclientPlugin ()
+@interface ImclientPlugin () <ConnectToServerDelegate>
 @property(nonatomic, strong)NSString *userId;
 @property(nonatomic, strong)NSString *token;
 
@@ -16,6 +16,7 @@ ImclientPlugin *gIMClientInstance;
                                      methodChannelWithName:@"imclient"
                                      binaryMessenger:[registrar messenger]];
     ImclientPlugin* instance = [[ImclientPlugin alloc] init];
+    [[WFCCNetworkService sharedInstance] setConnectToServerDelegate:instance];
     [instance observeIMEvents];
     [registrar addMethodCallDelegate:instance channel:channel];
     gIMClientInstance = instance;
@@ -1931,6 +1932,11 @@ ImclientPlugin *gIMClientInstance;
 - (void)onConnectionStatusChanged:(NSNotification *)notification {
     int status = [notification.object intValue];
     [self.channel invokeMethod:@"onConnectionStatusChanged" arguments:@(status)];
+}
+
+#pragma mark - ConnectToServerDelegate
+- (void)onConnected:(NSString *)host ip:(NSString *)ip port:(int)port mainNw:(BOOL)mainNw {
+    [self.channel invokeMethod:@"onConnected" arguments:@{@"host":host ?: @"", @"ip":ip ?: @"", @"port":@(port), @"mainNetwork":@(mainNw)}];
 }
 
 - (void)onUserInfoUpdated:(NSNotification *)notification {

@@ -14,6 +14,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class VoipCallScreen extends StatefulWidget {
@@ -386,7 +387,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                 Container(
                   decoration: BoxDecoration(
                     image: DecorationImage(
-                      image: NetworkImage(_targetUserInfo!.portrait!),
+                      image: NetworkImage(MediaUrlRedirector.redirect(_targetUserInfo!.portrait!)),
                       fit: BoxFit.cover,
                     ),
                   ),

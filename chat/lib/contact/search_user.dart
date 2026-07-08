@@ -5,6 +5,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:chat/user_info_widget.dart';
 
 import '../config.dart';
+import '../utils/media_url_redirector.dart';
 
 class SearchUserDelegate extends SearchDelegate<String> {
   SearchUserDelegate() : super(searchFieldLabel: "请输入电话号码或者账户");
@@ -64,7 +65,7 @@ class SearchUserDelegate extends SearchDelegate<String> {
         height: 48,
         child: Row(
           children: [
-            Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (userInfo.portrait == null || userInfo.portrait!.isEmpty)?Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0):Image.network(userInfo.portrait!, width: 40, height: 40,),),),
+            Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (userInfo.portrait == null || userInfo.portrait!.isEmpty)?Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0):Image.network(MediaUrlRedirector.redirect(userInfo.portrait!), width: 40, height: 40,),),),
             Text(userInfo.displayName!),
           ],
         ),

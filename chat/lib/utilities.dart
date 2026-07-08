@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 extension EmptyStringToNull on String? {
@@ -166,7 +167,7 @@ class Utilities {
     if (!resolvedUrl.contains('://') && resolvedUrl.startsWith('www.')) {
       resolvedUrl = 'https://$resolvedUrl';
     }
-    final uri = Uri.parse(resolvedUrl);
+    final uri = Uri.parse(MediaUrlRedirector.redirect(resolvedUrl));
     if (uri.scheme == 'http' || uri.scheme == 'https') {
       if (!context.mounted) {
         return;

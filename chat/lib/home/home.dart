@@ -80,7 +80,7 @@ class HomeTabBarState extends State<HomeTabBar> {
       AppLocalizations.of(context)!.tabMe
     ];
 
-    if (Config.WORKSPACE_URL.isEmpty) {
+    if ((Config.workspaceUrl ?? '').isEmpty) {
       if (appBarTitles.length > 2) {
         appBarTitles.removeAt(2);
       }

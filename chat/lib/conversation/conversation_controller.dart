@@ -33,6 +33,7 @@ import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/config.dart';
 import 'package:chat/model/favorite_item.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/widget/popup_menu_overlay.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -229,7 +230,7 @@ class ConversationController extends ChangeNotifier {
         final videoContent = model.message.content as VideoMessageContent;
         final videoUrl = videoContent.localPath != null && videoContent.localPath!.isNotEmpty && File(videoContent.localPath!).existsSync()
             ? Uri.file(videoContent.localPath!)
-            : (videoContent.remoteUrl != null ? Uri.parse(videoContent.remoteUrl!) : null);
+            : (videoContent.remoteUrl != null ? Uri.parse(MediaUrlRedirector.redirect(videoContent.remoteUrl!)) : null);
         if (videoUrl != null) {
           canLaunchUrl(videoUrl).then((canLaunch) {
             if (canLaunch) {
@@ -335,9 +336,10 @@ class ConversationController extends ChangeNotifier {
     } else if (model.message.content is FileMessageContent) {
       FileMessageContent fileContent =
           model.message.content as FileMessageContent;
-      canLaunchUrl(Uri.parse(fileContent.remoteUrl!)).then((value) {
+      final fileUrl = MediaUrlRedirector.redirect(fileContent.remoteUrl!);
+      canLaunchUrl(Uri.parse(fileUrl)).then((value) {
         if (value) {
-          launchUrl(Uri.parse(fileContent.remoteUrl!));
+          launchUrl(Uri.parse(fileUrl));
         } else {
           showToast(msg: AppLocalizations.of(context)!.cannotOpen);
         }
@@ -784,7 +786,7 @@ class ConversationController extends ChangeNotifier {
         return;
       }
 
-      await _makeAsrRequest(audioMessage.remoteUrl!, (resultChunk) {
+      await _makeAsrRequest(MediaUrlRedirector.redirect(audioMessage.remoteUrl!), (resultChunk) {
         // 回调函数：每接收到结果片段就更新
         audioMessage.speechText = (audioMessage.speechText ?? '') + resultChunk;
         eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
@@ -817,7 +819,7 @@ class ConversationController extends ChangeNotifier {
     try {
       final request = http.Request(
         'POST',
-        Uri.parse(Config.ASR_SERVER),
+        Uri.parse(Config.asrServerUrl ?? Config.ASR_SERVER),
       );
 
       request.headers.addAll({

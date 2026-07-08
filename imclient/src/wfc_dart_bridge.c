@@ -52,6 +52,7 @@ enum {
   kTagSendMessageUploaded = 26,
   kTagSendMessageError = 27,
   kTagUploadMediaProgress = 28,
+  kTagConnectedToServer = 29,
 };
 
 static Dart_Port_DL g_port = 0;
@@ -103,6 +104,20 @@ static void post(int n, Dart_CObject *items) {
 WFC_EXPORT void WFCAPI wfc_on_connection_status(int status) {
   Dart_CObject a[2] = {c_int(kTagConnectionStatus), c_int(status)};
   post(2, a);
+}
+
+WFC_EXPORT void WFCAPI wfc_on_connected(const char *host, size_t host_len,
+                                        const char *ip, size_t ip_len,
+                                        int nw_type) {
+  Dart_CObject a[5] = {c_int(kTagConnectedToServer), c_bytes(host, host_len),
+                       c_bytes(ip, ip_len), c_int(0),
+                       c_bool(nw_type == 1)};
+  post(5, a);
+}
+
+WFC_EXPORT void WFCAPI wfc_on_connecting(const char *host, size_t host_len,
+                                         const char *ip, size_t ip_len) {
+  // connecting 事件暂无业务消费
 }
 
 WFC_EXPORT void WFCAPI wfc_on_receive_message(const char *msgs, size_t len,

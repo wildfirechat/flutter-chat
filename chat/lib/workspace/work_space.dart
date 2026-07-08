@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:chat/config.dart';
 import 'package:chat/workspace/js_api.dart';
+import 'package:chat/utils/media_url_redirector.dart';
 
 // TODO: Potentially add imports for contact picking and navigation if needed for chooseContacts and openUrl
 
@@ -61,10 +62,11 @@ class _WorkSpaceState extends State<WorkSpace> {
           },
         ),
       )
-      ..addJavaScriptObject(JsApi(context, Config.WORKSPACE_URL, controller));
+      ..addJavaScriptObject(JsApi(context, Config.workspaceUrl ?? '', controller));
 
-    if (Config.WORKSPACE_URL != null && Config.WORKSPACE_URL!.isNotEmpty) {
-      controller.loadRequest(Uri.parse(Config.WORKSPACE_URL!));
+    final workspaceUrl = Config.workspaceUrl;
+    if (workspaceUrl != null && workspaceUrl.isNotEmpty) {
+      controller.loadRequest(Uri.parse(MediaUrlRedirector.redirect(workspaceUrl)));
     } else {
       // Load a default local page if WORKSPACE_URL is not set
       // controller.loadHtmlString(_kExamplePage);
