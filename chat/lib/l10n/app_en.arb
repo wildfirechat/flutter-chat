@@ -499,5 +499,10 @@
   "callSwitchCamera": "Flip",
   "callSpeaker": "Speaker",
   "callCameraOn": "Camera On",
-  "callCameraOff": "Camera Off"
+  "callCameraOff": "Camera Off",
+  "openFile": "Open File",
+  "deleteFileRecordConfirm": "Are you sure to delete this file record?",
+  "fileRecordDeleted": "File record deleted",
+  "deleteFileRecordFailed": "Failed to delete file record",
+  "searchFiles": "Search Files"
 }

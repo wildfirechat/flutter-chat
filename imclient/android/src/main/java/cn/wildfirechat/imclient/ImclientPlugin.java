@@ -968,6 +968,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         result.success(ret);
     }
 
+    private void isForceBigFilesUpload(@NonNull MethodCall call, @NonNull Result result) {
+        result.success(false);
+    }
+
     private void deleteMessage(@NonNull MethodCall call, @NonNull Result result) {
         long messageId = getLongPara(call, "messageId");
         Message msg = ChatManager.Instance().getMessage(messageId);

@@ -499,5 +499,10 @@
   "callSwitchCamera": "翻转",
   "callSpeaker": "免提",
   "callCameraOn": "开启摄像头",
-  "callCameraOff": "关闭摄像头"
+  "callCameraOff": "关闭摄像头",
+  "openFile": "打开文件",
+  "deleteFileRecordConfirm": "确定要删除这条文件记录吗？",
+  "fileRecordDeleted": "文件记录已删除",
+  "deleteFileRecordFailed": "删除文件记录失败",
+  "searchFiles": "搜索文件"
 }

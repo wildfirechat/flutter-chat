@@ -12,6 +12,7 @@ import 'package:chat/settings/message_notification_settings.dart';
 import 'package:chat/settings/favorite_list_screen.dart';
 import 'package:chat/settings/file_records_screen.dart';
 import 'package:chat/backup/backup_and_restore_screen.dart';
+import 'package:chat/settings/account_safety_screen.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -71,7 +72,7 @@ class MeTab extends StatelessWidget {
                 AppLocalizations.of(context)!.accountSafety,
                 leftImage: Image.asset('assets/images/setting_safety.png', width: 20.0, height: 20.0),
                 onTap: () {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                  openPage(context, const AccountSafetyScreen());
                 },
               ),
               const SectionDivider(),
@@ -83,6 +84,7 @@ class MeTab extends StatelessWidget {
                   openPage(context, const GeneralSettings());
                 },
               ),
+              const SectionDivider(),
             ],
           ),
         ),

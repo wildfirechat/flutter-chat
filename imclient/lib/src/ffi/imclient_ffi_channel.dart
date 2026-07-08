@@ -7,6 +7,7 @@ import 'dart:isolate';
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show MethodCall, MissingPluginException;
+import 'package:path/path.dart' as path;
 
 import '../imclient_channel.dart';
 import 'wfclient_bindings.dart';
@@ -1024,6 +1025,40 @@ class ImclientFfiChannel implements ImclientChannel {
               0);
           return null;
         });
+      case 'uploadMediaFile':
+        {
+          final requestId = _int(args, 'requestId');
+          final filePath = _str(args, 'filePath');
+          final file = File(filePath);
+          if (!file.existsSync()) {
+            _emit('onOperationFailure', {
+              'requestId': requestId,
+              'errorCode': -1,
+            });
+            return null;
+          }
+          final bytes = file.readAsBytesSync();
+          final name = path.basename(filePath);
+          return using((a) {
+            final fileName = _ns(a, name);
+            final dataPtr = a<Uint8>(bytes.length + 1);
+            dataPtr.asTypedList(bytes.length + 1)
+              ..setAll(0, bytes)
+              ..[bytes.length] = 0;
+            _wf.uploadMedia(
+                fileName.ptr,
+                fileName.len,
+                dataPtr.cast<Char>(),
+                bytes.length,
+                _int(args, 'mediaType'),
+                _cbString,
+                _cbError,
+                _bridge.fn('wfc_on_upload_media_progress'),
+                _reqPtr(requestId),
+                0);
+            return null;
+          });
+        }
       case 'getUploadUrl':
         {
           final requestId = _int(args, 'requestId');
@@ -1048,6 +1083,8 @@ class ImclientFfiChannel implements ImclientChannel {
         }
       case 'isSupportBigFilesUpload':
         return _wf.isSupportBigFilesUpload();
+      case 'isForceBigFilesUpload':
+        return _wf.isForceBigFilesUpload();
       case 'deleteMessage':
         return _wf.deleteMessage(_int(args, 'messageId'));
       case 'batchDeleteMessages':
@@ -2079,7 +2116,6 @@ class ImclientFfiChannel implements ImclientChannel {
       case 'getNoDisturbingTimes':
       case 'setNoDisturbingTimes':
       case 'clearNoDisturbingTimes':
-      case 'uploadMediaFile':
       case 'getMediaUploadUrl':
         return null;
 

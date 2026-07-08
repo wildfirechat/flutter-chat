@@ -545,6 +545,14 @@ ImclientPlugin *gIMClientInstance;
     result(@(ret));
 }
 
+- (void)isSupportBigFilesUpload:(NSDictionary *)dict result:(FlutterResult)result {
+    result(@([[WFCCIMService sharedWFCIMService] isSupportBigFilesUpload]));
+}
+
+- (void)isForceBigFilesUpload:(NSDictionary *)dict result:(FlutterResult)result {
+    result(@(mars::stn::ForcePresignedUrlUpload()));
+}
+
 - (void)batchDeleteMessages:(NSDictionary *)dict result:(FlutterResult)result {
     NSArray<NSNumber *> *messageUids = dict[@"messageUids"];
     BOOL ret = [[WFCCIMService sharedWFCIMService] batchDeleteMessages:messageUids];

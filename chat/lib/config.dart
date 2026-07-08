@@ -35,7 +35,7 @@ class Config {
   static String? POLL_SERVER_BACKUP_ADDRESS = null;
 
   // 网盘服务地址，如果需要网盘功能，请部署网盘服务并配置地址；如果不需要网盘功能，请置为 null
-  static String? PAN_SERVER_ADDRESS = null;
+  static String? PAN_SERVER_ADDRESS = "https://pan.wildfirechat.net";
   // 网盘服务备选地址，双网环境下使用。不需要双网时保持为 null。
   static String? PAN_SERVER_BACKUP_ADDRESS = null;
 

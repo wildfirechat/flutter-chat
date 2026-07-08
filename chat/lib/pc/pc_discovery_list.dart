@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/channel/channel_list.dart';
+import 'package:chat/config.dart';
 import 'package:chat/discovery/chatroom_list.dart';
+import 'package:chat/pan/pan_home_screen.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
@@ -38,6 +40,12 @@ class PcDiscoveryList extends StatelessWidget {
           title: l10n.developmentDocumentation,
           onTap: () => openPage(context, const WFWebViewScreen('https://docs.wildfirechat.cn')),
         ),
+        if (Config.panServerAddress != null && Config.panServerAddress!.isNotEmpty)
+          _DiscoveryRow(
+            iconAsset: 'assets/images/discover_devdocs.png',
+            title: '云盘',
+            onTap: () => openPage(context, const PanHomeScreen()),
+          ),
       ],
     );
   }

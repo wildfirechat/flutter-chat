@@ -4,12 +4,14 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:chat/channel/channel_list.dart';
 import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/discovery/chatroom_list.dart';
+import 'package:chat/pan/pan_home_screen.dart';
 import 'package:chat/widget/option_item.dart';
 
+import '../config.dart';
 import '../workspace/wf_webview_screen.dart';
 
 class DiscoveryTab extends StatelessWidget {
-  const DiscoveryTab({Key? key}) : super(key: key);
+  const DiscoveryTab({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +64,17 @@ class DiscoveryTab extends StatelessWidget {
                   );
                 },
               ),
+              if (Config.panServerAddress != null && Config.panServerAddress!.isNotEmpty)
+                OptionItem(
+                  '云盘',
+                  leftImage: const Icon(Icons.cloud, color: Colors.blue, size: 20),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PanHomeScreen()),
+                    );
+                  },
+                ),
             ],
           ),
         ),

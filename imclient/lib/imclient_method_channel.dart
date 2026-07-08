@@ -2151,6 +2151,10 @@ class ImclientPlatform extends PlatformInterface {
     return await _channel.invokeMethod("isSupportBigFilesUpload");
   }
 
+  Future<bool> isForceBigFilesUpload() async {
+    return await _channel.invokeMethod("isForceBigFilesUpload");
+  }
+
   ///删除消息
   Future<bool> deleteMessage(int messageId) async {
     Message? message = await getMessage(messageId);
@@ -3552,7 +3556,7 @@ class ImclientPlatform extends PlatformInterface {
     }
 
     if(fromUser != null) {
-      args['fromUser'] = fromUser;
+      args['userId'] = fromUser;
     }
 
     _channel.invokeMethod("getConversationFiles", args);
@@ -3614,7 +3618,7 @@ class ImclientPlatform extends PlatformInterface {
     }
 
     if(fromUser != null) {
-      args['fromUser'] = fromUser;
+      args['userId'] = fromUser;
     }
 
     _channel.invokeMethod("searchFiles", args);

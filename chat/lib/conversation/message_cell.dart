@@ -13,6 +13,7 @@ import 'package:imclient/message/sticker_message_content.dart';
 import 'package:imclient/message/collection_message_content.dart';
 import 'package:imclient/message/poll_message_content.dart';
 import 'package:imclient/message/composite_message_content.dart';
+import 'package:imclient/message/articles_message_content.dart';
 import 'cell_builder/call_start_cell_builder.dart';
 import 'cell_builder/card_cell_builder.dart';
 import 'cell_builder/file_cell_builder.dart';
@@ -28,6 +29,7 @@ import 'cell_builder/sticker_cell_builder.dart';
 import 'cell_builder/collection_cell_builder.dart';
 import 'cell_builder/poll_cell_builder.dart';
 import 'cell_builder/composite_cell_builder.dart';
+import 'cell_builder/articles_cell_builder.dart';
 import '../ui_model/ui_message.dart';
 
 class MessageCell extends StatefulWidget {
@@ -75,6 +77,8 @@ class _MessageCellState extends State<MessageCell> with AutomaticKeepAliveClient
       _cellBuilder = CollectionCellBuilder(context, widget.model);
     } else if (widget.model.message.content is PollMessageContent) {
       _cellBuilder = PollCellBuilder(context, widget.model);
+    } else if (widget.model.message.content is ArticlesMessageContent) {
+      _cellBuilder = ArticlesCellBuilder(context, widget.model);
     } else {
       _cellBuilder = UnknownCellBuilder(context, widget.model);
     }

@@ -928,6 +928,11 @@ class Imclient {
     return ImclientPlatform.instance.isSupportBigFilesUpload();
   }
 
+  ///是否强制使用大文件上传（预签名 URL）
+  static Future<bool> isForceBigFilesUpload() async {
+    return ImclientPlatform.instance.isForceBigFilesUpload();
+  }
+
   ///删除消息
   static Future<bool> deleteMessage(int messageId) async {
     return ImclientPlatform.instance.deleteMessage(messageId);
