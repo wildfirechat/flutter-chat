@@ -5,8 +5,8 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:chat/wfc_scheme.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class GroupQrCodeScreen extends StatefulWidget {
   final GroupInfo groupInfo;
@@ -46,7 +46,7 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
               backgroundColor: Colors.black,
               foregroundColor: Colors.white,
             ),
-      backgroundColor: isDesktopShell ? PcTheme.chatBg : Colors.black,
+      backgroundColor: isDesktopShell ? context.colors.chatBg : Colors.black,
       body: Center(
         child: Card(
           color: Colors.white,

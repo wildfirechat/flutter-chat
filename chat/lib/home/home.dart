@@ -22,6 +22,7 @@ import 'package:chat/workspace/work_space.dart';
 import 'package:chat/scanner/qr_scanner_screen.dart';
 import 'package:chat/group/group_info_screen.dart';
 import 'package:chat/user_info_widget.dart';
+import 'package:chat/theme/app_colors.dart';
 
 import 'package:chat/wfc_scheme.dart';
 import 'package:chat/pc/pc_login_screen.dart';
@@ -353,7 +354,9 @@ class HomeTabBarState extends State<HomeTabBar> {
             ),
             body: _body,
             bottomNavigationBar: CupertinoTabBar(
-              backgroundColor: Colors.white,
+              backgroundColor: context.colors.surface,
+              activeColor: context.colors.accent,
+              inactiveColor: context.colors.textSecondary,
               items: List.generate(appBarTitles.length, (index) {
                 if (index == 0) {
                   return BottomNavigationBarItem(

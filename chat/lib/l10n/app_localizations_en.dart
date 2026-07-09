@@ -1726,4 +1726,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get fontSizePreviewHint =>
       'Messages, contact lists and more will be displayed at this size.';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
 }

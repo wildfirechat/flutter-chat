@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 弹层相对锚点的水平对齐方式。
 enum PcPopoverAlign {
@@ -69,13 +70,13 @@ class _PcPopoverRoute<T> extends PopupRoute<T> {
         child: Theme(
           data: PcTheme.themeData(context),
           child: Material(
-            color: Colors.white,
-            // 白卡片压在浅灰聊天区上:阴影拉开纵深,再用一道极淡的边收住轮廓。
+            color: context.colors.popupBg,
+            // 卡片压在聊天区上:阴影拉开纵深,再用一道极淡的边收住轮廓。
             elevation: 12,
-            shadowColor: Colors.black.withValues(alpha: 0.28),
+            shadowColor: context.colors.shadow,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
-              side: const BorderSide(color: PcTheme.hairlineSoft),
+              side: BorderSide(color: context.colors.hairlineSoft),
             ),
             clipBehavior: Clip.antiAlias,
             child: Builder(builder: builder),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 右栏内的右侧抽屉(参照微信 PC 的会话详情面板):
 /// 从右缘滑入固定宽度面板,浅色遮罩点击/Esc 关闭。
@@ -24,7 +25,7 @@ Future<T?> showPcSideSheet<T>({
           width: width,
           child: Material(
             elevation: 16,
-            shadowColor: Colors.black.withValues(alpha: 0.3),
+            shadowColor: context.colors.shadow,
             child: Builder(builder: builder),
           ),
         ),

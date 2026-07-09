@@ -17,6 +17,7 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_button_item.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/section_divider.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/layout_scale.dart';
 
 import 'package:chat/event_bus.dart';
@@ -385,9 +386,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
             child: Text(
               AppLocalizations.of(context)!.wildfireId(userInfo.name),
               textAlign: TextAlign.left,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
-                color: Color(0xFF3b3b3b),
+                color: context.colors.textSecondary,
               ),
               overflow: TextOverflow.ellipsis,
             )),
@@ -492,7 +493,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                   Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.failed}: $errorCode");
                 });
               },
-              child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.red)),
+              child: Text(AppLocalizations.of(context)!.delete, style: TextStyle(color: context.colors.danger)),
             ),
           ],
         );

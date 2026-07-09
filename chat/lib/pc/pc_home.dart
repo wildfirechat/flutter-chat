@@ -39,6 +39,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/workspace/work_space.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/call/voip_call_screen.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 桌面端三栏 Shell:侧栏(tab 切换)+ 中栏(搜索 + 各 tab 列表)+ 右栏(嵌套 Navigator 的详情区)。
 /// 会话/联系人/搜索结果点击通过回调注入,在右栏内打开;二级页面(群信息等)在右栏内部导航。
@@ -323,17 +324,17 @@ class _PCHomeState extends State<PCHome> {
           children: [
             Text(
               l10n.tips,
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: PcTheme.textPrimary),
+                  color: dialogContext.colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               l10n.addFriendSearchHint,
-              style: const TextStyle(
-                  fontSize: 13, color: PcTheme.textSecondary, height: 1.4),
+              style: TextStyle(
+                  fontSize: 13, color: dialogContext.colors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 20),
             Row(
@@ -342,7 +343,7 @@ class _PCHomeState extends State<PCHome> {
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
                   style: TextButton.styleFrom(
-                    foregroundColor: PcTheme.textSecondary,
+                    foregroundColor: dialogContext.colors.textSecondary,
                     textStyle: const TextStyle(fontSize: 13),
                   ),
                   child: Text(l10n.close),
@@ -355,7 +356,8 @@ class _PCHomeState extends State<PCHome> {
                     _openSearchModal();
                   },
                   style: FilledButton.styleFrom(
-                    backgroundColor: PcTheme.accent,
+                    backgroundColor: dialogContext.colors.accent,
+                    foregroundColor: dialogContext.colors.onAccent,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4)),
                     textStyle: const TextStyle(fontSize: 13),
@@ -427,18 +429,18 @@ class _PCHomeState extends State<PCHome> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(
+              SizedBox(
                 width: 32,
                 height: 32,
                 child: CircularProgressIndicator(
-                    strokeWidth: 3, color: PcTheme.accent),
+                    strokeWidth: 3, color: context.colors.accent),
               ),
               const SizedBox(height: 20),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 13,
-                    color: PcTheme.textPrimary,
+                    color: context.colors.textPrimary,
                     decoration: TextDecoration.none),
                 textAlign: TextAlign.center,
               ),
@@ -748,7 +750,7 @@ class _PCHomeState extends State<PCHome> {
 
   Widget _buildMiddleColumn(BuildContext context) {
     return Container(
-      color: PcTheme.middleBg,
+      color: context.colors.middleBg,
       child: Column(
         children: [
           Consumer<PCShellViewModel>(
@@ -758,12 +760,12 @@ class _PCHomeState extends State<PCHome> {
                   height: PcTheme.headerHeight,
                   padding: const EdgeInsets.only(left: 16),
                   alignment: Alignment.centerLeft,
-                  child: const Text(
+                  child: Text(
                     "设置",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: PcTheme.textPrimary,
+                      color: context.colors.textPrimary,
                     ),
                   ),
                 );
@@ -826,6 +828,7 @@ class _MiddleColumnHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     return Container(
       height: PcTheme.headerHeight,
       padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
@@ -841,20 +844,18 @@ class _MiddleColumnHeader extends StatelessWidget {
                   height: 28,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
-                    color: hovered
-                        ? const Color(0xFFD5D4D3)
-                        : PcTheme.searchFieldBg,
+                    color: hovered ? colors.inputBgHover : colors.inputBg,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.search_rounded,
-                          size: 15, color: PcTheme.textSecondary),
+                      Icon(Icons.search_rounded,
+                          size: 15, color: colors.textSecondary),
                       const SizedBox(width: 4),
                       Text(l10n.search,
-                          style: const TextStyle(
-                              fontSize: 12, color: PcTheme.textSecondary)),
+                          style: TextStyle(
+                              fontSize: 12, color: colors.textSecondary)),
                     ],
                   ),
                 ),
@@ -878,6 +879,7 @@ class _PlusMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     return PopupMenuButton<String>(
       offset: const Offset(0, 34),
       itemBuilder: (context) => [
@@ -886,8 +888,8 @@ class _PlusMenuButton extends StatelessWidget {
           height: 36,
           child: Row(
             children: [
-              const Icon(Icons.chat_bubble_outline_rounded,
-                  size: 17, color: PcTheme.textSecondary),
+              Icon(Icons.chat_bubble_outline_rounded,
+                  size: 17, color: colors.textSecondary),
               const SizedBox(width: 10),
               Text(l10n.startChat),
             ],
@@ -898,8 +900,8 @@ class _PlusMenuButton extends StatelessWidget {
           height: 36,
           child: Row(
             children: [
-              const Icon(Icons.person_add_alt_outlined,
-                  size: 17, color: PcTheme.textSecondary),
+              Icon(Icons.person_add_alt_outlined,
+                  size: 17, color: colors.textSecondary),
               const SizedBox(width: 10),
               Text(l10n.addFriend),
             ],
@@ -922,10 +924,10 @@ class _PlusMenuButton extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: hovered ? const Color(0xFFD5D4D3) : PcTheme.searchFieldBg,
+            color: hovered ? colors.inputBgHover : colors.inputBg,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: const Icon(Icons.add, size: 18, color: Color(0xFF5C5C5C)),
+          child: Icon(Icons.add, size: 18, color: colors.iconSecondary),
         ),
       ),
     );
@@ -946,11 +948,11 @@ class _PcSideBar extends StatelessWidget {
     // macOS 隐藏标题栏后红绿灯悬浮在侧栏顶部,首个元素下移避让
     final double topInset = Platform.isMacOS ? PcTheme.sidebarTopInsetMac : 20;
     return Container(
-      decoration: const BoxDecoration(
-        color: PcTheme.sidebarBg,
+      decoration: BoxDecoration(
+        color: context.colors.sidebarBg,
         border: Border(
           right: BorderSide(
-            color: PcTheme.hairline,
+            color: context.colors.hairline,
             width: 0.5,
           ),
         ),
@@ -1108,6 +1110,7 @@ class _SideBarTab extends StatelessWidget {
   Widget build(BuildContext context) {
     var shell = Provider.of<PCShellViewModel>(context);
     bool selected = shell.selectedTab == tab;
+    final colors = context.colors;
 
     return Semantics(
       label: label,
@@ -1120,10 +1123,10 @@ class _SideBarTab extends StatelessWidget {
             selected ? selectedIcon : normalIcon,
             size: 22,
             color: selected
-                ? PcTheme.accent
+                ? colors.accent
                 : hovered
-                    ? PcTheme.sidebarIconHover
-                    : PcTheme.sidebarIcon,
+                    ? colors.iconPrimary
+                    : colors.iconSecondary,
           );
           if (badgeCount != 0) {
             icon = badge.Badge(
@@ -1132,10 +1135,10 @@ class _SideBarTab extends StatelessWidget {
                   ? null
                   : Text(
                       badgeCount > 99 ? '99+' : '$badgeCount',
-                      style: const TextStyle(color: Colors.white, fontSize: 9),
+                      style: TextStyle(color: colors.onAccent, fontSize: 9),
                     ),
-              badgeStyle: const badge.BadgeStyle(
-                  badgeColor: PcTheme.badgeRed, padding: EdgeInsets.all(4)),
+              badgeStyle: badge.BadgeStyle(
+                  badgeColor: colors.badge, padding: const EdgeInsets.all(4)),
               child: icon,
             );
           }
@@ -1146,7 +1149,7 @@ class _SideBarTab extends StatelessWidget {
               height: 38,
               decoration: BoxDecoration(
                 color: hovered && !selected
-                    ? PcTheme.sidebarHoverBg
+                    ? colors.sidebarHoverBg
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(6),
               ),
@@ -1173,6 +1176,7 @@ class _SideBarIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Tooltip(
       message: tooltip,
       child: HoverBuilder(
@@ -1184,7 +1188,7 @@ class _SideBarIconButton extends StatelessWidget {
             height: 38,
             decoration: BoxDecoration(
               color: hovered
-                  ? PcTheme.sidebarHoverBg
+                  ? colors.sidebarHoverBg
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(6),
             ),
@@ -1192,7 +1196,7 @@ class _SideBarIconButton extends StatelessWidget {
               child: Icon(
                 icon,
                 size: 22,
-                color: hovered ? PcTheme.sidebarIconHover : PcTheme.sidebarIcon,
+                color: hovered ? colors.iconPrimary : colors.iconSecondary,
               ),
             ),
           ),
@@ -1211,7 +1215,7 @@ class _WorkTabPlaceholder extends StatelessWidget {
     return Center(
       child: Text(
         AppLocalizations.of(context)!.tabWork,
-        style: const TextStyle(fontSize: 13, color: PcTheme.textTertiary),
+        style: TextStyle(fontSize: 13, color: context.colors.textTertiary),
       ),
     );
   }
@@ -1224,7 +1228,7 @@ class _EmptyDetailPane extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: PcTheme.chatBg,
+      color: context.colors.chatBg,
       child: Center(
         child: Opacity(
           opacity: 0.10,

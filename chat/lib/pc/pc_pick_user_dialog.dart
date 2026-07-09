@@ -15,6 +15,7 @@ import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/repo/user_repo.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 桌面端多选联系人的分栏形态(参照微信 PC):
 /// 左栏为可搜索的联系人列表(勾选框 + 分类字母段),右栏为「已选择」清单(可逐个移除),
@@ -65,7 +66,6 @@ class _PcPickUserViewState extends State<PcPickUserView> {
   OrganizationViewModel? _orgViewModel;
 
   // 白底弹窗上的行悬停高亮:比中栏灰列表更浅,避免脏灰感。
-  static const Color _rowHover = Color(0x0A000000);
 
   @override
   void initState() {
@@ -154,7 +154,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(child: _orgMode ? _buildOrgColumn(context, viewModel) : _buildContactsColumn(context, viewModel)),
-                    const VerticalDivider(width: 0.5, thickness: 0.5, color: PcTheme.hairline),
+                    VerticalDivider(width: 0.5, thickness: 0.5, color: context.colors.hairline),
                     SizedBox(width: 240, child: _buildRightColumn(context, viewModel)),
                   ],
                 ),
@@ -171,15 +171,15 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     return Container(
       height: 52,
       padding: const EdgeInsets.only(left: 16, right: 10),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(width: 0.5, color: PcTheme.hairline)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(width: 0.5, color: context.colors.hairline)),
       ),
       child: Row(
         children: [
           Expanded(
             child: Text(
               widget.title,
-              style: PcTheme.paneTitle,
+              style: PcTheme.paneTitle(context),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -192,10 +192,10 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: hovered ? _rowHover : Colors.transparent,
+                  color: hovered ? context.colors.hoverOverlay : Colors.transparent,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: const Icon(Icons.close, size: 18, color: PcTheme.textSecondary),
+                child: Icon(Icons.close, size: 18, color: context.colors.textSecondary),
               ),
             ),
           ),
@@ -215,7 +215,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
           onChanged: viewModel.search,
         ),
         if (widget.showOrganizationEntry && !viewModel.isSearching) _buildOrganizationEntry(context),
-        const Divider(height: 0.5, thickness: 0.5, color: PcTheme.hairline),
+        Divider(height: 0.5, thickness: 0.5, color: context.colors.hairline),
         Expanded(child: _buildContactList(context, viewModel)),
       ],
     );
@@ -231,25 +231,25 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       child: Container(
         height: 32,
         decoration: BoxDecoration(
-          color: PcTheme.searchFieldBg,
+          color: context.colors.inputBg,
           borderRadius: BorderRadius.circular(6),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
           children: [
-            const Icon(Icons.search, size: 16, color: PcTheme.textSecondary),
+            Icon(Icons.search, size: 16, color: context.colors.textSecondary),
             const SizedBox(width: 6),
             Expanded(
               child: TextField(
                 controller: controller,
-                style: const TextStyle(fontSize: 13, color: PcTheme.textPrimary),
-                cursorColor: PcTheme.accent,
+                style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
+                cursorColor: context.colors.accent,
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                   hintText: hint,
-                  hintStyle: const TextStyle(fontSize: 13, color: PcTheme.textTertiary),
+                  hintStyle: TextStyle(fontSize: 13, color: context.colors.textTertiary),
                 ),
                 onChanged: onChanged,
               ),
@@ -267,19 +267,19 @@ class _PcPickUserViewState extends State<PcPickUserView> {
         onTap: _enterOrgMode,
         child: Container(
           height: 44,
-          color: hovered ? _rowHover : Colors.transparent,
+          color: hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              const Icon(Icons.corporate_fare, size: 20, color: PcTheme.accent),
+              Icon(Icons.corporate_fare, size: 20, color: context.colors.accent),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   AppLocalizations.of(context)!.selectFromOrganization,
-                  style: const TextStyle(fontSize: 13, color: PcTheme.textPrimary),
+                  style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
                 ),
               ),
-              const Icon(Icons.chevron_right, size: 18, color: PcTheme.textTertiary),
+              Icon(Icons.chevron_right, size: 18, color: context.colors.textTertiary),
             ],
           ),
         ),
@@ -342,7 +342,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
         onTap: checkable ? () => onToggle(!checked) : null,
         child: Container(
           height: 48,
-          color: checkable && hovered ? _rowHover : Colors.transparent,
+          color: checkable && hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
@@ -362,14 +362,14 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(fontSize: 13, color: PcTheme.textPrimary),
+                        style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (subtitle != null && subtitle.isNotEmpty)
                         Text(
                           subtitle,
-                          style: const TextStyle(fontSize: 11, color: PcTheme.textTertiary),
+                          style: TextStyle(fontSize: 11, color: context.colors.textTertiary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -391,7 +391,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       padding: const EdgeInsets.only(left: 16),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary),
+        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
       ),
     );
   }
@@ -411,7 +411,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               hint: '搜索成员',
               onChanged: orgVm.search,
             ),
-            const Divider(height: 0.5, thickness: 0.5, color: PcTheme.hairline),
+            Divider(height: 0.5, thickness: 0.5, color: context.colors.hairline),
             Expanded(child: _buildOrgBody(context, orgVm, pickViewModel)),
           ],
         );
@@ -431,10 +431,10 @@ class _PcPickUserViewState extends State<PcPickUserView> {
             width: 26,
             height: 26,
             decoration: BoxDecoration(
-              color: hovered ? _rowHover : Colors.transparent,
+              color: hovered ? context.colors.hoverOverlay : Colors.transparent,
               borderRadius: BorderRadius.circular(4),
             ),
-            child: const Icon(Icons.arrow_back, size: 16, color: PcTheme.textPrimary),
+            child: Icon(Icons.arrow_back, size: 16, color: context.colors.textPrimary),
           ),
         ),
       ),
@@ -443,7 +443,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     for (int i = 0; i < path.length; i++) {
       final org = path[i];
       final isLast = i == path.length - 1;
-      items.add(const Icon(Icons.chevron_right, size: 16, color: PcTheme.textTertiary));
+      items.add(Icon(Icons.chevron_right, size: 16, color: context.colors.textTertiary));
       items.add(
         HoverBuilder(
           cursor: isLast ? SystemMouseCursors.basic : SystemMouseCursors.click,
@@ -455,7 +455,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                 org.name,
                 style: TextStyle(
                   fontSize: 13,
-                  color: isLast ? PcTheme.textPrimary : PcTheme.accent,
+                  color: isLast ? context.colors.textPrimary : context.colors.accent,
                   fontWeight: isLast ? FontWeight.w500 : FontWeight.normal,
                 ),
               ),
@@ -535,15 +535,15 @@ class _PcPickUserViewState extends State<PcPickUserView> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary),
+              style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 12),
               OutlinedButton(
                 onPressed: onRetry,
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: PcTheme.accent,
-                  side: const BorderSide(color: PcTheme.hairline),
+                  foregroundColor: context.colors.accent,
+                  side: BorderSide(color: context.colors.hairline),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                   textStyle: const TextStyle(fontSize: 13),
                 ),
@@ -563,21 +563,21 @@ class _PcPickUserViewState extends State<PcPickUserView> {
         onTap: () => orgVm.navigateToOrganization(org),
         child: Container(
           height: 48,
-          color: hovered ? _rowHover : Colors.transparent,
+          color: hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              const Icon(Icons.folder_outlined, size: 22, color: PcTheme.accent),
+              Icon(Icons.folder_outlined, size: 22, color: context.colors.accent),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   '${org.name}(${org.memberCount ?? 0})',
-                  style: const TextStyle(fontSize: 13, color: PcTheme.textPrimary),
+                  style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Icon(Icons.chevron_right, size: 18, color: PcTheme.textTertiary),
+              Icon(Icons.chevron_right, size: 18, color: context.colors.textTertiary),
             ],
           ),
         ),
@@ -613,10 +613,10 @@ class _PcPickUserViewState extends State<PcPickUserView> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             l10n.pickedCount(picked.length.toString()),
-            style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary),
+            style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
           ),
         ),
-        const Divider(height: 0.5, thickness: 0.5, color: PcTheme.hairline),
+        Divider(height: 0.5, thickness: 0.5, color: context.colors.hairline),
         Expanded(
           child: picked.isEmpty
               ? Center(
@@ -625,7 +625,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                     child: Text(
                       l10n.pickContactHint,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 13, color: PcTheme.textTertiary),
+                      style: TextStyle(fontSize: 13, color: context.colors.textTertiary),
                     ),
                   ),
                 )
@@ -647,7 +647,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
         onTap: () => viewModel.pickUser(userInfo, false),
         child: Container(
           height: 48,
-          color: hovered ? _rowHover : Colors.transparent,
+          color: hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
@@ -658,7 +658,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               Expanded(
                 child: Text(
                   userInfo.userId == '@all' ? l10n.allMembers : userInfo.displayName ?? userInfo.userId,
-                  style: const TextStyle(fontSize: 13, color: PcTheme.textPrimary),
+                  style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -666,7 +666,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               Icon(
                 Icons.remove_circle_outline,
                 size: 18,
-                color: hovered ? PcTheme.badgeRed : PcTheme.textTertiary,
+                color: hovered ? context.colors.badge : context.colors.textTertiary,
               ),
             ],
           ),
@@ -681,8 +681,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     return Container(
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(width: 0.5, color: PcTheme.hairline)),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(width: 0.5, color: context.colors.hairline)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -690,8 +690,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
           OutlinedButton(
             onPressed: () => Navigator.pop(context),
             style: OutlinedButton.styleFrom(
-              foregroundColor: PcTheme.textPrimary,
-              side: const BorderSide(color: PcTheme.hairline),
+              foregroundColor: context.colors.textPrimary,
+              side: BorderSide(color: context.colors.hairline),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
               textStyle: const TextStyle(fontSize: 13),
@@ -702,8 +702,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
           FilledButton(
             onPressed: () => widget.callback(context, viewModel.pickedUsers.map((u) => u.userId).toList()),
             style: FilledButton.styleFrom(
-              backgroundColor: PcTheme.accent,
-              disabledBackgroundColor: PcTheme.accent.withValues(alpha: 0.4),
+              backgroundColor: context.colors.accent,
+              disabledBackgroundColor: context.colors.accent.withValues(alpha: 0.4),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
               padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
               textStyle: const TextStyle(fontSize: 13),

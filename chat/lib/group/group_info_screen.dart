@@ -11,10 +11,10 @@ import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class GroupInfoScreen extends StatefulWidget {
   final String groupId;
@@ -115,15 +115,15 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
             const SizedBox(height: 16),
             Text(
               name,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: PcTheme.textPrimary),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               "群号: ${widget.groupId}",
-              style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary),
+              style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
             ),
             const SizedBox(height: 40),
-            const Divider(height: 1, thickness: 0.5, color: PcTheme.hairline),
+            Divider(height: 1, thickness: 0.5, color: context.colors.hairline),
             const SizedBox(height: 36),
             _buildActionButton(groupInfo),
           ],
@@ -183,7 +183,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
         child: ElevatedButton(
           onPressed: _isLoading ? null : () => _onAction(groupInfo, isJoined),
           style: ElevatedButton.styleFrom(
-            backgroundColor: PcTheme.accent,
+            backgroundColor: context.colors.accent,
             foregroundColor: Colors.white,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),

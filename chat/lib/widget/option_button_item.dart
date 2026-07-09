@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:chat/theme/app_colors.dart';
 import '../utils/layout_scale.dart';
 
 class OptionButtonItem extends StatelessWidget {
   final String title;
+
+  /// 不传则用主题的危险色(删除/退出这类操作)。默认值不能写成 `Colors.red` ——
+  /// 那是编译期常量,跟不了明暗主题。
   final Color? titleColor;
   final bool showBottomDivider;
   final GestureTapCallback onTap;
 
-  const OptionButtonItem(this.title, this.onTap, {this.showBottomDivider = true, this.titleColor = Colors.red, super.key});
+  const OptionButtonItem(this.title, this.onTap, {this.showBottomDivider = true, this.titleColor, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,14 +27,14 @@ class OptionButtonItem extends StatelessWidget {
             child: Center(
                 child: Text(
               title,
-              style: TextStyle(color: titleColor),
+              style: TextStyle(color: titleColor ?? context.colors.danger),
             )),
           ),
         ),
         Container(
           //margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
           height: showBottomDivider ? 0.5 : 0,
-          color: const Color(0xdbdbdbdb),
+          color: context.colors.hairline,
         ),
       ],
     );

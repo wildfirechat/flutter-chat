@@ -3271,6 +3271,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'设置后，会话中的消息、联系人列表等都将按此大小显示。'**
   String get fontSizePreviewHint;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In zh, this message translates to:
+  /// **'浅色'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In zh, this message translates to:
+  /// **'深色'**
+  String get themeDark;
 }
 
 class _AppLocalizationsDelegate

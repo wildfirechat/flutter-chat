@@ -15,12 +15,12 @@ import 'package:chat/conversation/composite_message_detail_screen.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/model/favorite_item.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class FavoriteListScreen extends StatefulWidget {
   const FavoriteListScreen({super.key});
@@ -263,7 +263,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
           : AppBar(
               title: Text(AppLocalizations.of(context)!.myFavorites),
             ),
-      backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
+      backgroundColor: isDesktopShell ? context.colors.chatBg : null,
       body: _buildBody(),
     );
   }

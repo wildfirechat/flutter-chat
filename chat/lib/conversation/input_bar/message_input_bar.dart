@@ -1,18 +1,16 @@
 import 'dart:math';
-import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:chat/conversation/input_bar/plugin_board.dart';
 import 'package:chat/conversation/input_bar/record_widget.dart';
 import 'package:chat/conversation/input_bar/channel_menu_widget.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
-
+import 'package:chat/theme/app_colors.dart';
 import 'message_input_bar_controller.dart';
 
 /// 持久化的键盘高度key
@@ -169,7 +167,7 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
     }
 
     return Container(
-      color: const Color(0xFFF5F5F5),
+      color: context.colors.chatBg,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -218,10 +216,10 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
 
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-      decoration: const BoxDecoration(
-        color: Color(0xFFEDEDED),
+      decoration: BoxDecoration(
+        color: context.colors.bubbleQuoted,
         border: Border(
-          top: BorderSide(width: 0.5, color: Color(0xFFDDDDDD)),
+          top: BorderSide(width: 0.5, color: context.colors.hairline),
         ),
       ),
       child: Row(
@@ -238,7 +236,7 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
                   snapshot.data ?? '',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Color(0xFF666666), fontSize: 13),
+                  style: TextStyle(color: context.colors.bubbleQuotedText, fontSize: 13),
                 );
               },
             ),
@@ -248,7 +246,7 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
             onTap: () => controller.setQuotedMessage(null),
             child: Container(
               padding: const EdgeInsets.all(4),
-              child: const Icon(Icons.close, size: 18, color: Color(0xFF999999)),
+              child: Icon(Icons.close, size: 18, color: context.colors.iconSecondary),
             ),
           ),
         ],
@@ -261,10 +259,10 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
     bool showMenu = controller.channelInfo?.menus != null && controller.channelInfo!.menus!.isNotEmpty;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFF5F5F5),
+      decoration: BoxDecoration(
+        color: context.colors.chatBg,
         border: Border(
-          top: BorderSide(width: 1, color: Color(0xFFDDDDDD)),
+          top: BorderSide(width: 1, color: context.colors.hairline),
         ),
       ),
       child: Column(
@@ -299,6 +297,14 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
                                   focusNode: controller.focusNode,
                                   onSubmitted: (_) => controller.onSendButton(),
                                   onChanged: controller.onTextChanged,
+                                  style: TextStyle(color: context.colors.textPrimary),
+                                  placeholderStyle: TextStyle(color: context.colors.textTertiary),
+                                  decoration: BoxDecoration(
+                                    color: context.colors.surface,
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(color: context.colors.hairline),
+                                  ),
+                                  cursorColor: context.colors.accent,
                                 ),
                                 if (controller.quotedMessage != null)
                                   Padding(

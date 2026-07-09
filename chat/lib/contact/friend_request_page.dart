@@ -4,11 +4,11 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/friend_request.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 
 import '../config.dart';
 import '../utils/media_url_redirector.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class FriendRequestPage extends StatefulWidget {
   const FriendRequestPage({super.key});
@@ -71,7 +71,7 @@ class FriendRequestPageState extends State<FriendRequestPage> {
               actions: actions,
               title: const Text("好友请求"),
             ),
-      backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
+      backgroundColor: isDesktopShell ? context.colors.chatBg : null,
       body: SafeArea(
         child: ListView.builder(
           itemCount: requests.length,

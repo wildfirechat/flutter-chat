@@ -1,6 +1,5 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'sticker_manager.dart';
 
 typedef OnPickerEmojiCallback = void Function(String emoji);
@@ -106,7 +105,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
                       height: 60,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: context.colors.popupBg,
                         borderRadius: BorderRadius.circular(8),
                         boxShadow: [
                           BoxShadow(
@@ -120,7 +119,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
                     ),
                     CustomPaint(
                       size: const Size(12, 8),
-                      painter: _TrianglePainter(Colors.white),
+                      painter: _TrianglePainter(context.colors.popupBg),
                     ),
                   ],
                 ),
@@ -136,7 +135,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
                   height: 160,
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colors.popupBg,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -205,7 +204,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
 
     return Container(
       height: boardHeight,
-      color: const Color(0xFFF5F5F5),
+      color: context.colors.chatBg,
       child: Column(
         children: [
           // Tab Bar (Top Row as requested)
@@ -238,9 +237,9 @@ class _EmojiBoardState extends State<EmojiBoard> {
   Widget _buildTabBar(List<StickerCategory> categories) {
     return Container(
       height: 40,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFE5E5E5))),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        border: Border(bottom: BorderSide(color: context.colors.hairline)),
       ),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -248,7 +247,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
         itemBuilder: (context, index) {
           bool isSelected = _selectedIndex == index;
           return Material(
-            color: isSelected ? const Color(0xFFF5F5F5) : Colors.white,
+            color: isSelected ? context.colors.chatBg : context.colors.surface,
             child: InkWell(
               onTap: () {
                 _pageController.jumpToPage(index);
@@ -316,13 +315,16 @@ class _EmojiBoardState extends State<EmojiBoard> {
                 child: Container(
                   padding: EdgeInsets.all(delPadding),
                   decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 232, 232, 232),
+                    color: context.colors.inputBg,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: SizedBox(
                     width: delSizeX - 2 * delPadding,
                     height: delSizeY - 2 * delPadding,
-                    child: Image.asset('assets/images/input/del_emoji.png'),
+                    child: Image.asset(
+                      'assets/images/input/del_emoji.png',
+                      color: context.colors.iconPrimary,
+                    ),
                   ),
                 ),
               ),

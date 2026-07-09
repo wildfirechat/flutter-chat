@@ -9,9 +9,9 @@ import 'package:imclient/model/user_info.dart';
 import 'package:pinyin/pinyin.dart';
 import 'package:chat/config.dart';
 import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 微信 PC 风格的 @ 提醒浮层:键入 '@' 后浮层出现在输入栏上方,随后续键入
 /// 就地过滤候选人(匹配显示名/拼音全拼/拼音首字母);上下键移动高亮并循环,
@@ -236,9 +236,9 @@ class PcMentionOverlay {
         followerAnchor: Alignment.bottomLeft,
         offset: const Offset(12, -4),
         child: Material(
-          color: Colors.white,
+          color: context.colors.popupBg,
           elevation: 6,
-          shadowColor: Colors.black.withValues(alpha: 0.2),
+          shadowColor: context.colors.shadow,
           borderRadius: BorderRadius.circular(6),
           clipBehavior: Clip.antiAlias,
           child: SizedBox(
@@ -302,7 +302,7 @@ class _MentionRow extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          color: highlighted ? PcTheme.accent : Colors.transparent,
+          color: highlighted ? context.colors.accent : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Row(
             children: [
@@ -311,10 +311,13 @@ class _MentionRow extends StatelessWidget {
                   width: 26,
                   height: 26,
                   decoration: BoxDecoration(
-                    color: highlighted ? Colors.white.withValues(alpha: 0.25) : PcTheme.accent.withValues(alpha: 0.12),
+                    color: highlighted
+                        ? context.colors.onAccent.withValues(alpha: 0.25)
+                        : context.colors.accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Icon(Icons.campaign_outlined, size: 16, color: highlighted ? Colors.white : PcTheme.accent),
+                  child: Icon(Icons.campaign_outlined,
+                      size: 16, color: highlighted ? context.colors.onAccent : context.colors.accent),
                 )
               else
                 Portrait(
@@ -330,7 +333,8 @@ class _MentionRow extends StatelessWidget {
                   candidate.display,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 13, color: highlighted ? Colors.white : PcTheme.textPrimary),
+                  style: TextStyle(
+                      fontSize: 13, color: highlighted ? context.colors.onAccent : context.colors.textPrimary),
                 ),
               ),
             ],

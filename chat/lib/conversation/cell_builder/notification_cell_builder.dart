@@ -12,6 +12,7 @@ import 'package:imclient/message/notification/recall_notificiation_content.dart'
 import '../input_bar/message_input_bar_controller.dart';
 import '../message_cell.dart';
 import 'message_cell_builder.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class NotificationCellBuilder extends MessageCellBuilder {
   String notificaitonMsgDigest = '';
@@ -55,7 +56,7 @@ class NotificationCellBuilder extends MessageCellBuilder {
       child: Text(
         AppLocalizations.of(context)?.reedit ?? '重新编辑',
         textAlign: TextAlign.center,
-        style: const TextStyle(fontSize: 12, color: Colors.green),
+        style: TextStyle(fontSize: 12, color: context.colors.link),
       ),
     )
         : null;
@@ -67,7 +68,7 @@ class NotificationCellBuilder extends MessageCellBuilder {
           width: 200,
           height: 12,
           decoration: BoxDecoration(
-            color: Colors.grey.withOpacity(0.2),
+            color: context.colors.hoverOverlay,
             borderRadius: BorderRadius.circular(4),
           ),
         )

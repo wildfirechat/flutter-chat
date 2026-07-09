@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class InviteFriendPage extends StatefulWidget {
   const InviteFriendPage(this.userId, {super.key});
@@ -33,7 +33,7 @@ class InviteFriendPageState extends State<InviteFriendPage> {
           style: TextStyle(
             color: fieldController.value.text.isEmpty
                 ? Colors.grey
-                : (isDesktopShell ? PcTheme.accent : Colors.black),
+                : (isDesktopShell ? context.colors.accent : Colors.black),
           ),
         ),
       ),
@@ -50,7 +50,7 @@ class InviteFriendPageState extends State<InviteFriendPage> {
               actions: actions,
               title: const Text('添加好友'),
             ),
-      backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
+      backgroundColor: isDesktopShell ? context.colors.chatBg : null,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

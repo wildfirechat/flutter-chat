@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:chat/theme/app_colors.dart';
 import '../utils/layout_scale.dart';
 
 class OptionItem extends StatelessWidget {
@@ -19,6 +20,7 @@ class OptionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final rowHeight = LayoutScale.watchScale(context, 36.0, cap: LayoutScale.rowCap);
     final iconSize = LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap);
+    final colors = context.colors;
 
     return GestureDetector(
       child: Column(
@@ -51,7 +53,7 @@ class OptionItem extends StatelessWidget {
                           desc!,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.right,
-                          style: const TextStyle(color: Colors.grey, fontSize: 14),
+                          style: TextStyle(color: colors.textSecondary, fontSize: 14),
                         ),
                       )
                     : Container(),
@@ -63,7 +65,9 @@ class OptionItem extends StatelessWidget {
                         child: rightImage ?? Icon(rightIcon, size: iconSize),
                       )
                     : const SizedBox.shrink(),
-                showRightArrow ? Icon(Icons.chevron_right, size: LayoutScale.watchScale(context, 24.0), color: Colors.grey) : Container(),
+                showRightArrow
+                    ? Icon(Icons.chevron_right, size: LayoutScale.watchScale(context, 24.0), color: colors.textTertiary)
+                    : Container(),
               ],
             ),
           ),
@@ -71,7 +75,7 @@ class OptionItem extends StatelessWidget {
               ? Container(
                   margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
                   height: 0.5,
-                  color: const Color(0xdbdbdbdb),
+                  color: colors.hairline,
                 )
               : Container(),
         ],

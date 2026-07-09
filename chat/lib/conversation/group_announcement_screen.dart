@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class GroupAnnouncementScreen extends StatefulWidget {
   final String groupId;
@@ -81,7 +81,7 @@ class _GroupAnnouncementScreenState extends State<GroupAnnouncementScreen> {
           },
           child: Text(
             _isEditing ? '完成' : '编辑',
-            style: TextStyle(color: isDesktopShell ? PcTheme.accent : Colors.white),
+            style: TextStyle(color: isDesktopShell ? context.colors.accent : Colors.white),
           ),
         ),
     ];

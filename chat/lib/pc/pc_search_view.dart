@@ -4,6 +4,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/search/search_portal_result_view.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 搜索浮层内容(参照微信 PC):
 /// 头部原位替换为聚焦态的真输入框,结果以圆角浮起卡片悬于列表上方,
@@ -84,7 +85,7 @@ class _PcSearchViewState extends State<PcSearchView> {
             child: Container(
               width: widget.middleColumnWidth,
               height: PcTheme.headerHeight,
-              color: PcTheme.middleBg,
+              color: context.colors.middleBg,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               alignment: Alignment.center,
               child: Row(
@@ -94,25 +95,25 @@ class _PcSearchViewState extends State<PcSearchView> {
                       height: 28,
                       padding: const EdgeInsets.only(left: 8, right: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: context.colors.surface,
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: PcTheme.accent, width: 1.2),
+                        border: Border.all(color: context.colors.accent, width: 1.2),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.search_rounded, size: 15, color: PcTheme.textSecondary),
+                          Icon(Icons.search_rounded, size: 15, color: context.colors.textSecondary),
                           const SizedBox(width: 4),
                           Expanded(
                             child: TextField(
                               controller: _controller,
                               focusNode: _focusNode,
                               autofocus: true,
-                              style: const TextStyle(fontSize: 13, color: PcTheme.textPrimary),
+                              style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
                               decoration: InputDecoration(
                                 isCollapsed: true,
                                 border: InputBorder.none,
                                 hintText: l10n.search,
-                                hintStyle: const TextStyle(fontSize: 13, color: PcTheme.textSecondary),
+                                hintStyle: TextStyle(fontSize: 13, color: context.colors.textSecondary),
                               ),
                               onChanged: (text) => setState(() => _query = text.trim()),
                             ),
@@ -125,7 +126,7 @@ class _PcSearchViewState extends State<PcSearchView> {
                                   _controller.clear();
                                   setState(() => _query = '');
                                 },
-                                child: const Icon(Icons.cancel, size: 14, color: PcTheme.textTertiary),
+                                child: Icon(Icons.cancel, size: 14, color: context.colors.textTertiary),
                               ),
                             ),
                         ],
@@ -138,10 +139,10 @@ class _PcSearchViewState extends State<PcSearchView> {
                     width: 28,
                     height: 28,
                     decoration: BoxDecoration(
-                      color: PcTheme.searchFieldBg,
+                      color: context.colors.inputBg,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Icon(Icons.add, size: 18, color: const Color(0xFF5C5C5C).withValues(alpha: 0.4)),
+                    child: Icon(Icons.add, size: 18, color: context.colors.iconSecondary.withValues(alpha: 0.4)),
                   ),
                 ],
               ),
@@ -162,15 +163,15 @@ class _PcSearchViewState extends State<PcSearchView> {
       if (!_isFocused) {
         return const SizedBox.shrink();
       }
-      return _buildCard(
+      return _buildCard(context,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           child: Center(
             child: Text(
               l10n.searchPrompt,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: PcTheme.textSecondary,
+                color: context.colors.textSecondary,
               ),
             ),
           ),
@@ -182,7 +183,7 @@ class _PcSearchViewState extends State<PcSearchView> {
     final maxContentHeight =
         screenHeight - PcTheme.headerHeight + _resultOverlap - _cardTopGap - _cardBottomMargin;
 
-    return _buildCard(
+    return _buildCard(context,
       constraints: BoxConstraints(maxHeight: maxContentHeight),
       child: SearchPortalResultView(
         _query,
@@ -194,17 +195,17 @@ class _PcSearchViewState extends State<PcSearchView> {
     );
   }
 
-  Widget _buildCard({required Widget child, BoxConstraints? constraints}) {
+  Widget _buildCard(BuildContext context, {required Widget child, BoxConstraints? constraints}) {
     return Container(
       margin: const EdgeInsets.fromLTRB(8, _cardTopGap, 8, _cardBottomMargin),
       constraints: constraints,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.popupBg,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.18),
+            color: context.colors.shadow,
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),

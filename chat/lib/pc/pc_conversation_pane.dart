@@ -9,6 +9,7 @@ import 'package:chat/pc/pc_message_input_bar.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_side_sheet.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 桌面右栏的会话页:标题栏 + 共享 [ConversationPane](注入桌面输入栏)。
 /// 会话信息等二级页通过最近的 Navigator(右栏嵌套 Navigator)打开。
@@ -33,21 +34,22 @@ class PcConversationPane extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
-      color: PcTheme.chatBg,
+      color: colors.chatBg,
       child: Column(
         children: [
           Container(
             height: PcTheme.headerHeight,
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(width: 0.5, color: PcTheme.hairline)),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(width: 0.5, color: colors.hairline)),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: DefaultTextStyle.merge(
-                    style: PcTheme.paneTitle,
+                    style: PcTheme.paneTitle(context),
                     child: ConversationAppbarTitle(conversation),
                   ),
                 ),
@@ -59,7 +61,7 @@ class PcConversationPane extends StatelessWidget {
                       child: Icon(
                         Icons.more_horiz_rounded,
                         size: 24,
-                        color: hovered ? PcTheme.textPrimary : PcTheme.textSecondary,
+                        color: hovered ? colors.textPrimary : colors.textSecondary,
                       ),
                     ),
                   ),

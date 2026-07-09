@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:chat/pc/pc_theme.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 分隔条的拖拽方向。
 enum PcResizeAxis {
@@ -56,10 +57,11 @@ class _PcResizeHandleState extends State<PcResizeHandle> {
   bool get _isHorizontal => widget.axis == PcResizeAxis.horizontal;
 
   Color get _lineColor {
+    final colors = context.colors;
     if (_dragging) {
-      return PcTheme.resizeHandleActive;
+      return colors.accent;
     }
-    return _hovered ? PcTheme.resizeHandleHover : PcTheme.hairline;
+    return _hovered ? colors.resizeHandleHover : colors.hairline;
   }
 
   void _onDragStart(DragStartDetails details) {

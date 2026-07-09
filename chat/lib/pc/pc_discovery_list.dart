@@ -9,6 +9,7 @@ import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 桌面端“发现”中栏:与移动端 DiscoveryTab 同一组入口,
 /// 但列表页/网页在右栏打开,机器人直接打开会话(经 app_navigator 统一跳转)。
@@ -68,13 +69,13 @@ class _DiscoveryRow extends StatelessWidget {
         child: Container(
           height: 48,
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          color: hovered ? PcTheme.cellHover : Colors.transparent,
+          color: hovered ? context.colors.cellHover : Colors.transparent,
           child: Row(
             children: [
               Image.asset(iconAsset, width: 22, height: 22),
               const SizedBox(width: 12),
-              Expanded(child: Text(title, style: PcTheme.cellTitle)),
-              const Icon(Icons.chevron_right_rounded, size: 18, color: PcTheme.textTertiary),
+              Expanded(child: Text(title, style: PcTheme.cellTitle(context))),
+              Icon(Icons.chevron_right_rounded, size: 18, color: context.colors.textTertiary),
             ],
           ),
         ),

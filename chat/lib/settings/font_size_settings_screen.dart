@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/app_theme.dart';
 
 import '../viewmodel/font_size_view_model.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 字号设置。上半部分是随字号实时变化的会话预览,下半部分是档位滑块。
 ///
@@ -15,20 +15,21 @@ class FontSizeSettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.fontSize),
         elevation: 0,
-        backgroundColor: AppTheme.chatBackground,
-        foregroundColor: Colors.black87,
+        backgroundColor: colors.conversationBg,
+        foregroundColor: colors.textPrimary,
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               l10n.done,
-              style: const TextStyle(
-                color: AppTheme.accent,
+              style: TextStyle(
+                color: colors.accent,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
@@ -36,7 +37,7 @@ class FontSizeSettingsScreen extends StatelessWidget {
           ),
         ],
       ),
-      backgroundColor: AppTheme.chatBackground,
+      backgroundColor: colors.conversationBg,
       body: SafeArea(
         child: Column(
           children: [
@@ -44,22 +45,25 @@ class FontSizeSettingsScreen extends StatelessWidget {
               child: ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                 children: [
-                  _buildChatTime('10:00'),
+                  _buildChatTime(context, '10:00'),
                   const SizedBox(height: 16),
                   _buildLeftMessage(
-                    avatarColor: const Color(0xFFE0E0E0),
+                    context,
+                    avatarColor: colors.inputBg,
                     avatarText: 'W',
                     text: l10n.fontSizePreviewIncoming,
                   ),
                   const SizedBox(height: 16),
                   _buildRightMessage(
-                    avatarColor: AppTheme.accent,
+                    context,
+                    avatarColor: colors.accent,
                     avatarText: 'M',
                     text: l10n.fontSizePreviewOutgoing,
                   ),
                   const SizedBox(height: 16),
                   _buildLeftMessage(
-                    avatarColor: const Color(0xFFE0E0E0),
+                    context,
+                    avatarColor: colors.inputBg,
                     avatarText: 'W',
                     text: l10n.fontSizePreviewHint,
                   ),
@@ -76,23 +80,23 @@ class FontSizeSettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChatTime(String time) {
+  Widget _buildChatTime(BuildContext context, String time) {
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.06),
+          color: context.colors.hoverOverlay,
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(
           time,
-          style: const TextStyle(fontSize: 11, color: Colors.grey),
+          style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
         ),
       ),
     );
   }
 
-  Widget _buildAvatar(Color color, String text) {
+  Widget _buildAvatar(BuildContext context, Color color, String text) {
     return Container(
       width: 40,
       height: 40,
@@ -100,16 +104,17 @@ class FontSizeSettingsScreen extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         text,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+        style: TextStyle(color: context.colors.onAccent, fontWeight: FontWeight.bold, fontSize: 16),
       ),
     );
   }
 
-  Widget _buildBubble(String text, {required bool sent}) {
+  Widget _buildBubble(BuildContext context, String text, {required bool sent}) {
+    final colors = context.colors;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: sent ? AppTheme.bubbleSent : AppTheme.bubbleReceived,
+        color: sent ? colors.bubbleSent : colors.bubbleReceived,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(sent ? 8 : 2),
           topRight: Radius.circular(sent ? 2 : 8),
@@ -119,32 +124,34 @@ class FontSizeSettingsScreen extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: const TextStyle(fontSize: 15, color: Colors.black87),
+        style: TextStyle(fontSize: 15, color: sent ? colors.bubbleSentText : colors.bubbleReceivedText),
       ),
     );
   }
 
-  Widget _buildLeftMessage({required Color avatarColor, required String avatarText, required String text}) {
+  Widget _buildLeftMessage(BuildContext context,
+      {required Color avatarColor, required String avatarText, required String text}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildAvatar(avatarColor, avatarText),
+        _buildAvatar(context, avatarColor, avatarText),
         const SizedBox(width: 12),
-        Flexible(child: _buildBubble(text, sent: false)),
+        Flexible(child: _buildBubble(context, text, sent: false)),
         const SizedBox(width: 40), // 留白,避免气泡顶到对侧边缘
       ],
     );
   }
 
-  Widget _buildRightMessage({required Color avatarColor, required String avatarText, required String text}) {
+  Widget _buildRightMessage(BuildContext context,
+      {required Color avatarColor, required String avatarText, required String text}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         const SizedBox(width: 40),
-        Flexible(child: _buildBubble(text, sent: true)),
+        Flexible(child: _buildBubble(context, text, sent: true)),
         const SizedBox(width: 12),
-        _buildAvatar(avatarColor, avatarText),
+        _buildAvatar(context, avatarColor, avatarText),
       ],
     );
   }
@@ -156,6 +163,7 @@ class _FontSizeSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     final labels = [
       l10n.fontSizeSmall,
       l10n.fontSizeNormal,
@@ -168,25 +176,25 @@ class _FontSizeSlider extends StatelessWidget {
       builder: (context, fontSizeViewModel, child) {
         assert(labels.length == fontSizeViewModel.itemCount, '档位标签数量必须与 FontSizeViewModel 的档位数一致');
         return Container(
-          color: Colors.white,
+          color: colors.surface,
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
                 children: [
-                  const Text('A', style: TextStyle(fontSize: 14, color: Colors.black54)),
+                  Text('A', style: TextStyle(fontSize: 14, color: colors.textSecondary)),
                   Expanded(
                     child: SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         trackHeight: 3,
-                        activeTrackColor: AppTheme.accent,
-                        inactiveTrackColor: const Color(0xFFE5E5E5),
-                        thumbColor: Colors.white,
+                        activeTrackColor: colors.accent,
+                        inactiveTrackColor: colors.inputBg,
+                        thumbColor: colors.surface,
                         thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10.0, elevation: 3.0),
-                        overlayColor: AppTheme.accent.withValues(alpha: 0.12),
-                        activeTickMarkColor: AppTheme.accent,
-                        inactiveTickMarkColor: const Color(0xFFCCCCCC),
+                        overlayColor: colors.accent.withValues(alpha: 0.12),
+                        activeTickMarkColor: colors.accent,
+                        inactiveTickMarkColor: colors.textTertiary,
                         tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 2.5),
                       ),
                       child: Slider(
@@ -198,7 +206,8 @@ class _FontSizeSlider extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Text('A', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  Text('A',
+                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: colors.textPrimary)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -213,7 +222,7 @@ class _FontSizeSlider extends StatelessWidget {
                           textAlign: TextAlign.center,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          style: TextStyle(fontSize: 12, color: colors.textSecondary),
                         ),
                       ),
                   ],

@@ -36,6 +36,7 @@ import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/viewmodel/locale_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
+import 'package:chat/viewmodel/theme_view_model.dart';
 import 'package:chat/wfc_notification_manager.dart';
 
 import 'app_navigator.dart';
@@ -63,16 +64,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (!isDesktopShell) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      statusBarBrightness: Brightness.light,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarDividerColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.dark,
-      systemNavigationBarContrastEnforced: false,
-      systemStatusBarContrastEnforced: false,
-    ));
+    // 状态栏/导航栏图标的明暗跟随主题,由 MyApp 里的 AnnotatedRegion 下发。
   }
   final PcLayoutViewModel? pcLayoutViewModel = isDesktopShell ? PcLayoutViewModel() : null;
   if (isDesktopShell) {
@@ -80,6 +72,9 @@ void main() async {
     // 首帧之前读出上次的栏宽/输入栏高度,避免默认尺寸闪一下再跳
     await pcLayoutViewModel!.load();
   }
+  // 同理,首帧之前读出明暗设置,否则暗色用户开屏会先闪一帧浅色
+  final themeViewModel = ThemeViewModel();
+  await themeViewModel.load();
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider<UserViewModel>(create: (_) => UserViewModel()),
@@ -90,10 +85,11 @@ void main() async {
       ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
       ChangeNotifierProvider<LocaleViewModel>(create: (_) => LocaleViewModel()),
       ChangeNotifierProvider<FontSizeViewModel>(create: (_) => FontSizeViewModel()),
+      // 已在 main 中 load 完毕,用 .value 交给 Provider(应用级生命周期,不随登出销毁)
+      ChangeNotifierProvider<ThemeViewModel>.value(value: themeViewModel),
       // 桌面 Shell 的导航状态。仅桌面注册:共享代码经 app_navigator.dart 查找,
       // 移动端取不到即走整页 push 路径。
       if (isDesktopShell) ChangeNotifierProvider<PCShellViewModel>(create: (_) => PCShellViewModel()),
-      // 已在 main 中 load 完毕,用 .value 交给 Provider(应用级生命周期,不随登出销毁)
       if (isDesktopShell) ChangeNotifierProvider<PcLayoutViewModel>.value(value: pcLayoutViewModel!),
     ],
     child: const MyApp(),
@@ -427,20 +423,29 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<LocaleViewModel, FontSizeViewModel>(
-      builder: (context, localeViewModel, fontSizeViewModel, _) {
+    return Consumer3<LocaleViewModel, FontSizeViewModel, ThemeViewModel>(
+      builder: (context, localeViewModel, fontSizeViewModel, themeViewModel, _) {
         return MaterialApp(
           locale: localeViewModel.locale,
-          // 字号完全由 app 内的「字体大小」设置接管,刻意丢弃系统 textScaler
-          // (与微信一致)。系统字体档位与 app 档位叠乘会放到 1.9 倍以上,
-          // 现有布局撑不住;若要恢复跟随系统,需要先把固定高度全部改成约束。
           builder: (context, child) {
-            return MediaQuery(
+            // 字号完全由 app 内的「字体大小」设置接管,刻意丢弃系统 textScaler
+            // (与微信一致)。系统字体档位与 app 档位叠乘会放到 1.9 倍以上,
+            // 现有布局撑不住;若要恢复跟随系统,需要先把固定高度全部改成约束。
+            Widget content = MediaQuery(
               data: MediaQuery.of(context).copyWith(
                 textScaler: TextScaler.linear(fontSizeViewModel.textScaleFactor),
               ),
               child: child!,
             );
+            if (!isDesktopShell) {
+              // 这里的 context 位于 MaterialApp 的 Theme 之下,themeMode 为
+              // ThemeMode.system 时也能拿到系统解析后的明暗。
+              content = AnnotatedRegion<SystemUiOverlayStyle>(
+                value: AppTheme.systemOverlayStyle(Theme.of(context).brightness),
+                child: content,
+              );
+            }
+            return content;
           },
           localizationsDelegates: const [
             AppLocalizations.delegate,
@@ -454,10 +459,9 @@ class _MyAppState extends State<MyApp> {
           ],
           navigatorKey: navKey,
           home: _buildHome(),
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-            checkboxTheme: AppTheme.checkboxTheme,
-          ),
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
+          themeMode: themeViewModel.themeMode,
         );
       },
     );

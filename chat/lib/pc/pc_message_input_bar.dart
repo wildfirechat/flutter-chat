@@ -24,6 +24,7 @@ import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/screenshot_service.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 桌面形态输入栏:顶部拖拽条 + 工具条(表情/图片/文件/通话)+ 多行输入区 + 发送按钮。
 /// Enter 发送、Shift+Enter 换行;中文输入法组合期间的 Enter 交给输入法。
@@ -195,13 +196,13 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
           children: [
             Text(
               l10n.sendFile,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: PcTheme.textPrimary),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: ctx.colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               l10n.confirmSendFile(fileName),
-              style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary, height: 1.4),
+              style: TextStyle(fontSize: 13, color: ctx.colors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 20),
             Row(
@@ -209,14 +210,15 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(false),
-                  style: TextButton.styleFrom(foregroundColor: PcTheme.textSecondary),
+                  style: TextButton.styleFrom(foregroundColor: ctx.colors.textSecondary),
                   child: Text(l10n.cancel),
                 ),
                 const SizedBox(width: 8),
                 FilledButton(
                   onPressed: () => Navigator.of(ctx).pop(true),
                   style: FilledButton.styleFrom(
-                    backgroundColor: PcTheme.accent,
+                    backgroundColor: ctx.colors.accent,
+                    foregroundColor: ctx.colors.onAccent,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                   ),
                   child: Text(l10n.send),
@@ -321,7 +323,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
         selector: (_, model) => model.inputBarHeight,
         builder: (context, height, child) => Container(
           height: _effectiveHeight(height),
-          color: PcTheme.chatBg,
+          color: context.colors.chatBg,
           child: child,
         ),
         child: Column(
@@ -389,7 +391,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
                   keyboardType: TextInputType.multiline,
-                  style: const TextStyle(fontSize: 14, height: 1.5, color: PcTheme.textPrimary),
+                  style: TextStyle(fontSize: 14, height: 1.5, color: context.colors.textPrimary),
                   decoration: const InputDecoration(
                     isCollapsed: true,
                     border: InputBorder.none,
@@ -413,10 +415,10 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                     child: ElevatedButton(
                       onPressed: hasText ? controller.onSendButton : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: PcTheme.accent,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: const Color(0xFFE3E2E1),
-                        disabledForegroundColor: PcTheme.textTertiary,
+                        backgroundColor: context.colors.accent,
+                        foregroundColor: context.colors.onAccent,
+                        disabledBackgroundColor: context.colors.inputBg,
+                        disabledForegroundColor: context.colors.textTertiary,
                         elevation: 0,
                         minimumSize: const Size(88, 30),
                         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -466,10 +468,10 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
             height: 30,
             margin: const EdgeInsets.only(right: 2),
             decoration: BoxDecoration(
-              color: _hovered ? Colors.black.withValues(alpha: 0.06) : Colors.transparent,
+              color: _hovered ? context.colors.hoverOverlay : Colors.transparent,
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Icon(widget.icon, size: 21, color: const Color(0xFF5C5C5C)),
+            child: Icon(widget.icon, size: 21, color: context.colors.iconSecondary),
           ),
         ),
       ),
@@ -500,13 +502,14 @@ class _QuoteChip extends StatelessWidget {
       );
     }
 
+    final colors = context.colors;
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 420),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
-          color: const Color(0xFFEAE9E8),
+          color: colors.inputBg,
           borderRadius: BorderRadius.circular(4),
         ),
         child: Row(
@@ -523,7 +526,7 @@ class _QuoteChip extends StatelessWidget {
                   snapshot.data ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary),
+                  style: TextStyle(fontSize: 12, color: colors.textSecondary),
                 ),
               ),
             ),
@@ -532,7 +535,7 @@ class _QuoteChip extends StatelessWidget {
               cursor: SystemMouseCursors.click,
               builder: (context, hovered) => GestureDetector(
                 onTap: () => controller.setQuotedMessage(null),
-                child: Icon(Icons.close, size: 14, color: hovered ? PcTheme.textPrimary : PcTheme.textSecondary),
+                child: Icon(Icons.close, size: 14, color: hovered ? colors.textPrimary : colors.textSecondary),
               ),
             ),
           ],

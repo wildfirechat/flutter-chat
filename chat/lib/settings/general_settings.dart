@@ -5,12 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import '../app_navigator.dart';
 import '../pc/pc_platform.dart';
-import '../pc/pc_theme.dart';
 import '../pc/widgets/pc_page_header.dart';
 import '../viewmodel/locale_view_model.dart';
+import '../viewmodel/theme_view_model.dart';
 import 'font_size_settings_screen.dart';
 import '../widget/option_item.dart';
 import '../widget/section_divider.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class GeneralSettings extends StatelessWidget {
   const GeneralSettings({super.key});
@@ -23,7 +24,7 @@ class GeneralSettings extends StatelessWidget {
           : AppBar(
               title: Text(AppLocalizations.of(context)!.settings),
             ),
-      backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
+      backgroundColor: isDesktopShell ? context.colors.chatBg : null,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -50,7 +51,7 @@ class GeneralSettings extends StatelessWidget {
               OptionItem(
                 AppLocalizations.of(context)!.theme,
                 onTap: () {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                  _showThemeDialog(context);
                 },
               ),
               const SectionDivider(),
@@ -97,7 +98,7 @@ class GeneralSettings extends StatelessWidget {
                   child: Center(
                     child: Text(
                       AppLocalizations.of(context)!.logout,
-                      style: const TextStyle(color: Colors.red, fontSize: 16),
+                      style: TextStyle(color: context.colors.danger, fontSize: 16),
                     ),
                   ),
                 ),
@@ -125,7 +126,7 @@ class GeneralSettings extends StatelessWidget {
               ListTile(
                 title: Text(l10n.followSystem),
                 trailing: localeViewModel.localeMode == 'follow_system'
-                    ? const Icon(Icons.check, color: Colors.blue)
+                    ? Icon(Icons.check, color: context.colors.accent)
                     : null,
                 onTap: () {
                   localeViewModel.setLocaleMode('follow_system');
@@ -135,7 +136,7 @@ class GeneralSettings extends StatelessWidget {
               ListTile(
                 title: Text(l10n.chinese),
                 trailing: localeViewModel.localeMode == 'zh'
-                    ? const Icon(Icons.check, color: Colors.blue)
+                    ? Icon(Icons.check, color: context.colors.accent)
                     : null,
                 onTap: () {
                   localeViewModel.setLocaleMode('zh');
@@ -145,13 +146,45 @@ class GeneralSettings extends StatelessWidget {
               ListTile(
                 title: Text(l10n.english),
                 trailing: localeViewModel.localeMode == 'en'
-                    ? const Icon(Icons.check, color: Colors.blue)
+                    ? Icon(Icons.check, color: context.colors.accent)
                     : null,
                 onTap: () {
                   localeViewModel.setLocaleMode('en');
                   Navigator.pop(context);
                 },
               ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showThemeDialog(BuildContext context) {
+    final themeViewModel = Provider.of<ThemeViewModel>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        Widget option(String label, ThemeMode mode) => ListTile(
+              title: Text(label),
+              trailing: themeViewModel.themeMode == mode
+                  ? Icon(Icons.check, color: dialogContext.colors.accent)
+                  : null,
+              onTap: () {
+                themeViewModel.setThemeMode(mode);
+                Navigator.pop(dialogContext);
+              },
+            );
+        return AlertDialog(
+          title: Text(l10n.theme),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              option(l10n.followSystem, ThemeMode.system),
+              option(l10n.themeLight, ThemeMode.light),
+              option(l10n.themeDark, ThemeMode.dark),
             ],
           ),
         );

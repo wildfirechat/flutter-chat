@@ -19,6 +19,7 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/widget/section_divider.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 
@@ -194,9 +195,9 @@ class SelfProfile extends StatelessWidget {
                               child: Text(
                                 AppLocalizations.of(context)!.wildfireId(userInfo.name),
                                 textAlign: TextAlign.left,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF3b3b3b),
+                                  color: context.colors.textSecondary,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),

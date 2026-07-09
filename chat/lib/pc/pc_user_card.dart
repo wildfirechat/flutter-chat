@@ -5,13 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
 import 'package:chat/pc/pc_av_call.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_popover.dart';
 import 'package:chat/user_info_widget.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 会话内点击头像弹出的用户信息卡片(参照微信 PC),代替整页 push。
 /// 跳转经 app_navigator 统一入口(Shell 状态注册在应用根部,浮层内也能取到)。
@@ -61,7 +61,7 @@ class _PcUserCard extends StatelessWidget {
                             cursor: SystemMouseCursors.click,
                             child: Text(
                               userInfo.displayName ?? '<$userId>',
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: PcTheme.textPrimary),
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -70,7 +70,7 @@ class _PcUserCard extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           '${AppLocalizations.of(context)!.accountLabel}${userInfo.name}',
-                          style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary),
+                          style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -165,15 +165,15 @@ class _CardAction extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
           decoration: BoxDecoration(
-            color: hovered ? Colors.black.withValues(alpha: 0.04) : Colors.transparent,
+            color: hovered ? context.colors.hoverOverlay : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 20, color: PcTheme.accent),
+              Icon(icon, size: 20, color: context.colors.accent),
               const SizedBox(height: 5),
-              Text(label, style: const TextStyle(fontSize: 11, color: PcTheme.textSecondary)),
+              Text(label, style: TextStyle(fontSize: 11, color: context.colors.textSecondary)),
             ],
           ),
         ),

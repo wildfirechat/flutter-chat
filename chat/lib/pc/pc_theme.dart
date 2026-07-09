@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import 'package:chat/app_theme.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 桌面端设计令牌,布局骨架参照微信 PC:
-/// 三段灰度纵深(近黑侧栏 → 暖灰列表栏 → 浅灰聊天区)建立空间层次,
-/// 品牌蓝 #1F64E4 只出现在少数关键位置(选中 tab、发送按钮、光标/选区),
-/// 己方气泡用配套浅蓝,其余全部灰阶 + 发丝线。
-/// 所有 PC 端组件的颜色/尺寸从这里取值,禁止散落硬编码。
+/// 三段纵深(侧栏 → 列表栏 → 聊天区)建立空间层次,
+/// 主色只出现在少数关键位置(选中 tab、发送按钮、光标/选区),
+/// 己方气泡用配套色,其余全部灰阶 + 发丝线。
+///
+/// 这里只放**尺寸**。颜色统一在 [AppColors],经 `context.colors` 取值 ——
+/// 明暗两套主题的色值不可能是编译期常量,写在这里就没法跟着主题切换。
 class PcTheme {
   PcTheme._();
 
@@ -49,77 +52,61 @@ class PcTheme {
 
   /// 分隔条命中区厚度。视觉仍是贴边的 0.5 发丝线,加厚只为好抓。
   static const double resizeHandleThickness = 6;
-  static const Color resizeHandleHover = Color(0xFFC2C1C0);
-  static const Color resizeHandleActive = accent;
-
-  // ---- 品牌色 ----
-  static const Color accent = AppTheme.accent;
-  static const Color accentPressed = Color(0xFF1A55C2);
-  static const Color badgeRed = Color(0xFFFA5151);
-
-  // ---- 侧栏 ----
-  static const Color sidebarBg = Color(0xFFE9E9E9);
-  static const Color sidebarIcon = Color(0xFF555555);
-  static const Color sidebarIconHover = Color(0xFF191919);
-  static const Color sidebarHoverBg = Color(0xFFDCDCDC);
-
-  // ---- 中栏(暖灰列表区) ----
-  static const Color middleBg = Color(0xFFE6E5E5);
-  static const Color cellHover = Color(0xFFDBDAD9);
-  static const Color cellSelected = Color(0xFFC8C7C6);
-  static const Color searchFieldBg = Color(0xFFDBDAD9);
-
-  // ---- 右栏(浅灰聊天区) ----
-  static const Color chatBg = Color(0xFFF5F5F5);
-  static const Color bubbleSent = Color(0xFFD6E4FF); // 品牌蓝的浅色调,黑字可读
-  static const Color bubbleReceived = Colors.white;
-
-  // ---- 通用 ----
-  static const Color hairline = Color(0xFFDDDCDB);
-
-  /// 浮层轮廓:比 hairline 更淡,只负责在阴影之外勾一道边,不抢视线。
-  static const Color hairlineSoft = Color(0xFFEBEAE9);
-  static const Color textPrimary = Color(0xFF191919);
-  static const Color textSecondary = Color(0xFF7F7F7F);
-  static const Color textTertiary = Color(0xFFB2B2B2);
 
   // ---- 字号(桌面密度,比移动端小一号) ----
-  static const TextStyle cellTitle = TextStyle(fontSize: 14, color: textPrimary);
-  static const TextStyle cellSubtitle = TextStyle(fontSize: 12, color: textSecondary);
-  static const TextStyle cellTime = TextStyle(fontSize: 11, color: textTertiary);
-  static const TextStyle paneTitle = TextStyle(fontSize: 17, fontWeight: FontWeight.w500, color: textPrimary);
+  static TextStyle cellTitle(BuildContext context) => TextStyle(fontSize: 14, color: context.colors.textPrimary);
 
-  /// 桌面子树的 Theme 覆盖:去水波纹、绿色主色、桌面化的菜单/滚动条,
+  static TextStyle cellSubtitle(BuildContext context) => TextStyle(fontSize: 12, color: context.colors.textSecondary);
+
+  static TextStyle cellTime(BuildContext context) => TextStyle(fontSize: 11, color: context.colors.textTertiary);
+
+  static TextStyle paneTitle(BuildContext context) =>
+      TextStyle(fontSize: 17, fontWeight: FontWeight.w500, color: context.colors.textPrimary);
+
+  /// 桌面子树的 Theme 覆盖:去水波纹、桌面化的菜单/滚动条,
   /// 让复用的移动端二级页在右栏内也保持一致观感。
+  ///
+  /// 明暗跟随祖先主题(main.dart 的 MaterialApp),这里只做桌面密度/形态的覆盖,
+  /// 不再自己决定亮暗。
   static ThemeData themeData(BuildContext context) {
     final base = Theme.of(context);
+    final colors = context.colors;
+    final isDark = base.brightness == Brightness.dark;
+    // 暗色下 hover/highlight 要提白,浅色下压黑。
+    final overlay = colors.hoverOverlay;
     return base.copyWith(
-      colorScheme: ColorScheme.fromSeed(seedColor: accent),
+      colorScheme: ColorScheme.fromSeed(seedColor: colors.accent, brightness: base.brightness).copyWith(
+        primary: colors.accent,
+        onPrimary: colors.onAccent,
+        surface: colors.surface,
+        onSurface: colors.textPrimary,
+        error: colors.danger,
+      ),
       splashFactory: NoSplash.splashFactory,
-      highlightColor: Colors.black.withValues(alpha: 0.04),
-      hoverColor: Colors.black.withValues(alpha: 0.04),
-      scaffoldBackgroundColor: Colors.white,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.white,
+      highlightColor: overlay,
+      hoverColor: overlay,
+      scaffoldBackgroundColor: colors.surface,
+      appBarTheme: AppBarTheme(
+        backgroundColor: colors.surface,
         surfaceTintColor: Colors.transparent,
-        foregroundColor: textPrimary,
+        foregroundColor: colors.textPrimary,
         elevation: 0,
-        titleTextStyle: paneTitle,
+        titleTextStyle: paneTitle(context),
         toolbarHeight: headerHeight,
       ),
       popupMenuTheme: PopupMenuThemeData(
-        color: Colors.white,
+        color: colors.popupBg,
         surfaceTintColor: Colors.transparent,
         elevation: 6,
-        shadowColor: Colors.black.withValues(alpha: 0.2),
+        shadowColor: colors.shadow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        textStyle: const TextStyle(fontSize: 13, color: textPrimary),
+        textStyle: TextStyle(fontSize: 13, color: colors.textPrimary),
       ),
       tooltipTheme: TooltipThemeData(
         waitDuration: const Duration(milliseconds: 500),
-        textStyle: const TextStyle(fontSize: 12, color: Colors.white),
+        textStyle: TextStyle(fontSize: 12, color: isDark ? colors.textPrimary : Colors.white),
         decoration: BoxDecoration(
-          color: const Color(0xCC000000),
+          color: isDark ? colors.popupBg : const Color(0xCC000000),
           borderRadius: BorderRadius.circular(4),
         ),
       ),
@@ -127,19 +114,21 @@ class PcTheme {
         thickness: WidgetStateProperty.all(6),
         radius: const Radius.circular(3),
         thumbColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.hovered) ? Colors.black26 : Colors.black12,
+          (states) => isDark
+              ? (states.contains(WidgetState.hovered) ? Colors.white30 : Colors.white24)
+              : (states.contains(WidgetState.hovered) ? Colors.black26 : Colors.black12),
         ),
       ),
       textSelectionTheme: TextSelectionThemeData(
-        cursorColor: accent,
-        selectionColor: accent.withValues(alpha: 0.25),
+        cursorColor: colors.accent,
+        selectionColor: colors.accent.withValues(alpha: isDark ? 0.35 : 0.25),
       ),
       // 圆形勾选框全端统一(app_theme.dart),桌面端在此基础上收紧密度
-      checkboxTheme: AppTheme.checkboxTheme.copyWith(
+      checkboxTheme: AppTheme.checkboxTheme(colors, base.brightness).copyWith(
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         visualDensity: VisualDensity.compact,
       ),
-      dividerTheme: const DividerThemeData(color: hairline, thickness: 0.5, space: 0.5),
+      dividerTheme: DividerThemeData(color: colors.hairline, thickness: 0.5, space: 0.5),
     );
   }
 }

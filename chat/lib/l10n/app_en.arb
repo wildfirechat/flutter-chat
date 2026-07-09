@@ -528,5 +528,7 @@
   "fontSizeExtraLarge": "Extra Large",
   "fontSizePreviewIncoming": "Preview font size",
   "fontSizePreviewOutgoing": "Drag the slider below to set the font size",
-  "fontSizePreviewHint": "Messages, contact lists and more will be displayed at this size."
+  "fontSizePreviewHint": "Messages, contact lists and more will be displayed at this size.",
+  "themeLight": "Light",
+  "themeDark": "Dark"
 }

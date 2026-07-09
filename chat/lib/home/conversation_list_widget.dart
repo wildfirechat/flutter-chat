@@ -13,7 +13,6 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/layout_scale.dart';
@@ -28,6 +27,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import '../config.dart';
 import '../conversation/conversation_screen.dart';
 import '../viewmodel/user_view_model.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 会话行的内容高度与分隔线高度。分隔线不随字号缩放,itemExtent 必须把它单独加上,
 /// 否则 s < 1 时内容比 extent 高,debug 下会报 overflow。
@@ -51,7 +51,7 @@ class ConversationListWidget extends StatelessWidget {
     return ChangeNotifierProvider<StatusNotificationViewModel>(
       create: (_) => StatusNotificationViewModel(),
       child: Scaffold(
-        // 桌面端中栏由 PCHome 铺 PcTheme.middleBg,列表本身透明
+        // 桌面端中栏由 PCHome 铺 context.colors.middleBg,列表本身透明
         backgroundColor: isDesktopShell ? Colors.transparent : null,
         body: SafeArea(
           child: Column(
@@ -97,19 +97,9 @@ class StatusNotificationHeader extends StatelessWidget {
 
         if (viewModel.connectionStatus == kConnectionStatusConnecting ||
             viewModel.connectionStatus == kConnectionStatusReceiving) {
-          headers.add(Container(
-            height: 40,
-            color: Colors.red[100],
-            alignment: Alignment.center,
-            child: Text(AppLocalizations.of(context)!.connecting, style: const TextStyle(color: Colors.red)),
-          ));
+          headers.add(_buildStatusBanner(context, AppLocalizations.of(context)!.connecting));
         } else if (viewModel.connectionStatus < 0) {
-          headers.add(Container(
-            height: 40,
-            color: Colors.red[100],
-            alignment: Alignment.center,
-            child: Text(AppLocalizations.of(context)!.connectionFailed, style: const TextStyle(color: Colors.red)),
-          ));
+          headers.add(_buildStatusBanner(context, AppLocalizations.of(context)!.connectionFailed));
         }
 
         // “PC 已登录”横幅只对手机端有意义,桌面端自身就是 PC
@@ -128,15 +118,16 @@ class StatusNotificationHeader extends StatelessWidget {
             },
             child: Container(
               height: 40,
-              color: const Color(0xfff5f5f5),
+              color: context.colors.chatBg,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  const Icon(Icons.computer, color: Colors.grey, size: 20),
+                  Icon(Icons.computer, color: context.colors.textSecondary, size: 20),
                   const SizedBox(width: 8),
-                  Text(AppLocalizations.of(context)!.pcLoggedIn(pcStatus), style: const TextStyle(color: Colors.grey)),
+                  Text(AppLocalizations.of(context)!.pcLoggedIn(pcStatus),
+                      style: TextStyle(color: context.colors.textSecondary)),
                   const Spacer(),
-                  const Icon(Icons.chevron_right, color: Colors.grey, size: 20),
+                  Icon(Icons.chevron_right, color: context.colors.textSecondary, size: 20),
                 ],
               ),
             ),
@@ -148,6 +139,17 @@ class StatusNotificationHeader extends StatelessWidget {
         }
         return Column(children: headers);
       },
+    );
+  }
+
+  /// 连接中 / 连接失败横幅。淡红底 + 红字,明暗两套主题各取自己的 danger。
+  Widget _buildStatusBanner(BuildContext context, String text) {
+    final danger = context.colors.danger;
+    return Container(
+      height: 40,
+      color: danger.withValues(alpha: 0.15),
+      alignment: Alignment.center,
+      child: Text(text, style: TextStyle(color: danger)),
     );
   }
 }
@@ -242,20 +244,21 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     return RepaintBoundary(child: _buildCell(context, false));
   }
 
-  /// 桌面端:透明底衬在中栏暖灰上,hover/选中分别加深;置顶会话微微提亮。
-  /// 移动端:维持原 Cupertino 配色。
+  /// 桌面端:透明底衬在中栏灰面上,hover/选中分别加深;置顶会话微微提亮。
+  /// 移动端:列表铺在 surface 上,没有 hover,置顶同样提亮一档。
+  ///
+  /// 移动端原先用 CupertinoColors.systemBackground —— 那是 CupertinoDynamicColor,
+  /// 不经 resolve 直接当 Color 用只会拿到浅色变体,暗色下会一直是白底。
   Color _cellBackground(bool hovered) {
     var conversationInfo = widget.conversationInfo;
+    final colors = context.colors;
     if (isDesktopShell) {
-      if (widget.isSelected) return PcTheme.cellSelected;
-      if (hovered) return PcTheme.cellHover;
-      return conversationInfo.isTop > 0 ? const Color(0xFFEFEEED) : Colors.transparent;
+      if (widget.isSelected) return colors.cellSelected;
+      if (hovered) return colors.cellHover;
+      return conversationInfo.isTop > 0 ? colors.cellTop : Colors.transparent;
     }
-    return widget.isSelected
-        ? const Color(0xffd6d6d6)
-        : conversationInfo.isTop > 0
-            ? CupertinoColors.secondarySystemBackground
-            : CupertinoColors.systemBackground;
+    if (widget.isSelected) return colors.cellSelected;
+    return conversationInfo.isTop > 0 ? colors.cellTop : colors.surface;
   }
 
   Widget _buildCell(BuildContext context, bool hovered) {
@@ -316,7 +319,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                             hasDraft
                                                 ? Text(
                                                     AppLocalizations.of(context)!.draftTag,
-                                                    style: const TextStyle(fontSize: 12.0, color: Colors.red),
+                                                    style: TextStyle(fontSize: 12.0, color: context.colors.danger),
                                                   )
                                                 : Container(),
                                             Expanded(
@@ -326,7 +329,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                                     : conversationInfo.lastMessage != null
                                                         ? '${value.$4?.getReadableName() ?? "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
                                                         : '',
-                                                style: const TextStyle(fontSize: 12.0, color: Color(0xffaaaaaa)),
+                                                style: TextStyle(fontSize: 12.0, color: context.colors.textTertiary),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                               ),
@@ -343,9 +346,9 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                   padding: const EdgeInsets.only(right: 15.0),
                                   child: Text(
                                     Utilities.formatTime(context, conversationInfo.timestamp),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 10.0,
-                                      color: Color(0xffaaaaaa),
+                                      color: context.colors.textTertiary,
                                     ),
                                   ),
                                 ),
@@ -367,7 +370,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
               Container(
                 margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
                 height: _kDividerHeight,
-                color: isDesktopShell ? Colors.transparent : const Color(0xffebebeb),
+                color: isDesktopShell ? Colors.transparent : context.colors.hairlineSoft,
               ),
             ],
           )),

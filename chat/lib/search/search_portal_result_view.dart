@@ -13,7 +13,6 @@ import 'package:chat/widget/group_list_view/list_view.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
-import 'package:chat/pc/pc_theme.dart';
 import '../conversation/conversation_screen.dart';
 import '../utilities.dart';
 import '../viewmodel/channel_view_model.dart';
@@ -22,6 +21,7 @@ import '../viewmodel/user_view_model.dart';
 import '../widget/group_list_view/index_path.dart';
 import 'search_conversation_result_view.dart';
 import '../user_info_widget.dart';
+import 'package:chat/theme/app_colors.dart';
 
 // 需要 StatefulWidget 才能保持 SearchVieModel，实现实时搜索
 class SearchPortalResultView extends StatefulWidget {
@@ -108,10 +108,10 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
                       child: Text(
                         sectionTitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: PcTheme.textSecondary,
+                          color: context.colors.textSecondary,
                         ),
                       ),
                     );
@@ -197,8 +197,8 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
       title: _buildHighlightedText(
         userInfo.getReadableName(),
         widget.query,
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: PcTheme.textPrimary),
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: PcTheme.accent),
+        TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+        TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.colors.accent),
       ),
       onTap: () => _openUser(userInfo.userId),
     );
@@ -210,8 +210,8 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
       title: _buildHighlightedText(
         userInfo.getReadableName(),
         widget.query,
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: PcTheme.textPrimary),
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: PcTheme.accent),
+        TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+        TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.colors.accent),
       ),
       onTap: () => _openUser(userInfo.userId),
     );
@@ -227,15 +227,15 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
       title: _buildHighlightedText(
         groupName,
         widget.query,
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: PcTheme.textPrimary),
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: PcTheme.accent),
+        TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+        TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.colors.accent),
       ),
       subtitle: (info.marchType & 2 != 0 && info.marchedMemberNames != null && info.marchedMemberNames!.isNotEmpty)
           ? Text(
               "包含成员: ${info.marchedMemberNames!.join(" ")}",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary),
+              style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
             )
           : null,
       onTap: () => _openConversation(Conversation(conversationType: ConversationType.Group, target: info.groupInfo!.target, line: 0)),
@@ -248,8 +248,8 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
       title: _buildHighlightedText(
         info.name ?? 'Channel',
         widget.query,
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: PcTheme.textPrimary),
-        const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: PcTheme.accent),
+        TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+        TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.colors.accent),
       ),
       onTap: () => _openConversation(Conversation(conversationType: ConversationType.Channel, target: info.channelId, line: 0)),
     );
@@ -270,7 +270,7 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
           if (info.marchedCount > 1) {
             subtitleWidget = Text(
               AppLocalizations.of(context)!.matchedMessageCount(info.marchedCount.toString()),
-              style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary),
+              style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
             );
           } else if (info.marchedMessage != null) {
             subtitleWidget = FutureBuilder<String>(
@@ -280,8 +280,8 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                     return _buildHighlightedText(
                       snapshot.data!,
                       widget.query,
-                      const TextStyle(fontSize: 12, color: PcTheme.textSecondary),
-                      const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: PcTheme.accent),
+                      TextStyle(fontSize: 12, color: context.colors.textSecondary),
+                      TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: context.colors.accent),
                     );
                   } else {
                     return Container(
@@ -301,8 +301,8 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
             title: _buildHighlightedText(
               titleText,
               widget.query,
-              const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: PcTheme.textPrimary),
-              const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: PcTheme.accent),
+              TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+              TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.colors.accent),
             ),
             subtitle: subtitleWidget,
             onTap: () {

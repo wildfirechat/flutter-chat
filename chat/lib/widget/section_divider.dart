@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
 
+import 'package:chat/theme/app_colors.dart';
+
+/// 分组列表之间的段间凹槽(18px 横带)。
 class SectionDivider extends StatelessWidget {
   const SectionDivider({super.key});
 
@@ -8,7 +11,7 @@ class SectionDivider extends StatelessWidget {
     return Container(
       height: 18,
       width: View.of(context).physicalSize.width,
-      color: const Color(0xffebebeb),
+      color: context.colors.sectionGap,
     );
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:chat/app_theme.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/sound_message_content.dart';
@@ -11,7 +10,6 @@ import 'package:provider/provider.dart';
 import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/conversation/read_receipt_status_widget.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/pc_user_card.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -20,6 +18,7 @@ import '../../config.dart';
 import '../../ui_model/ui_message.dart';
 import '../../widget/portrait.dart';
 import 'message_cell_builder.dart';
+import 'package:chat/theme/app_colors.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
   late bool isSendMessage;
@@ -108,10 +107,10 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                             ? const EdgeInsets.all(0)
                             : const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      // 桌面端用品牌蓝浅色调气泡(见 PcTheme),移动端维持原配色
+                      // 桌面端用品牌蓝浅色调气泡,移动端维持原配色;暗色下两端都是实心系统蓝
                       color: isSendMessage
-                          ? (isDesktopShell ? PcTheme.bubbleSent : AppTheme.bubbleSent)
-                          : AppTheme.bubbleReceived,
+                          ? (isDesktopShell ? context.colors.bubbleSentDesktop : context.colors.bubbleSent)
+                          : context.colors.bubbleReceived,
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(8),
                         topLeft: Radius.circular(8),
@@ -119,7 +118,14 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                         bottomRight: Radius.circular(8),
                       ),
                     ),
-                    child: buildMessageContent(context),
+                    // 气泡内的正文色在这里一次性定死,而不是每个 cell_builder 各写一遍:
+                    // 暗色下己方气泡是实心蓝,继承主题的灰白正文色对比度不够,必须走纯白。
+                    child: DefaultTextStyle.merge(
+                      style: TextStyle(
+                        color: isSendMessage ? context.colors.bubbleSentText : context.colors.bubbleReceivedText,
+                      ),
+                      child: buildMessageContent(context),
+                    ),
                   ),
                   onTap: () => conversationController?.onTapedCell(context, model),
                   onDoubleTap: () => conversationController?.onDoubleTapedCell(model),
@@ -139,7 +145,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                   },
                 ),
               ),
-              _playStatus(),
+              _playStatus(context),
             ],
           ),
           Container(
@@ -179,14 +185,14 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return Container();
   }
 
-  Widget _playStatus() {
+  Widget _playStatus(BuildContext context) {
     if (model.message.content is SoundMessageContent) {
       if (model.message.direction == MessageDirection.MessageDirection_Receive && model.message.status == MessageStatus.Message_Status_Readed) {
         return Container(
           margin: const EdgeInsets.fromLTRB(8, 0, 0, 8),
           width: 8,
           height: 8,
-          decoration: const BoxDecoration(color: Colors.red, borderRadius: BorderRadius.all(Radius.circular(8))),
+          decoration: BoxDecoration(color: context.colors.badge, borderRadius: const BorderRadius.all(Radius.circular(8))),
         );
       }
     }

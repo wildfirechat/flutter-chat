@@ -1710,4 +1710,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fontSizePreviewHint => '设置后，会话中的消息、联系人列表等都将按此大小显示。';
+
+  @override
+  String get themeLight => '浅色';
+
+  @override
+  String get themeDark => '深色';
 }

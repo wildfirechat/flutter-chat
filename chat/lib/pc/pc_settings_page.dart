@@ -4,7 +4,6 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/constants.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/settings/account_safety_screen.dart';
@@ -13,11 +12,13 @@ import 'package:chat/backup/backup_and_restore_screen.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/viewmodel/locale_view_model.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
+import 'package:chat/viewmodel/theme_view_model.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/app_navigator.dart';
+import 'package:chat/theme/app_colors.dart';
 
 // ==========================================
 // 1. Middle Column: PcSettingsMenu
@@ -44,7 +45,7 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
     ];
 
     return Container(
-      color: PcTheme.middleBg,
+      color: context.colors.middleBg,
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: menuItems.length,
@@ -69,9 +70,9 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
                     height: 40,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? PcTheme.cellSelected
+                          ? context.colors.cellSelected
                           : hovered
-                              ? PcTheme.cellHover
+                              ? context.colors.cellHover
                               : Colors.transparent,
                       borderRadius: BorderRadius.circular(4),
                     ),
@@ -81,7 +82,7 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
                         Icon(
                           item.icon,
                           size: 18,
-                          color: isSelected ? PcTheme.accent : PcTheme.sidebarIcon,
+                          color: isSelected ? context.colors.accent : context.colors.iconSecondary,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -90,7 +91,7 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-                              color: PcTheme.textPrimary,
+                              color: context.colors.textPrimary,
                             ),
                           ),
                         ),
@@ -181,7 +182,7 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PcTheme.chatBg,
+      backgroundColor: context.colors.chatBg,
       appBar: const PcPageHeader(title: "通用"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -377,7 +378,7 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PcTheme.chatBg,
+      backgroundColor: context.colors.chatBg,
       appBar: const PcPageHeader(title: "通知"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -441,44 +442,15 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
 }
 
 // --- 外观与主题 (Appearance) ---
-class PcAppearanceSettingsDetail extends StatefulWidget {
+class PcAppearanceSettingsDetail extends StatelessWidget {
   const PcAppearanceSettingsDetail({super.key});
 
   @override
-  State<PcAppearanceSettingsDetail> createState() => _PcAppearanceSettingsDetailState();
-}
-
-class _PcAppearanceSettingsDetailState extends State<PcAppearanceSettingsDetail> {
-  String _themeMode = 'follow_system';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLocalPreferences();
-  }
-
-  Future<void> _loadLocalPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (mounted) {
-      setState(() {
-        _themeMode = prefs.getString('pc_theme_mode') ?? 'follow_system';
-      });
-    }
-  }
-
-  void _saveLocalPreference(String key, dynamic value) async {
-    final prefs = await SharedPreferences.getInstance();
-    if (value is String) {
-      await prefs.setString(key, value);
-    } else if (value is double) {
-      await prefs.setDouble(key, value);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final localeViewModel = Provider.of<LocaleViewModel>(context);
     final fontSizeViewModel = Provider.of<FontSizeViewModel>(context);
+    final themeViewModel = Provider.of<ThemeViewModel>(context);
 
     String currentLangText = "跟随系统";
     if (localeViewModel.localeMode == 'zh') {
@@ -487,15 +459,14 @@ class _PcAppearanceSettingsDetailState extends State<PcAppearanceSettingsDetail>
       currentLangText = "English";
     }
 
-    String currentThemeText = "跟随系统";
-    if (_themeMode == 'light') {
-      currentThemeText = "浅色";
-    } else if (_themeMode == 'dark') {
-      currentThemeText = "暗黑";
-    }
+    final currentThemeText = switch (themeViewModel.themeMode) {
+      ThemeMode.light => l10n.themeLight,
+      ThemeMode.dark => l10n.themeDark,
+      ThemeMode.system => l10n.followSystem,
+    };
 
     return Scaffold(
-      backgroundColor: PcTheme.chatBg,
+      backgroundColor: context.colors.chatBg,
       appBar: const PcPageHeader(title: "外观与主题"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -542,21 +513,24 @@ class _PcAppearanceSettingsDetailState extends State<PcAppearanceSettingsDetail>
     );
   }
 
-  void _showLanguageMenu(BuildContext selectorContext) {
-    final localeViewModel = Provider.of<LocaleViewModel>(context, listen: false);
+  /// 把菜单锚定到被点击的那一行(selectorContext 来自行内的 Builder)。
+  static RelativeRect _menuPosition(BuildContext selectorContext) {
     final RenderBox button = selectorContext.findRenderObject() as RenderBox;
-    final RenderBox overlay = Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
-    final RelativeRect position = RelativeRect.fromRect(
+    final RenderBox overlay = Navigator.of(selectorContext).overlay!.context.findRenderObject() as RenderBox;
+    return RelativeRect.fromRect(
       Rect.fromPoints(
         button.localToGlobal(Offset.zero, ancestor: overlay),
         button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
       ),
       Offset.zero & overlay.size,
     );
+  }
 
+  void _showLanguageMenu(BuildContext selectorContext) {
+    final localeViewModel = Provider.of<LocaleViewModel>(selectorContext, listen: false);
     showMenu<String>(
-      context: context,
-      position: position,
+      context: selectorContext,
+      position: _menuPosition(selectorContext),
       items: const [
         PopupMenuItem(value: 'follow_system', child: Text("跟随系统")),
         PopupMenuItem(value: 'zh', child: Text("简体中文")),
@@ -571,31 +545,19 @@ class _PcAppearanceSettingsDetailState extends State<PcAppearanceSettingsDetail>
   }
 
   void _showThemeMenu(BuildContext selectorContext) {
-    final RenderBox button = selectorContext.findRenderObject() as RenderBox;
-    final RenderBox overlay = Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
-    final RelativeRect position = RelativeRect.fromRect(
-      Rect.fromPoints(
-        button.localToGlobal(Offset.zero, ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
-      ),
-      Offset.zero & overlay.size,
-    );
-
-    showMenu<String>(
-      context: context,
-      position: position,
-      items: const [
-        PopupMenuItem(value: 'follow_system', child: Text("跟随系统")),
-        PopupMenuItem(value: 'light', child: Text("浅色")),
-        PopupMenuItem(value: 'dark', child: Text("暗黑")),
+    final l10n = AppLocalizations.of(selectorContext)!;
+    final themeViewModel = Provider.of<ThemeViewModel>(selectorContext, listen: false);
+    showMenu<ThemeMode>(
+      context: selectorContext,
+      position: _menuPosition(selectorContext),
+      items: [
+        PopupMenuItem(value: ThemeMode.system, child: Text(l10n.followSystem)),
+        PopupMenuItem(value: ThemeMode.light, child: Text(l10n.themeLight)),
+        PopupMenuItem(value: ThemeMode.dark, child: Text(l10n.themeDark)),
       ],
     ).then((value) {
       if (value != null) {
-        setState(() {
-          _themeMode = value;
-        });
-        _saveLocalPreference('pc_theme_mode', value);
-        Fluttertoast.showToast(msg: "外观设置成功");
+        themeViewModel.setThemeMode(value);
       }
     });
   }
@@ -622,15 +584,15 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
       selector: (context, viewModel) => viewModel.getUserInfo(Imclient.currentUserId),
       builder: (context, userInfo, _) {
         if (userInfo == null) {
-          return const Scaffold(
-            backgroundColor: PcTheme.chatBg,
-            appBar: PcPageHeader(title: "账号与安全"),
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            backgroundColor: context.colors.chatBg,
+            appBar: const PcPageHeader(title: "账号与安全"),
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         return Scaffold(
-          backgroundColor: PcTheme.chatBg,
+          backgroundColor: context.colors.chatBg,
           appBar: const PcPageHeader(title: "账号与安全"),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -644,9 +606,9 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                     const _SettingsSectionTitle("当前登录账号"),
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: context.colors.surface,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: PcTheme.hairline, width: 0.5),
+                        border: Border.all(color: context.colors.hairline, width: 0.5),
                       ),
                       padding: const EdgeInsets.all(20),
                       child: Row(
@@ -665,12 +627,12 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                               children: [
                                 Text(
                                   userInfo.displayName ?? userInfo.name,
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: PcTheme.textPrimary),
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.colors.textPrimary),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   "账号: ${userInfo.name}",
-                                  style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary),
+                                  style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                                 ),
                               ],
                             ),
@@ -678,8 +640,8 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                           OutlinedButton(
                             onPressed: _handleLogout,
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red,
-                              side: const BorderSide(color: Colors.red),
+                              foregroundColor: context.colors.danger,
+                              side: BorderSide(color: context.colors.danger),
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                             ),
@@ -742,7 +704,7 @@ class PcAboutSettingsDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: PcTheme.chatBg,
+      backgroundColor: context.colors.chatBg,
       appBar: const PcPageHeader(title: "关于野火"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -762,7 +724,7 @@ class PcAboutSettingsDetail extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
+                        color: context.colors.shadow,
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       )
@@ -774,49 +736,49 @@ class PcAboutSettingsDetail extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   "野火 IM",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: PcTheme.textPrimary),
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: context.colors.textPrimary),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   "版本 v1.0.0",
-                  style: TextStyle(fontSize: 12, color: PcTheme.textSecondary),
+                  style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                 ),
                 const SizedBox(height: 24),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: context.colors.surface,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: PcTheme.hairline, width: 0.5),
+                    border: Border.all(color: context.colors.hairline, width: 0.5),
                   ),
-                  child: const Text(
+                  child: Text(
                     "野火IM 是安全可靠、开发对接便捷、部署维护简单，方便二次开发和对接现有系统的私有化即时通讯平台。",
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: PcTheme.textPrimary, height: 1.5),
+                    style: TextStyle(fontSize: 13, color: context.colors.textPrimary, height: 1.5),
                   ),
                 ),
                 const SizedBox(height: 40),
                 // Links
-                const Row(
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _SettingsTextLink(label: "官方网站", url: "https://wildfirechat.cn"),
-                    SizedBox(width: 12),
-                    Text("|", style: TextStyle(color: PcTheme.textTertiary)),
-                    SizedBox(width: 12),
-                    _SettingsTextLink(label: "GitHub 仓库", url: "https://github.com/wildfirechat"),
-                    SizedBox(width: 12),
-                    Text("|", style: TextStyle(color: PcTheme.textTertiary)),
-                    SizedBox(width: 12),
-                    _SettingsTextLink(label: "问题反馈", url: "https://github.com/wildfirechat/issues"),
+                    const _SettingsTextLink(label: "官方网站", url: "https://wildfirechat.cn"),
+                    const SizedBox(width: 12),
+                    Text("|", style: TextStyle(color: context.colors.textTertiary)),
+                    const SizedBox(width: 12),
+                    const _SettingsTextLink(label: "GitHub 仓库", url: "https://github.com/wildfirechat"),
+                    const SizedBox(width: 12),
+                    Text("|", style: TextStyle(color: context.colors.textTertiary)),
+                    const SizedBox(width: 12),
+                    const _SettingsTextLink(label: "问题反馈", url: "https://github.com/wildfirechat/issues"),
                   ],
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   "微信联系：wildfirechat 或 wfchat",
-                  style: TextStyle(fontSize: 12, color: PcTheme.textSecondary),
+                  style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                 ),
               ],
             ),
@@ -841,7 +803,7 @@ class _SettingsSectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         title,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: PcTheme.textSecondary),
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: context.colors.textSecondary),
       ),
     );
   }
@@ -855,9 +817,9 @@ class _SettingsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: PcTheme.hairline, width: 0.5),
+        border: Border.all(color: context.colors.hairline, width: 0.5),
       ),
       child: Column(
         children: children,
@@ -889,15 +851,15 @@ class _SettingsSwitchRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: PcTheme.textPrimary)),
+                Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
                 const SizedBox(height: 4),
-                Text(subtitle, style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary)),
+                Text(subtitle, style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
               ],
             ),
           ),
           Switch(
             value: value,
-            activeColor: PcTheme.accent,
+            activeColor: context.colors.accent,
             onChanged: onChanged,
           ),
         ],
@@ -925,7 +887,7 @@ class _SettingsClickableRow extends StatelessWidget {
         return InkWell(
           onTap: onTap,
           child: Container(
-            color: hovered ? Colors.black.withValues(alpha: 0.02) : Colors.transparent,
+            color: hovered ? context.colors.hoverOverlay : Colors.transparent,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Row(
               children: [
@@ -933,13 +895,13 @@ class _SettingsClickableRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: PcTheme.textPrimary)),
+                      Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
                       const SizedBox(height: 4),
-                      Text(subtitle, style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary)),
+                      Text(subtitle, style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
                     ],
                   ),
                 ),
-                const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: PcTheme.textTertiary),
+                Icon(Icons.arrow_forward_ios_rounded, size: 14, color: context.colors.textTertiary),
               ],
             ),
           ),
@@ -971,7 +933,7 @@ class _SettingsSelectorRow extends StatelessWidget {
           builder: (rowContext) => InkWell(
             onTap: () => onTap(rowContext),
             child: Container(
-              color: hovered ? Colors.black.withValues(alpha: 0.02) : Colors.transparent,
+              color: hovered ? context.colors.hoverOverlay : Colors.transparent,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Row(
                 children: [
@@ -979,17 +941,17 @@ class _SettingsSelectorRow extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: PcTheme.textPrimary)),
+                        Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
                         const SizedBox(height: 4),
-                        Text(subtitle, style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary)),
+                        Text(subtitle, style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
                       ],
                     ),
                   ),
                   Row(
                     children: [
-                      Text(valueText, style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary)),
+                      Text(valueText, style: TextStyle(fontSize: 13, color: context.colors.textSecondary)),
                       const SizedBox(width: 8),
-                      const Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: PcTheme.textTertiary),
+                      Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: context.colors.textTertiary),
                     ],
                   ),
                 ],
@@ -1032,9 +994,9 @@ class _SettingsSliderRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: PcTheme.textPrimary)),
+                    Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
                     const SizedBox(height: 4),
-                    Text(subtitle, style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary)),
+                    Text(subtitle, style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
                   ],
                 ),
               ),
@@ -1048,17 +1010,17 @@ class _SettingsSliderRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Text("A", style: TextStyle(fontSize: 12, color: PcTheme.textSecondary)),
+                    Text("A", style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
                     Expanded(
                       child: SliderTheme(
                         data: SliderTheme.of(context).copyWith(
-                          activeTrackColor: PcTheme.accent,
-                          inactiveTrackColor: Colors.black12,
-                          thumbColor: Colors.white,
-                          overlayColor: PcTheme.accent.withValues(alpha: 0.1),
-                          valueIndicatorColor: PcTheme.accent,
-                          activeTickMarkColor: PcTheme.accent,
-                          inactiveTickMarkColor: Colors.black26,
+                          activeTrackColor: context.colors.accent,
+                          inactiveTrackColor: context.colors.inputBg,
+                          thumbColor: context.colors.surface,
+                          overlayColor: context.colors.accent.withValues(alpha: 0.1),
+                          valueIndicatorColor: context.colors.accent,
+                          activeTickMarkColor: context.colors.accent,
+                          inactiveTickMarkColor: context.colors.textTertiary,
                           tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 2.0),
                         ),
                         child: Slider(
@@ -1070,7 +1032,7 @@ class _SettingsSliderRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const Text("A", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: PcTheme.textPrimary)),
+                    Text("A", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -1085,7 +1047,7 @@ class _SettingsSliderRow extends StatelessWidget {
                             textAlign: TextAlign.center,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 11, color: PcTheme.textSecondary),
+                            style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
                           ),
                         ),
                     ],
@@ -1127,9 +1089,9 @@ class _SettingsTextLink extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 12,
-              color: hovered ? PcTheme.accentPressed : PcTheme.accent,
+              color: hovered ? context.colors.accentPressed : context.colors.accent,
               decoration: TextDecoration.underline,
-              decorationColor: hovered ? PcTheme.accentPressed : PcTheme.accent,
+              decorationColor: hovered ? context.colors.accentPressed : context.colors.accent,
             ),
           ),
         );

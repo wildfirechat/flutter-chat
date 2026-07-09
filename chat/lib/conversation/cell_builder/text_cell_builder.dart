@@ -11,6 +11,7 @@ import 'package:chat/utilities.dart';
 
 import '../../ui_model/ui_message.dart';
 import '../mm_preview_view.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class TextCellBuilder extends PortraitCellBuilder {
   late TextMessageContent textMessageContent;
@@ -72,25 +73,28 @@ class TextCellBuilder extends PortraitCellBuilder {
               width: double.infinity,
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
+                color: context.colors.bubbleQuoted,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 "${textMessageContent.quoteInfo!.userDisplayName ?? ''}: ${textMessageContent.quoteInfo!.messageDigest ?? ''}",
-                style: const TextStyle(fontSize: 12, color: Color(0xFF666666)),
+                style: TextStyle(fontSize: 12, color: context.colors.bubbleQuotedText),
               ),
             ),
           )
         ],
       );
     }
+    // 正文色由 PortraitCellBuilder 的 DefaultTextStyle 提供,这里只补链接色。
+    // 暗色下己方气泡是实心蓝,蓝色链接会糊在底色里,改用气泡正文色 + 下划线表达可点。
+    final onSolidAccent = isSendMessage && Theme.of(context).brightness == Brightness.dark;
     return Linkify(
       onOpen: (link) => Utilities.openLink(context, link.url),
       text: textMessageContent.text,
       style: const TextStyle(fontSize: 16),
-      linkStyle: const TextStyle(
+      linkStyle: TextStyle(
         fontSize: 16,
-        color: Colors.blue,
+        color: onSolidAccent ? context.colors.bubbleSentText : context.colors.link,
         decoration: TextDecoration.underline,
       ),
       options: const LinkifyOptions(

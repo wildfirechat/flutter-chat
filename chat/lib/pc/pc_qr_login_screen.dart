@@ -18,6 +18,7 @@ import 'package:chat/utils/show_toast.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/wfc_scheme.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_colors.dart';
 
 enum _PCLoginView { qr, form }
 
@@ -219,10 +220,12 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
     return _buildQrView();
   }
 
-  /// 登录卡片外壳:白底、圆角、投影,QR 与表单视图共用。
+  /// 登录卡片外壳:圆角、投影,QR 与表单视图共用。
+  /// 卡片与页面刻意取不同的面色 —— 暗色下投影看不见,只能靠明度差把卡片托起来。
   Widget _buildCard({required Widget child}) {
+    final colors = context.colors;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colors.chatBg,
       body: Center(
         child: Container(
           width: 400,
@@ -231,11 +234,11 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
           ),
           padding: const EdgeInsets.all(32),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colors.surface,
             borderRadius: BorderRadius.circular(8),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: colors.shadow,
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -263,14 +266,16 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
           const SizedBox(height: 8),
           Text(
             _isScanned ? l10n.scanned : l10n.pcLoginQrHint,
-            style: const TextStyle(fontSize: 14, color: Color(0xFF888888)),
+            style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
           ),
           const SizedBox(height: 32),
           Container(
             width: 220,
             height: 220,
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFE5E5E5)),
+              // 二维码必须白底黑码才扫得出来,暗色下也钉死白色,做成卡片上的一块白板
+              color: Colors.white,
+              border: Border.all(color: context.colors.hairline),
               borderRadius: BorderRadius.circular(4),
             ),
             child: _buildQrContent(qrData),
@@ -279,7 +284,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
           if (_error != null) ...[
             Text(
               _error!,
-              style: const TextStyle(color: Colors.red, fontSize: 13),
+              style: TextStyle(color: context.colors.danger, fontSize: 13),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -293,7 +298,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
             // 已扫码：显示取消按钮
             TextButton(
               onPressed: _cancelScan,
-              child: Text(l10n.cancel, style: const TextStyle(color: Colors.red)),
+              child: Text(l10n.cancel, style: TextStyle(color: context.colors.danger)),
             )
           else
             // 未扫码：显示验证码/密码登录按钮
@@ -327,6 +332,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
             const SizedBox(height: 8),
             Text(
               _scannedUserName!,
+              // QR 白板之上,固定深色字
               style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
             ),
           ],
@@ -334,7 +340,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
       );
     }
     if (_error != null && _token == null) {
-      return const Center(child: Icon(Icons.error_outline, color: Colors.red, size: 48));
+      return Center(child: Icon(Icons.error_outline, color: context.colors.danger, size: 48));
     }
     if (qrData.isEmpty) {
       return const Center(child: CircularProgressIndicator());
@@ -367,11 +373,11 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.arrow_back_ios, size: 16, color: Color(0xFF576B95)),
+                        Icon(Icons.arrow_back_ios, size: 16, color: context.colors.link),
                         const SizedBox(width: 4),
                         Text(
                           l10n.loginCodeTitle,
-                          style: const TextStyle(fontSize: 14, color: Color(0xFF576B95)),
+                          style: TextStyle(fontSize: 14, color: context.colors.link),
                         ),
                       ],
                     ),
@@ -442,11 +448,11 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
                   child: RichText(
                     text: TextSpan(
                       text: l10n.readAndAgree,
-                      style: const TextStyle(color: Colors.black),
+                      style: TextStyle(color: context.colors.textPrimary),
                       children: <TextSpan>[
                         TextSpan(
                           text: l10n.userAgreement,
-                          style: const TextStyle(color: Colors.blue),
+                          style: TextStyle(color: context.colors.link),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
                               Utilities.openLink(context, Config.USER_AGREEMENT_URL);
@@ -455,7 +461,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
                         TextSpan(text: l10n.and),
                         TextSpan(
                           text: l10n.privacyPolicy,
-                          style: const TextStyle(color: Colors.blue),
+                          style: TextStyle(color: context.colors.link),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
                               Utilities.openLink(context, Config.PRIVACY_AGREEMENT_URL);

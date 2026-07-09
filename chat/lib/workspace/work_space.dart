@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dsbridge_flutter/dsbridge_flutter.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +8,7 @@ import 'package:imclient/imclient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:chat/config.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/workspace/js_api.dart';
 import 'package:chat/workspace/webview_background.dart';
 import 'package:chat/utils/media_url_redirector.dart';
@@ -24,6 +24,10 @@ class WorkSpace extends StatefulWidget {
 
 class _WorkSpaceState extends State<WorkSpace> {
   late final DWebViewController _controller;
+
+  /// 工作台是远端 H5,明暗只能由宿主用 URL 上的 `?theme=` 告诉它(与 vue-pc-chat 一致)。
+  /// 记住上次加载用的明暗,主题变了才重新 load,避免每次 didChangeDependencies 都刷页面。
+  Brightness? _loadedBrightness;
 
   @override
   void initState() {
@@ -59,27 +63,42 @@ class _WorkSpaceState extends State<WorkSpace> {
       )
       ..addJavaScriptObject(JsApi(context, Config.workspaceUrl ?? '', controller));
 
+    // 首次加载推迟到 didChangeDependencies:initState 里拿不到解析后的明暗。
+    _controller = controller;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Theme.of 注册依赖,应用切明暗时会再次走到这里
+    final brightness = Theme.of(context).brightness;
+    if (brightness != _loadedBrightness) {
+      _loadedBrightness = brightness;
+      _loadWorkspace(brightness);
+    }
+  }
+
+  void _loadWorkspace(Brightness brightness) {
     final workspaceUrl = Config.workspaceUrl;
-    if (workspaceUrl != null && workspaceUrl.isNotEmpty) {
-      controller.loadRequest(Uri.parse(MediaUrlRedirector.redirect(workspaceUrl)));
-    } else {
+    if (workspaceUrl == null || workspaceUrl.isEmpty) {
       // Load a default local page if WORKSPACE_URL is not set
       // controller.loadHtmlString(_kExamplePage);
+      return;
     }
-
-    _controller = controller;
+    _controller.loadRequest(workspaceUriWithTheme(MediaUrlRedirector.redirect(workspaceUrl), brightness));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: context.colors.surface,
       body: SafeArea(
         child: Column(
           children: [
             Container(
               height: 18,
               width: double.infinity, // Use double.infinity for full width
-              color: const Color(0xffebebeb),
+              color: context.colors.sectionGap,
             ),
             Expanded(
               child: WebViewWidget(
@@ -106,3 +125,12 @@ class _WorkSpaceState extends State<WorkSpace> {
     controller.clearLocalStorage();
   }
 }
+
+Uri workspaceUriWithTheme(String urlString, Brightness brightness) {
+  final uri = Uri.parse(urlString);
+  final themeValue = brightness == Brightness.dark ? 'dark' : 'light';
+  final queryParams = Map<String, String>.from(uri.queryParameters);
+  queryParams['theme'] = themeValue;
+  return uri.replace(queryParameters: queryParams);
+}
+

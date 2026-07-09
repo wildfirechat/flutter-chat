@@ -1,29 +1,102 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-/// 全端共享的品牌样式令牌(移动端 + 桌面端通用)。
-/// 桌面端布局/配色的专属令牌在 pc/pc_theme.dart,跨端需要一致的样式收敛在这里。
+import 'package:chat/theme/app_colors.dart';
+
+/// 全端共享的 ThemeData(移动端 + 桌面端通用)。
+/// 颜色一律从 [AppColors] 取,桌面端布局/密度的专属覆盖在 pc/pc_theme.dart。
 class AppTheme {
   AppTheme._();
 
-  /// 品牌蓝,PcTheme.accent 与此同源。
-  static const Color accent = Color(0xFF1F64E4);
+  /// ThemeData 不可变,且 `ColorScheme.fromSeed` 每次都要跑一遍 HCT 色彩推导,
+  /// 各建一次缓存起来,不要在 build 里反复构造。
+  static final ThemeData _light = _buildLight();
+  static final ThemeData _dark = _buildDark();
 
-  /// 移动端会话背景与消息气泡。桌面端对应 PcTheme.middleBg / PcTheme.bubbleSent。
-  static const Color chatBackground = Color(0xFFE8E8E8);
-  static const Color bubbleSent = Color(0xF0A8BDFF);
-  static const Color bubbleReceived = Colors.white;
+  static ThemeData light() => _light;
+
+  static ThemeData dark() => _dark;
+
+  /// 浅色主题。刻意保留 `primarySwatch: Colors.blue` 的推导方式,也刻意不去改
+  /// divider/文本选区等 Material 默认值:移动端一大片控件的默认色都从这里来,
+  /// 动一处就会在浅色下引发大范围回归。引入暗黑模式只是「加一套暗色」。
+  static ThemeData _buildLight() => _withColors(ThemeData(primarySwatch: Colors.blue), AppColors.light);
+
+  /// 暗色主题。Material 的暗色默认值带蓝紫色调(surface tint),这里把关键槽位
+  /// 全部钉到 [AppColors.dark] 的中性灰,与 vue-pc-chat 的面板色一致。
+  static ThemeData _buildDark() {
+    const colors = AppColors.dark;
+    final base = ThemeData(
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: colors.accent,
+        brightness: Brightness.dark,
+      ).copyWith(
+        primary: colors.accent,
+        onPrimary: colors.onAccent,
+        surface: colors.surface,
+        onSurface: colors.textPrimary,
+        error: colors.danger,
+      ),
+    );
+    return _withColors(base, colors).copyWith(
+      scaffoldBackgroundColor: colors.surface,
+      canvasColor: colors.surface,
+      appBarTheme: base.appBarTheme.copyWith(
+        backgroundColor: colors.surface,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: colors.textPrimary,
+        systemOverlayStyle: systemOverlayStyle(Brightness.dark),
+      ),
+      dividerTheme: base.dividerTheme.copyWith(color: colors.hairlineSoft),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: colors.accent,
+        selectionColor: colors.accent.withValues(alpha: 0.35),
+        selectionHandleColor: colors.accent,
+      ),
+    );
+  }
+
+  static ThemeData _withColors(ThemeData base, AppColors colors) => base.copyWith(
+        extensions: <ThemeExtension<dynamic>>[colors],
+        checkboxTheme: checkboxTheme(colors, base.brightness),
+      );
 
   /// 圆形勾选框(微信风格):选中品牌蓝,禁用置灰。
-  /// 选人、多选消息等场景全端统一观感;挂在 main.dart 全局主题与 PcTheme 上。
-  static final CheckboxThemeData checkboxTheme = CheckboxThemeData(
-    shape: const CircleBorder(),
-    side: const BorderSide(color: Color(0xFFC0C0C0), width: 1.5),
-    fillColor: WidgetStateProperty.resolveWith((states) {
-      if (!states.contains(WidgetState.selected)) {
-        return Colors.transparent;
-      }
-      return states.contains(WidgetState.disabled) ? const Color(0xFFC6C6C6) : accent;
-    }),
-    checkColor: const WidgetStatePropertyAll(Colors.white),
-  );
+  /// 选人、多选消息等场景全端统一观感;挂在全局 ThemeData 与 PcTheme 上。
+  ///
+  /// 描边/禁用灰是勾选框自己的中性灰,不复用文字令牌 —— 文字灰在暗色下
+  /// (#636366)压不住 #2C2C2E 的面,描边会看不见。
+  static CheckboxThemeData checkboxTheme(AppColors colors, Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    final borderGray = isDark ? const Color(0xFF5A5A5C) : const Color(0xFFC0C0C0);
+    final disabledGray = isDark ? const Color(0xFF48484A) : const Color(0xFFC6C6C6);
+    return CheckboxThemeData(
+      shape: const CircleBorder(),
+      side: BorderSide(color: borderGray, width: 1.5),
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (!states.contains(WidgetState.selected)) {
+          return Colors.transparent;
+        }
+        return states.contains(WidgetState.disabled) ? disabledGray : colors.accent;
+      }),
+      checkColor: WidgetStatePropertyAll(colors.onAccent),
+    );
+  }
+
+  /// 移动端状态栏 / 导航栏图标的明暗。桌面端不使用。
+  /// 传入的是「界面」的明暗,图标要取反才看得见。
+  static SystemUiOverlayStyle systemOverlayStyle(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    return SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+      systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
+      systemStatusBarContrastEnforced: false,
+    );
+  }
 }

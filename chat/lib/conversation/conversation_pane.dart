@@ -21,11 +21,11 @@ import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
 import 'package:chat/conversation/message_cell.dart';
 import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 会话消息面板:消息列表 + 输入栏 + 多选工具栏,并承载进入/退出会话的完整生命周期
 /// (setConversation、清未读、聊天室加退、草稿保存)。
@@ -306,11 +306,11 @@ class _ConversationPaneState extends State<ConversationPane> {
                       height: 35,
                       padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: context.colors.surface,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withValues(alpha: 0.5),
+                            color: context.colors.shadow,
                             spreadRadius: 1,
                             blurRadius: 3,
                             offset: const Offset(0, 1),
@@ -355,15 +355,15 @@ class _ConversationPaneState extends State<ConversationPane> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
+            Text(
               '发送文件',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: PcTheme.textPrimary),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               '确定要发送 $nameStr 吗？',
-              style: const TextStyle(fontSize: 13, color: PcTheme.textSecondary, height: 1.4),
+              style: TextStyle(fontSize: 13, color: context.colors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 20),
             Row(
@@ -371,14 +371,14 @@ class _ConversationPaneState extends State<ConversationPane> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(false),
-                  style: TextButton.styleFrom(foregroundColor: PcTheme.textSecondary),
+                  style: TextButton.styleFrom(foregroundColor: context.colors.textSecondary),
                   child: const Text('取消'),
                 ),
                 const SizedBox(width: 8),
                 FilledButton(
                   onPressed: () => Navigator.of(ctx).pop(true),
                   style: FilledButton.styleFrom(
-                    backgroundColor: PcTheme.accent,
+                    backgroundColor: context.colors.accent,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                   ),
                   child: const Text('发送'),
@@ -409,7 +409,7 @@ class _ConversationPaneState extends State<ConversationPane> {
   Widget _buildMultiSelectToolBar(BuildContext context, ConversationViewModel viewModel) {
     return Container(
       height: 60,
-      color: const Color(0xFFF5F5F5),
+      color: context.colors.chatBg,
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

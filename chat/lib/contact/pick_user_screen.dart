@@ -4,6 +4,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_colors.dart';
 
 import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
@@ -252,6 +253,7 @@ class _PickUserScreenState extends State<PickUserScreen> {
           ];
 
           return Scaffold(
+            backgroundColor: context.colors.chatBg,
             appBar: isDesktopShell
                 ? PcPageHeader(
                     title: widget.title,
@@ -275,22 +277,22 @@ class _PickUserScreenState extends State<PickUserScreen> {
                     Container(
                       height: 0.5,
                       margin: const EdgeInsets.only(left: 16.0),
-                      color: const Color(0xffebebeb),
+                      color: context.colors.hairlineSoft,
                     ),
                   ],
                   Container(
                     height: 56,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                    color: Colors.white,
+                    color: context.colors.surface,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xfff3f4f5),
+                        color: context.colors.inputBg,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Row(
                         children: [
-                          const Icon(Icons.search, color: Colors.grey),
+                          Icon(Icons.search, color: context.colors.iconSecondary),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Row(
@@ -318,9 +320,11 @@ class _PickUserScreenState extends State<PickUserScreen> {
                                 Expanded(
                                   child: TextField(
                                     controller: _searchController,
+                                    style: TextStyle(color: context.colors.textPrimary),
                                     decoration: InputDecoration(
                                       border: InputBorder.none,
                                       hintText: AppLocalizations.of(context)!.search,
+                                      hintStyle: TextStyle(color: context.colors.textTertiary),
                                       isDense: true,
                                       contentPadding: EdgeInsets.zero,
                                     ),
@@ -418,7 +422,7 @@ class SelectableUserItem extends StatelessWidget {
 
     Widget content = Container(
       height: 52.0,
-      color: Colors.white,
+      color: context.colors.surface,
       child: Row(
         children: <Widget>[
           if (maxSelected > 1)
@@ -450,7 +454,7 @@ class SelectableUserItem extends StatelessWidget {
               padding: const EdgeInsets.only(left: 12.0),
               child: Text(
                 userInfo.userId == '@all' ? AppLocalizations.of(context)!.allMembers: userInfo.displayName ?? userInfo.userId,
-                style: const TextStyle(fontSize: 15.0),
+                style: TextStyle(fontSize: 15.0, color: context.colors.textPrimary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -466,19 +470,19 @@ class SelectableUserItem extends StatelessWidget {
           Container(
             height: 18,
             width: double.infinity,
-            color: const Color(0xffebebeb),
+            color: context.colors.sectionGap,
             padding: const EdgeInsets.only(left: 16),
             alignment: Alignment.centerLeft,
             child: Text(
               contactInfo.category == '{' ? '#' : (contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : contactInfo.category),
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
             ),
           ),
         content,
         Container(
           margin: const EdgeInsets.only(left: 16.0),
           height: 0.5,
-          color: const Color(0xffebebeb),
+          color: context.colors.hairlineSoft,
         ),
       ],
     );

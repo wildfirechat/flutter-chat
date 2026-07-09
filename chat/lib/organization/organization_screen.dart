@@ -4,13 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import '../default_portrait_provider.dart';
 import '../user_info_widget.dart';
 import 'model/employee.dart';
 import 'model/organization.dart';
 import 'organization_view_model.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class OrganizationScreen extends StatefulWidget {
   final int? initialOrganizationId;
@@ -81,7 +81,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
         );
         items.add(Padding(
           padding: const EdgeInsets.symmetric(horizontal: 2.0),
-          child: Icon(Icons.chevron_right, size: 18.0, color: Colors.grey[700]),
+          child: Icon(Icons.chevron_right, size: 18.0, color: context.colors.textSecondary),
         ));
 
         for (int i = 0; i < path.length; i++) {
@@ -110,13 +110,14 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           if (!isLast) {
             items.add(Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2.0),
-              child: Icon(Icons.chevron_right, size: 18.0, color: Colors.grey[700]),
+              child: Icon(Icons.chevron_right, size: 18.0, color: context.colors.textSecondary),
             ));
           }
         }
 
         return Container(
-          color: isDesktopShell ? PcTheme.chatBg : Colors.grey[100],
+          // 浅色下 chatBg 与原来的 Colors.grey[100] 同为 #F5F5F5,两端可以合并成一个令牌
+          color: context.colors.chatBg,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Padding(
@@ -132,8 +133,9 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
   Widget _buildSearchBar() {
     return Consumer<OrganizationViewModel>(
       builder: (context, viewModel, child) {
+        final colors = context.colors;
         return Container(
-          color: isDesktopShell ? PcTheme.chatBg : null,
+          color: isDesktopShell ? colors.chatBg : null,
           padding: EdgeInsets.symmetric(
             horizontal: isDesktopShell ? 12.0 : 16.0,
             vertical: isDesktopShell ? 8.0 : 12.0,
@@ -141,12 +143,14 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           child: TextField(
             controller: _searchController,
             onChanged: (value) => viewModel.search(value),
+            style: TextStyle(color: colors.textPrimary),
             decoration: InputDecoration(
               hintText: '搜索成员',
-              prefixIcon: const Icon(Icons.search),
+              hintStyle: TextStyle(color: colors.textSecondary),
+              prefixIcon: Icon(Icons.search, color: colors.textSecondary),
               suffixIcon: viewModel.searchQuery.isNotEmpty
                   ? IconButton(
-                      icon: const Icon(Icons.clear),
+                      icon: Icon(Icons.clear, color: colors.textSecondary),
                       onPressed: () {
                         _searchController.clear();
                         viewModel.clearSearch();
@@ -159,7 +163,9 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                 borderSide: BorderSide.none,
               ),
               filled: true,
-              fillColor: isDesktopShell ? Colors.white : Colors.grey[200],
+              // 桌面端输入框浮在 chatBg 上,取 surface 才有层次;
+              // 移动端输入框嵌在 surface 页面里,要往下压一档。
+              fillColor: isDesktopShell ? colors.surface : colors.inputBg,
             ),
           ),
         );
@@ -171,12 +177,12 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
       alignment: Alignment.centerLeft,
-      color: isDesktopShell ? PcTheme.chatBg : Colors.grey[100],
+      color: context.colors.chatBg,
       child: Text(
         title,
         style: TextStyle(
           fontSize: 13,
-          color: Colors.grey[600],
+          color: context.colors.textSecondary,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -281,7 +287,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
             child: Text(
               '该部门暂无子部门或成员',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              style: TextStyle(color: context.colors.textSecondary, fontSize: 14),
             ),
           ),
         ),
@@ -318,7 +324,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           child: Text(
             viewModel.searchError!,
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[600]),
+            style: TextStyle(color: context.colors.textSecondary),
           ),
         ),
       );
@@ -329,7 +335,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
         child: Center(
           child: Text(
             '未找到匹配的成员',
-            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 14),
           ),
         ),
       );
@@ -350,7 +356,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     return TextButton(
       onPressed: _onDone,
       style: TextButton.styleFrom(
-        foregroundColor: isDesktopShell ? PcTheme.accent : null,
+        foregroundColor: isDesktopShell ? context.colors.accent : null,
         textStyle: isDesktopShell ? const TextStyle(fontSize: 14) : null,
       ),
       child: Text(label),
@@ -383,7 +389,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                       title: Text(viewModel.appBarTitle ?? '组织结构'),
                       actions: widget.selectMode ? [_buildDoneAction()] : null,
                     ),
-              backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
+              backgroundColor: isDesktopShell ? context.colors.chatBg : null,
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -400,7 +406,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.error_outline, color: Colors.red[400], size: 44),
+                              Icon(Icons.error_outline, color: context.colors.danger, size: 44),
                               const SizedBox(height: 12),
                               Text(viewModel.error!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 15)),
                               const SizedBox(height: 16),

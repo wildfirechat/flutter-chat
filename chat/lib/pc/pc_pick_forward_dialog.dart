@@ -17,11 +17,8 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
+import 'package:chat/theme/app_colors.dart';
 
-const Color _accent = Color(0xFF3B62E0);
-const Color _accentDisabled = Color(0xFFA8BDFF);
-const Color _hairline = Color(0xFFEBEBEB);
-const Color _divider = Color(0xFFF0F0F0);
 
 /// 桌面端转发弹窗:左栏选目标,右栏确认发送。
 ///
@@ -122,15 +119,15 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
     );
   }
 
-  Widget _buildShell({required Widget left, required Widget right}) {
+  Widget _buildShell(BuildContext context, {required Widget left, required Widget right}) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.colors.surface,
       body: Row(
         children: [
           Container(
             width: 280,
-            decoration: const BoxDecoration(
-              border: Border(right: BorderSide(color: _hairline, width: 0.5)),
+            decoration: BoxDecoration(
+              border: Border(right: BorderSide(color: context.colors.hairlineSoft, width: 0.5)),
             ),
             child: left,
           ),
@@ -141,7 +138,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
   }
 
   Widget _buildTargetSelection(BuildContext context) {
-    return _buildShell(left: _buildTargetColumn(context), right: _buildForwardPanel(context));
+    return _buildShell(context, left: _buildTargetColumn(context), right: _buildForwardPanel(context));
   }
 
   /// 两栏都依赖已选成员,统一挂在一个 Consumer 下,勾选后左右同时刷新。
@@ -149,6 +146,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
     final pickUserViewModel = _controller.pickUserViewModel;
     if (pickUserViewModel == null) {
       return _buildShell(
+        context,
         left: Column(
           children: [
             _buildBackBar(context),
@@ -163,6 +161,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
       value: pickUserViewModel,
       child: Consumer<PickUserViewModel>(
         builder: (context, viewModel, child) => _buildShell(
+          context,
           left: _buildMemberColumn(context, viewModel),
           right: _buildCreateGroupPanel(context, viewModel),
         ),
@@ -199,7 +198,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
               ? Center(
                   child: Text(
                     AppLocalizations.of(context)!.noSearchResult,
-                    style: const TextStyle(fontSize: 13, color: Colors.grey, decoration: TextDecoration.none),
+                    style: TextStyle(fontSize: 13, color: context.colors.textSecondary, decoration: TextDecoration.none),
                   ),
                 )
               : ListView.builder(
@@ -223,16 +222,20 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
       child: Container(
         height: 44,
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: _divider, width: 0.5)),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: context.colors.hairlineSoft, width: 0.5)),
         ),
         child: Row(
           children: [
-            const Icon(Icons.arrow_back_ios_new, size: 14, color: Color(0xFF666666)),
+            Icon(Icons.arrow_back_ios_new, size: 14, color: context.colors.textSecondary),
             const SizedBox(width: 8),
             Text(
               AppLocalizations.of(context)!.createGroupChat,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF333333), decoration: TextDecoration.none),
+              style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: context.colors.textPrimary,
+                  decoration: TextDecoration.none),
             ),
           ],
         ),
@@ -263,7 +266,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
           .toList(),
       action: ElevatedButton(
         onPressed: _controller.hasSelection ? () => widget.onSelected(selected, _comment) : null,
-        style: _actionButtonStyle,
+        style: _actionButtonStyle(context),
         child: Text(l10n.send, style: const TextStyle(fontSize: 13)),
       ),
     );
@@ -291,9 +294,12 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
         onPressed: (pickedUsers.isNotEmpty && !_controller.creatingGroup)
             ? () => _createGroupAndSend(List<UserInfo>.from(pickedUsers))
             : null,
-        style: _actionButtonStyle,
+        style: _actionButtonStyle(context),
         child: _controller.creatingGroup
-            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+            ? SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(strokeWidth: 2, color: context.colors.onAccent))
             : Text(l10n.createAndSend, style: const TextStyle(fontSize: 13)),
       ),
     );
@@ -309,8 +315,9 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
     required Widget action,
   }) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
     return Container(
-      color: Colors.white,
+      color: colors.surface,
       child: Column(
         children: [
           Padding(
@@ -320,23 +327,27 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF333333), decoration: TextDecoration.none),
+                  style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: colors.textPrimary,
+                      decoration: TextDecoration.none),
                 ),
                 Text(
                   subtitle,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey, decoration: TextDecoration.none),
+                  style: TextStyle(fontSize: 12, color: colors.textSecondary, decoration: TextDecoration.none),
                 ),
               ],
             ),
           ),
-          const Divider(color: _divider, height: 1),
+          Divider(color: colors.hairlineSoft, height: 1),
           Expanded(
             flex: 3,
             child: tiles.isEmpty
                 ? Center(
                     child: Text(
                       emptyHint,
-                      style: const TextStyle(fontSize: 13, color: Colors.grey, decoration: TextDecoration.none),
+                      style: TextStyle(fontSize: 13, color: colors.textSecondary, decoration: TextDecoration.none),
                     ),
                   )
                 : SingleChildScrollView(
@@ -359,7 +370,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
             ),
           ),
           const SizedBox(height: 12),
-          const Divider(color: _divider, height: 1),
+          Divider(color: colors.hairlineSoft, height: 1),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             child: Row(
@@ -368,11 +379,11 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
                 OutlinedButton(
                   onPressed: () => Navigator.pop(context),
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFDCDCDC), width: 0.5),
+                    side: BorderSide(color: colors.hairline, width: 0.5),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   ),
-                  child: Text(l10n.cancel, style: const TextStyle(color: Color(0xFF333333), fontSize: 13)),
+                  child: Text(l10n.cancel, style: TextStyle(color: colors.textPrimary, fontSize: 13)),
                 ),
                 const SizedBox(width: 12),
                 action,
@@ -385,26 +396,29 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
   }
 
   Widget _buildCommentField(BuildContext context) {
+    final colors = context.colors;
+    final underline = UnderlineInputBorder(borderSide: BorderSide(color: colors.hairlineSoft, width: 0.5));
     return TextField(
       controller: _commentController,
       style: const TextStyle(fontSize: 13),
       decoration: InputDecoration(
         hintText: AppLocalizations.of(context)!.leaveMessage,
-        hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
-        border: const UnderlineInputBorder(borderSide: BorderSide(color: _hairline, width: 0.5)),
-        enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: _hairline, width: 0.5)),
-        focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: _accent, width: 1.0)),
+        hintStyle: TextStyle(color: colors.textSecondary, fontSize: 13),
+        border: underline,
+        enabledBorder: underline,
+        focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: colors.accent, width: 1.0)),
         contentPadding: const EdgeInsets.symmetric(vertical: 6),
       ),
     );
   }
 
-  static final ButtonStyle _actionButtonStyle = ElevatedButton.styleFrom(
-    backgroundColor: _accent,
-    disabledBackgroundColor: _accentDisabled,
-    foregroundColor: Colors.white,
-    elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-  );
+  /// 禁用态用主色透明版而不是单独一支浅蓝:暗色下浅蓝会比底面还亮。
+  static ButtonStyle _actionButtonStyle(BuildContext context) => ElevatedButton.styleFrom(
+        backgroundColor: context.colors.accent,
+        disabledBackgroundColor: context.colors.accent.withValues(alpha: 0.4),
+        foregroundColor: context.colors.onAccent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      );
 }

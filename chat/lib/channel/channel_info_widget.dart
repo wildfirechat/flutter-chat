@@ -5,9 +5,9 @@ import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class ChannelInfoWidget extends StatefulWidget {
   final ChannelInfo? channelInfo;
@@ -111,10 +111,10 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
                       children: [
                         Text(
                           info.name ?? '',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
-                            color: PcTheme.textPrimary,
+                            color: context.colors.textPrimary,
                             decoration: TextDecoration.none,
                           ),
                           maxLines: 2,
@@ -126,29 +126,29 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
                 ],
               ),
               const SizedBox(height: 24),
-              const Divider(height: 1, thickness: 0.5, color: PcTheme.hairline),
+              Divider(height: 1, thickness: 0.5, color: context.colors.hairline),
               const SizedBox(height: 20),
               // Meta info
               _buildPcMetaRow("功能介绍", info.desc ?? "暂无介绍"),
               const SizedBox(height: 12),
               _buildPcMetaRow("拥有者", info.owner ?? "无"),
               const SizedBox(height: 20),
-              const Divider(height: 1, thickness: 0.5, color: PcTheme.hairline),
+              Divider(height: 1, thickness: 0.5, color: context.colors.hairline),
               const SizedBox(height: 36),
               // Action Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (isListened) ...[
-                    _buildPcButton("进入会话", PcTheme.accent, Colors.white, () {
+                    _buildPcButton("进入会话", context.colors.accent, Colors.white, () {
                       openConversation(context, Conversation(conversationType: ConversationType.Channel, target: info.channelId));
                     }),
                     const SizedBox(width: 16),
-                    _buildPcButton("取消订阅", Colors.grey[200]!, PcTheme.textPrimary, () {
+                    _buildPcButton("取消订阅", Colors.grey[200]!, context.colors.textPrimary, () {
                       _toggleSubscription(info);
                     }),
                   ] else ...[
-                    _buildPcButton("订阅频道", PcTheme.accent, Colors.white, () {
+                    _buildPcButton("订阅频道", context.colors.accent, Colors.white, () {
                       _toggleSubscription(info);
                     }),
                   ],
@@ -170,9 +170,9 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
           width: 80,
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: PcTheme.textSecondary,
+              color: context.colors.textSecondary,
               decoration: TextDecoration.none,
             ),
           ),
@@ -180,9 +180,9 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
         Expanded(
           child: Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: PcTheme.textPrimary,
+              color: context.colors.textPrimary,
               decoration: TextDecoration.none,
             ),
           ),

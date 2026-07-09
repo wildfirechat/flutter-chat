@@ -21,8 +21,8 @@ import '../user_info_widget.dart';
 import 'fav_groups.dart';
 import 'subscribed_channels.dart';
 import '../pc/pc_platform.dart';
-import '../pc/pc_theme.dart';
 import '../utils/layout_scale.dart';
+import 'package:chat/theme/app_colors.dart';
 
 // 行度量。itemExtentBuilder 与侧栏索引的跳转偏移必须共用下面两个函数,
 // 任何一边单独改写都会让 A-Z 跳转逐行累积偏差。
@@ -293,7 +293,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
           Container(
             margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
             height: _kDividerHeight,
-            color: const Color(0xffebebeb),
+            color: context.colors.hairlineSoft,
           ),
         ],
       ),
@@ -336,7 +336,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
           Container(
             margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
             height: _kDividerHeight,
-            color: const Color(0xffebebeb),
+            color: context.colors.hairlineSoft,
           ),
         ],
       ),
@@ -366,8 +366,8 @@ class _ContactListItemState extends State<ContactListItem> {
       if (!isDesktopShell) return Colors.transparent;
       final selectedId = Provider.of<PCShellViewModel>(context).selectedContactItemId;
       final isSelected = selectedId == 'user-${widget.contactInfo.userInfo.userId}';
-      if (isSelected) return PcTheme.cellSelected;
-      if (_hovered) return PcTheme.cellHover;
+      if (isSelected) return context.colors.cellSelected;
+      if (_hovered) return context.colors.cellHover;
       return Colors.transparent;
     }
 
@@ -416,7 +416,7 @@ class _ContactListItemState extends State<ContactListItem> {
               // 纯文本条:用 textCap 完整跟随字号,否则最大档位下分类字母会被裁掉。
               height: widget.contactInfo.showCategory ? LayoutScale.watchScale(context, _kCategoryHeight, cap: LayoutScale.textCap) : 0,
               width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
-              color: const Color(0xffebebeb),
+              color: context.colors.hairlineSoft,
               padding: const EdgeInsets.only(left: 16),
               child: widget.contactInfo.showCategory
                   ? Text(widget.contactInfo.category == '{'
@@ -430,7 +430,7 @@ class _ContactListItemState extends State<ContactListItem> {
             Container(
               margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
               height: _kDividerHeight,
-              color: const Color(0xffebebeb),
+              color: context.colors.hairlineSoft,
             ),
           ],
         ),

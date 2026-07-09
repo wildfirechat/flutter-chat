@@ -15,12 +15,12 @@ import 'package:chat/conversation/composite_message_detail_screen.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/model/favorite_item.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 收藏分类。
 ///
@@ -251,7 +251,7 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
       return Container(
         width: 50,
         height: 50,
-        color: Colors.grey[300],
+        color: context.colors.inputBg,
         child: const Icon(Icons.image),
       );
     } else if (item.favType == MESSAGE_CONTENT_TYPE_FILE) {
@@ -340,9 +340,9 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
       },
       child: Container(
         padding: const EdgeInsets.all(12),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           border: Border(
-            bottom: BorderSide(color: Color(0xFFE5E5E5), width: 0.5),
+            bottom: BorderSide(color: context.colors.hairlineSoft, width: 0.5),
           ),
         ),
         child: Row(
@@ -357,7 +357,7 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
                 children: [
                   Text(
                     item.title.isNotEmpty ? item.title : _getDefaultTitle(item),
-                    style: const TextStyle(fontSize: 16, color: Colors.black),
+                    style: TextStyle(fontSize: 16, color: context.colors.textPrimary),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -366,12 +366,12 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
                     children: [
                       Text(
                         item.origin,
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         Utilities.formatTime(context, item.timestamp),
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                       ),
                     ],
                   ),
@@ -393,7 +393,7 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
       appBar: isDesktopShell
           ? PcPageHeader(title: _pageTitle(context))
           : AppBar(title: Text(_pageTitle(context))),
-      backgroundColor: isDesktopShell ? PcTheme.chatBg : null,
+      backgroundColor: isDesktopShell ? context.colors.chatBg : null,
       body: _buildBody(),
     );
   }

@@ -7,6 +7,7 @@ import 'package:imclient/imclient.dart';
 import '../../utilities.dart';
 import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
+import 'package:chat/theme/app_colors.dart';
 
 abstract class MessageCellBuilder {
   UIMessage model;
@@ -30,7 +31,7 @@ abstract class MessageCellBuilder {
 
   Widget build(BuildContext context) {
     return Container(
-      color: model.highlighted ? Colors.grey.withOpacity(0.5) : null,
+      color: model.highlighted ? context.colors.messageHighlight : null,
       padding: EdgeInsets.all(model.showTimeLabel ? 5 : 3),
       child: Column(
         children: [
@@ -39,7 +40,7 @@ abstract class MessageCellBuilder {
                   padding: const EdgeInsets.all(3),
                   child: Text(
                     Utilities.formatMessageTime(context, model.message.serverTime),
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                   ),
                 )
               : Container(),

@@ -24,6 +24,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/theme/app_colors.dart';
 
 // ---- 中栏统一行度量(禁止散落硬编码,与 pc_theme 同一约定) ----
 // 分组头与子行的内容左缘对齐在 _kContentInset:分组头 = 14 边距 + 18 折叠箭头 + 4 间距。
@@ -357,13 +358,13 @@ class _SectionHeader extends StatelessWidget {
         child: Container(
           height: _sectionHeaderHeight(context),
           padding: const EdgeInsets.only(left: 14, right: 14),
-          color: hovered ? PcTheme.cellHover : Colors.transparent,
+          color: hovered ? context.colors.cellHover : Colors.transparent,
           child: Row(
             children: [
               Icon(
                 expanded ? Icons.expand_more_rounded : Icons.chevron_right_rounded,
                 size: 18,
-                color: PcTheme.textTertiary,
+                color: context.colors.textTertiary,
               ),
               const SizedBox(width: 4),
               SizedBox(
@@ -371,16 +372,16 @@ class _SectionHeader extends StatelessWidget {
                 height: _iconBox(context),
                 child: Center(
                   child: icon != null
-                      ? Icon(icon, size: LayoutScale.watchScale(context, 24), color: PcTheme.accent)
+                      ? Icon(icon, size: LayoutScale.watchScale(context, 24), color: context.colors.accent)
                       : Image.asset(iconAsset!, width: LayoutScale.watchScale(context, 28), height: LayoutScale.watchScale(context, 28)),
                 ),
               ),
               const SizedBox(width: _kIconGap),
-              Expanded(child: Text(title, style: PcTheme.cellTitle)),
+              Expanded(child: Text(title, style: PcTheme.cellTitle(context))),
               if (badgeCount > 0)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: PcTheme.badgeRed, borderRadius: BorderRadius.circular(9)),
+                  decoration: BoxDecoration(color: context.colors.badge, borderRadius: BorderRadius.circular(9)),
                   child: Text(
                     badgeCount > 99 ? '99+' : '$badgeCount',
                     style: const TextStyle(fontSize: 10, color: Colors.white),
@@ -408,7 +409,7 @@ class _GroupLabel extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: const TextStyle(fontSize: 12, color: PcTheme.textSecondary, fontWeight: FontWeight.w500),
+        style: TextStyle(fontSize: 12, color: context.colors.textSecondary, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -435,8 +436,8 @@ class _EntryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color getBgColor(bool hovered) {
-      if (isSelected) return PcTheme.cellSelected;
-      if (hovered) return PcTheme.cellHover;
+      if (isSelected) return context.colors.cellSelected;
+      if (hovered) return context.colors.cellHover;
       return Colors.transparent;
     }
 
@@ -456,7 +457,7 @@ class _EntryRow extends StatelessWidget {
               else
                 Portrait(portrait ?? defaultPortrait!, defaultPortrait!, width: _kIconBox, height: _kIconBox, borderRadius: 4),
               const SizedBox(width: _kIconGap),
-              Expanded(child: Text(title, style: PcTheme.cellTitle, maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(child: Text(title, style: PcTheme.cellTitle(context), maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
         ),
@@ -478,8 +479,8 @@ class _ContactRow extends StatelessWidget {
     final isSelected = selectedId == 'user-${userInfo.userId}';
 
     Color getBgColor(bool hovered) {
-      if (isSelected) return PcTheme.cellSelected;
-      if (hovered) return PcTheme.cellHover;
+      if (isSelected) return context.colors.cellSelected;
+      if (hovered) return context.colors.cellHover;
       return Colors.transparent;
     }
 
@@ -496,7 +497,7 @@ class _ContactRow extends StatelessWidget {
             children: [
               Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
               const SizedBox(width: _kIconGap),
-              Expanded(child: Text(userInfo.getReadableName(), style: PcTheme.cellTitle, maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(child: Text(userInfo.getReadableName(), style: PcTheme.cellTitle(context), maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
         ),
@@ -523,8 +524,8 @@ class _FriendRequestRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color getBgColor(bool hovered) {
-      if (isSelected) return PcTheme.cellSelected;
-      if (hovered) return PcTheme.cellHover;
+      if (isSelected) return context.colors.cellSelected;
+      if (hovered) return context.colors.cellHover;
       return Colors.transparent;
     }
 
@@ -547,9 +548,9 @@ class _FriendRequestRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(userInfo?.getReadableName() ?? '<${request.target}>',
-                        style: PcTheme.cellTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        style: PcTheme.cellTitle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
                     if (request.reason != null && request.reason!.isNotEmpty)
-                      Text(request.reason!, style: PcTheme.cellSubtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(request.reason!, style: PcTheme.cellSubtitle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
@@ -571,8 +572,8 @@ class _FriendRequestRow extends StatelessWidget {
             Imclient.handleFriendRequest(request.target, true, "", onAccepted, (errorCode) {});
           },
           style: OutlinedButton.styleFrom(
-            foregroundColor: PcTheme.accent,
-            side: const BorderSide(color: PcTheme.accent, width: 1),
+            foregroundColor: context.colors.accent,
+            side: BorderSide(color: context.colors.accent, width: 1),
             padding: const EdgeInsets.symmetric(horizontal: 10),
             textStyle: const TextStyle(fontSize: 12),
           ),
@@ -584,7 +585,7 @@ class _FriendRequestRow extends StatelessWidget {
       request.status == FriendRequestStatus.Accepted
           ? AppLocalizations.of(context)!.friendRequestAccepted
           : AppLocalizations.of(context)!.friendRequestRejected,
-      style: PcTheme.cellSubtitle,
+      style: PcTheme.cellSubtitle(context),
     );
   }
 }
@@ -610,7 +611,7 @@ class _SectionEmptyRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: _childRowHeight(context),
-      child: Center(child: Text(text, style: PcTheme.cellSubtitle)),
+      child: Center(child: Text(text, style: PcTheme.cellSubtitle(context))),
     );
   }
 }
