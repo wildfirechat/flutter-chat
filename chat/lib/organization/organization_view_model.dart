@@ -5,11 +5,13 @@ import 'package:chat/organization/model/employee.dart';
 import 'model/organization.dart';
 import 'model/organization_ex.dart';
 import 'organization_service.dart';
+import 'organization_cache.dart';
 
 // TODO
 // 目前只支持单个公司，及单个根部门
 class OrganizationViewModel extends ChangeNotifier {
   final OrganizationService _service = OrganizationService.instance;
+  final OrganizationCache _cache = OrganizationCache.instance;
   OrganizationEx? _currentOrganizationDetails;
   final List<Organization> _breadcrumbPath = [];
   bool _isLoading = true;
@@ -54,13 +56,39 @@ class OrganizationViewModel extends ChangeNotifier {
     try {
       await _ensureLoggedIn();
       _rootOrganizations = await _service.getRootOrganization();
-      List<OrganizationRelationship> orgRelations = await _service.getRelationship(Imclient.currentUserId);
-      orgRelations.removeWhere((org) => !org.bottom);
-      List<int> orgIds = orgRelations.map((r) => r.organizationId).toList();
-      if (orgIds.isEmpty) {
+      final currentUserId = Imclient.currentUserId;
+      if (currentUserId == null || currentUserId.isEmpty) {
         _myOrganizations = [];
       } else {
-        _myOrganizations = await _service.getOrganizations(orgIds);
+        final orgRelations = await _cache.getRelationship(currentUserId);
+        final bottomIds = orgRelations
+            .where((r) => r.bottom)
+            .map((r) => r.organizationId)
+            .toList();
+        if (bottomIds.isEmpty) {
+          _myOrganizations = [];
+        } else {
+          final List<Organization> orgs = [];
+          final List<int> missingIds = [];
+          for (final id in bottomIds) {
+            final cachedOrg = _cache.getOrganization(id, refresh: false);
+            if (cachedOrg != null) {
+              orgs.add(cachedOrg);
+            } else {
+              missingIds.add(id);
+            }
+          }
+          if (missingIds.isNotEmpty) {
+            final loaded = await _service.getOrganizations(missingIds);
+            for (final org in loaded) {
+              if (org.id != 0) {
+                _cache.getOrganization(org.id, refresh: true);
+                orgs.add(org);
+              }
+            }
+          }
+          _myOrganizations = orgs;
+        }
       }
       print('loading my organizations: $_myOrganizations, $_rootOrganizations');
       notifyListeners();
@@ -140,7 +168,7 @@ class OrganizationViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadOrganizationDataInternal(int organizationId, {Organization? orgForBreadcrumb, bool isInitialRoot = false}) async {
+  Future<void> _loadOrganizationDataInternal(int organizationId, {Organization? orgForBreadcrumb, bool isInitialRoot = false, bool refresh = false}) async {
     _isLoading = true;
     _error = null;
     // Do not notify listeners here if called from another method that handles it at start/end
@@ -148,7 +176,7 @@ class OrganizationViewModel extends ChangeNotifier {
 
     try {
       await _ensureLoggedIn();
-      final details = await _service.getOrganizationEx(organizationId);
+      final details = await _cache.getOrganizationEx(organizationId, refresh: refresh);
       _currentOrganizationDetails = details;
 
       if (isInitialRoot && orgForBreadcrumb != null) {
@@ -184,9 +212,16 @@ class OrganizationViewModel extends ChangeNotifier {
   }
 
   _getOrganizationPath(int orgId, List<Organization> outOrgPathList) async {
-    var orgs = await _service.getOrganizations([orgId]);
-    if (orgs.isNotEmpty) {
-      var org = orgs[0];
+    var org = _cache.getOrganization(orgId, refresh: false);
+    if (org == null) {
+      var orgs = await _service.getOrganizations([orgId]);
+      if (orgs.isNotEmpty) {
+        org = orgs[0];
+        _cache.getOrganization(orgId, refresh: true);
+      }
+    }
+
+    if (org != null) {
       outOrgPathList.insert(0, org);
       if (org.parentId != 0) {
         await _getOrganizationPath(org.parentId, outOrgPathList);
@@ -210,9 +245,9 @@ class OrganizationViewModel extends ChangeNotifier {
       await _ensureLoggedIn();
       if (_breadcrumbPath.isNotEmpty) {
         // Retry loading the current organization in the breadcrumb path
-        await _loadOrganizationDataInternal(_breadcrumbPath.last.id!, orgForBreadcrumb: _breadcrumbPath.last);
+        await _loadOrganizationDataInternal(_breadcrumbPath.last.id!, orgForBreadcrumb: _breadcrumbPath.last, refresh: true);
       } else if (currentOrganizationDetails != null) {
-        await _loadOrganizationDataInternal(currentOrganizationDetails!.organizationId, orgForBreadcrumb: currentOrganizationDetails?.organization);
+        await _loadOrganizationDataInternal(currentOrganizationDetails!.organizationId, orgForBreadcrumb: currentOrganizationDetails?.organization, refresh: true);
       } else {
         await loadInitialData();
       }

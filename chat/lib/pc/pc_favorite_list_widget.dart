@@ -104,7 +104,7 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
       });
 
       // 如果当前这一页没有命中目标分类且还有更多,继续加载。
-      if (filtered.isEmpty && hasMore && _shouldKeepLoading(items)) {
+      if (filtered.isEmpty && hasMore && items.isNotEmpty) {
         _loadData();
       }
     }, (msg) {
@@ -113,23 +113,6 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
           _isLoading = false;
         });
         Fluttertoast.showToast(msg: msg);
-      }
-    });
-  }
-
-  bool _shouldKeepLoading(List<FavoriteItem> loadedItems) {
-    if (widget.category == FavoriteCategory.all) return false;
-    return loadedItems.any((item) {
-      switch (widget.category) {
-        case FavoriteCategory.file:
-          return item.favType == MESSAGE_CONTENT_TYPE_FILE;
-        case FavoriteCategory.media:
-          return item.favType == MESSAGE_CONTENT_TYPE_IMAGE ||
-              item.favType == MESSAGE_CONTENT_TYPE_VIDEO;
-        case FavoriteCategory.composite:
-          return item.favType == MESSAGE_CONTENT_TYPE_COMPOSITE_MESSAGE;
-        default:
-          return false;
       }
     });
   }
