@@ -49,9 +49,10 @@ class _WatermarkOverlayState extends State<WatermarkOverlay> {
     final text = '${widget.userId ?? ''}  ${DateFormat('MM-dd HH:mm').format(_now)}';
     final size = MediaQuery.sizeOf(context);
     final theme = Theme.of(context);
+    // 深色背景下同等 alpha 的白字比浅色背景下的黑字更不明显，故给深色多一点
     final color = theme.brightness == Brightness.dark
-        ? Colors.white.withOpacity(0.06)
-        : Colors.black.withOpacity(0.06);
+        ? Colors.white.withValues(alpha: 0.045)
+        : Colors.black.withValues(alpha: 0.03);
 
     return IgnorePointer(
       child: SizedBox(
@@ -75,9 +76,9 @@ class _WatermarkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final textStyle = TextStyle(
-      fontSize: 14,
+      fontSize: 13,
       color: color,
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w400,
     );
     final textPainter = TextPainter(
       text: TextSpan(text: text, style: textStyle),
@@ -85,8 +86,9 @@ class _WatermarkPainter extends CustomPainter {
     );
     textPainter.layout();
 
-    const gapX = 120.0;
-    const gapY = 80.0;
+    // 步长必须大于文字自身宽度，否则相邻水印会互相重叠、显得很密
+    final stepX = textPainter.width + 140;
+    const stepY = 150.0;
     const rotation = -15 * pi / 180;
 
     canvas.save();
@@ -95,14 +97,18 @@ class _WatermarkPainter extends CustomPainter {
     final width = size.width * 1.5;
     final height = size.height * 1.5;
 
-    for (double y = 0; y < height; y += gapY) {
-      for (double x = 0; x < width; x += gapX) {
+    int row = 0;
+    for (double y = 0; y < height; y += stepY) {
+      // 奇数行错开半个步长，密度降低后仍能均匀覆盖
+      final offsetX = (row.isOdd ? stepX / 2 : 0) - stepX;
+      for (double x = offsetX; x < width; x += stepX) {
         canvas.save();
         canvas.translate(x, y);
         canvas.rotate(rotation);
         textPainter.paint(canvas, Offset.zero);
         canvas.restore();
       }
+      row++;
     }
     canvas.restore();
   }
