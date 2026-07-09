@@ -959,62 +959,62 @@ class _PcSideBar extends StatelessWidget {
         children: [
           SizedBox(height: topInset),
           _buildAvatar(context, shell),
-          const SizedBox(height: 18),
+          const SizedBox(height: PcTheme.sidebarAvatarGap),
           Selector<ConversationListViewModel, int>(
             selector: (_, model) => model.unreadMessageCount,
             builder: (context, unreadCount, _) => _SideBarTab(
               tab: PCShellViewModel.tabChat,
               selectedIcon: Icons.chat_bubble_rounded,
               normalIcon: Icons.chat_bubble_outline_rounded,
-              tooltip: l10n.tabChat,
+              label: l10n.tabChat,
               badgeCount: unreadCount,
               onTabSelected: onTabSelected,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: PcTheme.sidebarTabGap),
           Selector<ContactListViewModel, int>(
             selector: (_, model) => model.unreadFriendRequestCount,
             builder: (context, unreadFriendRequestCount, _) => _SideBarTab(
               tab: PCShellViewModel.tabContact,
               selectedIcon: Icons.contacts_rounded,
               normalIcon: Icons.contacts_outlined,
-              tooltip: l10n.tabContact,
+              label: l10n.tabContact,
               badgeCount: unreadFriendRequestCount > 0 ? -1 : 0,
               onTabSelected: onTabSelected,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: PcTheme.sidebarGroupGap),
           _SideBarTab(
             tab: PCShellViewModel.tabFile,
             selectedIcon: Icons.folder_rounded,
             normalIcon: Icons.folder_outlined,
-            tooltip: l10n.files,
+            label: l10n.files,
             onTabSelected: onTabSelected,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: PcTheme.sidebarTabGap),
           _SideBarTab(
             tab: PCShellViewModel.tabFavorite,
             selectedIcon: Icons.star_rounded,
             normalIcon: Icons.star_border_rounded,
-            tooltip: l10n.favorites,
+            label: l10n.favorites,
             onTabSelected: onTabSelected,
           ),
           if ((Config.workspaceUrl ?? '').isNotEmpty) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: PcTheme.sidebarTabGap),
             _SideBarTab(
               tab: PCShellViewModel.tabWork,
               selectedIcon: Icons.grid_view_rounded,
               normalIcon: Icons.grid_view_outlined,
-              tooltip: l10n.tabWork,
+              label: l10n.tabWork,
               onTabSelected: onTabSelected,
             ),
           ],
-          const SizedBox(height: 6),
+          const SizedBox(height: PcTheme.sidebarTabGap),
           _SideBarTab(
             tab: PCShellViewModel.tabDiscovery,
             selectedIcon: Icons.explore_rounded,
             normalIcon: Icons.explore_outlined,
-            tooltip: l10n.tabDiscovery,
+            label: l10n.tabDiscovery,
             onTabSelected: onTabSelected,
           ),
           const Spacer(),
@@ -1023,10 +1023,10 @@ class _PcSideBar extends StatelessWidget {
             tab: PCShellViewModel.tabMe,
             selectedIcon: Icons.settings_rounded,
             normalIcon: Icons.settings_outlined,
-            tooltip: l10n.settings,
+            label: l10n.settings,
             onTabSelected: onTabSelected,
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: PcTheme.sidebarBottomInset),
         ],
       ),
     );
@@ -1087,8 +1087,10 @@ class _SideBarTab extends StatelessWidget {
   final int tab;
   final IconData selectedIcon;
   final IconData normalIcon;
-  final String tooltip;
   final void Function(int tab) onTabSelected;
+
+  /// 仅用于无障碍:侧栏 hover 不弹提示气泡,图标靠选中态与 badge 自解释。
+  final String label;
 
   /// 0 不显示;-1 只显示红点;>0 显示数字。
   final int badgeCount;
@@ -1097,7 +1099,7 @@ class _SideBarTab extends StatelessWidget {
     required this.tab,
     required this.selectedIcon,
     required this.normalIcon,
-    required this.tooltip,
+    required this.label,
     required this.onTabSelected,
     this.badgeCount = 0,
   });
@@ -1107,8 +1109,10 @@ class _SideBarTab extends StatelessWidget {
     var shell = Provider.of<PCShellViewModel>(context);
     bool selected = shell.selectedTab == tab;
 
-    return Tooltip(
-      message: tooltip,
+    return Semantics(
+      label: label,
+      button: true,
+      selected: selected,
       child: HoverBuilder(
         cursor: SystemMouseCursors.click,
         builder: (context, hovered) {

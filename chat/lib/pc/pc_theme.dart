@@ -19,6 +19,13 @@ class PcTheme {
   /// macOS 隐藏标题栏后红绿灯悬浮在侧栏顶部,首个元素需要下移避让。
   static const double sidebarTopInsetMac = 40;
 
+  /// 侧栏纵向节奏。tab 自身是 38×38(图标 22 + 8 内边距),故这里的值再叠加 8 才是视觉间距。
+  /// “会话/联系人”与“文件/收藏/工作台/发现”用组间留白区分,不画分隔线。
+  static const double sidebarAvatarGap = 24;
+  static const double sidebarTabGap = 12;
+  static const double sidebarGroupGap = 24;
+  static const double sidebarBottomInset = 16;
+
   /// 搜索浮层比中栏宽出的部分:结果卡片越过中栏、少量悬在右栏之上(微信形态)。
   static const double searchPanelOverhang = 40;
 
