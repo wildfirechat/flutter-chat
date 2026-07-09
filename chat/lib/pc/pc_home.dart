@@ -27,7 +27,7 @@ import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/pc/widgets/pc_resize_handle.dart';
 import 'package:chat/settings/file_records_screen.dart';
-import 'package:chat/settings/me_tab.dart';
+import 'package:chat/pc/pc_settings_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/user_info_widget.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -185,6 +185,12 @@ class _PCHomeState extends State<PCHome> {
     _shellViewModel.selectTab(tab);
     if (tab == PCShellViewModel.tabWork) {
       _openPage(const WorkSpace());
+      return;
+    }
+    if (tab == PCShellViewModel.tabMe) {
+      final savedPage = _tabPages[tab] ?? const PcGeneralSettingsDetail();
+      _tabPages[tab] = savedPage;
+      _openPage(savedPage);
       return;
     }
     if (tab == previous) {
@@ -744,10 +750,29 @@ class _PCHomeState extends State<PCHome> {
       color: PcTheme.middleBg,
       child: Column(
         children: [
-          _MiddleColumnHeader(
-            onSearchTap: _openSearchModal,
-            onStartChat: _startChat,
-            onAddFriend: _onAddFriend,
+          Consumer<PCShellViewModel>(
+            builder: (context, shell, _) {
+              if (shell.selectedTab == PCShellViewModel.tabMe) {
+                return Container(
+                  height: PcTheme.headerHeight,
+                  padding: const EdgeInsets.only(left: 16),
+                  alignment: Alignment.centerLeft,
+                  child: const Text(
+                    "设置",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: PcTheme.textPrimary,
+                    ),
+                  ),
+                );
+              }
+              return _MiddleColumnHeader(
+                onSearchTap: _openSearchModal,
+                onStartChat: _startChat,
+                onAddFriend: _onAddFriend,
+              );
+            },
           ),
           Expanded(
             child: Consumer<PCShellViewModel>(
@@ -774,7 +799,7 @@ class _PCHomeState extends State<PCHome> {
                     const PcContactList(),
                     const _WorkTabPlaceholder(),
                     const PcDiscoveryList(),
-                    const MeTab(),
+                    const PcSettingsMenu(),
                   ],
                 );
               },
@@ -995,9 +1020,9 @@ class _PcSideBar extends StatelessWidget {
           _buildMinimizedCallTab(context, shell),
           _SideBarTab(
             tab: PCShellViewModel.tabMe,
-            selectedIcon: Icons.person_rounded,
-            normalIcon: Icons.person_outline_rounded,
-            tooltip: l10n.tabMe,
+            selectedIcon: Icons.settings_rounded,
+            normalIcon: Icons.settings_outlined,
+            tooltip: l10n.settings,
             onTabSelected: onTabSelected,
           ),
           const SizedBox(height: 14),
