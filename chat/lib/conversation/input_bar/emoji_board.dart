@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'sticker_manager.dart';
 
 typedef OnPickerEmojiCallback = void Function(String emoji);
@@ -92,33 +94,40 @@ class _EmojiBoardState extends State<EmojiBoard> {
           if (data == null) return const SizedBox.shrink();
 
           if (data.emoji != null && data.position != null) {
+            final fontSizeViewModel = Provider.of<FontSizeViewModel>(context);
+            final fontScale = fontSizeViewModel.textScaleFactor;
+            final double previewWidth = 60 * fontScale;
+            final double previewHeight = 60 * fontScale;
+            final double arrowWidth = 12 * fontScale;
+            final double arrowHeight = 8 * fontScale;
+
             // Emoji Preview
             return Positioned(
-              left: data.position!.dx - 30,
-              top: data.position!.dy - 100,
+              left: data.position!.dx - previewWidth / 2,
+              top: data.position!.dy - (previewHeight + arrowHeight + 32 * fontScale),
               child: Material(
                 color: Colors.transparent,
                 child: Column(
                   children: [
                     Container(
-                      width: 60,
-                      height: 60,
+                      width: previewWidth,
+                      height: previewHeight,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: context.colors.popupBg,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(8 * fontScale),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
+                            blurRadius: 4 * fontScale,
+                            offset: Offset(0, 2 * fontScale),
                           )
                         ],
                       ),
                       child: Text(data.emoji!, style: const TextStyle(fontSize: 36)),
                     ),
                     CustomPaint(
-                      size: const Size(12, 8),
+                      size: Size(arrowWidth, arrowHeight),
                       painter: _TrianglePainter(context.colors.popupBg),
                     ),
                   ],
@@ -167,7 +176,14 @@ class _EmojiBoardState extends State<EmojiBoard> {
 
     Offset localPosition = renderBox.globalToLocal(globalPosition);
     double width = renderBox.size.width;
+    final fontSizeViewModel = Provider.of<FontSizeViewModel>(context, listen: false);
+    final int fontIndex = fontSizeViewModel.index;
     int lineCount = 8;
+    if (fontIndex == 3) {
+      lineCount = 7;
+    } else if (fontIndex >= 4) {
+      lineCount = 6;
+    }
     double cellWidth = width / lineCount;
     double cellHeight = cellWidth; // Aspect ratio 1.0
 
@@ -267,7 +283,15 @@ class _EmojiBoardState extends State<EmojiBoard> {
   }
 
   Widget _buildEmojiGrid() {
+    final fontSizeViewModel = Provider.of<FontSizeViewModel>(context);
+    final fontScale = fontSizeViewModel.textScaleFactor;
+    final int fontIndex = fontSizeViewModel.index;
     int lineCount = 8;
+    if (fontIndex == 3) {
+      lineCount = 7;
+    } else if (fontIndex >= 4) {
+      lineCount = 6;
+    }
     double textSize = 28;
     double delSizeX = 48;
     double delSizeY = 38;
@@ -277,7 +301,8 @@ class _EmojiBoardState extends State<EmojiBoard> {
       builder: (context, constraints) {
         // 删除按钮贴在右下角,内缩量与表情格子的留白对齐。
         // 取面板自身宽度而非屏幕宽度:桌面端面板是窄弹层,用屏幕宽会把按钮推到面板中间。
-        double paddingSize = (constraints.maxWidth - textSize * lineCount) / lineCount / 2;
+        final double scaledTextSize = textSize * fontScale;
+        double paddingSize = ((constraints.maxWidth - scaledTextSize * lineCount) / lineCount / 2).clamp(0.0, double.infinity);
 
         return Stack(
           children: [

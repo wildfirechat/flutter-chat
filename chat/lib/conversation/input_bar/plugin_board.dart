@@ -9,6 +9,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/show_toast.dart';
+import 'package:chat/utils/layout_scale.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import 'package:chat/l10n/app_localizations.dart';
@@ -86,24 +87,24 @@ class PluginBoard extends StatelessWidget {
   }
 
   Widget _pluginItemWidget(BuildContext context, _PluginItem item) {
-    double width = View.of(context).physicalSize.width / View.of(context).devicePixelRatio;
-    double itemWidth = 64;
-    double padding = (width - 4 * itemWidth) / 4 / 2;
-    return Row(
-      children: [
-        Padding(padding: EdgeInsets.only(left: padding)),
-        GestureDetector(
-          onTap: () => _onClickItem(context, item.key),
-          child: Column(
-            children: [
-              Padding(padding: EdgeInsets.only(top: padding)),
-              _buildIcon(item, itemWidth),
-              const Padding(padding: EdgeInsets.only(top: 10)),
-              Text(_getPluginTitle(context, item.key)),
-            ],
+    final double itemWidth = LayoutScale.watchScale(context, 64, cap: LayoutScale.iconCap);
+    return GestureDetector(
+      onTap: () => _onClickItem(context, item.key),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _buildIcon(item, itemWidth),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: Text(
+              _getPluginTitle(context, item.key),
+              textAlign: TextAlign.center,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -267,10 +268,14 @@ class PluginBoard extends StatelessWidget {
   Widget build(BuildContext context) {
     double boardHeight = height ?? 250;
     final pluginItems = _getPluginItems();
+    final double extent = LayoutScale.watchScale(context, 120, cap: LayoutScale.rowCap);
     return SizedBox(
         height: boardHeight,
         child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisExtent: 120),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            mainAxisExtent: extent,
+          ),
           itemCount: pluginItems.length,
           itemBuilder: (context, index) {
             return _pluginItemWidget(context, pluginItems[index]);
