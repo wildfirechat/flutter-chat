@@ -54,12 +54,6 @@ class _PCHomeState extends State<PCHome> {
 
   late ConversationListViewModel _conversationListViewModel;
 
-  /// 当前是否在中栏展示文件入口列表。
-  bool _showFileRecords = false;
-
-  /// 当前是否在中栏展示收藏分类入口列表。
-  bool _showFavorites = false;
-
   /// 右栏当前是否展示着会话页。用于:
   /// - 从其它 tab 切回消息 tab 时恢复上次会话;
   /// - 避免对同一会话重复 push(新旧页 initState/dispose 交叠会清掉 viewModel)。
@@ -182,12 +176,6 @@ class _PCHomeState extends State<PCHome> {
   void _onTabSelected(int tab) {
     final int previous = _shellViewModel.selectedTab;
     _shellViewModel.selectTab(tab);
-    if (_showFileRecords || _showFavorites) {
-      setState(() {
-        _showFileRecords = false;
-        _showFavorites = false;
-      });
-    }
     if (tab == PCShellViewModel.tabWork) {
       _openPage(const WorkSpace());
       return;
@@ -443,13 +431,6 @@ class _PCHomeState extends State<PCHome> {
     );
   }
 
-  void _openFileRecordsScreen() {
-    setState(() {
-      _showFileRecords = true;
-    });
-    _clearRightPane();
-  }
-
   void _openFileListScreen(FileListScreen screen) {
     _paneShowsConversation = false;
     _paneNavKey.currentState!.pushAndRemoveUntil(
@@ -512,13 +493,6 @@ class _PCHomeState extends State<PCHome> {
       ),
       (route) => route.isFirst,
     );
-  }
-
-  void _openFavoritesScreen() {
-    setState(() {
-      _showFavorites = true;
-    });
-    _clearRightPane();
   }
 
   void _openFavoriteList(FavoriteCategory category) {
@@ -585,8 +559,6 @@ class _PCHomeState extends State<PCHome> {
                         width: PcTheme.sideBarWidth,
                         child: _PcSideBar(
                           onTabSelected: _onTabSelected,
-                          onFileTap: _openFileRecordsScreen,
-                          onFavoriteTap: _openFavoritesScreen,
                         )),
                     if (!isWorkTab) ...[
                       SizedBox(
@@ -727,31 +699,35 @@ class _PCHomeState extends State<PCHome> {
             onAddFriend: _onAddFriend,
           ),
           Expanded(
-            child: _showFileRecords
-                ? PcFileRecordsList(
+            child: Consumer<PCShellViewModel>(
+              builder: (context, shell, _) {
+                if (shell.selectedTab == PCShellViewModel.tabFile) {
+                  return PcFileRecordsList(
                     onOpenFileList: _openFileListScreen,
                     onOpenConversationPicker: _openConversationFilePicker,
                     onOpenUserPicker: _openUserFilePicker,
-                  )
-                : _showFavorites
-                    ? PcFavoriteCategoriesList(
-                        onOpenFavoriteList: _openFavoriteList,
-                      )
-                    : Consumer<PCShellViewModel>(
-                        builder: (context, shell, _) => IndexedStack(
-                          index: shell.selectedTab,
-                          children: [
-                            ConversationListWidget(
-                              onConversationSelected: _openConversation,
-                              selectedConversation: shell.selectedConversation,
-                            ),
-                            const PcContactList(),
-                            const _WorkTabPlaceholder(),
-                            const PcDiscoveryList(),
-                            const MeTab(),
-                          ],
-                        ),
-                      ),
+                  );
+                }
+                if (shell.selectedTab == PCShellViewModel.tabFavorite) {
+                  return PcFavoriteCategoriesList(
+                    onOpenFavoriteList: _openFavoriteList,
+                  );
+                }
+                return IndexedStack(
+                  index: shell.selectedTab,
+                  children: [
+                    ConversationListWidget(
+                      onConversationSelected: _openConversation,
+                      selectedConversation: shell.selectedConversation,
+                    ),
+                    const PcContactList(),
+                    const _WorkTabPlaceholder(),
+                    const PcDiscoveryList(),
+                    const MeTab(),
+                  ],
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -881,13 +857,9 @@ class _PlusMenuButton extends StatelessWidget {
 
 class _PcSideBar extends StatelessWidget {
   final void Function(int tab) onTabSelected;
-  final VoidCallback onFileTap;
-  final VoidCallback onFavoriteTap;
 
   const _PcSideBar({
     required this.onTabSelected,
-    required this.onFileTap,
-    required this.onFavoriteTap,
   });
 
   @override
@@ -927,16 +899,20 @@ class _PcSideBar extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          _SideBarIconButton(
-            icon: Icons.folder_outlined,
+          _SideBarTab(
+            tab: PCShellViewModel.tabFile,
+            selectedIcon: Icons.folder_rounded,
+            normalIcon: Icons.folder_outlined,
             tooltip: l10n.files,
-            onTap: onFileTap,
+            onTabSelected: onTabSelected,
           ),
           const SizedBox(height: 6),
-          _SideBarIconButton(
-            icon: Icons.star_border_rounded,
+          _SideBarTab(
+            tab: PCShellViewModel.tabFavorite,
+            selectedIcon: Icons.star_rounded,
+            normalIcon: Icons.star_border_rounded,
             tooltip: l10n.favorites,
-            onTap: onFavoriteTap,
+            onTabSelected: onTabSelected,
           ),
           if ((Config.workspaceUrl ?? '').isNotEmpty) ...[
             const SizedBox(height: 6),
@@ -1077,49 +1053,6 @@ class _SideBarTab extends StatelessWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-/// 侧栏非 tab 入口(如文件),视觉与 [_SideBarTab] 保持一致,点击直接打开页面而非切换 tab。
-class _SideBarIconButton extends StatelessWidget {
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onTap;
-
-  const _SideBarIconButton({
-    required this.icon,
-    required this.tooltip,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: HoverBuilder(
-        cursor: SystemMouseCursors.click,
-        builder: (context, hovered) => GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: hovered
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Center(
-              child: Icon(
-                icon,
-                size: 22,
-                color: hovered ? PcTheme.sidebarIconHover : PcTheme.sidebarIcon,
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

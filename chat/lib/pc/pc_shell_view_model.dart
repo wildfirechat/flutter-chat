@@ -11,6 +11,8 @@ class PCShellViewModel extends ChangeNotifier {
   static const int tabWork = 2;
   static const int tabDiscovery = 3;
   static const int tabMe = 4;
+  static const int tabFile = 5;
+  static const int tabFavorite = 6;
 
   /// 由 PCHome 注入。深层复用组件(如用户信息卡片、右栏用户详情的“发消息”)通过
   /// [openConversation]/[openPage] 请求在右栏打开内容并同步选中态,而不是自己 push 页面。

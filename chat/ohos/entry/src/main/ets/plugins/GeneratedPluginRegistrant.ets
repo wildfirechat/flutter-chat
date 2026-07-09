@@ -7,7 +7,6 @@ import PermissionHandlerPlugin from 'permission_handler_ohos';
 import PathProviderPlugin from 'path_provider_ohos';
 import ImclientPlugin from 'imclient';
 import ImagePickerPlugin from 'image_picker_ohos';
-import FluttertoastPlugin from 'fluttertoast';
 import FlutterSoundPlugin from 'flutter_sound';
 import FlutterLocalizationPlugin from 'flutter_localization';
 
@@ -31,7 +30,6 @@ export class GeneratedPluginRegistrant {
       flutterEngine.getPlugins()?.add(new PathProviderPlugin());
       flutterEngine.getPlugins()?.add(new ImclientPlugin());
       flutterEngine.getPlugins()?.add(new ImagePickerPlugin());
-      flutterEngine.getPlugins()?.add(new FluttertoastPlugin());
       flutterEngine.getPlugins()?.add(new FlutterSoundPlugin());
       flutterEngine.getPlugins()?.add(new FlutterLocalizationPlugin());
     } catch (e) {
