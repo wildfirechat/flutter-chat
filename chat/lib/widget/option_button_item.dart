@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/layout_scale.dart';
 
 class OptionButtonItem extends StatelessWidget {
   final String title;
@@ -10,6 +11,7 @@ class OptionButtonItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final btnHeight = LayoutScale.watchScale(context, 32.0, cap: LayoutScale.rowCap);
     return Column(
       children: [
         GestureDetector(
@@ -17,7 +19,7 @@ class OptionButtonItem extends StatelessWidget {
           onTap: onTap,
           child: Container(
             margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
-            height: 32,
+            constraints: BoxConstraints(minHeight: btnHeight),
             child: Center(
                 child: Text(
               title,

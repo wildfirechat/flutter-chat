@@ -8,6 +8,11 @@ class AppTheme {
   /// 品牌蓝,PcTheme.accent 与此同源。
   static const Color accent = Color(0xFF1F64E4);
 
+  /// 移动端会话背景与消息气泡。桌面端对应 PcTheme.middleBg / PcTheme.bubbleSent。
+  static const Color chatBackground = Color(0xFFE8E8E8);
+  static const Color bubbleSent = Color(0xF0A8BDFF);
+  static const Color bubbleReceived = Colors.white;
+
   /// 圆形勾选框(微信风格):选中品牌蓝,禁用置灰。
   /// 选人、多选消息等场景全端统一观感;挂在 main.dart 全局主题与 PcTheme 上。
   static final CheckboxThemeData checkboxTheme = CheckboxThemeData(

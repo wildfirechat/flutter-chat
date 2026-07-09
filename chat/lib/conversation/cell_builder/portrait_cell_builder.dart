@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:chat/app_theme.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/sound_message_content.dart';
@@ -109,8 +110,8 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                     decoration: BoxDecoration(
                       // 桌面端用品牌蓝浅色调气泡(见 PcTheme),移动端维持原配色
                       color: isSendMessage
-                          ? (isDesktopShell ? PcTheme.bubbleSent : const Color(0xf0a8bdff))
-                          : Colors.white,
+                          ? (isDesktopShell ? PcTheme.bubbleSent : AppTheme.bubbleSent)
+                          : AppTheme.bubbleReceived,
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(8),
                         topLeft: Radius.circular(8),

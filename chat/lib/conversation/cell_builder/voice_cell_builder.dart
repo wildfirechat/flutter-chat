@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:chat/utils/layout_scale.dart';
+
 import 'package:chat/event_bus.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
@@ -128,7 +130,8 @@ class VoiceCellBuilder extends PortraitCellBuilder {
           voiceContent,
           const SizedBox(height: 6),
           SizedBox(
-            height: 20,
+            // 12sp 的「转文字中」在最大档位下行高约 20.4px,固定 20 会溢出。
+            height: LayoutScale.watchScale(context, 20.0, cap: LayoutScale.textCap),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

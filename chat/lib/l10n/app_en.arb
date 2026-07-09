@@ -519,5 +519,14 @@
   "deleteFileRecordConfirm": "Are you sure to delete this file record?",
   "fileRecordDeleted": "File record deleted",
   "deleteFileRecordFailed": "Failed to delete file record",
-  "searchFiles": "Search Files"
+  "searchFiles": "Search Files",
+  "fontSize": "Font Size",
+  "fontSizeSmall": "Small",
+  "fontSizeNormal": "Standard",
+  "fontSizeMedium": "Medium",
+  "fontSizeLarge": "Large",
+  "fontSizeExtraLarge": "Extra Large",
+  "fontSizePreviewIncoming": "Preview font size",
+  "fontSizePreviewOutgoing": "Drag the slider below to set the font size",
+  "fontSizePreviewHint": "Messages, contact lists and more will be displayed at this size."
 }

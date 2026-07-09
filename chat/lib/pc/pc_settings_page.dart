@@ -12,6 +12,7 @@ import 'package:chat/settings/blacklist_screen.dart';
 import 'package:chat/backup/backup_and_restore_screen.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/viewmodel/locale_view_model.dart';
+import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
@@ -449,7 +450,6 @@ class PcAppearanceSettingsDetail extends StatefulWidget {
 
 class _PcAppearanceSettingsDetailState extends State<PcAppearanceSettingsDetail> {
   String _themeMode = 'follow_system';
-  double _fontScale = 1.0;
 
   @override
   void initState() {
@@ -462,7 +462,6 @@ class _PcAppearanceSettingsDetailState extends State<PcAppearanceSettingsDetail>
     if (mounted) {
       setState(() {
         _themeMode = prefs.getString('pc_theme_mode') ?? 'follow_system';
-        _fontScale = prefs.getDouble('pc_font_scale') ?? 1.0;
       });
     }
   }
@@ -479,6 +478,7 @@ class _PcAppearanceSettingsDetailState extends State<PcAppearanceSettingsDetail>
   @override
   Widget build(BuildContext context) {
     final localeViewModel = Provider.of<LocaleViewModel>(context);
+    final fontSizeViewModel = Provider.of<FontSizeViewModel>(context);
 
     String currentLangText = "跟随系统";
     if (localeViewModel.localeMode == 'zh') {
@@ -527,13 +527,11 @@ class _PcAppearanceSettingsDetailState extends State<PcAppearanceSettingsDetail>
                   ),
                   const Divider(height: 0.5),
                   _SettingsSliderRow(
-                    title: "字体大小",
+                    title: AppLocalizations.of(context)!.fontSize,
                     subtitle: "调整界面的文本显示大小",
-                    value: _fontScale,
-                    onChanged: (val) {
-                      setState(() => _fontScale = val);
-                      _saveLocalPreference('pc_font_scale', val);
-                    },
+                    index: fontSizeViewModel.index,
+                    itemCount: fontSizeViewModel.itemCount,
+                    onChanged: fontSizeViewModel.setFontSizeIndex,
                   ),
                 ]),
               ],
@@ -1004,16 +1002,20 @@ class _SettingsSelectorRow extends StatelessWidget {
   }
 }
 
+/// 档位滑块。用索引而不是倍数驱动 —— 倍数会让 min/max/divisions 与
+/// FontSizeViewModel 的档位表脱钩,加一档就会触发 Slider 的 value 越界断言。
 class _SettingsSliderRow extends StatelessWidget {
   final String title;
   final String subtitle;
-  final double value;
-  final ValueChanged<double> onChanged;
+  final int index;
+  final int itemCount;
+  final ValueChanged<int> onChanged;
 
   const _SettingsSliderRow({
     required this.title,
     required this.subtitle,
-    required this.value,
+    required this.index,
+    required this.itemCount,
     required this.onChanged,
   });
 
@@ -1039,33 +1041,67 @@ class _SettingsSliderRow extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              const Text("小", style: TextStyle(fontSize: 11, color: PcTheme.textSecondary)),
-              Expanded(
-                child: SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    activeTrackColor: PcTheme.accent,
-                    inactiveTrackColor: Colors.black12,
-                    thumbColor: Colors.white,
-                    overlayColor: PcTheme.accent.withValues(alpha: 0.1),
-                    valueIndicatorColor: PcTheme.accent,
-                  ),
-                  child: Slider(
-                    value: value,
-                    min: 0.85,
-                    max: 1.45,
-                    divisions: 4,
-                    onChanged: onChanged,
+          // 滑块自身是调节字号的控件,不跟着字号放大:否则档位标签在英文下会横向溢出。
+          MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    const Text("A", style: TextStyle(fontSize: 12, color: PcTheme.textSecondary)),
+                    Expanded(
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: PcTheme.accent,
+                          inactiveTrackColor: Colors.black12,
+                          thumbColor: Colors.white,
+                          overlayColor: PcTheme.accent.withValues(alpha: 0.1),
+                          valueIndicatorColor: PcTheme.accent,
+                          activeTickMarkColor: PcTheme.accent,
+                          inactiveTickMarkColor: Colors.black26,
+                          tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 2.0),
+                        ),
+                        child: Slider(
+                          value: index.toDouble(),
+                          min: 0,
+                          max: (itemCount - 1).toDouble(),
+                          divisions: itemCount - 1,
+                          onChanged: (value) => onChanged(value.round()),
+                        ),
+                      ),
+                    ),
+                    const Text("A", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: PcTheme.textPrimary)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      for (final label in _fontSizeLabels(context))
+                        Expanded(
+                          child: Text(
+                            label,
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 11, color: PcTheme.textSecondary),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-              ),
-              const Text("大", style: TextStyle(fontSize: 14, color: PcTheme.textSecondary)),
-            ],
+              ],
+            ),
           ),
         ],
       ),
     );
+  }
+
+  static List<String> _fontSizeLabels(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return [l10n.fontSizeSmall, l10n.fontSizeNormal, l10n.fontSizeMedium, l10n.fontSizeLarge, l10n.fontSizeExtraLarge];
   }
 }
 

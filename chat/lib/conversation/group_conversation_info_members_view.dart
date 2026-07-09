@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:chat/utils/layout_scale.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
@@ -65,11 +66,14 @@ class GroupConversationInfoMembersView extends StatelessWidget {
       hasMore = true;
     }
 
+    // 头像(iconCap)+ 名字(完整跟随字号),格子高度按行高上限放大才装得下。
+    // 在 LayoutBuilder 外取值:builder 在 layout 阶段执行,不适合注册 Provider 依赖。
+    final double cellHeight = LayoutScale.watchScale(context, 76.0, cap: LayoutScale.rowCap);
+
     return LayoutBuilder(
       builder: (context, constraints) {
         double width = constraints.maxWidth;
         double cellWidth = width / 5;
-        double cellHeight = 76.0;
         double childAspectRatio = cellWidth / cellHeight;
 
         return Column(

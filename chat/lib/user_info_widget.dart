@@ -9,7 +9,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
-import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/widget/portrait.dart';
 import 'package:chat/contact/invite_friend.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
@@ -17,6 +17,7 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_button_item.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/section_divider.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 import 'package:chat/event_bus.dart';
 import 'package:chat/organization/model/organization.dart';
@@ -399,26 +400,26 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     ));
 
     return Container(
-      height: 80,
+      constraints: BoxConstraints(minHeight: LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap)),
       margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
       child: Row(
         children: [
           GestureDetector(
             child: Container(
-              height: 60,
-              width: 60,
               margin: const EdgeInsets.only(right: 16),
-              child: portrait == null ? Image.asset(Config.defaultUserPortrait, width: 32.0, height: 32.0) : Image.network(MediaUrlRedirector.redirect(portrait), width: 32.0, height: 32.0),
+              child: Portrait(portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 60, height: 60, borderRadius: 6),
             ),
             onTap: () {
               //show user portrait
             },
           ),
-          Container(
-            margin: const EdgeInsets.only(top: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: nameList,
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(top: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: nameList,
+              ),
             ),
           )
         ],

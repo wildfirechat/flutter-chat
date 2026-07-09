@@ -23,14 +23,26 @@ import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
+import 'package:chat/utils/layout_scale.dart';
+
 // ---- 中栏统一行度量(禁止散落硬编码,与 pc_theme 同一约定) ----
 // 分组头与子行的内容左缘对齐在 _kContentInset:分组头 = 14 边距 + 18 折叠箭头 + 4 间距。
+// 折叠箭头与 _kContentInset 都不随字号缩放,这条等式才在所有档位下成立;
+// 之后两边都是 _iconBox + _kIconGap,所以文字左缘始终一致。
 const double _kSectionHeaderHeight = 48;
 const double _kChildRowHeight = 52;
 const double _kGroupLabelHeight = 30;
-const double _kContentInset = 36; // 图标/头像左缘;子行文字随之落在 36 + 36 + 10 = 82
 const double _kIconBox = 36; // 图标/头像统一 36x36
+const double _kContentInset = 36; // 图标/头像左缘
 const double _kIconGap = 10;
+
+double _sectionHeaderHeight(BuildContext context) => LayoutScale.watchScale(context, _kSectionHeaderHeight, cap: LayoutScale.rowCap);
+double _childRowHeight(BuildContext context) => LayoutScale.watchScale(context, _kChildRowHeight, cap: LayoutScale.rowCap);
+double _groupLabelHeight(BuildContext context) => LayoutScale.watchScale(context, _kGroupLabelHeight, cap: LayoutScale.rowCap);
+
+/// 图标/头像的实际占位。注意 [Portrait] 会自己缩放,所以传给它的是未缩放的
+/// [_kIconBox],渲染结果恰好等于本函数的返回值 —— 不要再把本函数的结果传进去。
+double _iconBox(BuildContext context) => LayoutScale.watchScale(context, _kIconBox, cap: LayoutScale.iconCap);
 
 /// 桌面端联系人中栏(参照微信 PC):固定分类(新的朋友/收藏群组/订阅频道)+
 /// 可折叠的「组织架构」「联系人」。联系人下按 星标 / AI 机器人 / 字母序 分组内联铺开。
@@ -343,7 +355,7 @@ class _SectionHeader extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          height: _kSectionHeaderHeight,
+          height: _sectionHeaderHeight(context),
           padding: const EdgeInsets.only(left: 14, right: 14),
           color: hovered ? PcTheme.cellHover : Colors.transparent,
           child: Row(
@@ -355,12 +367,12 @@ class _SectionHeader extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               SizedBox(
-                width: _kIconBox,
-                height: _kIconBox,
+                width: _iconBox(context),
+                height: _iconBox(context),
                 child: Center(
                   child: icon != null
-                      ? Icon(icon, size: 24, color: PcTheme.accent)
-                      : Image.asset(iconAsset!, width: 28, height: 28),
+                      ? Icon(icon, size: LayoutScale.watchScale(context, 24), color: PcTheme.accent)
+                      : Image.asset(iconAsset!, width: LayoutScale.watchScale(context, 28), height: LayoutScale.watchScale(context, 28)),
                 ),
               ),
               const SizedBox(width: _kIconGap),
@@ -391,7 +403,7 @@ class _GroupLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: _kGroupLabelHeight,
+      height: _groupLabelHeight(context),
       padding: const EdgeInsets.only(left: _kContentInset, right: 14),
       alignment: Alignment.centerLeft,
       child: Text(
@@ -434,13 +446,13 @@ class _EntryRow extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          height: _kChildRowHeight,
+          height: _childRowHeight(context),
           padding: const EdgeInsets.only(left: _kContentInset, right: 14),
           color: getBgColor(hovered),
           child: Row(
             children: [
               if (assetIcon != null)
-                SizedBox(width: _kIconBox, height: _kIconBox, child: Center(child: Image.asset(assetIcon!, width: 28, height: 28)))
+                SizedBox(width: _iconBox(context), height: _iconBox(context), child: Center(child: Image.asset(assetIcon!, width: LayoutScale.watchScale(context, 28), height: LayoutScale.watchScale(context, 28))))
               else
                 Portrait(portrait ?? defaultPortrait!, defaultPortrait!, width: _kIconBox, height: _kIconBox, borderRadius: 4),
               const SizedBox(width: _kIconGap),
@@ -477,7 +489,7 @@ class _ContactRow extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          height: _kChildRowHeight,
+          height: _childRowHeight(context),
           padding: const EdgeInsets.only(left: _kContentInset, right: 14),
           color: getBgColor(hovered),
           child: Row(
@@ -522,7 +534,7 @@ class _FriendRequestRow extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          height: _kChildRowHeight,
+          height: _childRowHeight(context),
           padding: const EdgeInsets.only(left: _kContentInset, right: 14),
           color: getBgColor(hovered),
           child: Row(
@@ -582,9 +594,9 @@ class _SectionLoadingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      height: _kChildRowHeight,
-      child: Center(child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))),
+    return SizedBox(
+      height: _childRowHeight(context),
+      child: const Center(child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))),
     );
   }
 }
@@ -597,7 +609,7 @@ class _SectionEmptyRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: _kChildRowHeight,
+      height: _childRowHeight(context),
       child: Center(child: Text(text, style: PcTheme.cellSubtitle)),
     );
   }

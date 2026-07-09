@@ -15,12 +15,30 @@ import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/organization/organization_screen.dart';
 import 'package:chat/widget/sidebar_index.dart';
+import 'package:chat/viewmodel/font_size_view_model.dart';
 
 import '../user_info_widget.dart';
 import 'fav_groups.dart';
 import 'subscribed_channels.dart';
 import '../pc/pc_platform.dart';
 import '../pc/pc_theme.dart';
+import '../utils/layout_scale.dart';
+
+// 行度量。itemExtentBuilder 与侧栏索引的跳转偏移必须共用下面两个函数,
+// 任何一边单独改写都会让 A-Z 跳转逐行累积偏差。
+const double _kRowHeight = 52.0;
+const double _kCategoryHeight = 18.0;
+const double _kDividerHeight = 0.5; // 不随字号缩放
+
+/// 固定表头行(新的朋友/收藏群组/…/组织)的完整高度。
+double _headerExtent(BuildContext context) =>
+    LayoutScale.scale(context, _kRowHeight, cap: LayoutScale.rowCap) + _kDividerHeight;
+
+/// 联系人行的完整高度。带分类标题时多一条纯文本的分类条。
+double _contactExtent(BuildContext context, bool showCategory) =>
+    (showCategory ? LayoutScale.scale(context, _kCategoryHeight, cap: LayoutScale.textCap) : 0) +
+    LayoutScale.scale(context, _kRowHeight, cap: LayoutScale.rowCap) +
+    _kDividerHeight;
 
 class ContactListWidget extends StatefulWidget {
   /// 桌面端 Shell 注入:点击联系人时回调(替代默认的全屏 push)。移动端不传,保持原有行为。
@@ -39,21 +57,24 @@ class _ContactListWidgetState extends State<ContactListWidget> {
 
   List<UIContactInfo>? _cachedContactList;
   int _cachedHeaderCount = 0;
+  double _cachedFontScale = 1.0;
   Map<String, double> _cachedOffsets = {};
 
   Map<String, double> _getOffsets(List<UIContactInfo> contactList, int headerCount) {
-    if (_cachedContactList == contactList && _cachedHeaderCount == headerCount) {
+    final fontScale = context.read<FontSizeViewModel>().textScaleFactor;
+    if (_cachedContactList == contactList && _cachedHeaderCount == headerCount && _cachedFontScale == fontScale) {
       return _cachedOffsets;
     }
     _cachedContactList = contactList;
     _cachedHeaderCount = headerCount;
+    _cachedFontScale = fontScale;
     _cachedOffsets = _calculateIndexOffsets(contactList, headerCount);
     return _cachedOffsets;
   }
 
   Map<String, double> _calculateIndexOffsets(List<UIContactInfo> contactList, int headerCount) {
     Map<String, double> offsets = {};
-    double offset = headerCount * 52.5;
+    double offset = headerCount * _headerExtent(context);
     for (var contact in contactList) {
       if (contact.showCategory) {
         String category = contact.category;
@@ -62,7 +83,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
           offsets[category] = offset;
         }
       }
-      offset += contact.showCategory ? 70.5 : 52.5;
+      offset += _contactExtent(context, contact.showCategory);
     }
     return offsets;
   }
@@ -84,6 +105,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // 字号变化必须重跑本 build:itemExtentBuilder 与索引偏移都要按新字号重算。
+    context.watch<FontSizeViewModel>();
     final List fixHeaderList = [
       ['assets/images/contact_new_friend.png', AppLocalizations.of(context)!.newFriend, 'new_friend'],
       ['assets/images/contact_fav_group.png', AppLocalizations.of(context)!.favGroup, 'fav_group'],
@@ -117,13 +140,13 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                           cacheExtent: 200,
                           addRepaintBoundaries: true,
                           addAutomaticKeepAlives: false,
+                          // 字号变化时 build 重跑,新的闭包会让 RenderSliverVariedExtentList
+                          // 重新 layout;这里必须用不注册依赖的 LayoutScale.scale。
                           itemExtentBuilder: (index, dimensions) {
                             if (index < headerCount) {
-                              return 52.5;
-                            } else {
-                              final contactInfo = record.contactList[index - headerCount];
-                              return contactInfo.showCategory ? 70.5 : 52.5;
+                              return _headerExtent(context);
                             }
+                            return _contactExtent(context, record.contactList[index - headerCount].showCategory);
                           },
                           itemBuilder: (context, i) {
                             if (i < fixHeaderList.length) {
@@ -245,7 +268,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
       child: Column(
         children: <Widget>[
           Container(
-            height: 52.0,
+            height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
@@ -254,8 +277,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                         showBadge: unreadFriendRequestCount > 0,
                         badgeContent: Text('$unreadFriendRequestCount'),
                         // TODO: Replace 'assets/images/contact_organization.png' with an actual asset if it doesn't exist
-                        child: Image.asset(imagePath, width: 40.0, height: 40.0))
-                    : Image.asset(imagePath, width: 40.0, height: 40.0),
+                        child: Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)))
+                    : Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)),
                 Container(
                   margin: const EdgeInsets.only(left: 16),
                 ),
@@ -269,7 +292,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
           ),
           Container(
             margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-            height: 0.5,
+            height: _kDividerHeight,
             color: const Color(0xffebebeb),
           ),
         ],
@@ -294,11 +317,11 @@ class _ContactListWidgetState extends State<ContactListWidget> {
       child: Column(
         children: <Widget>[
           Container(
-            height: 52.0,
+            height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
             margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
             child: Row(
               children: <Widget>[
-                Image.asset(imagePath, width: 40.0, height: 40.0),
+                Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)),
                 Container(
                   margin: const EdgeInsets.only(left: 16),
                 ),
@@ -312,7 +335,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
           ),
           Container(
             margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-            height: 0.5,
+            height: _kDividerHeight,
             color: const Color(0xffebebeb),
           ),
         ],
@@ -349,7 +372,7 @@ class _ContactListItemState extends State<ContactListItem> {
     }
 
     Widget contactRow = Container(
-      height: 52.0,
+      height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
       padding: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
       color: getBgColor(),
       child: Row(
@@ -390,7 +413,8 @@ class _ContactListItemState extends State<ContactListItem> {
           children: <Widget>[
             // 分类标题
             Container(
-              height: widget.contactInfo.showCategory ? 18 : 0,
+              // 纯文本条:用 textCap 完整跟随字号,否则最大档位下分类字母会被裁掉。
+              height: widget.contactInfo.showCategory ? LayoutScale.watchScale(context, _kCategoryHeight, cap: LayoutScale.textCap) : 0,
               width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
               color: const Color(0xffebebeb),
               padding: const EdgeInsets.only(left: 16),
@@ -405,7 +429,7 @@ class _ContactListItemState extends State<ContactListItem> {
             contactRow,
             Container(
               margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-              height: 0.5,
+              height: _kDividerHeight,
               color: const Color(0xffebebeb),
             ),
           ],

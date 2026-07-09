@@ -1697,4 +1697,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchFiles => 'Search Files';
+
+  @override
+  String get fontSize => 'Font Size';
+
+  @override
+  String get fontSizeSmall => 'Small';
+
+  @override
+  String get fontSizeNormal => 'Standard';
+
+  @override
+  String get fontSizeMedium => 'Medium';
+
+  @override
+  String get fontSizeLarge => 'Large';
+
+  @override
+  String get fontSizeExtraLarge => 'Extra Large';
+
+  @override
+  String get fontSizePreviewIncoming => 'Preview font size';
+
+  @override
+  String get fontSizePreviewOutgoing =>
+      'Drag the slider below to set the font size';
+
+  @override
+  String get fontSizePreviewHint =>
+      'Messages, contact lists and more will be displayed at this size.';
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/layout_scale.dart';
 
 class OptionItem extends StatelessWidget {
   final String title;
@@ -16,20 +17,23 @@ class OptionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final rowHeight = LayoutScale.watchScale(context, 36.0, cap: LayoutScale.rowCap);
+    final iconSize = LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap);
+
     return GestureDetector(
       child: Column(
         children: [
           Container(
             margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
-            height: 36,
+            constraints: BoxConstraints(minHeight: rowHeight),
             child: Row(
               children: [
                 leftImage != null || leftIcon != null
                     ? Container(
-                        height: 20,
-                        width: 20,
+                        height: iconSize,
+                        width: iconSize,
                         margin: const EdgeInsets.fromLTRB(0, 0, 12, 0),
-                        child: leftImage ?? Icon(leftIcon),
+                        child: leftImage ?? Icon(leftIcon, size: iconSize),
                       )
                     : const SizedBox.shrink(),
                 Expanded(
@@ -53,13 +57,13 @@ class OptionItem extends StatelessWidget {
                     : Container(),
                 rightImage != null || rightIcon != null
                     ? Container(
-                        height: 20,
-                        width: 20,
+                        height: iconSize,
+                        width: iconSize,
                         margin: const EdgeInsets.fromLTRB(12, 0, 0, 0),
-                        child: rightImage ?? Icon(rightIcon),
+                        child: rightImage ?? Icon(rightIcon, size: iconSize),
                       )
                     : const SizedBox.shrink(),
-                showRightArrow ? const Icon(Icons.chevron_right, color: Colors.grey) : Container(),
+                showRightArrow ? Icon(Icons.chevron_right, size: LayoutScale.watchScale(context, 24.0), color: Colors.grey) : Container(),
               ],
             ),
           ),

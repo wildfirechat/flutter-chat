@@ -1683,4 +1683,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get searchFiles => '搜索文件';
+
+  @override
+  String get fontSize => '字体大小';
+
+  @override
+  String get fontSizeSmall => '小';
+
+  @override
+  String get fontSizeNormal => '标准';
+
+  @override
+  String get fontSizeMedium => '中';
+
+  @override
+  String get fontSizeLarge => '大';
+
+  @override
+  String get fontSizeExtraLarge => '特大';
+
+  @override
+  String get fontSizePreviewIncoming => '预览字体大小';
+
+  @override
+  String get fontSizePreviewOutgoing => '拖动下方的滑块，可设置字体大小';
+
+  @override
+  String get fontSizePreviewHint => '设置后，会话中的消息、联系人列表等都将按此大小显示。';
 }

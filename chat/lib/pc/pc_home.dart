@@ -28,6 +28,7 @@ import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/pc/widgets/pc_resize_handle.dart';
 import 'package:chat/settings/file_records_screen.dart';
 import 'package:chat/pc/pc_settings_page.dart';
+import 'package:chat/pc/pc_user_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/user_info_widget.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -1054,14 +1055,26 @@ class _PcSideBar extends StatelessWidget {
         var userInfo = userViewModel.getUserInfo(Imclient.currentUserId);
         return HoverBuilder(
           cursor: SystemMouseCursors.click,
-          builder: (context, hovered) => GestureDetector(
-            onTap: () => onTabSelected(PCShellViewModel.tabMe),
-            child: Portrait(
-              userInfo.portrait ?? Config.defaultUserPortrait,
-              Config.defaultUserPortrait,
-              width: 34,
-              height: 34,
-              borderRadius: 4,
+          builder: (context, hovered) => Builder(
+            builder: (avatarContext) => GestureDetector(
+              onTap: () {
+                final renderBox = avatarContext.findRenderObject() as RenderBox;
+                final size = renderBox.size;
+                final offset = renderBox.localToGlobal(Offset.zero);
+                final anchor = Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height);
+                showPcUserCard(
+                  context: avatarContext,
+                  anchor: anchor,
+                  userId: Imclient.currentUserId,
+                );
+              },
+              child: Portrait(
+                userInfo.portrait ?? Config.defaultUserPortrait,
+                Config.defaultUserPortrait,
+                width: 34,
+                height: 34,
+                borderRadius: 4,
+              ),
             ),
           ),
         );

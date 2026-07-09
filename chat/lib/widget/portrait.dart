@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/media_url_redirector.dart';
+import '../utils/layout_scale.dart';
 
 class Portrait extends StatelessWidget {
   final String portrait;
@@ -16,26 +17,28 @@ class Portrait extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scaledWidth = LayoutScale.watchScale(context, width, cap: LayoutScale.iconCap);
+    final scaledHeight = LayoutScale.watchScale(context, height, cap: LayoutScale.iconCap);
     Widget image;
     if (portrait.isEmpty || portrait.startsWith('assets/')) {
       image = Image.asset(
         portrait.isEmpty ? assetPlaceHolder : portrait,
-        width: width,
-        height: height,
+        width: scaledWidth,
+        height: scaledHeight,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Image.asset(assetPlaceHolder, width: width, height: height),
+        errorBuilder: (context, error, stackTrace) => Image.asset(assetPlaceHolder, width: scaledWidth, height: scaledHeight),
       );
     } else {
       final redirectedUrl = MediaUrlRedirector.redirect(portrait);
       image = CachedNetworkImage(
         imageUrl: redirectedUrl,
-        width: width,
-        height: height,
+        width: scaledWidth,
+        height: scaledHeight,
         fit: BoxFit.cover,
         placeholder: (context, url) => Container(
           color: Colors.grey[200],
         ),
-        errorWidget: (context, url, err) => Image.asset(assetPlaceHolder, width: width, height: height),
+        errorWidget: (context, url, err) => Image.asset(assetPlaceHolder, width: scaledWidth, height: scaledHeight),
       );
     }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:chat/app_theme.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/conversation/channel_conversation_info_screen.dart';
 import 'package:chat/conversation/conversation_appbar_title.dart';
@@ -38,7 +39,7 @@ class ConversationScreen extends StatelessWidget {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: const Color.fromARGB(255, 232, 232, 232),
+      backgroundColor: AppTheme.chatBackground,
       appBar: AppBar(
         title: ConversationAppbarTitle(conversation),
         actions: actions,

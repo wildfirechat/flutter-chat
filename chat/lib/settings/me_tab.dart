@@ -19,6 +19,8 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/widget/section_divider.dart';
+import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/viewmodel/font_size_view_model.dart';
 
 import '../config.dart';
 import '../pc/pc_platform.dart';
@@ -119,18 +121,19 @@ class SelfProfile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Provider.of<FontSizeViewModel>(context); // Trigger rebuild when font size changes
     return Selector<UserViewModel, UserInfo?>(
       selector: (context, viewModel) => viewModel.getUserInfo(Imclient.currentUserId),
       builder: (context, userInfo, child) {
         if (userInfo == null) {
           return Container(
-            height: 80,
+            constraints: BoxConstraints(minHeight: LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap)),
             alignment: Alignment.center,
             child: Text(AppLocalizations.of(context)!.loading),
           );
         } else {
           return Container(
-              height: 80,
+              constraints: BoxConstraints(minHeight: LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap)),
               margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
               child: Row(
                 children: [
@@ -170,38 +173,41 @@ class SelfProfile extends StatelessWidget {
                       );
                     },
                   ),
-                  GestureDetector(
-                    child: Container(
-                      margin: const EdgeInsets.only(left: 10, top: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            userInfo.displayName ?? userInfo.name,
-                            textAlign: TextAlign.left,
-                            style: const TextStyle(fontSize: 18),
-                          ),
-                          Container(
-                            margin: const EdgeInsets.only(top: 5),
-                          ),
-                          Container(
-                            constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 100),
-                            child: Text(
-                              AppLocalizations.of(context)!.wildfireId(userInfo.name),
+                  Expanded(
+                    child: GestureDetector(
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 10, top: 10, bottom: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              userInfo.displayName ?? userInfo.name,
                               textAlign: TextAlign.left,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF3b3b3b),
-                              ),
-                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 18),
                             ),
-                          )
-                        ],
+                            Container(
+                              margin: const EdgeInsets.only(top: 5),
+                            ),
+                            Container(
+                              constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 100),
+                              child: Text(
+                                AppLocalizations.of(context)!.wildfireId(userInfo.name),
+                                textAlign: TextAlign.left,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Color(0xFF3b3b3b),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            )
+                          ],
+                        ),
                       ),
+                      onTap: () {
+                        openPage(context, UserInfoWidget(userInfo.userId));
+                      },
                     ),
-                    onTap: () {
-                      openPage(context, UserInfoWidget(userInfo.userId));
-                    },
                   )
                 ],
               ));

@@ -16,6 +16,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utilities.dart';
+import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
@@ -27,6 +28,14 @@ import 'package:chat/l10n/app_localizations.dart';
 import '../config.dart';
 import '../conversation/conversation_screen.dart';
 import '../viewmodel/user_view_model.dart';
+
+/// 会话行的内容高度与分隔线高度。分隔线不随字号缩放,itemExtent 必须把它单独加上,
+/// 否则 s < 1 时内容比 extent 高,debug 下会报 overflow。
+const double _kConversationRowHeight = 64.0;
+const double _kDividerHeight = 0.5;
+
+double _conversationItemExtent(BuildContext context) =>
+    LayoutScale.watchScale(context, _kConversationRowHeight, cap: LayoutScale.rowCap) + _kDividerHeight;
 
 class ConversationListWidget extends StatelessWidget {
   /// 桌面端 Shell 注入:点击会话时回调(替代默认的全屏 push),并高亮选中会话。
@@ -52,7 +61,7 @@ class ConversationListWidget extends StatelessWidget {
                 child: ListView.builder(
                     itemCount: conversationListViewModel.conversationList.length,
                     // 使用 ListView.builder 的 key 参数确保列表项在顺序变化时能正确更新
-                    itemExtent: 64.5,
+                    itemExtent: _conversationItemExtent(context),
                     key: ValueKey<int>(conversationListViewModel.conversationList.length),
                     cacheExtent: 200,
                     addRepaintBoundaries: true,
@@ -259,7 +268,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
           child: Column(
             children: <Widget>[
               Container(
-                height: 64.0,
+                height: LayoutScale.watchScale(context, _kConversationRowHeight, cap: LayoutScale.rowCap),
                 margin: const EdgeInsets.only(left: 15),
                 child: Selector3<UserViewModel, GroupViewModel, ChannelViewModel,
                         (UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? channelInfo, UserInfo? lastMessageSenderUserInfo)>(
@@ -287,7 +296,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                             ),
                             Expanded(
                                 child: Container(
-                                    height: 48.0,
+                                    height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
                                     alignment: Alignment.centerLeft,
                                     margin: const EdgeInsets.only(left: 15),
                                     child: Column(
@@ -327,9 +336,11 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                       ],
                                     ))),
                             Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.fromLTRB(0.0, 15.0, 15.0, 0.0),
+                                  padding: const EdgeInsets.only(right: 15.0),
                                   child: Text(
                                     Utilities.formatTime(context, conversationInfo.timestamp),
                                     style: const TextStyle(
@@ -338,16 +349,15 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                     ),
                                   ),
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.fromLTRB(0.0, 5.0, 15.0, 0.0),
-                                  child: conversationInfo.isSilent
-                                      ? Image.asset(
-                                          'assets/images/conversation_mute.png',
-                                          width: 10,
-                                          height: 10,
-                                        )
-                                      : null,
-                                ),
+                                if (conversationInfo.isSilent)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 15.0, top: 4.0),
+                                    child: Image.asset(
+                                      'assets/images/conversation_mute.png',
+                                      width: 10,
+                                      height: 10,
+                                    ),
+                                  ),
                               ],
                             ),
                           ],
@@ -356,7 +366,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
               // 桌面端参照微信 PC 不加分隔线,由背景色区分;保留高度以维持 itemExtent
               Container(
                 margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-                height: 0.5,
+                height: _kDividerHeight,
                 color: isDesktopShell ? Colors.transparent : const Color(0xffebebeb),
               ),
             ],

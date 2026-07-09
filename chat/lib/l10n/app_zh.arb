@@ -519,5 +519,14 @@
   "deleteFileRecordConfirm": "确定要删除这条文件记录吗？",
   "fileRecordDeleted": "文件记录已删除",
   "deleteFileRecordFailed": "删除文件记录失败",
-  "searchFiles": "搜索文件"
+  "searchFiles": "搜索文件",
+  "fontSize": "字体大小",
+  "fontSizeSmall": "小",
+  "fontSizeNormal": "标准",
+  "fontSizeMedium": "中",
+  "fontSizeLarge": "大",
+  "fontSizeExtraLarge": "特大",
+  "fontSizePreviewIncoming": "预览字体大小",
+  "fontSizePreviewOutgoing": "拖动下方的滑块，可设置字体大小",
+  "fontSizePreviewHint": "设置后，会话中的消息、联系人列表等都将按此大小显示。"
 }

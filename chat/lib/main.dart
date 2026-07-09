@@ -35,6 +35,7 @@ import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/viewmodel/locale_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
+import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/wfc_notification_manager.dart';
 
 import 'app_navigator.dart';
@@ -88,6 +89,7 @@ void main() async {
       ChangeNotifierProvider<ConversationListViewModel>(create: (_) => ConversationListViewModel()),
       ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
       ChangeNotifierProvider<LocaleViewModel>(create: (_) => LocaleViewModel()),
+      ChangeNotifierProvider<FontSizeViewModel>(create: (_) => FontSizeViewModel()),
       // 桌面 Shell 的导航状态。仅桌面注册:共享代码经 app_navigator.dart 查找,
       // 移动端取不到即走整页 push 路径。
       if (isDesktopShell) ChangeNotifierProvider<PCShellViewModel>(create: (_) => PCShellViewModel()),
@@ -425,10 +427,21 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<LocaleViewModel>(
-      builder: (context, localeViewModel, _) {
+    return Consumer2<LocaleViewModel, FontSizeViewModel>(
+      builder: (context, localeViewModel, fontSizeViewModel, _) {
         return MaterialApp(
           locale: localeViewModel.locale,
+          // 字号完全由 app 内的「字体大小」设置接管,刻意丢弃系统 textScaler
+          // (与微信一致)。系统字体档位与 app 档位叠乘会放到 1.9 倍以上,
+          // 现有布局撑不住;若要恢复跟随系统,需要先把固定高度全部改成约束。
+          builder: (context, child) {
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(
+                textScaler: TextScaler.linear(fontSizeViewModel.textScaleFactor),
+              ),
+              child: child!,
+            );
+          },
           localizationsDelegates: const [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,

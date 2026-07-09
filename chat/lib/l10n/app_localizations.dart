@@ -3217,6 +3217,60 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'搜索文件'**
   String get searchFiles;
+
+  /// No description provided for @fontSize.
+  ///
+  /// In zh, this message translates to:
+  /// **'字体大小'**
+  String get fontSize;
+
+  /// No description provided for @fontSizeSmall.
+  ///
+  /// In zh, this message translates to:
+  /// **'小'**
+  String get fontSizeSmall;
+
+  /// No description provided for @fontSizeNormal.
+  ///
+  /// In zh, this message translates to:
+  /// **'标准'**
+  String get fontSizeNormal;
+
+  /// No description provided for @fontSizeMedium.
+  ///
+  /// In zh, this message translates to:
+  /// **'中'**
+  String get fontSizeMedium;
+
+  /// No description provided for @fontSizeLarge.
+  ///
+  /// In zh, this message translates to:
+  /// **'大'**
+  String get fontSizeLarge;
+
+  /// No description provided for @fontSizeExtraLarge.
+  ///
+  /// In zh, this message translates to:
+  /// **'特大'**
+  String get fontSizeExtraLarge;
+
+  /// No description provided for @fontSizePreviewIncoming.
+  ///
+  /// In zh, this message translates to:
+  /// **'预览字体大小'**
+  String get fontSizePreviewIncoming;
+
+  /// No description provided for @fontSizePreviewOutgoing.
+  ///
+  /// In zh, this message translates to:
+  /// **'拖动下方的滑块，可设置字体大小'**
+  String get fontSizePreviewOutgoing;
+
+  /// No description provided for @fontSizePreviewHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置后，会话中的消息、联系人列表等都将按此大小显示。'**
+  String get fontSizePreviewHint;
 }
 
 class _AppLocalizationsDelegate

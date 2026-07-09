@@ -8,6 +8,7 @@ import '../pc/pc_platform.dart';
 import '../pc/pc_theme.dart';
 import '../pc/widgets/pc_page_header.dart';
 import '../viewmodel/locale_view_model.dart';
+import 'font_size_settings_screen.dart';
 import '../widget/option_item.dart';
 import '../widget/section_divider.dart';
 
@@ -38,6 +39,12 @@ class GeneralSettings extends StatelessWidget {
                 AppLocalizations.of(context)!.language,
                 onTap: () {
                   _showLanguageDialog(context);
+                },
+              ),
+              OptionItem(
+                AppLocalizations.of(context)!.fontSize,
+                onTap: () {
+                  openPage(context, const FontSizeSettingsScreen());
                 },
               ),
               OptionItem(
