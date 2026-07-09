@@ -58,6 +58,12 @@
 
 > 桌面端支持的详细状态、已知问题及 Flutter 版本要求，请参考 [DESKTOP_STATUS.md](./DESKTOP_STATUS.md)。
 
+## 桌面端截图
+
+本项目桌面端（Windows/macOS/Linux）使用 [flameshot](https://flameshot.org/) 作为独立截图工具，通过 `Process.run` 调起。详细的构建、打包、权限与许可证说明请参考 [SCREENSHOT.md](./SCREENSHOT.md)。
+
+> **macOS 沙盒注意**：macOS 的 App Sandbox 会限制 flameshot 访问屏幕录制/窗口服务，导致截图功能无法正常初始化。因此 macOS 版本需要**关闭 App Sandbox**（已移除 `com.apple.security.app-sandbox`）才能使用截图。这也意味着当前配置**无法直接上架 Mac App Store**；如必须走 App Store，需改用原生 `ScreenCaptureKit` 方案。
+
 ## 关于 Flutter 、Android Studio、Gradle 版本的重要说明
 
 1. 为了能够兼容原生鸿蒙，Flutter 版本会跟随原生鸿蒙已适配的Flutter 版本进行升级，目前鸿蒙原生已适配的Flutter版本是`3.27.4`

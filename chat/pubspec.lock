@@ -473,11 +473,12 @@ packages:
   fluttertoast:
     dependency: "direct main"
     description:
-      name: fluttertoast
-      sha256: "144ddd74d49c865eba47abe31cbc746c7b311c82d6c32e571fd73c4264b740e2"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "9.0.0"
+      path: "."
+      ref: "br_8.2.8_ohos"
+      resolved-ref: "54a9ccaf32fbf0e53e0ce16ced890ebc49e04599"
+      url: "https://gitcode.com/openharmony-sig/flutter_fluttertoast.git"
+    source: git
+    version: "8.2.8"
   glob:
     dependency: transitive
     description:
@@ -1522,14 +1523,13 @@ packages:
     source: git
     version: "2.13.1"
   webview_flutter_wkwebview:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      path: "packages/webview_flutter/webview_flutter_wkwebview"
-      ref: "3dd0e0864212dde5e719a312fa88074acd88bde3"
-      resolved-ref: "3dd0e0864212dde5e719a312fa88074acd88bde3"
-      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
-    source: git
-    version: "3.22.0"
+      name: webview_flutter_wkwebview
+      sha256: "4adc14ea9a770cc9e2c8f1ac734536bd40e82615bd0fa6b94be10982de656cc7"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "3.17.0"
   wechat_camera_picker:
     dependency: "direct main"
     description:

@@ -56,7 +56,7 @@ chat/
 └── macos/
     ├── Runner.xcodeproj/project.pbxproj     # macOS 打包集成（Copy flameshot.app）
     ├── Runner/Info.plist                    # NSScreenCaptureUsageDescription
-    └── Runner/Release.entitlements          # App Sandbox 等 entitlement
+    └── Runner/Release.entitlements          # macOS entitlement（已关闭 App Sandbox）
 ```
 
 ---
@@ -287,9 +287,9 @@ Imclient.sendMediaMessage(conversation, imageContent, ...);
   <string>截屏功能需要录制屏幕内容</string>
   ```
 
+- **App Sandbox 已关闭**：macOS 的 App Sandbox 会阻止 flameshot（子进程）访问屏幕录制/窗口服务，导致 flameshot 初始化失败并立即退出。因此 `chat/macos/Runner/Release.entitlements` 和 `DebugProfile.entitlements` 中已移除 `com.apple.security.app-sandbox`。
 - 首次调用 flameshot 截图时，系统会弹出“屏幕录制”权限提示，用户授权后才能正常截图。
-- `chat/macos/Runner/Release.entitlements` 已开启 `com.apple.security.app-sandbox`。
-- 如通过 Mac App Store 分发，需额外确认 helper 的沙盒/entitlement 策略；非 App Store 分发一般只需用户授权 TCC。
+- **重要**：关闭沙盒后**无法直接上架 Mac App Store**。如必须走 App Store，需要改用原生 `ScreenCaptureKit` 方案，而不是 flameshot。
 
 ### 7.2 Windows
 

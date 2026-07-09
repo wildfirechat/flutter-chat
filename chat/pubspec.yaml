@@ -171,6 +171,16 @@ dependency_overrides:
           url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
           path: "packages/webview_flutter/webview_flutter_platform_interface"
           ref: br_webview_flutter-v4.13.0_ohos
+  # webview_flutter_wkwebview 3.18.0+ 在 iOS 处理 authentication challenge 时存在
+  # NSNull -> AuthenticationChallengeResponse 强制转换崩溃（flutter/flutter#162437）。
+  # 鸿蒙适配仓库的 3.22.0 同样受影响，临时固定到 pub.dev 原版的 3.17.0。
+  webview_flutter_wkwebview: 3.17.0
+  # avenginekit 依赖 git 来源的 fluttertoast，chat 默认使用 hosted，
+  # 通过 override 统一使用 avenginekit 指定的 ohos 分支。
+  fluttertoast:
+      git:
+          url: https://gitcode.com/openharmony-sig/flutter_fluttertoast.git
+          ref: br_8.2.8_ohos
 
 dev_dependencies:
   flutter_test:
