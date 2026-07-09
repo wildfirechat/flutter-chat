@@ -8,7 +8,7 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/message/poll_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 

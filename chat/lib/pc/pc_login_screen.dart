@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/utils/show_toast.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class PCLoginScreen extends StatefulWidget {
   final String token;

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:chat/event_bus.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/sound_message_content.dart';

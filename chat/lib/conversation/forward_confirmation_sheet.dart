@@ -19,7 +19,7 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/utilities.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class ForwardConfirmationSheet extends StatefulWidget {
   final List<Conversation> targets;

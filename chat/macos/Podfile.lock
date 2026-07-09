@@ -133,7 +133,7 @@ SPEC CHECKSUMS:
   flutter_local_notifications: 7e5a17a1dbc00d83dc10d43c2c4c05f2ceed233c
   flutter_localization: 3cda759884c7dab4466fe963d97fba723a492666
   flutter_webrtc: fec3dc9284a1f6d21ec2caa91c90bb4c1824eb04
-  FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
+  FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
   imclient: 7f16737688e0ae74172004a6f53a7ed68bf06ab3
   irondash_engine_context: 893c7d96d20ce361d7e996f39d360c4c2f9869ba
   mobile_scanner: 0e365ed56cad24f28c0fd858ca04edefb40dfac3

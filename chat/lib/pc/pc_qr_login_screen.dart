@@ -17,7 +17,7 @@ import 'package:chat/utilities.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/wfc_scheme.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 enum _PCLoginView { qr, form }
 

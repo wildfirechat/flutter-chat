@@ -7,7 +7,7 @@ import 'package:chat/config.dart';
 import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/widget/portrait.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class SearchConversationResultView extends StatefulWidget {
   final Conversation conversation;

@@ -10,7 +10,7 @@ import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
 import 'package:chat/utils/media_url_redirector.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 extension EmptyStringToNull on String? {
   String? get emptyToNull {

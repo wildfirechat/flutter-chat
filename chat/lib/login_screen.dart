@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'config.dart';
 import 'login/login_form_controller.dart';
 import 'utilities.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 移动端登录页(手机壳)。表单状态与登录流程在共享的 [LoginFormController],
 /// 桌面端 PCQRLoginScreen 的表单视图复用同一控制器。

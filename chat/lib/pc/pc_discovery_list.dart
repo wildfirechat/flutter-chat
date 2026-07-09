@@ -8,7 +8,7 @@ import 'package:chat/pan/pan_home_screen.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 桌面端“发现”中栏:与移动端 DiscoveryTab 同一组入口,
 /// 但列表页/网页在右栏打开,机器人直接打开会话(经 app_navigator 统一跳转)。

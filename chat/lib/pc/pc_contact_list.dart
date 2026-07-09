@@ -21,7 +21,7 @@ import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/widget/portrait.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 // ---- 中栏统一行度量(禁止散落硬编码,与 pc_theme 同一约定) ----
 // 分组头与子行的内容左缘对齐在 _kContentInset:分组头 = 14 边距 + 18 折叠箭头 + 4 间距。

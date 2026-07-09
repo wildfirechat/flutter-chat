@@ -20,7 +20,7 @@ import 'package:chat/pc/widgets/pc_popover.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/screenshot_service.dart';
 import 'package:chat/utils/show_toast.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 桌面形态输入栏:工具条(表情/图片/文件/通话)+ 多行输入区 + 发送按钮。
 /// Enter 发送、Shift+Enter 换行;中文输入法组合期间的 Enter 交给输入法。

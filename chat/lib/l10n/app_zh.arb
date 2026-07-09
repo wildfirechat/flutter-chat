@@ -475,6 +475,7 @@
   "publish": "发布",
   "pickFriendsToStartChat": "请选择一位或者多位好友发起聊天",
   "creatingGroup": "群组创建中...",
+  "createGroupChat": "创建群聊",
   "createGroupFail": "创建失败：{error}",
   "groupNameEtc": "{names}等",
   "audioVideoCall": "音视频通话",

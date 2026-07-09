@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/search/search_portal_result_view.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 搜索浮层内容(参照微信 PC):
 /// 头部原位替换为聚焦态的真输入框,结果以圆角浮起卡片悬于列表上方,

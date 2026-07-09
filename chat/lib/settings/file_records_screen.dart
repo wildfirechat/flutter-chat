@@ -10,7 +10,7 @@ import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class FileRecordsScreen extends StatelessWidget {
   const FileRecordsScreen({super.key});

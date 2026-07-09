@@ -6,7 +6,7 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/config.dart';
 import 'package:chat/widget/portrait.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class ReadReceiptDetailScreen extends StatefulWidget {
   final Message message;

@@ -17,9 +17,11 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chat/config.dart';
+import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/utilities.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -28,7 +30,10 @@ import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'forward_confirmation_sheet.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/repo/user_repo.dart';
+import 'package:chat/widget/sidebar_index.dart';
+import 'package:chat/viewmodel/pick_user_view_model.dart';
 
 class PickForwardTargetPage extends StatefulWidget {
   final Function(List<Conversation> targets, String? comment) onSelected;
@@ -50,6 +55,14 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
   String _searchText = '';
   SearchViewModel? _searchViewModel;
 
+  bool _isSelectingMembers = false;
+  PickUserViewModel? _pickUserViewModelForGroup;
+  final ScrollController _pickUserScrollController = ScrollController();
+  final ScrollController _selectedUsersScrollController = ScrollController();
+  final TextEditingController _pickUserSearchController = TextEditingController();
+  String _currentLetter = '';
+  bool _isTouchingIndex = false;
+
   @override
   void initState() {
     super.initState();
@@ -64,6 +77,9 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
         _searchViewModel?.search(_searchText);
       }
     });
+    _pickUserSearchController.addListener(() {
+      _pickUserViewModelForGroup?.search(_pickUserSearchController.text);
+    });
   }
 
   @override
@@ -71,6 +87,9 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
     _searchController.dispose();
     _commentController.dispose();
     _searchFocusNode.dispose();
+    _pickUserScrollController.dispose();
+    _selectedUsersScrollController.dispose();
+    _pickUserSearchController.dispose();
     super.dispose();
   }
 
@@ -447,6 +466,9 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isSelectingMembers) {
+      return _buildMemberSelectionLayout(context);
+    }
     return ChangeNotifierProvider<SearchViewModel>(
       create: (_) => SearchViewModel(),
       child: isDesktopShell
@@ -564,11 +586,300 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
     );
   }
 
+  Widget _buildCreateGroupEntry(BuildContext context) {
+    return InkWell(
+      onTap: _createGroupChat,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFF3B62E0),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Icon(Icons.group_add_rounded, color: Colors.white, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              AppLocalizations.of(context)!.createGroupChat,
+              style: const TextStyle(fontSize: 15, color: Color(0xFF333333), decoration: TextDecoration.none),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _createGroupChat() {
+    setState(() {
+      _isSelectingMembers = true;
+    });
+    _initMemberPicker();
+  }
+
+  void _initMemberPicker() async {
+    _pickUserViewModelForGroup = PickUserViewModel();
+    var userInfos = await UserRepo.getFriendUserInfos();
+    _pickUserViewModelForGroup!.setup(userInfos, maxPickCount: 1024);
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _cancelMemberSelection() {
+    _pickUserSearchController.clear();
+    _pickUserViewModelForGroup = null;
+    setState(() {
+      _isSelectingMembers = false;
+    });
+  }
+
+  void _confirmMemberSelection(List<UserInfo> pickedUsers) async {
+    final l10n = AppLocalizations.of(context)!;
+    final members = pickedUsers.map((u) => u.userId).toList();
+
+    // 只选中一位好友时直接转发到单聊,无需建群
+    if (members.length == 1) {
+      _cancelMemberSelection();
+      _onTargetTap(Conversation(conversationType: ConversationType.Single, target: members[0], line: 0));
+      return;
+    }
+
+    // 多位好友:创建群聊后再转发,群名参考发起聊天的拼接规则
+    List<UserInfo> userInfos = await Imclient.getUserInfos(members);
+    UserInfo? creator = await Imclient.getUserInfo(Imclient.currentUserId);
+    String groupName = creator?.displayName ?? '';
+    for (var user in userInfos) {
+      if (user.displayName != null) {
+        if ('$groupName,${user.displayName}'.length > 24) {
+          groupName = l10n.groupNameEtc(groupName);
+          break;
+        } else {
+          groupName = '$groupName,${user.displayName}';
+        }
+      }
+    }
+
+    Imclient.createGroup(null, groupName, null, GroupType.Restricted.index, members, (groupId) {
+      if (!mounted) return;
+      _cancelMemberSelection();
+      _onTargetTap(Conversation(conversationType: ConversationType.Group, target: groupId, line: 0));
+    }, (errorCode) {
+      showToast(msg: l10n.createGroupFail('$errorCode'));
+    });
+  }
+
+  List<String> _getIndexList(List<UIPickUserInfo> userList) {
+    List<String> indexList = [];
+    indexList.add('↑');
+    for (var user in userList) {
+      if (user.showCategory) {
+        String category = user.category;
+        if (category.startsWith("AI")) continue;
+        if (category == "{") category = "#";
+        if (!indexList.contains(category)) {
+          indexList.add(category);
+        }
+      }
+    }
+    return indexList;
+  }
+
+  void _jumpToTag(String tag, List<UIPickUserInfo> userList) {
+    if (tag == '↑') {
+      _pickUserScrollController.jumpTo(0.0);
+      return;
+    }
+    String targetCategory = tag;
+    if (tag == '#') targetCategory = '{';
+
+    double offset = 0;
+    for (var user in userList) {
+      if (user.category == targetCategory) {
+        _pickUserScrollController.jumpTo(offset);
+        return;
+      }
+      offset += user.showCategory ? 70.5 : 52.5;
+    }
+  }
+
+  Widget _buildMemberSelectionLayout(BuildContext context) {
+    if (_pickUserViewModelForGroup == null) {
+      return Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: _cancelMemberSelection,
+          ),
+          title: Text(AppLocalizations.of(context)!.startChat),
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    return ChangeNotifierProvider<PickUserViewModel>.value(
+      value: _pickUserViewModelForGroup!,
+      child: Consumer<PickUserViewModel>(
+        builder: (context, viewModel, child) {
+          final l10n = AppLocalizations.of(context)!;
+          List<String> indexList = viewModel.isSearching ? [] : _getIndexList(viewModel.userList);
+          
+          return Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: _cancelMemberSelection,
+              ),
+              title: Text(l10n.startChat),
+              actions: [
+                TextButton(
+                  onPressed: viewModel.pickedUsers.isNotEmpty
+                      ? () => _confirmMemberSelection(viewModel.pickedUsers)
+                      : null,
+                  child: Text(
+                    viewModel.pickedUsers.isNotEmpty
+                        ? '${l10n.confirm}(${viewModel.pickedUsers.length})'
+                        : l10n.confirm,
+                    style: TextStyle(
+                      color: viewModel.pickedUsers.isNotEmpty ? Colors.blue : Colors.grey,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  Container(
+                    height: 56,
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    color: Colors.white,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xfff3f4f5),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.search, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                if (viewModel.pickedUsers.isNotEmpty)
+                                  ConstrainedBox(
+                                    constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 140),
+                                    child: SingleChildScrollView(
+                                      controller: _selectedUsersScrollController,
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: viewModel.pickedUsers
+                                            .map((u) => Padding(
+                                                  padding: const EdgeInsets.only(right: 4),
+                                                  child: GestureDetector(
+                                                    onTap: () => viewModel.pickUser(u, false),
+                                                    child: Portrait(u.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait,
+                                                        width: 30, height: 30, borderRadius: 4),
+                                                  ),
+                                                ))
+                                            .toList(),
+                                      ),
+                                    ),
+                                  ),
+                                Expanded(
+                                  child: TextField(
+                                    controller: _pickUserSearchController,
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      hintText: l10n.search,
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        ListView.builder(
+                          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                          controller: _pickUserScrollController,
+                          itemCount: viewModel.userList.length,
+                          itemBuilder: (context, i) {
+                            var userInfo = viewModel.userList[i];
+                            return SelectableUserItem(
+                              userInfo,
+                              1024,
+                              null,
+                              onUserPicked: () {
+                                if (_pickUserSearchController.text.isNotEmpty) {
+                                  _pickUserSearchController.clear();
+                                  viewModel.search('');
+                                }
+                              },
+                            );
+                          },
+                        ),
+                        if (indexList.isNotEmpty)
+                          SidebarIndex(
+                            indexList: indexList,
+                            onIndexSelected: (tag) {
+                              _jumpToTag(tag, viewModel.userList);
+                            },
+                            onTouch: (tag, isTouching) {
+                              setState(() {
+                                _currentLetter = tag;
+                                _isTouchingIndex = isTouching;
+                              });
+                            },
+                          ),
+                        if (_isTouchingIndex)
+                          Center(
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              alignment: Alignment.center,
+                              child: _currentLetter == '↑'
+                                  ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
+                                  : Text(
+                                      _currentLetter,
+                                      style: const TextStyle(color: Colors.white, fontSize: 40),
+                                    ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildRecentConversations(BuildContext context) {
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        _buildCreateGroupEntry(context),
         _buildSectionHeader( AppLocalizations.of(context)!.recentChats),
         Expanded(
           child: ListView.builder(
@@ -663,7 +974,11 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
                       : Config.defaultChannelPortrait,
                 borderRadius: 4.0
               ),
-              title: Text(Utilities.conversationTitle(context, conversation, rec.$1, rec.$2, rec.$3)),
+              title: Text(
+                Utilities.conversationTitle(context, conversation, rec.$1, rec.$2, rec.$3),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
               trailing: (_isMultiSelect && showCheckbox)
                   ? (selected
                       ? const Icon(Icons.check_circle, color: Color(0xFF3B62E0))
@@ -675,7 +990,7 @@ class _PickForwardTargetPageState extends State<PickForwardTargetPage> {
     } else {
       content = ListTile(
         leading: Portrait(portrait ?? '', defaultPortrait ?? Config.defaultUserPortrait, borderRadius: 4.0),
-        title: Text(title ?? ''),
+        title: Text(title ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
         trailing: (_isMultiSelect && showCheckbox)
             ? (selected
                 ? const Icon(Icons.check_circle, color: Color(0xFF3B62E0))

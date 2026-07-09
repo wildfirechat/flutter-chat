@@ -475,6 +475,7 @@
   "publish": "Publish",
   "pickFriendsToStartChat": "Select one or more friends to start a chat",
   "creatingGroup": "Creating group...",
+  "createGroupChat": "Create Group Chat",
   "createGroupFail": "Failed to create: {error}",
   "groupNameEtc": "{names} etc.",
   "audioVideoCall": "Voice & Video Call",

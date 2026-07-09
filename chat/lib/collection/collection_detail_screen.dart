@@ -5,7 +5,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/collection_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/user_info.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import '../widget/portrait.dart';
 import 'collection_model.dart';

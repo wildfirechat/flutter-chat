@@ -19,6 +19,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   imclient:
     # When depending on this package from a real application you should use:
@@ -47,10 +49,11 @@ dependencies:
     git:
       url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
       path: "packages/shared_preferences/shared_preferences"
-  fluttertoast:
-    git:
-      url: https://gitcode.com/openharmony-sig/flutter_fluttertoast.git
-      ref: br_8.2.8_ohos
+  fluttertoast: ^9.0.0
+#  fluttertoast:
+#    git:
+#      url: https://gitcode.com/openharmony-sig/flutter_fluttertoast.git
+#      ref: br_v9.0.0_ohos
   image_picker:
     git:
       url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
@@ -72,7 +75,7 @@ dependencies:
   event_bus: ^2.0.0
   image: ^4.0.15
   badges: ^3.0.3
-  intl: ^0.19.0
+  intl: ^0.20.2
   file_picker: ^8.0.7
   desktop_drop: ^0.5.0
   super_clipboard: ^0.8.24
@@ -116,7 +119,7 @@ dependencies:
   flutter_localization:
       git:
           url: "https://gitcode.com/openharmony-sig/flutter_localization"
-  flutter_dynamic_icon: ^2.1.0
+          ref: br_v0.3.3_ohos
   provider: ^6.1.4
   webview_flutter: ^4.7.0
 #  切换到 ohos 已适配版本

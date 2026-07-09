@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/contact/pick_user_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 桌面端发起音视频通话的统一入口(输入栏按钮与用户信息卡片共用):
 /// - 单聊:直接按 [audioOnly] 指定类型发起,不弹选择菜单;

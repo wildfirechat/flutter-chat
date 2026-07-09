@@ -13,7 +13,7 @@ import 'package:chat/settings/favorite_list_screen.dart';
 import 'package:chat/settings/file_records_screen.dart';
 import 'package:chat/backup/backup_and_restore_screen.dart';
 import 'package:chat/settings/account_safety_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_item.dart';

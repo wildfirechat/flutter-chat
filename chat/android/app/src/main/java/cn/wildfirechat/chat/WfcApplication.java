@@ -1,6 +1,5 @@
 package cn.wildfirechat.chat;
 
-import android.app.Application;
 import android.content.Context;
 import android.os.Build;
 import android.os.StrictMode;
@@ -9,13 +8,13 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.multidex.MultiDex;
 
+import io.flutter.app.FlutterApplication;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterEngineCache;
 import io.flutter.embedding.engine.dart.DartExecutor;
-import io.flutter.view.FlutterMain;
 import io.flutter.plugins.GeneratedPluginRegistrant;
 
-public class WfcApplication extends Application {
+public class WfcApplication extends FlutterApplication {
     private static final String TAG = "WfcApplication";
     private static WfcApplication instance;
     private FlutterEngine flutterEngine;
@@ -48,8 +47,6 @@ public class WfcApplication extends Application {
         try {
             // 预热FlutterEngine以加快第一次渲染
             Log.i(TAG, "Initializing Flutter engine");
-            FlutterMain.startInitialization(this);
-            FlutterMain.ensureInitializationComplete(this, null);
 
             // 创建和缓存FlutterEngine，并配置更多优化选项
             flutterEngine = new FlutterEngine(this);

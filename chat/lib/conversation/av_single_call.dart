@@ -3,7 +3,7 @@ import 'package:avenginekit/internal/avenginekit_impl.dart';
 import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 发起单聊音视频通话的统一入口(桌面输入栏按钮与用户信息卡片共用):
 /// 直接按 [audioOnly] 指定类型发起,不弹选择菜单;已有通话时提示。

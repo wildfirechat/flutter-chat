@@ -27,7 +27,7 @@ import 'package:chat/organization/organization_service.dart';
 
 import 'package:chat/pc/widgets/pc_page_header.dart';
 
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class UserInfoWidget extends StatefulWidget {
   const UserInfoWidget(this.userId, {this.inGroupId, super.key});

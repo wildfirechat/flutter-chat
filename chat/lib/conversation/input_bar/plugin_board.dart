@@ -11,7 +11,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/collection/create_collection_screen.dart';
 import 'package:chat/collection/collection_icon.dart';
 import 'package:chat/poll/poll_home_screen.dart';

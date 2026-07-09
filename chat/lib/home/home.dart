@@ -25,7 +25,7 @@ import 'package:chat/user_info_widget.dart';
 import 'package:chat/wfc_scheme.dart';
 import 'package:chat/pc/pc_login_screen.dart';
 import 'package:chat/utils/show_toast.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import '../contact/contact_list_widget.dart';
 import '../conversation/conversation_screen.dart';

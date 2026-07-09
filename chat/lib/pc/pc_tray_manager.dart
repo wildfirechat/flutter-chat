@@ -6,7 +6,7 @@ import 'package:menu_base/menu_base.dart' as mb;
 import 'package:tray_manager/tray_manager.dart' as tm;
 import 'package:window_manager/window_manager.dart';
 import 'package:chat/pc/pc_window_manager.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 桌面端托盘管理。
 /// - 托盘图标与菜单、点击托盘显示窗口;

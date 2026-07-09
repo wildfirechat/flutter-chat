@@ -36,7 +36,7 @@ import 'package:chat/model/favorite_item.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/widget/popup_menu_overlay.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import '../collection/collection_detail_screen.dart';
 import '../poll/poll_detail_screen.dart';

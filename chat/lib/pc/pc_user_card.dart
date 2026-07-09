@@ -11,7 +11,7 @@ import 'package:chat/pc/widgets/pc_popover.dart';
 import 'package:chat/user_info_widget.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 会话内点击头像弹出的用户信息卡片(参照微信 PC),代替整页 push。
 /// 跳转经 app_navigator 统一入口(Shell 状态注册在应用根部,浮层内也能取到)。

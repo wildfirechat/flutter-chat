@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/pc/pc_favorite_list_widget.dart';
 import 'package:chat/widget/option_item.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/settings/file_records_screen.dart';
 import 'package:chat/widget/option_item.dart';

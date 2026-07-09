@@ -12,7 +12,7 @@ import 'package:chat/pc/pc_home.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/widget/slide_verify_dialog.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 手机号 + 验证码/密码登录的共享表单逻辑,移动端 [LoginScreen] 与桌面
 /// PCQRLoginScreen 的表单视图共用:输入校验、验证码 60s 倒计时、滑动验证、

@@ -16,7 +16,7 @@ import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/widget/drag_to_dismiss.dart';
 import 'package:video_player/video_player.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 typedef PageToEnd = void Function(int messageId, bool tail);
 

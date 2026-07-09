@@ -5,7 +5,7 @@ import 'package:avenginekit/engine/call_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
+// import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/channel_info.dart';
@@ -51,7 +51,7 @@ import 'pc/pc_qr_login_screen.dart';
 import 'pc/pc_tray_manager.dart';
 import 'pc/pc_window_manager.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/widget/watermark_overlay.dart';
 import 'package:chat/organization/organization_cache.dart';
@@ -392,11 +392,11 @@ class _MyAppState extends State<MyApp> {
 
   void _updatePlatformBadge(int count) {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
-      try {
-        FlutterDynamicIcon.setApplicationIconBadgeNumber(count);
-      } catch (e) {
-        debugPrint('unsupport app icon badge number platform');
-      }
+//       try {
+//         FlutterDynamicIcon.setApplicationIconBadgeNumber(count);
+//       } catch (e) {
+//         debugPrint('unsupport app icon badge number platform');
+//       }
     } else if (isDesktopShell) {
       // 桌面端:Dock(macOS)/任务栏(Windows) badge 目前通过托盘角标/标题模拟
       // tray_manager 没有 setBadge API,先更新托盘 tooltip 和未读闪烁。

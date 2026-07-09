@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/message/collection_message_content.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import '../../ui_model/ui_message.dart';
 import 'portrait_cell_builder.dart';

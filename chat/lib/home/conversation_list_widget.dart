@@ -22,7 +22,7 @@ import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/viewmodel/status_notification_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/settings/pc_online_devices_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import '../config.dart';
 import '../conversation/conversation_screen.dart';

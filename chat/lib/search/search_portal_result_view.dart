@@ -11,7 +11,7 @@ import 'package:chat/config.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
 import 'package:chat/widget/group_list_view/list_view.dart';
 import 'package:chat/widget/portrait.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/pc/pc_theme.dart';
 import '../conversation/conversation_screen.dart';

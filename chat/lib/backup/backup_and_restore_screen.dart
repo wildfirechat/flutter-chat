@@ -3,7 +3,7 @@ import 'package:chat/backup/pc_restore_progress_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
-// import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+// import 'package:chat/l10n/app_localizations.dart';
 
 import 'backup_manager.dart';
 import 'backup_models.dart';

@@ -7,7 +7,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/group_conversation_info_view_model.dart';

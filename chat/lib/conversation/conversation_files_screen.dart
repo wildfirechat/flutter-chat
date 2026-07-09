@@ -5,7 +5,7 @@ import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/file_record.dart';
 import 'package:chat/utilities.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class ConversationFilesScreen extends StatefulWidget {
   final Conversation conversation;
