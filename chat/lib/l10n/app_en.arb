@@ -151,6 +151,8 @@
   "location": "Location",
   "filePicker": "File",
   "businessCard": "Card",
+  "screenshotTool": "Screenshot",
+  "screenshotToolNotAvailable": "Screenshot tool unavailable",
   "notSupportedOnCurrentPlatform": "Not supported on current platform",
   "notSupported": "Not supported",
   "singleConversationDetails": "Single Conversation Details",

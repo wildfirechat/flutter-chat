@@ -106,3 +106,21 @@ install(DIRECTORY "${PROJECT_BUILD_DIR}/${FLUTTER_ASSET_DIR_NAME}"
 install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
   CONFIGURATIONS Profile;Release
   COMPONENT Runtime)
+
+# === Bundle flameshot screenshot tool ===
+set(FLAMESHOT_TOOL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/windows/flameshot")
+if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot.exe")
+  install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
+    COMPONENT Runtime)
+endif()
+
+# === Bundle flameshot license notices ===
+set(FLAMESHOT_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/LICENSE.flameshot")
+set(FLAMESHOT_NOTICE "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/NOTICE.md")
+if(EXISTS "${FLAMESHOT_LICENSE}")
+  install(FILES "${FLAMESHOT_LICENSE}" DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT Runtime)
+endif()
+if(EXISTS "${FLAMESHOT_NOTICE}")
+  install(FILES "${FLAMESHOT_NOTICE}" DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT Runtime)
+endif()

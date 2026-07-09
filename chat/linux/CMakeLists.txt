@@ -126,3 +126,41 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
   install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
     COMPONENT Runtime)
 endif()
+
+# === Bundle flameshot screenshot tool ===
+# 根据目标架构选择对应的 flameshot 二进制目录。
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+  set(FLAMESHOT_ARCH "x86_64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+  set(FLAMESHOT_ARCH "aarch64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
+  set(FLAMESHOT_ARCH "arm")
+else()
+  set(FLAMESHOT_ARCH "${CMAKE_SYSTEM_PROCESSOR}")
+  message(WARNING "flameshot: unknown target architecture '${CMAKE_SYSTEM_PROCESSOR}', falling back to literal directory name")
+endif()
+
+set(FLAMESHOT_TOOL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/linux/flameshot/${FLAMESHOT_ARCH}")
+if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot")
+  install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot/${FLAMESHOT_ARCH}"
+    COMPONENT Runtime)
+else()
+  # 兼容旧的无架构子目录布局
+  set(FLAMESHOT_TOOL_DIR_LEGACY "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/linux/flameshot")
+  if(EXISTS "${FLAMESHOT_TOOL_DIR_LEGACY}/flameshot")
+    install(DIRECTORY "${FLAMESHOT_TOOL_DIR_LEGACY}/"
+      DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
+      COMPONENT Runtime)
+  endif()
+endif()
+
+# === Bundle flameshot license notices ===
+set(FLAMESHOT_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/LICENSE.flameshot")
+set(FLAMESHOT_NOTICE "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/NOTICE.md")
+if(EXISTS "${FLAMESHOT_LICENSE}")
+  install(FILES "${FLAMESHOT_LICENSE}" DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT Runtime)
+endif()
+if(EXISTS "${FLAMESHOT_NOTICE}")
+  install(FILES "${FLAMESHOT_NOTICE}" DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT Runtime)
+endif()

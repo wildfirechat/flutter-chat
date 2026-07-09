@@ -18,6 +18,8 @@ import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_popover.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
+import 'package:chat/utils/screenshot_service.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 /// 桌面形态输入栏:工具条(表情/图片/文件/通话)+ 多行输入区 + 发送按钮。
@@ -245,6 +247,22 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     }
   }
 
+  Future<void> _captureScreenshot(ConversationController conversationController, MessageInputBarController controller) async {
+    final available = await ScreenshotService.isAvailable;
+    if (!available) {
+      if (mounted) {
+        showToast(msg: AppLocalizations.of(context)!.screenshotToolNotAvailable);
+      }
+      return;
+    }
+    final result = await ScreenshotService.captureToFile();
+    if (result.success) {
+      conversationController.onPickImage(controller.conversation, result.path!);
+    } else if (result.error != null && mounted) {
+      showToast(msg: result.error!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = Provider.of<MessageInputBarController>(context);
@@ -277,6 +295,11 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                     icon: Icons.image_outlined,
                     tooltip: l10n.image,
                     onTap: () => _pickImage(conversationController, controller),
+                  ),
+                  _ToolbarButton(
+                    icon: Icons.cut,
+                    tooltip: l10n.screenshotTool,
+                    onTap: () => _captureScreenshot(conversationController, controller),
                   ),
                   _ToolbarButton(
                     icon: Icons.folder_outlined,

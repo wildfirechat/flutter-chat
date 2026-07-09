@@ -16,6 +16,7 @@ import 'package:chat/collection/create_collection_screen.dart';
 import 'package:chat/collection/collection_icon.dart';
 import 'package:chat/poll/poll_home_screen.dart';
 import 'package:chat/conversation/conversation_controller.dart';
+import 'package:chat/utils/screenshot_service.dart';
 
 class _PluginItem {
   String iconPath;
@@ -33,6 +34,7 @@ class PluginBoard extends StatelessWidget {
   List<_PluginItem> _getPluginItems() {
     final items = [
       _PluginItem('assets/images/input/album.png',  "album"),
+      if (isDesktopShell) _PluginItem('', "screenshot"),
       if (!isDesktopShell) _PluginItem('assets/images/input/camera.png', "camera"),
       if (!isDesktopShell) _PluginItem('assets/images/input/call.png', "call"),
       if (!isDesktopShell) _PluginItem('assets/images/input/location.png', "location"),
@@ -72,6 +74,8 @@ class PluginBoard extends StatelessWidget {
         return l10n.filePicker;
       case "card":
         return l10n.businessCard;
+      case "screenshot":
+        return l10n.screenshotTool;
       case "collection":
         return l10n.collection;
       case "poll":
@@ -112,6 +116,22 @@ class PluginBoard extends StatelessWidget {
     if (item.key == 'poll') {
       return _buildPollIcon(size);
     }
+    // 截屏按钮使用 Material 图标
+    if (item.key == 'screenshot') {
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          borderRadius: BorderRadius.circular(size * 0.2),
+        ),
+        child: Icon(
+          Icons.cut,
+          size: size * 0.5,
+          color: const Color(0xFF585858),
+        ),
+      );
+    }
     // 其他图标使用图片资源
     return Image.asset(
       item.iconPath,
@@ -138,7 +158,7 @@ class PluginBoard extends StatelessWidget {
     );
   }
 
-  void _onClickItem(BuildContext context, String key) {
+  Future<void> _onClickItem(BuildContext context, String key) async {
     var conversationController = Provider.of<ConversationController>(context, listen: false);
     final l10n = AppLocalizations.of(context)!;
     switch (key) {
@@ -208,6 +228,21 @@ class PluginBoard extends StatelessWidget {
       case "card":
         // _pressCardBtnCallback();
         conversationController.onPressCardBtn(context, conversation);
+        break;
+      case "screenshot":
+        {
+          final available = await ScreenshotService.isAvailable;
+          if (!available) {
+            showToast(msg: l10n.screenshotToolNotAvailable);
+            return;
+          }
+          final result = await ScreenshotService.captureToFile();
+          if (result.success) {
+            conversationController.onPickImage(conversation, result.path!);
+          } else if (result.error != null) {
+            showToast(msg: result.error!);
+          }
+        }
         break;
       case "collection":
         Navigator.push(

@@ -151,6 +151,8 @@
   "location": "位置",
   "filePicker": "文件",
   "businessCard": "名片",
+  "screenshotTool": "截屏",
+  "screenshotToolNotAvailable": "截屏工具不可用",
   "notSupportedOnCurrentPlatform": "当前平台暂不支持",
   "notSupported": "暂不支持",
   "singleConversationDetails": "单聊会话详情",
