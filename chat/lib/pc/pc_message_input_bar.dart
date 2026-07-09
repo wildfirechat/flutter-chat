@@ -243,7 +243,10 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
       align: PcPopoverAlign.center,
       builder: (popoverContext) => EmojiBoard(
         kChatEmojis,
-        pickerEmojiCallback: (emoji) => controller.insertText(emoji),
+        pickerEmojiCallback: (emoji) {
+          controller.insertText(emoji);
+          Navigator.of(popoverContext).pop();
+        },
         delEmojiCallback: () => controller.backspace(kChatEmojis),
         pickerStickerCallback: (stickerPath) {
           Navigator.of(popoverContext).pop();

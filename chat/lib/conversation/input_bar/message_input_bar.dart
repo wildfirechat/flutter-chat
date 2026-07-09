@@ -168,24 +168,27 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
       _animatingBoardStatus = controller.status;
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildInputBar(controller),
-        ClipRect(
-          child: useAnimation
-              ? AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeOutCubic,
-                  height: bottomHeight,
-                  child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
-                )
-              : Container(
-                  height: bottomHeight,
-                  child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
-                ),
-        ),
-      ],
+    return Container(
+      color: const Color(0xFFF5F5F5),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildInputBar(controller),
+          ClipRect(
+            child: useAnimation
+                ? AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                    height: bottomHeight,
+                    child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
+                  )
+                : Container(
+                    height: bottomHeight,
+                    child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
+                  ),
+          ),
+        ],
+      ),
     );
   }
 

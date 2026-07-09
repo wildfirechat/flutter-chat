@@ -34,7 +34,7 @@ class Mention {
 
 /// 控制器类，用于管理输入栏的状态
 class MessageInputBarController extends ChangeNotifier {
-  final TextEditingController textEditingController = TextEditingController();
+  final TextEditingController textEditingController = EmojiTextEditingController();
   final FocusNode focusNode = FocusNode();
   final Conversation conversation;
   final ConversationViewModel conversationViewModel;
@@ -703,4 +703,76 @@ class _StickerInfo {
   final int height;
 
   _StickerInfo({required this.path, required this.width, required this.height});
+}
+
+class EmojiTextEditingController extends TextEditingController {
+  EmojiTextEditingController({super.text});
+
+  // Regular expression to match emojis (covers standard emojis, emoticons, symbols, flag sequences, etc.)
+  static final RegExp _emojiRegex = RegExp(
+    r'[\u{1F300}-\u{1FAFF}]|[\u{1F000}-\u{1F0FF}]|[\u{1F1E6}-\u{1F1FF}]|[\u{2600}-\u{27BF}]|[\u{2300}-\u{23FF}]|[\u{2B50}]',
+    unicode: true,
+  );
+
+  @override
+  TextSpan buildTextSpan({
+    required BuildContext context,
+    TextStyle? style,
+    required bool withComposing,
+  }) {
+    assert(!value.composing.isValid || !withComposing || value.composing.isCollapsed || (value.composing.start >= 0 && value.composing.end <= value.text.length));
+
+    final bool hasComposing = value.composing.isValid && withComposing && !value.composing.isCollapsed;
+
+    if (!hasComposing) {
+      return _buildEmojiTextSpan(text, style);
+    }
+
+    final TextStyle composingStyle = style?.merge(const TextStyle(decoration: TextDecoration.underline)) 
+        ?? const TextStyle(decoration: TextDecoration.underline);
+
+    final String beforeText = value.text.substring(0, value.composing.start);
+    final String composingText = value.text.substring(value.composing.start, value.composing.end);
+    final String afterText = value.text.substring(value.composing.end);
+
+    return TextSpan(
+      style: style,
+      children: [
+        _buildEmojiTextSpan(beforeText, style),
+        _buildEmojiTextSpan(composingText, composingStyle),
+        _buildEmojiTextSpan(afterText, style),
+      ],
+    );
+  }
+
+  TextSpan _buildEmojiTextSpan(String text, TextStyle? style) {
+    final List<InlineSpan> children = [];
+    final baseFontSize = style?.fontSize ?? 16.0;
+    // Scale emoji font size to make them look comparable to or slightly larger than text.
+    final emojiStyle = style?.copyWith(
+      fontSize: baseFontSize * 1.35,
+    ) ?? TextStyle(fontSize: baseFontSize * 1.35);
+
+    text.splitMapJoin(
+      _emojiRegex,
+      onMatch: (Match match) {
+        children.add(TextSpan(
+          text: match.group(0),
+          style: emojiStyle,
+        ));
+        return '';
+      },
+      onNonMatch: (String nonMatch) {
+        if (nonMatch.isNotEmpty) {
+          children.add(TextSpan(
+            text: nonMatch,
+            style: style,
+          ));
+        }
+        return '';
+      },
+    );
+
+    return TextSpan(style: style, children: children);
+  }
 }

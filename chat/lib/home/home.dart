@@ -5,6 +5,7 @@
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
@@ -286,94 +287,102 @@ class HomeTabBarState extends State<HomeTabBar> {
       children: pages,
       index: _tabIndex,
     );
-    return Scaffold(
-          //布局结构
-          appBar: AppBar(
-            //选中每一项的标题和图标设置
-            title: Text(appBarTitles[_tabIndex]),
-            centerTitle: false,
-            actions: [
-              GestureDetector(
-                onTap: () => _onTapSearchButton(context),
-                child: const Icon(Icons.search_rounded),
-              ),
-              const Padding(padding: EdgeInsets.only(left: 8)),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.add_circle_outline_rounded),
-                offset: const Offset(10, 60),
-                itemBuilder: (context) {
-                  return [
-                    PopupMenuItem(
-                      value: "chat",
-                      child: ListTile(
-                        leading: const Icon(Icons.chat_bubble_rounded),
-                        title: Text(AppLocalizations.of(context)!.startChat),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.dark,
+        systemNavigationBarContrastEnforced: false,
+      ),
+      child: Scaffold(
+            //布局结构
+            appBar: AppBar(
+              //选中每一项的标题和图标设置
+              title: Text(appBarTitles[_tabIndex]),
+              centerTitle: false,
+              actions: [
+                GestureDetector(
+                  onTap: () => _onTapSearchButton(context),
+                  child: const Icon(Icons.search_rounded),
+                ),
+                const Padding(padding: EdgeInsets.only(left: 8)),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.add_circle_outline_rounded),
+                  offset: const Offset(10, 60),
+                  itemBuilder: (context) {
+                    return [
+                      PopupMenuItem(
+                        value: "chat",
+                        child: ListTile(
+                          leading: const Icon(Icons.chat_bubble_rounded),
+                          title: Text(AppLocalizations.of(context)!.startChat),
+                        ),
                       ),
-                    ),
-                    PopupMenuItem(
-                      value: "add",
-                      child: ListTile(
-                        leading: const Icon(Icons.contact_phone_rounded),
-                        title: Text(AppLocalizations.of(context)!.addFriend),
+                      PopupMenuItem(
+                        value: "add",
+                        child: ListTile(
+                          leading: const Icon(Icons.contact_phone_rounded),
+                          title: Text(AppLocalizations.of(context)!.addFriend),
+                        ),
                       ),
-                    ),
-                    PopupMenuItem(
-                      value: "scan",
-                      child: ListTile(
-                        leading: const Icon(Icons.qr_code_scanner_rounded),
-                        title: Text(AppLocalizations.of(context)!.scanQrCode),
+                      PopupMenuItem(
+                        value: "scan",
+                        child: ListTile(
+                          leading: const Icon(Icons.qr_code_scanner_rounded),
+                          title: Text(AppLocalizations.of(context)!.scanQrCode),
+                        ),
                       ),
-                    ),
-                  ];
-                },
-                onSelected: (value) {
-                  switch (value) {
-                    case "chat":
-                      _startChat();
-                      break;
-                    case "add":
-                      _addFriend();
-                      break;
-                    case "scan":
-                      _scanQrCode();
-                      break;
-                  }
-                },
-              ),
-              const Padding(padding: EdgeInsets.only(left: 16)),
-            ],
+                    ];
+                  },
+                  onSelected: (value) {
+                    switch (value) {
+                      case "chat":
+                        _startChat();
+                        break;
+                      case "add":
+                        _addFriend();
+                        break;
+                      case "scan":
+                        _scanQrCode();
+                        break;
+                    }
+                  },
+                ),
+                const Padding(padding: EdgeInsets.only(left: 16)),
+              ],
+            ),
+            body: _body,
+            bottomNavigationBar: CupertinoTabBar(
+              backgroundColor: Colors.white,
+              items: List.generate(appBarTitles.length, (index) {
+                if (index == 0) {
+                  return BottomNavigationBarItem(
+                      icon: Selector<ConversationListViewModel, int>(
+                        selector: (_, model) => model.unreadMessageCount,
+                        builder: (context, unreadCount, child) =>
+                            _buildBadge(unreadCount, getTabIcon(0)),
+                      ),
+                      label: getTabTitle(0));
+                } else if (index == 1) {
+                  return BottomNavigationBarItem(
+                      icon: Selector<ContactListViewModel, int>(
+                        selector: (_, model) => model.unreadFriendRequestCount,
+                        builder: (context, unreadFriendRequestCount, child) =>
+                            _buildBadge(unreadFriendRequestCount > 0 ? -1 : 0, getTabIcon(1)),
+                      ),
+                      label: getTabTitle(1));
+                } else {
+                  return BottomNavigationBarItem(icon: getTabIcon(index), label: getTabTitle(index));
+                }
+              }),
+              currentIndex: _tabIndex,
+              onTap: (index) {
+                setState(() {
+                  _tabIndex = index;
+                });
+              },
+            ),
           ),
-          body: _body,
-          bottomNavigationBar: CupertinoTabBar(
-            //
-            items: List.generate(appBarTitles.length, (index) {
-              if (index == 0) {
-                return BottomNavigationBarItem(
-                    icon: Selector<ConversationListViewModel, int>(
-                      selector: (_, model) => model.unreadMessageCount,
-                      builder: (context, unreadCount, child) =>
-                          _buildBadge(unreadCount, getTabIcon(0)),
-                    ),
-                    label: getTabTitle(0));
-              } else if (index == 1) {
-                return BottomNavigationBarItem(
-                    icon: Selector<ContactListViewModel, int>(
-                      selector: (_, model) => model.unreadFriendRequestCount,
-                      builder: (context, unreadFriendRequestCount, child) =>
-                          _buildBadge(unreadFriendRequestCount > 0 ? -1 : 0, getTabIcon(1)),
-                    ),
-                    label: getTabTitle(1));
-              } else {
-                return BottomNavigationBarItem(icon: getTabIcon(index), label: getTabTitle(index));
-              }
-            }),
-            currentIndex: _tabIndex,
-            onTap: (index) {
-              setState(() {
-                _tabIndex = index;
-              });
-            },
-          ),
-        );
+    );
   }
 }
