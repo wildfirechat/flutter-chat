@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 /// 转发 / 建群选人共用的圆角搜索框。
@@ -25,17 +25,17 @@ class ForwardSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Colors.white,
+      color: context.colors.surface,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFFF5F5F5),
+          color: context.colors.inputBg,
           borderRadius: BorderRadius.circular(6),
         ),
         constraints: const BoxConstraints(minHeight: 36),
         child: Row(
           children: [
-            const Icon(Icons.search, color: Colors.grey, size: 20),
+            Icon(Icons.search, color: context.colors.iconSecondary, size: 20),
             const SizedBox(width: 8),
             Expanded(
               child: Row(
@@ -52,8 +52,10 @@ class ForwardSearchBar extends StatelessWidget {
                     child: TextField(
                       controller: controller,
                       focusNode: focusNode,
+                      style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
                       decoration: InputDecoration(
                         hintText: AppLocalizations.of(context)!.search,
+                        hintStyle: TextStyle(color: context.colors.textSecondary, fontSize: 14),
                         isDense: true,
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,

@@ -4,6 +4,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/conversation/forward/forward_target_controller.dart';
@@ -151,6 +152,7 @@ class _PickForwardPageState extends State<PickForwardPage> {
   Widget _buildTargetSelection(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
+      backgroundColor: context.colors.chatBg,
       appBar: AppBar(
         title: Text(_controller.isMultiSelect ? l10n.pickMultipleChats : l10n.pickOneChat),
         actions: [
@@ -158,7 +160,7 @@ class _PickForwardPageState extends State<PickForwardPage> {
             onPressed: _controller.toggleMultiSelect,
             child: Text(
               _controller.isMultiSelect ? l10n.singleSelect : l10n.multiSelect,
-              style: const TextStyle(color: Colors.blue, fontSize: 16),
+              style: TextStyle(color: context.colors.accent, fontSize: 16),
             ),
           ),
         ],
@@ -203,24 +205,27 @@ class _PickForwardPageState extends State<PickForwardPage> {
     final l10n = AppLocalizations.of(context)!;
     final count = _controller.selectedConversations.length;
     return Container(
-      color: Colors.white,
+      color: context.colors.surface,
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Container(
         height: 50,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: const BoxDecoration(
-          border: Border(top: BorderSide(color: Color(0xFFEBEBEB))),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: context.colors.hairlineSoft)),
         ),
         child: Row(
           children: [
-            Text(l10n.selectedChatsCount('$count')),
+            Text(
+              l10n.selectedChatsCount('$count'),
+              style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
+            ),
             const Spacer(),
             ElevatedButton(
               onPressed: _controller.hasSelection ? () => _showConfirmationSheet(_controller.selectedConversations) : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B62E0),
-                disabledBackgroundColor: const Color(0xFFA8BDFF),
-                foregroundColor: Colors.white,
+                backgroundColor: context.colors.accent,
+                disabledBackgroundColor: context.colors.accent.withValues(alpha: 0.4),
+                foregroundColor: context.colors.onAccent,
                 elevation: 0,
               ),
               child: Text(l10n.sendWithCount('$count')),
@@ -239,6 +244,7 @@ class _PickForwardPageState extends State<PickForwardPage> {
 
     if (pickUserViewModel == null) {
       return Scaffold(
+        backgroundColor: context.colors.chatBg,
         appBar: AppBar(
           leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _exitMemberSelection),
           title: Text(l10n.createGroupChat),
@@ -255,6 +261,7 @@ class _PickForwardPageState extends State<PickForwardPage> {
           final canConfirm = viewModel.pickedUsers.isNotEmpty && !_controller.creatingGroup;
 
           return Scaffold(
+            backgroundColor: context.colors.chatBg,
             appBar: AppBar(
               leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _exitMemberSelection),
               title: Text(l10n.createGroupChat),
@@ -263,7 +270,7 @@ class _PickForwardPageState extends State<PickForwardPage> {
                   onPressed: canConfirm ? () => _confirmMemberSelection(List<UserInfo>.from(viewModel.pickedUsers)) : null,
                   child: Text(
                     viewModel.pickedUsers.isNotEmpty ? '${l10n.confirm}(${viewModel.pickedUsers.length})' : l10n.confirm,
-                    style: TextStyle(color: canConfirm ? Colors.blue : Colors.grey, fontSize: 16),
+                    style: TextStyle(color: canConfirm ? context.colors.accent : context.colors.textSecondary, fontSize: 16),
                   ),
                 ),
               ],

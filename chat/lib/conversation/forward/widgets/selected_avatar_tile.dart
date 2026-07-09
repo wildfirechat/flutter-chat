@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/portrait.dart';
 
 /// 已选目标的方格:头像 + 右上角删除按钮 + 名称。用于桌面端右栏。
@@ -36,14 +37,14 @@ class SelectedAvatarTile extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: context.colors.popupBg,
                       shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFE0E0E0), width: 0.5),
+                      border: Border.all(color: context.colors.hairline, width: 0.5),
                       boxShadow: [
                         BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 2),
                       ],
                     ),
-                    child: const Icon(Icons.close, size: 10, color: Colors.grey),
+                    child: Icon(Icons.close, size: 10, color: context.colors.textSecondary),
                   ),
                 ),
               ),
@@ -52,7 +53,7 @@ class SelectedAvatarTile extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             name,
-            style: const TextStyle(fontSize: 12, color: Color(0xFF333333), decoration: TextDecoration.none),
+            style: TextStyle(fontSize: 12, color: context.colors.textPrimary, decoration: TextDecoration.none),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,

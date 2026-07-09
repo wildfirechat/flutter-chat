@@ -7,6 +7,7 @@ import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/composite_message_content.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/conversation/forward/widgets/conversation_display.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/utils/media_url_redirector.dart';
@@ -68,9 +69,9 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
             GestureDetector(
               onTap: () {}, // Prevent tap from closing sheet
               child: Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.only(
+                decoration: BoxDecoration(
+                  color: context.colors.popupBg,
+                  borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(12),
                     topRight: Radius.circular(12),
                   ),
@@ -86,7 +87,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
                           AppLocalizations.of(context)!.sendTo,
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.colors.textPrimary),
                         ),
                       ),
                       _buildTargetsList(),
@@ -95,10 +96,12 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: TextField(
                           controller: _commentController,
+                          style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
                           decoration: InputDecoration(
                             hintText: AppLocalizations.of(context)!.leaveMessage,
+                            hintStyle: TextStyle(color: context.colors.textSecondary, fontSize: 14),
                             filled: true,
-                            fillColor: const Color(0xFFF5F5F5),
+                            fillColor: context.colors.inputBg,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide.none,
@@ -107,22 +110,22 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                           ),
                         ),
                       ),
-                      const Divider(
-                        color: Color(0xFFEBEBEB),
+                      Divider(
+                        color: context.colors.hairlineSoft,
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: Text(AppLocalizations.of(context)!.cancel, style: const TextStyle(color: Colors.black, fontSize: 16)),
+                            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: context.colors.textSecondary, fontSize: 16)),
                           ),
                           TextButton(
                             onPressed: () {
                               Navigator.pop(context);
                               widget.onConfirm(_commentController.text.isEmpty ? null : _commentController.text);
                             },
-                            child: Text(AppLocalizations.of(context)!.send, style: const TextStyle(color: Color(0xFF3B62E0), fontSize: 16, fontWeight: FontWeight.bold)),
+                            child: Text(AppLocalizations.of(context)!.send, style: TextStyle(color: context.colors.accent, fontSize: 16, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
@@ -146,10 +149,10 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
       child: ListView.separated(
         shrinkWrap: true,
         itemCount: widget.targets.length,
-        separatorBuilder: (_, __) => const Divider(
+        separatorBuilder: (_, __) => Divider(
           height: 0.4,
           indent: 68,
-          color: Colors.white70,
+          color: context.colors.hairlineSoft,
         ),
         itemBuilder: (context, index) {
           return _buildSingleTarget(widget.targets[index]);
@@ -170,7 +173,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
             Expanded(
               child: Text(
                 info.title,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: context.colors.textPrimary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -194,7 +197,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
             padding: const EdgeInsets.all(12),
             width: double.infinity,
             decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F5),
+              color: context.colors.inputBg,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
@@ -207,7 +210,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                     preview.text,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    style: TextStyle(color: context.colors.textSecondary, fontSize: 14),
                   ),
                 ),
               ],

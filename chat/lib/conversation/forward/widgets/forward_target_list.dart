@@ -5,6 +5,7 @@ import 'package:imclient/model/group_search_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/config.dart';
 import 'package:chat/conversation/forward/forward_target_controller.dart';
 import 'package:chat/conversation/forward/widgets/conversation_display.dart';
@@ -85,7 +86,7 @@ class ForwardTargetList extends StatelessWidget {
     }
 
     if (results.isEmpty) {
-      return Center(child: Text(l10n.noSearchResult, style: const TextStyle(color: Colors.grey)));
+      return Center(child: Text(l10n.noSearchResult, style: TextStyle(color: context.colors.textSecondary)));
     }
     return ListView(children: results);
   }
@@ -157,11 +158,16 @@ class _ConversationTile extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: ListTile(
         leading: Portrait(portrait, defaultPortrait, borderRadius: 4.0),
-        title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        title: Text(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: context.colors.textPrimary),
+        ),
         trailing: showCheckbox
             ? (selected
-                ? const Icon(Icons.check_circle, color: Color(0xFF3B62E0))
-                : const Icon(Icons.radio_button_unchecked, color: Colors.grey))
+                ? Icon(Icons.check_circle, color: context.colors.accent)
+                : Icon(Icons.radio_button_unchecked, color: context.colors.textSecondary))
             : null,
       ),
     );
@@ -178,8 +184,8 @@ class _SectionHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: const Color(0xFFF5F5F5),
-      child: Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      color: context.colors.sectionGap,
+      child: Text(title, style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
     );
   }
 }
@@ -201,7 +207,7 @@ class _CreateGroupEntry extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B62E0),
+                color: context.colors.accent,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: const Icon(Icons.group_add_rounded, color: Colors.white, size: 22),
@@ -209,7 +215,7 @@ class _CreateGroupEntry extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               AppLocalizations.of(context)!.createGroupChat,
-              style: const TextStyle(fontSize: 15, color: Color(0xFF333333), decoration: TextDecoration.none),
+              style: TextStyle(fontSize: 15, color: context.colors.textPrimary, decoration: TextDecoration.none),
             ),
           ],
         ),

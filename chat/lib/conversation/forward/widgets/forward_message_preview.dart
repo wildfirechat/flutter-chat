@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 
@@ -37,7 +38,7 @@ class ForwardMessagePreview extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: const Color(0xFFE2E2E2),
+            color: context.colors.inputBg,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Column(
@@ -46,7 +47,7 @@ class ForwardMessagePreview extends StatelessWidget {
             children: [
               Text(
                 text,
-                style: const TextStyle(fontSize: 13, color: Color(0xFF666666), height: 1.4, decoration: TextDecoration.none),
+                style: TextStyle(fontSize: 13, color: context.colors.textSecondary, height: 1.4, decoration: TextDecoration.none),
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -90,12 +91,12 @@ class ForwardMessagePreview extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFE2E2E2),
+        color: context.colors.inputBg,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
         children: [
-          const Icon(Icons.description_rounded, color: Colors.grey, size: 36),
+          Icon(Icons.description_rounded, color: context.colors.iconSecondary, size: 36),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -103,12 +104,12 @@ class ForwardMessagePreview extends StatelessWidget {
               children: [
                 Text(
                   oneByOne ? l10n.forwardOneByOne : l10n.forwardCombined,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF333333)),
+                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   l10n.totalMessages('$count'),
-                  style: const TextStyle(fontSize: 11, color: Color(0xFF666666)),
+                  style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
                 ),
               ],
             ),

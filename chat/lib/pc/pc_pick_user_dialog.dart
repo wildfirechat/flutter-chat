@@ -16,6 +16,8 @@ import 'package:chat/repo/user_repo.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/viewmodel/font_size_view_model.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 /// 桌面端多选联系人的分栏形态(参照微信 PC):
 /// 左栏为可搜索的联系人列表(勾选框 + 分类字母段),右栏为「已选择」清单(可逐个移除),
@@ -142,6 +144,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
 
   @override
   Widget build(BuildContext context) {
+    context.watch<FontSizeViewModel>();
     return ChangeNotifierProvider<PickUserViewModel>.value(
       value: _viewModel,
       child: Consumer<PickUserViewModel>(
@@ -266,12 +269,12 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       builder: (context, hovered) => GestureDetector(
         onTap: _enterOrgMode,
         child: Container(
-          height: 44,
+          height: LayoutScale.watchScale(context, 44.0, cap: LayoutScale.rowCap),
           color: hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Icon(Icons.corporate_fare, size: 20, color: context.colors.accent),
+              Icon(Icons.corporate_fare, size: LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap), color: context.colors.accent),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -279,7 +282,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                   style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
                 ),
               ),
-              Icon(Icons.chevron_right, size: 18, color: context.colors.textTertiary),
+              Icon(Icons.chevron_right, size: LayoutScale.watchScale(context, 18.0, cap: LayoutScale.iconCap), color: context.colors.textTertiary),
             ],
           ),
         ),
@@ -311,7 +314,9 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       checked: checked,
       onToggle: (value) => _togglePick(context, userInfo, value),
       avatar: userId == '@all'
-          ? Image.asset(Config.defaultGroupPortrait, width: 34, height: 34)
+          ? Image.asset(Config.defaultGroupPortrait,
+              width: LayoutScale.watchScale(context, 34.0, cap: LayoutScale.iconCap),
+              height: LayoutScale.watchScale(context, 34.0, cap: LayoutScale.iconCap))
           : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 34, height: 34),
       title: userId == '@all' ? l10n.allMembers : userInfo.displayName ?? userId,
     );
@@ -341,7 +346,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       builder: (context, hovered) => GestureDetector(
         onTap: checkable ? () => onToggle(!checked) : null,
         child: Container(
-          height: 48,
+          height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
           color: checkable && hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
@@ -386,7 +391,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
 
   Widget _buildSectionHeader(String text) {
     return Container(
-      height: 24,
+      height: LayoutScale.watchScale(context, 24.0, cap: LayoutScale.textCap),
       alignment: Alignment.centerLeft,
       padding: const EdgeInsets.only(left: 16),
       child: Text(
@@ -562,12 +567,12 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       builder: (context, hovered) => GestureDetector(
         onTap: () => orgVm.navigateToOrganization(org),
         child: Container(
-          height: 48,
+          height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
           color: hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Icon(Icons.folder_outlined, size: 22, color: context.colors.accent),
+              Icon(Icons.folder_outlined, size: LayoutScale.watchScale(context, 22.0, cap: LayoutScale.iconCap), color: context.colors.accent),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -646,13 +651,15 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       builder: (context, hovered) => GestureDetector(
         onTap: () => viewModel.pickUser(userInfo, false),
         child: Container(
-          height: 48,
+          height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
           color: hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
               userInfo.userId == '@all'
-                  ? Image.asset(Config.defaultGroupPortrait, width: 30, height: 30)
+                  ? Image.asset(Config.defaultGroupPortrait,
+                      width: LayoutScale.watchScale(context, 30.0, cap: LayoutScale.iconCap),
+                      height: LayoutScale.watchScale(context, 30.0, cap: LayoutScale.iconCap))
                   : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 30, height: 30),
               const SizedBox(width: 10),
               Expanded(
@@ -665,7 +672,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               ),
               Icon(
                 Icons.remove_circle_outline,
-                size: 18,
+                size: LayoutScale.watchScale(context, 18.0, cap: LayoutScale.iconCap),
                 color: hovered ? context.colors.badge : context.colors.textTertiary,
               ),
             ],

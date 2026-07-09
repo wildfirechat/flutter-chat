@@ -411,9 +411,11 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   }
 
   void _onLongPressed(BuildContext context, ConversationInfo conversationInfo, Offset position) {
+    final double itemHeight = isDesktopShell ? LayoutScale.scale(context, 34, cap: LayoutScale.rowCap) : kMinInteractiveDimension;
     List<PopupMenuItem> items = [
       PopupMenuItem(
         value: 'delete',
+        height: itemHeight,
         child: Text(AppLocalizations.of(context)!.deleteConversation),
       )
     ];
@@ -421,11 +423,13 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     if (conversationInfo.isTop > 0) {
       items.add(PopupMenuItem(
         value: 'untop',
+        height: itemHeight,
         child: Text(AppLocalizations.of(context)!.untop),
       ));
     } else {
       items.add(PopupMenuItem(
         value: 'top',
+        height: itemHeight,
         child: Text(AppLocalizations.of(context)!.top),
       ));
     }
@@ -433,11 +437,13 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     if (conversationInfo.unreadCount.unread + conversationInfo.unreadCount.unreadMention + conversationInfo.unreadCount.unreadMentionAll > 0) {
       items.add(PopupMenuItem(
         value: 'clear_unread',
+        height: itemHeight,
         child: Text(AppLocalizations.of(context)!.clearUnread),
       ));
     } else {
       items.add(PopupMenuItem(
         value: 'set_unread',
+        height: itemHeight,
         child: Text(AppLocalizations.of(context)!.setUnread),
       ));
     }

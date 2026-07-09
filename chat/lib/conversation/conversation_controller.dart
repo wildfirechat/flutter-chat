@@ -28,6 +28,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/show_toast.dart';
+import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/config.dart';
@@ -574,15 +575,19 @@ class ConversationController extends ChangeNotifier {
     showMenu<String>(
       context: context,
       position: RelativeRect.fromRect(localAnchor & Size.zero, Offset.zero & overlayBox.size),
-      constraints: const BoxConstraints(minWidth: 140),
+      constraints: BoxConstraints(minWidth: LayoutScale.scale(context, 140, cap: LayoutScale.rowCap)),
       items: menuItems
           .map((item) => PopupMenuItem<String>(
                 value: item['value'],
-                height: 34,
+                height: LayoutScale.scale(context, 34, cap: LayoutScale.rowCap),
                 child: Row(
                   children: [
-                    Icon(item['icon'], size: 16, color: const Color(0xFF5C5C5C)),
-                    const SizedBox(width: 10),
+                    Icon(
+                      item['icon'],
+                      size: LayoutScale.scale(context, 16, cap: LayoutScale.iconCap),
+                      color: const Color(0xFF5C5C5C),
+                    ),
+                    SizedBox(width: LayoutScale.scale(context, 10, cap: LayoutScale.iconCap)),
                     Text(item['label']),
                   ],
                 ),

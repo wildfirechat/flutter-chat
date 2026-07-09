@@ -32,6 +32,7 @@ import 'package:chat/pc/pc_user_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/user_info_widget.dart';
 import 'package:chat/utils/show_toast.dart';
+import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -880,29 +881,34 @@ class _PlusMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
+    final itemHeight = LayoutScale.watchScale(context, 36, cap: LayoutScale.rowCap);
+    final iconSize = LayoutScale.watchScale(context, 17, cap: LayoutScale.iconCap);
+    final iconGap = LayoutScale.watchScale(context, 10, cap: LayoutScale.iconCap);
+    final menuOffset = Offset(0, LayoutScale.watchScale(context, 34, cap: LayoutScale.rowCap));
+
     return PopupMenuButton<String>(
-      offset: const Offset(0, 34),
+      offset: menuOffset,
       itemBuilder: (context) => [
         PopupMenuItem(
           value: 'chat',
-          height: 36,
+          height: itemHeight,
           child: Row(
             children: [
               Icon(Icons.chat_bubble_outline_rounded,
-                  size: 17, color: colors.textSecondary),
-              const SizedBox(width: 10),
+                  size: iconSize, color: colors.textSecondary),
+              SizedBox(width: iconGap),
               Text(l10n.startChat),
             ],
           ),
         ),
         PopupMenuItem(
           value: 'add',
-          height: 36,
+          height: itemHeight,
           child: Row(
             children: [
               Icon(Icons.person_add_alt_outlined,
-                  size: 17, color: colors.textSecondary),
-              const SizedBox(width: 10),
+                  size: iconSize, color: colors.textSecondary),
+              SizedBox(width: iconGap),
               Text(l10n.addFriend),
             ],
           ),

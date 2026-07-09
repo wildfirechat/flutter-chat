@@ -16,6 +16,8 @@ import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/widget/sidebar_index.dart';
 import 'package:chat/organization/organization_screen.dart';
+import 'package:chat/viewmodel/font_size_view_model.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 typedef OnPickUserCallback = void Function(BuildContext context, List<String> pickedUsers);
 
@@ -227,12 +229,16 @@ class _PickUserScreenState extends State<PickUserScreen> {
         _scrollController.jumpTo(offset);
         return;
       }
-      offset += user.showCategory ? 70.5 : 52.5;
+      final double categoryHeight = user.showCategory ? LayoutScale.scale(context, 18.0, cap: LayoutScale.textCap) : 0.0;
+      final double contentHeight = LayoutScale.scale(context, 52.0, cap: LayoutScale.rowCap);
+      const double dividerHeight = 0.5;
+      offset += categoryHeight + contentHeight + dividerHeight;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    context.watch<FontSizeViewModel>();
     return ChangeNotifierProvider<PickUserViewModel>.value(
       value: _pickUserViewModel,
       child: Consumer<PickUserViewModel>(
@@ -421,7 +427,7 @@ class SelectableUserItem extends StatelessWidget {
     bool showCategory = contactInfo.showCategory && !pickUserViewModel.isSearching;
 
     Widget content = Container(
-      height: 52.0,
+      height: LayoutScale.watchScale(context, 52.0, cap: LayoutScale.rowCap),
       color: context.colors.surface,
       child: Row(
         children: <Widget>[
@@ -446,8 +452,10 @@ class SelectableUserItem extends StatelessWidget {
           Padding(
             padding: EdgeInsets.only(left: maxSelected > 1 ? 8.0 : 16.0),
             child: userInfo.userId == '@all'
-                ? Image.asset('assets/images/group_avatar_default.png', width: 40, height: 40)
-                : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
+                ? Image.asset('assets/images/group_avatar_default.png',
+                    width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap),
+                    height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap))
+                : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40.0, height: 40.0),
           ),
           Expanded(
             child: Padding(
@@ -468,7 +476,7 @@ class SelectableUserItem extends StatelessWidget {
       children: <Widget>[
         if (showCategory)
           Container(
-            height: 18,
+            height: LayoutScale.watchScale(context, 18.0, cap: LayoutScale.textCap),
             width: double.infinity,
             color: context.colors.sectionGap,
             padding: const EdgeInsets.only(left: 16),
