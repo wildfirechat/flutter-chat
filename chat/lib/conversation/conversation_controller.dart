@@ -27,7 +27,6 @@ import 'package:avenginekit/internal/avenginekit_impl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/app_server.dart';
@@ -43,7 +42,7 @@ import '../poll/poll_detail_screen.dart';
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
 import '../ui_model/ui_message.dart';
-import 'pick_forward_target_page.dart';
+import 'forward/show_pick_forward_target.dart';
 import 'package:provider/provider.dart';
 import 'input_bar/message_input_bar_controller.dart';
 import 'package:chat/event_bus.dart';
@@ -614,37 +613,15 @@ class ConversationController extends ChangeNotifier {
         _performSpeechToText(model, context);
         break;
       case "forward":
-        if (isDesktopShell) {
-          showPcDialog(
-            context: context,
-            width: 680,
-            height: 540,
-            builder: (dialogContext) => PickForwardTargetPage(
-              messages: [model.message],
-              onSelected: (conversations, comment) {
-                for (var conversation in conversations) {
-                  _performForward(conversation, model.message, comment ?? "");
-                }
-                Navigator.pop(dialogContext); // Close PickForwardTargetPage dialog
-              },
-            ),
-          );
-        } else {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PickForwardTargetPage(
-                messages: [model.message],
-                onSelected: (conversations, comment) {
-                  for (var conversation in conversations) {
-                    _performForward(conversation, model.message, comment ?? "");
-                  }
-                  Navigator.pop(context); // Close PickForwardTargetPage
-                },
-              ),
-            ),
-          );
-        }
+        showPickForwardTarget(
+          context,
+          messages: [model.message],
+          onSelected: (conversations, comment) {
+            for (var conversation in conversations) {
+              _performForward(conversation, model.message, comment ?? "");
+            }
+          },
+        );
         break;
       case "recall":
         _recallMessage(model.message.messageId, model.message.messageUid!);

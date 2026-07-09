@@ -9,9 +9,7 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/utilities.dart';
-import 'package:chat/conversation/pick_forward_target_page.dart';
-import 'package:chat/pc/pc_platform.dart';
-import 'package:chat/pc/widgets/pc_dialog.dart';
+import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'pan_service.dart';
 
 /// 云盘/网盘主页面
@@ -734,37 +732,15 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
       final message = Message();
       message.content = content;
 
-      if (isDesktopShell) {
-        showPcDialog(
-          context: context,
-          width: 680,
-          height: 540,
-          builder: (dialogContext) => PickForwardTargetPage(
-            messages: [message],
-            onSelected: (conversations, comment) {
-              for (var conversation in conversations) {
-                _performForward(conversation, message, comment ?? '');
-              }
-              Navigator.pop(dialogContext);
-            },
-          ),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PickForwardTargetPage(
-              messages: [message],
-              onSelected: (conversations, comment) {
-                for (var conversation in conversations) {
-                  _performForward(conversation, message, comment ?? '');
-                }
-                Navigator.pop(context);
-              },
-            ),
-          ),
-        );
-      }
+      showPickForwardTarget(
+        context,
+        messages: [message],
+        onSelected: (conversations, comment) {
+          for (var conversation in conversations) {
+            _performForward(conversation, message, comment ?? '');
+          }
+        },
+      );
     } catch (e, s) {
       debugPrint('Pan share file error: $e\n$s');
       Fluttertoast.showToast(msg: '获取下载链接失败');

@@ -2954,6 +2954,42 @@ abstract class AppLocalizations {
   /// **'创建群聊'**
   String get createGroupChat;
 
+  /// No description provided for @createAndSend.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建并发送'**
+  String get createAndSend;
+
+  /// No description provided for @forwardSendSeparately.
+  ///
+  /// In zh, this message translates to:
+  /// **'分别发送给'**
+  String get forwardSendSeparately;
+
+  /// No description provided for @forwardSendMerged.
+  ///
+  /// In zh, this message translates to:
+  /// **'合并发送给'**
+  String get forwardSendMerged;
+
+  /// No description provided for @pickTargetsFromLeft.
+  ///
+  /// In zh, this message translates to:
+  /// **'请在左侧选择联系人或群聊'**
+  String get pickTargetsFromLeft;
+
+  /// No description provided for @selectedContactsCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'已选择{count}个联系人'**
+  String selectedContactsCount(Object count);
+
+  /// No description provided for @pickContactsToCreateGroup.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择群成员'**
+  String get pickContactsToCreateGroup;
+
   /// No description provided for @createGroupFail.
   ///
   /// In zh, this message translates to:

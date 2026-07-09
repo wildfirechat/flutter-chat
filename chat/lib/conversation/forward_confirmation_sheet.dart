@@ -2,23 +2,14 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:imclient/model/channel_info.dart';
-import 'package:imclient/model/group_info.dart';
-import 'package:imclient/model/user_info.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/composite_message_content.dart';
-import 'package:image/image.dart' as img;
+import 'package:chat/conversation/forward/widgets/conversation_display.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/utils/media_url_redirector.dart';
-import 'package:chat/config.dart';
-import 'package:provider/provider.dart';
-import 'package:chat/viewmodel/user_view_model.dart';
-import 'package:chat/viewmodel/group_view_model.dart';
-import 'package:chat/viewmodel/channel_view_model.dart';
-import 'package:chat/utilities.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 class ForwardConfirmationSheet extends StatefulWidget {
@@ -170,53 +161,23 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
   Widget _buildSingleTarget(Conversation conversation) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          _buildTargetAvatar(conversation),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Selector3<UserViewModel, GroupViewModel, ChannelViewModel, (UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? channelInfo)>(
-              selector: (context, userViewModel, groupViewModel, channelViewModel) => (
-                conversation.conversationType == ConversationType.Single ? userViewModel.getUserInfo(conversation.target) : null,
-                conversation.conversationType == ConversationType.Group ? groupViewModel.getGroupInfo(conversation.target) : null,
-                conversation.conversationType == ConversationType.Channel ? channelViewModel.getChannelInfo(conversation.target) : null,
+      child: ConversationDisplay(
+        conversation: conversation,
+        builder: (context, info) => Row(
+          children: [
+            Portrait(info.portrait, info.defaultPortrait, width: 40, height: 40, borderRadius: 4.0),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                info.title,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              builder: (context, rec, child) {
-                return Text(
-                  Utilities.conversationTitle(context, conversation, rec.$1, rec.$2, rec.$3),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                );
-              },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    );
-  }
-
-  Widget _buildTargetAvatar(Conversation conversation) {
-    return Selector3<UserViewModel, GroupViewModel, ChannelViewModel, (UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? channelInfo)>(
-      selector: (context, userViewModel, groupViewModel, channelViewModel) => (
-        conversation.conversationType == ConversationType.Single ? userViewModel.getUserInfo(conversation.target) : null,
-        conversation.conversationType == ConversationType.Group ? groupViewModel.getGroupInfo(conversation.target) : null,
-        conversation.conversationType == ConversationType.Channel ? channelViewModel.getChannelInfo(conversation.target) : null,
-      ),
-      builder: (context, rec, child) {
-        String portrait = switch (conversation.conversationType) {
-          ConversationType.Single => rec.$1?.portrait ?? Config.defaultUserPortrait,
-          ConversationType.Group => rec.$2?.portrait ?? Config.defaultGroupPortrait,
-          ConversationType.Channel => rec.$3?.portrait ?? Config.defaultChannelPortrait,
-          _ => ''
-        };
-        var defaultPortrait = conversation.conversationType == ConversationType.Single
-            ? Config.defaultUserPortrait
-            : conversation.conversationType == ConversationType.Group
-                ? Config.defaultGroupPortrait
-                : Config.defaultChannelPortrait;
-        return Portrait(portrait, defaultPortrait, width: 40, height: 40, borderRadius: 4.0);
-      },
     );
   }
 

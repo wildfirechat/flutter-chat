@@ -1551,6 +1551,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createGroupChat => 'Create Group Chat';
 
   @override
+  String get createAndSend => 'Create and Send';
+
+  @override
+  String get forwardSendSeparately => 'Send separately to';
+
+  @override
+  String get forwardSendMerged => 'Send merged to';
+
+  @override
+  String get pickTargetsFromLeft => 'Select a contact or group on the left';
+
+  @override
+  String selectedContactsCount(Object count) {
+    return '$count contacts selected';
+  }
+
+  @override
+  String get pickContactsToCreateGroup => 'Select group members';
+
+  @override
   String createGroupFail(Object error) {
     return 'Failed to create: $error';
   }

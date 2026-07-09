@@ -19,7 +19,7 @@ import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/conversation/input_bar/message_input_bar.dart';
 import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
 import 'package:chat/conversation/message_cell.dart';
-import 'package:chat/conversation/pick_forward_target_page.dart';
+import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
@@ -526,57 +526,25 @@ class _ConversationPaneState extends State<ConversationPane> {
   }
 
   void _forwardMessages(BuildContext context, ConversationViewModel viewModel, List<Message> messages, bool isMerge) {
-    if (isDesktopShell) {
-      showPcDialog(
-        context: context,
-        width: 680,
-        height: 540,
-        builder: (dialogContext) => PickForwardTargetPage(
-          messages: messages,
-          onSelected: (conversations, comment) {
-            Navigator.pop(dialogContext); // Close PickForwardTargetPage dialog
-            viewModel.toggleMultiSelectMode();
+    showPickForwardTarget(
+      context,
+      messages: messages,
+      onSelected: (conversations, comment) {
+        viewModel.toggleMultiSelectMode();
 
-            for (var target in conversations) {
-              if (isMerge && messages.length > 1) {
-                _sendCompositeMessage(context, target, messages);
-              } else {
-                _sendOneByOneMessage(context, target, messages);
-              }
-              if (comment != null && comment.isNotEmpty) {
-                Imclient.sendMessage(target, TextMessageContent(comment), successCallback: (uid, ts) {}, errorCallback: (err) {});
-              }
-            }
-            showToast(msg: AppLocalizations.of(context)!.sent);
-          },
-        ),
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => PickForwardTargetPage(
-            messages: messages,
-            onSelected: (conversations, comment) {
-              Navigator.pop(context);
-              viewModel.toggleMultiSelectMode();
-
-              for (var target in conversations) {
-                if (isMerge && messages.length > 1) {
-                  _sendCompositeMessage(context, target, messages);
-                } else {
-                  _sendOneByOneMessage(context, target, messages);
-                }
-                if (comment != null && comment.isNotEmpty) {
-                  Imclient.sendMessage(target, TextMessageContent(comment), successCallback: (uid, ts) {}, errorCallback: (err) {});
-                }
-              }
-              showToast(msg: AppLocalizations.of(context)!.sent);
-            },
-          ),
-        ),
-      );
-    }
+        for (var target in conversations) {
+          if (isMerge && messages.length > 1) {
+            _sendCompositeMessage(context, target, messages);
+          } else {
+            _sendOneByOneMessage(context, target, messages);
+          }
+          if (comment != null && comment.isNotEmpty) {
+            Imclient.sendMessage(target, TextMessageContent(comment), successCallback: (uid, ts) {}, errorCallback: (err) {});
+          }
+        }
+        showToast(msg: AppLocalizations.of(context)!.sent);
+      },
+    );
   }
 
   void _sendOneByOneMessage(BuildContext context, Conversation target, List<Message> messages) {

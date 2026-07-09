@@ -1539,6 +1539,26 @@ class AppLocalizationsZh extends AppLocalizations {
   String get createGroupChat => '创建群聊';
 
   @override
+  String get createAndSend => '创建并发送';
+
+  @override
+  String get forwardSendSeparately => '分别发送给';
+
+  @override
+  String get forwardSendMerged => '合并发送给';
+
+  @override
+  String get pickTargetsFromLeft => '请在左侧选择联系人或群聊';
+
+  @override
+  String selectedContactsCount(Object count) {
+    return '已选择$count个联系人';
+  }
+
+  @override
+  String get pickContactsToCreateGroup => '请选择群成员';
+
+  @override
   String createGroupFail(Object error) {
     return '创建失败：$error';
   }
