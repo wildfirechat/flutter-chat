@@ -473,12 +473,11 @@ packages:
   fluttertoast:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "br_8.2.8_ohos"
-      resolved-ref: "54a9ccaf32fbf0e53e0ce16ced890ebc49e04599"
-      url: "https://gitcode.com/openharmony-sig/flutter_fluttertoast.git"
-    source: git
-    version: "8.2.8"
+      name: fluttertoast
+      sha256: "144ddd74d49c865eba47abe31cbc746c7b311c82d6c32e571fd73c4264b740e2"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "9.0.0"
   glob:
     dependency: transitive
     description:
@@ -1255,18 +1254,18 @@ packages:
     dependency: "direct main"
     description:
       name: super_clipboard
-      sha256: "4a6ae6dfaa282ec1f2bff750976f535517ed8ca842d5deae13985eb11c00ac1f"
+      sha256: e73f3bb7e66cc9260efa1dc507f979138e7e106c3521e2dda2d0311f6d728a16
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.8.24"
+    version: "0.9.1"
   super_native_extensions:
     dependency: transitive
     description:
       name: super_native_extensions
-      sha256: a433bba8186cd6b707560c42535bf284804665231c00bca86faf1aa4968b7637
+      sha256: b9611dcb68f1047d6f3ef11af25e4e68a21b1a705bbcc3eb8cb4e9f5c3148569
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.8.24"
+    version: "0.9.1"
   synchronized:
     dependency: transitive
     description:
@@ -1491,7 +1490,7 @@ packages:
     description:
       path: "packages/webview_flutter/webview_flutter"
       ref: "br_webview_flutter-v4.13.0_ohos"
-      resolved-ref: "3dd0e0864212dde5e719a312fa88074acd88bde3"
+      resolved-ref: "4c55cac26756e0a3e74098e837f598587e2e8e83"
       url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
     source: git
     version: "4.13.0"
@@ -1499,8 +1498,8 @@ packages:
     dependency: transitive
     description:
       path: "packages/webview_flutter/webview_flutter_android"
-      ref: "3dd0e0864212dde5e719a312fa88074acd88bde3"
-      resolved-ref: "3dd0e0864212dde5e719a312fa88074acd88bde3"
+      ref: "4c55cac26756e0a3e74098e837f598587e2e8e83"
+      resolved-ref: "4c55cac26756e0a3e74098e837f598587e2e8e83"
       url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
     source: git
     version: "4.7.0"
@@ -1508,8 +1507,8 @@ packages:
     dependency: transitive
     description:
       path: "packages/webview_flutter/webview_flutter_ohos"
-      ref: "3dd0e0864212dde5e719a312fa88074acd88bde3"
-      resolved-ref: "3dd0e0864212dde5e719a312fa88074acd88bde3"
+      ref: "4c55cac26756e0a3e74098e837f598587e2e8e83"
+      resolved-ref: "4c55cac26756e0a3e74098e837f598587e2e8e83"
       url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
     source: git
     version: "4.7.0"
@@ -1518,7 +1517,7 @@ packages:
     description:
       path: "packages/webview_flutter/webview_flutter_platform_interface"
       ref: "br_webview_flutter-v4.13.0_ohos"
-      resolved-ref: "3dd0e0864212dde5e719a312fa88074acd88bde3"
+      resolved-ref: "4c55cac26756e0a3e74098e837f598587e2e8e83"
       url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
     source: git
     version: "2.13.1"
@@ -1603,5 +1602,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.8.0-0 <4.0.0"
-  flutter: ">=3.27.0"
+  dart: ">=3.9.0 <4.0.0"
+  flutter: ">=3.35.0"

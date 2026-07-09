@@ -1,5 +1,5 @@
 
-import 'dart:io';
+import 'dart:async';
 
 import 'package:dsbridge_flutter/dsbridge_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:chat/workspace/js_api.dart';
+import 'package:chat/workspace/webview_background.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 
 class WFWebViewScreen extends StatefulWidget {
@@ -63,14 +64,7 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
       )
       ..addJavaScriptObject(jsApi);
 
-    // macOS 版 webview_flutter 未实现 setOpaque,跳过 setBackgroundColor。
-    if (!Platform.isMacOS) {
-      try {
-        controller.setBackgroundColor(const Color(0x00000000));
-      } catch (e) {
-        debugPrint('WebView setBackgroundColor failed: $e');
-      }
-    }
+    unawaited(setTransparentBackground(controller));
 
     controller.loadRequest(Uri.parse(MediaUrlRedirector.redirect(widget.url)));
 

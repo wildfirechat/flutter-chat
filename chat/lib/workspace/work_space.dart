@@ -1,4 +1,4 @@
-import 'dart:convert'; // Added for jsonDecode/jsonEncode
+import 'dart:async';
 
 import 'package:dsbridge_flutter/dsbridge_flutter.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:chat/config.dart';
 import 'package:chat/workspace/js_api.dart';
+import 'package:chat/workspace/webview_background.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 
 // TODO: Potentially add imports for contact picking and navigation if needed for chooseContacts and openUrl
@@ -31,13 +32,7 @@ class _WorkSpaceState extends State<WorkSpace> {
     final DWebViewController controller = DWebViewController();
     _clearInvalidWebViewCookies(controller);
 
-    // setBackgroundColor triggers `opaque is not implemented on macOS` on
-    // desktop WebKit. Catch and ignore so the workspace tab still builds.
-    try {
-      controller.setBackgroundColor(const Color(0x00000000));
-    } catch (e) {
-      debugPrint('setBackgroundColor skipped on this platform: $e');
-    }
+    unawaited(setTransparentBackground(controller));
 
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)

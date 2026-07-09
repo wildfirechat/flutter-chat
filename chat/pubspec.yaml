@@ -78,7 +78,9 @@ dependencies:
   intl: ^0.20.2
   file_picker: ^8.0.7
   desktop_drop: ^0.5.0
-  super_clipboard: ^0.8.24
+  # 0.9.0 起 cargokit 才认识 Flutter 3.35 的 com.flutter.gradle.FlutterPlugin，
+  # 低版本会静默跳过 Rust 构建，导致 libsuper_native_extensions.so 缺失。
+  super_clipboard: ^0.9.1
   cross_file: ^0.3.4+2
   crypto: ^3.0.3
   mime: ^1.0.5
@@ -121,7 +123,7 @@ dependencies:
           url: "https://gitcode.com/openharmony-sig/flutter_localization"
           ref: br_v0.3.3_ohos
   provider: ^6.1.4
-  webview_flutter: ^4.7.0
+  webview_flutter: ^4.13.0
 #  切换到 ohos 已适配版本
 #  webview_flutter:
 #      git:
@@ -176,11 +178,6 @@ dependency_overrides:
   # 鸿蒙适配仓库的 3.22.0 同样受影响，临时固定到 pub.dev 原版的 3.17.0。
   webview_flutter_wkwebview: 3.17.0
   # avenginekit 依赖 git 来源的 fluttertoast，chat 默认使用 hosted，
-  # 通过 override 统一使用 avenginekit 指定的 ohos 分支。
-  fluttertoast:
-      git:
-          url: https://gitcode.com/openharmony-sig/flutter_fluttertoast.git
-          ref: br_8.2.8_ohos
 
 dev_dependencies:
   flutter_test:
