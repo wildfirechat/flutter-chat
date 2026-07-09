@@ -66,11 +66,16 @@ class PcConversationPane extends StatelessWidget {
               ],
             ),
           ),
+          // 输入栏可拖高,但不能把消息列表挤没:按会话区实际高度给出上限
           Expanded(
-            child: ConversationPane(
-              conversation,
-              toFocusMessageId: toFocusMessageId,
-              inputBar: const PcMessageInputBar(),
+            child: LayoutBuilder(
+              builder: (context, constraints) => ConversationPane(
+                conversation,
+                toFocusMessageId: toFocusMessageId,
+                inputBar: PcMessageInputBar(
+                  maxHeight: constraints.maxHeight * PcTheme.inputBarMaxHeightRatio,
+                ),
+              ),
             ),
           ),
         ],

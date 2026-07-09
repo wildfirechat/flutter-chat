@@ -11,28 +11,50 @@ class PcTheme {
   PcTheme._();
 
   // ---- 布局尺寸 ----
-  // 68 而非 60:macOS 红绿灯按钮区域约 62px 宽,侧栏必须完整容纳
-  static const double sideBarWidth = 68;
-  static const double middleColumnWidth = 280;
+  // 60: 参照微信宽度更小的侧栏设计
+  static const double sideBarWidth = 60;
   static const double headerHeight = 60;
   static const double conversationCellHeight = 64;
-  static const double inputBarHeight = 148;
 
   /// macOS 隐藏标题栏后红绿灯悬浮在侧栏顶部,首个元素需要下移避让。
   static const double sidebarTopInsetMac = 40;
 
-  /// 搜索浮层宽度:比中栏宽 40,结果卡片越过中栏、少量悬在右栏之上(微信形态)。
-  static const double searchPanelWidth = middleColumnWidth + 40;
+  /// 搜索浮层比中栏宽出的部分:结果卡片越过中栏、少量悬在右栏之上(微信形态)。
+  static const double searchPanelOverhang = 40;
+
+  // ---- 可拖拽尺寸 ----
+  // 中栏宽度与输入栏高度可由用户拖拽调整,运行时值取自 PcLayoutViewModel,
+  // 这里只给默认值与边界:上界不让一侧把另一侧挤没,下界保证内容仍可读。
+  static const double middleColumnDefaultWidth = 298;
+  static const double middleColumnMinWidth = 220;
+  static const double middleColumnMaxWidth = 420;
+
+  static const double inputBarDefaultHeight = 148;
+
+  /// 无引用条时的下界。挂着引用条时输入栏再抬高一个引用条的高度,
+  /// 取 110 是为了让“默认高度 + 引用条”恰好等于 [inputBarDefaultHeight],
+  /// 引用消息时输入栏不会跳一下。
+  static const double inputBarMinHeight = 110;
+  static const double inputBarMaxHeight = 480;
+
+  /// 输入栏最多占会话区高度的比例:窗口压缩时优先保证消息列表可读。
+  static const double inputBarMaxHeightRatio = 0.6;
+
+  /// 分隔条命中区厚度。视觉仍是贴边的 0.5 发丝线,加厚只为好抓。
+  static const double resizeHandleThickness = 6;
+  static const Color resizeHandleHover = Color(0xFFC2C1C0);
+  static const Color resizeHandleActive = accent;
 
   // ---- 品牌色 ----
   static const Color accent = AppTheme.accent;
   static const Color accentPressed = Color(0xFF1A55C2);
   static const Color badgeRed = Color(0xFFFA5151);
 
-  // ---- 侧栏(近黑) ----
-  static const Color sidebarBg = Color(0xFF2E2E2E);
-  static const Color sidebarIcon = Color(0xFF8F8F8F);
-  static const Color sidebarIconHover = Color(0xFFC9C9C9);
+  // ---- 侧栏 ----
+  static const Color sidebarBg = Color(0xFFE9E9E9);
+  static const Color sidebarIcon = Color(0xFF555555);
+  static const Color sidebarIconHover = Color(0xFF191919);
+  static const Color sidebarHoverBg = Color(0xFFDCDCDC);
 
   // ---- 中栏(暖灰列表区) ----
   static const Color middleBg = Color(0xFFE6E5E5);
@@ -47,6 +69,9 @@ class PcTheme {
 
   // ---- 通用 ----
   static const Color hairline = Color(0xFFDDDCDB);
+
+  /// 浮层轮廓:比 hairline 更淡,只负责在阴影之外勾一道边,不抢视线。
+  static const Color hairlineSoft = Color(0xFFEBEAE9);
   static const Color textPrimary = Color(0xFF191919);
   static const Color textSecondary = Color(0xFF7F7F7F);
   static const Color textTertiary = Color(0xFFB2B2B2);

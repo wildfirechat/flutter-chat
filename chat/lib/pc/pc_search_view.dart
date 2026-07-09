@@ -14,8 +14,12 @@ class PcSearchView extends StatefulWidget {
   final void Function(String userId) onUserSelected;
   final void Function(Conversation conversation, {int? focusMessageId}) onConversationSelected;
 
+  /// 头部要与它盖住的中栏头部同宽(中栏宽度用户可拖拽调整),由 PCHome 传入。
+  final double middleColumnWidth;
+
   const PcSearchView({
     super.key,
+    required this.middleColumnWidth,
     required this.onClose,
     required this.onUserSelected,
     required this.onConversationSelected,
@@ -26,6 +30,12 @@ class PcSearchView extends StatefulWidget {
 }
 
 class _PcSearchViewState extends State<PcSearchView> {
+  /// 输入框(28高)在 60 高的头部里垂直居中,下沿离头部底还有 16px 空白。
+  /// 结果卡片上提盖住这段空白,使其紧随输入框下方。
+  static const double _resultOverlap = 10;
+  static const double _cardTopGap = 2;
+  static const double _cardBottomMargin = 12;
+
   final TextEditingController _controller = TextEditingController();
   final FocusNode _focusNode = FocusNode();
   String _query = '';
@@ -72,7 +82,7 @@ class _PcSearchViewState extends State<PcSearchView> {
           Align(
             alignment: Alignment.centerLeft,
             child: Container(
-              width: PcTheme.middleColumnWidth,
+              width: widget.middleColumnWidth,
               height: PcTheme.headerHeight,
               color: PcTheme.middleBg,
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -137,7 +147,11 @@ class _PcSearchViewState extends State<PcSearchView> {
               ),
             ),
           ),
-          _buildBody(context, l10n),
+          // 上提盖住头部下沿的空白,卡片紧随输入框
+          Transform.translate(
+            offset: const Offset(0, -_resultOverlap),
+            child: _buildBody(context, l10n),
+          ),
         ],
       ),
     );
@@ -148,26 +162,16 @@ class _PcSearchViewState extends State<PcSearchView> {
       if (!_isFocused) {
         return const SizedBox.shrink();
       }
-      return Container(
-        margin: const EdgeInsets.fromLTRB(8, 2, 8, 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        child: Center(
-          child: Text(
-            l10n.searchPrompt,
-            style: const TextStyle(
-              fontSize: 13,
-              color: PcTheme.textSecondary,
+      return _buildCard(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Center(
+            child: Text(
+              l10n.searchPrompt,
+              style: const TextStyle(
+                fontSize: 13,
+                color: PcTheme.textSecondary,
+              ),
             ),
           ),
         ),
@@ -175,13 +179,25 @@ class _PcSearchViewState extends State<PcSearchView> {
     }
 
     final screenHeight = MediaQuery.of(context).size.height;
-    final maxContentHeight = screenHeight - PcTheme.headerHeight - 24;
+    final maxContentHeight =
+        screenHeight - PcTheme.headerHeight + _resultOverlap - _cardTopGap - _cardBottomMargin;
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(8, 2, 8, 12),
-      constraints: BoxConstraints(
-        maxHeight: maxContentHeight,
+    return _buildCard(
+      constraints: BoxConstraints(maxHeight: maxContentHeight),
+      child: SearchPortalResultView(
+        _query,
+        key: const ValueKey('pc-search-result'),
+        shrinkWrap: true,
+        onUserSelected: widget.onUserSelected,
+        onConversationSelected: widget.onConversationSelected,
       ),
+    );
+  }
+
+  Widget _buildCard({required Widget child, BoxConstraints? constraints}) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(8, _cardTopGap, 8, _cardBottomMargin),
+      constraints: constraints,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: Colors.white,
@@ -194,13 +210,7 @@ class _PcSearchViewState extends State<PcSearchView> {
           ),
         ],
       ),
-      child: SearchPortalResultView(
-        _query,
-        key: const ValueKey('pc-search-result'),
-        shrinkWrap: true,
-        onUserSelected: widget.onUserSelected,
-        onConversationSelected: widget.onConversationSelected,
-      ),
+      child: child,
     );
   }
 }

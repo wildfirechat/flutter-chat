@@ -47,6 +47,7 @@ import 'home/home.dart';
 import 'internal/app_state.dart';
 import 'login_screen.dart';
 import 'pc/pc_home.dart';
+import 'pc/pc_layout_view_model.dart';
 import 'pc/pc_qr_login_screen.dart';
 import 'pc/pc_tray_manager.dart';
 import 'pc/pc_window_manager.dart';
@@ -59,8 +60,11 @@ import 'package:chat/organization/organization_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final PcLayoutViewModel? pcLayoutViewModel = isDesktopShell ? PcLayoutViewModel() : null;
   if (isDesktopShell) {
     await PCWindowManager().ensureInitialized();
+    // 首帧之前读出上次的栏宽/输入栏高度,避免默认尺寸闪一下再跳
+    await pcLayoutViewModel!.load();
   }
   runApp(MultiProvider(
     providers: [
@@ -74,6 +78,8 @@ void main() async {
       // 桌面 Shell 的导航状态。仅桌面注册:共享代码经 app_navigator.dart 查找,
       // 移动端取不到即走整页 push 路径。
       if (isDesktopShell) ChangeNotifierProvider<PCShellViewModel>(create: (_) => PCShellViewModel()),
+      // 已在 main 中 load 完毕,用 .value 交给 Provider(应用级生命周期,不随登出销毁)
+      if (isDesktopShell) ChangeNotifierProvider<PcLayoutViewModel>.value(value: pcLayoutViewModel!),
     ],
     child: const MyApp(),
   ));

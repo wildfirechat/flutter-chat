@@ -269,61 +269,67 @@ class _EmojiBoardState extends State<EmojiBoard> {
 
   Widget _buildEmojiGrid() {
     int lineCount = 8;
-    double screenWidth = MediaQuery.of(context).size.width;
     double textSize = 28;
-    double paddingSize = (screenWidth - textSize * lineCount) / lineCount / 2;
     double delSizeX = 48;
     double delSizeY = 38;
     double delPadding = 5;
 
-    return Stack(
-      children: [
-        GestureDetector(
-          onLongPressStart: (details) => _updateEmojiPreview(details.globalPosition),
-          onLongPressMoveUpdate: (details) => _updateEmojiPreview(details.globalPosition),
-          onLongPressEnd: (_) => _hidePreview(),
-          child: GridView.builder(
-            key: _emojiGridKey,
-            controller: _emojiScrollController,
-            padding: const EdgeInsets.only(top: 10, bottom: 50),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: lineCount),
-            itemCount: widget.emojis.length,
-            itemBuilder: (context, index) {
-              return Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () => widget.pickerEmojiCallback(widget.emojis[index]),
-                  child: Center(
-                    child: Text(
-                      widget.emojis[index],
-                      style: TextStyle(fontSize: textSize),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 删除按钮贴在右下角,内缩量与表情格子的留白对齐。
+        // 取面板自身宽度而非屏幕宽度:桌面端面板是窄弹层,用屏幕宽会把按钮推到面板中间。
+        double paddingSize = (constraints.maxWidth - textSize * lineCount) / lineCount / 2;
+
+        return Stack(
+          children: [
+            GestureDetector(
+              onLongPressStart: (details) => _updateEmojiPreview(details.globalPosition),
+              onLongPressMoveUpdate: (details) => _updateEmojiPreview(details.globalPosition),
+              onLongPressEnd: (_) => _hidePreview(),
+              child: GridView.builder(
+                key: _emojiGridKey,
+                controller: _emojiScrollController,
+                padding: const EdgeInsets.only(top: 10, bottom: 50),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: lineCount),
+                itemCount: widget.emojis.length,
+                itemBuilder: (context, index) {
+                  return Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => widget.pickerEmojiCallback(widget.emojis[index]),
+                      child: Center(
+                        child: Text(
+                          widget.emojis[index],
+                          style: TextStyle(fontSize: textSize),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        Positioned(
-          right: paddingSize,
-          bottom: paddingSize,
-          child: GestureDetector(
-            onTap: widget.delEmojiCallback,
-            child: Container(
-              padding: EdgeInsets.all(delPadding),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 232, 232, 232),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: SizedBox(
-                width: delSizeX - 2 * delPadding,
-                height: delSizeY - 2 * delPadding,
-                child: Image.asset('assets/images/input/del_emoji.png'),
+                  );
+                },
               ),
             ),
-          ),
-        )
-      ],
+            Positioned(
+              right: paddingSize,
+              bottom: paddingSize,
+              child: GestureDetector(
+                onTap: widget.delEmojiCallback,
+                child: Container(
+                  padding: EdgeInsets.all(delPadding),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 232, 232, 232),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: SizedBox(
+                    width: delSizeX - 2 * delPadding,
+                    height: delSizeY - 2 * delPadding,
+                    child: Image.asset('assets/images/input/del_emoji.png'),
+                  ),
+                ),
+              ),
+            )
+          ],
+        );
+      },
     );
   }
 

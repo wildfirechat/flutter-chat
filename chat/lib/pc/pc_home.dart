@@ -19,11 +19,13 @@ import 'package:chat/pc/pc_discovery_list.dart';
 import 'package:chat/pc/pc_favorite_categories_list.dart';
 import 'package:chat/pc/pc_favorite_list_widget.dart';
 import 'package:chat/pc/pc_file_records_list.dart';
+import 'package:chat/pc/pc_layout_view_model.dart';
 import 'package:chat/pc/pc_search_view.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
+import 'package:chat/pc/widgets/pc_resize_handle.dart';
 import 'package:chat/settings/file_records_screen.dart';
 import 'package:chat/settings/me_tab.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -62,6 +64,11 @@ class _PCHomeState extends State<PCHome> {
   /// 选中会话是否已在会话列表中出现过。新建会话在发出首条消息前不在列表里,
   /// 用它区分“尚未入列”与“被删除”,只在后者时清空右栏。
   bool _selectedSeenInList = false;
+
+  /// 拖拽中栏分隔条时的起点宽度与累计位移。用累计量而非逐帧增量,
+  /// 这样拖到边界后继续拖不会“攒”出位移,回拖时立刻跟手。
+  double _resizeStartWidth = 0;
+  double _resizeOffset = 0;
 
   @override
   void initState() {
@@ -205,6 +212,9 @@ class _PCHomeState extends State<PCHome> {
   /// 搜索浮层(微信 PC 形态):头部原位换成聚焦输入框,结果为浮起卡片,
   /// 无遮罩、透出底下的中栏内容;Esc/点击外部关闭。
   void _openSearchModal() {
+    // 浮层期间遮罩吃掉所有点击,中栏宽度不会变,取一次当前值即可
+    final double middleColumnWidth =
+        context.read<PcLayoutViewModel>().middleColumnWidth;
     Navigator.of(context, rootNavigator: true).push(
       PageRouteBuilder(
         opaque: false,
@@ -217,12 +227,13 @@ class _PCHomeState extends State<PCHome> {
             Positioned(
               left: PcTheme.sideBarWidth,
               top: 0,
-              width: PcTheme.searchPanelWidth,
+              width: middleColumnWidth + PcTheme.searchPanelOverhang,
               child: FadeTransition(
                 opacity: animation,
                 child: Material(
                   type: MaterialType.transparency,
                   child: PcSearchView(
+                    middleColumnWidth: middleColumnWidth,
                     onClose: () => Navigator.of(routeContext).pop(),
                     onUserSelected: (userId) {
                       Navigator.of(routeContext).pop();
@@ -560,19 +571,38 @@ class _PCHomeState extends State<PCHome> {
                         child: _PcSideBar(
                           onTabSelected: _onTabSelected,
                         )),
-                    if (!isWorkTab) ...[
-                      SizedBox(
-                          width: PcTheme.middleColumnWidth,
-                          child: _buildMiddleColumn(context)),
-                      Container(width: 0.5, color: PcTheme.hairline),
-                    ],
+                    if (!isWorkTab)
+                      // 宽度单独用 Selector 订阅:拖拽期间只重建 SizedBox,
+                      // 中栏子树作为 child 复用,不逐帧重建会话列表。
+                      Selector<PcLayoutViewModel, double>(
+                        selector: (_, layout) => layout.middleColumnWidth,
+                        builder: (context, width, child) =>
+                            SizedBox(width: width, child: child),
+                        child: _buildMiddleColumn(context),
+                      ),
                     Expanded(
-                      child: ClipRect(
-                        child: Navigator(
-                          key: _paneNavKey,
-                          onGenerateRoute: (settings) =>
-                              _paneRoute(const _EmptyDetailPane(), settings),
-                        ),
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: ClipRect(
+                              child: Navigator(
+                                key: _paneNavKey,
+                                onGenerateRoute: (settings) =>
+                                    _paneRoute(const _EmptyDetailPane(), settings),
+                              ),
+                            ),
+                          ),
+                          // 中右栏的分隔条。发丝线画在右栏最左侧(即原来那条分隔线的位置),
+                          // 加厚的命中区向右压在右栏上,这样发丝线仍紧贴中栏列表的滚动条。
+                          if (!isWorkTab)
+                            Positioned(
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              width: PcTheme.resizeHandleThickness,
+                              child: _buildColumnResizeHandle(context),
+                            ),
+                        ],
                       ),
                     ),
                   ],
@@ -685,6 +715,25 @@ class _PCHomeState extends State<PCHome> {
           ),
         );
       },
+    );
+  }
+
+  /// 中栏与右栏之间的分隔条。作为右栏的浮层放置:发丝线贴左缘落在两栏交界处,
+  /// 命中区透明地压在右栏内容上,中栏侧不占一像素(否则会把发丝线推离列表滚动条)。
+  Widget _buildColumnResizeHandle(BuildContext context) {
+    final layout = context.read<PcLayoutViewModel>();
+    return PcResizeHandle(
+      axis: PcResizeAxis.horizontal,
+      lineAlignment: Alignment.centerLeft,
+      onDragStart: () {
+        _resizeStartWidth = layout.middleColumnWidth;
+        _resizeOffset = 0;
+      },
+      onDragDelta: (delta) {
+        _resizeOffset += delta;
+        layout.setMiddleColumnWidth(_resizeStartWidth + _resizeOffset);
+      },
+      onDragEnd: layout.persist,
     );
   }
 
@@ -869,7 +918,15 @@ class _PcSideBar extends StatelessWidget {
     // macOS 隐藏标题栏后红绿灯悬浮在侧栏顶部,首个元素下移避让
     final double topInset = Platform.isMacOS ? PcTheme.sidebarTopInsetMac : 20;
     return Container(
-      color: PcTheme.sidebarBg,
+      decoration: const BoxDecoration(
+        color: PcTheme.sidebarBg,
+        border: Border(
+          right: BorderSide(
+            color: PcTheme.hairline,
+            width: 0.5,
+          ),
+        ),
+      ),
       child: Column(
         children: [
           SizedBox(height: topInset),
@@ -1045,7 +1102,7 @@ class _SideBarTab extends StatelessWidget {
               height: 38,
               decoration: BoxDecoration(
                 color: hovered && !selected
-                    ? Colors.white.withValues(alpha: 0.08)
+                    ? PcTheme.sidebarHoverBg
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(6),
               ),
@@ -1053,6 +1110,49 @@ class _SideBarTab extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// 侧栏非 tab 入口(如文件),视觉与 [_SideBarTab] 保持一致,点击直接打开页面而非切换 tab。
+class _SideBarIconButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+
+  const _SideBarIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: HoverBuilder(
+        cursor: SystemMouseCursors.click,
+        builder: (context, hovered) => GestureDetector(
+          onTap: onTap,
+          child: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: hovered
+                  ? PcTheme.sidebarHoverBg
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Center(
+              child: Icon(
+                icon,
+                size: 22,
+                color: hovered ? PcTheme.sidebarIconHover : PcTheme.sidebarIcon,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

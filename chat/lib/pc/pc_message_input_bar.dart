@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -13,21 +14,28 @@ import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
 import 'package:chat/pc/pc_av_call.dart';
+import 'package:chat/pc/pc_layout_view_model.dart';
 import 'package:chat/pc/pc_mention_popup.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_popover.dart';
+import 'package:chat/pc/widgets/pc_resize_handle.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/screenshot_service.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
-/// 桌面形态输入栏:工具条(表情/图片/文件/通话)+ 多行输入区 + 发送按钮。
+/// 桌面形态输入栏:顶部拖拽条 + 工具条(表情/图片/文件/通话)+ 多行输入区 + 发送按钮。
 /// Enter 发送、Shift+Enter 换行;中文输入法组合期间的 Enter 交给输入法。
 /// 键入 '@' 弹出 [PcMentionOverlay] 就地选人(微信 PC 交互),浮层优先消费导航按键。
 /// 复用 [MessageInputBarController] 的文本/@提醒/引用/草稿逻辑,与手机形态共享一套状态。
+///
+/// 高度由 [PcLayoutViewModel] 统一持有(所有会话共用一个高度、跨启动保留),
+/// 拖顶部的分隔条调整;[maxHeight] 是会话区留给输入栏的上限,由外层按窗口高度算出。
 class PcMessageInputBar extends StatefulWidget {
-  const PcMessageInputBar({super.key});
+  const PcMessageInputBar({super.key, required this.maxHeight});
+
+  final double maxHeight;
 
   @override
   State<PcMessageInputBar> createState() => _PcMessageInputBarState();
@@ -38,6 +46,11 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
   final LayerLink _inputBarLink = LayerLink();
   bool _isPickingFile = false;
   String _textBeforePaste = '';
+
+  /// 拖拽起点的高度与累计位移。用累计量而非逐帧增量,
+  /// 这样拖到边界后继续拖不会“攒”出位移,回拖时立刻跟手。
+  double _dragStartHeight = 0;
+  double _dragOffset = 0;
 
   MessageInputBarController? _boundController;
   PcMentionOverlay? _mentionOverlay;
@@ -58,6 +71,30 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
   void dispose() {
     _mentionOverlay?.dispose();
     super.dispose();
+  }
+
+  /// 引用条占掉的固定高度(chip 34 + 与发送行的间距 4)。挂着引用时输入栏要相应加高,
+  /// 否则拖到最矮会把输入框挤到 0 高。
+  static const double _quoteChipRowHeight = 38;
+
+  double get _minHeight =>
+      PcTheme.inputBarMinHeight + (_boundController?.quotedMessage != null ? _quoteChipRowHeight : 0);
+
+  /// 会话区太矮时压缩输入栏,保证消息列表还剩得下内容。
+  double get _maxHeight => math.max(_minHeight, widget.maxHeight);
+
+  /// 渲染高度。只夹取不回写:窗口重新拉大后,用户存下的期望高度原样恢复。
+  double _effectiveHeight(double height) => height.clamp(_minHeight, _maxHeight).toDouble();
+
+  void _onResizeStart(PcLayoutViewModel layout) {
+    _dragStartHeight = _effectiveHeight(layout.inputBarHeight);
+    _dragOffset = 0;
+  }
+
+  /// 分隔条在输入栏顶部:向上拖(dy 为负)变高。
+  void _onResizeDelta(PcLayoutViewModel layout, double delta) {
+    _dragOffset += delta;
+    layout.setInputBarHeight((_dragStartHeight - _dragOffset).clamp(_minHeight, _maxHeight).toDouble());
   }
 
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event, MessageInputBarController controller) {
@@ -201,7 +238,9 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     showPcPopover(
       context: context,
       anchor: anchor,
-      size: const Size(400, 320),
+      width: 400,
+      // 面板居中于表情按钮,左半边压在会话列表上方(微信 PC 的位置感)。
+      align: PcPopoverAlign.center,
       builder: (popoverContext) => EmojiBoard(
         kChatEmojis,
         pickerEmojiCallback: (emoji) => controller.insertText(emoji),
@@ -267,22 +306,34 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
   Widget build(BuildContext context) {
     final controller = Provider.of<MessageInputBarController>(context);
     final conversationController = Provider.of<ConversationController>(context, listen: false);
+    final layout = Provider.of<PcLayoutViewModel>(context, listen: false);
     final l10n = AppLocalizations.of(context)!;
     final hasText = controller.textEditingController.text.trim().isNotEmpty;
 
+    // 高度单独用 Selector 订阅:拖拽期间只重建外层 Container,
+    // 输入框/工具条整棵子树作为 child 复用,不逐帧重建。
     return CompositedTransformTarget(
       link: _inputBarLink,
-      child: Container(
-        height: PcTheme.inputBarHeight,
-        decoration: const BoxDecoration(
+      child: Selector<PcLayoutViewModel, double>(
+        selector: (_, model) => model.inputBarHeight,
+        builder: (context, height, child) => Container(
+          height: _effectiveHeight(height),
           color: PcTheme.chatBg,
-          border: Border(top: BorderSide(width: 0.5, color: PcTheme.hairline)),
+          child: child,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 顶部发丝线即分隔条本身,上下拖动调整输入栏高度
+            PcResizeHandle(
+              axis: PcResizeAxis.vertical,
+              lineAlignment: Alignment.topCenter,
+              onDragStart: () => _onResizeStart(layout),
+              onDragDelta: (delta) => _onResizeDelta(layout, delta),
+              onDragEnd: layout.persist,
+            ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+              padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
               child: Row(
                 children: [
                   _ToolbarButton(

@@ -25,7 +25,7 @@ Future<void> showPcUserCard({
   return showPcPopover(
     context: context,
     anchor: anchor,
-    size: Size(288, isSelf ? 116 : 178),
+    width: 288,
     builder: (_) => _PcUserCard(userId: userId, groupId: groupId, isSelf: isSelf),
   );
 }
@@ -43,6 +43,7 @@ class _PcUserCard extends StatelessWidget {
       builder: (context, userViewModel, _) {
         final userInfo = userViewModel.getUserInfo(userId, groupId: groupId);
         return Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
@@ -93,20 +94,26 @@ class _PcUserCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (!isSelf) ...[
-              const Divider(),
-              Expanded(
-                child: Row(
-                  children: [
-                    _CardAction(
-                      icon: Icons.chat_bubble_outline_rounded,
-                      label: AppLocalizations.of(context)!.sendMsg,
-                      onTap: () {
-                        // 先经当前 context 完成查找与跳转,再关卡片
-                        openConversation(context, Conversation(conversationType: ConversationType.Single, target: userId));
-                        Navigator.of(context).pop();
-                      },
-                    ),
+            const Divider(indent: 16, endIndent: 16),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+              // 按钮宽度包住文字即可,不平分整行;译文过长时换行而非溢出。
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 4,
+                runSpacing: 2,
+                children: [
+                  _CardAction(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    label: AppLocalizations.of(context)!.sendMsg,
+                    onTap: () {
+                      // 先经当前 context 完成查找与跳转,再关卡片
+                      openConversation(context, Conversation(conversationType: ConversationType.Single, target: userId));
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                  // 给自己发消息(当作文件传输助手)可用,但音视频通话对自己无意义。
+                  if (!isSelf) ...[
                     _CardAction(
                       icon: Icons.call_outlined,
                       label: AppLocalizations.of(context)!.audioCallAction,
@@ -124,9 +131,9 @@ class _PcUserCard extends StatelessWidget {
                       },
                     ),
                   ],
-                ),
+                ],
               ),
-            ],
+            ),
           ],
         );
       },
@@ -140,7 +147,7 @@ class _PcUserCard extends StatelessWidget {
   }
 }
 
-/// 卡片底部操作项:图标 + 小字标签,等宽排列。
+/// 卡片底部操作项:图标 + 小字标签,尺寸随标签宽度收缩。
 class _CardAction extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -150,22 +157,24 @@ class _CardAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: HoverBuilder(
-        cursor: SystemMouseCursors.click,
-        builder: (context, hovered) => GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onTap,
-          child: Container(
+    return HoverBuilder(
+      cursor: SystemMouseCursors.click,
+      builder: (context, hovered) => GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
             color: hovered ? Colors.black.withValues(alpha: 0.04) : Colors.transparent,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 20, color: PcTheme.accent),
-                const SizedBox(height: 5),
-                Text(label, style: const TextStyle(fontSize: 11, color: PcTheme.textSecondary)),
-              ],
-            ),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 20, color: PcTheme.accent),
+              const SizedBox(height: 5),
+              Text(label, style: const TextStyle(fontSize: 11, color: PcTheme.textSecondary)),
+            ],
           ),
         ),
       ),
