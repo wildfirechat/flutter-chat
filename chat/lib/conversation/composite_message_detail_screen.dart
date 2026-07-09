@@ -29,6 +29,8 @@ import 'package:chat/conversation/cell_builder/voice_cell_builder.dart';
 import 'package:chat/ui_model/ui_message.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 class CompositeMessageDetailScreen extends StatelessWidget {
   final CompositeMessageContent content;
@@ -38,9 +40,12 @@ class CompositeMessageDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(content.title),
-      ),
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: content.title,
+              onBack: () => Navigator.of(context).maybePop(),
+            )
+          : AppBar(title: Text(content.title)),
       body: ListView.builder(
         itemCount: content.messages.length,
         itemBuilder: (context, index) {

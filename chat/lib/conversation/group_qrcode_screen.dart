@@ -37,7 +37,10 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
 
     return Scaffold(
       appBar: isDesktopShell
-          ? const PcPageHeader(title: "群二维码")
+          ? PcPageHeader(
+              title: "群二维码",
+              onBack: () => Navigator.of(context).maybePop(),
+            )
           : AppBar(
               title: const Text("群二维码"),
               backgroundColor: Colors.black,

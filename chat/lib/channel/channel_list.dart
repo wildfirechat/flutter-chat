@@ -8,6 +8,8 @@ import 'package:imclient/model/conversation.dart';
 import 'package:chat/channel/search_channel.dart';
 import 'package:chat/config.dart';
 import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 import '../conversation/conversation_screen.dart';
 
@@ -22,20 +24,28 @@ class ChannelListState extends State<ChannelList> {
   List<String>? channelIds;
   @override
   Widget build(BuildContext context) {
+    final actions = [
+      GestureDetector(
+        onTap: () => _searchChannel(),
+        child: Row(
+          children: [
+            const Icon(Icons.add_circle_outline_rounded),
+            const Padding(padding: EdgeInsets.only(left: 16)),
+          ],
+        ),
+      )
+    ];
+
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          GestureDetector(
-            onTap: () => _searchChannel(),
-            child: Row(
-              children: [
-                Icon(Icons.add_circle_outline_rounded),
-                Padding(padding: EdgeInsets.only(left: 16)),
-              ],
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: "订阅的频道",
+              actions: actions,
+            )
+          : AppBar(
+              title: const Text("订阅的频道"),
+              actions: actions,
             ),
-          )
-        ],
-        title: const Text("订阅的频道"),),
       body: SafeArea(child:
       channelIds == null ? const Center(child: CircularProgressIndicator(),) :
       ListView.builder(

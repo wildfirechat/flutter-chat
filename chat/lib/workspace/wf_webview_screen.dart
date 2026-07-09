@@ -9,6 +9,8 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:chat/workspace/js_api.dart';
 import 'package:chat/workspace/webview_background.dart';
 import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 class WFWebViewScreen extends StatefulWidget {
   final String url;
@@ -74,9 +76,13 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_pageTitle),
-      ),
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: _pageTitle,
+            )
+          : AppBar(
+              title: Text(_pageTitle),
+            ),
       body: SafeArea(
         child: Column(
           children: [

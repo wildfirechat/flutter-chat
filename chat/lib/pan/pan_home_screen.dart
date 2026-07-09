@@ -11,6 +11,8 @@ import 'package:imclient/model/conversation.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'pan_service.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 /// 云盘/网盘主页面
 ///
@@ -108,10 +110,15 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_appBarTitle),
-        actions: _buildActions(),
-      ),
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: _appBarTitle,
+              actions: _buildActions(),
+            )
+          : AppBar(
+              title: Text(_appBarTitle),
+              actions: _buildActions(),
+            ),
       body: _buildBody(),
     );
   }
@@ -336,10 +343,16 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_appBarTitle),
-        actions: _buildActions(),
-      ),
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: _appBarTitle,
+              onBack: () => Navigator.of(context).maybePop(),
+              actions: _buildActions(),
+            )
+          : AppBar(
+              title: Text(_appBarTitle),
+              actions: _buildActions(),
+            ),
       body: _buildBody(),
     );
   }

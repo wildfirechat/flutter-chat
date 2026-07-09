@@ -20,6 +20,7 @@ import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/app_navigator.dart';
 
 /// 收藏分类。
 ///
@@ -192,12 +193,7 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
       Fluttertoast.showToast(
           msg: '${AppLocalizations.of(context)!.fileLabel}${content.name}');
     } else if (content is CompositeMessageContent) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CompositeMessageDetailScreen(content),
-        ),
-      );
+      pushPage(context, CompositeMessageDetailScreen(content));
     } else if (content is TextMessageContent) {
       Fluttertoast.showToast(msg: content.text);
     } else if (content is LinkMessageContent) {

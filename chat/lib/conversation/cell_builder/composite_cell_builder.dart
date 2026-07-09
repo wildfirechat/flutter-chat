@@ -8,6 +8,7 @@ import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
 import 'package:chat/conversation/composite_message_detail_screen.dart';
 import 'package:chat/ui_model/ui_message.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
+import 'package:chat/app_navigator.dart';
 
 class CompositeCellBuilder extends PortraitCellBuilder {
   late CompositeMessageContent compositeMessageContent;
@@ -20,12 +21,7 @@ class CompositeCellBuilder extends PortraitCellBuilder {
   Widget buildMessageContent(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CompositeMessageDetailScreen(compositeMessageContent),
-          ),
-        );
+        pushPage(context, CompositeMessageDetailScreen(compositeMessageContent));
       },
       child: Container(
         width: 200,

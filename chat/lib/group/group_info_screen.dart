@@ -13,6 +13,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 
 class GroupInfoScreen extends StatefulWidget {
@@ -67,12 +68,16 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       builder: (context, groupInfo, child) {
         if (groupInfo == null || groupInfo.updateDt == 0) {
           return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context)!.groupInfo)),
+            appBar: isDesktopShell
+                ? PcPageHeader(title: AppLocalizations.of(context)!.groupInfo)
+                : AppBar(title: Text(AppLocalizations.of(context)!.groupInfo)),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
         return Scaffold(
-          appBar: AppBar(title: Text(AppLocalizations.of(context)!.groupInfo)),
+          appBar: isDesktopShell
+              ? PcPageHeader(title: AppLocalizations.of(context)!.groupInfo)
+              : AppBar(title: Text(AppLocalizations.of(context)!.groupInfo)),
           body: _buildBody(context, groupInfo),
         );
       },

@@ -20,6 +20,7 @@ import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/app_navigator.dart';
 
 class FavoriteListScreen extends StatefulWidget {
   const FavoriteListScreen({super.key});
@@ -110,11 +111,9 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
       // TODO: Open file
       Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.fileLabel}${(message.content as FileMessageContent).name}");
     } else if (message.content is CompositeMessageContent) {
-      Navigator.push(
+      pushPage(
         context,
-        MaterialPageRoute(
-          builder: (context) => CompositeMessageDetailScreen(message.content as CompositeMessageContent),
-        ),
+        CompositeMessageDetailScreen(message.content as CompositeMessageContent),
       );
     } else if (message.content is TextMessageContent) {
       // TODO: Show text detail

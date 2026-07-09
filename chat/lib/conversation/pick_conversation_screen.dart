@@ -5,9 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:chat/home/conversation_list_widget.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
 
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
+
 class PickConversationScreen extends StatefulWidget {
   final Function(BuildContext context, Conversation conversation)? onConversationSelected;
-  const PickConversationScreen({Key? key, this.onConversationSelected}) : super(key: key);
+  final VoidCallback? onBack;
+  const PickConversationScreen({Key? key, this.onConversationSelected, this.onBack}) : super(key: key);
 
   @override
   State<PickConversationScreen> createState() => _PickConversationScreenState();
@@ -18,9 +22,14 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
   Widget build(BuildContext context) {
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('选择会话'),
-      ),
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: '选择会话',
+              onBack: widget.onBack,
+            )
+          : AppBar(
+              title: const Text('选择会话'),
+            ),
       body: SafeArea(
         child: ListView.builder(
             itemCount: conversationListViewModel.conversationList.length,

@@ -11,6 +11,9 @@ import 'package:chat/widget/option_item.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/app_navigator.dart';
 
 class FileRecordsScreen extends StatelessWidget {
   const FileRecordsScreen({super.key});
@@ -18,25 +21,22 @@ class FileRecordsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.fileRecords),
-      ),
+      appBar: isDesktopShell
+          ? PcPageHeader(title: AppLocalizations.of(context)!.fileRecords)
+          : AppBar(
+              title: Text(AppLocalizations.of(context)!.fileRecords),
+            ),
       body: Column(
         children: [
           OptionItem(
             AppLocalizations.of(context)!.allFiles,
             onTap: () {
-              Navigator.push(
+              pushPage(
                 context,
-                MaterialPageRoute(
-                  settings: RouteSettings(
-                    name: 'file-list/all',
-                    arguments: {'type': FileListType.all},
-                  ),
-                  builder: (context) => FileListScreen(
-                    title: AppLocalizations.of(context)!.allFiles,
-                    child: const FileListWidget(type: FileListType.all),
-                  ),
+                FileListScreen(
+                  title: AppLocalizations.of(context)!.allFiles,
+                  onBack: () => Navigator.of(context).maybePop(),
+                  child: const FileListWidget(type: FileListType.all),
                 ),
               );
             },
@@ -44,17 +44,12 @@ class FileRecordsScreen extends StatelessWidget {
           OptionItem(
             AppLocalizations.of(context)!.myFiles,
             onTap: () {
-              Navigator.push(
+              pushPage(
                 context,
-                MaterialPageRoute(
-                  settings: RouteSettings(
-                    name: 'file-list/my',
-                    arguments: {'type': FileListType.my},
-                  ),
-                  builder: (context) => FileListScreen(
-                    title: AppLocalizations.of(context)!.myFiles,
-                    child: const FileListWidget(type: FileListType.my),
-                  ),
+                FileListScreen(
+                  title: AppLocalizations.of(context)!.myFiles,
+                  onBack: () => Navigator.of(context).maybePop(),
+                  child: const FileListWidget(type: FileListType.my),
                 ),
               );
             },
@@ -62,32 +57,49 @@ class FileRecordsScreen extends StatelessWidget {
           OptionItem(
             AppLocalizations.of(context)!.chatFiles,
             onTap: () {
-              Navigator.push(
+              pushPage(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => PickConversationScreen(
-                    onConversationSelected: (context, conversation) {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          settings: RouteSettings(
-                            name: 'file-list/conversation',
-                            arguments: {
-                              'type': FileListType.conversation,
-                              'conversation': conversation,
-                            },
-                          ),
-                          builder: (context) => FileListScreen(
-                            title: AppLocalizations.of(context)!.chatFiles,
-                            child: FileListWidget(
-                              type: FileListType.conversation,
-                              conversation: conversation,
+                PickConversationScreen(
+                  onBack: () => Navigator.of(context).maybePop(),
+                  onConversationSelected: (context, conversation) {
+                    final route = isDesktopShell
+                        ? PageRouteBuilder(
+                            settings: RouteSettings(
+                              name: 'file-list/conversation',
+                              arguments: {
+                                'type': FileListType.conversation,
+                                'conversation': conversation,
+                              },
                             ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+                            pageBuilder: (_, __, ___) => FileListScreen(
+                              title: AppLocalizations.of(context)!.chatFiles,
+                              onBack: () => Navigator.of(context).maybePop(),
+                              child: FileListWidget(
+                                type: FileListType.conversation,
+                                conversation: conversation,
+                              ),
+                            ),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero,
+                          )
+                        : MaterialPageRoute(
+                            settings: RouteSettings(
+                              name: 'file-list/conversation',
+                              arguments: {
+                                'type': FileListType.conversation,
+                                'conversation': conversation,
+                              },
+                            ),
+                            builder: (context) => FileListScreen(
+                              title: AppLocalizations.of(context)!.chatFiles,
+                              child: FileListWidget(
+                                type: FileListType.conversation,
+                                conversation: conversation,
+                              ),
+                            ),
+                          );
+                    Navigator.pushReplacement(context, route);
+                  },
                 ),
               );
             },
@@ -95,39 +107,58 @@ class FileRecordsScreen extends StatelessWidget {
           OptionItem(
             AppLocalizations.of(context)!.userFiles,
             onTap: () {
-              Navigator.push(
+              pushPage(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => PickUserScreen(
-                    (context, users) {
-                      if (users.isNotEmpty) {
-                        var userId = users[0];
-                        var conversation = Conversation(conversationType: ConversationType.Single, target: userId, line: 0);
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            settings: RouteSettings(
-                              name: 'file-list/user',
-                              arguments: {
-                                'type': FileListType.user,
-                                'conversation': conversation,
-                                'userId': userId,
-                              },
-                            ),
-                            builder: (context) => FileListScreen(
-                              title: AppLocalizations.of(context)!.userFiles,
-                              child: FileListWidget(
-                                type: FileListType.user,
-                                conversation: conversation,
-                                userId: userId,
+                PickUserScreen(
+                  (context, users) {
+                    if (users.isNotEmpty) {
+                      var userId = users[0];
+                      var conversation = Conversation(conversationType: ConversationType.Single, target: userId, line: 0);
+                      final route = isDesktopShell
+                          ? PageRouteBuilder(
+                              settings: RouteSettings(
+                                name: 'file-list/user',
+                                arguments: {
+                                  'type': FileListType.user,
+                                  'conversation': conversation,
+                                  'userId': userId,
+                                },
                               ),
-                            ),
-                          ),
-                        );
-                      }
-                    },
-                    maxSelected: 1,
-                  ),
+                              pageBuilder: (_, __, ___) => FileListScreen(
+                                title: AppLocalizations.of(context)!.userFiles,
+                                onBack: () => Navigator.of(context).maybePop(),
+                                child: FileListWidget(
+                                  type: FileListType.user,
+                                  conversation: conversation,
+                                  userId: userId,
+                                ),
+                              ),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            )
+                          : MaterialPageRoute(
+                              settings: RouteSettings(
+                                name: 'file-list/user',
+                                arguments: {
+                                  'type': FileListType.user,
+                                  'conversation': conversation,
+                                  'userId': userId,
+                                },
+                              ),
+                              builder: (context) => FileListScreen(
+                                title: AppLocalizations.of(context)!.userFiles,
+                                child: FileListWidget(
+                                  type: FileListType.user,
+                                  conversation: conversation,
+                                  userId: userId,
+                                ),
+                              ),
+                            );
+                      Navigator.pushReplacement(context, route);
+                    }
+                  },
+                  onBack: () => Navigator.of(context).maybePop(),
+                  maxSelected: 1,
                 ),
               );
             },
@@ -142,28 +173,43 @@ class FileListScreen extends StatelessWidget {
   final String title;
   final Widget child;
   final bool showSearchAction;
+  final VoidCallback? onBack;
 
-  const FileListScreen({super.key, required this.title, required this.child, this.showSearchAction = true});
+  const FileListScreen({
+    super.key,
+    required this.title,
+    required this.child,
+    this.showSearchAction = true,
+    this.onBack,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final actions = showSearchAction
+        ? [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                showSearch(
+                  context: context,
+                  delegate: _FileSearchDelegate(),
+                );
+              },
+            ),
+          ]
+        : null;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        actions: showSearchAction
-            ? [
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: () {
-                    showSearch(
-                      context: context,
-                      delegate: _FileSearchDelegate(),
-                    );
-                  },
-                ),
-              ]
-            : null,
-      ),
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: title,
+              onBack: onBack,
+              actions: actions,
+            )
+          : AppBar(
+              title: Text(title),
+              actions: actions,
+            ),
       body: child,
     );
   }

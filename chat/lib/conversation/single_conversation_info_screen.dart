@@ -71,7 +71,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
           : Container(),
       const SectionDivider(),
       OptionItem(l10n.searchChatContents, onTap: () {
-        openPage(
+        pushPage(
           context,
           SearchConversationResultView(
             conversation: conversation,
@@ -80,7 +80,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
         );
       }),
       OptionItem(l10n.chatFiles, onTap: () {
-        openPage(context, ConversationFilesScreen(conversation));
+        pushPage(context, ConversationFilesScreen(conversation));
       }),
       const SectionDivider(),
       OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {

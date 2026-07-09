@@ -4,6 +4,8 @@ import 'package:imclient/model/chatroom_info.dart';
 import 'package:imclient/model/conversation.dart';
 
 import '../conversation/conversation_screen.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 class ChatroomList extends StatelessWidget {
   final List modelList = ['chatroom1', 'chatroom2', 'chatroom3'];
@@ -13,7 +15,9 @@ class ChatroomList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("消息设置"),),
+      appBar: isDesktopShell
+          ? const PcPageHeader(title: "消息设置")
+          : AppBar(title: const Text("消息设置")),
       body: SafeArea(
         child: ListView.builder(
           itemCount: modelList.length,

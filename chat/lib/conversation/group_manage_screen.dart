@@ -28,7 +28,10 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: isDesktopShell
-          ? const PcPageHeader(title: '群管理')
+          ? PcPageHeader(
+              title: '群管理',
+              onBack: () => Navigator.of(context).maybePop(),
+            )
           : AppBar(
               title: const Text('群管理'),
             ),

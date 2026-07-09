@@ -19,6 +19,7 @@ class OrganizationScreen extends StatefulWidget {
   final List<String>? disabledUserIds;
   final List<String>? initialSelectedUserIds;
   final ValueChanged<List<String>>? onSelected;
+  final bool showBackOnRoot;
 
   const OrganizationScreen({
     super.key,
@@ -28,6 +29,7 @@ class OrganizationScreen extends StatefulWidget {
     this.disabledUserIds,
     this.initialSelectedUserIds,
     this.onSelected,
+    this.showBackOnRoot = false,
   });
 
   @override
@@ -372,7 +374,9 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
               appBar: isDesktopShell
                   ? PcPageHeader(
                       title: viewModel.appBarTitle ?? '组织结构',
-                      onBack: () => Navigator.of(context).maybePop(),
+                      onBack: (viewModel.canNavigateBackInHierarchy() || widget.showBackOnRoot)
+                          ? () => Navigator.of(context).maybePop()
+                          : null,
                       actions: widget.selectMode ? [_buildDoneAction()] : null,
                     )
                   : AppBar(

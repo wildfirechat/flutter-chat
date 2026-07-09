@@ -48,6 +48,23 @@ void openPage(BuildContext context, Widget page) {
   }
 }
 
+/// 在当前导航栈中 push 一个子页面（保留返回历史）。
+void pushPage(BuildContext context, Widget page) {
+  final shell = _shellOf(context);
+  if (shell != null) {
+    // 桌面端，在右栏 Navigator 中正常 push (无转场动画，符合 PC 体验)
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => page,
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+  } else {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  }
+}
+
 /// 回到登录页(登出/被踢/token 失效):若栈顶已是登录页则不动,
 /// 否则清空根导航栈换成平台各自的登录页。调用方自行负责 [Imclient.disconnect]。
 void navigateToLogin(NavigatorState rootNavigator) {

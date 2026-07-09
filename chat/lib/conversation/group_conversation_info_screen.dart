@@ -107,11 +107,11 @@ class GroupConversationInfoScreen extends StatelessWidget {
       }),
       OptionItem(l10n.groupQrCode, rightIcon: Icons.qr_code, onTap: () {
         if (groupInfo != null) {
-          openPage(context, GroupQrCodeScreen(groupInfo: groupInfo));
+          pushPage(context, GroupQrCodeScreen(groupInfo: groupInfo));
         }
       }),
       OptionItem(l10n.groupAnnouncement, desc: groupConversationInfoViewModel.groupAnnouncement ?? l10n.clickToCheck, onTap: () {
-        openPage(
+        pushPage(
           context,
           GroupAnnouncementScreen(
             groupId: conversation.target,
@@ -130,13 +130,13 @@ class GroupConversationInfoScreen extends StatelessWidget {
       groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner
           ? OptionItem(l10n.groupManagement, onTap: () {
               if (groupInfo != null) {
-                openPage(context, GroupManageScreen(groupInfo: groupInfo));
+                pushPage(context, GroupManageScreen(groupInfo: groupInfo));
               }
             })
           : Container(),
       const SectionDivider(),
       OptionItem(l10n.searchChatContents, onTap: () {
-        openPage(
+        pushPage(
           context,
           SearchConversationResultView(
             conversation: conversation,
@@ -145,7 +145,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
         );
       }),
       OptionItem(l10n.chatFiles, onTap: () {
-        openPage(context, ConversationFilesScreen(conversation));
+        pushPage(context, ConversationFilesScreen(conversation));
       }),
       const SectionDivider(),
       OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {

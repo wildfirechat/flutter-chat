@@ -460,6 +460,7 @@ class _PCHomeState extends State<PCHome> {
               _paneRoute(
                 FileListScreen(
                   title: AppLocalizations.of(context)!.chatFiles,
+                  onBack: () => Navigator.of(context).maybePop(),
                   child: FileListWidget(
                     type: FileListType.conversation,
                     conversation: conversation,
@@ -486,6 +487,7 @@ class _PCHomeState extends State<PCHome> {
               _paneRoute(
                 FileListScreen(
                   title: AppLocalizations.of(context)!.userFiles,
+                  onBack: () => Navigator.of(context).maybePop(),
                   child: FileListWidget(
                     type: FileListType.user,
                     conversation: Conversation(

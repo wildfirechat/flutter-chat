@@ -43,6 +43,7 @@ class InviteFriendPageState extends State<InviteFriendPage> {
       appBar: isDesktopShell
           ? PcPageHeader(
               title: '添加好友',
+              onBack: () => Navigator.of(context).maybePop(),
               actions: actions,
             )
           : AppBar(

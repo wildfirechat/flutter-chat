@@ -6,6 +6,8 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/file_record.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 class ConversationFilesScreen extends StatefulWidget {
   final Conversation conversation;
@@ -160,16 +162,24 @@ class _ConversationFilesScreenState extends State<ConversationFilesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.chatFiles),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: _startSearch,
-          ),
-        ],
+    final actions = [
+      IconButton(
+        icon: const Icon(Icons.search),
+        onPressed: _startSearch,
       ),
+    ];
+
+    return Scaffold(
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              title: AppLocalizations.of(context)!.chatFiles,
+              onBack: () => Navigator.of(context).maybePop(),
+              actions: actions,
+            )
+          : AppBar(
+              title: Text(AppLocalizations.of(context)!.chatFiles),
+              actions: actions,
+            ),
       body: NotificationListener<ScrollNotification>(
         onNotification: (ScrollNotification scrollInfo) {
           if (!_isLoading &&

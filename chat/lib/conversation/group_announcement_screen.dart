@@ -90,6 +90,7 @@ class _GroupAnnouncementScreenState extends State<GroupAnnouncementScreen> {
       appBar: isDesktopShell
           ? PcPageHeader(
               title: '群公告',
+              onBack: () => Navigator.of(context).maybePop(),
               actions: actions,
             )
           : AppBar(

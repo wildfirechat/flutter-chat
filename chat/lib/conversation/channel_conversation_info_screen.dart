@@ -68,7 +68,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
             ),
       const SectionDivider(),
       OptionItem(l10n.searchChatContents, onTap: () {
-        openPage(
+        pushPage(
           context,
           SearchConversationResultView(
             conversation: conversation,
@@ -77,7 +77,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
         );
       }),
       OptionItem(l10n.chatFiles, onTap: () {
-        openPage(context, ConversationFilesScreen(conversation));
+        pushPage(context, ConversationFilesScreen(conversation));
       }),
       const SectionDivider(),
       OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {

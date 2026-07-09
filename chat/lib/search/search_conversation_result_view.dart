@@ -8,6 +8,8 @@ import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 
 class SearchConversationResultView extends StatefulWidget {
   final Conversation conversation;
@@ -65,20 +67,27 @@ class _SearchConversationResultViewState extends State<SearchConversationResultV
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: TextField(
-          controller: _controller,
-          decoration: InputDecoration(
-            hintText: AppLocalizations.of(context)!.searchHint,
-            border: InputBorder.none,
-          ),
-          onChanged: (value) {
-            _search(value);
-          },
-          textInputAction: TextInputAction.search,
-        ),
+    final searchField = TextField(
+      controller: _controller,
+      decoration: InputDecoration(
+        hintText: AppLocalizations.of(context)!.searchHint,
+        border: InputBorder.none,
       ),
+      onChanged: (value) {
+        _search(value);
+      },
+      textInputAction: TextInputAction.search,
+    );
+
+    return Scaffold(
+      appBar: isDesktopShell
+          ? PcPageHeader(
+              titleWidget: searchField,
+              onBack: () => Navigator.of(context).maybePop(),
+            )
+          : AppBar(
+              title: searchField,
+            ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _messages.isEmpty

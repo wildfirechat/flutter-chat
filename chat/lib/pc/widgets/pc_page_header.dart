@@ -7,16 +7,18 @@ import 'package:chat/pc/widgets/hover_builder.dart';
 /// 桌面端二级页面统一头部栏 (高度与整体 headerHeight 保持一致)
 /// 包含: 返回按钮、页面标题、可选右侧操作按钮 (actions)
 class PcPageHeader extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
+  final String? title;
+  final Widget? titleWidget;
   final VoidCallback? onBack;
   final List<Widget>? actions;
 
   const PcPageHeader({
     super.key,
-    required this.title,
+    this.title,
+    this.titleWidget,
     this.onBack,
     this.actions,
-  });
+  }) : assert(title != null || titleWidget != null);
 
   @override
   Size get preferredSize => const Size.fromHeight(PcTheme.headerHeight);
@@ -93,17 +95,18 @@ class PcPageHeader extends StatelessWidget implements PreferredSizeWidget {
             const SizedBox(width: 12),
           ],
           Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: PcTheme.textPrimary,
-                decoration: TextDecoration.none,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            child: titleWidget ??
+                Text(
+                  title ?? '',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: PcTheme.textPrimary,
+                    decoration: TextDecoration.none,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
           ),
           if (actions != null) ...actions!,
         ],

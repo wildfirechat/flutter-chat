@@ -111,9 +111,12 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   }
 
   void _openOrganization(int organizationId) {
-    openPage(
+    pushPage(
       context,
-      OrganizationScreen(initialOrganizationId: organizationId),
+      OrganizationScreen(
+        initialOrganizationId: organizationId,
+        showBackOnRoot: true,
+      ),
     );
   }
 
@@ -441,7 +444,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   }
 
   void _openInviteFriendPage(BuildContext context) {
-    openPage(context, InviteFriendPage(widget.userId));
+    pushPage(context, InviteFriendPage(widget.userId));
   }
 
   void _toggleBlacklist() {
