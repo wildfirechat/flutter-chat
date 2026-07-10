@@ -30,6 +30,8 @@ import 'group_conversation_info_members_view.dart';
 import 'group_manage_screen.dart';
 import 'group_qrcode_screen.dart';
 
+import 'package:chat/theme/app_colors.dart';
+
 class GroupConversationInfoScreen extends StatelessWidget {
   const GroupConversationInfoScreen(this.conversation, {super.key});
 
@@ -45,6 +47,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
         },
         child: Consumer<GroupConversationInfoViewModel>(
             builder: (context, viewModel, child) => Scaffold(
+                  backgroundColor: context.colors.primaryBackground,
                   appBar: isDesktopShell
                       ? null
                       : AppBar(
@@ -70,126 +73,166 @@ class GroupConversationInfoScreen extends StatelessWidget {
     return SingleChildScrollView(
         child: Column(children: [
       if (isDesktopShell) const SizedBox(height: 12.0),
-      GroupConversationInfoMembersView(
-        conversation,
-        onGroupMemberTap: (userInfo, anchor) {
-          // 桌面端点群成员弹用户信息卡片(与会话内点头像一致),移动端仍整页打开
-          if (isDesktopShell) {
-            showPcUserCard(context: context, anchor: anchor, userId: userInfo.userId, groupId: conversation.target);
-          } else {
-            openPage(context, UserInfoWidget(userInfo.userId));
-          }
-        },
-        onAddActionTap: () {
-          _onAddNewConversationMember(context);
-        },
-        onRemoveActionTap: () {
-          _onRemoveConversationMember(context);
-        },
-        onShowMoreGroupMemberTap: () {
-          // TODO
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => GroupAllMembersWidget(conversation.target, groupMembers, hasPlus, hasMinus)),
-          // );
-        },
+      Container(
+        color: context.colors.surface,
+        child: GroupConversationInfoMembersView(
+          conversation,
+          onGroupMemberTap: (userInfo, anchor) {
+            // 桌面端点群成员弹用户信息卡片(与会话内点头像一致),移动端仍整页打开
+            if (isDesktopShell) {
+              showPcUserCard(context: context, anchor: anchor, userId: userInfo.userId, groupId: conversation.target);
+            } else {
+              openPage(context, UserInfoWidget(userInfo.userId));
+            }
+          },
+          onAddActionTap: () {
+            _onAddNewConversationMember(context);
+          },
+          onRemoveActionTap: () {
+            _onRemoveConversationMember(context);
+          },
+          onShowMoreGroupMemberTap: () {
+            // TODO
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => GroupAllMembersWidget(conversation.target, groupMembers, hasPlus, hasMinus)),
+            // );
+          },
+        ),
       ),
       const SectionDivider(),
-      OptionItem(l10n.groupMemberList, onTap: () {}),
-      OptionItem(l10n.groupNameLabel, desc: groupInfo?.name ?? '', onTap: () {
-        if (groupInfo != null &&
-            groupInfo.type == GroupType.Restricted &&
-            (groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager)) {
-          _showEditDialog(context, l10n.modifyGroupNameDialog, groupInfo?.name ?? '', (value) {
-            Imclient.modifyGroupInfo(conversation.target, ModifyGroupInfoType.Modify_Group_Name, value, () {}, (errorCode) {
-              Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
-            });
-          });
-        } else {
-          Fluttertoast.showToast(msg: l10n.onlyOwnerManagerCanModify);
-        }
-      }),
-      OptionItem(l10n.groupQrCode, rightIcon: Icons.qr_code, onTap: () {
-        if (groupInfo != null) {
-          pushPage(context, GroupQrCodeScreen(groupInfo: groupInfo));
-        }
-      }),
-      OptionItem(l10n.groupAnnouncement, desc: groupConversationInfoViewModel.groupAnnouncement ?? l10n.clickToCheck, onTap: () {
-        pushPage(
-          context,
-          GroupAnnouncementScreen(
-            groupId: conversation.target,
-            canEdit: groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager,
-          ),
-        );
-        groupConversationInfoViewModel.refreshGroupAnnouncement(conversation.target);
-      }),
-      OptionItem(l10n.groupRemarkLabel, desc: groupInfo?.remark, onTap: () {
-        _showEditDialog(context, l10n.modifyGroupRemarkDialog, groupInfo?.remark ?? '', (value) {
-          Imclient.setGroupRemark(conversation.target, value, () {}, (errorCode) {
-            Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
-          });
-        });
-      }),
-      groupInfo != null &&
-              groupInfo.type == GroupType.Restricted &&
-              (groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner)
-          ? OptionItem(l10n.groupManagement, onTap: () {
-              if (groupInfo != null) {
-                pushPage(context, GroupManageScreen(groupInfo: groupInfo));
+      Container(
+        color: context.colors.surface,
+        child: Column(
+          children: [
+            OptionItem(l10n.groupMemberList, onTap: () {}),
+            OptionItem(l10n.groupNameLabel, desc: groupInfo?.name ?? '', onTap: () {
+              if (groupInfo != null &&
+                  groupInfo.type == GroupType.Restricted &&
+                  (groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager)) {
+                _showEditDialog(context, l10n.modifyGroupNameDialog, groupInfo?.name ?? '', (value) {
+                  Imclient.modifyGroupInfo(conversation.target, ModifyGroupInfoType.Modify_Group_Name, value, () {}, (errorCode) {
+                    Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
+                  });
+                });
+              } else {
+                Fluttertoast.showToast(msg: l10n.onlyOwnerManagerCanModify);
               }
-            })
-          : Container(),
+            }),
+            OptionItem(l10n.groupQrCode, rightIcon: Icons.qr_code, onTap: () {
+              if (groupInfo != null) {
+                pushPage(context, GroupQrCodeScreen(groupInfo: groupInfo));
+              }
+            }),
+            OptionItem(l10n.groupAnnouncement, desc: groupConversationInfoViewModel.groupAnnouncement ?? l10n.clickToCheck, onTap: () {
+              pushPage(
+                context,
+                GroupAnnouncementScreen(
+                  groupId: conversation.target,
+                  canEdit: groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager,
+                ),
+              );
+              groupConversationInfoViewModel.refreshGroupAnnouncement(conversation.target);
+            }),
+            OptionItem(l10n.groupRemarkLabel, desc: groupInfo?.remark, showBottomDivider: groupInfo == null || groupInfo.type != GroupType.Restricted || (groupMember.type != GroupMemberType.Manager && groupMember.type != GroupMemberType.Owner), onTap: () {
+              _showEditDialog(context, l10n.modifyGroupRemarkDialog, groupInfo?.remark ?? '', (value) {
+                Imclient.setGroupRemark(conversation.target, value, () {}, (errorCode) {
+                  Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
+                });
+              });
+            }),
+            if (groupInfo != null &&
+                groupInfo.type == GroupType.Restricted &&
+                (groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner))
+              OptionItem(l10n.groupManagement, showBottomDivider: false, onTap: () {
+                if (groupInfo != null) {
+                  pushPage(context, GroupManageScreen(groupInfo: groupInfo));
+                }
+              })
+          ],
+        ),
+      ),
       const SectionDivider(),
-      OptionItem(l10n.searchChatContents, onTap: () {
-        pushPage(
-          context,
-          SearchConversationResultView(
-            conversation: conversation,
-            keyword: '',
-          ),
-        );
-      }),
-      OptionItem(l10n.chatFiles, onTap: () {
-        pushPage(context, ConversationFilesScreen(conversation));
-      }),
-      OptionItem(l10n.chatLinks, onTap: () {
-        openPage(context, ConversationLinksScreen(conversation));
-      }),
+      Container(
+        color: context.colors.surface,
+        child: Column(
+          children: [
+            OptionItem(l10n.searchChatContents, onTap: () {
+              pushPage(
+                context,
+                SearchConversationResultView(
+                  conversation: conversation,
+                  keyword: '',
+                ),
+              );
+            }),
+            OptionItem(l10n.chatFiles, onTap: () {
+              pushPage(context, ConversationFilesScreen(conversation));
+            }),
+            OptionItem(l10n.chatLinks, showBottomDivider: false, onTap: () {
+              openPage(context, ConversationLinksScreen(conversation));
+            }),
+          ],
+        ),
+      ),
       const SectionDivider(),
-      OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
-        conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
-      }),
-      OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0, (enable) {
-        conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
-      }),
-      OptionSwitchItem(l10n.favoriteGroup, groupConversationInfoViewModel.isFavGroup, (enable) {
-        groupConversationInfoViewModel.setFavGroup(conversationInfo.conversation.target, enable);
-      }),
+      Container(
+        color: context.colors.surface,
+        child: Column(
+          children: [
+            OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
+              conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
+            }),
+            OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0, (enable) {
+              conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
+            }),
+            OptionSwitchItem(l10n.favoriteGroup, groupConversationInfoViewModel.isFavGroup, showBottomDivider: false, (enable) {
+              groupConversationInfoViewModel.setFavGroup(conversationInfo.conversation.target, enable);
+            }),
+          ],
+        ),
+      ),
       const SectionDivider(),
-      OptionItem(l10n.myAliasInGroupLabel, desc: groupMember.alias, onTap: () {
-        _showEditDialog(context, l10n.modifyGroupAliasDialog, groupMember.alias ?? '', (value) {
-          Imclient.modifyGroupAlias(conversation.target, value, () {}, (errorCode) {
-            Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
-          });
-        });
-      }),
-      OptionSwitchItem(l10n.showGroupMemberNames, !conversationViewModel.isHiddenConversationMemberName, (enable) {
-        conversationViewModel.setHideGroupMemberName(conversationInfo.conversation.target, !enable);
-      }),
+      Container(
+        color: context.colors.surface,
+        child: Column(
+          children: [
+            OptionItem(l10n.myAliasInGroupLabel, desc: groupMember.alias, onTap: () {
+              _showEditDialog(context, l10n.modifyGroupAliasDialog, groupMember.alias ?? '', (value) {
+                Imclient.modifyGroupAlias(conversation.target, value, () {}, (errorCode) {
+                  Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
+                });
+              });
+            }),
+            OptionSwitchItem(l10n.showGroupMemberNames, !conversationViewModel.isHiddenConversationMemberName, showBottomDivider: false, (enable) {
+              conversationViewModel.setHideGroupMemberName(conversationInfo.conversation.target, !enable);
+            }),
+          ],
+        ),
+      ),
       const SectionDivider(),
-      OptionButtonItem(l10n.clearChatHistory, () {
-        _showClearMessageDialog(context, conversation);
-      }),
-      groupMember.type == GroupMemberType.Owner ? OptionButtonItem(l10n.transferGroup, () {
-        _onTransferGroup(context);
-      }) : Container(),
-      groupMember.type == GroupMemberType.Owner ? OptionButtonItem(l10n.dismissGroup, () {
-        _showDismissGroupConfirmDialog(context);
-      }) : Container(),
-      groupMember.type != GroupMemberType.Owner ? OptionButtonItem(l10n.quitGroupChat, () {
-        _showQuitGroupConfirmDialog(context);
-      }) : Container(),
+      Container(
+        color: context.colors.surface,
+        child: Column(
+          children: [
+            OptionButtonItem(l10n.clearChatHistory, () {
+              _showClearMessageDialog(context, conversation);
+            }, showBottomDivider: true),
+            if (groupMember.type == GroupMemberType.Owner) ...[
+              OptionButtonItem(l10n.transferGroup, () {
+                _onTransferGroup(context);
+              }, showBottomDivider: true),
+              OptionButtonItem(l10n.dismissGroup, () {
+                _showDismissGroupConfirmDialog(context);
+              }, showBottomDivider: false),
+            ] else ...[
+              OptionButtonItem(l10n.quitGroupChat, () {
+                _showQuitGroupConfirmDialog(context);
+              }, showBottomDivider: false),
+            ],
+          ],
+        ),
+      ),
       const SectionDivider(),
     ]));
   }

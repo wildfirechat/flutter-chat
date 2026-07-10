@@ -1,17 +1,11 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 
-import 'package:chat/theme/app_colors.dart';
-
-/// 分组列表之间的段间凹槽(18px 横带)。
+/// 分组列表之间的段间空隙(18px 占位，透明露出底层背景色)。
 class SectionDivider extends StatelessWidget {
   const SectionDivider({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 18,
-      width: View.of(context).physicalSize.width,
-      color: context.colors.sectionGap,
-    );
+    return const SizedBox(height: 18);
   }
 }

@@ -327,7 +327,18 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                     children: <Widget>[
                       badge.Badge(
                         showBadge: conversationInfo.unreadCount.unread > 0,
-                        badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
+                        badgeContent: Text(
+                          conversationInfo.isSilent
+                              ? ''
+                              : (conversationInfo.unreadCount.unread > 99
+                                  ? '99+'
+                                  : '${conversationInfo.unreadCount.unread}'),
+                          style: TextStyle(color: Colors.white, fontSize: isDesktopShell ? 12 : 10),
+                        ),
+                        badgeStyle: badge.BadgeStyle(
+                          badgeColor: context.colors.badge,
+                          padding: isDesktopShell ? const EdgeInsets.all(5) : const EdgeInsets.all(4),
+                        ),
                         child: _buildPortraitImage(conversationInfo.conversation, value.$1, value.$2, value.$3),
                       ),
                       Expanded(

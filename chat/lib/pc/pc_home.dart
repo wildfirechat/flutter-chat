@@ -1144,10 +1144,10 @@ class _SideBarTab extends StatelessWidget {
                   ? null
                   : Text(
                       badgeCount > 99 ? '99+' : '$badgeCount',
-                      style: TextStyle(color: colors.onAccent, fontSize: 9),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
                     ),
               badgeStyle: badge.BadgeStyle(
-                  badgeColor: colors.badge, padding: const EdgeInsets.all(4)),
+                  badgeColor: colors.badge, padding: const EdgeInsets.all(5)),
               child: icon,
             );
           }

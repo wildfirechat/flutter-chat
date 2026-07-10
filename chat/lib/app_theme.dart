@@ -90,7 +90,28 @@ class AppTheme {
   static ThemeData _withColors(ThemeData base, AppColors colors) => base.copyWith(
         extensions: <ThemeExtension<dynamic>>[colors],
         checkboxTheme: checkboxTheme(colors, base.brightness),
+        switchTheme: switchTheme(colors, base.brightness),
       );
+
+  /// 开关(Switch)的主题:收紧点击区域,选中品牌蓝。
+  static SwitchThemeData switchTheme(AppColors colors, Brightness brightness) {
+    return SwitchThemeData(
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return colors.onAccent;
+        }
+        return null;
+      }),
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return colors.accent;
+        }
+        return null;
+      }),
+    );
+  }
 
   /// 圆形勾选框(微信风格):选中品牌蓝,禁用置灰。
   /// 选人、多选消息等场景全端统一观感;挂在全局 ThemeData 与 PcTheme 上。

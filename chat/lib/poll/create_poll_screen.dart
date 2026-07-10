@@ -479,9 +479,12 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
             title,
             style: const TextStyle(fontSize: 16),
           ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
+          Transform.scale(
+            scale: 0.6,
+            child: Switch(
+              value: value,
+              onChanged: onChanged,
+            ),
           ),
         ],
       ),

@@ -23,6 +23,8 @@ import 'conversation_files_screen.dart';
 import 'conversation_links_screen.dart';
 import 'package:chat/app_navigator.dart';
 
+import 'package:chat/theme/app_colors.dart';
+
 class SingleConversationInfoScreen extends StatelessWidget {
   const SingleConversationInfoScreen(this.conversation, {super.key});
 
@@ -33,6 +35,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
     return Selector<UserViewModel, UserInfo?>(
         builder: (context, userInfo, child) {
           return Scaffold(
+            backgroundColor: context.colors.primaryBackground,
             appBar: isDesktopShell
                 ? null
                 : AppBar(
@@ -54,49 +57,69 @@ class SingleConversationInfoScreen extends StatelessWidget {
         child: Column(children: [
       if (isDesktopShell) const SizedBox(height: 12.0),
       userInfo != null
-          ? SingleConversationMemberView(
-              conversation,
-              userInfo,
-              onUserTap: (userInfo, anchor) {
-                // 桌面端点成员弹用户信息卡片(与会话内点头像一致),移动端仍整页打开
-                if (isDesktopShell) {
-                  showPcUserCard(context: context, anchor: anchor, userId: userInfo.userId);
-                } else {
-                  openPage(context, UserInfoWidget(userInfo.userId));
-                }
-              },
-              onAddActionTap: () {
-                _onAddNewConversationMember(context);
-              },
+          ? Container(
+              color: context.colors.surface,
+              child: SingleConversationMemberView(
+                conversation,
+                userInfo,
+                onUserTap: (userInfo, anchor) {
+                  // 桌面端点成员弹用户信息卡片(与会话内点头像一致),移动端仍整页打开
+                  if (isDesktopShell) {
+                    showPcUserCard(context: context, anchor: anchor, userId: userInfo.userId);
+                  } else {
+                    openPage(context, UserInfoWidget(userInfo.userId));
+                  }
+                },
+                onAddActionTap: () {
+                  _onAddNewConversationMember(context);
+                },
+              ),
             )
           : Container(),
       const SectionDivider(),
-      OptionItem(l10n.searchChatContents, onTap: () {
-        pushPage(
-          context,
-          SearchConversationResultView(
-            conversation: conversation,
-            keyword: '',
-          ),
-        );
-      }),
-      OptionItem(l10n.chatFiles, onTap: () {
-        pushPage(context, ConversationFilesScreen(conversation));
-      }),
-      OptionItem(l10n.chatLinks, onTap: () {
-        openPage(context, ConversationLinksScreen(conversation));
-      }),
+      Container(
+        color: context.colors.surface,
+        child: Column(
+          children: [
+            OptionItem(l10n.searchChatContents, onTap: () {
+              pushPage(
+                context,
+                SearchConversationResultView(
+                  conversation: conversation,
+                  keyword: '',
+                ),
+              );
+            }),
+            OptionItem(l10n.chatFiles, onTap: () {
+              pushPage(context, ConversationFilesScreen(conversation));
+            }),
+            OptionItem(l10n.chatLinks, showBottomDivider: false, onTap: () {
+              openPage(context, ConversationLinksScreen(conversation));
+            }),
+          ],
+        ),
+      ),
       const SectionDivider(),
-      OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
-        conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
-      }),
-      OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0, (enable) {
-        conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
-      }),
+      Container(
+        color: context.colors.surface,
+        child: Column(
+          children: [
+            OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
+              conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
+            }),
+            OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0, showBottomDivider: false, (enable) {
+              conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
+            }),
+          ],
+        ),
+      ),
       const SectionDivider(),
-      OptionButtonItem(l10n.clearChatHistory, () {
-        _showClearMessageDialog(context, conversation);
-      }),
+      Container(
+        color: context.colors.surface,
+        child: OptionButtonItem(l10n.clearChatHistory, () {
+          _showClearMessageDialog(context, conversation);
+        }, showBottomDivider: false),
+      ),
       const SectionDivider(),
     ]));
   }

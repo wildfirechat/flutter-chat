@@ -4,7 +4,6 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/settings/file_records_screen.dart';
 import 'package:chat/widget/option_item.dart';
-import 'package:chat/widget/section_divider.dart';
 
 /// PC 中栏使用的文件入口列表。
 ///
@@ -44,22 +43,19 @@ class PcFileRecordsList extends StatelessWidget {
             l10n.allFiles,
             onTap: () => _openList(context, l10n.allFiles, FileListType.all),
           ),
-          const SectionDivider(),
           OptionItem(
             l10n.myFiles,
             onTap: () => _openList(context, l10n.myFiles, FileListType.my),
           ),
-          const SectionDivider(),
           OptionItem(
             l10n.chatFiles,
             onTap: onOpenConversationPicker,
           ),
-          const SectionDivider(),
           OptionItem(
             l10n.userFiles,
+            showBottomDivider: false,
             onTap: onOpenUserPicker,
           ),
-          const SectionDivider(),
         ],
       ),
     );

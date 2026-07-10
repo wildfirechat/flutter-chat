@@ -184,6 +184,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     );
 
     return Scaffold(
+      backgroundColor: context.colors.primaryBackground,
       appBar: isDesktopShell
           ? PcPageHeader(
               title: AppLocalizations.of(context)!.userInfo,
@@ -209,49 +210,86 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                 return SingleChildScrollView(
                   child: Column(
                     children: [
-                      _buildHeader(context, userInfo, isFriend),
+                      Container(
+                        color: context.colors.surface,
+                        child: _buildHeader(context, userInfo, isFriend),
+                      ),
                       if (!_loadingOrg && _bottomRelationships.isNotEmpty) ...[
                         const SectionDivider(),
-                        _buildOrganizationSection(),
+                        Container(
+                          color: context.colors.surface,
+                          child: _buildOrganizationSection(),
+                        ),
                       ],
                       if (isMe) ...[
-                        OptionItem(AppLocalizations.of(context)!.modifyAlias, onTap: () {
-                          _showSetDisplayNameDialog(context, userInfo);
-                        }),
                         const SectionDivider(),
-                        OptionItem(AppLocalizations.of(context)!.moreInfo, onTap: () {
-                          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                        }),
+                        Container(
+                          color: context.colors.surface,
+                          child: Column(
+                            children: [
+                              OptionItem(AppLocalizations.of(context)!.modifyAlias, onTap: () {
+                                _showSetDisplayNameDialog(context, userInfo);
+                              }),
+                              OptionItem(AppLocalizations.of(context)!.moreInfo, showBottomDivider: false, onTap: () {
+                                Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                              }),
+                            ],
+                          ),
+                        ),
                         const SectionDivider(),
-                        OptionButtonItem(AppLocalizations.of(context)!.sendMsg, () {
-                          _openSingleConversation(context);
-                        }),
+                        Container(
+                          color: context.colors.surface,
+                          child: OptionButtonItem(AppLocalizations.of(context)!.sendMsg, () {
+                            _openSingleConversation(context);
+                          }, showBottomDivider: false),
+                        ),
                       ] else if (isFriend) ...[
-                        OptionItem(AppLocalizations.of(context)!.setAlias, onTap: () {
-                          _showSetAliasDialog(context, userInfo);
-                        }),
                         const SectionDivider(),
-                        OptionItem(AppLocalizations.of(context)!.moreInfo, onTap: () {
-                          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                        }),
+                        Container(
+                          color: context.colors.surface,
+                          child: Column(
+                            children: [
+                              OptionItem(AppLocalizations.of(context)!.setAlias, onTap: () {
+                                _showSetAliasDialog(context, userInfo);
+                              }),
+                              OptionItem(AppLocalizations.of(context)!.moreInfo, showBottomDivider: false, onTap: () {
+                                Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                              }),
+                            ],
+                          ),
+                        ),
                         const SectionDivider(),
-                        OptionButtonItem(AppLocalizations.of(context)!.sendMsg, () {
-                          _openSingleConversation(context);
-                        }),
-                        OptionButtonItem('视频聊天', () {
-                          // SingleVideoCallView callView = SingleVideoCallView(userId: userId, audioOnly: false);
-                          // Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
-                        }),
+                        Container(
+                          color: context.colors.surface,
+                          child: Column(
+                            children: [
+                              OptionButtonItem(AppLocalizations.of(context)!.sendMsg, () {
+                                _openSingleConversation(context);
+                              }, showBottomDivider: true),
+                              OptionButtonItem('视频聊天', () {
+                                // SingleVideoCallView callView = SingleVideoCallView(userId: userId, audioOnly: false);
+                                // Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
+                              }, showBottomDivider: false),
+                            ],
+                          ),
+                        ),
                       ] else ...[
                         const SectionDivider(),
-                        OptionItem(AppLocalizations.of(context)!.moreInfo, onTap: () {
-                          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                        }),
+                        Container(
+                          color: context.colors.surface,
+                          child: OptionItem(AppLocalizations.of(context)!.moreInfo, showBottomDivider: false, onTap: () {
+                            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                          }),
+                        ),
                         const SectionDivider(),
-                        OptionButtonItem(AppLocalizations.of(context)!.addFriend, () {
-                          _openInviteFriendPage(context);
-                        }),
-                      ]
+                        Container(
+                          color: context.colors.surface,
+                          child: OptionButtonItem(AppLocalizations.of(context)!.addFriend, () {
+                            _openInviteFriendPage(context);
+                          }, showBottomDivider: false),
+                        ),
+                      ],
+                      const SectionDivider(),
                     ],
                   ),
                 );
@@ -266,11 +304,14 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   Widget _buildOrganizationSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: _bottomRelationships.map((rel) {
+      children: _bottomRelationships.asMap().entries.map((entry) {
+        final index = entry.key;
+        final rel = entry.value;
         final org = _bottomOrganizations[rel.organizationId];
         final title = org?.name ?? '部门 ${rel.organizationId}';
         return OptionItem(
           title,
+          showBottomDivider: index < _bottomRelationships.length - 1,
           onTap: () => _openOrganization(rel.organizationId),
         );
       }).toList(),

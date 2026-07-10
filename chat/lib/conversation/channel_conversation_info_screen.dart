@@ -20,6 +20,7 @@ import '../pc/pc_platform.dart';
 import '../search/search_conversation_result_view.dart';
 import '../utils/media_url_redirector.dart';
 import 'conversation_files_screen.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class ChannelConversationInfoScreen extends StatelessWidget {
   const ChannelConversationInfoScreen(this.conversation, {super.key});
@@ -31,6 +32,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
     return Selector<ChannelViewModel, ChannelInfo?>(
         builder: (context, channelInfo, child) {
           return Scaffold(
+            backgroundColor: context.colors.primaryBackground,
             appBar: isDesktopShell
                 ? null
                 : AppBar(
@@ -53,46 +55,76 @@ class ChannelConversationInfoScreen extends StatelessWidget {
         child: Column(children: [
       if (isDesktopShell) const SizedBox(height: 12.0),
       channelInfo != null
-          ? Column(
-              children: [
-                CachedNetworkImage(
-                  imageUrl: MediaUrlRedirector.redirect(channelInfo.portrait!),
-                  width: 80,
-                  height: 80,
-                ),
-                Container(margin: const EdgeInsets.only(top: 10.0, bottom: 10), child: Text(channelInfo.name!))
-              ],
+          ? Container(
+              color: context.colors.surface,
+              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              width: double.infinity,
+              child: Column(
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: MediaUrlRedirector.redirect(channelInfo.portrait!),
+                    width: 80,
+                    height: 80,
+                  ),
+                  Container(margin: const EdgeInsets.only(top: 10.0, bottom: 10), child: Text(channelInfo.name!))
+                ],
+              ),
             )
-          : const Center(
-              child: CircularProgressIndicator(),
+          : Container(
+              color: context.colors.surface,
+              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
             ),
       const SectionDivider(),
-      OptionItem(l10n.searchChatContents, onTap: () {
-        pushPage(
-          context,
-          SearchConversationResultView(
-            conversation: conversation,
-            keyword: '',
-          ),
-        );
-      }),
-      OptionItem(l10n.chatFiles, onTap: () {
-        pushPage(context, ConversationFilesScreen(conversation));
-      }),
+      Container(
+        color: context.colors.surface,
+        child: Column(
+          children: [
+            OptionItem(l10n.searchChatContents, onTap: () {
+              pushPage(
+                context,
+                SearchConversationResultView(
+                  conversation: conversation,
+                  keyword: '',
+                ),
+              );
+            }),
+            OptionItem(l10n.chatFiles, showBottomDivider: false, onTap: () {
+              pushPage(context, ConversationFilesScreen(conversation));
+            }),
+          ],
+        ),
+      ),
       const SectionDivider(),
-      OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
-        conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
-      }),
-      OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0, (enable) {
-        conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
-      }),
+      Container(
+        color: context.colors.surface,
+        child: Column(
+          children: [
+            OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
+              conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
+            }),
+            OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0, showBottomDivider: false, (enable) {
+              conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
+            }),
+          ],
+        ),
+      ),
       const SectionDivider(),
-      OptionButtonItem(l10n.clearChatHistory, () {
-        _showClearMessageDialog(context, conversation);
-      }),
-      OptionButtonItem(l10n.unsubscribeChannel, () {
-        _showUnsubscribeChannelConfirmDialog(context);
-      }),
+      Container(
+        color: context.colors.surface,
+        child: Column(
+          children: [
+            OptionButtonItem(l10n.clearChatHistory, () {
+              _showClearMessageDialog(context, conversation);
+            }, showBottomDivider: true),
+            OptionButtonItem(l10n.unsubscribeChannel, () {
+              _showUnsubscribeChannelConfirmDialog(context);
+            }, showBottomDivider: false),
+          ],
+        ),
+      ),
       const SectionDivider(),
     ]));
   }

@@ -315,7 +315,7 @@ class HomeTabBarState extends State<HomeTabBar> {
               count > 99 ? '99+' : '$count',
               style: const TextStyle(color: Colors.white, fontSize: 10),
             ),
-      badgeStyle: const badge.BadgeStyle(badgeColor: Colors.red),
+      badgeStyle: badge.BadgeStyle(badgeColor: context.colors.badge, padding: const EdgeInsets.all(4)),
       child: child,
     );
   }

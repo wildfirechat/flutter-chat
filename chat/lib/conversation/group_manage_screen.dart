@@ -18,6 +18,8 @@ import '../pc/widgets/pc_page_header.dart';
 import 'group_manager_screen.dart';
 import 'group_mute_screen.dart';
 
+import 'package:chat/theme/app_colors.dart';
+
 class GroupManageScreen extends StatefulWidget {
   final GroupInfo groupInfo;
 
@@ -81,6 +83,7 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
+      backgroundColor: context.colors.primaryBackground,
       appBar: isDesktopShell
           ? PcPageHeader(
               title: '群管理',
@@ -92,69 +95,91 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            const SizedBox(height: 10),
             // Section 0: 成员管理
-            if (_isOwner)
-              OptionItem(l10n.managerSetting, onTap: () {
-                openPage(context, GroupManagerScreen(groupInfo: _groupInfo));
-              }),
-            OptionItem(l10n.muteSetting, onTap: () {
-              openPage(context, GroupMuteScreen(groupInfo: _groupInfo));
-            }),
-            OptionSwitchItem(l10n.allowTemporarySession, _groupInfo.privateChat == 0, (value) {
-              Imclient.modifyGroupInfo(
-                _groupInfo.target,
-                ModifyGroupInfoType.Modify_Group_PrivateChat,
-                value ? "0" : "1",
-                () {
-                  setState(() {
-                    _groupInfo.privateChat = value ? 0 : 1;
-                  });
-                },
-                (errorCode) {
-                  Fluttertoast.showToast(msg: '${l10n.setFail}$errorCode');
-                },
-              );
-            }),
+            Container(
+              color: context.colors.surface,
+              child: Column(
+                children: [
+                  if (_isOwner)
+                    OptionItem(l10n.managerSetting, onTap: () {
+                      openPage(context, GroupManagerScreen(groupInfo: _groupInfo));
+                    }),
+                  OptionItem(l10n.muteSetting, onTap: () {
+                    openPage(context, GroupMuteScreen(groupInfo: _groupInfo));
+                  }),
+                  OptionSwitchItem(l10n.allowTemporarySession, _groupInfo.privateChat == 0, showBottomDivider: false, (value) {
+                    Imclient.modifyGroupInfo(
+                      _groupInfo.target,
+                      ModifyGroupInfoType.Modify_Group_PrivateChat,
+                      value ? "0" : "1",
+                      () {
+                        setState(() {
+                          _groupInfo.privateChat = value ? 0 : 1;
+                        });
+                      },
+                      (errorCode) {
+                        Fluttertoast.showToast(msg: '${l10n.setFail}$errorCode');
+                      },
+                    );
+                  }),
+                ],
+              ),
+            ),
             const SectionDivider(),
             // Section 1: 群通用设置
-            OptionItem(
-              l10n.joinGroupPermission,
-              desc: _joinTypeDesc(context),
-              onTap: _showJoinTypePicker,
+            Container(
+              color: context.colors.surface,
+              child: Column(
+                children: [
+                  OptionItem(
+                    l10n.joinGroupPermission,
+                    desc: _joinTypeDesc(context),
+                    onTap: _showJoinTypePicker,
+                  ),
+                  OptionItem(
+                    l10n.groupVisible,
+                    desc: _groupInfo.searchable == 0 ? l10n.searchable : l10n.notSearchable,
+                    showBottomDivider: _isCommercialServer == true,
+                    onTap: _showSearchablePicker,
+                  ),
+                  if (_isCommercialServer == true) ...[
+                    OptionSwitchItem(l10n.groupHistoryMessage, _groupInfo.historyMessage == 1, (value) {
+                      Imclient.modifyGroupInfo(
+                        _groupInfo.target,
+                        ModifyGroupInfoType.Modify_Group_History_Message,
+                        value ? "1" : "0",
+                        () {
+                          setState(() {
+                            _groupInfo.historyMessage = value ? 1 : 0;
+                          });
+                        },
+                        (errorCode) {
+                          Fluttertoast.showToast(msg: '${l10n.setFail}$errorCode');
+                        },
+                      );
+                    }),
+                    OptionItem(
+                      l10n.groupMaxMember,
+                      desc: _groupInfo.maxMemberCount > 0 ? _groupInfo.maxMemberCount.toString() : '',
+                      showRightArrow: false,
+                      showBottomDivider: false,
+                    ),
+                  ],
+                ],
+              ),
             ),
-            OptionItem(
-              l10n.groupVisible,
-              desc: _groupInfo.searchable == 0 ? l10n.searchable : l10n.notSearchable,
-              onTap: _showSearchablePicker,
-            ),
-            if (_isCommercialServer == true) ...[
-              OptionSwitchItem(l10n.groupHistoryMessage, _groupInfo.historyMessage == 1, (value) {
-                Imclient.modifyGroupInfo(
-                  _groupInfo.target,
-                  ModifyGroupInfoType.Modify_Group_History_Message,
-                  value ? "1" : "0",
-                  () {
-                    setState(() {
-                      _groupInfo.historyMessage = value ? 1 : 0;
-                    });
-                  },
-                  (errorCode) {
-                    Fluttertoast.showToast(msg: '${l10n.setFail}$errorCode');
-                  },
-                );
-              }),
-              OptionItem(
-                l10n.groupMaxMember,
-                desc: _groupInfo.maxMemberCount > 0 ? _groupInfo.maxMemberCount.toString() : '',
-                showRightArrow: false,
+            // Section 2: 入群申请
+            if (_isOwner && _groupInfo.type == GroupType.Restricted && _groupInfo.joinType == 3) ...[
+              const SectionDivider(),
+              Container(
+                color: context.colors.surface,
+                child: OptionItem(l10n.joinGroupRequests, showBottomDivider: false, onTap: () {
+                  openPage(context, JoinGroupRequestScreen(groupId: _groupInfo.target));
+                }),
               ),
             ],
             const SectionDivider(),
-            // Section 2: 入群申请
-            if (_isOwner && _groupInfo.type == GroupType.Restricted && _groupInfo.joinType == 3)
-              OptionItem(l10n.joinGroupRequests, onTap: () {
-                openPage(context, JoinGroupRequestScreen(groupId: _groupInfo.target));
-              }),
           ],
         ),
       ),

@@ -849,10 +849,12 @@ class _SettingsSwitchRow extends StatelessWidget {
               ],
             ),
           ),
-          Switch(
-            value: value,
-            activeColor: context.colors.accent,
-            onChanged: onChanged,
+          Transform.scale(
+            scale: 0.6,
+            child: Switch(
+              value: value,
+              onChanged: onChanged,
+            ),
           ),
         ],
       ),

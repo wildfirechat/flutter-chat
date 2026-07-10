@@ -3,7 +3,6 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/pc/pc_favorite_list_widget.dart';
 import 'package:chat/widget/option_item.dart';
-import 'package:chat/widget/section_divider.dart';
 
 /// PC 中栏使用的收藏分类入口列表。
 ///
@@ -27,25 +26,22 @@ class PcFavoriteCategoriesList extends StatelessWidget {
             leftIcon: Icons.cloud_outlined,
             onTap: () => onOpenFavoriteList(FavoriteCategory.all),
           ),
-          const SectionDivider(),
           OptionItem(
             l10n.favoritesFile,
             leftIcon: Icons.insert_drive_file_outlined,
             onTap: () => onOpenFavoriteList(FavoriteCategory.file),
           ),
-          const SectionDivider(),
           OptionItem(
             l10n.favoritesMedia,
             leftIcon: Icons.image_outlined,
             onTap: () => onOpenFavoriteList(FavoriteCategory.media),
           ),
-          const SectionDivider(),
           OptionItem(
             l10n.favoritesComposite,
             leftIcon: Icons.chat_bubble_outline_rounded,
+            showBottomDivider: false,
             onTap: () => onOpenFavoriteList(FavoriteCategory.composite),
           ),
-          const SectionDivider(),
         ],
       ),
     );

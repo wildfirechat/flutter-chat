@@ -107,35 +107,40 @@ class _EmojiBoardState extends State<EmojiBoard> {
             return Positioned(
               left: data.position!.dx - previewWidth / 2,
               top: data.position!.dy - (previewHeight + arrowHeight + 32 * fontScale),
-              child: Material(
-                color: Colors.transparent,
-                child: Column(
-                  children: [
-                    Container(
-                      width: previewWidth,
-                      height: previewHeight,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: context.colors.popupBg,
-                        borderRadius: BorderRadius.circular(8 * fontScale),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 4 * fontScale,
-                            offset: Offset(0, 2 * fontScale),
-                          )
-                        ],
+              child: MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.noScaling,
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: previewWidth,
+                        height: previewHeight,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: context.colors.popupBg,
+                          borderRadius: BorderRadius.circular(8 * fontScale),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4 * fontScale,
+                              offset: Offset(0, 2 * fontScale),
+                            )
+                          ],
+                        ),
+                        child: AnimatedEmojiWidget(
+                          emoji: data.emoji!,
+                          size: 36 * fontScale,
+                        ),
                       ),
-                      child: AnimatedEmojiWidget(
-                        emoji: data.emoji!,
-                        size: 36 * fontScale,
+                      CustomPaint(
+                        size: Size(arrowWidth, arrowHeight),
+                        painter: _TrianglePainter(context.colors.popupBg),
                       ),
-                    ),
-                    CustomPaint(
-                      size: Size(arrowWidth, arrowHeight),
-                      painter: _TrianglePainter(context.colors.popupBg),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );

@@ -139,7 +139,9 @@ class MessageNotificationSettingItemState extends State<MessageNotificationSetti
             Text(widget.settingName),
             Expanded(child: Container()),
             (widget.settingKey == 'no_disturb' && startTime != endTime) ? Text(NotificationSettings.formatNoDisturbTime(startTime, endTime)):Container(),
-            Switch(value: isEnabled, onChanged: (enable) {
+            Transform.scale(
+              scale: 0.6,
+              child: Switch(value: isEnabled, onChanged: (enable) {
               final l10n = AppLocalizations.of(context)!;
               setState(() {
                 isEnabled = enable;
@@ -172,9 +174,9 @@ class MessageNotificationSettingItemState extends State<MessageNotificationSetti
                   Fluttertoast.showToast(msg: l10n.networkError);
                   loadData();
                 });
-              }
-            })
-          ],
+               }
+             })),
+           ],
         ),
         Container(
           margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),

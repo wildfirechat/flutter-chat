@@ -278,7 +278,14 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                   key == 'new_friend'
                       ? badge.Badge(
                           showBadge: unreadFriendRequestCount > 0,
-                          badgeContent: Text('$unreadFriendRequestCount'),
+                          badgeContent: Text(
+                            unreadFriendRequestCount > 99 ? '99+' : '$unreadFriendRequestCount',
+                            style: TextStyle(color: Colors.white, fontSize: isDesktopShell ? 12 : 10),
+                          ),
+                          badgeStyle: badge.BadgeStyle(
+                            badgeColor: context.colors.badge,
+                            padding: isDesktopShell ? const EdgeInsets.all(5) : const EdgeInsets.all(4),
+                          ),
                           // TODO: Replace 'assets/images/contact_organization.png' with an actual asset if it doesn't exist
                           child: Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)))
                       : Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)),
