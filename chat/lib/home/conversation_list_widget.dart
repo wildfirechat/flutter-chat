@@ -270,8 +270,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     return RepaintBoundary(child: _buildCell(context, false));
   }
 
-  /// 桌面端:透明底衬在中栏灰面上,hover/选中分别加深;置顶会话微微提亮。
-  /// 移动端:列表铺在 surface 上,没有 hover,置顶同样提亮一档。
+  /// 桌面端:透明底衬在中栏灰面上,hover/选中分别加深;置顶会话微微加深。
+  /// 移动端:列表铺在 surface 上,没有 hover,置顶同样加深一档。
   ///
   /// 移动端原先用 CupertinoColors.systemBackground —— 那是 CupertinoDynamicColor,
   /// 不经 resolve 直接当 Color 用只会拿到浅色变体,暗色下会一直是白底。
@@ -413,7 +413,14 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
               ),
               // 桌面端参照微信 PC 不加分隔线,由背景色区分;保留高度以维持 itemExtent
               Container(
-                margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+                margin: EdgeInsets.fromLTRB(
+                  isDesktopShell
+                      ? 12.0
+                      : 15.0 + LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap) + 15.0,
+                  0.0,
+                  12.0,
+                  0.0,
+                ),
                 height: _kDividerHeight,
                 color: isDesktopShell ? Colors.transparent : context.colors.hairlineSoft,
               ),

@@ -17,10 +17,40 @@ class AppTheme {
 
   static ThemeData dark() => _dark;
 
-  /// 浅色主题。刻意保留 `primarySwatch: Colors.blue` 的推导方式,也刻意不去改
-  /// divider/文本选区等 Material 默认值:移动端一大片控件的默认色都从这里来,
-  /// 动一处就会在浅色下引发大范围回归。引入暗黑模式只是「加一套暗色」。
-  static ThemeData _buildLight() => _withColors(ThemeData(primarySwatch: Colors.blue), AppColors.light);
+  /// 浅色主题。把关键槽位钉到 [AppColors.light] 的蓝色与中性白灰,
+  /// 参考 PC 端配色方案优化,避免 Material 3 默认的蓝紫色调。
+  static ThemeData _buildLight() {
+    const colors = AppColors.light;
+    final base = ThemeData(
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: colors.accent,
+        brightness: Brightness.light,
+      ).copyWith(
+        primary: colors.accent,
+        onPrimary: colors.onAccent,
+        surface: colors.surface,
+        onSurface: colors.textPrimary,
+        error: colors.danger,
+      ),
+    );
+    return _withColors(base, colors).copyWith(
+      scaffoldBackgroundColor: colors.surface,
+      canvasColor: colors.surface,
+      appBarTheme: base.appBarTheme.copyWith(
+        backgroundColor: colors.surface,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: colors.textPrimary,
+        systemOverlayStyle: systemOverlayStyle(Brightness.light),
+      ),
+      dividerTheme: base.dividerTheme.copyWith(color: colors.hairlineSoft),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: colors.accent,
+        selectionColor: colors.accent.withValues(alpha: 0.35),
+        selectionHandleColor: colors.accent,
+      ),
+    );
+  }
 
   /// 暗色主题。Material 的暗色默认值带蓝紫色调(surface tint),这里把关键槽位
   /// 全部钉到 [AppColors.dark] 的中性灰,与 vue-pc-chat 的面板色一致。

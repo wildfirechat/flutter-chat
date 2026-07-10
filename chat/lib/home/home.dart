@@ -357,26 +357,37 @@ class HomeTabBarState extends State<HomeTabBar> {
               backgroundColor: context.colors.surface,
               activeColor: context.colors.accent,
               inactiveColor: context.colors.textSecondary,
+              height: 58.0,
+              border: Border(
+                top: BorderSide(
+                  color: context.colors.hairlineSoft,
+                  width: 0.0,
+                ),
+              ),
               items: List.generate(appBarTitles.length, (index) {
+                Widget iconWidget;
                 if (index == 0) {
-                  return BottomNavigationBarItem(
-                      icon: Selector<ConversationListViewModel, int>(
-                        selector: (_, model) => model.unreadMessageCount,
-                        builder: (context, unreadCount, child) =>
-                            _buildBadge(unreadCount, getTabIcon(0)),
-                      ),
-                      label: getTabTitle(0));
+                  iconWidget = Selector<ConversationListViewModel, int>(
+                    selector: (_, model) => model.unreadMessageCount,
+                    builder: (context, unreadCount, child) =>
+                        _buildBadge(unreadCount, getTabIcon(0)),
+                  );
                 } else if (index == 1) {
-                  return BottomNavigationBarItem(
-                      icon: Selector<ContactListViewModel, int>(
-                        selector: (_, model) => model.unreadFriendRequestCount,
-                        builder: (context, unreadFriendRequestCount, child) =>
-                            _buildBadge(unreadFriendRequestCount > 0 ? -1 : 0, getTabIcon(1)),
-                      ),
-                      label: getTabTitle(1));
+                  iconWidget = Selector<ContactListViewModel, int>(
+                    selector: (_, model) => model.unreadFriendRequestCount,
+                    builder: (context, unreadFriendRequestCount, child) =>
+                        _buildBadge(unreadFriendRequestCount > 0 ? -1 : 0, getTabIcon(1)),
+                  );
                 } else {
-                  return BottomNavigationBarItem(icon: getTabIcon(index), label: getTabTitle(index));
+                  iconWidget = getTabIcon(index);
                 }
+                return BottomNavigationBarItem(
+                  icon: Padding(
+                    padding: const EdgeInsets.only(top: 5.0),
+                    child: iconWidget,
+                  ),
+                  label: getTabTitle(index),
+                );
               }),
               currentIndex: _tabIndex,
               onTap: (index) {

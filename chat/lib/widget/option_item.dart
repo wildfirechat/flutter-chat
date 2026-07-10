@@ -77,7 +77,14 @@ class OptionItem extends StatelessWidget {
             ),
             showBottomDivider
                 ? Container(
-                    margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+                    margin: EdgeInsets.fromLTRB(
+                      (leftImage != null || leftIcon != null)
+                          ? (15.0 + iconSize + 12.0)
+                          : 15.0,
+                      0.0,
+                      12.0,
+                      0.0,
+                    ),
                     height: 0.5,
                     color: colors.hairline,
                   )

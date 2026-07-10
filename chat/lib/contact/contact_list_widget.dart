@@ -294,7 +294,14 @@ class _ContactListWidgetState extends State<ContactListWidget> {
               ),
             ),
             Container(
-              margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+              margin: EdgeInsets.fromLTRB(
+                isDesktopShell
+                    ? 12.0
+                    : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
+                0.0,
+                12.0,
+                0.0,
+              ),
               height: _kDividerHeight,
               color: context.colors.hairlineSoft,
             ),
@@ -341,7 +348,14 @@ class _ContactListWidgetState extends State<ContactListWidget> {
               ),
             ),
             Container(
-              margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+              margin: EdgeInsets.fromLTRB(
+                isDesktopShell
+                    ? 12.0
+                    : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
+                0.0,
+                12.0,
+                0.0,
+              ),
               height: _kDividerHeight,
               color: context.colors.hairlineSoft,
             ),
@@ -442,7 +456,14 @@ class _ContactListItemState extends State<ContactListItem> {
             ),
           ),
           Container(
-            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+            margin: EdgeInsets.fromLTRB(
+              isDesktopShell
+                  ? 12.0
+                  : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
+              0.0,
+              12.0,
+              0.0,
+            ),
             height: _kDividerHeight,
             color: context.colors.hairlineSoft,
           ),

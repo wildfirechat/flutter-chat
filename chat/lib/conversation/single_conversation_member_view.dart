@@ -9,6 +9,7 @@ import 'package:chat/conversation/conversation_info_member_action_item.dart';
 import 'package:chat/conversation/conversation_info_member_item.dart';
 import 'package:chat/conversation/member_cell_anchor.dart';
 import 'package:chat/viewmodel/group_conversation_info_view_model.dart';
+import 'package:chat/pc/pc_platform.dart';
 
 import '../config.dart';
 
@@ -24,27 +25,33 @@ class SingleConversationMemberView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<UserInfo> userInfos = [userInfo];
-    int columnCount = 5;
+    int columnCount = isDesktopShell ? 4 : 5;
     int memberCount = 2;
     // 头像(iconCap)+ 名字(完整跟随字号),格子高度按行高上限放大才装得下。
     // 在 LayoutBuilder 外取值:builder 在 layout 阶段执行,不适合注册 Provider 依赖。
-    final double cellHeight = LayoutScale.watchScale(context, 76.0, cap: LayoutScale.rowCap);
+    final double cellHeight = LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap);
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        double width = constraints.maxWidth;
-        double cellWidth = width / 5;
+        double horizontalPadding = 16.0;
+        double crossAxisSpacing = 8.0;
+        double mainAxisSpacing = 12.0;
+        double width = constraints.maxWidth - horizontalPadding * 2;
+        double cellWidth = (width - (columnCount - 1) * crossAxisSpacing) / columnCount;
         double childAspectRatio = cellWidth / cellHeight;
 
         return Column(
           children: [
             GridView.builder(
               shrinkWrap: true,
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12.0),
               itemCount: memberCount,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 5,
+                crossAxisCount: columnCount,
                 childAspectRatio: childAspectRatio,
+                crossAxisSpacing: crossAxisSpacing,
+                mainAxisSpacing: mainAxisSpacing,
               ),
               itemBuilder: (context, index) {
                 if (index < userInfos.length) {

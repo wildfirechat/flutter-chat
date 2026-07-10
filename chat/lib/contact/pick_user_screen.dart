@@ -290,7 +290,11 @@ class _PickUserScreenState extends State<PickUserScreen> {
                     ),
                     Container(
                       height: 0.5,
-                      margin: const EdgeInsets.only(left: 16.0),
+                      margin: EdgeInsets.only(
+                        left: isDesktopShell
+                            ? 16.0
+                            : 16.0 + LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap) + 16.0,
+                      ),
                       color: context.colors.hairlineSoft,
                     ),
                   ],
@@ -435,6 +439,13 @@ class SelectableUserItem extends StatelessWidget {
     bool showCategory = contactInfo.showCategory && !pickUserViewModel.isSearching;
     final bool checkable = pickUserViewModel.isCheckable(userInfo.userId);
 
+    final double portraitWidth = LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap);
+    final double leftIndent = isDesktopShell
+        ? 16.0
+        : (maxSelected > 1
+            ? (16.0 + 32.0 + 8.0 + portraitWidth + 12.0)
+            : (16.0 + portraitWidth + 12.0));
+
     Widget content = Material(
       color: context.colors.surface,
       child: InkWell(
@@ -530,7 +541,7 @@ class SelectableUserItem extends StatelessWidget {
           ),
         content,
         Container(
-          margin: const EdgeInsets.only(left: 16.0),
+          margin: EdgeInsets.only(left: leftIndent),
           height: 0.5,
           color: context.colors.hairlineSoft,
         ),

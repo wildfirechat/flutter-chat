@@ -6,12 +6,14 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
+import 'package:chat/theme/app_colors.dart';
+import 'package:chat/pc/pc_platform.dart';
 
 import 'conversation_info_member_action_item.dart';
 import 'conversation_info_member_item.dart';
 import 'member_cell_anchor.dart';
 
-class GroupConversationInfoMembersView extends StatelessWidget {
+class GroupConversationInfoMembersView extends StatefulWidget {
   final Conversation conversation;
 
   final void Function() onAddActionTap;
@@ -23,20 +25,27 @@ class GroupConversationInfoMembersView extends StatelessWidget {
       {required this.onGroupMemberTap, required this.onAddActionTap, required this.onRemoveActionTap, this.onShowMoreGroupMemberTap, super.key});
 
   @override
+  State<GroupConversationInfoMembersView> createState() => _GroupConversationInfoMembersViewState();
+}
+
+class _GroupConversationInfoMembersViewState extends State<GroupConversationInfoMembersView> {
+  bool _isExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
     GroupViewModel groupViewModel = Provider.of<GroupViewModel>(context);
 
     List<UserInfo>? groupMemberUserInfos;
     GroupInfo? groupInfo;
-    groupMemberUserInfos = groupViewModel.getGroupMemberUserInfos(conversation.target);
-    groupInfo = groupViewModel.getGroupInfo(conversation.target);
+    groupMemberUserInfos = groupViewModel.getGroupMemberUserInfos(widget.conversation.target);
+    groupInfo = groupViewModel.getGroupInfo(widget.conversation.target);
     if (groupInfo == null || groupMemberUserInfos == null) {
       return Container();
     }
 
     List<UserInfo> showGroupMemberUserInfos;
 
-    int columnCount = 5;
+    int columnCount = isDesktopShell ? 4 : 5;
     int showLines = 4;
     bool hasMore = false;
 
@@ -61,37 +70,45 @@ class GroupConversationInfoMembersView extends StatelessWidget {
     memberCount += moreItemCount;
 
     if (memberCount > columnCount * showLines) {
-      showGroupMemberUserInfos = groupMemberUserInfos.sublist(0, columnCount * showLines - moreItemCount);
-      memberCount = columnCount * showLines;
       hasMore = true;
+      if (!_isExpanded) {
+        showGroupMemberUserInfos = groupMemberUserInfos.sublist(0, columnCount * showLines - moreItemCount);
+        memberCount = columnCount * showLines;
+      }
     }
 
     // 头像(iconCap)+ 名字(完整跟随字号),格子高度按行高上限放大才装得下。
     // 在 LayoutBuilder 外取值:builder 在 layout 阶段执行,不适合注册 Provider 依赖。
-    final double cellHeight = LayoutScale.watchScale(context, 76.0, cap: LayoutScale.rowCap);
+    final double cellHeight = LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap);
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        double width = constraints.maxWidth;
-        double cellWidth = width / 5;
+        double horizontalPadding = 16.0;
+        double crossAxisSpacing = 8.0;
+        double mainAxisSpacing = 12.0;
+        double width = constraints.maxWidth - horizontalPadding * 2;
+        double cellWidth = (width - (columnCount - 1) * crossAxisSpacing) / columnCount;
         double childAspectRatio = cellWidth / cellHeight;
 
         return Column(
           children: [
             GridView.builder(
               shrinkWrap: true,
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12.0),
               itemCount: memberCount,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 5,
+                crossAxisCount: columnCount,
                 childAspectRatio: childAspectRatio,
+                crossAxisSpacing: crossAxisSpacing,
+                mainAxisSpacing: mainAxisSpacing,
               ),
               itemBuilder: (context, index) {
                 if (index < showGroupMemberUserInfos.length) {
                   final memberInfo = showGroupMemberUserInfos[index];
                   return Builder(
                     builder: (itemContext) => GestureDetector(
-                      onTap: () => onGroupMemberTap(memberInfo, memberCellAnchor(itemContext)),
+                      onTap: () => widget.onGroupMemberTap(memberInfo, memberCellAnchor(itemContext)),
                       child: ConversationInfoMemberItem(memberInfo),
                     ),
                   );
@@ -99,14 +116,14 @@ class GroupConversationInfoMembersView extends StatelessWidget {
                   if (showRemoveAction && index == memberCount - 1) {
                     return GestureDetector(
                       onTap: () {
-                        onRemoveActionTap();
+                        widget.onRemoveActionTap();
                       },
                       child: const ConversationInfoMemberActionItem(false),
                     );
                   } else if (showAddAction) {
                     return GestureDetector(
                       onTap: () {
-                        onAddActionTap();
+                        widget.onAddActionTap();
                       },
                       child: const ConversationInfoMemberActionItem(true),
                     );
@@ -120,9 +137,19 @@ class GroupConversationInfoMembersView extends StatelessWidget {
                 ? Center(
                     child: TextButton(
                       onPressed: () {
-                        onShowMoreGroupMemberTap?.call();
+                        setState(() {
+                          _isExpanded = !_isExpanded;
+                        });
+                        widget.onShowMoreGroupMemberTap?.call();
                       },
-                      child: const Text("查看更多群成员 >"),
+                      child: Text(
+                        _isExpanded ? "收起群成员 <" : "查看更多群成员 >",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.colors.accent,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   )
                 : const Padding(padding: EdgeInsets.only(top: 15)),

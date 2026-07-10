@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 class ConversationInfoMemberActionItem extends StatelessWidget {
   final bool isPlus;
@@ -10,9 +11,11 @@ class ConversationInfoMemberActionItem extends StatelessWidget {
     late Image image;
     image = isPlus ? Image.asset('assets/images/conversation_setting_member_plus.png') : Image.asset('assets/images/conversation_setting_member_minus.png');
 
+    final double dimension = LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap);
+
     return Column(
       children: [
-        SizedBox.square(dimension: 48, child: image),
+        SizedBox.square(dimension: dimension, child: image),
       ],
     );
   }
