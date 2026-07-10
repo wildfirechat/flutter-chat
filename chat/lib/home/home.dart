@@ -288,11 +288,12 @@ class HomeTabBarState extends State<HomeTabBar> {
       children: pages,
       index: _tabIndex,
     );
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        systemNavigationBarColor: Colors.transparent,
+      value: SystemUiOverlayStyle(
+        systemNavigationBarColor: context.colors.cellTop,
         systemNavigationBarDividerColor: Colors.transparent,
-        systemNavigationBarIconBrightness: Brightness.dark,
+        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
         systemNavigationBarContrastEnforced: false,
       ),
       child: Scaffold(
@@ -354,7 +355,7 @@ class HomeTabBarState extends State<HomeTabBar> {
             ),
             body: _body,
             bottomNavigationBar: CupertinoTabBar(
-              backgroundColor: context.colors.surface,
+              backgroundColor: context.colors.cellTop,
               activeColor: context.colors.accent,
               inactiveColor: context.colors.textSecondary,
               height: 58.0,

@@ -38,7 +38,7 @@ class AppTheme {
       scaffoldBackgroundColor: colors.surface,
       canvasColor: colors.surface,
       appBarTheme: base.appBarTheme.copyWith(
-        backgroundColor: colors.surface,
+        backgroundColor: colors.cellTop,
         surfaceTintColor: Colors.transparent,
         foregroundColor: colors.textPrimary,
         systemOverlayStyle: systemOverlayStyle(Brightness.light),
@@ -73,7 +73,7 @@ class AppTheme {
       scaffoldBackgroundColor: colors.surface,
       canvasColor: colors.surface,
       appBarTheme: base.appBarTheme.copyWith(
-        backgroundColor: colors.surface,
+        backgroundColor: colors.cellTop,
         surfaceTintColor: Colors.transparent,
         foregroundColor: colors.textPrimary,
         systemOverlayStyle: systemOverlayStyle(Brightness.dark),
@@ -118,11 +118,12 @@ class AppTheme {
   /// 传入的是「界面」的明暗,图标要取反才看得见。
   static SystemUiOverlayStyle systemOverlayStyle(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
+    final colors = isDark ? AppColors.dark : AppColors.light;
     return SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarColor: colors.cellTop,
       systemNavigationBarDividerColor: Colors.transparent,
       systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       systemNavigationBarContrastEnforced: false,
