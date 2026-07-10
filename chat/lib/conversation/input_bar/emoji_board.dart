@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
+import 'package:chat/widgets/animated_emoji.dart';
 import 'sticker_manager.dart';
 
 typedef OnPickerEmojiCallback = void Function(String emoji);
@@ -125,7 +126,10 @@ class _EmojiBoardState extends State<EmojiBoard> {
                           )
                         ],
                       ),
-                      child: Text(data.emoji!, style: const TextStyle(fontSize: 36)),
+                      child: AnimatedEmojiWidget(
+                        emoji: data.emoji!,
+                        size: 36 * fontScale,
+                      ),
                     ),
                     CustomPaint(
                       size: Size(arrowWidth, arrowHeight),

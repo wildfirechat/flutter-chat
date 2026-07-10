@@ -5,9 +5,14 @@ import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
-import 'package:flutter_linkify/flutter_linkify.dart';
+import 'package:chat/widgets/rich_text_message.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utilities.dart';
+import 'package:characters/characters.dart';
+import 'package:chat/widgets/animated_emoji.dart';
+import 'package:chat/conversation/input_bar/emoji_board.dart';
+import 'package:provider/provider.dart';
+import 'package:chat/viewmodel/conversation_view_model.dart';
 
 import '../../ui_model/ui_message.dart';
 import '../mm_preview_view.dart';
@@ -86,11 +91,16 @@ class TextCellBuilder extends PortraitCellBuilder {
         ],
       );
     } else {
-      // 正文色由 PortraitCellBuilder 的 DefaultTextStyle 提供,这里只补链接色。
-      // 暗色下己方气泡是实心蓝,蓝色链接会糊在底色里,改用气泡正文色 + 下划线表达可点。
+      final text = textMessageContent.text.trim();
+      final charList = text.characters;
+      final bool isSingleEmoji = charList.length == 1 && kChatEmojis.contains(charList.first);
+
+      final conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
+      final messageList = conversationViewModel.conversationMessageList;
+      final bool isLastMessage = messageList.isNotEmpty && messageList.first.message.messageId == model.message.messageId;
+
       final onSolidAccent = isSendMessage && Theme.of(context).brightness == Brightness.dark;
-      child = Linkify(
-        onOpen: (link) => Utilities.openLink(context, link.url),
+      child = RichTextMessageWidget(
         text: textMessageContent.text,
         style: const TextStyle(fontSize: 16),
         linkStyle: TextStyle(
@@ -98,11 +108,12 @@ class TextCellBuilder extends PortraitCellBuilder {
           color: onSolidAccent ? context.colors.bubbleSentText : context.colors.link,
           decoration: TextDecoration.underline,
         ),
-        options: const LinkifyOptions(
-          humanize: false,
-        ),
+        onLinkTap: (url) => Utilities.openLink(context, url),
+        isSingleEmoji: isSingleEmoji && !isDesktopShell,
+        isLastMessage: isLastMessage,
       );
     }
+
     if (isDesktopShell) {
       return LayoutBuilder(
         builder: (context, constraints) => ConstrainedBox(

@@ -109,6 +109,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                 child: GestureDetector(
                   child: Container(
                     key: _bubbleKey,
+                    constraints: const BoxConstraints(minHeight: 44.0),
                     padding:
                         (model.message.content is ImageMessageContent || model.message.content is VideoMessageContent || model.message.content is StickerMessageContent)
                             ? const EdgeInsets.all(0)
@@ -127,11 +128,16 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                     ),
                     // 气泡内的正文色在这里一次性定死,而不是每个 cell_builder 各写一遍:
                     // 暗色下己方气泡是实心蓝,继承主题的灰白正文色对比度不够,必须走纯白。
-                    child: DefaultTextStyle.merge(
-                      style: TextStyle(
-                        color: isSendMessage ? context.colors.bubbleSentText : context.colors.bubbleReceivedText,
+                    child: Align(
+                      alignment: isSendMessage ? Alignment.centerRight : Alignment.centerLeft,
+                      widthFactor: 1.0,
+                      heightFactor: 1.0,
+                      child: DefaultTextStyle.merge(
+                        style: TextStyle(
+                          color: isSendMessage ? context.colors.bubbleSentText : context.colors.bubbleReceivedText,
+                        ),
+                        child: buildMessageContent(context),
                       ),
-                      child: buildMessageContent(context),
                     ),
                   ),
                   onTap: () => conversationController?.onTapedCell(context, model),
