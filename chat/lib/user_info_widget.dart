@@ -71,7 +71,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     });
     _refreshUserInfo();
     _checkRelation();
-    _loadOrganizationInfo();
+    _loadOrganizationInfo(refresh: true);
   }
 
   @override
@@ -81,7 +81,10 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     super.dispose();
   }
 
-  Future<void> _loadOrganizationInfo() async {
+  /// [refresh] 仅在首次加载时为 true；事件回调里必须只读缓存，
+  /// 否则 refresh 拉取完成后 fire 的 EmployeeExUpdatedEvent 会再次触发
+  /// 本方法，形成无限请求环。
+  Future<void> _loadOrganizationInfo({bool refresh = false}) async {
     if (!OrganizationService.instance.isServiceAvailable()) {
       if (mounted) {
         setState(() {
@@ -91,7 +94,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       return;
     }
 
-    final ex = OrganizationCache.instance.getEmployeeEx(widget.userId, refresh: true);
+    final ex = OrganizationCache.instance.getEmployeeEx(widget.userId, refresh: refresh);
     final relationships = ex?.relationships ?? [];
     final bottomRels = relationships.where((r) => r.bottom).toList();
     final Map<int, Organization> orgs = {};

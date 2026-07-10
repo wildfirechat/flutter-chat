@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
@@ -73,7 +74,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
               child: Text(
-                '组织架构',
+                AppLocalizations.of(context)!.organization,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
                   fontSize: 14,
@@ -150,7 +151,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
             },
             style: TextStyle(color: colors.textPrimary),
             decoration: InputDecoration(
-              hintText: '搜索部门成员',
+              hintText: AppLocalizations.of(context)!.searchOrgMembers,
               hintStyle: TextStyle(color: colors.textSecondary),
               prefixIcon: Icon(Icons.search, color: colors.textSecondary),
               suffixIcon: viewModel.searchQuery.isNotEmpty
@@ -215,7 +216,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     if (_isDisabled(userId)) return;
 
     if (_selectedUserIds.length >= widget.maxSelected) {
-      Fluttertoast.showToast(msg: '最多选择 ${widget.maxSelected} 人');
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxSelectCount(widget.maxSelected));
       return;
     }
 
@@ -250,7 +251,6 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           Icons.chevron_right,
           size: LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap),
         ),
-        visualDensity: isDesktopShell ? VisualDensity.compact : VisualDensity.standard,
         onTap: () => _viewModel.navigateToOrganization(subOrg),
       ),
     );
@@ -298,18 +298,18 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           title: Text(emp.name),
           subtitle: hasSubtitle ? Text(emp.title!) : null,
           trailing: trailing,
-          visualDensity: isDesktopShell ? VisualDensity.compact : VisualDensity.standard,
-          onTap: onTap,
+            onTap: onTap,
         ),
       ),
     );
   }
 
   Widget _buildOrganizationList(OrganizationViewModel viewModel) {
+    final l10n = AppLocalizations.of(context)!;
     final details = viewModel.currentOrganizationDetails;
     if (details == null) {
-      return const Expanded(
-        child: Center(child: Text('No organization data available.')),
+      return Expanded(
+        child: Center(child: Text(l10n.noOrganizationData)),
       );
     }
 
@@ -322,7 +322,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 32.0),
             child: Text(
-              '该部门暂无子部门或成员',
+              l10n.orgNoSubOrgOrMembers,
               textAlign: TextAlign.center,
               style: TextStyle(color: context.colors.textSecondary, fontSize: 14),
             ),
@@ -336,11 +336,11 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
         padding: const EdgeInsets.symmetric(vertical: 0.0),
         children: [
           if (subOrgs.isNotEmpty) ...[
-            _buildSectionHeader('子部门'),
+            _buildSectionHeader(l10n.subDepartments),
             ...subOrgs.map(_buildSubOrgTile),
           ],
           if (employees.isNotEmpty) ...[
-            _buildSectionHeader('成员'),
+            _buildSectionHeader(l10n.members),
             ...employees.map(_buildEmployeeTile),
           ],
         ],
@@ -359,7 +359,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       return Expanded(
         child: Center(
           child: Text(
-            viewModel.searchError!,
+            AppLocalizations.of(context)!.searchFailed(viewModel.searchError!),
             textAlign: TextAlign.center,
             style: TextStyle(color: context.colors.textSecondary),
           ),
@@ -371,7 +371,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       return Expanded(
         child: Center(
           child: Text(
-            '未找到匹配的成员',
+            AppLocalizations.of(context)!.noMatchedMembers,
             style: TextStyle(color: context.colors.textSecondary, fontSize: 14),
           ),
         ),
@@ -387,9 +387,10 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
   }
 
   Widget _buildDoneAction() {
+    final l10n = AppLocalizations.of(context)!;
     final label = _selectedUserIds.isEmpty
-        ? '确定'
-        : '确定(${_selectedUserIds.length}/${widget.maxSelected})';
+        ? l10n.confirm
+        : l10n.confirmWithCount(_selectedUserIds.length, widget.maxSelected);
     return TextButton(
       onPressed: _onDone,
       style: TextButton.styleFrom(
@@ -416,14 +417,14 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
             child: Scaffold(
               appBar: isDesktopShell
                   ? PcPageHeader(
-                      title: viewModel.appBarTitle ?? '组织结构',
+                      title: viewModel.appBarTitle ?? AppLocalizations.of(context)!.organization,
                       onBack: (viewModel.canNavigateBackInHierarchy() || widget.showBackOnRoot)
                           ? () => Navigator.of(context).maybePop()
                           : null,
                       actions: widget.selectMode ? [_buildDoneAction()] : null,
                     )
                   : AppBar(
-                      title: Text(viewModel.appBarTitle ?? '组织结构'),
+                      title: Text(viewModel.appBarTitle ?? AppLocalizations.of(context)!.organization),
                       actions: widget.selectMode ? [_buildDoneAction()] : null,
                     ),
               backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
@@ -449,7 +450,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                               const SizedBox(height: 16),
                               ElevatedButton.icon(
                                 icon: const Icon(Icons.refresh),
-                                label: const Text('重新加载'),
+                                label: Text(AppLocalizations.of(context)!.reload),
                                 onPressed: () => viewModel.retryLoadData(),
                               )
                             ],

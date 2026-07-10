@@ -36,7 +36,7 @@ class FileRecordsScreen extends StatelessWidget {
                 FileListScreen(
                   title: AppLocalizations.of(context)!.allFiles,
                   onBack: () => Navigator.of(context).maybePop(),
-                  child: const FileListWidget(type: FileListType.all),
+                  type: FileListType.all,
                 ),
               );
             },
@@ -49,7 +49,7 @@ class FileRecordsScreen extends StatelessWidget {
                 FileListScreen(
                   title: AppLocalizations.of(context)!.myFiles,
                   onBack: () => Navigator.of(context).maybePop(),
-                  child: const FileListWidget(type: FileListType.my),
+                  type: FileListType.my,
                 ),
               );
             },
@@ -62,43 +62,15 @@ class FileRecordsScreen extends StatelessWidget {
                 PickConversationScreen(
                   onBack: () => Navigator.of(context).maybePop(),
                   onConversationSelected: (context, conversation) {
-                    final route = isDesktopShell
-                        ? PageRouteBuilder(
-                            settings: RouteSettings(
-                              name: 'file-list/conversation',
-                              arguments: {
-                                'type': FileListType.conversation,
-                                'conversation': conversation,
-                              },
-                            ),
-                            pageBuilder: (_, __, ___) => FileListScreen(
-                              title: AppLocalizations.of(context)!.chatFiles,
-                              onBack: () => Navigator.of(context).maybePop(),
-                              child: FileListWidget(
-                                type: FileListType.conversation,
-                                conversation: conversation,
-                              ),
-                            ),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          )
-                        : MaterialPageRoute(
-                            settings: RouteSettings(
-                              name: 'file-list/conversation',
-                              arguments: {
-                                'type': FileListType.conversation,
-                                'conversation': conversation,
-                              },
-                            ),
-                            builder: (context) => FileListScreen(
-                              title: AppLocalizations.of(context)!.chatFiles,
-                              child: FileListWidget(
-                                type: FileListType.conversation,
-                                conversation: conversation,
-                              ),
-                            ),
-                          );
-                    Navigator.pushReplacement(context, route);
+                    pushReplacementPage(
+                      context,
+                      FileListScreen(
+                        title: AppLocalizations.of(context)!.chatFiles,
+                        onBack: () => Navigator.of(context).maybePop(),
+                        type: FileListType.conversation,
+                        conversation: conversation,
+                      ),
+                    );
                   },
                 ),
               );
@@ -114,47 +86,16 @@ class FileRecordsScreen extends StatelessWidget {
                     if (users.isNotEmpty) {
                       var userId = users[0];
                       var conversation = Conversation(conversationType: ConversationType.Single, target: userId, line: 0);
-                      final route = isDesktopShell
-                          ? PageRouteBuilder(
-                              settings: RouteSettings(
-                                name: 'file-list/user',
-                                arguments: {
-                                  'type': FileListType.user,
-                                  'conversation': conversation,
-                                  'userId': userId,
-                                },
-                              ),
-                              pageBuilder: (_, __, ___) => FileListScreen(
-                                title: AppLocalizations.of(context)!.userFiles,
-                                onBack: () => Navigator.of(context).maybePop(),
-                                child: FileListWidget(
-                                  type: FileListType.user,
-                                  conversation: conversation,
-                                  userId: userId,
-                                ),
-                              ),
-                              transitionDuration: Duration.zero,
-                              reverseTransitionDuration: Duration.zero,
-                            )
-                          : MaterialPageRoute(
-                              settings: RouteSettings(
-                                name: 'file-list/user',
-                                arguments: {
-                                  'type': FileListType.user,
-                                  'conversation': conversation,
-                                  'userId': userId,
-                                },
-                              ),
-                              builder: (context) => FileListScreen(
-                                title: AppLocalizations.of(context)!.userFiles,
-                                child: FileListWidget(
-                                  type: FileListType.user,
-                                  conversation: conversation,
-                                  userId: userId,
-                                ),
-                              ),
-                            );
-                      Navigator.pushReplacement(context, route);
+                      pushReplacementPage(
+                        context,
+                        FileListScreen(
+                          title: AppLocalizations.of(context)!.userFiles,
+                          onBack: () => Navigator.of(context).maybePop(),
+                          type: FileListType.user,
+                          conversation: conversation,
+                          userId: userId,
+                        ),
+                      );
                     }
                   },
                   onBack: () => Navigator.of(context).maybePop(),
@@ -171,14 +112,18 @@ class FileRecordsScreen extends StatelessWidget {
 
 class FileListScreen extends StatelessWidget {
   final String title;
-  final Widget child;
+  final FileListType type;
+  final Conversation? conversation;
+  final String? userId;
   final bool showSearchAction;
   final VoidCallback? onBack;
 
   const FileListScreen({
     super.key,
     required this.title,
-    required this.child,
+    required this.type,
+    this.conversation,
+    this.userId,
     this.showSearchAction = true,
     this.onBack,
   });
@@ -192,7 +137,11 @@ class FileListScreen extends StatelessWidget {
               onPressed: () {
                 showSearch(
                   context: context,
-                  delegate: _FileSearchDelegate(),
+                  delegate: _FileSearchDelegate(
+                    type: type,
+                    conversation: conversation,
+                    userId: userId,
+                  ),
                 );
               },
             ),
@@ -210,12 +159,26 @@ class FileListScreen extends StatelessWidget {
               title: Text(title),
               actions: actions,
             ),
-      body: child,
+      body: FileListWidget(
+        type: type,
+        conversation: conversation,
+        userId: userId,
+      ),
     );
   }
 }
 
 class _FileSearchDelegate extends SearchDelegate<FileRecord?> {
+  final FileListType type;
+  final Conversation? conversation;
+  final String? userId;
+
+  _FileSearchDelegate({
+    required this.type,
+    this.conversation,
+    this.userId,
+  });
+
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
@@ -253,26 +216,8 @@ class _FileSearchDelegate extends SearchDelegate<FileRecord?> {
     if (query.trim().isEmpty) {
       return Center(child: Text(AppLocalizations.of(context)!.searchPrompt));
     }
-    FileListType? type;
-    Conversation? conversation;
-    String? userId;
-    Navigator.of(context).popUntil((route) {
-      if (route.settings.name != null && route.settings.name!.startsWith('file-list/')) {
-        final args = route.settings.arguments as Map?;
-        if (args != null) {
-          type = args['type'] as FileListType?;
-          conversation = args['conversation'] as Conversation?;
-          userId = args['userId'] as String?;
-        }
-        return true;
-      }
-      return route.isFirst;
-    });
-    if (type == null) {
-      return Center(child: Text(AppLocalizations.of(context)!.searchPrompt));
-    }
     return FileListWidget(
-      type: type!,
+      type: type,
       conversation: conversation,
       userId: userId,
       keyword: query.trim(),

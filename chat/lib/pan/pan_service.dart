@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message_content.dart';
@@ -12,6 +10,7 @@ import 'package:path/path.dart' as path;
 
 import 'package:chat/pc/pc_platform.dart';
 import '../config.dart';
+import '../utils/auth_code_api_client.dart';
 import '../utils/media_url_redirector.dart';
 
 /// 云盘服务
@@ -22,8 +21,6 @@ class PanService {
   static const String _authCodeId = 'admin';
   static const int _authCodeType = 2;
 
-  static final PanService _instance = PanService._();
-  factory PanService() => _instance;
   PanService._();
 
   /// 检查网盘服务是否可用
@@ -41,64 +38,18 @@ class PanService {
     return MediaUrlRedirector.redirect(url);
   }
 
-  static String _extractHost(String url) {
-    String host = url;
-    if (host.startsWith('https://')) {
-      host = host.substring(8);
-    } else if (host.startsWith('http://')) {
-      host = host.substring(7);
-    }
-    final slashIndex = host.indexOf('/');
-    if (slashIndex > 0) {
-      host = host.substring(0, slashIndex);
-    }
-    return host;
-  }
-
-  static Future<String> _getAuthCode() async {
-    final completer = Completer<String>();
-    final host = _extractHost(_baseUrl);
-
-    Imclient.getAuthCode(
-      _authCodeId,
-      _authCodeType,
-      host,
-      (authCode) => completer.complete(authCode),
-      (errorCode) => completer.completeError(PanException(errorCode, '获取认证码失败')),
-    );
-
-    return completer.future;
-  }
+  static final AuthCodeApiClient _api = AuthCodeApiClient(
+    authCodeId: _authCodeId,
+    authCodeType: _authCodeType,
+    baseUrlProvider: () => _baseUrl,
+    exceptionFactory: (code, message) => PanException(code, message),
+  );
 
   static Future<Map<String, dynamic>> _post(
     String path,
     Map<String, dynamic> params,
-  ) async {
-    final authCode = await _getAuthCode();
-    final url = Uri.parse('$_baseUrl$path');
-    debugPrint('Pan POST $url params: $params');
-
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'authCode': authCode,
-      },
-      body: json.encode(params),
-    );
-
-    debugPrint('Pan POST $path status: ${response.statusCode} body: ${response.body}');
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body) as Map<String, dynamic>;
-      final code = data['code'] ?? -1;
-      if (code != 0) {
-        throw PanException(code, data['message'] ?? '请求失败');
-      }
-      return data;
-    } else {
-      throw PanException(-1, '网络错误: ${response.statusCode}');
-    }
-  }
+  ) =>
+      _api.post(path, params);
 
   /// 获取所有可访问的空间列表
   static Future<List<PanSpace>> getSpaces() async {
@@ -169,9 +120,7 @@ class PanService {
     if (mimeType != null && mimeType.isNotEmpty) params['mimeType'] = mimeType;
     if (md5 != null && md5.isNotEmpty) params['md5'] = md5;
 
-    debugPrint('Pan createFile request: $params');
     final data = await _post('/api/v1/files', params);
-    debugPrint('Pan createFile response: $data');
     final result = data['data'] as Map<String, dynamic>?;
     if (result == null) throw PanException(-1, '返回数据为空');
     return PanFile.fromJson(result);
@@ -229,28 +178,20 @@ class PanService {
     void Function(double progress)? onProgress,
     PanUploadCancelToken? cancelToken,
   }) async {
-    debugPrint('Pan uploadFile start: $localPath');
     final file = File(localPath);
     if (!await file.exists()) {
-      debugPrint('Pan uploadFile file not exists');
       throw PanException(-1, '文件不存在');
     }
 
     final name = remoteName ?? path.basename(localPath);
-    debugPrint('Pan uploadFile name: $name');
     final size = await file.length();
-    debugPrint('Pan uploadFile size: $size');
     final md5 = await _md5File(file);
-    debugPrint('Pan uploadFile md5: $md5');
     final mimeType = lookupMimeType(localPath) ?? 'application/octet-stream';
-    debugPrint('Pan uploadFile mimeType: $mimeType');
 
     final bool useLargeUpload = isDesktopShell ? await _shouldUseLargeUpload(size) : false;
-    debugPrint('Pan uploadFile useLargeUpload: $useLargeUpload');
 
     final String storageUrl;
     if (useLargeUpload) {
-      debugPrint('Pan uploadFile enter large upload');
       storageUrl = await _uploadLargeFile(
         localPath: localPath,
         name: name,
@@ -260,14 +201,12 @@ class PanService {
         cancelToken: cancelToken,
       );
     } else {
-      debugPrint('Pan uploadFile enter small upload');
       storageUrl = await _uploadSmallFile(
         localPath,
         onProgress,
         cancelToken: cancelToken,
       );
     }
-    debugPrint('Pan uploadFile storageUrl: $storageUrl');
 
     if (cancelToken?.isCancelled ?? false) {
       throw PanException(-2, '上传已取消');
@@ -285,15 +224,11 @@ class PanService {
   }
 
   static Future<bool> _shouldUseLargeUpload(int size) async {
-    debugPrint('Pan _shouldUseLargeUpload check support');
     final support = await Imclient.isSupportBigFilesUpload();
-    debugPrint('Pan isSupportBigFilesUpload: $support');
     if (!support) {
       return false;
     }
-    debugPrint('Pan _shouldUseLargeUpload check force');
     final force = await Imclient.isForceBigFilesUpload();
-    debugPrint('Pan isForceBigFilesUpload: $force');
     if (force) {
       return true;
     }
@@ -305,14 +240,12 @@ class PanService {
     void Function(double progress)? onProgress, {
     PanUploadCancelToken? cancelToken,
   }) async {
-    debugPrint('Pan _uploadSmallFile call Imclient.uploadMediaFile');
     final completer = Completer<String>();
 
     Imclient.uploadMediaFile(
       localPath,
       MediaType.Media_Type_FILE,
       (url) {
-        debugPrint('Pan _uploadSmallFile success: $url');
         if (cancelToken?.isCancelled ?? false) {
           completer.completeError(PanException(-2, '上传已取消'));
         } else {
@@ -321,13 +254,11 @@ class PanService {
       },
       onProgress != null
           ? (uploaded, total) {
-              debugPrint('Pan _uploadSmallFile progress: $uploaded / $total');
               if (cancelToken?.isCancelled ?? false) return;
               if (total > 0) onProgress(uploaded / total);
             }
           : (a, b) {},
       (errorCode) {
-        debugPrint('Pan _uploadSmallFile error: $errorCode');
         if (cancelToken?.isCancelled ?? false) {
           completer.completeError(PanException(-2, '上传已取消'));
         } else {
@@ -418,18 +349,22 @@ class PanService {
       request.headers.set('Content-Type', mimeType);
       request.contentLength = total;
 
+      // addStream 内部按 socket 背压调度写入，避免逐 chunk flush 把吞吐串行化。
       int uploaded = 0;
-      await for (final chunk in file.openRead()) {
-        if (cancelToken?.isCancelled ?? false) {
-          request.abort();
-          throw PanException(-2, '上传已取消');
-        }
-        request.add(chunk);
-        await request.flush();
-        uploaded += chunk.length;
-        if (onProgress != null && total > 0) {
-          onProgress(uploaded / total);
-        }
+      try {
+        await request.addStream(file.openRead().map((chunk) {
+          if (cancelToken?.isCancelled ?? false) {
+            throw PanException(-2, '上传已取消');
+          }
+          uploaded += chunk.length;
+          if (onProgress != null && total > 0) {
+            onProgress(uploaded / total);
+          }
+          return chunk;
+        }));
+      } catch (e) {
+        request.abort();
+        rethrow;
       }
 
       final response = await request.close();
@@ -529,11 +464,17 @@ class PanService {
   }
 
   static Future<String> _md5File(File file) async {
-    debugPrint('Pan _md5File start');
     final digest = await md5.bind(file.openRead()).first;
-    debugPrint('Pan _md5File done');
     return digest.toString();
   }
+}
+
+/// 以带一位小数的形式格式化字节数（网盘展示风格，如 '1.5 GB'）。
+String formatPanSize(int bytes) {
+  if (bytes >= 1073741824) return '${(bytes / 1073741824).toStringAsFixed(1)} GB';
+  if (bytes >= 1048576) return '${(bytes / 1048576).toStringAsFixed(1)} MB';
+  if (bytes >= 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+  return '$bytes B';
 }
 
 /// 网盘异常
@@ -703,13 +644,7 @@ class PanFile {
 
   bool get isFolder => type == PanFileType.folder;
 
-  String get sizeText {
-    if (isFolder) return '';
-    if (size >= 1073741824) return '${(size / 1073741824).toStringAsFixed(1)} GB';
-    if (size >= 1048576) return '${(size / 1048576).toStringAsFixed(1)} MB';
-    if (size >= 1024) return '${(size / 1024).toStringAsFixed(1)} KB';
-    return '$size B';
-  }
+  String get sizeText => isFolder ? '' : formatPanSize(size);
 
   String get extension {
     if (isFolder) return '';

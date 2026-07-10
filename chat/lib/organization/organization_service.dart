@@ -260,11 +260,39 @@ class OrganizationService {
   }
 
   Future<http.Response> _post(String url, Map<String, dynamic>? body) async {
-    return await http.post(
+    var response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json', 'authToken': _orgAuthToken!},
       body: body == null ? null : jsonEncode(body),
     );
+    // 本地恢复的 token 可能已在服务端失效，且 login() 见到缓存 token 会短路，
+    // 不重新走认证。这里在鉴权失败时清掉旧 token 重新登录，并用新 token 重试一次。
+    if (response.statusCode == 401 || response.statusCode == 403) {
+      await _relogin();
+      response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json', 'authToken': _orgAuthToken!},
+        body: body == null ? null : jsonEncode(body),
+      );
+    }
+    return response;
+  }
+
+  Future<void>? _reloginFuture;
+
+  /// 清除失效 token 并重新登录；并发的 401 共享同一次重登录。
+  Future<void> _relogin() {
+    return _reloginFuture ??= () async {
+      _orgAuthToken = null;
+      _isServiceAvailable = false;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_authTokenKey);
+      try {
+        await login();
+      } finally {
+        _reloginFuture = null;
+      }
+    }();
   }
 
   void clearOrgServiceAuthInfos() {

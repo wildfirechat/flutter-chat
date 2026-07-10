@@ -7,6 +7,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 
 import '../../utilities.dart';
+import '../../utils/media_url_redirector.dart';
 import '../../viewmodel/user_view_model.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -127,7 +128,7 @@ class _ConversationLinksScreenState extends State<ConversationLinksScreen> {
                                 ? ClipRRect(
                                     borderRadius: BorderRadius.circular(4),
                                     child: Image.network(
-                                      content.thumbnailUrl!,
+                                      MediaUrlRedirector.redirect(content.thumbnailUrl!),
                                       width: 48,
                                       height: 48,
                                       fit: BoxFit.cover,

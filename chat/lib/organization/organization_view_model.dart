@@ -123,7 +123,8 @@ class OrganizationViewModel extends ChangeNotifier {
       }
     } catch (e) {
       print('Error searching employees: $e');
-      _searchError = '搜索失败: $e';
+      // 只存原始错误，展示层（organization_screen）用 l10n.searchFailed 包装
+      _searchError = '$e';
       _searchResults = [];
     } finally {
       _isSearching = false;

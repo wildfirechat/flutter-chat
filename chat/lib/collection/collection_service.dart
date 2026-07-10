@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:imclient/imclient.dart';
 
 import '../config.dart';
+import '../utils/auth_code_api_client.dart';
 import '../utils/media_url_redirector.dart';
 import 'collection_model.dart';
 
@@ -37,73 +35,19 @@ class CollectionService {
     return MediaUrlRedirector.redirect(url);
   }
 
-  /// 从 URL 中提取 host
-  static String _extractHost(String url) {
-    String host = url;
-    // 去除协议前缀
-    if (host.startsWith('https://')) {
-      host = host.substring(8);
-    } else if (host.startsWith('http://')) {
-      host = host.substring(7);
-    }
-    // 去除路径部分
-    int slashIndex = host.indexOf('/');
-    if (slashIndex > 0) {
-      host = host.substring(0, slashIndex);
-    }
-    return host;
-  }
-
-  /// 获取认证码
-  static Future<String> _getAuthCode() async {
-    final completer = Completer<String>();
-    final host = _extractHost(_baseUrl);
-    
-    Imclient.getAuthCode(
-      _authCodeId,
-      _authCodeType,
-      host,
-      (authCode) {
-        completer.complete(authCode);
-      },
-      (errorCode) {
-        completer.completeError(
-          CollectionException(errorCode, '获取认证码失败'),
-        );
-      },
-    );
-    
-    return completer.future;
-  }
+  static final AuthCodeApiClient _api = AuthCodeApiClient(
+    authCodeId: _authCodeId,
+    authCodeType: _authCodeType,
+    baseUrlProvider: () => _baseUrl,
+    exceptionFactory: (code, message) => CollectionException(code, message),
+  );
 
   /// 带认证的 POST 请求
   static Future<Map<String, dynamic>> _post(
     String path,
     Map<String, dynamic> params,
-  ) async {
-    final authCode = await _getAuthCode();
-    final url = Uri.parse('$_baseUrl$path');
-    
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'authCode': authCode,
-      },
-      body: json.encode(params),
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body) as Map<String, dynamic>;
-      final code = data['code'] ?? -1;
-      if (code != 0) {
-        throw CollectionException(code, data['message'] ?? '请求失败');
-      }
-      return data;
-    } else {
-      throw CollectionException(-1, '网络错误: ${response.statusCode}');
-    }
-  }
+  ) =>
+      _api.post(path, params);
 
   /// 创建接龙
   /// POST /api/collections

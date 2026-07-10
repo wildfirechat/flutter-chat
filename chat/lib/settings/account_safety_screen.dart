@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/app_server.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/settings/blacklist_screen.dart';
 import 'package:chat/widget/option_item.dart';
 
@@ -12,16 +13,17 @@ class AccountSafetyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('账号与安全'),
+        title: Text(l10n.accountAndSecurity),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
               OptionItem(
-                '修改密码',
+                l10n.changePassword,
                 leftImage: const Icon(Icons.lock_outline, color: Color(0xFF576b95), size: 20),
                 onTap: () {
                   Navigator.push(
@@ -32,7 +34,7 @@ class AccountSafetyScreen extends StatelessWidget {
               ),
               const Divider(height: 1, indent: 56),
               OptionItem(
-                '黑名单',
+                l10n.blacklist,
                 leftImage: const Icon(Icons.block, color: Colors.red, size: 20),
                 onTap: () {
                   Navigator.push(
@@ -72,20 +74,21 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   Future<void> _changePassword() async {
+    final l10n = AppLocalizations.of(context)!;
     final oldPassword = _oldController.text.trim();
     final newPassword = _newController.text.trim();
     final confirmPassword = _confirmController.text.trim();
 
     if (oldPassword.isEmpty || newPassword.isEmpty || confirmPassword.isEmpty) {
-      Fluttertoast.showToast(msg: '请填写完整密码');
+      Fluttertoast.showToast(msg: l10n.pleaseCompletePasswordFields);
       return;
     }
     if (newPassword != confirmPassword) {
-      Fluttertoast.showToast(msg: '两次输入的新密码不一致');
+      Fluttertoast.showToast(msg: l10n.passwordNotMatch);
       return;
     }
     if (newPassword.length < 6) {
-      Fluttertoast.showToast(msg: '新密码长度不能少于6位');
+      Fluttertoast.showToast(msg: l10n.passwordTooShort);
       return;
     }
 
@@ -96,14 +99,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       () {
         if (mounted) {
           setState(() => _loading = false);
-          Fluttertoast.showToast(msg: '修改成功');
+          Fluttertoast.showToast(msg: l10n.modifySuccess);
           Navigator.pop(context);
         }
       },
       (errorMsg) {
         if (mounted) {
           setState(() => _loading = false);
-          Fluttertoast.showToast(msg: '修改失败: $errorMsg');
+          Fluttertoast.showToast(msg: l10n.modifyFail(errorMsg));
         }
       },
     );
@@ -111,9 +114,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('修改密码'),
+        title: Text(l10n.changePassword),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -122,27 +126,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             TextField(
               controller: _oldController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: '原密码',
-                hintText: '请输入原密码',
+              decoration: InputDecoration(
+                labelText: l10n.oldPassword,
+                hintText: l10n.inputOldPassword,
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _newController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: '新密码',
-                hintText: '请输入新密码',
+              decoration: InputDecoration(
+                labelText: l10n.newPassword,
+                hintText: l10n.inputNewPassword,
               ),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _confirmController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: '确认新密码',
-                hintText: '请再次输入新密码',
+              decoration: InputDecoration(
+                labelText: l10n.confirmNewPassword,
+                hintText: l10n.inputNewPasswordAgain,
               ),
             ),
             const SizedBox(height: 32),
@@ -156,7 +160,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                       )
-                    : const Text('确认修改'),
+                    : Text(l10n.confirmModify),
               ),
             ),
           ],

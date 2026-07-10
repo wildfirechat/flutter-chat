@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/settings/general_settings.dart';
 import 'package:chat/settings/message_notification_settings.dart';
-import 'package:chat/settings/favorite_list_screen.dart';
+import 'package:chat/pc/pc_favorite_list_widget.dart';
 import 'package:chat/settings/file_records_screen.dart';
 import 'package:chat/backup/backup_and_restore_screen.dart';
 import 'package:chat/settings/account_safety_screen.dart';
@@ -52,7 +52,7 @@ class MeTab extends StatelessWidget {
                   AppLocalizations.of(context)!.favorites,
                   leftImage: Image.asset('assets/images/setting_favorite.png', width: 20.0, height: 20.0),
                   onTap: () {
-                    openPage(context, const FavoriteListScreen());
+                    openPage(context, const FavoriteListWidget(category: FavoriteCategory.all, isEmbedded: false));
                   },
                 ),
               if (!isDesktopShell) const SectionDivider(),

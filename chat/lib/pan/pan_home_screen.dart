@@ -11,8 +11,14 @@ import 'package:imclient/model/conversation.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'pan_service.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/theme/app_colors.dart';
+
+/// 加载失败类型。build 时再映射为本地化文案
+/// （initState 同步路径里不能做 InheritedWidget 查找）。
+enum _PanLoadError { serviceNotConfigured, loadFailed }
 
 /// 云盘/网盘主页面
 ///
@@ -67,7 +73,7 @@ class PanHomeScreen extends StatefulWidget {
 class _PanHomeScreenState extends State<PanHomeScreen> {
   List<PanSpace> _spaces = [];
   bool _loading = true;
-  String? _error;
+  _PanLoadError? _error;
 
   @override
   void initState() {
@@ -79,7 +85,7 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
     if (!PanService.isAvailable) {
       setState(() {
         _loading = false;
-        _error = '网盘服务未配置';
+        _error = _PanLoadError.serviceNotConfigured;
       });
       return;
     }
@@ -102,7 +108,7 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
       _error = null;
     } catch (e, s) {
       debugPrint('Pan load spaces error: $e\n$s');
-      _error = '加载失败，请稍后重试';
+      _error = _PanLoadError.loadFailed;
     }
     setState(() => _loading = false);
   }
@@ -124,10 +130,11 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
   }
 
   String get _appBarTitle {
+    final l10n = AppLocalizations.of(context)!;
     if (widget.isMoveMode || widget.isCopyMode) {
-      return '选择目标位置';
+      return l10n.pickDestination;
     }
-    return '云盘';
+    return l10n.cloudDrive;
   }
 
   List<Widget> _buildActions() {
@@ -135,7 +142,7 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
       return [
         TextButton(
           onPressed: _cancelMoveCopy,
-          child: const Text('取消', style: TextStyle(color: Colors.white)),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
       ];
     }
@@ -159,22 +166,26 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (_error != null) {
+      final l10n = AppLocalizations.of(context)!;
+      final message = _error == _PanLoadError.serviceNotConfigured
+          ? l10n.panServiceNotConfigured
+          : l10n.loadFailedRetry;
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_error!, style: const TextStyle(color: Colors.red)),
+            Text(message, style: TextStyle(color: context.colors.danger)),
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: _loadSpaces,
-              child: const Text('重试'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
       );
     }
     if (_spaces.isEmpty) {
-      return const Center(child: Text('暂无云盘空间'));
+      return Center(child: Text(AppLocalizations.of(context)!.noPanSpaces));
     }
     return RefreshIndicator(
       onRefresh: _loadSpaces,
@@ -213,8 +224,8 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
                     ),
                   ),
                   Text(
-                    '${space.fileCount} 个文件',
-                    style: const TextStyle(fontSize: 13, color: Color(0xFF999999)),
+                    AppLocalizations.of(context)!.panFileCount(space.fileCount),
+                    style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
                   ),
                 ],
               ),
@@ -223,15 +234,15 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
                 borderRadius: BorderRadius.circular(4),
                 child: LinearProgressIndicator(
                   value: usagePercent,
-                  backgroundColor: Colors.grey[200],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF576b95)),
+                  backgroundColor: context.colors.inputBg,
+                  valueColor: AlwaysStoppedAnimation<Color>(context.colors.accent),
                   minHeight: 6,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                '${_formatSize(space.usedQuota)} / ${_formatSize(space.totalQuota)}',
-                style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+                '${formatPanSize(space.usedQuota)} / ${formatPanSize(space.totalQuota)}',
+                style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
               ),
             ],
           ),
@@ -241,13 +252,14 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
   }
 
   String _spaceDisplayName(PanSpace space) {
+    final l10n = AppLocalizations.of(context)!;
     switch (space.spaceType) {
       case PanSpaceType.globalPublic:
-        return '全局公共空间';
+        return l10n.panGlobalPublicSpace;
       case PanSpaceType.userPublic:
-        return '我的公共空间';
+        return l10n.panMyPublicSpace;
       case PanSpaceType.userPrivate:
-        return '我的私有空间';
+        return l10n.panMyPrivateSpace;
     }
   }
 
@@ -273,12 +285,6 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
   }
 
 
-  String _formatSize(int bytes) {
-    if (bytes >= 1073741824) return '${(bytes / 1073741824).toStringAsFixed(1)} GB';
-    if (bytes >= 1048576) return '${(bytes / 1048576).toStringAsFixed(1)} MB';
-    if (bytes >= 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    return '$bytes B';
-  }
 }
 
 /// 空间文件列表页面
@@ -317,7 +323,7 @@ class PanFileListScreen extends StatefulWidget {
 class _PanFileListScreenState extends State<PanFileListScreen> {
   List<PanFile> _files = [];
   bool _loading = true;
-  String? _error;
+  bool _loadFailed = false;
 
   @override
   void initState() {
@@ -332,10 +338,10 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
         widget.space.spaceId,
         parentId: widget.parentId,
       );
-      _error = null;
+      _loadFailed = false;
     } catch (e, s) {
       debugPrint('Pan load files error: $e\n$s');
-      _error = '加载失败，请稍后重试';
+      _loadFailed = true;
     }
     setState(() => _loading = false);
   }
@@ -359,23 +365,24 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
 
   String get _appBarTitle {
     if (widget.isMoveMode || widget.isCopyMode) {
-      return '选择目标位置';
+      return AppLocalizations.of(context)!.pickDestination;
     }
     return widget.title ?? widget.space.name;
   }
 
   List<Widget> _buildActions() {
+    final l10n = AppLocalizations.of(context)!;
     if (widget.isMoveMode) {
       final isSameLocation = widget.sourceSpace?.spaceId == widget.space.spaceId &&
           (widget.sourceParentId ?? 0) == widget.parentId;
       return [
         TextButton(
           onPressed: isSameLocation ? null : _executeMove,
-          child: const Text('粘贴', style: TextStyle(color: Colors.white)),
+          child: Text(l10n.paste),
         ),
         TextButton(
           onPressed: _cancelMoveCopy,
-          child: const Text('取消', style: TextStyle(color: Colors.white)),
+          child: Text(l10n.cancel),
         ),
       ];
     }
@@ -386,11 +393,11 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
       return [
         TextButton(
           onPressed: isSameLocation ? null : _executeCopy,
-          child: const Text('粘贴', style: TextStyle(color: Colors.white)),
+          child: Text(l10n.paste),
         ),
         TextButton(
           onPressed: _cancelMoveCopy,
-          child: const Text('取消', style: TextStyle(color: Colors.white)),
+          child: Text(l10n.cancel),
         ),
       ];
     }
@@ -420,16 +427,17 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (_error != null) {
+    if (_loadFailed) {
+      final l10n = AppLocalizations.of(context)!;
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(_error!, style: const TextStyle(color: Colors.red)),
+            Text(l10n.loadFailedRetry, style: TextStyle(color: context.colors.danger)),
             const SizedBox(height: 12),
             ElevatedButton(
               onPressed: _loadFiles,
-              child: const Text('重试'),
+              child: Text(l10n.retry),
             ),
           ],
         ),
@@ -444,7 +452,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
             child: Container(
               height: constraints.maxHeight,
               alignment: Alignment.center,
-              child: const Text('暂无文件'),
+              child: Text(AppLocalizations.of(context)!.noFilesYet),
             ),
           ),
         ),
@@ -469,9 +477,9 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
       title: Text(file.name, maxLines: 1, overflow: TextOverflow.ellipsis),
       subtitle: Text(
         file.isFolder
-            ? '${file.childCount} 项'
+            ? AppLocalizations.of(context)!.panItemCount(file.childCount)
             : '${file.sizeText}  ${file.creatorName ?? file.creatorId}',
-        style: const TextStyle(fontSize: 12, color: Color(0xFF999999)),
+        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
       ),
       trailing: IconButton(
         icon: const Icon(Icons.more_horiz, size: 20),
@@ -526,14 +534,15 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
   }
 
   void _openFolder(PanFile file) {
+    final l10n = AppLocalizations.of(context)!;
     if (widget.isMoveMode && widget.fileToMove != null &&
         widget.fileToMove!.isFolder && widget.fileToMove!.fileId == file.fileId) {
-      Fluttertoast.showToast(msg: '不能将文件夹移动到自身');
+      Fluttertoast.showToast(msg: l10n.panCannotMoveFolderIntoItself);
       return;
     }
     if (widget.isCopyMode && widget.fileToCopy != null &&
         widget.fileToCopy!.isFolder && widget.fileToCopy!.fileId == file.fileId) {
-      Fluttertoast.showToast(msg: '不能将文件夹复制到自身');
+      Fluttertoast.showToast(msg: l10n.panCannotCopyFolderIntoItself);
       return;
     }
 
@@ -558,6 +567,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
   }
 
   Future<void> _openFile(PanFile file) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final url = await PanService.getFileDownloadUrl(file.fileId);
       if (url.isNotEmpty) {
@@ -565,11 +575,12 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
       }
     } catch (e, s) {
       debugPrint('Pan open file error: $e\n$s');
-      Fluttertoast.showToast(msg: '获取下载链接失败');
+      Fluttertoast.showToast(msg: l10n.panGetDownloadUrlFailed);
     }
   }
 
   Future<void> _uploadFile() async {
+    final l10n = AppLocalizations.of(context)!;
     final result = await FilePicker.platform.pickFiles(
       allowMultiple: false,
       withReadStream: false,
@@ -598,7 +609,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('上传中...', style: TextStyle(fontSize: 16)),
+                Text(l10n.uploading, style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 16),
                 ValueListenableBuilder<double>(
                   valueListenable: progressNotifier,
@@ -617,7 +628,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
                   onPressed: () {
                     cancelToken.cancel();
                   },
-                  child: const Text('取消上传'),
+                  child: Text(l10n.cancelUpload),
                 ),
               ],
             ),
@@ -636,45 +647,46 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
       );
       final dialogContext = await dialogContextCompleter.future;
       if (dialogContext.mounted) Navigator.pop(dialogContext);
-      Fluttertoast.showToast(msg: '上传成功');
+      Fluttertoast.showToast(msg: l10n.uploadSuccess);
       _loadFiles();
     } on PanException catch (e) {
       final dialogContext = await dialogContextCompleter.future;
       if (dialogContext.mounted) Navigator.pop(dialogContext);
       if (e.code == -2) {
-        Fluttertoast.showToast(msg: '上传已取消');
+        Fluttertoast.showToast(msg: l10n.uploadCancelled);
       } else {
         debugPrint('Pan upload error: $e');
-        Fluttertoast.showToast(msg: '上传失败');
+        Fluttertoast.showToast(msg: l10n.uploadFail);
       }
     } catch (e, s) {
       final dialogContext = await dialogContextCompleter.future;
       if (dialogContext.mounted) Navigator.pop(dialogContext);
       debugPrint('Pan upload error: $e\n$s');
-      Fluttertoast.showToast(msg: '上传失败');
+      Fluttertoast.showToast(msg: l10n.uploadFail);
     }
   }
 
   Future<void> _createFolder() async {
+    final l10n = AppLocalizations.of(context)!;
     final name = await showDialog<String>(
       context: context,
       builder: (context) {
         final controller = TextEditingController();
         return AlertDialog(
-          title: const Text('新建文件夹'),
+          title: Text(l10n.newFolder),
           content: TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(hintText: '文件夹名称'),
+            decoration: InputDecoration(hintText: l10n.folderName),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, controller.text.trim()),
-              child: const Text('确定'),
+              child: Text(l10n.confirm),
             ),
           ],
         );
@@ -688,34 +700,35 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
         name,
         parentId: widget.parentId,
       );
-      Fluttertoast.showToast(msg: '创建成功');
+      Fluttertoast.showToast(msg: l10n.createSuccess);
       _loadFiles();
     } catch (e, s) {
       debugPrint('Pan create folder error: $e\n$s');
-      Fluttertoast.showToast(msg: '创建失败');
+      Fluttertoast.showToast(msg: l10n.createFail);
     }
   }
 
   Future<void> _renameFile(PanFile file) async {
+    final l10n = AppLocalizations.of(context)!;
     final name = await showDialog<String>(
       context: context,
       builder: (context) {
         final controller = TextEditingController(text: file.name);
         return AlertDialog(
-          title: const Text('重命名'),
+          title: Text(l10n.rename),
           content: TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(hintText: '新名称'),
+            decoration: InputDecoration(hintText: l10n.newName),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('取消'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, controller.text.trim()),
-              child: const Text('确定'),
+              child: Text(l10n.confirm),
             ),
           ],
         );
@@ -725,15 +738,16 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
 
     try {
       await PanService.renameFile(file.fileId, name);
-      Fluttertoast.showToast(msg: '重命名成功');
+      Fluttertoast.showToast(msg: l10n.renameSuccess);
       _loadFiles();
     } catch (e, s) {
       debugPrint('Pan rename error: $e\n$s');
-      Fluttertoast.showToast(msg: '重命名失败');
+      Fluttertoast.showToast(msg: l10n.renameFail);
     }
   }
 
   Future<void> _shareFile(PanFile file) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final url = await PanService.getFileDownloadUrl(file.fileId);
       if (!mounted) return;
@@ -756,7 +770,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
       );
     } catch (e, s) {
       debugPrint('Pan share file error: $e\n$s');
-      Fluttertoast.showToast(msg: '获取下载链接失败');
+      Fluttertoast.showToast(msg: l10n.panGetDownloadUrlFailed);
     }
   }
 
@@ -803,6 +817,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
   }
 
   Future<void> _pickDuplicateSpace(PanFile file) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final spaces = await PanService.getMySpaces();
       if (!mounted) return;
@@ -815,7 +830,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
       }
 
       if (publicSpace == null && privateSpace == null) {
-        Fluttertoast.showToast(msg: '没有可转存的空间');
+        Fluttertoast.showToast(msg: l10n.panNoSpaceToSave);
         return;
       }
 
@@ -849,17 +864,18 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
       );
     } catch (e, s) {
       debugPrint('Pan duplicate load spaces error: $e\n$s');
-      Fluttertoast.showToast(msg: '加载空间失败');
+      Fluttertoast.showToast(msg: l10n.panLoadSpacesFailed);
     }
   }
 
   Future<void> _doDuplicate(PanFile file, PanSpace targetSpace) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       await PanService.copyFile(file.fileId, targetSpace.spaceId);
-      Fluttertoast.showToast(msg: '转存成功');
+      Fluttertoast.showToast(msg: l10n.panDuplicateSuccess);
     } catch (e, s) {
       debugPrint('Pan duplicate error: $e\n$s');
-      Fluttertoast.showToast(msg: '转存失败');
+      Fluttertoast.showToast(msg: l10n.panDuplicateFail);
     }
   }
 
@@ -867,21 +883,22 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
     final file = widget.fileToMove;
     if (file == null || widget.sourceSpace == null) return;
 
+    final l10n = AppLocalizations.of(context)!;
     final isSameLocation = widget.sourceSpace!.spaceId == widget.space.spaceId &&
         (widget.sourceParentId ?? 0) == widget.parentId;
     if (isSameLocation) {
-      Fluttertoast.showToast(msg: '不能将文件移动到原位置');
+      Fluttertoast.showToast(msg: l10n.panCannotMoveToSameLocation);
       return;
     }
 
     try {
       await PanService.moveFile(file.fileId, widget.space.spaceId,
           targetParentId: widget.parentId);
-      Fluttertoast.showToast(msg: '移动成功');
+      Fluttertoast.showToast(msg: l10n.moveSuccess);
       _returnToOriginalView();
     } catch (e, s) {
       debugPrint('Pan move error: $e\n$s');
-      Fluttertoast.showToast(msg: '移动失败');
+      Fluttertoast.showToast(msg: l10n.moveFail);
     }
   }
 
@@ -889,21 +906,22 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
     final file = widget.fileToCopy;
     if (file == null || widget.sourceCopySpace == null) return;
 
+    final l10n = AppLocalizations.of(context)!;
     final isSameLocation = widget.sourceCopySpace!.spaceId == widget.space.spaceId &&
         (widget.sourceCopyParentId ?? 0) == widget.parentId;
     if (isSameLocation) {
-      Fluttertoast.showToast(msg: '不能将文件复制到原位置');
+      Fluttertoast.showToast(msg: l10n.panCannotCopyToSameLocation);
       return;
     }
 
     try {
       await PanService.copyFile(file.fileId, widget.space.spaceId,
           targetParentId: widget.parentId);
-      Fluttertoast.showToast(msg: '复制成功');
+      Fluttertoast.showToast(msg: l10n.copySuccess);
       _returnToOriginalView();
     } catch (e, s) {
       debugPrint('Pan copy error: $e\n$s');
-      Fluttertoast.showToast(msg: '复制失败');
+      Fluttertoast.showToast(msg: l10n.copyFail);
     }
   }
 
@@ -920,18 +938,19 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
   }
 
   Future<void> _deleteFile(PanFile file) async {
+    final l10n = AppLocalizations.of(context)!;
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        content: Text('确定要删除 "${file.name}" 吗？'),
+        content: Text(l10n.deleteFileConfirm(file.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('删除', style: TextStyle(color: Colors.red)),
+            child: Text(l10n.delete, style: TextStyle(color: context.colors.danger)),
           ),
         ],
       ),
@@ -940,15 +959,16 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
 
     try {
       await PanService.deleteFile(file.fileId);
-      Fluttertoast.showToast(msg: '删除成功');
+      Fluttertoast.showToast(msg: l10n.deleteSuccess);
       _loadFiles();
     } catch (e, s) {
       debugPrint('Pan delete error: $e\n$s');
-      Fluttertoast.showToast(msg: '删除失败');
+      Fluttertoast.showToast(msg: l10n.deleteFailed);
     }
   }
 
   void _showFileMenu(PanFile file) {
+    final l10n = AppLocalizations.of(context)!;
     final canManage = widget.space.canManage;
     showModalBottomSheet(
       context: context,
@@ -959,7 +979,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
             if (!file.isFolder)
               ListTile(
                 leading: const Icon(Icons.download),
-                title: const Text('下载/打开'),
+                title: Text(l10n.downloadOrOpen),
                 onTap: () {
                   Navigator.pop(ctx);
                   _openFile(file);
@@ -969,7 +989,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
               if (!file.isFolder)
                 ListTile(
                   leading: const Icon(Icons.share),
-                  title: const Text('分享'),
+                  title: Text(l10n.share),
                   onTap: () {
                     Navigator.pop(ctx);
                     _shareFile(file);
@@ -977,7 +997,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
                 ),
               ListTile(
                 leading: const Icon(Icons.drive_file_move_outline),
-                title: const Text('移动'),
+                title: Text(l10n.move),
                 onTap: () {
                   Navigator.pop(ctx);
                   _startMoveFile(file);
@@ -985,7 +1005,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.file_copy_outlined),
-                title: const Text('复制'),
+                title: Text(l10n.copy),
                 onTap: () {
                   Navigator.pop(ctx);
                   _startCopyFile(file);
@@ -993,15 +1013,15 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.edit),
-                title: const Text('重命名'),
+                title: Text(l10n.rename),
                 onTap: () {
                   Navigator.pop(ctx);
                   _renameFile(file);
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text('删除', style: TextStyle(color: Colors.red)),
+                leading: Icon(Icons.delete_outline, color: ctx.colors.danger),
+                title: Text(l10n.delete, style: TextStyle(color: ctx.colors.danger)),
                 onTap: () {
                   Navigator.pop(ctx);
                   _deleteFile(file);
@@ -1010,7 +1030,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
             ] else ...[
               ListTile(
                 leading: const Icon(Icons.file_copy_outlined),
-                title: const Text('转存'),
+                title: Text(l10n.panDuplicate),
                 onTap: () {
                   Navigator.pop(ctx);
                   _duplicateFile(file);

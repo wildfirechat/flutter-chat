@@ -1887,4 +1887,405 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get transferGroupSuccess => 'Group transferred successfully';
+
+  @override
+  String get cloudDrive => 'Cloud Drive';
+
+  @override
+  String get pickDestination => 'Select Destination';
+
+  @override
+  String get panServiceNotConfigured => 'Cloud drive service is not configured';
+
+  @override
+  String get loadFailedRetry => 'Failed to load, please try again later';
+
+  @override
+  String get noPanSpaces => 'No cloud drive spaces';
+
+  @override
+  String panFileCount(Object count) {
+    return '$count files';
+  }
+
+  @override
+  String get panGlobalPublicSpace => 'Global Public Space';
+
+  @override
+  String get panMyPublicSpace => 'My Public Space';
+
+  @override
+  String get panMyPrivateSpace => 'My Private Space';
+
+  @override
+  String get paste => 'Paste';
+
+  @override
+  String get noFilesYet => 'No files yet';
+
+  @override
+  String panItemCount(Object count) {
+    return '$count items';
+  }
+
+  @override
+  String get panCannotMoveFolderIntoItself =>
+      'Cannot move a folder into itself';
+
+  @override
+  String get panCannotCopyFolderIntoItself =>
+      'Cannot copy a folder into itself';
+
+  @override
+  String get panGetDownloadUrlFailed => 'Failed to get download link';
+
+  @override
+  String get uploading => 'Uploading...';
+
+  @override
+  String get cancelUpload => 'Cancel Upload';
+
+  @override
+  String get uploadSuccess => 'Uploaded successfully';
+
+  @override
+  String get uploadCancelled => 'Upload cancelled';
+
+  @override
+  String get uploadFail => 'Upload failed';
+
+  @override
+  String get newFolder => 'New Folder';
+
+  @override
+  String get folderName => 'Folder name';
+
+  @override
+  String get createSuccess => 'Created successfully';
+
+  @override
+  String get createFail => 'Failed to create';
+
+  @override
+  String get rename => 'Rename';
+
+  @override
+  String get newName => 'New name';
+
+  @override
+  String get renameSuccess => 'Renamed successfully';
+
+  @override
+  String get renameFail => 'Failed to rename';
+
+  @override
+  String get panNoSpaceToSave => 'No space available to save to';
+
+  @override
+  String get panLoadSpacesFailed => 'Failed to load spaces';
+
+  @override
+  String get panDuplicate => 'Save a Copy';
+
+  @override
+  String get panDuplicateSuccess => 'Saved successfully';
+
+  @override
+  String get panDuplicateFail => 'Failed to save';
+
+  @override
+  String get panCannotMoveToSameLocation =>
+      'Cannot move the file to its original location';
+
+  @override
+  String get moveSuccess => 'Moved successfully';
+
+  @override
+  String get moveFail => 'Failed to move';
+
+  @override
+  String get panCannotCopyToSameLocation =>
+      'Cannot copy the file to its original location';
+
+  @override
+  String get copySuccess => 'Copied successfully';
+
+  @override
+  String get copyFail => 'Failed to copy';
+
+  @override
+  String deleteFileConfirm(Object name) {
+    return 'Are you sure you want to delete \"$name\"?';
+  }
+
+  @override
+  String get downloadOrOpen => 'Download/Open';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get move => 'Move';
+
+  @override
+  String get general => 'General';
+
+  @override
+  String get appearanceAndTheme => 'Appearance & Theme';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get accountAndSecurity => 'Account & Security';
+
+  @override
+  String get chat => 'Chat';
+
+  @override
+  String get syncDraft => 'Sync Drafts';
+
+  @override
+  String get syncDraftDesc =>
+      'Sync chat drafts both ways between mobile and desktop';
+
+  @override
+  String get startupAndWindow => 'Startup & Window';
+
+  @override
+  String get closeToExitTitle =>
+      'Quit the app when the window close button is clicked';
+
+  @override
+  String get closeToExitDesc =>
+      'When off, the window minimizes to the system tray instead';
+
+  @override
+  String get minimizeToTaskbarTitle =>
+      'Allow the main window to be minimized to the taskbar';
+
+  @override
+  String get minimizeToTaskbarDesc =>
+      'When on, the window can be minimized; when off, it stays in the foreground';
+
+  @override
+  String get termsOfService => 'Terms of Service';
+
+  @override
+  String get userAgreementDesc =>
+      'Read the WildFire IM software license and service agreement';
+
+  @override
+  String get privacyPolicyDesc => 'Read the WildFire IM privacy guidelines';
+
+  @override
+  String get messageAlerts => 'Message Alerts';
+
+  @override
+  String get receiveNewMessageNotification =>
+      'Receive new message notifications';
+
+  @override
+  String get receiveNewMessageNotificationDesc =>
+      'Turn system sounds and banner notifications for new messages on or off';
+
+  @override
+  String get receiveCallNotification =>
+      'Receive voice and video call notifications';
+
+  @override
+  String get receiveCallNotificationDesc =>
+      'Turn the incoming call alert window on or off';
+
+  @override
+  String get showNotificationDetail => 'Show message details in notifications';
+
+  @override
+  String get showNotificationDetailDesc =>
+      'When on, notifications show the sender and a message preview; when off, only \"You have a new message\" is shown';
+
+  @override
+  String get noDisturb => 'Do Not Disturb';
+
+  @override
+  String noDisturbPeriod(Object period) {
+    return 'Current Do Not Disturb period: $period';
+  }
+
+  @override
+  String get noDisturbDesc =>
+      'When on, messages received during the set period will not play sounds or vibrate';
+
+  @override
+  String get simplifiedChinese => '简体中文';
+
+  @override
+  String get interfaceAppearance => 'Interface Appearance';
+
+  @override
+  String get interfaceLanguage => 'Interface Language';
+
+  @override
+  String get interfaceLanguageDesc =>
+      'Change the interface language; restart the app for it to take effect';
+
+  @override
+  String get appearanceTheme => 'Theme';
+
+  @override
+  String get appearanceThemeDesc =>
+      'Switch between dark and light themes, or follow the system appearance';
+
+  @override
+  String get fontSizeDesc => 'Adjust the text display size of the interface';
+
+  @override
+  String get setSuccessRestartToApply =>
+      'Set successfully, restart the app for it to take effect';
+
+  @override
+  String get currentLoginAccount => 'Current Account';
+
+  @override
+  String accountName(Object name) {
+    return 'Account: $name';
+  }
+
+  @override
+  String get signOut => 'Sign Out';
+
+  @override
+  String get securityAndData => 'Security & Data';
+
+  @override
+  String get changePassword => 'Change Password';
+
+  @override
+  String get changePasswordDesc =>
+      'Change your login password by verifying the old password';
+
+  @override
+  String get blacklist => 'Blacklist';
+
+  @override
+  String get blacklistDesc => 'View and manage blocked contacts';
+
+  @override
+  String get backupAndRestoreDesc =>
+      'Back up chat history to your computer, or restore a backup to your phone';
+
+  @override
+  String aboutVersion(Object version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get aboutDescription =>
+      'WildFire IM is a secure and reliable private instant messaging platform that is easy to integrate, simple to deploy and maintain, and convenient for secondary development and integration with existing systems.';
+
+  @override
+  String get officialWebsite => 'Official Website';
+
+  @override
+  String get githubRepo => 'GitHub Repository';
+
+  @override
+  String get issueFeedback => 'Report Issues';
+
+  @override
+  String get wechatContact => 'WeChat: wildfirechat or wfchat';
+
+  @override
+  String openLinkUrl(Object url) {
+    return 'Open link: $url';
+  }
+
+  @override
+  String get pleaseCompletePasswordFields =>
+      'Please fill in all password fields';
+
+  @override
+  String get passwordNotMatch => 'The two new passwords do not match';
+
+  @override
+  String get passwordTooShort =>
+      'The new password must be at least 6 characters';
+
+  @override
+  String get oldPassword => 'Old Password';
+
+  @override
+  String get inputOldPassword => 'Enter the old password';
+
+  @override
+  String get newPassword => 'New Password';
+
+  @override
+  String get inputNewPassword => 'Enter the new password';
+
+  @override
+  String get confirmNewPassword => 'Confirm New Password';
+
+  @override
+  String get inputNewPasswordAgain => 'Enter the new password again';
+
+  @override
+  String get confirmModify => 'Confirm';
+
+  @override
+  String get removeFromBlacklistConfirm =>
+      'Are you sure you want to remove this user from the blacklist?';
+
+  @override
+  String get removedFromBlacklist => 'Removed from blacklist';
+
+  @override
+  String get blacklistEmpty => 'Blacklist is empty';
+
+  @override
+  String get blacklistRemove => 'Remove';
+
+  @override
+  String get searchOrgMembers => 'Search members';
+
+  @override
+  String maxSelectCount(Object count) {
+    return 'Select up to $count people';
+  }
+
+  @override
+  String get noOrganizationData => 'No organization data available';
+
+  @override
+  String get orgNoSubOrgOrMembers =>
+      'This department has no sub-departments or members';
+
+  @override
+  String get subDepartments => 'Sub-departments';
+
+  @override
+  String get members => 'Members';
+
+  @override
+  String get noMatchedMembers => 'No matching members found';
+
+  @override
+  String confirmWithCount(Object count, Object max) {
+    return 'Confirm ($count/$max)';
+  }
+
+  @override
+  String get reload => 'Reload';
+
+  @override
+  String searchFailed(Object error) {
+    return 'Search failed: $error';
+  }
+
+  @override
+  String get messageSettings => 'Message Settings';
+
+  @override
+  String get unknownMessageNotImplemented =>
+      'This message type is not supported yet, please upgrade!';
 }

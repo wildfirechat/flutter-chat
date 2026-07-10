@@ -20,7 +20,7 @@ class LayoutScale {
   static const double iconCap = 1.2;
 
   /// 行高、列表项 extent。容器内同时有图形和文字时用这个。
-  static const double rowCap = 1.3;
+  static const double rowCap = 1.35;
 
   /// 纯文本容器。必须完整跟随字号,否则最大档位下文字会被裁掉。
   static const double textCap = double.infinity;

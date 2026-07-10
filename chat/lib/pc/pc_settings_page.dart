@@ -8,6 +8,7 @@ import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/settings/account_safety_screen.dart';
 import 'package:chat/settings/blacklist_screen.dart';
+import 'package:chat/settings/notification_settings.dart';
 import 'package:chat/backup/backup_and_restore_screen.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/viewmodel/locale_view_model.dart';
@@ -38,11 +39,11 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final menuItems = [
-      _MenuData("通用", Icons.tune_rounded, const PcGeneralSettingsDetail()),
+      _MenuData(l10n.general, Icons.tune_rounded, const PcGeneralSettingsDetail()),
       _MenuData(l10n.messageNotification, Icons.notifications_none_rounded, const PcNotificationSettingsDetail()),
-      _MenuData("外观与主题", Icons.palette_outlined, const PcAppearanceSettingsDetail()),
+      _MenuData(l10n.appearanceAndTheme, Icons.palette_outlined, const PcAppearanceSettingsDetail()),
       _MenuData(l10n.accountSafety, Icons.security_rounded, const PcSecuritySettingsDetail()),
-      _MenuData("关于野火", Icons.info_outline_rounded, const PcAboutSettingsDetail()),
+      _MenuData(l10n.about, Icons.info_outline_rounded, const PcAboutSettingsDetail()),
     ];
 
     return Container(
@@ -141,10 +142,10 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
   }
 
   void _loadUserSettings() {
-    Imclient.getUserSetting(kUserSettingDisableSyncDraft, "").then((value) {
+    NotificationSettings.getBool(kUserSettingDisableSyncDraft, invert: true).then((value) {
       if (mounted) {
         setState(() {
-          _syncDraftEnabled = (value.isEmpty || value == '0');
+          _syncDraftEnabled = value;
         });
       }
     });
@@ -168,23 +169,21 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
   }
 
   void _updateUserSetting(int scope, bool value, {bool revert = false}) {
-    bool sendVal = value;
-    if (revert) {
-      sendVal = !value;
-    }
-    Imclient.setUserSetting(scope, "", sendVal ? "1" : "0", () {
-      Fluttertoast.showToast(msg: "设置成功");
-    }, (errorCode) {
-      Fluttertoast.showToast(msg: "网络错误");
+    final l10n = AppLocalizations.of(context)!;
+    NotificationSettings.setBool(scope, value, invert: revert, onSuccess: () {
+      Fluttertoast.showToast(msg: l10n.setSuccess);
+    }, onFailure: (errorCode) {
+      Fluttertoast.showToast(msg: l10n.networkError);
       _loadUserSettings();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: context.colors.chatBgDesktop,
-      appBar: const PcPageHeader(title: "通用"),
+      appBar: PcPageHeader(title: l10n.general),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Align(
@@ -194,11 +193,11 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _SettingsSectionTitle("聊天"),
+                _SettingsSectionTitle(l10n.chat),
                 _SettingsCard(children: [
                   _SettingsSwitchRow(
-                    title: "同步草稿",
-                    subtitle: "支持聊天草稿在移动端和电脑端之间进行双向同步",
+                    title: l10n.syncDraft,
+                    subtitle: l10n.syncDraftDesc,
                     value: _syncDraftEnabled,
                     onChanged: (val) {
                       setState(() => _syncDraftEnabled = val);
@@ -207,46 +206,46 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                   ),
                 ]),
                 const SizedBox(height: 20),
-                const _SettingsSectionTitle("启动与窗口"),
+                _SettingsSectionTitle(l10n.startupAndWindow),
                 _SettingsCard(children: [
                   _SettingsSwitchRow(
-                    title: "点击窗口关闭按钮时退出整个程序",
-                    subtitle: "关闭则默认最小化到系统托盘",
+                    title: l10n.closeToExitTitle,
+                    subtitle: l10n.closeToExitDesc,
                     value: _closeToExit,
                     onChanged: (val) {
                       setState(() => _closeToExit = val);
                       _saveLocalPreference('pc_close_to_exit', val);
-                      Fluttertoast.showToast(msg: "设置成功");
+                      Fluttertoast.showToast(msg: l10n.setSuccess);
                     },
                   ),
                   const Divider(height: 0.5),
                   _SettingsSwitchRow(
-                    title: "开启后主窗体支持最小化到任务栏",
-                    subtitle: "开启后支持最小化，关闭则直接保留在前台",
+                    title: l10n.minimizeToTaskbarTitle,
+                    subtitle: l10n.minimizeToTaskbarDesc,
                     value: _enableMinimize,
                     onChanged: (val) {
                       setState(() => _enableMinimize = val);
                       _saveLocalPreference('pc_enable_minimize', val);
-                      Fluttertoast.showToast(msg: "设置成功");
+                      Fluttertoast.showToast(msg: l10n.setSuccess);
                     },
                   ),
                 ]),
                 const SizedBox(height: 20),
-                const _SettingsSectionTitle("服务条款"),
+                _SettingsSectionTitle(l10n.termsOfService),
                 _SettingsCard(children: [
                   _SettingsClickableRow(
-                    title: "用户协议",
-                    subtitle: "阅读野火 IM 软件许可及服务协议",
+                    title: l10n.userAgreement,
+                    subtitle: l10n.userAgreementDesc,
                     onTap: () {
-                      Fluttertoast.showToast(msg: "方法未实现");
+                      Fluttertoast.showToast(msg: l10n.methodNotImpl);
                     },
                   ),
                   const Divider(height: 0.5),
                   _SettingsClickableRow(
-                    title: "隐私政策",
-                    subtitle: "阅读野火 IM 隐私保护指引",
+                    title: l10n.privacyPolicy,
+                    subtitle: l10n.privacyPolicyDesc,
                     onTap: () {
-                      Fluttertoast.showToast(msg: "方法未实现");
+                      Fluttertoast.showToast(msg: l10n.methodNotImpl);
                     },
                   ),
                 ]),
@@ -268,9 +267,11 @@ class PcNotificationSettingsDetail extends StatefulWidget {
 }
 
 class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDetail> {
-  bool _globalSilent = false;
-  bool _voipSilent = false;
-  bool _hiddenNotificationDetail = false;
+  // 字段均为 UI 语义（"接收/显示"为 true），与服务端"静默/隐藏"存储语义的
+  // 取反由 NotificationSettings 统一处理。
+  bool _receiveMsgNotification = true;
+  bool _receiveVoipNotification = true;
+  bool _showNotificationDetail = true;
   bool _noDisturbing = false;
   int _noDisturbStartTime = 0;
   int _noDisturbEndTime = 0;
@@ -282,26 +283,26 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
   }
 
   void _loadUserSettings() {
-    Imclient.getUserSetting(kUserSettingGlobalSilent, "").then((value) {
+    NotificationSettings.getBool(kUserSettingGlobalSilent, invert: true).then((value) {
       if (mounted) {
         setState(() {
-          _globalSilent = !(value.isEmpty || value == '0');
+          _receiveMsgNotification = value;
         });
       }
     });
 
-    Imclient.getUserSetting(kUserSettingVoipSilent, "").then((value) {
+    NotificationSettings.getBool(kUserSettingVoipSilent, invert: true).then((value) {
       if (mounted) {
         setState(() {
-          _voipSilent = !(value.isEmpty || value == '0');
+          _receiveVoipNotification = value;
         });
       }
     });
 
-    Imclient.getUserSetting(kUserSettingHiddenNotificationDetail, "").then((value) {
+    NotificationSettings.getBool(kUserSettingHiddenNotificationDetail, invert: true).then((value) {
       if (mounted) {
         setState(() {
-          _hiddenNotificationDetail = !(value.isEmpty || value == '0');
+          _showNotificationDetail = value;
         });
       }
     });
@@ -324,63 +325,50 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
   }
 
   void _updateUserSetting(int scope, bool value, {bool revert = false}) {
-    bool sendVal = value;
-    if (revert) {
-      sendVal = !value;
-    }
-    Imclient.setUserSetting(scope, "", sendVal ? "1" : "0", () {
-      Fluttertoast.showToast(msg: "设置成功");
-    }, (errorCode) {
-      Fluttertoast.showToast(msg: "网络错误");
+    final l10n = AppLocalizations.of(context)!;
+    NotificationSettings.setBool(scope, value, invert: revert, onSuccess: () {
+      Fluttertoast.showToast(msg: l10n.setSuccess);
+    }, onFailure: (errorCode) {
+      Fluttertoast.showToast(msg: l10n.networkError);
       _loadUserSettings();
     });
   }
 
   void _toggleNoDisturb(bool enabled) {
+    final l10n = AppLocalizations.of(context)!;
     if (enabled) {
-      _noDisturbStartTime = 21 * 60 - 8 * 60;
-      _noDisturbEndTime = 7 * 60 - 8 * 60;
+      _noDisturbStartTime = NotificationSettings.defaultNoDisturbStart;
+      _noDisturbEndTime = NotificationSettings.defaultNoDisturbEnd;
       Imclient.setNoDisturbingTimes(_noDisturbStartTime, _noDisturbEndTime, () {
-        Fluttertoast.showToast(msg: "设置成功");
+        Fluttertoast.showToast(msg: l10n.setSuccess);
         setState(() {
           _noDisturbing = true;
         });
       }, (errorCode) {
-        Fluttertoast.showToast(msg: "网络错误");
+        Fluttertoast.showToast(msg: l10n.networkError);
         _loadUserSettings();
       });
     } else {
       Imclient.clearNoDisturbingTimes(() {
-        Fluttertoast.showToast(msg: "设置成功");
+        Fluttertoast.showToast(msg: l10n.setSuccess);
         setState(() {
           _noDisturbing = false;
           _noDisturbStartTime = 0;
           _noDisturbEndTime = 0;
         });
       }, (errorCode) {
-        Fluttertoast.showToast(msg: "网络错误");
+        Fluttertoast.showToast(msg: l10n.networkError);
         _loadUserSettings();
       });
     }
   }
 
-  String _formatNoDisturbTime(int startTime, int endTime) {
-    int localStart = startTime + 8 * 60;
-    int localEnd = endTime + 8 * 60;
-
-    int startHour = localStart ~/ 60;
-    int startMin = localStart % 60;
-    int endHour = localEnd ~/ 60;
-    int endMin = localEnd % 60;
-
-    return '${startHour.toString().padLeft(2, '0')}:${startMin.toString().padLeft(2, '0')} - ${endHour.toString().padLeft(2, '0')}:${endMin.toString().padLeft(2, '0')}';
-  }
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: context.colors.chatBgDesktop,
-      appBar: const PcPageHeader(title: "通知"),
+      appBar: PcPageHeader(title: l10n.notifications),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Align(
@@ -390,43 +378,43 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _SettingsSectionTitle("消息提醒"),
+                _SettingsSectionTitle(l10n.messageAlerts),
                 _SettingsCard(children: [
                   _SettingsSwitchRow(
-                    title: "接收新消息通知",
-                    subtitle: "开启或关闭新消息到达时的系统声音和横幅通知",
-                    value: _globalSilent,
+                    title: l10n.receiveNewMessageNotification,
+                    subtitle: l10n.receiveNewMessageNotificationDesc,
+                    value: _receiveMsgNotification,
                     onChanged: (val) {
-                      setState(() => _globalSilent = val);
+                      setState(() => _receiveMsgNotification = val);
                       _updateUserSetting(kUserSettingGlobalSilent, val, revert: true);
                     },
                   ),
                   const Divider(height: 0.5),
                   _SettingsSwitchRow(
-                    title: "接收语音或视频来电通知",
-                    subtitle: "开启或关闭新呼叫到达时的来电窗口提醒",
-                    value: _voipSilent,
+                    title: l10n.receiveCallNotification,
+                    subtitle: l10n.receiveCallNotificationDesc,
+                    value: _receiveVoipNotification,
                     onChanged: (val) {
-                      setState(() => _voipSilent = val);
+                      setState(() => _receiveVoipNotification = val);
                       _updateUserSetting(kUserSettingVoipSilent, val, revert: true);
                     },
                   ),
                   const Divider(height: 0.5),
                   _SettingsSwitchRow(
-                    title: "通知显示消息详情",
-                    subtitle: "开启后通知显示消息的发件人和预览内容，关闭后只显示“收到一条新消息”",
-                    value: _hiddenNotificationDetail,
+                    title: l10n.showNotificationDetail,
+                    subtitle: l10n.showNotificationDetailDesc,
+                    value: _showNotificationDetail,
                     onChanged: (val) {
-                      setState(() => _hiddenNotificationDetail = val);
+                      setState(() => _showNotificationDetail = val);
                       _updateUserSetting(kUserSettingHiddenNotificationDetail, val, revert: true);
                     },
                   ),
                   const Divider(height: 0.5),
                   _SettingsSwitchRow(
-                    title: "免打扰",
+                    title: l10n.noDisturb,
                     subtitle: _noDisturbing && _noDisturbStartTime != _noDisturbEndTime
-                        ? "当前免打扰时间段: ${_formatNoDisturbTime(_noDisturbStartTime, _noDisturbEndTime)}"
-                        : "开启后在特定时间段内接收消息不发出声音或振动提醒",
+                        ? l10n.noDisturbPeriod(NotificationSettings.formatNoDisturbTime(_noDisturbStartTime, _noDisturbEndTime))
+                        : l10n.noDisturbDesc,
                     value: _noDisturbing,
                     onChanged: (val) {
                       _toggleNoDisturb(val);
@@ -453,11 +441,11 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
     final fontSizeViewModel = Provider.of<FontSizeViewModel>(context);
     final themeViewModel = Provider.of<ThemeViewModel>(context);
 
-    String currentLangText = "跟随系统";
+    String currentLangText = l10n.followSystem;
     if (localeViewModel.localeMode == 'zh') {
-      currentLangText = "简体中文";
+      currentLangText = l10n.simplifiedChinese;
     } else if (localeViewModel.localeMode == 'en') {
-      currentLangText = "English";
+      currentLangText = l10n.english;
     }
 
     final currentThemeText = switch (themeViewModel.themeMode) {
@@ -468,7 +456,7 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: context.colors.chatBgDesktop,
-      appBar: const PcPageHeader(title: "外观与主题"),
+      appBar: PcPageHeader(title: l10n.appearanceAndTheme),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Align(
@@ -478,11 +466,11 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _SettingsSectionTitle("界面外观"),
+                _SettingsSectionTitle(l10n.interfaceAppearance),
                 _SettingsCard(children: [
                   _SettingsSelectorRow(
-                    title: "界面语言",
-                    subtitle: "更改客户端的界面语言，需重新启动应用以生效",
+                    title: l10n.interfaceLanguage,
+                    subtitle: l10n.interfaceLanguageDesc,
                     valueText: currentLangText,
                     onTap: (rowContext) {
                       _showLanguageMenu(rowContext);
@@ -490,8 +478,8 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
                   ),
                   const Divider(height: 0.5),
                   _SettingsSelectorRow(
-                    title: "外观主题",
-                    subtitle: "切换深色、浅色主题风格，或设置跟随系统外观",
+                    title: l10n.appearanceTheme,
+                    subtitle: l10n.appearanceThemeDesc,
                     valueText: currentThemeText,
                     onTap: (rowContext) {
                       _showThemeMenu(rowContext);
@@ -499,8 +487,8 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
                   ),
                   const Divider(height: 0.5),
                   _SettingsSliderRow(
-                    title: AppLocalizations.of(context)!.fontSize,
-                    subtitle: "调整界面的文本显示大小",
+                    title: l10n.fontSize,
+                    subtitle: l10n.fontSizeDesc,
                     index: fontSizeViewModel.index,
                     itemCount: fontSizeViewModel.itemCount,
                     onChanged: fontSizeViewModel.setFontSizeIndex,
@@ -528,19 +516,20 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
   }
 
   void _showLanguageMenu(BuildContext selectorContext) {
+    final l10n = AppLocalizations.of(selectorContext)!;
     final localeViewModel = Provider.of<LocaleViewModel>(selectorContext, listen: false);
     showMenu<String>(
       context: selectorContext,
       position: _menuPosition(selectorContext),
-      items: const [
-        PopupMenuItem(value: 'follow_system', child: Text("跟随系统")),
-        PopupMenuItem(value: 'zh', child: Text("简体中文")),
-        PopupMenuItem(value: 'en', child: Text("English")),
+      items: [
+        PopupMenuItem(value: 'follow_system', child: Text(l10n.followSystem)),
+        PopupMenuItem(value: 'zh', child: Text(l10n.simplifiedChinese)),
+        PopupMenuItem(value: 'en', child: Text(l10n.english)),
       ],
     ).then((value) {
       if (value != null) {
         localeViewModel.setLocaleMode(value);
-        Fluttertoast.showToast(msg: "设置成功，重新启动应用以生效");
+        Fluttertoast.showToast(msg: l10n.setSuccessRestartToApply);
       }
     });
   }
@@ -581,20 +570,21 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Selector<UserViewModel, UserInfo?>(
       selector: (context, viewModel) => viewModel.getUserInfo(Imclient.currentUserId),
       builder: (context, userInfo, _) {
         if (userInfo == null) {
           return Scaffold(
             backgroundColor: context.colors.chatBgDesktop,
-            appBar: const PcPageHeader(title: "账号与安全"),
+            appBar: PcPageHeader(title: l10n.accountAndSecurity),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         return Scaffold(
           backgroundColor: context.colors.chatBgDesktop,
-          appBar: const PcPageHeader(title: "账号与安全"),
+          appBar: PcPageHeader(title: l10n.accountAndSecurity),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Align(
@@ -604,7 +594,7 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _SettingsSectionTitle("当前登录账号"),
+                    _SettingsSectionTitle(l10n.currentLoginAccount),
                     Container(
                       decoration: BoxDecoration(
                         color: context.colors.surface,
@@ -632,7 +622,7 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  "账号: ${userInfo.name}",
+                                  l10n.accountName(userInfo.name),
                                   style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                                 ),
                               ],
@@ -646,17 +636,17 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                             ),
-                            child: const Text("退出登录", style: TextStyle(fontSize: 12)),
+                            child: Text(l10n.signOut, style: const TextStyle(fontSize: 12)),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const _SettingsSectionTitle("安全与数据"),
+                    _SettingsSectionTitle(l10n.securityAndData),
                     _SettingsCard(children: [
                       _SettingsClickableRow(
-                        title: "修改密码",
-                        subtitle: "支持使用旧密码验证修改登录密码",
+                        title: l10n.changePassword,
+                        subtitle: l10n.changePasswordDesc,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -666,8 +656,8 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                       ),
                       const Divider(height: 0.5),
                       _SettingsClickableRow(
-                        title: "黑名单",
-                        subtitle: "查看和管理已屏蔽的联系人列表",
+                        title: l10n.blacklist,
+                        subtitle: l10n.blacklistDesc,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -677,8 +667,8 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                       ),
                       const Divider(height: 0.5),
                       _SettingsClickableRow(
-                        title: "备份与恢复",
-                        subtitle: "备份聊天记录到电脑，或从电脑恢复备份到手机客户端",
+                        title: l10n.backup_and_restore,
+                        subtitle: l10n.backupAndRestoreDesc,
                         onTap: () {
                           Navigator.push(
                             context,
@@ -704,9 +694,10 @@ class PcAboutSettingsDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: context.colors.chatBgDesktop,
-      appBar: const PcPageHeader(title: "关于野火"),
+      appBar: PcPageHeader(title: l10n.about),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Align(
@@ -738,12 +729,12 @@ class PcAboutSettingsDetail extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  "野火 IM",
+                  l10n.appName,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: context.colors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "版本 v1.0.0",
+                  l10n.aboutVersion("v1.0.0"),
                   style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                 ),
                 const SizedBox(height: 24),
@@ -755,7 +746,7 @@ class PcAboutSettingsDetail extends StatelessWidget {
                     border: Border.all(color: context.colors.hairline, width: 0.5),
                   ),
                   child: Text(
-                    "野火IM 是安全可靠、开发对接便捷、部署维护简单，方便二次开发和对接现有系统的私有化即时通讯平台。",
+                    l10n.aboutDescription,
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 13, color: context.colors.textPrimary, height: 1.5),
                   ),
@@ -765,20 +756,20 @@ class PcAboutSettingsDetail extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const _SettingsTextLink(label: "官方网站", url: "https://wildfirechat.cn"),
+                    _SettingsTextLink(label: l10n.officialWebsite, url: "https://wildfirechat.cn"),
                     const SizedBox(width: 12),
                     Text("|", style: TextStyle(color: context.colors.textTertiary)),
                     const SizedBox(width: 12),
-                    const _SettingsTextLink(label: "GitHub 仓库", url: "https://github.com/wildfirechat"),
+                    _SettingsTextLink(label: l10n.githubRepo, url: "https://github.com/wildfirechat"),
                     const SizedBox(width: 12),
                     Text("|", style: TextStyle(color: context.colors.textTertiary)),
                     const SizedBox(width: 12),
-                    const _SettingsTextLink(label: "问题反馈", url: "https://github.com/wildfirechat/issues"),
+                    _SettingsTextLink(label: l10n.issueFeedback, url: "https://github.com/wildfirechat/issues"),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "微信联系：wildfirechat 或 wfchat",
+                  l10n.wechatContact,
                   style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
                 ),
               ],
@@ -1084,7 +1075,7 @@ class _SettingsTextLink extends StatelessWidget {
       builder: (context, hovered) {
         return GestureDetector(
           onTap: () {
-            Fluttertoast.showToast(msg: "打开链接: $url");
+            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.openLinkUrl(url));
           },
           child: Text(
             label,

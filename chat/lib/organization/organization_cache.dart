@@ -342,6 +342,11 @@ class OrganizationCache {
         eventBus.fire(OrganizationExUpdatedEvent(organizationId, loaded));
       } catch (e) {
         print('Failed to get organization ex $organizationId: $e');
+        // 无缓存可兜底时向上抛出，让 view model 进入错误/重试分支；
+        // 有旧缓存则降级返回旧数据。
+        if (_organizationExDict[organizationId] == null) {
+          rethrow;
+        }
       }
     }
     return _organizationExDict[organizationId] ?? ex;

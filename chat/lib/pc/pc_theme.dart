@@ -85,6 +85,9 @@ class PcTheme {
       splashFactory: NoSplash.splashFactory,
       highlightColor: overlay,
       hoverColor: overlay,
+      // 桌面统一紧凑密度:复用的移动端页面在 PC 壳内无需再逐 widget 判平台,
+      // 需要移动端密度的组件可自行显式覆盖。
+      visualDensity: VisualDensity.compact,
       scaffoldBackgroundColor: colors.surface,
       appBarTheme: AppBarTheme(
         backgroundColor: colors.surface,

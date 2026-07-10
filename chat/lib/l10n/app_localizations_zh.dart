@@ -1869,4 +1869,379 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get transferGroupSuccess => '转让群组成功';
+
+  @override
+  String get cloudDrive => '云盘';
+
+  @override
+  String get pickDestination => '选择目标位置';
+
+  @override
+  String get panServiceNotConfigured => '云盘服务未配置';
+
+  @override
+  String get loadFailedRetry => '加载失败，请稍后重试';
+
+  @override
+  String get noPanSpaces => '没有网盘空间';
+
+  @override
+  String panFileCount(Object count) {
+    return '$count个文件';
+  }
+
+  @override
+  String get panGlobalPublicSpace => '全局公共空间';
+
+  @override
+  String get panMyPublicSpace => '我的公共空间';
+
+  @override
+  String get panMyPrivateSpace => '我的个人空间';
+
+  @override
+  String get paste => '粘贴';
+
+  @override
+  String get noFilesYet => '暂无文件';
+
+  @override
+  String panItemCount(Object count) {
+    return '$count项';
+  }
+
+  @override
+  String get panCannotMoveFolderIntoItself => '不能将文件夹移动到自身';
+
+  @override
+  String get panCannotCopyFolderIntoItself => '不能将文件夹复制到自身';
+
+  @override
+  String get panGetDownloadUrlFailed => '获取下载链接失败';
+
+  @override
+  String get uploading => '上传中...';
+
+  @override
+  String get cancelUpload => '取消上传';
+
+  @override
+  String get uploadSuccess => '上传成功';
+
+  @override
+  String get uploadCancelled => '上传已取消';
+
+  @override
+  String get uploadFail => '上传失败';
+
+  @override
+  String get newFolder => '新建文件夹';
+
+  @override
+  String get folderName => '文件夹名称';
+
+  @override
+  String get createSuccess => '创建成功';
+
+  @override
+  String get createFail => '创建失败';
+
+  @override
+  String get rename => '重命名';
+
+  @override
+  String get newName => '新名称';
+
+  @override
+  String get renameSuccess => '重命名成功';
+
+  @override
+  String get renameFail => '重命名失败';
+
+  @override
+  String get panNoSpaceToSave => '没有可转存的空间';
+
+  @override
+  String get panLoadSpacesFailed => '加载空间失败';
+
+  @override
+  String get panDuplicate => '转存';
+
+  @override
+  String get panDuplicateSuccess => '转存成功';
+
+  @override
+  String get panDuplicateFail => '转存失败';
+
+  @override
+  String get panCannotMoveToSameLocation => '不能将文件移动到原位置';
+
+  @override
+  String get moveSuccess => '移动成功';
+
+  @override
+  String get moveFail => '移动失败';
+
+  @override
+  String get panCannotCopyToSameLocation => '不能将文件复制到原位置';
+
+  @override
+  String get copySuccess => '复制成功';
+
+  @override
+  String get copyFail => '复制失败';
+
+  @override
+  String deleteFileConfirm(Object name) {
+    return '确认要删除“$name”吗？';
+  }
+
+  @override
+  String get downloadOrOpen => '下载/打开';
+
+  @override
+  String get share => '分享';
+
+  @override
+  String get move => '移动';
+
+  @override
+  String get general => '通用';
+
+  @override
+  String get appearanceAndTheme => '外观与主题';
+
+  @override
+  String get notifications => '通知';
+
+  @override
+  String get accountAndSecurity => '账号与安全';
+
+  @override
+  String get chat => '聊天';
+
+  @override
+  String get syncDraft => '同步草稿';
+
+  @override
+  String get syncDraftDesc => '在移动端和电脑端之间双向同步聊天草稿';
+
+  @override
+  String get startupAndWindow => '启动与窗口';
+
+  @override
+  String get closeToExitTitle => '点击窗口关闭按钮时退出应用程序';
+
+  @override
+  String get closeToExitDesc => '关闭后，点击关闭按钮仅将窗口最小化到系统托盘';
+
+  @override
+  String get minimizeToTaskbarTitle => '允许主窗口最小化到任务栏';
+
+  @override
+  String get minimizeToTaskbarDesc => '开启后，窗口可以最小化；关闭后，窗口将保持在前台';
+
+  @override
+  String get termsOfService => '服务条款';
+
+  @override
+  String get userAgreementDesc => '阅读野火IM软件许可及服务协议';
+
+  @override
+  String get privacyPolicyDesc => '阅读野火IM隐私政策';
+
+  @override
+  String get messageAlerts => '消息提示';
+
+  @override
+  String get receiveNewMessageNotification => '接收新消息通知';
+
+  @override
+  String get receiveNewMessageNotificationDesc => '开启或关闭新消息到达时的系统声音和横幅通知';
+
+  @override
+  String get receiveCallNotification => '接收语音或视频来电通知';
+
+  @override
+  String get receiveCallNotificationDesc => '开启或关闭新呼叫到达时的来电窗口提醒';
+
+  @override
+  String get showNotificationDetail => '通知显示消息详情';
+
+  @override
+  String get showNotificationDetailDesc => '开启后通知显示消息的发件人和预览内容，关闭后只显示“收到一条新消息”';
+
+  @override
+  String get noDisturb => '免打扰';
+
+  @override
+  String noDisturbPeriod(Object period) {
+    return '当前免打扰时间段: $period';
+  }
+
+  @override
+  String get noDisturbDesc => '开启后在特定时间段内接收消息不发出声音或振动提醒';
+
+  @override
+  String get simplifiedChinese => '简体中文';
+
+  @override
+  String get interfaceAppearance => '界面外观';
+
+  @override
+  String get interfaceLanguage => '界面语言';
+
+  @override
+  String get interfaceLanguageDesc => '更改界面语言；重启应用后生效';
+
+  @override
+  String get appearanceTheme => '主题';
+
+  @override
+  String get appearanceThemeDesc => '在深色和浅色主题之间切换，或跟随系统外观';
+
+  @override
+  String get fontSizeDesc => '调整界面的文字显示大小';
+
+  @override
+  String get setSuccessRestartToApply => '设置成功，重启应用后生效';
+
+  @override
+  String get currentLoginAccount => '当前登录账号';
+
+  @override
+  String accountName(Object name) {
+    return '账号: $name';
+  }
+
+  @override
+  String get signOut => '退出登录';
+
+  @override
+  String get securityAndData => '安全与数据';
+
+  @override
+  String get changePassword => '修改密码';
+
+  @override
+  String get changePasswordDesc => '通过验证旧密码来更改您的登录密码';
+
+  @override
+  String get blacklist => '黑名单';
+
+  @override
+  String get blacklistDesc => '查看和管理已屏蔽的联系人';
+
+  @override
+  String get backupAndRestoreDesc => '备份聊天记录到电脑，或者恢复备份到手机';
+
+  @override
+  String aboutVersion(Object version) {
+    return '版本 $version';
+  }
+
+  @override
+  String get aboutDescription =>
+      '野火IM是安全、可靠的私有即时通讯平台，易于集成、简单部署维护，方便进行二次开发和与现有系统集成。';
+
+  @override
+  String get officialWebsite => '官方网站';
+
+  @override
+  String get githubRepo => 'GitHub 仓库';
+
+  @override
+  String get issueFeedback => '问题反馈';
+
+  @override
+  String get wechatContact => '微信: wildfirechat 或 wfchat';
+
+  @override
+  String openLinkUrl(Object url) {
+    return '打开链接: $url';
+  }
+
+  @override
+  String get pleaseCompletePasswordFields => '请填写所有密码字段';
+
+  @override
+  String get passwordNotMatch => '两次输入的密码不一致';
+
+  @override
+  String get passwordTooShort => '新密码必须至少为6个字符';
+
+  @override
+  String get oldPassword => '旧密码';
+
+  @override
+  String get inputOldPassword => '输入旧密码';
+
+  @override
+  String get newPassword => '新密码';
+
+  @override
+  String get inputNewPassword => '输入新密码';
+
+  @override
+  String get confirmNewPassword => '确认新密码';
+
+  @override
+  String get inputNewPasswordAgain => '再次输入新密码';
+
+  @override
+  String get confirmModify => '确认修改';
+
+  @override
+  String get removeFromBlacklistConfirm => '确定要将此用户从黑名单中移除吗？';
+
+  @override
+  String get removedFromBlacklist => '已从黑名单移除';
+
+  @override
+  String get blacklistEmpty => '黑名单为空';
+
+  @override
+  String get blacklistRemove => '移除';
+
+  @override
+  String get searchOrgMembers => '搜索成员';
+
+  @override
+  String maxSelectCount(Object count) {
+    return '最多选择 $count 人';
+  }
+
+  @override
+  String get noOrganizationData => '暂无组织架构数据';
+
+  @override
+  String get orgNoSubOrgOrMembers => '该部门暂无下级部门或成员';
+
+  @override
+  String get subDepartments => '下级部门';
+
+  @override
+  String get members => '成员';
+
+  @override
+  String get noMatchedMembers => '未找到匹配的成员';
+
+  @override
+  String confirmWithCount(Object count, Object max) {
+    return '确定 ($count/$max)';
+  }
+
+  @override
+  String get reload => '重新加载';
+
+  @override
+  String searchFailed(Object error) {
+    return '搜索失败: $error';
+  }
+
+  @override
+  String get messageSettings => '消息设置';
+
+  @override
+  String get unknownMessageNotImplemented => '暂不支持此消息类型，请升级客户端！';
 }

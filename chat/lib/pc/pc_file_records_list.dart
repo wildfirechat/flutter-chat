@@ -28,11 +28,9 @@ class PcFileRecordsList extends StatelessWidget {
       {Conversation? conversation, String? userId}) {
     onOpenFileList(FileListScreen(
       title: title,
-      child: FileListWidget(
-        type: type,
-        conversation: conversation,
-        userId: userId,
-      ),
+      type: type,
+      conversation: conversation,
+      userId: userId,
     ));
   }
 

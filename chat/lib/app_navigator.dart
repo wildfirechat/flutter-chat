@@ -65,6 +65,23 @@ void pushPage(BuildContext context, Widget page) {
   }
 }
 
+/// 替换当前页(如"选择会话/用户"页选完后进入结果页,返回时跳过选择页)。
+void pushReplacementPage(BuildContext context, Widget page) {
+  final shell = _shellOf(context);
+  if (shell != null) {
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => page,
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
+  } else {
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (_) => page));
+  }
+}
+
 /// 回到登录页(登出/被踢/token 失效):若栈顶已是登录页则不动,
 /// 否则清空根导航栈换成平台各自的登录页。调用方自行负责 [Imclient.disconnect]。
 void navigateToLogin(NavigatorState rootNavigator) {

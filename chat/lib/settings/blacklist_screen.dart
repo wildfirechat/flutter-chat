@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -46,19 +47,20 @@ class _BlacklistScreenState extends State<BlacklistScreen> {
   }
 
   Future<void> _removeFromBlacklist(String userId) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('移出黑名单'),
-        content: const Text('确定要将该用户移出黑名单吗？'),
+        title: Text(l10n.removeFromBlacklist),
+        content: Text(l10n.removeFromBlacklistConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('确定'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -67,9 +69,9 @@ class _BlacklistScreenState extends State<BlacklistScreen> {
     if (confirmed == true) {
       Imclient.setBlackList(userId, false, () {
         _loadBlacklist();
-        Fluttertoast.showToast(msg: '已移出黑名单');
+        Fluttertoast.showToast(msg: l10n.removedFromBlacklist);
       }, (code) {
-        Fluttertoast.showToast(msg: '操作失败: $code');
+        Fluttertoast.showToast(msg: l10n.operateFail('$code'));
       });
     }
   }
@@ -78,7 +80,7 @@ class _BlacklistScreenState extends State<BlacklistScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('黑名单'),
+        title: Text(AppLocalizations.of(context)!.blacklist),
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
@@ -106,7 +108,8 @@ class _BlacklistScreenState extends State<BlacklistScreen> {
         children: [
           Icon(Icons.block, size: 64, color: Colors.grey[300]),
           const SizedBox(height: 16),
-          const Text('黑名单为空', style: TextStyle(fontSize: 16, color: Color(0xFF999999))),
+          Text(AppLocalizations.of(context)!.blacklistEmpty,
+              style: const TextStyle(fontSize: 16, color: Color(0xFF999999))),
         ],
       ),
     );
@@ -125,7 +128,8 @@ class _BlacklistScreenState extends State<BlacklistScreen> {
       subtitle: Text(userId, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
       trailing: TextButton(
         onPressed: () => _removeFromBlacklist(userId),
-        child: const Text('移出', style: TextStyle(color: Colors.red)),
+        child: Text(AppLocalizations.of(context)!.blacklistRemove,
+            style: const TextStyle(color: Colors.red)),
       ),
     );
   }

@@ -471,10 +471,8 @@ class _PCHomeState extends State<PCHome> {
                 FileListScreen(
                   title: AppLocalizations.of(context)!.chatFiles,
                   onBack: () => Navigator.of(context).maybePop(),
-                  child: FileListWidget(
-                    type: FileListType.conversation,
-                    conversation: conversation,
-                  ),
+                  type: FileListType.conversation,
+                  conversation: conversation,
                 ),
               ),
             );
@@ -498,15 +496,13 @@ class _PCHomeState extends State<PCHome> {
                 FileListScreen(
                   title: AppLocalizations.of(context)!.userFiles,
                   onBack: () => Navigator.of(context).maybePop(),
-                  child: FileListWidget(
-                    type: FileListType.user,
-                    conversation: Conversation(
-                      conversationType: ConversationType.Single,
-                      target: userId,
-                      line: 0,
-                    ),
-                    userId: userId,
+                  type: FileListType.user,
+                  conversation: Conversation(
+                    conversationType: ConversationType.Single,
+                    target: userId,
+                    line: 0,
                   ),
+                  userId: userId,
                 ),
               ),
             );

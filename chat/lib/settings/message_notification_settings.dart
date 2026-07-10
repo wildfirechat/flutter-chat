@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:chat/constants.dart';
+import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/settings/notification_settings.dart';
 
 
 class MessageNotificationSettings extends StatelessWidget {
-  final List modelList = [
-    ['接收新消息通知', 'new_msg_notification'],
-    ['接收语音或视频来电通知', 'voip_notification'],
-    ['通知显示消息详情', 'new_msg_detail'],
-    ['免打扰', 'no_disturb'],
-    ['同步草稿', 'sync_draft'],
+  static const List<String> _settingKeys = [
+    'new_msg_notification',
+    'voip_notification',
+    'new_msg_detail',
+    'no_disturb',
+    'sync_draft',
   ];
 
   MessageNotificationSettings({Key? key}) : super(key: key);
@@ -19,10 +21,10 @@ class MessageNotificationSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("消息设置"),),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.messageSettings),),
       body: SafeArea(
         child: ListView.builder(
-          itemCount: modelList.length,
+          itemCount: _settingKeys.length,
           itemBuilder: (BuildContext context, int index) {
             return _buildRow(context, index);
           },
@@ -31,10 +33,27 @@ class MessageNotificationSettings extends StatelessWidget {
     );
   }
 
+  String _titleFor(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (key) {
+      case 'new_msg_notification':
+        return l10n.receiveNewMessageNotification;
+      case 'voip_notification':
+        return l10n.receiveCallNotification;
+      case 'new_msg_detail':
+        return l10n.showNotificationDetail;
+      case 'no_disturb':
+        return l10n.noDisturb;
+      case 'sync_draft':
+        return l10n.syncDraft;
+      default:
+        return key;
+    }
+  }
+
   Widget _buildRow(BuildContext context, int index) {
-    String title = modelList[index][0];
-    String key = modelList[index][1];
-    return MessageNotificationSettingItem(title, key);
+    String key = _settingKeys[index];
+    return MessageNotificationSettingItem(_titleFor(context, key), key);
   }
 }
 
@@ -102,29 +121,12 @@ class MessageNotificationSettingItemState extends State<MessageNotificationSetti
         });
       });
     } else {
-      Imclient.getUserSetting(scope, "").then((value)  {
+      NotificationSettings.getBool(scope, invert: revertValue).then((value) {
         setState(() {
-          isEnabled = !(value.isEmpty || value == '0');
-          if(revertValue) {
-            isEnabled = !isEnabled;
-          }
+          isEnabled = value;
         });
       });
     }
-  }
-
-  String _formatTimeDuration(int startTime, int endTime) {
-    //弹出界面限制开始时间和结束时间，假设选择时间是晚上9点到第二天7天
-    //东八区的时差是8个小时
-    startTime = startTime + 8*60;
-    endTime = endTime + 8*60;
-
-    int startHour = startTime~/60;
-    int startMin = startTime%60;
-    int endHour = endTime~/60;
-    int endMin = endTime%60;
-
-    return '${startHour.toString().padLeft(2)}:${startMin.toString().padLeft(2)} - ${endHour.toString().padLeft(2)}:${endMin.toString().padLeft(2)}';
   }
 
   @override
@@ -136,42 +138,38 @@ class MessageNotificationSettingItemState extends State<MessageNotificationSetti
             const Padding(padding: EdgeInsets.all(8)),
             Text(widget.settingName),
             Expanded(child: Container()),
-            (widget.settingKey == 'no_disturb' && startTime != endTime) ? Text(_formatTimeDuration(startTime, endTime)):Container(),
+            (widget.settingKey == 'no_disturb' && startTime != endTime) ? Text(NotificationSettings.formatNoDisturbTime(startTime, endTime)):Container(),
             Switch(value: isEnabled, onChanged: (enable) {
+              final l10n = AppLocalizations.of(context)!;
               setState(() {
                 isEnabled = enable;
               });
-              if(revertValue) {
-                enable = !enable;
-              }
 
               if(widget.settingKey == 'no_disturb') {
                if(isEnabled) {
-                 //弹出界面限制开始时间和结束时间，假设选择时间是晚上9点到第二天7天
-                 //东八区的时差是8个小时
-                 startTime = 21*60 - 8*60;
-                 endTime = 7*60 - 8*60;
+                 startTime = NotificationSettings.defaultNoDisturbStart;
+                 endTime = NotificationSettings.defaultNoDisturbEnd;
                  Imclient.setNoDisturbingTimes(startTime, endTime, () {
-                   Fluttertoast.showToast(msg: "设置成功");
+                   Fluttertoast.showToast(msg: l10n.setSuccess);
                  }, (errorCode) {
-                   Fluttertoast.showToast(msg: "网络错误");
+                   Fluttertoast.showToast(msg: l10n.networkError);
                    loadData();
                  });
                } else {
                  startTime = 0;
                  endTime = 0;
                  Imclient.clearNoDisturbingTimes(() {
-                   Fluttertoast.showToast(msg: "设置成功");
+                   Fluttertoast.showToast(msg: l10n.setSuccess);
                  }, (errorCode) {
-                   Fluttertoast.showToast(msg: "网络错误");
+                   Fluttertoast.showToast(msg: l10n.networkError);
                    loadData();
                  });
                }
               } else {
-                Imclient.setUserSetting(scope, "", enable ? "1" : "0", () {
-                  Fluttertoast.showToast(msg: "设置成功");
-                }, (errorCode) {
-                  Fluttertoast.showToast(msg: "网络错误");
+                NotificationSettings.setBool(scope, enable, invert: revertValue, onSuccess: () {
+                  Fluttertoast.showToast(msg: l10n.setSuccess);
+                }, onFailure: (errorCode) {
+                  Fluttertoast.showToast(msg: l10n.networkError);
                   loadData();
                 });
               }

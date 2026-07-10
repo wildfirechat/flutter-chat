@@ -3577,6 +3577,714 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'转让群组成功'**
   String get transferGroupSuccess;
+
+  /// No description provided for @cloudDrive.
+  ///
+  /// In zh, this message translates to:
+  /// **'云盘'**
+  String get cloudDrive;
+
+  /// No description provided for @pickDestination.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择目标位置'**
+  String get pickDestination;
+
+  /// No description provided for @panServiceNotConfigured.
+  ///
+  /// In zh, this message translates to:
+  /// **'云盘服务未配置'**
+  String get panServiceNotConfigured;
+
+  /// No description provided for @loadFailedRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载失败，请稍后重试'**
+  String get loadFailedRetry;
+
+  /// No description provided for @noPanSpaces.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有网盘空间'**
+  String get noPanSpaces;
+
+  /// No description provided for @panFileCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}个文件'**
+  String panFileCount(Object count);
+
+  /// No description provided for @panGlobalPublicSpace.
+  ///
+  /// In zh, this message translates to:
+  /// **'全局公共空间'**
+  String get panGlobalPublicSpace;
+
+  /// No description provided for @panMyPublicSpace.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的公共空间'**
+  String get panMyPublicSpace;
+
+  /// No description provided for @panMyPrivateSpace.
+  ///
+  /// In zh, this message translates to:
+  /// **'我的个人空间'**
+  String get panMyPrivateSpace;
+
+  /// No description provided for @paste.
+  ///
+  /// In zh, this message translates to:
+  /// **'粘贴'**
+  String get paste;
+
+  /// No description provided for @noFilesYet.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无文件'**
+  String get noFilesYet;
+
+  /// No description provided for @panItemCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}项'**
+  String panItemCount(Object count);
+
+  /// No description provided for @panCannotMoveFolderIntoItself.
+  ///
+  /// In zh, this message translates to:
+  /// **'不能将文件夹移动到自身'**
+  String get panCannotMoveFolderIntoItself;
+
+  /// No description provided for @panCannotCopyFolderIntoItself.
+  ///
+  /// In zh, this message translates to:
+  /// **'不能将文件夹复制到自身'**
+  String get panCannotCopyFolderIntoItself;
+
+  /// No description provided for @panGetDownloadUrlFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取下载链接失败'**
+  String get panGetDownloadUrlFailed;
+
+  /// No description provided for @uploading.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传中...'**
+  String get uploading;
+
+  /// No description provided for @cancelUpload.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消上传'**
+  String get cancelUpload;
+
+  /// No description provided for @uploadSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传成功'**
+  String get uploadSuccess;
+
+  /// No description provided for @uploadCancelled.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传已取消'**
+  String get uploadCancelled;
+
+  /// No description provided for @uploadFail.
+  ///
+  /// In zh, this message translates to:
+  /// **'上传失败'**
+  String get uploadFail;
+
+  /// No description provided for @newFolder.
+  ///
+  /// In zh, this message translates to:
+  /// **'新建文件夹'**
+  String get newFolder;
+
+  /// No description provided for @folderName.
+  ///
+  /// In zh, this message translates to:
+  /// **'文件夹名称'**
+  String get folderName;
+
+  /// No description provided for @createSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建成功'**
+  String get createSuccess;
+
+  /// No description provided for @createFail.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建失败'**
+  String get createFail;
+
+  /// No description provided for @rename.
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名'**
+  String get rename;
+
+  /// No description provided for @newName.
+  ///
+  /// In zh, this message translates to:
+  /// **'新名称'**
+  String get newName;
+
+  /// No description provided for @renameSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名成功'**
+  String get renameSuccess;
+
+  /// No description provided for @renameFail.
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名失败'**
+  String get renameFail;
+
+  /// No description provided for @panNoSpaceToSave.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有可转存的空间'**
+  String get panNoSpaceToSave;
+
+  /// No description provided for @panLoadSpacesFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载空间失败'**
+  String get panLoadSpacesFailed;
+
+  /// No description provided for @panDuplicate.
+  ///
+  /// In zh, this message translates to:
+  /// **'转存'**
+  String get panDuplicate;
+
+  /// No description provided for @panDuplicateSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'转存成功'**
+  String get panDuplicateSuccess;
+
+  /// No description provided for @panDuplicateFail.
+  ///
+  /// In zh, this message translates to:
+  /// **'转存失败'**
+  String get panDuplicateFail;
+
+  /// No description provided for @panCannotMoveToSameLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'不能将文件移动到原位置'**
+  String get panCannotMoveToSameLocation;
+
+  /// No description provided for @moveSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'移动成功'**
+  String get moveSuccess;
+
+  /// No description provided for @moveFail.
+  ///
+  /// In zh, this message translates to:
+  /// **'移动失败'**
+  String get moveFail;
+
+  /// No description provided for @panCannotCopyToSameLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'不能将文件复制到原位置'**
+  String get panCannotCopyToSameLocation;
+
+  /// No description provided for @copySuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制成功'**
+  String get copySuccess;
+
+  /// No description provided for @copyFail.
+  ///
+  /// In zh, this message translates to:
+  /// **'复制失败'**
+  String get copyFail;
+
+  /// No description provided for @deleteFileConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认要删除“{name}”吗？'**
+  String deleteFileConfirm(Object name);
+
+  /// No description provided for @downloadOrOpen.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载/打开'**
+  String get downloadOrOpen;
+
+  /// No description provided for @share.
+  ///
+  /// In zh, this message translates to:
+  /// **'分享'**
+  String get share;
+
+  /// No description provided for @move.
+  ///
+  /// In zh, this message translates to:
+  /// **'移动'**
+  String get move;
+
+  /// No description provided for @general.
+  ///
+  /// In zh, this message translates to:
+  /// **'通用'**
+  String get general;
+
+  /// No description provided for @appearanceAndTheme.
+  ///
+  /// In zh, this message translates to:
+  /// **'外观与主题'**
+  String get appearanceAndTheme;
+
+  /// No description provided for @notifications.
+  ///
+  /// In zh, this message translates to:
+  /// **'通知'**
+  String get notifications;
+
+  /// No description provided for @accountAndSecurity.
+  ///
+  /// In zh, this message translates to:
+  /// **'账号与安全'**
+  String get accountAndSecurity;
+
+  /// No description provided for @chat.
+  ///
+  /// In zh, this message translates to:
+  /// **'聊天'**
+  String get chat;
+
+  /// No description provided for @syncDraft.
+  ///
+  /// In zh, this message translates to:
+  /// **'同步草稿'**
+  String get syncDraft;
+
+  /// No description provided for @syncDraftDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'在移动端和电脑端之间双向同步聊天草稿'**
+  String get syncDraftDesc;
+
+  /// No description provided for @startupAndWindow.
+  ///
+  /// In zh, this message translates to:
+  /// **'启动与窗口'**
+  String get startupAndWindow;
+
+  /// No description provided for @closeToExitTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击窗口关闭按钮时退出应用程序'**
+  String get closeToExitTitle;
+
+  /// No description provided for @closeToExitDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭后，点击关闭按钮仅将窗口最小化到系统托盘'**
+  String get closeToExitDesc;
+
+  /// No description provided for @minimizeToTaskbarTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许主窗口最小化到任务栏'**
+  String get minimizeToTaskbarTitle;
+
+  /// No description provided for @minimizeToTaskbarDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后，窗口可以最小化；关闭后，窗口将保持在前台'**
+  String get minimizeToTaskbarDesc;
+
+  /// No description provided for @termsOfService.
+  ///
+  /// In zh, this message translates to:
+  /// **'服务条款'**
+  String get termsOfService;
+
+  /// No description provided for @userAgreementDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'阅读野火IM软件许可及服务协议'**
+  String get userAgreementDesc;
+
+  /// No description provided for @privacyPolicyDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'阅读野火IM隐私政策'**
+  String get privacyPolicyDesc;
+
+  /// No description provided for @messageAlerts.
+  ///
+  /// In zh, this message translates to:
+  /// **'消息提示'**
+  String get messageAlerts;
+
+  /// No description provided for @receiveNewMessageNotification.
+  ///
+  /// In zh, this message translates to:
+  /// **'接收新消息通知'**
+  String get receiveNewMessageNotification;
+
+  /// No description provided for @receiveNewMessageNotificationDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启或关闭新消息到达时的系统声音和横幅通知'**
+  String get receiveNewMessageNotificationDesc;
+
+  /// No description provided for @receiveCallNotification.
+  ///
+  /// In zh, this message translates to:
+  /// **'接收语音或视频来电通知'**
+  String get receiveCallNotification;
+
+  /// No description provided for @receiveCallNotificationDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启或关闭新呼叫到达时的来电窗口提醒'**
+  String get receiveCallNotificationDesc;
+
+  /// No description provided for @showNotificationDetail.
+  ///
+  /// In zh, this message translates to:
+  /// **'通知显示消息详情'**
+  String get showNotificationDetail;
+
+  /// No description provided for @showNotificationDetailDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后通知显示消息的发件人和预览内容，关闭后只显示“收到一条新消息”'**
+  String get showNotificationDetailDesc;
+
+  /// No description provided for @noDisturb.
+  ///
+  /// In zh, this message translates to:
+  /// **'免打扰'**
+  String get noDisturb;
+
+  /// No description provided for @noDisturbPeriod.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前免打扰时间段: {period}'**
+  String noDisturbPeriod(Object period);
+
+  /// No description provided for @noDisturbDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后在特定时间段内接收消息不发出声音或振动提醒'**
+  String get noDisturbDesc;
+
+  /// No description provided for @simplifiedChinese.
+  ///
+  /// In zh, this message translates to:
+  /// **'简体中文'**
+  String get simplifiedChinese;
+
+  /// No description provided for @interfaceAppearance.
+  ///
+  /// In zh, this message translates to:
+  /// **'界面外观'**
+  String get interfaceAppearance;
+
+  /// No description provided for @interfaceLanguage.
+  ///
+  /// In zh, this message translates to:
+  /// **'界面语言'**
+  String get interfaceLanguage;
+
+  /// No description provided for @interfaceLanguageDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'更改界面语言；重启应用后生效'**
+  String get interfaceLanguageDesc;
+
+  /// No description provided for @appearanceTheme.
+  ///
+  /// In zh, this message translates to:
+  /// **'主题'**
+  String get appearanceTheme;
+
+  /// No description provided for @appearanceThemeDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'在深色和浅色主题之间切换，或跟随系统外观'**
+  String get appearanceThemeDesc;
+
+  /// No description provided for @fontSizeDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'调整界面的文字显示大小'**
+  String get fontSizeDesc;
+
+  /// No description provided for @setSuccessRestartToApply.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置成功，重启应用后生效'**
+  String get setSuccessRestartToApply;
+
+  /// No description provided for @currentLoginAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前登录账号'**
+  String get currentLoginAccount;
+
+  /// No description provided for @accountName.
+  ///
+  /// In zh, this message translates to:
+  /// **'账号: {name}'**
+  String accountName(Object name);
+
+  /// No description provided for @signOut.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出登录'**
+  String get signOut;
+
+  /// No description provided for @securityAndData.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全与数据'**
+  String get securityAndData;
+
+  /// No description provided for @changePassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'修改密码'**
+  String get changePassword;
+
+  /// No description provided for @changePasswordDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'通过验证旧密码来更改您的登录密码'**
+  String get changePasswordDesc;
+
+  /// No description provided for @blacklist.
+  ///
+  /// In zh, this message translates to:
+  /// **'黑名单'**
+  String get blacklist;
+
+  /// No description provided for @blacklistDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看和管理已屏蔽的联系人'**
+  String get blacklistDesc;
+
+  /// No description provided for @backupAndRestoreDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份聊天记录到电脑，或者恢复备份到手机'**
+  String get backupAndRestoreDesc;
+
+  /// No description provided for @aboutVersion.
+  ///
+  /// In zh, this message translates to:
+  /// **'版本 {version}'**
+  String aboutVersion(Object version);
+
+  /// No description provided for @aboutDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'野火IM是安全、可靠的私有即时通讯平台，易于集成、简单部署维护，方便进行二次开发和与现有系统集成。'**
+  String get aboutDescription;
+
+  /// No description provided for @officialWebsite.
+  ///
+  /// In zh, this message translates to:
+  /// **'官方网站'**
+  String get officialWebsite;
+
+  /// No description provided for @githubRepo.
+  ///
+  /// In zh, this message translates to:
+  /// **'GitHub 仓库'**
+  String get githubRepo;
+
+  /// No description provided for @issueFeedback.
+  ///
+  /// In zh, this message translates to:
+  /// **'问题反馈'**
+  String get issueFeedback;
+
+  /// No description provided for @wechatContact.
+  ///
+  /// In zh, this message translates to:
+  /// **'微信: wildfirechat 或 wfchat'**
+  String get wechatContact;
+
+  /// No description provided for @openLinkUrl.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开链接: {url}'**
+  String openLinkUrl(Object url);
+
+  /// No description provided for @pleaseCompletePasswordFields.
+  ///
+  /// In zh, this message translates to:
+  /// **'请填写所有密码字段'**
+  String get pleaseCompletePasswordFields;
+
+  /// No description provided for @passwordNotMatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'两次输入的密码不一致'**
+  String get passwordNotMatch;
+
+  /// No description provided for @passwordTooShort.
+  ///
+  /// In zh, this message translates to:
+  /// **'新密码必须至少为6个字符'**
+  String get passwordTooShort;
+
+  /// No description provided for @oldPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'旧密码'**
+  String get oldPassword;
+
+  /// No description provided for @inputOldPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入旧密码'**
+  String get inputOldPassword;
+
+  /// No description provided for @newPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'新密码'**
+  String get newPassword;
+
+  /// No description provided for @inputNewPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入新密码'**
+  String get inputNewPassword;
+
+  /// No description provided for @confirmNewPassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认新密码'**
+  String get confirmNewPassword;
+
+  /// No description provided for @inputNewPasswordAgain.
+  ///
+  /// In zh, this message translates to:
+  /// **'再次输入新密码'**
+  String get inputNewPasswordAgain;
+
+  /// No description provided for @confirmModify.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认修改'**
+  String get confirmModify;
+
+  /// No description provided for @removeFromBlacklistConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要将此用户从黑名单中移除吗？'**
+  String get removeFromBlacklistConfirm;
+
+  /// No description provided for @removedFromBlacklist.
+  ///
+  /// In zh, this message translates to:
+  /// **'已从黑名单移除'**
+  String get removedFromBlacklist;
+
+  /// No description provided for @blacklistEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'黑名单为空'**
+  String get blacklistEmpty;
+
+  /// No description provided for @blacklistRemove.
+  ///
+  /// In zh, this message translates to:
+  /// **'移除'**
+  String get blacklistRemove;
+
+  /// No description provided for @searchOrgMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索成员'**
+  String get searchOrgMembers;
+
+  /// No description provided for @maxSelectCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'最多选择 {count} 人'**
+  String maxSelectCount(Object count);
+
+  /// No description provided for @noOrganizationData.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无组织架构数据'**
+  String get noOrganizationData;
+
+  /// No description provided for @orgNoSubOrgOrMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'该部门暂无下级部门或成员'**
+  String get orgNoSubOrgOrMembers;
+
+  /// No description provided for @subDepartments.
+  ///
+  /// In zh, this message translates to:
+  /// **'下级部门'**
+  String get subDepartments;
+
+  /// No description provided for @members.
+  ///
+  /// In zh, this message translates to:
+  /// **'成员'**
+  String get members;
+
+  /// No description provided for @noMatchedMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'未找到匹配的成员'**
+  String get noMatchedMembers;
+
+  /// No description provided for @confirmWithCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定 ({count}/{max})'**
+  String confirmWithCount(Object count, Object max);
+
+  /// No description provided for @reload.
+  ///
+  /// In zh, this message translates to:
+  /// **'重新加载'**
+  String get reload;
+
+  /// No description provided for @searchFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索失败: {error}'**
+  String searchFailed(Object error);
+
+  /// No description provided for @messageSettings.
+  ///
+  /// In zh, this message translates to:
+  /// **'消息设置'**
+  String get messageSettings;
+
+  /// No description provided for @unknownMessageNotImplemented.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂不支持此消息类型，请升级客户端！'**
+  String get unknownMessageNotImplemented;
 }
 
 class _AppLocalizationsDelegate
