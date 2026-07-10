@@ -324,6 +324,8 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
                     break
                 }
                 case 'onTrafficData':
+                case 'onErrorEvent':
+                case 'onDomainInfoUpdate':
                 case 'onConversationTopUpdate':
                 case 'onConversationSilentUpdate':
                 case 'onClearMessage':

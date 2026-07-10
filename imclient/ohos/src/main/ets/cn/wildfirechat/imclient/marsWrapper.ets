@@ -472,6 +472,64 @@ function kickoffPCClient(clientId: string, successCB: VoidCallback, failCB: Fail
     return clientModule.kickoffPCClient(clientId, voidCallback(successCB), numberCallback(failCB));
 }
 
+function setDeviceName(deviceName: string): void {
+    clientModule.setDeviceName(deviceName);
+}
+function setHeartBeatInterval(sec: number): void {
+    clientModule.setHeartBeatInterval(sec);
+}
+function setAppDataPath(path: string): void {
+    clientModule.setAppDataPath(path);
+}
+function setClientPrefix(prefix: string): void {
+    clientModule.setClientPrefix(prefix);
+}
+function getConnectedNetworkType(): number {
+    return clientModule.getConnectedNetworkType();
+}
+function setTrafficDataListener(_listener: (args: object) => void): void {
+    clientModule.setTrafficDataListener(genWfcEventListener('onTrafficData'));
+}
+function setErrorEventListener(_listener: (args: object) => void): void {
+    clientModule.setErrorEventListener(genWfcEventListener('onErrorEvent'));
+}
+function setDomainInfoCallback(_listener: (args: object) => void): void {
+    clientModule.setDomainInfoCallback(genWfcEventListener('onDomainInfoUpdate'));
+}
+function getUserInfosEx(userIds: string[], groupId: string, successCB: StringCallback, failCB: FailCallback): void {
+    clientModule.getUserInfosEx(userIds, groupId, stringCallback(successCB), numberCallback(failCB));
+}
+function searchUserEx(domainId: string, keyword: string, searchType: number, page: number, successCB: StringCallback, failCB: FailCallback): void {
+    clientModule.searchUserEx(domainId, keyword, searchType, page, stringCallback(successCB), numberCallback(failCB));
+}
+function getGroupMembersEx2(groupId: string, memberTypes: number[], offset: number, count: number): string {
+    return clientModule.getGroupMembersEx2(groupId, memberTypes, offset, count);
+}
+function getGroupMembersCount(groupId: string, memberTypes: number[]): number {
+    return clientModule.getGroupMembersCount(groupId, memberTypes);
+}
+function getGroupMemberIds(groupId: string, memberTypes: number[]): string {
+    return clientModule.getGroupMemberIds(groupId, memberTypes);
+}
+function loadGroupMemberFromRemote(groupId: string): void {
+    clientModule.loadGroupMemberFromRemote(groupId);
+}
+function screenShot(): string {
+    return clientModule.screenShot();
+}
+function getDomainInfo(domainId: string, refresh: boolean): string {
+    return clientModule.getDomainInfo(domainId, refresh);
+}
+function loadRemoteDomains(successCB: VoidCallback, failCB: FailCallback): void {
+    clientModule.loadRemoteDomains(voidCallback(successCB), numberCallback(failCB));
+}
+function isEnableMesh(): boolean {
+    return clientModule.isEnableMesh() === 1;
+}
+function isEnableRemoteControl(): boolean {
+    return clientModule.isEnableRemoteControl() === 1;
+}
+
 function voidCallback(cb: VoidCallback): (value: object) => void {
     return (_: object | null = null)=>{
         cb();
@@ -653,3 +711,22 @@ export { getMessageByUid as getMessageByUid };
 export { getGroupMember as getGroupMember };
 export { getGroupInfoEx as getGroupInfoEx };
 export { kickoffPCClient as kickoffPCClient };
+export { setDeviceName as setDeviceName };
+export { setHeartBeatInterval as setHeartBeatInterval };
+export { setAppDataPath as setAppDataPath };
+export { setClientPrefix as setClientPrefix };
+export { getConnectedNetworkType as getConnectedNetworkType };
+export { setTrafficDataListener as setTrafficDataListener };
+export { setErrorEventListener as setErrorEventListener };
+export { setDomainInfoCallback as setDomainInfoCallback };
+export { getUserInfosEx as getUserInfosEx };
+export { searchUserEx as searchUserEx };
+export { getGroupMembersEx2 as getGroupMembersEx2 };
+export { getGroupMembersCount as getGroupMembersCount };
+export { getGroupMemberIds as getGroupMemberIds };
+export { loadGroupMemberFromRemote as loadGroupMemberFromRemote };
+export { screenShot as screenShot };
+export { getDomainInfo as getDomainInfo };
+export { loadRemoteDomains as loadRemoteDomains };
+export { isEnableMesh as isEnableMesh };
+export { isEnableRemoteControl as isEnableRemoteControl };
