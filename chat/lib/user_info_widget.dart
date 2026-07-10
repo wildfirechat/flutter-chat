@@ -448,6 +448,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       constraints: BoxConstraints(minHeight: LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap)),
       margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           GestureDetector(
             child: Container(
@@ -459,12 +460,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
             },
           ),
           Expanded(
-            child: Container(
-              margin: const EdgeInsets.only(top: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: nameList,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: nameList,
             ),
           )
         ],

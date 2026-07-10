@@ -226,7 +226,7 @@ class SelfProfile extends StatelessWidget {
                     child: GestureDetector(
                       child: Container(
                         margin: const EdgeInsets.only(
-                            left: 10, top: 10, bottom: 10),
+                            left: 10, top: 0, bottom: 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,

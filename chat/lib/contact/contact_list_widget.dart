@@ -272,7 +272,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
           children: <Widget>[
             Container(
               height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
-              margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
+              margin: EdgeInsets.fromLTRB(16.0, 0.0, isDesktopShell ? 0.0 : 32.0, 0.0),
               child: Row(
                 children: <Widget>[
                   key == 'new_friend'
@@ -296,6 +296,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                       child: Text(
                     title,
                     style: const TextStyle(fontSize: 15.0),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   )),
                 ],
               ),
@@ -339,7 +341,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
           children: <Widget>[
             Container(
               height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
-              margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
+              margin: EdgeInsets.fromLTRB(16.0, 0.0, isDesktopShell ? 0.0 : 32.0, 0.0),
               child: Row(
                 children: <Widget>[
                   Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)),
@@ -350,6 +352,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                       child: Text(
                     org.name ?? '',
                     style: const TextStyle(fontSize: 15.0),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   )),
                 ],
               ),
@@ -402,7 +406,7 @@ class _ContactListItemState extends State<ContactListItem> {
 
     Widget contactRow = Container(
       height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
-      padding: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
+      padding: EdgeInsets.fromLTRB(16.0, 0.0, isDesktopShell ? 0.0 : 32.0, 0.0),
       child: Row(
         children: <Widget>[
           Portrait(widget.contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40, height: 40,),
@@ -413,6 +417,8 @@ class _ContactListItemState extends State<ContactListItem> {
               child: Text(
             displayName,
             style: const TextStyle(fontSize: 15.0),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           )),
         ],
       ),
@@ -437,7 +443,7 @@ class _ContactListItemState extends State<ContactListItem> {
               height: LayoutScale.watchScale(context, _kCategoryHeight, cap: LayoutScale.textCap),
               width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
               color: context.colors.hairlineSoft,
-              padding: const EdgeInsets.only(left: 16),
+              padding: EdgeInsets.only(left: 16, right: isDesktopShell ? 16.0 : 32.0),
               alignment: Alignment.centerLeft,
               child: Text(
                 widget.contactInfo.category == '{'
@@ -446,6 +452,8 @@ class _ContactListItemState extends State<ContactListItem> {
                         ? AppLocalizations.of(context)!.favFriend
                         : (widget.contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : widget.contactInfo.category)),
                 style: TextStyle(fontSize: 12.0, color: context.colors.textSecondary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           Material(

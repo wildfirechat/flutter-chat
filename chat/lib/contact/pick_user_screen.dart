@@ -470,6 +470,7 @@ class SelectableUserItem extends StatelessWidget {
         hoverColor: context.colors.hoverOverlay,
         child: Container(
           height: LayoutScale.watchScale(context, 52.0, cap: LayoutScale.rowCap),
+          padding: EdgeInsets.only(right: isDesktopShell ? 0.0 : 32.0),
           child: Row(
             children: <Widget>[
               if (maxSelected > 1)
@@ -532,11 +533,13 @@ class SelectableUserItem extends StatelessWidget {
             height: LayoutScale.watchScale(context, 18.0, cap: LayoutScale.textCap),
             width: double.infinity,
             color: context.colors.sectionGap,
-            padding: const EdgeInsets.only(left: 16),
+            padding: EdgeInsets.only(left: 16, right: isDesktopShell ? 16.0 : 32.0),
             alignment: Alignment.centerLeft,
             child: Text(
               contactInfo.category == '{' ? '#' : (contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : contactInfo.category),
               style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         content,
