@@ -10,6 +10,7 @@ import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 /// 桌面端“发现”中栏:与移动端 DiscoveryTab 同一组入口,
 /// 但列表页/网页在右栏打开,机器人直接打开会话(经 app_navigator 统一跳转)。
@@ -67,15 +68,23 @@ class _DiscoveryRow extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          height: 48,
+          height: LayoutScale.watchScale(context, 48, cap: LayoutScale.rowCap),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           color: hovered ? context.colors.cellHover : Colors.transparent,
           child: Row(
             children: [
-              Image.asset(iconAsset, width: 22, height: 22),
+              Image.asset(
+                iconAsset,
+                width: LayoutScale.watchScale(context, 22, cap: LayoutScale.iconCap),
+                height: LayoutScale.watchScale(context, 22, cap: LayoutScale.iconCap),
+              ),
               const SizedBox(width: 12),
               Expanded(child: Text(title, style: PcTheme.cellTitle(context))),
-              Icon(Icons.chevron_right_rounded, size: 18, color: context.colors.textTertiary),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: LayoutScale.watchScale(context, 18, cap: LayoutScale.iconCap),
+                color: context.colors.textTertiary,
+              ),
             ],
           ),
         ),

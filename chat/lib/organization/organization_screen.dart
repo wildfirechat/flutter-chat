@@ -5,6 +5,7 @@ import 'package:chat/config.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/utils/layout_scale.dart';
 import '../default_portrait_provider.dart';
 import '../user_info_widget.dart';
 import 'model/employee.dart';
@@ -223,12 +224,25 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
 
   Widget _buildSubOrgTile(Organization subOrg) {
     final name = '${subOrg.name}(${subOrg.memberCount ?? 0})';
-    return ListTile(
-      leading: Icon(Icons.corporate_fare, color: Theme.of(context).colorScheme.secondary),
-      title: Text(name),
-      trailing: const Icon(Icons.chevron_right, size: 20),
-      visualDensity: isDesktopShell ? VisualDensity.compact : VisualDensity.standard,
-      onTap: () => _viewModel.navigateToOrganization(subOrg),
+    final baseHeight = isDesktopShell ? 48.0 : 56.0;
+    return Container(
+      constraints: BoxConstraints(
+        minHeight: LayoutScale.watchScale(context, baseHeight, cap: LayoutScale.rowCap),
+      ),
+      child: ListTile(
+        leading: Icon(
+          Icons.corporate_fare,
+          color: Theme.of(context).colorScheme.secondary,
+          size: LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap),
+        ),
+        title: Text(name),
+        trailing: Icon(
+          Icons.chevron_right,
+          size: LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap),
+        ),
+        visualDensity: isDesktopShell ? VisualDensity.compact : VisualDensity.standard,
+        onTap: () => _viewModel.navigateToOrganization(subOrg),
+      ),
     );
   }
 
@@ -255,16 +269,26 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       };
     }
 
-    return ListTile(
-      leading: Portrait(
-        emp.portraitUrl ?? WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()),
-        Config.defaultUserPortrait,
+    final hasSubtitle = emp.title != null && emp.title!.isNotEmpty;
+    final baseHeight = hasSubtitle
+        ? (isDesktopShell ? 64.0 : 72.0)
+        : (isDesktopShell ? 48.0 : 56.0);
+
+    return Container(
+      constraints: BoxConstraints(
+        minHeight: LayoutScale.watchScale(context, baseHeight, cap: LayoutScale.rowCap),
       ),
-      title: Text(emp.name),
-      subtitle: (emp.title != null && emp.title!.isNotEmpty) ? Text(emp.title!) : null,
-      trailing: trailing,
-      visualDensity: isDesktopShell ? VisualDensity.compact : VisualDensity.standard,
-      onTap: onTap,
+      child: ListTile(
+        leading: Portrait(
+          emp.portraitUrl ?? WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()),
+          Config.defaultUserPortrait,
+        ),
+        title: Text(emp.name),
+        subtitle: hasSubtitle ? Text(emp.title!) : null,
+        trailing: trailing,
+        visualDensity: isDesktopShell ? VisualDensity.compact : VisualDensity.standard,
+        onTap: onTap,
+      ),
     );
   }
 

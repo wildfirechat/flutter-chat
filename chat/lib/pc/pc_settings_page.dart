@@ -19,6 +19,7 @@ import 'package:chat/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 // ==========================================
 // 1. Middle Column: PcSettingsMenu
@@ -67,7 +68,7 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Container(
-                    height: 40,
+                    height: LayoutScale.watchScale(context, 40, cap: LayoutScale.rowCap),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? context.colors.cellSelected
@@ -81,7 +82,7 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
                       children: [
                         Icon(
                           item.icon,
-                          size: 18,
+                          size: LayoutScale.watchScale(context, 18, cap: LayoutScale.iconCap),
                           color: isSelected ? context.colors.accent : context.colors.iconSecondary,
                         ),
                         const SizedBox(width: 10),
