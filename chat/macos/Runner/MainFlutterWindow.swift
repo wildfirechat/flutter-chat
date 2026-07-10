@@ -54,7 +54,7 @@ private class TrafficLightButton: NSView {
         let size = min(bounds.width, bounds.height)
         let lineLength = size * 0.42
         let lineWidth = size * 0.10
-        let centerX = bounds.midX - 6
+        let centerX = bounds.midX
         let centerY = bounds.midY
 
         let path = NSBezierPath()
@@ -279,7 +279,7 @@ class MainFlutterWindow: NSWindow {
         let viewHeight: CGFloat = 24
         let viewWidth: CGFloat = 52
         trafficLightsView?.frame = NSRect(
-            x: 12,
+            x: 8,
             y: titlebarContainer.bounds.height - topMargin - viewHeight,
             width: viewWidth,
             height: viewHeight

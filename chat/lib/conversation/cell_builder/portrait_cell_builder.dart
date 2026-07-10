@@ -56,7 +56,9 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return GestureDetector(
       child: Container(
           key: _portraitKey,
-          margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+          margin: isDesktopShell
+              ? EdgeInsets.fromLTRB(isSendMessage ? 8 : 12, 0, isSendMessage ? 12 : 8, 0)
+              : const EdgeInsets.fromLTRB(8, 0, 8, 0),
           child: Portrait(portrait, Config.defaultUserPortrait, width: 44.0, height: 44.0, borderRadius: 6.0)),
       // 桌面端点头像弹用户信息卡片(微信 PC 形态),移动端仍整页打开
       onTap: () => isDesktopShell ? _showUserCard(context) : conversationController?.onPortraitTaped(context, model),
@@ -91,7 +93,12 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       child: Column(
         crossAxisAlignment: isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          !isHiddenGroupMemberName ? Text(senderUserInfo != null ? senderUserInfo.getReadableName() : '<${model.message.fromUser}>') : Container(),
+          !isSendMessage && !isHiddenGroupMemberName
+              ? Text(
+                  senderUserInfo != null ? senderUserInfo.getReadableName() : '<${model.message.fromUser}>',
+                  style: TextStyle(color: context.colors.messageSenderName, fontSize: 12),
+                )
+              : Container(),
           Row(
             mainAxisAlignment: isSendMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,

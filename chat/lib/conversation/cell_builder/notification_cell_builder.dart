@@ -62,7 +62,7 @@ class NotificationCellBuilder extends MessageCellBuilder {
         : null;
 
     return Container(
-        padding: const EdgeInsets.fromLTRB(60, 0, 60, 0),
+        padding: const EdgeInsets.fromLTRB(90, 0, 90, 0),
         child: notificaitonMsgDigest.isEmpty
             ? Container(
           width: 200,
@@ -79,7 +79,7 @@ class NotificationCellBuilder extends MessageCellBuilder {
             Text(
               notificaitonMsgDigest,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12),
+              style: const TextStyle(fontSize: 13, color: Color(0xFFA0A0A4)),
             ),
             if (reeditWidget != null) ...[
               const SizedBox(width: 6),

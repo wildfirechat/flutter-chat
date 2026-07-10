@@ -25,6 +25,8 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.conversationBg,
     required this.inputBg,
     required this.inputBgHover,
+    required this.searchBg,
+    required this.searchBgHover,
     required this.cellHover,
     required this.cellSelected,
     required this.cellTop,
@@ -42,6 +44,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.textPrimary,
     required this.textSecondary,
     required this.textTertiary,
+    required this.messageSenderName,
     required this.iconPrimary,
     required this.iconSecondary,
     required this.hairline,
@@ -89,6 +92,10 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color inputBg;
   final Color inputBgHover;
 
+  /// 桌面端中栏顶部搜索框底色（常态 / hover）。
+  final Color searchBg;
+  final Color searchBgHover;
+
   // ---- 列表项状态 ----
   final Color cellHover;
   final Color cellSelected;
@@ -128,6 +135,9 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color textSecondary;
   final Color textTertiary;
 
+  /// 群组会话消息发送者昵称。
+  final Color messageSenderName;
+
   // ---- 图标 ----
   final Color iconPrimary;
   final Color iconSecondary;
@@ -157,22 +167,24 @@ class AppColors extends ThemeExtension<AppColors> {
     link: Color(0xFF1F64E4),
     surface: Color(0xFFFFFFFF),
     popupBg: Color(0xFFFFFFFF),
-    sidebarBg: Color(0xFFE9E9E9),
-    middleBg: Color(0xFFEFEEED),
-    chatBg: Color(0xFFF5F5F5),
+    sidebarBg: Color(0xFFE2E2E2),
+    middleBg: Color(0xFFEEEEF0),
+    chatBg: Color(0xFFF9F9FA),
     conversationBg: Color(0xFFE8E8E8),
     inputBg: Color(0xFFDBDAD9),
     inputBgHover: Color(0xFFD5D4D3),
-    cellHover: Color(0xFFDBDAD9),
-    cellSelected: Color(0xFFC8C7C6),
-    cellTop: Color(0xFFE6E5E5),
+    searchBg: Color(0xFFFAFAFA),
+    searchBgHover: Color(0xFFF6F6F7),
+    cellHover: Color(0xFFEEEEF0),
+    cellSelected: Color(0xFFD8E3FD),
+    cellTop: Color(0xFFE6E6E7),
     sidebarHoverBg: Color(0xFFDCDCDC),
     hoverOverlay: Color(0x0A000000),
     messageHighlight: Color(0x809E9E9E),
     sectionGap: Color(0xFFEBEBEB),
     bubbleSent: Color(0xF0A8BDFF),
     bubbleSentDesktop: Color(0xFFD6E4FF),
-    bubbleReceived: Color(0xFFFFFFFF),
+    bubbleReceived: Color(0xFFEEEEF0),
     bubbleSentText: Color(0xFF191919),
     bubbleReceivedText: Color(0xFF191919),
     bubbleQuoted: Color(0xFFF5F5F5),
@@ -180,6 +192,7 @@ class AppColors extends ThemeExtension<AppColors> {
     textPrimary: Color(0xFF191919),
     textSecondary: Color(0xFF7F7F7F),
     textTertiary: Color(0xFFB2B2B2),
+    messageSenderName: Color(0xFFB4B4B4),
     iconPrimary: Color(0xFF191919),
     iconSecondary: Color(0xFF555555),
     hairline: Color(0xFFDDDCDB),
@@ -206,6 +219,8 @@ class AppColors extends ThemeExtension<AppColors> {
     conversationBg: Color(0xFF1C1C1E),
     inputBg: Color(0xFF3A3A3C),
     inputBgHover: Color(0xFF48484A),
+    searchBg: Color(0xFF2C2C2E),
+    searchBgHover: Color(0xFF323232),
     cellHover: Color(0x0DFFFFFF),
     cellSelected: Color(0x1AFFFFFF),
     cellTop: Color(0xFF1C1C1E),
@@ -223,6 +238,7 @@ class AppColors extends ThemeExtension<AppColors> {
     textPrimary: Color(0xFFE0E0E4),
     textSecondary: Color(0xFF8E8E93),
     textTertiary: Color(0xFF636366),
+    messageSenderName: Color(0xFF8E8E93),
     iconPrimary: Color(0xFFE0E0E4),
     iconSecondary: Color(0xFF8E8E93),
     hairline: Color(0xFF3A3A3C),
@@ -248,6 +264,8 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? conversationBg,
     Color? inputBg,
     Color? inputBgHover,
+    Color? searchBg,
+    Color? searchBgHover,
     Color? cellHover,
     Color? cellSelected,
     Color? cellTop,
@@ -265,6 +283,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? textPrimary,
     Color? textSecondary,
     Color? textTertiary,
+    Color? messageSenderName,
     Color? iconPrimary,
     Color? iconSecondary,
     Color? hairline,
@@ -288,6 +307,8 @@ class AppColors extends ThemeExtension<AppColors> {
       conversationBg: conversationBg ?? this.conversationBg,
       inputBg: inputBg ?? this.inputBg,
       inputBgHover: inputBgHover ?? this.inputBgHover,
+      searchBg: searchBg ?? this.searchBg,
+      searchBgHover: searchBgHover ?? this.searchBgHover,
       cellHover: cellHover ?? this.cellHover,
       cellSelected: cellSelected ?? this.cellSelected,
       cellTop: cellTop ?? this.cellTop,
@@ -305,6 +326,7 @@ class AppColors extends ThemeExtension<AppColors> {
       textPrimary: textPrimary ?? this.textPrimary,
       textSecondary: textSecondary ?? this.textSecondary,
       textTertiary: textTertiary ?? this.textTertiary,
+      messageSenderName: messageSenderName ?? this.messageSenderName,
       iconPrimary: iconPrimary ?? this.iconPrimary,
       iconSecondary: iconSecondary ?? this.iconSecondary,
       hairline: hairline ?? this.hairline,
@@ -336,6 +358,8 @@ class AppColors extends ThemeExtension<AppColors> {
       conversationBg: mix(conversationBg, other.conversationBg),
       inputBg: mix(inputBg, other.inputBg),
       inputBgHover: mix(inputBgHover, other.inputBgHover),
+      searchBg: mix(searchBg, other.searchBg),
+      searchBgHover: mix(searchBgHover, other.searchBgHover),
       cellHover: mix(cellHover, other.cellHover),
       cellSelected: mix(cellSelected, other.cellSelected),
       cellTop: mix(cellTop, other.cellTop),
@@ -353,6 +377,7 @@ class AppColors extends ThemeExtension<AppColors> {
       textPrimary: mix(textPrimary, other.textPrimary),
       textSecondary: mix(textSecondary, other.textSecondary),
       textTertiary: mix(textTertiary, other.textTertiary),
+      messageSenderName: mix(messageSenderName, other.messageSenderName),
       iconPrimary: mix(iconPrimary, other.iconPrimary),
       iconSecondary: mix(iconSecondary, other.iconSecondary),
       hairline: mix(hairline, other.hairline),

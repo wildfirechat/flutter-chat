@@ -22,8 +22,9 @@ class TextCellBuilder extends PortraitCellBuilder {
 
   @override
   Widget buildMessageContent(BuildContext context) {
+    final Widget child;
     if (textMessageContent.quoteInfo != null) {
-      return Column(
+      child = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
          Text(
@@ -84,21 +85,28 @@ class TextCellBuilder extends PortraitCellBuilder {
           )
         ],
       );
+    } else {
+      // 正文色由 PortraitCellBuilder 的 DefaultTextStyle 提供,这里只补链接色。
+      // 暗色下己方气泡是实心蓝,蓝色链接会糊在底色里,改用气泡正文色 + 下划线表达可点。
+      final onSolidAccent = isSendMessage && Theme.of(context).brightness == Brightness.dark;
+      child = Linkify(
+        onOpen: (link) => Utilities.openLink(context, link.url),
+        text: textMessageContent.text,
+        style: const TextStyle(fontSize: 16),
+        linkStyle: TextStyle(
+          fontSize: 16,
+          color: onSolidAccent ? context.colors.bubbleSentText : context.colors.link,
+          decoration: TextDecoration.underline,
+        ),
+        options: const LinkifyOptions(
+          humanize: false,
+        ),
+      );
     }
-    // 正文色由 PortraitCellBuilder 的 DefaultTextStyle 提供,这里只补链接色。
-    // 暗色下己方气泡是实心蓝,蓝色链接会糊在底色里,改用气泡正文色 + 下划线表达可点。
-    final onSolidAccent = isSendMessage && Theme.of(context).brightness == Brightness.dark;
-    return Linkify(
-      onOpen: (link) => Utilities.openLink(context, link.url),
-      text: textMessageContent.text,
-      style: const TextStyle(fontSize: 16),
-      linkStyle: TextStyle(
-        fontSize: 16,
-        color: onSolidAccent ? context.colors.bubbleSentText : context.colors.link,
-        decoration: TextDecoration.underline,
-      ),
-      options: const LinkifyOptions(
-        humanize: false,
+    return LayoutBuilder(
+      builder: (context, constraints) => ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: constraints.maxWidth - 60),
+        child: child,
       ),
     );
   }

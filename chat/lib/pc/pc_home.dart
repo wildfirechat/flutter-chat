@@ -834,6 +834,7 @@ class _MiddleColumnHeader extends StatelessWidget {
       height: PcTheme.headerHeight,
       padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
       alignment: Alignment.center,
+      color: colors.cellTop,
       child: Row(
         children: [
           Expanded(
@@ -845,7 +846,7 @@ class _MiddleColumnHeader extends StatelessWidget {
                   height: 28,
                   padding: const EdgeInsets.symmetric(horizontal: 8),
                   decoration: BoxDecoration(
-                    color: hovered ? colors.inputBgHover : colors.inputBg,
+                    color: hovered ? colors.searchBgHover : colors.searchBg,
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
@@ -927,13 +928,14 @@ class _PlusMenuButton extends StatelessWidget {
       child: HoverBuilder(
         cursor: SystemMouseCursors.click,
         builder: (context, hovered) => Container(
-          width: 28,
-          height: 28,
+          width: 20,
+          height: 20,
           decoration: BoxDecoration(
-            color: hovered ? colors.inputBgHover : colors.inputBg,
-            borderRadius: BorderRadius.circular(4),
+            color: hovered ? colors.inputBgHover : colors.cellTop,
+            shape: BoxShape.circle,
+            border: Border.all(color: colors.iconPrimary, width: 1),
           ),
-          child: Icon(Icons.add, size: 18, color: colors.iconSecondary),
+          child: Icon(Icons.add, size: 14, color: colors.iconSecondary),
         ),
       ),
     );
@@ -969,6 +971,7 @@ class _PcSideBar extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: topInset),
+            const SizedBox(height: 48),
             _buildAvatar(context, shell),
             const SizedBox(height: PcTheme.sidebarAvatarGap),
           Selector<ConversationListViewModel, int>(
@@ -1131,7 +1134,7 @@ class _SideBarTab extends StatelessWidget {
         builder: (context, hovered) {
           Widget icon = Icon(
             selected ? selectedIcon : normalIcon,
-            size: 22,
+            size: 26,
             color: selected
                 ? colors.accent
                 : hovered

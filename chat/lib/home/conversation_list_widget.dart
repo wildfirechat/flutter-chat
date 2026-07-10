@@ -31,7 +31,7 @@ import 'package:chat/theme/app_colors.dart';
 
 /// 会话行的内容高度与分隔线高度。分隔线不随字号缩放,itemExtent 必须把它单独加上,
 /// 否则 s < 1 时内容比 extent 高,debug 下会报 overflow。
-const double _kConversationRowHeight = 64.0;
+const double _kConversationRowHeight = 70.0;
 const double _kDividerHeight = 0.5;
 
 double _conversationItemExtent(BuildContext context) =>
@@ -280,7 +280,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     final colors = context.colors;
     if (isDesktopShell) {
       if (widget.isSelected) return colors.cellSelected;
-      if (hovered) return colors.cellHover;
+      if (hovered) return conversationInfo.isTop > 0 ? colors.cellTop : colors.cellHover;
       return conversationInfo.isTop > 0 ? colors.cellTop : Colors.transparent;
     }
     if (widget.isSelected) return colors.cellSelected;
@@ -291,141 +291,157 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     var conversationInfo = widget.conversationInfo;
     bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
 
+    void onTap() {
+      if (widget.onTap != null) {
+        widget.onTap!(conversationInfo.conversation);
+      } else {
+        _toChatPage(context, conversationInfo.conversation);
+      }
+    }
+
+    final cellChild = Column(
+      children: <Widget>[
+        Container(
+          height: LayoutScale.watchScale(context, _kConversationRowHeight, cap: LayoutScale.rowCap),
+          margin: const EdgeInsets.only(left: 15),
+          child: Selector3<UserViewModel, GroupViewModel, ChannelViewModel,
+                  (UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? channelInfo, UserInfo? lastMessageSenderUserInfo)>(
+              selector: (context, userViewModel, groupViewModel, channelViewModel) => (
+                    conversationInfo.conversation.conversationType == ConversationType.Single
+                        ? userViewModel.getUserInfo(conversationInfo.conversation.target)
+                        : null,
+                    conversationInfo.conversation.conversationType == ConversationType.Group
+                        ? groupViewModel.getGroupInfo(conversationInfo.conversation.target)
+                        : null,
+                    conversationInfo.conversation.conversationType == ConversationType.Channel
+                        ? channelViewModel.getChannelInfo(conversationInfo.conversation.target)
+                        : null,
+                    conversationInfo.lastMessage != null
+                        ? userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser,
+                            groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null)
+                        : null
+                  ),
+              builder: (context, value, child) => Row(
+                    children: <Widget>[
+                      badge.Badge(
+                        showBadge: conversationInfo.unreadCount.unread > 0,
+                        badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
+                        child: _buildPortraitImage(conversationInfo.conversation, value.$1, value.$2, value.$3),
+                      ),
+                      Expanded(
+                          child: Container(
+                              height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
+                              alignment: Alignment.centerLeft,
+                              margin: const EdgeInsets.only(left: 15),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: <Widget>[
+                                  Text(
+                                    Utilities.conversationTitle(context, conversationInfo.conversation, value.$1, value.$2, value.$3),
+                                    style: const TextStyle(fontSize: 15.0),
+                                    maxLines: 1,
+                                  ),
+                                  Container(
+                                    height: 2,
+                                  ),
+                                  Row(
+                                    children: [
+                                      _messageStatusIcon(),
+                                      hasDraft
+                                          ? Text(
+                                              AppLocalizations.of(context)!.draftTag,
+                                              style: TextStyle(fontSize: 12.0, color: context.colors.danger),
+                                            )
+                                          : Container(),
+                                      if (_joinRequestCount > 0) ...[
+                                        Text(
+                                          '[${AppLocalizations.of(context)!.newJoinGroupRequestCount(_joinRequestCount)}]',
+                                          style: const TextStyle(fontSize: 12.0, color: Colors.red),
+                                        ),
+                                        const SizedBox(width: 4),
+                                      ],
+                                      Expanded(
+                                        child: Text(
+                                          hasDraft
+                                              ? conversationInfo.draft!
+                                              : conversationInfo.lastMessage != null
+                                                  ? '${value.$4?.getReadableName() ?? "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
+                                                  : '',
+                                          style: TextStyle(fontSize: 14.0, color: context.colors.textTertiary),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                ],
+                              ))),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(right: 15.0),
+                            child: Text(
+                              Utilities.formatTime(context, conversationInfo.timestamp),
+                              style: TextStyle(
+                                fontSize: 10.0,
+                                color: context.colors.textTertiary,
+                              ),
+                            ),
+                          ),
+                          if (conversationInfo.isSilent)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 15.0, top: 4.0),
+                              child: Image.asset(
+                                'assets/images/conversation_mute.png',
+                                width: 10,
+                                height: 10,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  )),
+        ),
+        // 桌面端参照微信 PC 不加分隔线,由背景色区分;保留高度以维持 itemExtent
+        Container(
+          margin: EdgeInsets.fromLTRB(
+            isDesktopShell
+                ? 12.0
+                : 15.0 + LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap) + 15.0,
+            0.0,
+            12.0,
+            0.0,
+          ),
+          height: _kDividerHeight,
+          color: isDesktopShell ? context.colors.cellTop : context.colors.hairlineSoft,
+        ),
+      ],
+    );
+
+    if (isDesktopShell) {
+      return Material(
+        color: _cellBackground(hovered),
+        child: GestureDetector(
+          onTap: onTap,
+          onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
+          onSecondaryTapUp: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
+          behavior: HitTestBehavior.opaque,
+          child: cellChild,
+        ),
+      );
+    }
+
     return Material(
       color: _cellBackground(hovered),
       child: InkWell(
-        onTap: () {
-          if (widget.onTap != null) {
-            widget.onTap!(conversationInfo.conversation);
-          } else {
-            _toChatPage(context, conversationInfo.conversation);
-          }
-        },
-        hoverColor: context.colors.cellHover,
+        onTap: onTap,
         child: GestureDetector(
           onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
           onSecondaryTapUp: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
           behavior: HitTestBehavior.opaque,
-          child: Column(
-            children: <Widget>[
-              Container(
-                height: LayoutScale.watchScale(context, _kConversationRowHeight, cap: LayoutScale.rowCap),
-                margin: const EdgeInsets.only(left: 15),
-                child: Selector3<UserViewModel, GroupViewModel, ChannelViewModel,
-                        (UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? channelInfo, UserInfo? lastMessageSenderUserInfo)>(
-                    selector: (context, userViewModel, groupViewModel, channelViewModel) => (
-                          conversationInfo.conversation.conversationType == ConversationType.Single
-                              ? userViewModel.getUserInfo(conversationInfo.conversation.target)
-                              : null,
-                          conversationInfo.conversation.conversationType == ConversationType.Group
-                              ? groupViewModel.getGroupInfo(conversationInfo.conversation.target)
-                              : null,
-                          conversationInfo.conversation.conversationType == ConversationType.Channel
-                              ? channelViewModel.getChannelInfo(conversationInfo.conversation.target)
-                              : null,
-                          conversationInfo.lastMessage != null
-                              ? userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser,
-                                  groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null)
-                              : null
-                        ),
-                    builder: (context, value, child) => Row(
-                          children: <Widget>[
-                            badge.Badge(
-                              showBadge: conversationInfo.unreadCount.unread > 0,
-                              badgeContent: Text(conversationInfo.isSilent ? '' : '${conversationInfo.unreadCount.unread}'),
-                              child: _buildPortraitImage(conversationInfo.conversation, value.$1, value.$2, value.$3),
-                            ),
-                            Expanded(
-                                child: Container(
-                                    height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
-                                    alignment: Alignment.centerLeft,
-                                    margin: const EdgeInsets.only(left: 15),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(
-                                          Utilities.conversationTitle(context, conversationInfo.conversation, value.$1, value.$2, value.$3),
-                                          style: const TextStyle(fontSize: 15.0),
-                                          maxLines: 1,
-                                        ),
-                                        Container(
-                                          height: 2,
-                                        ),
-                                        Row(
-                                          children: [
-                                            _messageStatusIcon(),
-                                            hasDraft
-                                                ? Text(
-                                                    AppLocalizations.of(context)!.draftTag,
-                                                    style: TextStyle(fontSize: 12.0, color: context.colors.danger),
-                                                  )
-                                                : Container(),
-                                            if (_joinRequestCount > 0) ...[
-                                              Text(
-                                                '[${AppLocalizations.of(context)!.newJoinGroupRequestCount(_joinRequestCount)}]',
-                                                style: const TextStyle(fontSize: 12.0, color: Colors.red),
-                                              ),
-                                              const SizedBox(width: 4),
-                                            ],
-                                            Expanded(
-                                              child: Text(
-                                                hasDraft
-                                                    ? conversationInfo.draft!
-                                                    : conversationInfo.lastMessage != null
-                                                        ? '${value.$4?.getReadableName() ?? "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
-                                                        : '',
-                                                style: TextStyle(fontSize: 12.0, color: context.colors.textTertiary),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ],
-                                    ))),
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(right: 15.0),
-                                  child: Text(
-                                    Utilities.formatTime(context, conversationInfo.timestamp),
-                                    style: TextStyle(
-                                      fontSize: 10.0,
-                                      color: context.colors.textTertiary,
-                                    ),
-                                  ),
-                                ),
-                                if (conversationInfo.isSilent)
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 15.0, top: 4.0),
-                                    child: Image.asset(
-                                      'assets/images/conversation_mute.png',
-                                      width: 10,
-                                      height: 10,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ],
-                        )),
-              ),
-              // 桌面端参照微信 PC 不加分隔线,由背景色区分;保留高度以维持 itemExtent
-              Container(
-                margin: EdgeInsets.fromLTRB(
-                  isDesktopShell
-                      ? 12.0
-                      : 15.0 + LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap) + 15.0,
-                  0.0,
-                  12.0,
-                  0.0,
-                ),
-                height: _kDividerHeight,
-                color: isDesktopShell ? Colors.transparent : context.colors.hairlineSoft,
-              ),
-            ],
-          ),
+          child: cellChild,
         ),
       ),
     );
@@ -443,7 +459,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
         : widget.conversationInfo.conversation.conversationType == ConversationType.Group
             ? Config.defaultGroupPortrait
             : Config.defaultChannelPortrait;
-    return Portrait(portrait, defaultPortrait, borderRadius: 6.0);
+    return Portrait(portrait, defaultPortrait, width: 44.0, height: 44.0, borderRadius: 6.0);
   }
 
 

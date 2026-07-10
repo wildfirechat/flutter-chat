@@ -30,9 +30,15 @@ abstract class MessageCellBuilder {
   }
 
   Widget build(BuildContext context) {
+    final basePadding = model.showTimeLabel ? 5.0 : 3.0;
     return Container(
       color: model.highlighted ? context.colors.messageHighlight : null,
-      padding: EdgeInsets.all(model.showTimeLabel ? 5 : 3),
+      padding: EdgeInsets.fromLTRB(
+        basePadding,
+        basePadding + 6,
+        basePadding,
+        basePadding + 6,
+      ),
       child: Column(
         children: [
           model.showTimeLabel
