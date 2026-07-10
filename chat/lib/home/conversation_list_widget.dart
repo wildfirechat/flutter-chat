@@ -291,9 +291,21 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     var conversationInfo = widget.conversationInfo;
     bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
 
-    return GestureDetector(
-      child: Container(
-          color: _cellBackground(hovered),
+    return Material(
+      color: _cellBackground(hovered),
+      child: InkWell(
+        onTap: () {
+          if (widget.onTap != null) {
+            widget.onTap!(conversationInfo.conversation);
+          } else {
+            _toChatPage(context, conversationInfo.conversation);
+          }
+        },
+        hoverColor: context.colors.cellHover,
+        child: GestureDetector(
+          onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
+          onSecondaryTapUp: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
+          behavior: HitTestBehavior.opaque,
           child: Column(
             children: <Widget>[
               Container(
@@ -406,17 +418,9 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                 color: isDesktopShell ? Colors.transparent : context.colors.hairlineSoft,
               ),
             ],
-          )),
-      onTap: () {
-        if (widget.onTap != null) {
-          widget.onTap!(conversationInfo.conversation);
-        } else {
-          _toChatPage(context, conversationInfo.conversation);
-        }
-      },
-      onLongPressStart: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
-      // 桌面端右键弹出同一套会话操作菜单(置顶/删除/未读)
-      onSecondaryTapUp: (details) => _onLongPressed(context, conversationInfo, details.globalPosition),
+          ),
+        ),
+      ),
     );
   }
 

@@ -239,106 +239,114 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     String imagePath = fixHeaderList[index][0];
     String title = fixHeaderList[index][1];
     String key = fixHeaderList[index][2];
-    return GestureDetector(
-      onTap: () {
-        if (key == "new_friend") {
-          var contactListViewModel = Provider.of<ContactListViewModel>(context, listen: false);
-          contactListViewModel.clearUnreadFriendRequestStatus();
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const FriendRequestPage()),
-          );
-        } else if (key == "fav_group") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const FavGroupsPage()),
-          );
-        } else if (key == "subscribed_channel") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SubscribedChannelsPage()),
-          );
-        } else {
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-          if (kDebugMode) {
-            print("on tap item $index");
+    return Material(
+      color: context.colors.surface,
+      child: InkWell(
+        onTap: () {
+          if (key == "new_friend") {
+            var contactListViewModel = Provider.of<ContactListViewModel>(context, listen: false);
+            contactListViewModel.clearUnreadFriendRequestStatus();
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FriendRequestPage()),
+            );
+          } else if (key == "fav_group") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FavGroupsPage()),
+            );
+          } else if (key == "subscribed_channel") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SubscribedChannelsPage()),
+            );
+          } else {
+            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+            if (kDebugMode) {
+              print("on tap item $index");
+            }
           }
-        }
-      },
-      child: Column(
-        children: <Widget>[
-          Container(
-            height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
-            margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
-            child: Row(
-              children: <Widget>[
-                key == 'new_friend'
-                    ? badge.Badge(
-                        showBadge: unreadFriendRequestCount > 0,
-                        badgeContent: Text('$unreadFriendRequestCount'),
-                        // TODO: Replace 'assets/images/contact_organization.png' with an actual asset if it doesn't exist
-                        child: Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)))
-                    : Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)),
-                Container(
-                  margin: const EdgeInsets.only(left: 16),
-                ),
-                Expanded(
-                    child: Text(
-                  title,
-                  style: const TextStyle(fontSize: 15.0),
-                )),
-              ],
+        },
+        hoverColor: context.colors.hoverOverlay,
+        child: Column(
+          children: <Widget>[
+            Container(
+              height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
+              margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
+              child: Row(
+                children: <Widget>[
+                  key == 'new_friend'
+                      ? badge.Badge(
+                          showBadge: unreadFriendRequestCount > 0,
+                          badgeContent: Text('$unreadFriendRequestCount'),
+                          // TODO: Replace 'assets/images/contact_organization.png' with an actual asset if it doesn't exist
+                          child: Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)))
+                      : Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)),
+                  Container(
+                    margin: const EdgeInsets.only(left: 16),
+                  ),
+                  Expanded(
+                      child: Text(
+                    title,
+                    style: const TextStyle(fontSize: 15.0),
+                  )),
+                ],
+              ),
             ),
-          ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-            height: _kDividerHeight,
-            color: context.colors.hairlineSoft,
-          ),
-        ],
+            Container(
+              margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+              height: _kDividerHeight,
+              color: context.colors.hairlineSoft,
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _contactListOrgHeader(BuildContext context, Organization org, bool isRoot) {
     String imagePath = isRoot ? 'assets/images/contact_organization.png' : 'assets/images/contact_organization_expended.png';
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          // Directly navigate to OrganizationViewPage.
-          // The ViewModel in OrganizationViewPage will handle loading the root/default organization.
-          MaterialPageRoute(
-              builder: (context) => OrganizationScreen(
-                    initialOrganizationId: org.id,
+    return Material(
+      color: context.colors.surface,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            // Directly navigate to OrganizationViewPage.
+            // The ViewModel in OrganizationViewPage will handle loading the root/default organization.
+            MaterialPageRoute(
+                builder: (context) => OrganizationScreen(
+                      initialOrganizationId: org.id,
+                    )),
+          );
+        },
+        hoverColor: context.colors.hoverOverlay,
+        child: Column(
+          children: <Widget>[
+            Container(
+              height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
+              margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
+              child: Row(
+                children: <Widget>[
+                  Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)),
+                  Container(
+                    margin: const EdgeInsets.only(left: 16),
+                  ),
+                  Expanded(
+                      child: Text(
+                    org.name ?? '',
+                    style: const TextStyle(fontSize: 15.0),
                   )),
-        );
-      },
-      child: Column(
-        children: <Widget>[
-          Container(
-            height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
-            margin: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
-            child: Row(
-              children: <Widget>[
-                Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)),
-                Container(
-                  margin: const EdgeInsets.only(left: 16),
-                ),
-                Expanded(
-                    child: Text(
-                  org.name ?? '',
-                  style: const TextStyle(fontSize: 15.0),
-                )),
-              ],
+                ],
+              ),
             ),
-          ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-            height: _kDividerHeight,
-            color: context.colors.hairlineSoft,
-          ),
-        ],
+            Container(
+              margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+              height: _kDividerHeight,
+              color: context.colors.hairlineSoft,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -374,7 +382,6 @@ class _ContactListItemState extends State<ContactListItem> {
     Widget contactRow = Container(
       height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
       padding: const EdgeInsets.fromLTRB(16.0, 0.0, 0.0, 0.0),
-      color: getBgColor(),
       child: Row(
         children: <Widget>[
           Portrait(widget.contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40, height: 40,),
@@ -400,40 +407,46 @@ class _ContactListItemState extends State<ContactListItem> {
     }
 
     return RepaintBoundary(
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () {
-          if (widget.onTap != null) {
-            widget.onTap!(widget.contactInfo.userInfo.userId);
-          } else {
-            _toUserInfoPage(context);
-          }
-        },
-        child: Column(
-          children: <Widget>[
-            // 分类标题
+      child: Column(
+        children: <Widget>[
+          // 分类标题
+          if (widget.contactInfo.showCategory)
             Container(
               // 纯文本条:用 textCap 完整跟随字号,否则最大档位下分类字母会被裁掉。
-              height: widget.contactInfo.showCategory ? LayoutScale.watchScale(context, _kCategoryHeight, cap: LayoutScale.textCap) : 0,
+              height: LayoutScale.watchScale(context, _kCategoryHeight, cap: LayoutScale.textCap),
               width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
               color: context.colors.hairlineSoft,
               padding: const EdgeInsets.only(left: 16),
-              child: widget.contactInfo.showCategory
-                  ? Text(widget.contactInfo.category == '{'
-                      ? '#'
-                      : (widget.contactInfo.category == '☆'
-                          ? AppLocalizations.of(context)!.favFriend
-                          : (widget.contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : widget.contactInfo.category)))
-                  : null,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                widget.contactInfo.category == '{'
+                    ? '#'
+                    : (widget.contactInfo.category == '☆'
+                        ? AppLocalizations.of(context)!.favFriend
+                        : (widget.contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : widget.contactInfo.category)),
+                style: TextStyle(fontSize: 12.0, color: context.colors.textSecondary),
+              ),
             ),
-            contactRow,
-            Container(
-              margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-              height: _kDividerHeight,
-              color: context.colors.hairlineSoft,
+          Material(
+            color: getBgColor(),
+            child: InkWell(
+              onTap: () {
+                if (widget.onTap != null) {
+                  widget.onTap!(widget.contactInfo.userInfo.userId);
+                } else {
+                  _toUserInfoPage(context);
+                }
+              },
+              hoverColor: context.colors.hoverOverlay,
+              child: contactRow,
             ),
-          ],
-        ),
+          ),
+          Container(
+            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
+            height: _kDividerHeight,
+            color: context.colors.hairlineSoft,
+          ),
+        ],
       ),
     );
   }

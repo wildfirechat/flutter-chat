@@ -256,7 +256,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
       tiles: selected
           .map((conversation) => ConversationDisplay(
                 conversation: conversation,
-                builder: (context, info) => SelectedAvatarTile(
+                builder: (context, info) => SelectedListTile(
                   portrait: info.portrait,
                   defaultPortrait: info.defaultPortrait,
                   name: info.title,
@@ -283,7 +283,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
       subtitle: l10n.selectedContactsCount('${pickedUsers.length}'),
       emptyHint: l10n.pickContactsToCreateGroup,
       tiles: pickedUsers
-          .map((user) => SelectedAvatarTile(
+          .map((user) => SelectedListTile(
                 portrait: user.portrait ?? Config.defaultUserPortrait,
                 defaultPortrait: Config.defaultUserPortrait,
                 name: user.displayName ?? user.userId,
@@ -350,12 +350,9 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
                       style: TextStyle(fontSize: 13, color: colors.textSecondary, decoration: TextDecoration.none),
                     ),
                   )
-                : SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
-                    child: Align(
-                      alignment: Alignment.topLeft,
-                      child: Wrap(spacing: 8, runSpacing: 8, children: tiles),
-                    ),
+                : ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    children: tiles,
                   ),
           ),
           Padding(

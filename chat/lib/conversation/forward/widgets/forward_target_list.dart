@@ -13,6 +13,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 /// 转发目标列表:搜索为空时显示“创建群聊”入口 + 最近聊天,否则显示搜索结果。
 /// 移动端整页、桌面端左栏共用这一份。
@@ -61,7 +62,7 @@ class ForwardTargetList extends StatelessWidget {
         Expanded(
           child: ListView.builder(
             itemCount: conversationList.length,
-            itemExtent: 64.5,
+            itemExtent: LayoutScale.watchScale(context, 64.0, cap: LayoutScale.rowCap),
             itemBuilder: (context, i) {
               ConversationInfo info = conversationList[i];
               return _buildLiveTile(info.conversation, showCheckbox: true);
@@ -153,22 +154,49 @@ class _ConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: ListTile(
-        leading: Portrait(portrait, defaultPortrait, borderRadius: 4.0),
-        title: Text(
-          title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: context.colors.textPrimary),
+    final double rowHeight = LayoutScale.watchScale(context, 64.0, cap: LayoutScale.rowCap);
+    final double iconSize = LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        hoverColor: context.colors.hoverOverlay,
+        child: Container(
+          height: rowHeight,
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Row(
+            children: [
+              Portrait(portrait, defaultPortrait, borderRadius: 4.0),
+              const SizedBox(width: 12.0),
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: context.colors.textPrimary,
+                    fontSize: 15.0,
+                  ),
+                ),
+              ),
+              if (showCheckbox) ...[
+                const SizedBox(width: 12.0),
+                selected
+                    ? Icon(
+                        Icons.check_circle,
+                        color: context.colors.accent,
+                        size: iconSize,
+                      )
+                    : Icon(
+                        Icons.radio_button_unchecked,
+                        color: context.colors.textSecondary,
+                        size: iconSize,
+                      ),
+              ],
+            ],
+          ),
         ),
-        trailing: showCheckbox
-            ? (selected
-                ? Icon(Icons.check_circle, color: context.colors.accent)
-                : Icon(Icons.radio_button_unchecked, color: context.colors.textSecondary))
-            : null,
       ),
     );
   }
@@ -197,27 +225,34 @@ class _CreateGroupEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: context.colors.accent,
-                borderRadius: BorderRadius.circular(4),
+    final double iconBoxSize = LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap);
+    final double iconSize = LayoutScale.watchScale(context, 22.0, cap: LayoutScale.iconCap);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        hoverColor: context.colors.hoverOverlay,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              Container(
+                width: iconBoxSize,
+                height: iconBoxSize,
+                decoration: BoxDecoration(
+                  color: context.colors.accent,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Icon(Icons.group_add_rounded, color: Colors.white, size: iconSize),
               ),
-              child: const Icon(Icons.group_add_rounded, color: Colors.white, size: 22),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              AppLocalizations.of(context)!.createGroupChat,
-              style: TextStyle(fontSize: 15, color: context.colors.textPrimary, decoration: TextDecoration.none),
-            ),
-          ],
+              const SizedBox(width: 12),
+              Text(
+                AppLocalizations.of(context)!.createGroupChat,
+                style: TextStyle(fontSize: 15, color: context.colors.textPrimary, decoration: TextDecoration.none),
+              ),
+            ],
+          ),
         ),
       ),
     );

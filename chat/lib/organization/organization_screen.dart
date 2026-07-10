@@ -18,6 +18,7 @@ class OrganizationScreen extends StatefulWidget {
   final bool selectMode;
   final int maxSelected;
   final List<String>? disabledUserIds;
+  final List<String>? disabledCheckedUserIds;
   final List<String>? initialSelectedUserIds;
   final ValueChanged<List<String>>? onSelected;
   final bool showBackOnRoot;
@@ -28,6 +29,7 @@ class OrganizationScreen extends StatefulWidget {
     this.selectMode = false,
     this.maxSelected = 1024,
     this.disabledUserIds,
+    this.disabledCheckedUserIds,
     this.initialSelectedUserIds,
     this.onSelected,
     this.showBackOnRoot = false,
@@ -143,10 +145,12 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           ),
           child: TextField(
             controller: _searchController,
-            onChanged: (value) => viewModel.search(value),
+            onChanged: (val) {
+              viewModel.search(val);
+            },
             style: TextStyle(color: colors.textPrimary),
             decoration: InputDecoration(
-              hintText: '搜索成员',
+              hintText: '搜索部门成员',
               hintStyle: TextStyle(color: colors.textSecondary),
               prefixIcon: Icon(Icons.search, color: colors.textSecondary),
               suffixIcon: viewModel.searchQuery.isNotEmpty
@@ -191,7 +195,13 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
   }
 
   bool _isDisabled(String userId) {
-    return widget.disabledUserIds?.contains(userId) ?? false;
+    return (widget.disabledUserIds?.contains(userId) ?? false) ||
+        (widget.disabledCheckedUserIds?.contains(userId) ?? false);
+  }
+
+  bool _isChecked(String userId) {
+    return _selectedUserIds.contains(userId) ||
+        (widget.disabledCheckedUserIds?.contains(userId) ?? false);
   }
 
   void _toggleEmployeeSelection(String userId) {
@@ -247,7 +257,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
   }
 
   Widget _buildEmployeeTile(Employee emp) {
-    final isSelected = _selectedUserIds.contains(emp.employeeId);
+    final isSelected = _isChecked(emp.employeeId);
     final isDisabled = widget.selectMode && _isDisabled(emp.employeeId);
 
     Widget? trailing;
@@ -278,16 +288,19 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       constraints: BoxConstraints(
         minHeight: LayoutScale.watchScale(context, baseHeight, cap: LayoutScale.rowCap),
       ),
-      child: ListTile(
-        leading: Portrait(
-          emp.portraitUrl ?? WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()),
-          Config.defaultUserPortrait,
+      child: Opacity(
+        opacity: isDisabled ? 0.5 : 1.0,
+        child: ListTile(
+          leading: Portrait(
+            emp.portraitUrl ?? WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()),
+            Config.defaultUserPortrait,
+          ),
+          title: Text(emp.name),
+          subtitle: hasSubtitle ? Text(emp.title!) : null,
+          trailing: trailing,
+          visualDensity: isDesktopShell ? VisualDensity.compact : VisualDensity.standard,
+          onTap: onTap,
         ),
-        title: Text(emp.name),
-        subtitle: hasSubtitle ? Text(emp.title!) : null,
-        trailing: trailing,
-        visualDensity: isDesktopShell ? VisualDensity.compact : VisualDensity.standard,
-        onTap: onTap,
       ),
     );
   }

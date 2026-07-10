@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/pc/widgets/hover_builder.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 /// 已选目标的方格:头像 + 右上角删除按钮 + 名称。用于桌面端右栏。
 class SelectedAvatarTile extends StatelessWidget {
@@ -88,3 +90,58 @@ class PortraitChip extends StatelessWidget {
     );
   }
 }
+
+/// 已选目标的垂直行:头像 + 名称 + 右侧删除按钮。用于桌面端右栏。
+class SelectedListTile extends StatelessWidget {
+  final String portrait;
+  final String defaultPortrait;
+  final String name;
+  final VoidCallback onRemove;
+
+  const SelectedListTile({
+    super.key,
+    required this.portrait,
+    required this.defaultPortrait,
+    required this.name,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return HoverBuilder(
+      cursor: SystemMouseCursors.click,
+      builder: (context, hovered) => GestureDetector(
+        onTap: onRemove,
+        child: Container(
+          height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
+          color: hovered ? context.colors.hoverOverlay : Colors.transparent,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Portrait(portrait, defaultPortrait, width: 30, height: 30, borderRadius: 4.0),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: context.colors.textPrimary,
+                    decoration: TextDecoration.none,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                Icons.remove_circle_outline,
+                size: LayoutScale.watchScale(context, 18.0, cap: LayoutScale.iconCap),
+                color: hovered ? context.colors.badge : context.colors.textTertiary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+

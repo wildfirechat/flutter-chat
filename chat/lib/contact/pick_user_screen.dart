@@ -173,11 +173,6 @@ class _PickUserScreenState extends State<PickUserScreen> {
       return;
     }
     final selected = _pickUserViewModel.pickedUsers.map((u) => u.userId).toList();
-    final disabled = <String>{
-      ...widget.disabledUncheckedUsers ?? [],
-      ...widget.disabledCheckedUsers ?? [],
-    }.toList();
-
     final result = await Navigator.push<List<String>>(
       context,
       MaterialPageRoute(
@@ -185,7 +180,8 @@ class _PickUserScreenState extends State<PickUserScreen> {
           selectMode: true,
           maxSelected: remaining,
           initialSelectedUserIds: selected,
-          disabledUserIds: disabled,
+          disabledUserIds: widget.disabledUncheckedUsers,
+          disabledCheckedUserIds: widget.disabledCheckedUsers,
         ),
       ),
     );
@@ -274,11 +270,23 @@ class _PickUserScreenState extends State<PickUserScreen> {
               child: Column(
                 children: [
                   if (widget.showOrganizationEntry) ...[
-                    ListTile(
-                      leading: Icon(Icons.corporate_fare, color: Theme.of(context).colorScheme.secondary),
-                      title: const Text('从组织架构选择'),
-                      trailing: const Icon(Icons.chevron_right),
-                      onTap: () => _openOrganizationPicker(context),
+                    Container(
+                      constraints: BoxConstraints(
+                        minHeight: LayoutScale.watchScale(context, 56.0, cap: LayoutScale.rowCap),
+                      ),
+                      child: ListTile(
+                        leading: Icon(
+                          Icons.corporate_fare,
+                          color: Theme.of(context).colorScheme.secondary,
+                          size: LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap),
+                        ),
+                        title: const Text('从组织架构选择'),
+                        trailing: Icon(
+                          Icons.chevron_right,
+                          size: LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap),
+                        ),
+                        onTap: () => _openOrganizationPicker(context),
+                      ),
                     ),
                     Container(
                       height: 0.5,
@@ -425,50 +433,84 @@ class SelectableUserItem extends StatelessWidget {
     PickUserViewModel pickUserViewModel = Provider.of<PickUserViewModel>(context);
     UserInfo userInfo = contactInfo.userInfo;
     bool showCategory = contactInfo.showCategory && !pickUserViewModel.isSearching;
+    final bool checkable = pickUserViewModel.isCheckable(userInfo.userId);
 
-    Widget content = Container(
-      height: LayoutScale.watchScale(context, 52.0, cap: LayoutScale.rowCap),
+    Widget content = Material(
       color: context.colors.surface,
-      child: Row(
-        children: <Widget>[
-          if (maxSelected > 1)
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: Checkbox(
-                value: pickUserViewModel.isChecked(userInfo.userId),
-                onChanged: pickUserViewModel.isCheckable(userInfo.userId)
-                    ? (bool? value) {
-                        if (!pickUserViewModel.pickUser(userInfo, value!)) {
-                          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
-                        } else {
-                          if (value == true && onUserPicked != null) {
-                            onUserPicked!();
+      child: InkWell(
+        onTap: checkable
+            ? () {
+                if (maxSelected == 1) {
+                  if (callback != null) {
+                    callback!(context, [userInfo.userId]);
+                  }
+                } else {
+                  bool checked = pickUserViewModel.isChecked(userInfo.userId);
+                  if (!pickUserViewModel.pickUser(userInfo, !checked)) {
+                    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
+                  } else {
+                    if (!checked && onUserPicked != null) {
+                      onUserPicked!();
+                    }
+                  }
+                }
+              }
+            : null,
+        hoverColor: context.colors.hoverOverlay,
+        child: Container(
+          height: LayoutScale.watchScale(context, 52.0, cap: LayoutScale.rowCap),
+          child: Row(
+            children: <Widget>[
+              if (maxSelected > 1)
+                Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: Checkbox(
+                    value: pickUserViewModel.isChecked(userInfo.userId) ||
+                        pickUserViewModel.disabledAndCheckedUserIds.contains(userInfo.userId),
+                    onChanged: pickUserViewModel.isCheckable(userInfo.userId)
+                        ? (bool? value) {
+                            if (!pickUserViewModel.pickUser(userInfo, value!)) {
+                              Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
+                            } else {
+                              if (value == true && onUserPicked != null) {
+                                onUserPicked!();
+                              }
+                            }
                           }
-                        }
-                      }
-                    : null,
+                        : null,
+                  ),
+                ),
+              Expanded(
+                child: Opacity(
+                  opacity: checkable ? 1.0 : 0.5,
+                  child: Row(
+                    children: <Widget>[
+                      Padding(
+                        padding: EdgeInsets.only(left: maxSelected > 1 ? 8.0 : 16.0),
+                        child: userInfo.userId == '@all'
+                            ? Image.asset('assets/images/group_avatar_default.png',
+                                width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap),
+                                height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap))
+                            : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40.0, height: 40.0),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 12.0),
+                          child: Text(
+                            userInfo.userId == '@all' ? AppLocalizations.of(context)!.allMembers: userInfo.displayName ?? userInfo.userId,
+                            style: TextStyle(fontSize: 15.0, color: context.colors.textPrimary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          Padding(
-            padding: EdgeInsets.only(left: maxSelected > 1 ? 8.0 : 16.0),
-            child: userInfo.userId == '@all'
-                ? Image.asset('assets/images/group_avatar_default.png',
-                    width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap),
-                    height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap))
-                : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40.0, height: 40.0),
+            ],
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 12.0),
-              child: Text(
-                userInfo.userId == '@all' ? AppLocalizations.of(context)!.allMembers: userInfo.displayName ?? userInfo.userId,
-                style: TextStyle(fontSize: 15.0, color: context.colors.textPrimary),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
 
@@ -495,31 +537,6 @@ class SelectableUserItem extends StatelessWidget {
       ],
     );
 
-    if (maxSelected == 1) {
-      return GestureDetector(
-        onTap: () {
-          if (callback != null) {
-            callback!(context, [userInfo.userId]);
-          }
-        },
-        child: item,
-      );
-    } else {
-      return GestureDetector(
-        onTap: () {
-          if (pickUserViewModel.isCheckable(userInfo.userId)) {
-            bool checked = pickUserViewModel.isChecked(userInfo.userId);
-            if (!pickUserViewModel.pickUser(userInfo, !checked)) {
-              Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
-            } else {
-              if (!checked && onUserPicked != null) {
-                onUserPicked!();
-              }
-            }
-          }
-        },
-        child: item,
-      );
-    }
+    return item;
   }
 }

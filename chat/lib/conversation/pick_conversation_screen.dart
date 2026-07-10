@@ -7,6 +7,7 @@ import 'package:chat/viewmodel/conversation_list_view_model.dart';
 
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 class PickConversationScreen extends StatefulWidget {
   final Function(BuildContext context, Conversation conversation)? onConversationSelected;
@@ -33,7 +34,7 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
       body: SafeArea(
         child: ListView.builder(
             itemCount: conversationListViewModel.conversationList.length,
-            itemExtent: 64.5,
+            itemExtent: LayoutScale.watchScale(context, 64.0, cap: LayoutScale.rowCap) + 0.5,
             key: ValueKey<int>(conversationListViewModel.conversationList.length),
             itemBuilder: (context, i) {
               ConversationInfo info = conversationListViewModel.conversationList[i];
