@@ -81,7 +81,7 @@ import {
     deleteFriend,
     deleteMessage,
     deleteRemoteMessage,
-    destoryChannel,
+    destroyChannel,
     dismissGroup,
     getAuthorizedMediaUrl,
     getBlackList,
@@ -98,7 +98,7 @@ import {
     getRemoteMessages,
     getServerDeltaTime,
     getUnreadCount,
-    getUploadMediaUrl,
+    getUploadUrl,
     getUserInfoEx,
     getUserMessages,
     getUserMessagesEx,
@@ -106,6 +106,15 @@ import {
     getUserMessagesV2,
     getUserSetting,
     handleFriendRequest,
+    deleteFriendRequest,
+    sendJoinGroupRequest,
+    handleJoinGroupRequest,
+    getJoinGroupRequests,
+    clearJoinGroupRequest,
+    getAllJoinGroupRequestUnread,
+    getJoinGroupRequestUnread,
+    clearJoinGroupRequestUnread,
+    clearRemoteJoinGroupRequest,
     insertMessage,
     isBlackListed,
     isCommercialServer,
@@ -951,7 +960,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let mediaType = call.argument("mediaType") as number
         let contentType = call.argument("contentType") as string
 
-        getUploadMediaUrl(fileName, mediaType, contentType, arrArgs => {
+        getUploadUrl(fileName, mediaType, contentType, arrArgs => {
             let value = {
                 'requestId': requestId,
                 'uploadUrl': arrArgs[0],
@@ -1120,6 +1129,58 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let extra = call.argument("extra") as string
         let accept = call.argument("accept") as boolean
         handleFriendRequest(userId, accept, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId), extra)
+    }
+    _deleteFriendRequest = (call: MethodCall, result: MethodResult) => {
+        let userId = call.argument("userId") as string
+        let direction = call.argument("direction") as number
+        deleteFriendRequest(userId, direction)
+        result.success(true)
+    }
+    _sendJoinGroupRequest = (call: MethodCall, result: MethodResult) => {
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let memberIds = call.argument("memberIds") as string[]
+        let reason = call.argument("reason") as string
+        let extra = call.argument("extra") as string
+        sendJoinGroupRequest(groupId, memberIds, reason, extra, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
+    }
+    _handleJoinGroupRequest = (call: MethodCall, result: MethodResult) => {
+        let requestId = call.argument("requestId") as number
+        let groupId = call.argument("groupId") as string
+        let memberId = call.argument("memberId") as string
+        let inviterId = call.argument("inviterId") as string
+        let status = call.argument("status") as number
+        let memberExtra = call.argument("memberExtra") as string
+        let lines = call.argument("lines") as number[]
+        handleJoinGroupRequest(groupId, memberId, inviterId, status, memberExtra, lines, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
+    }
+    _getJoinGroupRequests = (call: MethodCall, result: MethodResult) => {
+        let groupId = call.argument("groupId") as string
+        let memberId = call.argument("memberId") as string
+        let status = call.argument("status") as number
+        result.success(getJoinGroupRequests(groupId, memberId, status))
+    }
+    _clearJoinGroupRequest = (call: MethodCall, result: MethodResult) => {
+        let groupId = call.argument("groupId") as string
+        let memberId = call.argument("memberId") as string
+        let inviterId = call.argument("inviterId") as string
+        result.success(clearJoinGroupRequest(groupId, memberId, inviterId))
+    }
+    _getAllJoinGroupRequestUnread = (call: MethodCall, result: MethodResult) => {
+        result.success(getAllJoinGroupRequestUnread())
+    }
+    _getJoinGroupRequestUnread = (call: MethodCall, result: MethodResult) => {
+        let groupId = call.argument("groupId") as string
+        result.success(getJoinGroupRequestUnread(groupId))
+    }
+    _clearJoinGroupRequestUnread = (call: MethodCall, result: MethodResult) => {
+        let groupId = call.argument("groupId") as string
+        clearJoinGroupRequestUnread(groupId)
+        result.success(null)
+    }
+    _clearRemoteJoinGroupRequest = (call: MethodCall, result: MethodResult) => {
+        let requestId = call.argument("requestId") as number
+        clearRemoteJoinGroupRequest(this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getFriendAlias = (call: MethodCall, result: MethodResult) => {
         let friendId = call.argument("friendId") as string
@@ -1442,6 +1503,10 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
             this.__callback2UI('onGetChatroomMemberInfoResult', obj)
         }, this.__generalFailCallback(requestId))
     }
+    _getJoinedChatroomId = (call: MethodCall, result: MethodResult) => {
+        // native 层暂无对应接口，返回空字符串保持与 Dart 契约
+        result.success('')
+    }
     _createChannel = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
         let channelId = call.argument("channelId") as string
@@ -1496,10 +1561,10 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         // TODO
         console.error(`${call.method} is not implement`);
     }
-    _destoryChannel = (call: MethodCall, result: MethodResult) => {
+    _destroyChannel = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
         let channelId = call.argument("channelId") as string
-        destoryChannel(channelId, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
+        destroyChannel(channelId, this.__generalVoidCallback(requestId), this.__generalFailCallback(requestId))
     }
     _getOnlineInfos = (call: MethodCall, result: MethodResult) => {
         // TODO
@@ -1554,6 +1619,25 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     }
     _isEnableUserOnlineState = (call: MethodCall, result: MethodResult) => {
         result.success(isEnableUserOnlineState())
+    }
+    _sendConferenceRequest = (call: MethodCall, result: MethodResult) => {
+        let requestId = call.argument("requestId") as number
+        let sessionId = call.argument("sessionId") as string
+        let roomId = call.argument("roomId") as string
+        let request = call.argument("request") as string
+        let advanced = call.argument("advanced") as boolean
+        let data = call.argument("data") as string
+        sendConferenceRequest(sessionId, roomId, request, data, advanced, str => {
+            this.__callback2UI('onSendConferenceRequestSuccess', {'requestId': requestId, 'result': str} as Record<string, Object>)
+        }, this.__generalFailCallback(requestId))
+    }
+    _isForceBigFilesUpload = (call: MethodCall, result: MethodResult) => {
+        // native 层暂无对应接口，默认返回 false
+        result.success(false)
+    }
+    _setDefaultSilentWhenPcOnline = (call: MethodCall, result: MethodResult) => {
+        // native 层暂无对应接口，先做空实现
+        result.success(null)
     }
     _getConversationFiles = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -1783,6 +1867,15 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         "deleteFriend": this._deleteFriend,
         "sendFriendRequest": this._sendFriendRequest,
         "handleFriendRequest": this._handleFriendRequest,
+        "deleteFriendRequest": this._deleteFriendRequest,
+        "sendJoinGroupRequest": this._sendJoinGroupRequest,
+        "handleJoinGroupRequest": this._handleJoinGroupRequest,
+        "getJoinGroupRequests": this._getJoinGroupRequests,
+        "clearJoinGroupRequest": this._clearJoinGroupRequest,
+        "getAllJoinGroupRequestUnread": this._getAllJoinGroupRequestUnread,
+        "getJoinGroupRequestUnread": this._getJoinGroupRequestUnread,
+        "clearJoinGroupRequestUnread": this._clearJoinGroupRequestUnread,
+        "clearRemoteJoinGroupRequest": this._clearRemoteJoinGroupRequest,
         "getFriendAlias": this._getFriendAlias,
         "setFriendAlias": this._setFriendAlias,
         "getFriendExtra": this._getFriendExtra,
@@ -1834,6 +1927,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         "quitChatroom": this._quitChatroom,
         "getChatroomInfo": this._getChatroomInfo,
         "getChatroomMemberInfo": this._getChatroomMemberInfo,
+        "getJoinedChatroomId": this._getJoinedChatroomId,
         "createChannel": this._createChannel,
         "getChannelInfo": this._getChannelInfo,
         "modifyChannelInfo": this._modifyChannelInfo,
@@ -1842,7 +1936,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         "listenChannel": this._listenChannel,
         "getMyChannels": this._getMyChannels,
         "getRemoteListenedChannels": this._getRemoteListenedChannels,
-        "destoryChannel": this._destoryChannel,
+        "destroyChannel": this._destroyChannel,
         "getOnlineInfos": this._getOnlineInfos,
         "kickoffPCClient": this._kickoffPCClient,
         "isMuteNotificationWhenPcOnline": this._isMuteNotificationWhenPcOnline,
@@ -1853,6 +1947,9 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         "watchOnlineState": this._watchOnlineState,
         "unwatchOnlineState": this._unwatchOnlineState,
         "isEnableUserOnlineState": this._isEnableUserOnlineState,
+        "sendConferenceRequest": this._sendConferenceRequest,
+        "isForceBigFilesUpload": this._isForceBigFilesUpload,
+        "setDefaultSilentWhenPcOnline": this._setDefaultSilentWhenPcOnline,
         "getConversationFiles": this._getConversationFiles,
         "getMyFiles": this._getMyFiles,
         "deleteFileRecord": this._deleteFileRecord,

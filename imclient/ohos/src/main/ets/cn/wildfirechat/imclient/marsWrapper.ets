@@ -182,7 +182,7 @@ function deleteMessage(messageId: number): void {
 function deleteRemoteMessage(messageUid: string, successCB: SuccessCallback, failCB: FailCallback): void {
     clientModule.deleteRemoteMessage(messageUid, voidCallback(successCB), numberCallback(failCB));
 }
-function destoryChannel(channelId: string, successCB: SuccessCallback, failCB: FailCallback): void {
+function destroyChannel(channelId: string, successCB: SuccessCallback, failCB: FailCallback): void {
     clientModule.destoryChannel(channelId, voidCallback(successCB), numberCallback(failCB));
 }
 function dismissGroup(groupId: string, lines: number[], messagePayload: string, successCB: SuccessCallback, failCB: FailCallback): void {
@@ -233,7 +233,7 @@ function getServerDeltaTime(): number {
 function getUnreadCount(types: number[], lines: number[]): string {
     return clientModule.getUnreadCount(types, lines);
 }
-function getUploadMediaUrl(fileName: string, mediaType: number, contentType: string, successCB: (value: object) => void, failCB: FailCallback): void {
+function getUploadUrl(fileName: string, mediaType: number, contentType: string, successCB: (value: object) => void, failCB: FailCallback): void {
     clientModule.getUploadMediaUrl(fileName, mediaType, contentType, variableParamsToArrayParamCallback(successCB), numberCallback(failCB));
 }
 function getUserInfoEx(userId: string, refresh: boolean, successCB: StringCallback, failCB: FailCallback): void {
@@ -256,6 +256,33 @@ function getUserSetting(scope: number, key: string): string {
 }
 function handleFriendRequest(userId: string, accept: boolean, successCB: VoidCallback, failCB: FailCallback, extra: string): void {
     clientModule.handleFriendRequest(userId, accept, voidCallback(successCB), numberCallback(failCB), extra);
+}
+function deleteFriendRequest(userId: string, incomming: number): void {
+    clientModule.deleteFriendRequest(userId, incomming);
+}
+function sendJoinGroupRequest(groupId: string, memberIds: string[], reason: string, extra: string, successCB: VoidCallback, failCB: FailCallback): void {
+    clientModule.sendJoinGroupRequest(groupId, memberIds, reason, extra, voidCallback(successCB), numberCallback(failCB));
+}
+function handleJoinGroupRequest(groupId: string, memberId: string, inviterId: string, status: number, memberExtra: string, notifyLines: number[], successCB: VoidCallback, failCB: FailCallback): void {
+    clientModule.handleJoinGroupRequest(groupId, memberId, inviterId, status, memberExtra, notifyLines, voidCallback(successCB), numberCallback(failCB));
+}
+function getJoinGroupRequests(groupId: string, memberId: string, status: number): string {
+    return clientModule.getJoinGroupRequests(groupId, memberId, status);
+}
+function clearJoinGroupRequest(groupId: string, memberId: string, inviterId: string): number {
+    return clientModule.clearJoinGroupRequest(groupId, memberId, inviterId);
+}
+function getAllJoinGroupRequestUnread(): number {
+    return clientModule.getAllJoinGroupRequestUnread();
+}
+function getJoinGroupRequestUnread(groupId: string): number {
+    return clientModule.getJoinGroupRequestUnread(groupId);
+}
+function clearJoinGroupRequestUnread(groupId: string): void {
+    clientModule.clearJoinGroupRequestUnread(groupId);
+}
+function clearRemoteJoinGroupRequest(successCB: VoidCallback, failCB: FailCallback): void {
+    clientModule.clearRemoteJoinGroupRequest(voidCallback(successCB), numberCallback(failCB));
 }
 function insertMessage(conversation: string, sender: string, messagePayload: string, status: number, notify: boolean, toUsers: string[], serverTime: number): string{
     return clientModule.insertMessage(conversation, sender, messagePayload, status, notify, toUsers, serverTime);
@@ -371,8 +398,8 @@ function searchMyFiles(keyword: string, beforeMessageUid: string, order:number, 
 function searchUser(keyword: string, searchType: number, page: number, successCB: StringCallback, failCB: FailCallback): void {
     clientModule.searchUser(keyword, searchType, page, stringCallback(successCB), numberCallback(failCB));
 }
-function sendConferenceRequest(sessionId: string, roomId: string, request: string, data: string, advance: boolean, successCB: VoidCallback, failCB: FailCallback): void {
-    clientModule.sendConferenceRequest(sessionId, roomId, request, data, voidCallback(successCB), numberCallback(failCB), advance);
+function sendConferenceRequest(sessionId: string, roomId: string, request: string, data: string, advance: boolean, successCB: StringCallback, failCB: FailCallback): void {
+    clientModule.sendConferenceRequest(sessionId, roomId, request, data, stringCallback(successCB), numberCallback(failCB), advance);
 }
 function sendFriendRequest(userId: string, reason: string, extra: string, successCB: VoidCallback, failCB: FailCallback): void {
     clientModule.sendFriendRequest(userId, reason, extra, voidCallback(successCB), numberCallback(failCB));
@@ -614,7 +641,7 @@ export { getConversationRead as getConversationRead };
 export { deleteFriend as deleteFriend };
 export { deleteMessage as deleteMessage };
 export { deleteRemoteMessage as deleteRemoteMessage };
-export { destoryChannel as destoryChannel };
+export { destroyChannel as destroyChannel };
 export { dismissGroup as dismissGroup };
 export { getAuthorizedMediaUrl as getAuthorizedMediaUrl };
 export { getBlackList as getBlackList };
@@ -631,7 +658,7 @@ export { getRemoteMessage as getRemoteMessage };
 export { getRemoteMessages as getRemoteMessages };
 export { getServerDeltaTime as getServerDeltaTime };
 export { getUnreadCount as getUnreadCount };
-export { getUploadMediaUrl as getUploadMediaUrl };
+export { getUploadUrl as getUploadUrl };
 export { getUserInfoEx as getUserInfoEx };
 export { getUserMessages as getUserMessages };
 export { getUserMessagesEx as getUserMessagesEx };
@@ -639,6 +666,15 @@ export { getUserMessagesExV2 as getUserMessagesExV2 };
 export { getUserMessagesV2 as getUserMessagesV2 };
 export { getUserSetting as getUserSetting };
 export { handleFriendRequest as handleFriendRequest };
+export { deleteFriendRequest as deleteFriendRequest };
+export { sendJoinGroupRequest as sendJoinGroupRequest };
+export { handleJoinGroupRequest as handleJoinGroupRequest };
+export { getJoinGroupRequests as getJoinGroupRequests };
+export { clearJoinGroupRequest as clearJoinGroupRequest };
+export { getAllJoinGroupRequestUnread as getAllJoinGroupRequestUnread };
+export { getJoinGroupRequestUnread as getJoinGroupRequestUnread };
+export { clearJoinGroupRequestUnread as clearJoinGroupRequestUnread };
+export { clearRemoteJoinGroupRequest as clearRemoteJoinGroupRequest };
 export { insertMessage as insertMessage };
 export { isBlackListed as isBlackListed };
 export { isCommercialServer as isCommercialServer };

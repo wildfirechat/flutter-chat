@@ -940,7 +940,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         });
     }
 
-    private void getMediaUploadUrl(@NonNull MethodCall call, @NonNull Result result) {
+    private void getUploadUrl(@NonNull MethodCall call, @NonNull Result result) {
         int requestId = call.argument("requestId");
         String fileName = call.argument("fileName");
         int mediaType = call.argument("mediaType");

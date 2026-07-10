@@ -526,7 +526,7 @@ ImclientPlugin *gIMClientInstance;
     }];
 }
 
-- (void)getMediaUploadUrl:(NSDictionary *)dict result:(FlutterResult)result {
+- (void)getUploadUrl:(NSDictionary *)dict result:(FlutterResult)result {
     int requestId = [dict[@"requestId"] intValue];
     NSString *fileName = dict[@"fileName"];
     int mediaType = [dict[@"mediaType"] intValue];
@@ -1773,6 +1773,11 @@ ImclientPlugin *gIMClientInstance;
     result(@(ret));
 }
 
+- (void)rollbackTransaction:(NSDictionary *)dict result:(FlutterResult)result {
+    BOOL ret = [[WFCCIMService sharedWFCIMService] rollbackTransaction];
+    result(@(ret));
+}
+
 - (void)isCommercialServer:(NSDictionary *)dict result:(FlutterResult)result {
     BOOL ret = [[WFCCIMService sharedWFCIMService] isCommercialServer];
     result(@(ret));
@@ -1846,6 +1851,21 @@ ImclientPlugin *gIMClientInstance;
 - (void)isEnableUserOnlineState:(NSDictionary *)dict result:(FlutterResult)result {
     WFCCUserCustomState *customState = [[WFCCIMService sharedWFCIMService] getMyCustomState];
     result(@([[WFCCIMService sharedWFCIMService] isEnableUserOnlineState]));
+}
+
+- (void)sendConferenceRequest:(NSDictionary *)dict result:(FlutterResult)result {
+    int requestId = [dict[@"requestId"] intValue];
+    long long sessionId = [dict[@"sessionId"] longLongValue];
+    NSString *roomId = dict[@"roomId"];
+    NSString *request = dict[@"request"];
+    BOOL advanced = [dict[@"advanced"] boolValue];
+    NSString *data = dict[@"data"];
+
+    [[WFCCIMService sharedWFCIMService] sendConferenceRequest:sessionId room:roomId request:request advanced:advanced data:data success:^(NSString *authorizedUrl) {
+        [self.channel invokeMethod:@"onSendConferenceRequestSuccess" arguments:@{@"requestId":@(requestId), @"result":authorizedUrl}];
+    } error:^(int error_code) {
+        [self.channel invokeMethod:@"onSendConferenceRequestFailure" arguments:@{@"requestId":@(requestId), @"errorCode":@(error_code)}];
+    }];
 }
 
 
