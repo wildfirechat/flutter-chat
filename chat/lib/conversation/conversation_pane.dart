@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -20,6 +21,7 @@ import 'package:chat/conversation/input_bar/message_input_bar.dart';
 import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
 import 'package:chat/conversation/message_cell.dart';
 import 'package:chat/conversation/forward/show_pick_forward_target.dart';
+import 'package:chat/group/join_group_request_screen.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -57,6 +59,8 @@ class _ConversationPaneState extends State<ConversationPane> {
   bool _isLoading = false;
   bool _isLoadingNewer = false;
   final Key _centerKey = UniqueKey();
+  int _joinRequestCount = 0;
+  StreamSubscription<JoinGroupRequestUpdatedEvent>? _joinGroupRequestSubscription;
 
   @override
   void initState() {
@@ -69,6 +73,10 @@ class _ConversationPaneState extends State<ConversationPane> {
     });
 
     Imclient.clearConversationUnreadStatus(widget.conversation);
+    _loadJoinRequestCount();
+    _joinGroupRequestSubscription = Imclient.IMEventBus.on<JoinGroupRequestUpdatedEvent>().listen((_) {
+      _loadJoinRequestCount();
+    });
 
     if (isDesktopShell) {
       // 桌面端没有触摸下拉手势,滚动接近历史侧末端时自动加载更早的消息;
@@ -78,10 +86,60 @@ class _ConversationPaneState extends State<ConversationPane> {
     }
   }
 
+  Future<void> _loadJoinRequestCount() async {
+    if (widget.conversation.conversationType != ConversationType.Group) {
+      if (_joinRequestCount != 0 && mounted) {
+        setState(() => _joinRequestCount = 0);
+      }
+      return;
+    }
+    try {
+      final count = await Imclient.getJoinGroupRequestUnread(groupId: widget.conversation.target);
+      if (mounted && count != _joinRequestCount) {
+        setState(() => _joinRequestCount = count);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  void _openJoinGroupRequests() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => JoinGroupRequestScreen(groupId: widget.conversation.target),
+    ));
+  }
+
+  Widget _buildJoinRequestBanner(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return GestureDetector(
+      onTap: _openJoinGroupRequests,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(48, 8, 48, 8),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          l10n.newJoinGroupRequestCount(_joinRequestCount),
+          style: const TextStyle(fontSize: 14, color: Colors.red),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
-    super.dispose();
     _scrollController.dispose();
+    _joinGroupRequestSubscription?.cancel();
     // 桌面端右栏切换会话时,新会话页 initState 先于旧页 dispose 执行,
     // 此时 viewModel 已指向新会话,不能清空;仅当自己仍是当前会话时才清。
     if (_conversationViewModel.currentConversation == widget.conversation) {
@@ -98,6 +156,7 @@ class _ConversationPaneState extends State<ConversationPane> {
         });
       }, (errorCode) {});
     }
+    super.dispose();
   }
 
   @override
@@ -223,6 +282,8 @@ class _ConversationPaneState extends State<ConversationPane> {
             children: [
               Column(
                 children: [
+                  if (_joinRequestCount > 0)
+                    _buildJoinRequestBanner(context),
                   Expanded(
                     child: GestureDetector(
                       child: NotificationListener(

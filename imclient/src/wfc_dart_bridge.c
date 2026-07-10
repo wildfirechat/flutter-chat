@@ -42,6 +42,7 @@ enum {
   kTagChannelInfoUpdated = 11,
   kTagMessageDelivered = 12,
   kTagMessageReaded = 13,
+  kTagJoinGroupRequestUpdated = 14,
 
   kTagGeneralVoidSuccess = 20,
   kTagGeneralStringSuccess = 21,
@@ -153,6 +154,11 @@ GLOBAL_STRING_LISTENER(wfc_on_friendrequest_updated, kTagFriendRequestUpdated)
 GLOBAL_STRING_LISTENER(wfc_on_channelinfo_updated, kTagChannelInfoUpdated)
 GLOBAL_STRING_LISTENER(wfc_on_message_delivered, kTagMessageDelivered)
 GLOBAL_STRING_LISTENER(wfc_on_message_readed, kTagMessageReaded)
+
+WFC_EXPORT void WFCAPI wfc_on_join_group_request_updated(void) {
+  Dart_CObject a[1] = {c_int(kTagJoinGroupRequestUpdated)};
+  post(1, a);
+}
 
 WFC_EXPORT void WFCAPI wfc_on_setting_updated(void) {
   Dart_CObject a[1] = {c_int(kTagSettingUpdated)};

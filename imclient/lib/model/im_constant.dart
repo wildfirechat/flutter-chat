@@ -1,3 +1,11 @@
+class ErrorCode {
+  /// 加群需要验证（管理员审批）
+  static const int joinGroupNeedVerify = 13;
+
+  /// 群成员数超过最大限制
+  static const int groupExceedMaxMemberCount = 240;
+}
+
 enum ModifyMyInfoType {
   Modify_DisplayName,
   Modify_Portrait,

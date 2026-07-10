@@ -827,6 +827,82 @@ ImclientPlugin *gIMClientInstance;
     }];
 }
 
+- (void)getJoinGroupRequests:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *groupId = dict[@"groupId"];
+    NSString *memberId = dict[@"memberId"];
+    int status = [dict[@"status"] intValue];
+    NSArray<WFCCJoinGroupRequest *> *requests = [[WFCCIMService sharedWFCIMService] getJoinGroupRequests:groupId memberId:memberId status:status];
+    NSMutableArray *array = [NSMutableArray arrayWithCapacity:requests.count];
+    for (WFCCJoinGroupRequest *request in requests) {
+        [array addObject:[request toJsonObj]];
+    }
+    result(array);
+}
+
+- (void)handleJoinGroupRequest:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *groupId = dict[@"groupId"];
+    NSString *memberId = dict[@"memberId"];
+    NSString *inviterId = dict[@"inviterId"];
+    int status = [dict[@"status"] intValue];
+    NSString *memberExtra = dict[@"memberExtra"];
+    NSArray *lines = dict[@"lines"];
+    int requestId = [dict[@"requestId"] intValue];
+    
+    [[WFCCIMService sharedWFCIMService] handleJoinGroupRequest:groupId memberId:memberId inviter:inviterId status:status memberExtra:memberExtra notifyLines:lines success:^{
+        [self callbackOperationVoidSuccess:requestId];
+    } error:^(int errorCode) {
+        [self callbackOperationFailure:requestId errorCode:errorCode];
+    }];
+}
+
+- (void)sendJoinGroupRequest:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *groupId = dict[@"groupId"];
+    NSArray<NSString *> *memberIds = dict[@"memberIds"];
+    NSString *reason = dict[@"reason"];
+    NSString *extra = dict[@"extra"];
+    int requestId = [dict[@"requestId"] intValue];
+    
+    [[WFCCIMService sharedWFCIMService] sendJoinGroupRequest:groupId members:memberIds reason:reason extra:extra success:^{
+        [self callbackOperationVoidSuccess:requestId];
+    } error:^(int errorCode) {
+        [self callbackOperationFailure:requestId errorCode:errorCode];
+    }];
+}
+
+- (void)clearJoinGroupRequest:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *groupId = dict[@"groupId"];
+    NSString *memberId = dict[@"memberId"];
+    NSString *inviterId = dict[@"inviterId"];
+    BOOL ret = [[WFCCIMService sharedWFCIMService] clearJoinGroupRequest:groupId memberId:memberId inviter:inviterId];
+    result(@(ret));
+}
+
+- (void)getAllJoinGroupRequestUnread:(NSDictionary *)dict result:(FlutterResult)result {
+    int count = [[WFCCIMService sharedWFCIMService] getAllJoinGroupRequestUnread];
+    result(@(count));
+}
+
+- (void)getJoinGroupRequestUnread:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *groupId = dict[@"groupId"];
+    int count = [[WFCCIMService sharedWFCIMService] getJoinGroupRequestUnread:groupId];
+    result(@(count));
+}
+
+- (void)clearJoinGroupRequestUnread:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *groupId = dict[@"groupId"];
+    [[WFCCIMService sharedWFCIMService] clearJoinGroupRequestUnread:groupId];
+    result(nil);
+}
+
+- (void)clearRemoteJoinGroupRequest:(NSDictionary *)dict result:(FlutterResult)result {
+    int requestId = [dict[@"requestId"] intValue];
+    [[WFCCIMService sharedWFCIMService] clearRemoteJoinGroupRequest:^{
+        [self callbackOperationVoidSuccess:requestId];
+    } error:^(int errorCode) {
+        [self callbackOperationFailure:requestId errorCode:errorCode];
+    }];
+}
+
 - (void)getFriendAlias:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *friendId = dict[@"friendId"];
     
@@ -1855,6 +1931,7 @@ ImclientPlugin *gIMClientInstance;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onUserInfoUpdated:) name:kUserInfoUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onFriendListUpdated:) name:kFriendListUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onFriendRequestUpdated:) name:kFriendRequestUpdated object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onJoinGroupRequestUpdated:) name:kJoinGroupRequestUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSettingUpdated:) name:kSettingUpdated object:nil];
 }
 - (void)onRecallMessage:(NSNotification *)notification {
@@ -1969,6 +2046,10 @@ ImclientPlugin *gIMClientInstance;
 - (void)onFriendRequestUpdated:(NSNotification *)notification {
     NSArray<NSString *> *newFriendRequests = notification.object;
     [self.channel invokeMethod:@"onFriendRequestUpdated" arguments:@{@"requests":newFriendRequests}];
+}
+
+- (void)onJoinGroupRequestUpdated:(NSNotification *)notification {
+    [self.channel invokeMethod:@"onJoinGroupRequestUpdated" arguments:nil];
 }
 
 - (void)onSettingUpdated:(NSNotification *)notification {

@@ -3283,6 +3283,300 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'深色'**
   String get themeDark;
+
+  /// No description provided for @chatLinks.
+  ///
+  /// In zh, this message translates to:
+  /// **'会话链接'**
+  String get chatLinks;
+
+  /// No description provided for @noLinks.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无链接'**
+  String get noLinks;
+
+  /// No description provided for @joinGroupRequests.
+  ///
+  /// In zh, this message translates to:
+  /// **'入群申请'**
+  String get joinGroupRequests;
+
+  /// No description provided for @noJoinGroupRequests.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无入群申请'**
+  String get noJoinGroupRequests;
+
+  /// No description provided for @joinGroupReason.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请理由'**
+  String get joinGroupReason;
+
+  /// No description provided for @agree.
+  ///
+  /// In zh, this message translates to:
+  /// **'同意'**
+  String get agree;
+
+  /// No description provided for @reject.
+  ///
+  /// In zh, this message translates to:
+  /// **'拒绝'**
+  String get reject;
+
+  /// No description provided for @clearJoinGroupRequests.
+  ///
+  /// In zh, this message translates to:
+  /// **'清空'**
+  String get clearJoinGroupRequests;
+
+  /// No description provided for @accepted.
+  ///
+  /// In zh, this message translates to:
+  /// **'已通过'**
+  String get accepted;
+
+  /// No description provided for @rejected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已拒绝'**
+  String get rejected;
+
+  /// No description provided for @expired.
+  ///
+  /// In zh, this message translates to:
+  /// **'已过期'**
+  String get expired;
+
+  /// No description provided for @newJoinGroupRequestCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'有{count}条新加群申请'**
+  String newJoinGroupRequestCount(Object count);
+
+  /// No description provided for @joinGroupRequestSent.
+  ///
+  /// In zh, this message translates to:
+  /// **'已发送给管理员，请等待管理员批准'**
+  String get joinGroupRequestSent;
+
+  /// No description provided for @sendFailure.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送失败'**
+  String get sendFailure;
+
+  /// No description provided for @joinGroupVerificationEnabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'该群已开启入群验证'**
+  String get joinGroupVerificationEnabled;
+
+  /// No description provided for @pleaseInputJoinGroupReason.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入入群理由'**
+  String get pleaseInputJoinGroupReason;
+
+  /// No description provided for @requestJoinGroup.
+  ///
+  /// In zh, this message translates to:
+  /// **'{name} 请求加入群聊'**
+  String requestJoinGroup(Object name);
+
+  /// No description provided for @inviteJoinGroup.
+  ///
+  /// In zh, this message translates to:
+  /// **'{inviter} 邀请 {member} 加入群聊'**
+  String inviteJoinGroup(Object inviter, Object member);
+
+  /// No description provided for @deleteJoinGroupRequest.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get deleteJoinGroupRequest;
+
+  /// No description provided for @managerSetting.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理员'**
+  String get managerSetting;
+
+  /// No description provided for @muteSetting.
+  ///
+  /// In zh, this message translates to:
+  /// **'禁言设置'**
+  String get muteSetting;
+
+  /// No description provided for @allowTemporarySession.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许临时会话'**
+  String get allowTemporarySession;
+
+  /// No description provided for @joinGroupPermission.
+  ///
+  /// In zh, this message translates to:
+  /// **'加群权限'**
+  String get joinGroupPermission;
+
+  /// No description provided for @freeToJoin.
+  ///
+  /// In zh, this message translates to:
+  /// **'自由加入'**
+  String get freeToJoin;
+
+  /// No description provided for @memberInviteOnly.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅群成员邀请'**
+  String get memberInviteOnly;
+
+  /// No description provided for @managerInviteOnly.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅管理邀请'**
+  String get managerInviteOnly;
+
+  /// No description provided for @needManagerVerify.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要管理审批'**
+  String get needManagerVerify;
+
+  /// No description provided for @groupVisible.
+  ///
+  /// In zh, this message translates to:
+  /// **'群可见性'**
+  String get groupVisible;
+
+  /// No description provided for @searchable.
+  ///
+  /// In zh, this message translates to:
+  /// **'可被搜索'**
+  String get searchable;
+
+  /// No description provided for @notSearchable.
+  ///
+  /// In zh, this message translates to:
+  /// **'不可被搜索'**
+  String get notSearchable;
+
+  /// No description provided for @groupHistoryMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史消息'**
+  String get groupHistoryMessage;
+
+  /// No description provided for @groupMaxMember.
+  ///
+  /// In zh, this message translates to:
+  /// **'最大成员数'**
+  String get groupMaxMember;
+
+  /// No description provided for @addManager.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加管理员'**
+  String get addManager;
+
+  /// No description provided for @removeManager.
+  ///
+  /// In zh, this message translates to:
+  /// **'移除管理员'**
+  String get removeManager;
+
+  /// No description provided for @mutedMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'禁言成员'**
+  String get mutedMembers;
+
+  /// No description provided for @allowedMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'白名单成员'**
+  String get allowedMembers;
+
+  /// No description provided for @addMutedMember.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加禁言成员'**
+  String get addMutedMember;
+
+  /// No description provided for @addAllowedMember.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加白名单成员'**
+  String get addAllowedMember;
+
+  /// No description provided for @remove.
+  ///
+  /// In zh, this message translates to:
+  /// **'移除'**
+  String get remove;
+
+  /// No description provided for @noCandidateForManager.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有可添加为管理员的成员'**
+  String get noCandidateForManager;
+
+  /// No description provided for @noCandidateForMute.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有可选择的成员'**
+  String get noCandidateForMute;
+
+  /// No description provided for @unmuteSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消禁言'**
+  String get unmuteSuccess;
+
+  /// No description provided for @unallowSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'已移除白名单'**
+  String get unallowSuccess;
+
+  /// No description provided for @removeManagerSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'已移除管理员'**
+  String get removeManagerSuccess;
+
+  /// No description provided for @groupOwner.
+  ///
+  /// In zh, this message translates to:
+  /// **'群主'**
+  String get groupOwner;
+
+  /// No description provided for @groupManager.
+  ///
+  /// In zh, this message translates to:
+  /// **'管理员'**
+  String get groupManager;
+
+  /// No description provided for @muteAllMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'全员禁言'**
+  String get muteAllMembers;
+
+  /// No description provided for @noOtherMembersToTransfer.
+  ///
+  /// In zh, this message translates to:
+  /// **'群中没有其他成员可转让'**
+  String get noOtherMembersToTransfer;
+
+  /// No description provided for @transferGroupSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'转让群组成功'**
+  String get transferGroupSuccess;
 }
 
 class _AppLocalizationsDelegate

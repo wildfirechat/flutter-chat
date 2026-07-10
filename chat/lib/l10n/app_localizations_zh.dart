@@ -1716,4 +1716,157 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get themeDark => '深色';
+
+  @override
+  String get chatLinks => '会话链接';
+
+  @override
+  String get noLinks => '暂无链接';
+
+  @override
+  String get joinGroupRequests => '入群申请';
+
+  @override
+  String get noJoinGroupRequests => '暂无入群申请';
+
+  @override
+  String get joinGroupReason => '申请理由';
+
+  @override
+  String get agree => '同意';
+
+  @override
+  String get reject => '拒绝';
+
+  @override
+  String get clearJoinGroupRequests => '清空';
+
+  @override
+  String get accepted => '已通过';
+
+  @override
+  String get rejected => '已拒绝';
+
+  @override
+  String get expired => '已过期';
+
+  @override
+  String newJoinGroupRequestCount(Object count) {
+    return '有$count条新加群申请';
+  }
+
+  @override
+  String get joinGroupRequestSent => '已发送给管理员，请等待管理员批准';
+
+  @override
+  String get sendFailure => '发送失败';
+
+  @override
+  String get joinGroupVerificationEnabled => '该群已开启入群验证';
+
+  @override
+  String get pleaseInputJoinGroupReason => '请输入入群理由';
+
+  @override
+  String requestJoinGroup(Object name) {
+    return '$name 请求加入群聊';
+  }
+
+  @override
+  String inviteJoinGroup(Object inviter, Object member) {
+    return '$inviter 邀请 $member 加入群聊';
+  }
+
+  @override
+  String get deleteJoinGroupRequest => '删除';
+
+  @override
+  String get managerSetting => '管理员';
+
+  @override
+  String get muteSetting => '禁言设置';
+
+  @override
+  String get allowTemporarySession => '允许临时会话';
+
+  @override
+  String get joinGroupPermission => '加群权限';
+
+  @override
+  String get freeToJoin => '自由加入';
+
+  @override
+  String get memberInviteOnly => '仅群成员邀请';
+
+  @override
+  String get managerInviteOnly => '仅管理邀请';
+
+  @override
+  String get needManagerVerify => '需要管理审批';
+
+  @override
+  String get groupVisible => '群可见性';
+
+  @override
+  String get searchable => '可被搜索';
+
+  @override
+  String get notSearchable => '不可被搜索';
+
+  @override
+  String get groupHistoryMessage => '历史消息';
+
+  @override
+  String get groupMaxMember => '最大成员数';
+
+  @override
+  String get addManager => '添加管理员';
+
+  @override
+  String get removeManager => '移除管理员';
+
+  @override
+  String get mutedMembers => '禁言成员';
+
+  @override
+  String get allowedMembers => '白名单成员';
+
+  @override
+  String get addMutedMember => '添加禁言成员';
+
+  @override
+  String get addAllowedMember => '添加白名单成员';
+
+  @override
+  String get remove => '移除';
+
+  @override
+  String get noCandidateForManager => '没有可添加为管理员的成员';
+
+  @override
+  String get noCandidateForMute => '没有可选择的成员';
+
+  @override
+  String get unmuteSuccess => '已取消禁言';
+
+  @override
+  String get unallowSuccess => '已移除白名单';
+
+  @override
+  String get removeManagerSuccess => '已移除管理员';
+
+  @override
+  String get groupOwner => '群主';
+
+  @override
+  String get groupManager => '管理员';
+
+  @override
+  String get muteAllMembers => '全员禁言';
+
+  @override
+  String get noOtherMembersToTransfer => '群中没有其他成员可转让';
+
+  @override
+  String get transferGroupSuccess => '转让群组成功';
 }

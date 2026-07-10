@@ -14,10 +14,12 @@ import 'package:imclient/message/collection_message_content.dart';
 import 'package:imclient/message/poll_message_content.dart';
 import 'package:imclient/message/composite_message_content.dart';
 import 'package:imclient/message/articles_message_content.dart';
+import 'package:imclient/message/link_message_content.dart';
 import 'cell_builder/call_start_cell_builder.dart';
 import 'cell_builder/card_cell_builder.dart';
 import 'cell_builder/file_cell_builder.dart';
 import 'cell_builder/image_cell_builder.dart';
+import 'cell_builder/link_cell_builder.dart';
 import 'cell_builder/message_cell_builder.dart';
 import 'cell_builder/notification_cell_builder.dart';
 import 'cell_builder/streaming_text_cell_builder.dart';
@@ -53,6 +55,8 @@ class _MessageCellState extends State<MessageCell> with AutomaticKeepAliveClient
   void _initCellBuilder() {
     if (widget.model.message.content is NotificationMessageContent) {
       _cellBuilder = NotificationCellBuilder(context, widget.model);
+    } else if (widget.model.message.content is LinkMessageContent) {
+      _cellBuilder = LinkCellBuilder(context, widget.model);
     } else if (widget.model.message.content is TextMessageContent) {
       _cellBuilder = TextCellBuilder(context, widget.model);
     } else if (widget.model.message.content is ImageMessageContent) {

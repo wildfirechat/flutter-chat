@@ -9,8 +9,8 @@
 #import "WFCCMessageContent.h"
 
 /**
- 电话总结消息
- */
+通话开始消息
+*/
 @interface WFCCCallStartMessageContent : WFCCMessageContent
 
 
@@ -48,6 +48,17 @@ WFAVCallEndReason
  0 未知；1 音视频免费版；2 音视频高级版
  */
 @property (nonatomic, assign)int type;
+
+
+/*
+ 0 voip对voip电话；1 voip打PSTN电话；2 PSTN打voip电话。
+ */
+@property (nonatomic, assign)int pstnType;
+
+/*
+ 当pstnType为1或者2时，PSTN电话号码.
+ */
+@property (nonatomic, strong)NSString *pstnNumber;
 
 /*
  * 是否仅音频

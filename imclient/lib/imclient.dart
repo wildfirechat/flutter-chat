@@ -85,6 +85,7 @@ import 'model/file_record.dart';
 import 'model/friend_request.dart';
 import 'model/group_info.dart';
 import 'model/group_member.dart';
+import 'model/join_group_request.dart';
 import 'model/group_search_info.dart';
 import 'model/im_constant.dart';
 import 'model/message_payload.dart';
@@ -279,6 +280,8 @@ class FriendRequestUpdateEvent {
 
   FriendRequestUpdateEvent(this.newUserRequests);
 }
+
+class JoinGroupRequestUpdatedEvent {}
 
 class ChannelInfoUpdateEvent {
   List<ChannelInfo> channelInfos;
@@ -1149,6 +1152,85 @@ class Imclient {
       OperationSuccessVoidCallback successCallback,
       OperationFailureCallback errorCallback) {
     ImclientPlatform.instance.handleFriendRequest(userId, accept, extra, successCallback, errorCallback);
+  }
+
+  ///获取入群申请列表
+  /// [groupId] 为空时获取所有群的申请;[status] 0-待处理,1-已通过,2-已拒绝,-1-全部
+  static Future<List<JoinGroupRequest>> getJoinGroupRequests({String? groupId, int status = -1}) async {
+    final list = await ImclientPlatform.instance.getJoinGroupRequests(groupId: groupId, status: status);
+    return list.map((e) => JoinGroupRequest.fromJson(e)).toList();
+  }
+
+  ///处理入群申请
+  /// [accept] true 表示同意,false 表示拒绝
+  /// [inviterId] 对应模型中的 requestUserId,即发起邀请/申请的用户ID
+  static void handleJoinGroupRequest(
+      String groupId,
+      String memberId,
+      bool accept, {
+        String? inviterId,
+        String? memberExtra,
+        OperationSuccessVoidCallback? successCallback,
+        OperationFailureCallback? errorCallback,
+      }) {
+    ImclientPlatform.instance.handleJoinGroupRequest(
+      groupId,
+      memberId,
+      accept,
+      inviterId: inviterId,
+      memberExtra: memberExtra,
+      successCallback: successCallback ?? () {},
+      errorCallback: errorCallback ?? (int errorCode) {},
+    );
+  }
+
+  ///发送入群申请(或邀请)到管理员审批
+  /// [groupId] 群组ID
+  /// [memberIds] 被邀请人ID列表
+  /// [reason] 申请理由
+  /// [extra] 扩展信息
+  static void sendJoinGroupRequest(
+      String groupId,
+      List<String> memberIds, {
+        String? reason,
+        String? extra,
+        OperationSuccessVoidCallback? successCallback,
+        OperationFailureCallback? errorCallback,
+      }) {
+    ImclientPlatform.instance.sendJoinGroupRequest(
+      groupId,
+      memberIds,
+      reason: reason,
+      extra: extra,
+      successCallback: successCallback ?? () {},
+      errorCallback: errorCallback ?? (int errorCode) {},
+    );
+  }
+
+  ///清除入群申请记录
+  static Future<bool> clearJoinGroupRequest(String groupId, String memberId, {String? inviterId}) async {
+    return ImclientPlatform.instance.clearJoinGroupRequest(groupId, memberId, inviterId: inviterId);
+  }
+
+  ///获取入群申请未读数
+  static Future<int> getJoinGroupRequestUnread({String? groupId}) async {
+    return ImclientPlatform.instance.getJoinGroupRequestUnread(groupId: groupId);
+  }
+
+  ///清除入群申请未读数
+  static Future<void> clearJoinGroupRequestUnread({String? groupId}) async {
+    return ImclientPlatform.instance.clearJoinGroupRequestUnread(groupId: groupId);
+  }
+
+  ///清除服务器端属于当前用户的入群申请记录
+  static void clearRemoteJoinGroupRequest({
+    OperationSuccessVoidCallback? successCallback,
+    OperationFailureCallback? errorCallback,
+  }) {
+    ImclientPlatform.instance.clearRemoteJoinGroupRequest(
+      successCallback: successCallback ?? () {},
+      errorCallback: errorCallback ?? (int errorCode) {},
+    );
   }
 
   ///获取好友备注名

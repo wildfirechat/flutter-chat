@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,7 @@ import '../pc/pc_user_card.dart';
 import '../search/search_conversation_result_view.dart';
 import '../user_info_widget.dart';
 import 'conversation_files_screen.dart';
+import 'conversation_links_screen.dart';
 import 'group_announcement_screen.dart';
 import 'group_conversation_info_members_view.dart';
 import 'group_manage_screen.dart';
@@ -95,7 +97,9 @@ class GroupConversationInfoScreen extends StatelessWidget {
       const SectionDivider(),
       OptionItem(l10n.groupMemberList, onTap: () {}),
       OptionItem(l10n.groupNameLabel, desc: groupInfo?.name ?? '', onTap: () {
-        if (groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager) {
+        if (groupInfo != null &&
+            groupInfo.type == GroupType.Restricted &&
+            (groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager)) {
           _showEditDialog(context, l10n.modifyGroupNameDialog, groupInfo?.name ?? '', (value) {
             Imclient.modifyGroupInfo(conversation.target, ModifyGroupInfoType.Modify_Group_Name, value, () {}, (errorCode) {
               Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
@@ -127,7 +131,9 @@ class GroupConversationInfoScreen extends StatelessWidget {
           });
         });
       }),
-      groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner
+      groupInfo != null &&
+              groupInfo.type == GroupType.Restricted &&
+              (groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner)
           ? OptionItem(l10n.groupManagement, onTap: () {
               if (groupInfo != null) {
                 pushPage(context, GroupManageScreen(groupInfo: groupInfo));
@@ -146,6 +152,9 @@ class GroupConversationInfoScreen extends StatelessWidget {
       }),
       OptionItem(l10n.chatFiles, onTap: () {
         pushPage(context, ConversationFilesScreen(conversation));
+      }),
+      OptionItem(l10n.chatLinks, onTap: () {
+        openPage(context, ConversationLinksScreen(conversation));
       }),
       const SectionDivider(),
       OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
@@ -172,7 +181,9 @@ class GroupConversationInfoScreen extends StatelessWidget {
       OptionButtonItem(l10n.clearChatHistory, () {
         _showClearMessageDialog(context, conversation);
       }),
-      // groupMember.type == GroupMemberType.Owner ? OptionButtonItem(l10n.transferGroup, () {}) : Container(),
+      groupMember.type == GroupMemberType.Owner ? OptionButtonItem(l10n.transferGroup, () {
+        _onTransferGroup(context);
+      }) : Container(),
       groupMember.type == GroupMemberType.Owner ? OptionButtonItem(l10n.dismissGroup, () {
         _showDismissGroupConfirmDialog(context);
       }) : Container(),
@@ -272,7 +283,12 @@ class GroupConversationInfoScreen extends StatelessWidget {
               } else {
                 Imclient.addGroupMembers(conversation.target, members, () {
                   Navigator.pop(pickerContext);
-                }, (errorCode) {});
+                }, (errorCode) {
+                  if (errorCode == ErrorCode.joinGroupNeedVerify) {
+                    Navigator.pop(pickerContext);
+                    _showJoinGroupReasonDialog(context, members);
+                  }
+                });
               }
             },
             disabledCheckedUsers: memberIds,
@@ -301,6 +317,46 @@ class GroupConversationInfoScreen extends StatelessWidget {
         disabledCheckedUsers: [conversation.target],
       );
     }
+  }
+
+  void _showJoinGroupReasonDialog(BuildContext context, List<String> members) {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.joinGroupVerificationEnabled),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l10n.pleaseInputJoinGroupReason),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              final reason = controller.text.trim();
+              Imclient.sendJoinGroupRequest(
+                conversation.target,
+                members,
+                reason: reason,
+                successCallback: () {
+                  Fluttertoast.showToast(msg: l10n.joinGroupRequestSent);
+                },
+                errorCallback: (code) {
+                  Fluttertoast.showToast(msg: l10n.sendFailure);
+                },
+              );
+            },
+            child: Text(l10n.confirm),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showEditDialog(BuildContext context, String title, String initialValue, Function(String) onConfirm) {
@@ -389,6 +445,43 @@ class GroupConversationInfoScreen extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _onTransferGroup(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final currentContext = context;
+    Imclient.getGroupMembers(conversation.target).then((members) {
+      if (members.isEmpty) return;
+      List<String> candidateIds = [];
+      for (var member in members) {
+        if (member.memberId != Imclient.currentUserId) {
+          candidateIds.add(member.memberId);
+        }
+      }
+      if (candidateIds.isEmpty) {
+        Fluttertoast.showToast(msg: l10n.noOtherMembersToTransfer);
+        return;
+      }
+      showPickUserScreen(
+        currentContext,
+        title: l10n.transferGroup,
+        (pickerContext, pickedUsers) {
+          if (pickedUsers.isEmpty) {
+            Navigator.pop(pickerContext);
+            return;
+          }
+          Imclient.transferGroup(conversation.target, pickedUsers.first, () {
+            Navigator.pop(pickerContext);
+            Fluttertoast.showToast(msg: l10n.transferGroupSuccess);
+          }, (errorCode) {
+            Fluttertoast.showToast(msg: '${l10n.transferGroup}$errorCode');
+          });
+        },
+        candidates: candidateIds,
+        maxSelected: 1,
+        showOrganizationEntry: false,
+      );
+    });
   }
 
   void _handleDismissGroup(BuildContext context) {

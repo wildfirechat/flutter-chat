@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
+import 'package:imclient/model/im_constant.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -246,13 +247,6 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       _isLoading = true;
     });
 
-    // 假设 addGroupMembers 用于加入群聊
-    // 这里如果 widget.from 有值，可能需要作为验证信息传递，但 addGroupMembers 接口似乎没有该参数
-    // 查看 Android 代码: groupViewModel.addGroupMember(groupInfo, Collections.singletonList(userId), null, Collections.singletonList(0), memberExtra)
-    // Flutter 的 addGroupMembers: (String groupId, List<String> userIds, Function successCB, Function(int) errorCB)
-    // 看起来 Flutter SDK 简化了，或者需要确认是否有其他方法支持验证信息
-    // 暂时按照现有接口调用
-
     Imclient.addGroupMembers(widget.groupId, [Imclient.currentUserId], () {
       if (mounted) {
         setState(() {
@@ -265,8 +259,55 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
         setState(() {
           _isLoading = false;
         });
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.joinFail(errorCode));
+        if (errorCode == ErrorCode.joinGroupNeedVerify) {
+          _showJoinGroupReasonDialog().then((reason) {
+            if (reason != null) {
+              Imclient.sendJoinGroupRequest(
+                widget.groupId,
+                [Imclient.currentUserId],
+                reason: reason,
+                successCallback: () {
+                  Fluttertoast.showToast(
+                      msg: AppLocalizations.of(context)!.joinGroupRequestSent);
+                },
+                errorCallback: (code) {
+                  Fluttertoast.showToast(
+                      msg: AppLocalizations.of(context)!.sendFailure);
+                },
+              );
+            }
+          });
+        } else {
+          Fluttertoast.showToast(
+              msg: AppLocalizations.of(context)!.joinFail(errorCode));
+        }
       }
     });
+  }
+
+  Future<String?> _showJoinGroupReasonDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.joinGroupVerificationEnabled),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: InputDecoration(hintText: l10n.pleaseInputJoinGroupReason),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, null),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: Text(l10n.confirm),
+          ),
+        ],
+      ),
+    );
   }
 }

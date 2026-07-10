@@ -20,6 +20,7 @@ import '../viewmodel/user_view_model.dart';
 import '../widget/option_button_item.dart';
 import '../widget/option_item.dart';
 import 'conversation_files_screen.dart';
+import 'conversation_links_screen.dart';
 import 'package:chat/app_navigator.dart';
 
 class SingleConversationInfoScreen extends StatelessWidget {
@@ -81,6 +82,9 @@ class SingleConversationInfoScreen extends StatelessWidget {
       }),
       OptionItem(l10n.chatFiles, onTap: () {
         pushPage(context, ConversationFilesScreen(conversation));
+      }),
+      OptionItem(l10n.chatLinks, onTap: () {
+        openPage(context, ConversationLinksScreen(conversation));
       }),
       const SectionDivider(),
       OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {

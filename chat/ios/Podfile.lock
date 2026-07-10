@@ -51,7 +51,6 @@ PODS:
     - WebRTC-SDK (= 144.7559.09)
   - fluttertoast (0.0.2):
     - Flutter
-    - Toast
   - GoogleDataTransport (10.1.0):
     - nanopb (~> 3.30910.0)
     - PromisesObjC (~> 2.4)
@@ -129,7 +128,6 @@ PODS:
   - super_native_extensions (0.0.1):
     - Flutter
   - SwiftyGif (5.4.4)
-  - Toast (4.1.1)
   - url_launcher_ios (0.0.1):
     - Flutter
   - video_player_avfoundation (0.0.1):
@@ -183,7 +181,6 @@ SPEC REPOS:
     - PromisesObjC
     - SDWebImage
     - SwiftyGif
-    - Toast
     - WebRTC-SDK
 
 EXTERNAL SOURCES:
@@ -246,7 +243,7 @@ SPEC CHECKSUMS:
   flutter_sound: b9236a5875299aaa4cef1690afd2f01d52a3f890
   flutter_sound_core: 427465f72d07ab8c3edbe8ffdde709ddacd3763c
   flutter_webrtc: 3ee86aa10e0313c38c93fdb215dd86e77014f96a
-  fluttertoast: 76fea30fcf04176325f6864c87306927bd7d2038
+  fluttertoast: 2c67e14dce98bbdb200df9e1acf610d7a6264ea1
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleMLKit: eff9e23ec1d90ea4157a1ee2e32a4f610c5b3318
   GoogleToolboxForMac: d1a2cbf009c453f4d6ded37c105e2f67a32206d8
@@ -271,7 +268,6 @@ SPEC CHECKSUMS:
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   super_native_extensions: b763c02dc3a8fd078389f410bf15149179020cb4
   SwiftyGif: 93a1cc87bf3a51916001cf8f3d63835fb64c819f
-  Toast: 1f5ea13423a1e6674c4abdac5be53587ae481c4e
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
   video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
   WebRTC-SDK: e6006119cd730d6315d875e4a421b6cc8bb88833

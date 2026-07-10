@@ -6,27 +6,35 @@
 	<dict>
 		<key>Headers/Common.h</key>
 		<data>
-		SV0WZqcXhL+nE+yOouRP4VZpXfI=
+		wGaJOYIhfa6w4EoMA7ol3ZRZiBg=
 		</data>
 		<key>Headers/WFCCAddGroupeMemberNotificationContent.h</key>
 		<data>
-		jvLO++pfRhcWd1SGd2Rl9MD72yI=
+		Xuc4wWqJk0P17dj7dbWo3qwO6l4=
 		</data>
 		<key>Headers/WFCCArticlesMessageContent.h</key>
 		<data>
-		OCeFgvYBsjpkMD0TktQKQhsKhd4=
+		us08OSjFP324yOXK2/y8jawYtmk=
+		</data>
+		<key>Headers/WFCCBackupRequestNotificationContent.h</key>
+		<data>
+		Xi/n38Muo2bG/t15laQTHxXniSA=
+		</data>
+		<key>Headers/WFCCBackupResponseNotificationContent.h</key>
+		<data>
+		DksKF8UP4Ulp1dqA5cFyymd38iU=
 		</data>
 		<key>Headers/WFCCCallAddParticipantMessageContent.h</key>
 		<data>
-		Gp2DUYZvy4oTOkc/ESfeRb7RiWE=
+		5gLGcIh97nVsrJUjWqJ0pP2J7h4=
 		</data>
 		<key>Headers/WFCCCallByeMessageContent.h</key>
 		<data>
-		lLIN2Wba1CnarrOaKTCj0jdpAo4=
+		RKZJt9I+3tTpo4iewOlouDMcofc=
 		</data>
 		<key>Headers/WFCCCallStartMessageContent.h</key>
 		<data>
-		TkaXEIURlWRSAUSWH4JFT/k6lpo=
+		jaVK7LN22doi+Ueaovy2FiMHzQM=
 		</data>
 		<key>Headers/WFCCCardMessageContent.h</key>
 		<data>
@@ -38,31 +46,35 @@
 		</data>
 		<key>Headers/WFCCChangeGroupPortraitNotificationContent.h</key>
 		<data>
-		RV7X/R5zu1nk7gWMG51Rau9bu18=
+		etEjeOxLuJNk8kxSQZqBuN29K7w=
 		</data>
 		<key>Headers/WFCCChannelInfo.h</key>
 		<data>
-		J/5lIOlldCotTh7EdP/hQUDYzB4=
+		IAUMfrIudI2ZsvGCdoN8BD8Yq6M=
 		</data>
 		<key>Headers/WFCCChannelMenu.h</key>
 		<data>
-		FZXkE9hSv0palo5UGSct/+wjTVI=
+		fqObTBLK669y1ojboBs0XMbJNa8=
 		</data>
 		<key>Headers/WFCCChannelMenuEventMessageContent.h</key>
 		<data>
-		KGX0HpyfUYU/+5LBf7Y7PWNyDf0=
+		8/ZE7S5tAleJvJRTlAs7N+mtJmg=
 		</data>
 		<key>Headers/WFCCChatroomInfo.h</key>
 		<data>
-		D5lCwDH3GJCnM1X7Ug3CnX5RXsw=
+		PiqY5pqEYZzWOLL09BObwcCtvqA=
 		</data>
 		<key>Headers/WFCCChatroomMemberInfo.h</key>
 		<data>
-		uAzguqEQAeOcOzpYPuX+FidG9dc=
+		vRZCAeD22tuPqGXnXminVlWI3ng=
+		</data>
+		<key>Headers/WFCCCollectionMessageContent.h</key>
+		<data>
+		qoseompTRLt1OROxzzX3nyS6ZLA=
 		</data>
 		<key>Headers/WFCCCompositeMessageContent.h</key>
 		<data>
-		ygnyDZtDTn9hq0Ar+RmKc95ysAQ=
+		Jk1PloyHrsCRywWUOZ+FL5Xwgss=
 		</data>
 		<key>Headers/WFCCConferenceInviteMessageContent.h</key>
 		<data>
@@ -86,11 +98,11 @@
 		</data>
 		<key>Headers/WFCCDeleteMessageContent.h</key>
 		<data>
-		JgLZw5Iosxii47IRTkbYseNa010=
+		wA2NRwgjePl/sn/hFp9MAkoGQRQ=
 		</data>
 		<key>Headers/WFCCDeliveryReport.h</key>
 		<data>
-		Mx9wvAK8IjC+EQwbZuqQBf12O3A=
+		R4mCq1yNVgBTs/wn98IxbF1Ou/s=
 		</data>
 		<key>Headers/WFCCDictionary.h</key>
 		<data>
@@ -110,15 +122,15 @@
 		</data>
 		<key>Headers/WFCCEnums.h</key>
 		<data>
-		qNHY+LulPY/c3tPfoonhObTr1r0=
+		B3QjBGY7cUFi3Y0Un6JPXfVhKIA=
 		</data>
 		<key>Headers/WFCCFileMessageContent.h</key>
 		<data>
-		5wbl0fY5k0YAcEfHt+/grdcw+w0=
+		l29XtvwsnM8eEkvaUpjggY7s+qo=
 		</data>
 		<key>Headers/WFCCFileRecord.h</key>
 		<data>
-		4aIaA33n6bUCX8O6J0xxmsa1Pos=
+		Z6CsuKUbn48vUTg2GZOnxpU/8DY=
 		</data>
 		<key>Headers/WFCCFriend.h</key>
 		<data>
@@ -138,11 +150,11 @@
 		</data>
 		<key>Headers/WFCCGroupInfo.h</key>
 		<data>
-		96/Vhp003W4SR9FKbeUw4RixYb4=
+		0KW6k3/849TJdCJL9OjICTnWJ00=
 		</data>
 		<key>Headers/WFCCGroupJoinTypeNotificationContent.h</key>
 		<data>
-		Qtr37R+sD09xV6fgIKZwO8rApSg=
+		MnIXs8cNwfFykvfHiWiQQa7i5qw=
 		</data>
 		<key>Headers/WFCCGroupMember.h</key>
 		<data>
@@ -158,15 +170,15 @@
 		</data>
 		<key>Headers/WFCCGroupMuteNotificationContent.h</key>
 		<data>
-		qLFbHvFV3B0PW18/X9IzTDyK+04=
+		D5gtkaV4wlW0sFqsbtVYQQciOAE=
 		</data>
 		<key>Headers/WFCCGroupPrivateChatNotificationContent.h</key>
 		<data>
-		7sAJpuAG5CohYN3Is3k0A53OsF0=
+		Iovh6goSCPoZpqC9bAkaiA47y9g=
 		</data>
 		<key>Headers/WFCCGroupRejectJoinNotificationContent.h</key>
 		<data>
-		xAhhZcT2FtNL8VGKCVPbK+68Dm0=
+		WNuMu2wD7ANrhZE/VJM4bGcKh3M=
 		</data>
 		<key>Headers/WFCCGroupSearchInfo.h</key>
 		<data>
@@ -182,7 +194,7 @@
 		</data>
 		<key>Headers/WFCCIMService.h</key>
 		<data>
-		jQMtDFfpjLdYK9cCoOoo0Dl4My8=
+		4JgHpEqFA5TNTqVZDVGjPwh1Zpk=
 		</data>
 		<key>Headers/WFCCImageMessageContent.h</key>
 		<data>
@@ -190,7 +202,11 @@
 		</data>
 		<key>Headers/WFCCJoinCallRequestMessageContent.h</key>
 		<data>
-		xzAvi1X3CA9lt04ULjpeFB7daJA=
+		ba75masmqFyfSkRxH3AHQWgZCgA=
+		</data>
+		<key>Headers/WFCCJoinGroupRequest.h</key>
+		<data>
+		6SqK/yJxyA3JdeFlLKIkJpaUAuA=
 		</data>
 		<key>Headers/WFCCJsonSerializer.h</key>
 		<data>
@@ -206,7 +222,7 @@
 		</data>
 		<key>Headers/WFCCLeaveChannelChatMessageContent.h</key>
 		<data>
-		DL8WjZgqYS9l/OvtU0AvYHPaMik=
+		mQ1EHhoKRmAteISqVIf/hKKcxFA=
 		</data>
 		<key>Headers/WFCCLinkMessageContent.h</key>
 		<data>
@@ -220,13 +236,21 @@
 		<data>
 		dKL+vn0PcsLdH2KYp2FrEQjKVrE=
 		</data>
+		<key>Headers/WFCCMeetingMinutesMessageContent.h</key>
+		<data>
+		3pqSI6PPPW8cDNqbV9P9Gep1moQ=
+		</data>
 		<key>Headers/WFCCMessage.h</key>
 		<data>
 		fAupfxwHH1mU/yWc9RxqVNcou3s=
 		</data>
+		<key>Headers/WFCCMessageBackupManager.h</key>
+		<data>
+		e5TTzwLrQdbWND6jg/4eJkGGYJw=
+		</data>
 		<key>Headers/WFCCMessageContent.h</key>
 		<data>
-		ts0Q3p2wCt5/RGJYerWAVLLsMNg=
+		SP/MIxsmfVY1Xke8GfCXu7EDYr0=
 		</data>
 		<key>Headers/WFCCModifyGroupAliasNotificationContent.h</key>
 		<data>
@@ -246,7 +270,7 @@
 		</data>
 		<key>Headers/WFCCNetworkService.h</key>
 		<data>
-		QWmAkvGXF//C6TYJ6gOyEZjwG8M=
+		hxDp5hTqt+B4URY5FIRJU6dY1kY=
 		</data>
 		<key>Headers/WFCCNotDeliveredMessageContent.h</key>
 		<data>
@@ -258,11 +282,11 @@
 		</data>
 		<key>Headers/WFCCPCLoginRequestMessageContent.h</key>
 		<data>
-		k/r3Yv0yVSbq6FU8T2CLxq6b6z4=
+		USx/+Sn+TzBq9fRtsQyN9++rJko=
 		</data>
 		<key>Headers/WFCCPCOnlineInfo.h</key>
 		<data>
-		XHYyRIsilrjHZNVPPS4a7PxHNG4=
+		mbEjXk/szXCdXfgB4Qvu9b4JP/A=
 		</data>
 		<key>Headers/WFCCPTTSoundMessageContent.h</key>
 		<data>
@@ -271,6 +295,14 @@
 		<key>Headers/WFCCPTextMessageContent.h</key>
 		<data>
 		kEio/hGlyJShUFOyrmLfaDmW4W4=
+		</data>
+		<key>Headers/WFCCPollMessageContent.h</key>
+		<data>
+		vU7iX2Lq6uYfvudD6d5QrBSSlyI=
+		</data>
+		<key>Headers/WFCCPollResultMessageContent.h</key>
+		<data>
+		tpQ7uHvtdB2837iK5lgCKm6izXs=
 		</data>
 		<key>Headers/WFCCProtocol.h</key>
 		<data>
@@ -286,7 +318,7 @@
 		</data>
 		<key>Headers/WFCCQuoteInfo.h</key>
 		<data>
-		ERBNbAyfOp3vf/yfH+xFXvRHVfE=
+		mMWFK0dbh7Ts2ju20qLXOjQqSrc=
 		</data>
 		<key>Headers/WFCCRawMessageContent.h</key>
 		<data>
@@ -294,11 +326,19 @@
 		</data>
 		<key>Headers/WFCCReadReport.h</key>
 		<data>
-		RLnJXSMYZRuIrADwxk5m1TIhc2M=
+		YAj13gT8gvNnuTJj+sxTO5houdc=
 		</data>
 		<key>Headers/WFCCRecallMessageContent.h</key>
 		<data>
-		tf4uFEBvokiIXp5TyVpuJAFcLwU=
+		wUfY5eEGkgF7uFQUODY8snwlDN8=
+		</data>
+		<key>Headers/WFCCRestoreRequestNotificationContent.h</key>
+		<data>
+		I27mJhHwYY6nBrkJQlPhLmQf3LE=
+		</data>
+		<key>Headers/WFCCRestoreResponseNotificationContent.h</key>
+		<data>
+		1oRuOaWW5LQbz9pgnALFvHkTX9g=
 		</data>
 		<key>Headers/WFCCRichNotificationMessageContent.h</key>
 		<data>
@@ -314,7 +354,7 @@
 		</data>
 		<key>Headers/WFCCStartSecretChatMessageContent.h</key>
 		<data>
-		uy8dt0OafAkux/C2TQSRVlrC/Mo=
+		i4EIOqR7qAkRBKR6kLpJHluYRGw=
 		</data>
 		<key>Headers/WFCCStickerMessageContent.h</key>
 		<data>
@@ -322,11 +362,11 @@
 		</data>
 		<key>Headers/WFCCStreamingTextGeneratedMessageContent.h</key>
 		<data>
-		woFKNIgjsc8naNTMxv42sLuuYhg=
+		Fv+wvOS00jkVLoCAnFyK9I3BF/g=
 		</data>
 		<key>Headers/WFCCStreamingTextGeneratingMessageContent.h</key>
 		<data>
-		85FlvdNUDtADujETMUtI3O3xsTI=
+		rgJ93nQZAksHnaziiDPYNefwuZc=
 		</data>
 		<key>Headers/WFCCTextMessageContent.h</key>
 		<data>
@@ -342,7 +382,11 @@
 		</data>
 		<key>Headers/WFCCTipNotificationMessageContent.h</key>
 		<data>
-		OUWpXw5oLCcRrZzKMinv4QWyeog=
+		x8badgkG50tyctY45jP09fdUHNw=
+		</data>
+		<key>Headers/WFCCTranscriptionMessageContent.h</key>
+		<data>
+		mpQpAUyqSHmcQ8cWLx9s6cfc8yQ=
 		</data>
 		<key>Headers/WFCCTransferGroupOwnerNotificationContent.h</key>
 		<data>
@@ -358,7 +402,7 @@
 		</data>
 		<key>Headers/WFCCUnreadCount.h</key>
 		<data>
-		qQ9rtAub4TjppdUgobFrqZgF3S8=
+		TfLtLMC+5MEPvpch6ISkfHSoGLk=
 		</data>
 		<key>Headers/WFCCUserInfo.h</key>
 		<data>
@@ -370,20 +414,47 @@
 		</data>
 		<key>Headers/WFCCUtilities.h</key>
 		<data>
-		a93kPB9X1c0058XVXSTsrHFPB/Y=
+		Rywiv6sJFCSiMvuxz72CekSmmbc=
 		</data>
 		<key>Headers/WFCCVideoMessageContent.h</key>
 		<data>
-		xqitZmCxwt/yGMV+5vCzjpLRiWQ=
+		yrSbN58ZJVu7JXGmz116s6ie3KE=
 		</data>
 		<key>Headers/WFCChatClient.h</key>
 		<data>
-		AF3OOF63hsmv1DdI09oH2djjsv8=
+		iCzHWjmgWv3ow5fypeNNHGT2cGk=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		EXf7bS6COlEzMmmjEBHKPTsK5Lc=
+		dYROeDHfCzq0M0bKReRLLExWeVM=
 		</data>
+		<key>en.lproj/wfc_client.strings</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			dTo1JOY23x3fXfn4JWR4lmFgBvM=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>zh-Hans.lproj/wfc_client.strings</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			+lUgKYflHhsviHk9bUyQ5CRPEeI=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>zh-Hant.lproj/wfc_client.strings</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			5G93lXV03iQiGrS+ul5P7Is7cKo=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
 	</dict>
 	<key>files2</key>
 	<dict>
@@ -391,42 +462,56 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			F2Ic3hyQNTVCvOMnTLERXfuxmNT87HqEygujpgH2iY4=
+			MKE3JQ7ulMiYbRXCxfXGyqLUcxq8gisUcFt8kTQmotI=
 			</data>
 		</dict>
 		<key>Headers/WFCCAddGroupeMemberNotificationContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			EpsJAfExMfDRxNnkv78FsRq19MxhZOOa7zAXkJWjhqc=
+			fxa8LcsYdqMScfwuPb8TPmY1tC/se+rvgo3mL2fwXZE=
 			</data>
 		</dict>
 		<key>Headers/WFCCArticlesMessageContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			eorX+dyEZxC/KyOBe/GEDyXrvHZZuhiwWYPaavCA2Lo=
+			9X+WQI/Sp27SOTsKYuchtVXnCnmu5FASlEyBsAyvxAM=
+			</data>
+		</dict>
+		<key>Headers/WFCCBackupRequestNotificationContent.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			0Oxdzk1LAIZl8GLX+p6MMFinQgPVFWKKHOu3PVH+wYU=
+			</data>
+		</dict>
+		<key>Headers/WFCCBackupResponseNotificationContent.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			M5V9mdby88nh5Rrr5Cv8qriyTdMvIX3KcCXUFRZnz2g=
 			</data>
 		</dict>
 		<key>Headers/WFCCCallAddParticipantMessageContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			AlXCupdVJRWmVnjglrGyavED8Yz+sbIqoYS0GBu/vbI=
+			BU+tYLs4oaMoERq1r/1dVzbiZYcD0Ocdk/gvGLHdmQk=
 			</data>
 		</dict>
 		<key>Headers/WFCCCallByeMessageContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			4mJFazKyranTM2fv8KTUwvpIaQmp3IE4H1Vd6yHGz7k=
+			epbpDK6jXFnnV4lbbQfFYhlKf1qL3TNUD2+AHg2Qxls=
 			</data>
 		</dict>
 		<key>Headers/WFCCCallStartMessageContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			rsMetvs+P6KcPYwKQIE83DDG2zu1ydb0QMmEcvvfmpo=
+			oySCqUYHfL8PXhVI8uADN3W5pWKYrS+nVz1m+EvwEwM=
 			</data>
 		</dict>
 		<key>Headers/WFCCCardMessageContent.h</key>
@@ -447,49 +532,56 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			VeQkDgvx4xzLQAUvHOZX+DP0pe5iFNa+W8tVeUHXBIg=
+			JdDUP6mU+fdiWcy0xEEQ1jdf76rqXeC48D+/fv8bD3s=
 			</data>
 		</dict>
 		<key>Headers/WFCCChannelInfo.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			6WeFt0dSRLGSnbn64ICrnGtZNphvudqH/V7qBn7feq8=
+			YkgNcj8EqIrbaDcshdVRgRQR/eXQKqXE94GyT2foSak=
 			</data>
 		</dict>
 		<key>Headers/WFCCChannelMenu.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			nK+4x9iBnOpoHvoT3hZe2YpeQfgXswzolUVIIgu1KIE=
+			hK1PrVaYlT/N5HZGzz8eaVvgJTW1QVal15PzEiWi0OQ=
 			</data>
 		</dict>
 		<key>Headers/WFCCChannelMenuEventMessageContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			kqR96xTnrwWJmDLxvCP1HsTHLjq9ABAJpUPhY1Ofxow=
+			Hu6SXX4QkOzQ7l16Er8LnDIKXqrXvTvVLvEBWRzl9/Y=
 			</data>
 		</dict>
 		<key>Headers/WFCCChatroomInfo.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			iGzH+D/CP1f+3wl2eHqSQ9bsMEdrhI/58jAUiFwDl3o=
+			HSkqmxBteLsbrXWeahXlHs0/jOyybY+yu1nwPLYwH+I=
 			</data>
 		</dict>
 		<key>Headers/WFCCChatroomMemberInfo.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			zxOmgf7enEISucSuoB9IsV/o9VzSHNlp5Zmg/9/pPpY=
+			GfXWlBJROQtwNpilFpvxZem4EQbYYBPJjLZAM4CQ688=
+			</data>
+		</dict>
+		<key>Headers/WFCCCollectionMessageContent.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			sUm/xPhXXGSuQhRUW9fwh7RGUUdth5t9K/FHXS55HNA=
 			</data>
 		</dict>
 		<key>Headers/WFCCCompositeMessageContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			CM2kbabygG2hCZmfD2Jk6Z99D1Yn8nRXo+K7m+eju1E=
+			L6asWhKmjd4PkZk66gMixjhw659L9Ma6hd2QMGKGCbA=
 			</data>
 		</dict>
 		<key>Headers/WFCCConferenceInviteMessageContent.h</key>
@@ -531,14 +623,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			TpgwOudamzEDDSNDNggq0kwmq5Ekq/6GaYxWm9ZgOFs=
+			vFtqQYvDdGXg/e1VANyyT7xr6nmQgyznhl+kRPehi3k=
 			</data>
 		</dict>
 		<key>Headers/WFCCDeliveryReport.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			OWY6aKmCkIe/yDO9vQaWTp/aV+Y7lbOLdxoykWcyeRY=
+			4ehlZuaPue0XbPmnseOx+45h61o/ka6PQSpF7xK3CjM=
 			</data>
 		</dict>
 		<key>Headers/WFCCDictionary.h</key>
@@ -573,21 +665,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			YIv49UhmyEim+Jj4uTU0+9/bH88b7wdcSP4UiUwvo9s=
+			Ulamdz0qkzODHFidXg3mZWS8BXZ4ZNMg6vuFEuRBJOk=
 			</data>
 		</dict>
 		<key>Headers/WFCCFileMessageContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Ke5naJ1rrOtdXPhmBi8Vs9tpTDUsZJxlzB7VcIg73AY=
+			8luNMlbwbvd/CHPHCR8fPxcV541O1ikYX7zbzgtJt+s=
 			</data>
 		</dict>
 		<key>Headers/WFCCFileRecord.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			XwwSIhCpYldnFXUQc5XmQ/A1nR8leevRi5By0He+ECk=
+			UALt/eO8ggIJWVL2P+zvxM2hjMyJ7riaMdVtB9PMqBw=
 			</data>
 		</dict>
 		<key>Headers/WFCCFriend.h</key>
@@ -622,14 +714,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			yv3HF/PGRpX5iccbi0fiJG8mwChwQsKdgLzhVP8IdaE=
+			8d5edZW41kt993A+73Cz0n4FoctJGmTuQbEWGQozUY8=
 			</data>
 		</dict>
 		<key>Headers/WFCCGroupJoinTypeNotificationContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			UWXVAFchCctfR1zw4Z58MLM5ktwA3TVUziHrAkMz1BY=
+			FshxCegbKc8ekScR1K2xlvT0Lb+Nyo+qaD0KXct7LAk=
 			</data>
 		</dict>
 		<key>Headers/WFCCGroupMember.h</key>
@@ -657,21 +749,21 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			I0vaBMST9PHfXlQ7n7THkN3IfD1q5orzXPvJD3Y/p5A=
+			Hh3xTJ10XxkTaU45ThnUwbrwEHd1J8qPovHvq1BeCiw=
 			</data>
 		</dict>
 		<key>Headers/WFCCGroupPrivateChatNotificationContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			uaqdJhtVebaqAGbG6p4KxdgvyxAJLe4xfPslLpTYnLY=
+			gQj5aqwKTf0SJIb45hzGcNzRp3N61xwTvezHpSSms3o=
 			</data>
 		</dict>
 		<key>Headers/WFCCGroupRejectJoinNotificationContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			sfGTEqIYS1+2lTQAGhErIYybJpzlL1w2AYFLJYcbVPY=
+			OHbC+KKDL6iRlWYMm2671Uv+GhfIVvXLlYlc/2myxwo=
 			</data>
 		</dict>
 		<key>Headers/WFCCGroupSearchInfo.h</key>
@@ -699,7 +791,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			43JwIUaWjMFjYH6tuvCEx41bftHXHGWk9l3MW0r7x0g=
+			R96xM1JUcmnc9b72lpMf1CNDBmL/cNZEoy8gJeB1eQY=
 			</data>
 		</dict>
 		<key>Headers/WFCCImageMessageContent.h</key>
@@ -713,7 +805,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			zAu3dFjJzIl7b4I7P0EfZDoZqHbcZp4kaKlNTTHvGR0=
+			L2jH/FU0TTmT7FBLScliORPhP7gKPVVl0P24zJwZBSc=
+			</data>
+		</dict>
+		<key>Headers/WFCCJoinGroupRequest.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			XLMCTRmTHz07/5S5yt7lOP+fJ8/k+JzpSbJEhcUr+Gc=
 			</data>
 		</dict>
 		<key>Headers/WFCCJsonSerializer.h</key>
@@ -741,7 +840,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			W1ziobFnL+1IGb7kMr/mJuaeAfbYb4JsVNsoxy2nNzM=
+			CTCbAVmm8Uw0nAqlU9xzrzsEhOYU+DhfGg84c1Xj0rY=
 			</data>
 		</dict>
 		<key>Headers/WFCCLinkMessageContent.h</key>
@@ -765,6 +864,13 @@
 			ohbLG9MuRZtoapfSoVeBwmN8Q6N071RFZurZw+SgUEY=
 			</data>
 		</dict>
+		<key>Headers/WFCCMeetingMinutesMessageContent.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			qVzYxpznyIrOhCT47jbwHhTb6Zxi6RFWAO5LBp44AOE=
+			</data>
+		</dict>
 		<key>Headers/WFCCMessage.h</key>
 		<dict>
 			<key>hash2</key>
@@ -772,11 +878,18 @@
 			b32LtXrfugMv9vxXe/tA/rk41xt+e8ObTwX5OVIcw3Y=
 			</data>
 		</dict>
+		<key>Headers/WFCCMessageBackupManager.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			cv2HXam7Sz2sUK75Px1UmSzXB6ssPKL6LxquzPv635A=
+			</data>
+		</dict>
 		<key>Headers/WFCCMessageContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			ZUosxN4ZrEZc5LvPK9LAXH0j6xRGHvXUiSuO7B7SP8I=
+			s5MdHSRyV7rsv4Bn+DkhoXPM6Z5GbeNkkdqlpPfOyFc=
 			</data>
 		</dict>
 		<key>Headers/WFCCModifyGroupAliasNotificationContent.h</key>
@@ -811,7 +924,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			VXQWn2maE9oIdND5fMzabpTFZEL0Sxb9rS5UqXUepWw=
+			N3UgNPUukdZk81Pd2qIoenem2nLfRZrKByoZt9AfQV8=
 			</data>
 		</dict>
 		<key>Headers/WFCCNotDeliveredMessageContent.h</key>
@@ -832,14 +945,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			TAI09QlP7msC4SY0HrdIsyX1ootM+izGqQAdB3vRpqY=
+			HQ84Z/+klc2JCO5qnN5D+YWH0kwtE0SBp+sjd+1HSA8=
 			</data>
 		</dict>
 		<key>Headers/WFCCPCOnlineInfo.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			u41qwzHVYIrR+jZEvDimNA4YkNTwlYa6DGH8BaLK9ks=
+			ikLRs1Ku8RMCgsc7u2GwpFWkI9r4gEXILs7EF9M9JbQ=
 			</data>
 		</dict>
 		<key>Headers/WFCCPTTSoundMessageContent.h</key>
@@ -854,6 +967,20 @@
 			<key>hash2</key>
 			<data>
 			XvZRKc8mf2/ZkoBHyDwnMLrng068LcZ13kzwSReKeOA=
+			</data>
+		</dict>
+		<key>Headers/WFCCPollMessageContent.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Dkt5Ym4MTUbfNk9jUaQCOMf8xAVGRv6FDU3RWdwQ3fg=
+			</data>
+		</dict>
+		<key>Headers/WFCCPollResultMessageContent.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			EclNtrtoQACC1RkYLBXOkwhvQujlS+LnWErd6ENbjH0=
 			</data>
 		</dict>
 		<key>Headers/WFCCProtocol.h</key>
@@ -881,7 +1008,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			HAwGIa4WqeAMr18p0GnQZlAtK7s9E3ihLD0Jaid98Vo=
+			3XXYpbQ2LITVD0lCk+mrpGWk1JsiUxMTWk+5z9MurJU=
 			</data>
 		</dict>
 		<key>Headers/WFCCRawMessageContent.h</key>
@@ -895,14 +1022,28 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			rb7Q1EBA8r69zD0qiFTZn39sDs/oDiE441mqfdkiXh4=
+			Ednh1f1tV3BBwash57bq7f128WXn+jTHikli9Hbx+6E=
 			</data>
 		</dict>
 		<key>Headers/WFCCRecallMessageContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			4R32Hfzp8TJRJ/Tk6B9zLNlUHExhecCwQWQnkFuEiiI=
+			ubi/0suIHtRuFyYM0p2rgYmRAxNPXIep7VLOuMFvnCQ=
+			</data>
+		</dict>
+		<key>Headers/WFCCRestoreRequestNotificationContent.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			ANGOtZA0KMXfnC2caXfux9On7tf9AVdKRNEx4O3+jEc=
+			</data>
+		</dict>
+		<key>Headers/WFCCRestoreResponseNotificationContent.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			iu/SjEx99vMgjuMWItEyMJ5QSj+oGQt/UR5nJMBhvIc=
 			</data>
 		</dict>
 		<key>Headers/WFCCRichNotificationMessageContent.h</key>
@@ -930,7 +1071,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			zVx5tl6i3NxpMLBX31K56SRqqeaytZORhC155BAReX0=
+			Cyc2jivO5lVF8FkpxGb4Va3mROrARvKSUMmF9lZgG+I=
 			</data>
 		</dict>
 		<key>Headers/WFCCStickerMessageContent.h</key>
@@ -944,14 +1085,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			j4yUn7cF4oon36TRIsHKKtGVyfUaRWA4px3T3G2cf1I=
+			IsBZYL4n1DTXWPLO9uwD9KjLBng5khB3w7WrRsrYLGU=
 			</data>
 		</dict>
 		<key>Headers/WFCCStreamingTextGeneratingMessageContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			UItFJ9Sz9qIpBgv7yiyg/qqUecTV+QWquwxxpU8d9eg=
+			Mg4ROLUhZCYGuOPNqu7ccuqYuuQeKgw67eWW0EY7bck=
 			</data>
 		</dict>
 		<key>Headers/WFCCTextMessageContent.h</key>
@@ -979,7 +1120,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			90RsFbgpcU6nG7UDzgXhe8VMRY4UDWpJbOLhyerU9pQ=
+			XCDbsubfNT+GaI3WTa6DO6HiHklZQBBSkAiTEGnrQgQ=
+			</data>
+		</dict>
+		<key>Headers/WFCCTranscriptionMessageContent.h</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			DYh+6BLlodzO2taqoB9sEAxOP11pvixuqHUsBmGJCRc=
 			</data>
 		</dict>
 		<key>Headers/WFCCTransferGroupOwnerNotificationContent.h</key>
@@ -1007,7 +1155,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			WXsnUNjKVv7ZLm292UKOidK0hrONKryavW9IZyJLUoQ=
+			s1NVH7yg+wqrJTpaKDGjKirgdmPOQBJ76L7PHDfFHPI=
 			</data>
 		</dict>
 		<key>Headers/WFCCUserInfo.h</key>
@@ -1028,22 +1176,49 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			xgFPAEFwneeZ8CTxFpgTpBaWX4jsYA/MN+qPNh7w+t0=
+			TMPj1yH8ACTiT0/qbtW6HolTHBKAUYL7SN2cAYalNAk=
 			</data>
 		</dict>
 		<key>Headers/WFCCVideoMessageContent.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			dAzsmak0E5VmmiaDL6mlrhniCf97j7d3ksK8KMHFwmU=
+			cuQp8uewMr0NFSfGqyfNoEy2VlueSSSs3DVWbXoLzIE=
 			</data>
 		</dict>
 		<key>Headers/WFCChatClient.h</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			QAVWC5TQ9QW4BizD78wyTHttex7Ywm5k1SYTgLxNveU=
+			GUveTUBuyeXXgkzbAel14UYW86bIxEGFVmWQw8TVTFs=
 			</data>
+		</dict>
+		<key>en.lproj/wfc_client.strings</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			rfu5oWFKZfJ78wr2NhXkq1N61n7tgyAWn65PaUWnc6c=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>zh-Hans.lproj/wfc_client.strings</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			o7urIeXRPrzJgZoBSUYyudBb46ywDX89OmyZKg/7i8Q=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>zh-Hant.lproj/wfc_client.strings</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			NLs1cdpVHwZ6j8qCXU5JPeiRuyR2eLYGTsD3o91+sV8=
+			</data>
+			<key>optional</key>
+			<true/>
 		</dict>
 	</dict>
 	<key>rules</key>

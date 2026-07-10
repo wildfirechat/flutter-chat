@@ -178,6 +178,9 @@ class ImclientFfiChannel implements ImclientChannel {
       case _BridgeTag.channelInfoUpdated:
         _emit('onChannelInfoUpdated', {'channels': _jsonList(str(1))});
         break;
+      case _BridgeTag.joinGroupRequestUpdated:
+        _emit('onJoinGroupRequestUpdated', null);
+        break;
       case _BridgeTag.messageDelivered:
         final delivered = _json(str(1));
         if (delivered is Map) {
@@ -492,6 +495,7 @@ class ImclientFfiChannel implements ImclientChannel {
     _wf.setFriendUpdateListener(_bridge.fn('wfc_on_friendlist_updated'));
     _wf.setFriendRequestListener(_bridge.fn('wfc_on_friendrequest_updated'));
     _wf.setSettingUpdateListener(_bridge.fn('wfc_on_setting_updated'));
+    _wf.setJoinGroupRequestUpdateListener(_bridge.fn('wfc_on_join_group_request_updated'));
     _wf.setChannelInfoUpdateListener(_bridge.fn('wfc_on_channelinfo_updated'));
   }
 
@@ -1343,6 +1347,84 @@ class ImclientFfiChannel implements ImclientChannel {
               _reqPtr(_int(args, 'requestId')), 0);
           return null;
         });
+      case 'sendJoinGroupRequest':
+        return using((a) {
+          final groupId = _ns(a, _str(args, 'groupId'));
+          final members = _nsArray(a, _strList(args, 'memberIds'));
+          final reason = _ns(a, _str(args, 'reason'));
+          final extra = _ns(a, _str(args, 'extra'));
+          _wf.sendJoinGroupRequest(
+              groupId.ptr,
+              groupId.len,
+              members.ptrs,
+              members.lens,
+              members.count,
+              reason.ptr,
+              reason.len,
+              extra.ptr,
+              extra.len,
+              _cbVoid,
+              _cbError,
+              _reqPtr(_int(args, 'requestId')),
+              0);
+          return null;
+        });
+      case 'getJoinGroupRequests':
+        return using((a) {
+          final groupId = _ns(a, _str(args, 'groupId'));
+          final memberId = _ns(a, _str(args, 'memberId'));
+          return _jsonList(_outString((lp) => _wf.getJoinGroupRequests(
+              groupId.ptr, groupId.len, memberId.ptr, memberId.len, _int(args, 'status'), lp)));
+        });
+      case 'handleJoinGroupRequest':
+        return using((a) {
+          final groupId = _ns(a, _str(args, 'groupId'));
+          final memberId = _ns(a, _str(args, 'memberId'));
+          final inviterId = _ns(a, _str(args, 'inviterId'));
+          final memberExtra = _ns(a, _str(args, 'memberExtra'));
+          _wf.handleJoinGroupRequest(
+              groupId.ptr,
+              groupId.len,
+              memberId.ptr,
+              memberId.len,
+              inviterId.ptr,
+              inviterId.len,
+              _int(args, 'status'),
+              memberExtra.ptr,
+              memberExtra.len,
+              _i32Array(a, _intList(args, 'lines')),
+              _intList(args, 'lines').length,
+              _cbVoid,
+              _cbError,
+              _reqPtr(_int(args, 'requestId')),
+              0);
+          return null;
+        });
+      case 'clearJoinGroupRequest':
+        return using((a) {
+          final groupId = _ns(a, _str(args, 'groupId'));
+          final memberId = _ns(a, _str(args, 'memberId'));
+          final inviterId = _ns(a, _str(args, 'inviterId'));
+          return _wf.clearJoinGroupRequest(groupId.ptr, groupId.len, memberId.ptr,
+              memberId.len, inviterId.ptr, inviterId.len);
+        });
+      case 'getAllJoinGroupRequestUnread':
+        return _wf.getAllJoinGroupRequestUnread();
+      case 'getJoinGroupRequestUnread':
+        return using((a) {
+          final groupId = _ns(a, _str(args, 'groupId'));
+          return _wf.getJoinGroupRequestUnread(groupId.ptr, groupId.len);
+        });
+      case 'clearJoinGroupRequestUnread':
+        return using((a) {
+          final groupId = _ns(a, _str(args, 'groupId'));
+          _wf.clearJoinGroupRequestUnread(groupId.ptr, groupId.len);
+          return null;
+        });
+      case 'clearRemoteJoinGroupRequest':
+        _wf.clearRemoteJoinGroupRequest(
+            _cbVoid, _cbError, _reqPtr(_int(args, 'requestId')), 0);
+        return null;
       case 'isBlackListed':
         return using((a) {
           final userId = _ns(a, _str(args, 'userId'));
@@ -2166,6 +2248,7 @@ class _BridgeTag {
   static const int channelInfoUpdated = 11;
   static const int messageDelivered = 12;
   static const int messageReaded = 13;
+  static const int joinGroupRequestUpdated = 14;
 
   static const int generalVoidSuccess = 20;
   static const int generalStringSuccess = 21;

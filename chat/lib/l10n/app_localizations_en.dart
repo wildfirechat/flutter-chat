@@ -1732,4 +1732,159 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeDark => 'Dark';
+
+  @override
+  String get chatLinks => 'Chat Links';
+
+  @override
+  String get noLinks => 'No links';
+
+  @override
+  String get joinGroupRequests => 'Join Group Requests';
+
+  @override
+  String get noJoinGroupRequests => 'No join group requests';
+
+  @override
+  String get joinGroupReason => 'Reason';
+
+  @override
+  String get agree => 'Agree';
+
+  @override
+  String get reject => 'Reject';
+
+  @override
+  String get clearJoinGroupRequests => 'Clear';
+
+  @override
+  String get accepted => 'Accepted';
+
+  @override
+  String get rejected => 'Rejected';
+
+  @override
+  String get expired => 'Expired';
+
+  @override
+  String newJoinGroupRequestCount(Object count) {
+    return '$count new group join requests';
+  }
+
+  @override
+  String get joinGroupRequestSent =>
+      'Request sent to admin, please wait for approval';
+
+  @override
+  String get sendFailure => 'Send failed';
+
+  @override
+  String get joinGroupVerificationEnabled =>
+      'Join group verification is enabled';
+
+  @override
+  String get pleaseInputJoinGroupReason => 'Please input join group reason';
+
+  @override
+  String requestJoinGroup(Object name) {
+    return '$name requests to join group';
+  }
+
+  @override
+  String inviteJoinGroup(Object inviter, Object member) {
+    return '$inviter invites $member to join group';
+  }
+
+  @override
+  String get deleteJoinGroupRequest => 'Delete';
+
+  @override
+  String get managerSetting => 'Managers';
+
+  @override
+  String get muteSetting => 'Mute Settings';
+
+  @override
+  String get allowTemporarySession => 'Allow Temporary Session';
+
+  @override
+  String get joinGroupPermission => 'Join Permission';
+
+  @override
+  String get freeToJoin => 'Free to Join';
+
+  @override
+  String get memberInviteOnly => 'Member Invite Only';
+
+  @override
+  String get managerInviteOnly => 'Manager Invite Only';
+
+  @override
+  String get needManagerVerify => 'Need Manager Approval';
+
+  @override
+  String get groupVisible => 'Group Visibility';
+
+  @override
+  String get searchable => 'Searchable';
+
+  @override
+  String get notSearchable => 'Not Searchable';
+
+  @override
+  String get groupHistoryMessage => 'History Message';
+
+  @override
+  String get groupMaxMember => 'Max Members';
+
+  @override
+  String get addManager => 'Add Manager';
+
+  @override
+  String get removeManager => 'Remove Manager';
+
+  @override
+  String get mutedMembers => 'Muted Members';
+
+  @override
+  String get allowedMembers => 'Allowed Members';
+
+  @override
+  String get addMutedMember => 'Add Muted Member';
+
+  @override
+  String get addAllowedMember => 'Add Allowed Member';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get noCandidateForManager => 'No member can be set as manager';
+
+  @override
+  String get noCandidateForMute => 'No member available';
+
+  @override
+  String get unmuteSuccess => 'Unmuted';
+
+  @override
+  String get unallowSuccess => 'Removed from allow list';
+
+  @override
+  String get removeManagerSuccess => 'Manager removed';
+
+  @override
+  String get groupOwner => 'Owner';
+
+  @override
+  String get groupManager => 'Manager';
+
+  @override
+  String get muteAllMembers => 'Mute All Members';
+
+  @override
+  String get noOtherMembersToTransfer => 'No other member to transfer';
+
+  @override
+  String get transferGroupSuccess => 'Group transferred successfully';
 }

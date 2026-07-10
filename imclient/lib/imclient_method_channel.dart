@@ -437,6 +437,9 @@ class ImclientPlatform extends PlatformInterface {
           }
           _eventBus.fire(FriendRequestUpdateEvent(friendRequestList));
           break;
+        case 'onJoinGroupRequestUpdated':
+          _eventBus.fire(JoinGroupRequestUpdatedEvent());
+          break;
         case 'onSettingUpdated':
           if (_userSettingsUpdatedCallback != null) {
             _userSettingsUpdatedCallback!();
@@ -2469,6 +2472,95 @@ class ImclientPlatform extends PlatformInterface {
       "userId": userId,
       "accept": accept,
       "extra": extra
+    });
+  }
+
+  ///获取入群申请列表
+  Future<List<dynamic>> getJoinGroupRequests({String? groupId, int status = -1}) async {
+    return await _channel.invokeMethod("getJoinGroupRequests", {
+      "groupId": groupId ?? '',
+      "memberId": '',
+      "status": status,
+    });
+  }
+
+  ///处理入群申请
+  void handleJoinGroupRequest(
+      String groupId,
+      String memberId,
+      bool accept, {
+        String? inviterId,
+        String? memberExtra,
+        required OperationSuccessVoidCallback successCallback,
+        required OperationFailureCallback errorCallback,
+      }) {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    _channel.invokeMethod("handleJoinGroupRequest", {
+      "requestId": requestId,
+      "groupId": groupId,
+      "memberId": memberId,
+      "inviterId": inviterId ?? '',
+      "status": accept ? 1 : 2,
+      "memberExtra": memberExtra ?? '',
+      "lines": [0],
+    });
+  }
+
+  ///清除入群申请记录
+  Future<bool> clearJoinGroupRequest(String groupId, String memberId, {String? inviterId}) async {
+    return await _channel.invokeMethod("clearJoinGroupRequest", {
+      "groupId": groupId,
+      "memberId": memberId,
+      "inviterId": inviterId ?? '',
+    });
+  }
+
+  ///获取入群申请未读数
+  Future<int> getJoinGroupRequestUnread({String? groupId}) async {
+    if (groupId != null && groupId.isNotEmpty) {
+      return await _channel.invokeMethod("getJoinGroupRequestUnread", {"groupId": groupId});
+    }
+    return await _channel.invokeMethod("getAllJoinGroupRequestUnread");
+  }
+
+  ///清除入群申请未读数
+  Future<void> clearJoinGroupRequestUnread({String? groupId}) async {
+    await _channel.invokeMethod("clearJoinGroupRequestUnread", {"groupId": groupId ?? ''});
+  }
+
+  ///发送入群申请
+  void sendJoinGroupRequest(
+      String groupId,
+      List<String> memberIds, {
+        String? reason,
+        String? extra,
+        required OperationSuccessVoidCallback successCallback,
+        required OperationFailureCallback errorCallback,
+      }) {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    _channel.invokeMethod("sendJoinGroupRequest", {
+      "requestId": requestId,
+      "groupId": groupId,
+      "memberIds": memberIds,
+      "reason": reason ?? '',
+      "extra": extra ?? '',
+    });
+  }
+
+  ///清除服务端属于当前用户的入群申请记录
+  void clearRemoteJoinGroupRequest({
+    required OperationSuccessVoidCallback successCallback,
+    required OperationFailureCallback errorCallback,
+  }) {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+    _channel.invokeMethod("clearRemoteJoinGroupRequest", {
+      "requestId": requestId,
     });
   }
 

@@ -22,7 +22,7 @@ class GroupJoinTypeNotificationContent extends NotificationMessageContent {
   late String groupId;
   late String operatorId;
 
-  ///0 开放加入，1 运行群成员添加，2 仅管理员或群主添加
+  ///0 开放加入，1 仅允许群成员邀请，2 仅管理员或群主邀请，3 需要审批
   late String type;
 
   @override
@@ -73,9 +73,13 @@ class GroupJoinTypeNotificationContent extends NotificationMessageContent {
     }
 
     if (type == '0') {
-      formatMsg = '$formatMsg 开放了加入群组权限';
+      formatMsg = '$formatMsg 修改群加入权限为开放加入';
     } else if (type == '1') {
-      formatMsg = '$formatMsg 仅允许群成员邀请加群';
+      formatMsg = '$formatMsg 修改群加入权限为仅允许群成员邀请';
+    } else if (type == '2') {
+      formatMsg = '$formatMsg 修改群加入权限为仅限群管理邀请';
+    } else if (type == '3') {
+      formatMsg = '$formatMsg 开启了加群验证';
     } else {
       formatMsg = '$formatMsg 关闭了加入群组功能';
     }

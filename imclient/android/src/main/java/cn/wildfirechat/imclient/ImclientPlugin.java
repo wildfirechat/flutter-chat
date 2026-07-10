@@ -53,6 +53,7 @@ import cn.wildfirechat.model.FriendRequest;
 import cn.wildfirechat.model.GroupInfo;
 import cn.wildfirechat.model.GroupMember;
 import cn.wildfirechat.model.GroupSearchResult;
+import cn.wildfirechat.model.JoinGroupRequest;
 import cn.wildfirechat.model.ModifyChannelInfoType;
 import cn.wildfirechat.model.ModifyGroupInfoType;
 import cn.wildfirechat.model.ModifyMyInfoEntry;
@@ -1222,6 +1223,82 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String extra = call.argument("extra");
         boolean accept = call.argument("accept");
         ChatManager.Instance().handleFriendRequest(userId, accept, extra, new GeneralVoidCallback(requestId));
+    }
+
+    private void getJoinGroupRequests(@NonNull MethodCall call, @NonNull Result result) {
+        String groupId = call.argument("groupId");
+        String memberId = call.argument("memberId");
+        int status = call.argument("status");
+        List<JoinGroupRequest> requests = ChatManager.Instance().getJoinGroupRequests(groupId, memberId, status);
+        List<Map> list = new ArrayList<>();
+        if (requests != null) {
+            for (JoinGroupRequest request : requests) {
+                list.add(convertJoinGroupRequest(request));
+            }
+        }
+        result.success(list);
+    }
+
+    private void handleJoinGroupRequest(@NonNull MethodCall call, @NonNull Result result) {
+        int requestId = call.argument("requestId");
+        String groupId = call.argument("groupId");
+        String memberId = call.argument("memberId");
+        String inviterId = call.argument("inviterId");
+        int status = call.argument("status");
+        String memberExtra = call.argument("memberExtra");
+        List<Integer> lines = call.argument("lines");
+        ChatManager.Instance().handleJoinGroupRequest(groupId, memberId, inviterId, status, memberExtra, lines, new GeneralVoidCallback(requestId));
+    }
+
+    private void sendJoinGroupRequest(@NonNull MethodCall call, @NonNull Result result) {
+        int requestId = call.argument("requestId");
+        String groupId = call.argument("groupId");
+        List<String> memberIds = call.argument("memberIds");
+        String reason = call.argument("reason");
+        String extra = call.argument("extra");
+        ChatManager.Instance().sendJoinGroupRequest(groupId, memberIds, reason, extra, new GeneralVoidCallback(requestId));
+    }
+
+    private void clearJoinGroupRequest(@NonNull MethodCall call, @NonNull Result result) {
+        String groupId = call.argument("groupId");
+        String memberId = call.argument("memberId");
+        String inviterId = call.argument("inviterId");
+        boolean ret = ChatManager.Instance().clearJoinGroupRequest(groupId, memberId, inviterId);
+        result.success(ret);
+    }
+
+    private void getAllJoinGroupRequestUnread(@NonNull MethodCall call, @NonNull Result result) {
+        result.success(ChatManager.Instance().getAllJoinGroupRequestUnread());
+    }
+
+    private void getJoinGroupRequestUnread(@NonNull MethodCall call, @NonNull Result result) {
+        String groupId = call.argument("groupId");
+        result.success(ChatManager.Instance().getJoinGroupRequestUnread(groupId));
+    }
+
+    private void clearJoinGroupRequestUnread(@NonNull MethodCall call, @NonNull Result result) {
+        String groupId = call.argument("groupId");
+        ChatManager.Instance().clearJoinGroupRequestUnread(groupId);
+        result.success(null);
+    }
+
+    private void clearRemoteJoinGroupRequest(@NonNull MethodCall call, @NonNull Result result) {
+        int requestId = call.argument("requestId");
+        ChatManager.Instance().clearRemoteJoinGroupRequest(new GeneralVoidCallback(requestId));
+    }
+
+    private Map convertJoinGroupRequest(JoinGroupRequest request) {
+        Map map = new HashMap();
+        map.put("groupId", request.groupId);
+        map.put("memberId", request.memberId);
+        map.put("requestUserId", request.requestUserId);
+        map.put("acceptUserId", request.acceptUserId);
+        map.put("reason", request.reason);
+        map.put("extra", request.extra);
+        map.put("status", request.status);
+        map.put("readStatus", request.readStatus);
+        map.put("timestamp", request.timestamp);
+        return map;
     }
 
     private void getFriendAlias(@NonNull MethodCall call, @NonNull Result result) {
@@ -3046,6 +3123,11 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 //                            args.put("requests", convertProtoStringArray(strings));
 //                            callback2UI("onFriendRequestUpdated", args);
 //                        }
+//
+                        case "onJoinGroupRequestUpdate": {
+                            callback2UI("onJoinGroupRequestUpdated", null);
+                            break;
+                        }
 //
                         case "onGroupInfoUpdate": {
                             List<GroupInfo> groupInfos = (List<GroupInfo>) args[0];

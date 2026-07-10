@@ -953,21 +953,24 @@ class _PcSideBar extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     // macOS 隐藏标题栏后红绿灯悬浮在侧栏顶部,首个元素下移避让
     final double topInset = Platform.isMacOS ? PcTheme.sidebarTopInsetMac : 20;
-    return Container(
-      decoration: BoxDecoration(
-        color: context.colors.sidebarBg,
-        border: Border(
-          right: BorderSide(
-            color: context.colors.hairline,
-            width: 0.5,
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onPanStart: (_) => windowManager.startDragging(),
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.colors.sidebarBg,
+          border: Border(
+            right: BorderSide(
+              color: context.colors.hairline,
+              width: 0.5,
+            ),
           ),
         ),
-      ),
-      child: Column(
-        children: [
-          SizedBox(height: topInset),
-          _buildAvatar(context, shell),
-          const SizedBox(height: PcTheme.sidebarAvatarGap),
+        child: Column(
+          children: [
+            SizedBox(height: topInset),
+            _buildAvatar(context, shell),
+            const SizedBox(height: PcTheme.sidebarAvatarGap),
           Selector<ConversationListViewModel, int>(
             selector: (_, model) => model.unreadMessageCount,
             builder: (context, unreadCount, _) => _SideBarTab(
@@ -1037,8 +1040,9 @@ class _PcSideBar extends StatelessWidget {
           const SizedBox(height: PcTheme.sidebarBottomInset),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildMinimizedCallTab(BuildContext context, PCShellViewModel shell) {
     if (shell.activeCallSession == null || !shell.callWindowMinimized) {

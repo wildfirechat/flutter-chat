@@ -168,8 +168,10 @@ class ConversationListItem extends StatefulWidget {
 class _ConversationListItemState extends State<ConversationListItem> with AutomaticKeepAliveClientMixin {
   String lastMsgDigest = '';
   bool isLoading = true;
+  int _joinRequestCount = 0;
 
   StreamSubscription<UserInfoUpdatedEvent>? _userInfoUpdatedSubscription;
+  StreamSubscription<JoinGroupRequestUpdatedEvent>? _joinGroupRequestSubscription;
 
   @override
   bool get wantKeepAlive => true;
@@ -187,12 +189,17 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       });
     }
     _loadLastMessageDigest();
+    _loadJoinRequestCount();
+    _joinGroupRequestSubscription = Imclient.IMEventBus.on<JoinGroupRequestUpdatedEvent>().listen((_) {
+      _loadJoinRequestCount();
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
     _userInfoUpdatedSubscription?.cancel();
+    _joinGroupRequestSubscription?.cancel();
   }
 
   @override
@@ -201,6 +208,25 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     // 只要会话信息对象改变了，就重新加载 digest
     if (oldWidget.conversationInfo != widget.conversationInfo) {
       _loadLastMessageDigest();
+      _loadJoinRequestCount();
+    }
+  }
+
+  Future<void> _loadJoinRequestCount() async {
+    if (widget.conversationInfo.conversation.conversationType != ConversationType.Group) {
+      if (_joinRequestCount != 0) {
+        setState(() => _joinRequestCount = 0);
+      }
+      return;
+    }
+    try {
+      final count = await Imclient.getJoinGroupRequestUnread(
+          groupId: widget.conversationInfo.conversation.target);
+      if (mounted && count != _joinRequestCount) {
+        setState(() => _joinRequestCount = count);
+      }
+    } catch (e) {
+      // ignore
     }
   }
 
@@ -322,6 +348,13 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                                     style: TextStyle(fontSize: 12.0, color: context.colors.danger),
                                                   )
                                                 : Container(),
+                                            if (_joinRequestCount > 0) ...[
+                                              Text(
+                                                '[${AppLocalizations.of(context)!.newJoinGroupRequestCount(_joinRequestCount)}]',
+                                                style: const TextStyle(fontSize: 12.0, color: Colors.red),
+                                              ),
+                                              const SizedBox(width: 4),
+                                            ],
                                             Expanded(
                                               child: Text(
                                                 hasDraft
