@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'sticker_manager.dart';
 
@@ -220,7 +221,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
 
     return Container(
       height: boardHeight,
-      color: context.colors.chatBg,
+      color: isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
       child: Column(
         children: [
           // Tab Bar (Top Row as requested)
@@ -263,7 +264,9 @@ class _EmojiBoardState extends State<EmojiBoard> {
         itemBuilder: (context, index) {
           bool isSelected = _selectedIndex == index;
           return Material(
-            color: isSelected ? context.colors.chatBg : context.colors.surface,
+            color: isSelected
+                ? (isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg)
+                : context.colors.surface,
             child: InkWell(
               onTap: () {
                 _pageController.jumpToPage(index);

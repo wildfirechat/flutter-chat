@@ -24,7 +24,7 @@ class GeneralSettings extends StatelessWidget {
           : AppBar(
               title: Text(AppLocalizations.of(context)!.settings),
             ),
-      backgroundColor: isDesktopShell ? context.colors.chatBg : null,
+      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(

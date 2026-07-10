@@ -11,6 +11,7 @@ import 'package:chat/conversation/input_bar/channel_menu_widget.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'message_input_bar_controller.dart';
 
 /// 持久化的键盘高度key
@@ -167,7 +168,7 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
     }
 
     return Container(
-      color: context.colors.chatBg,
+      color: isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -260,7 +261,7 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
 
     return Container(
       decoration: BoxDecoration(
-        color: context.colors.chatBg,
+        color: isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
         border: Border(
           top: BorderSide(width: 1, color: context.colors.hairline),
         ),

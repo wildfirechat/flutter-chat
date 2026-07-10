@@ -225,7 +225,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
   Widget _buildCard({required Widget child}) {
     final colors = context.colors;
     return Scaffold(
-      backgroundColor: colors.chatBg,
+      backgroundColor: colors.chatBgDesktop,
       body: Center(
         child: Container(
           width: 400,

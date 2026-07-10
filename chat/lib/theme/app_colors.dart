@@ -20,16 +20,22 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.surface,
     required this.popupBg,
     required this.sidebarBg,
+    required this.sidebarBgDesktop,
     required this.middleBg,
+    required this.middleBgDesktop,
     required this.chatBg,
+    required this.chatBgDesktop,
     required this.conversationBg,
     required this.inputBg,
     required this.inputBgHover,
     required this.searchBg,
     required this.searchBgHover,
     required this.cellHover,
+    required this.cellHoverDesktop,
     required this.cellSelected,
+    required this.cellSelectedDesktop,
     required this.cellTop,
+    required this.cellTopDesktop,
     required this.sidebarHoverBg,
     required this.hoverOverlay,
     required this.messageHighlight,
@@ -37,6 +43,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.bubbleSent,
     required this.bubbleSentDesktop,
     required this.bubbleReceived,
+    required this.bubbleReceivedDesktop,
     required this.bubbleSentText,
     required this.bubbleReceivedText,
     required this.bubbleQuoted,
@@ -82,8 +89,11 @@ class AppColors extends ThemeExtension<AppColors> {
   /// 桌面端三段纵深:侧栏 → 中栏 → 右栏。
   /// 浅色是「灰 → 更灰 → 最浅」,暗色反过来「最亮 → 中 → 最深」,层次方向保持一致。
   final Color sidebarBg;
+  final Color sidebarBgDesktop;
   final Color middleBg;
+  final Color middleBgDesktop;
   final Color chatBg;
+  final Color chatBgDesktop;
 
   /// 移动端会话页背景(与桌面端右栏不同色,故单列)。
   final Color conversationBg;
@@ -98,10 +108,13 @@ class AppColors extends ThemeExtension<AppColors> {
 
   // ---- 列表项状态 ----
   final Color cellHover;
+  final Color cellHoverDesktop;
   final Color cellSelected;
+  final Color cellSelectedDesktop;
 
   /// 置顶会话底色。
   final Color cellTop;
+  final Color cellTopDesktop;
   final Color sidebarHoverBg;
 
   /// 盖在任意底色上的通用 hover 蒙版(半透明)。
@@ -121,6 +134,7 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color bubbleSent;
   final Color bubbleSentDesktop;
   final Color bubbleReceived;
+  final Color bubbleReceivedDesktop;
 
   /// 气泡内文字。暗色发送气泡是实心蓝,必须用纯白而不是正文灰白。
   final Color bubbleSentText;
@@ -167,24 +181,31 @@ class AppColors extends ThemeExtension<AppColors> {
     link: Color(0xFF1F64E4),
     surface: Color(0xFFFFFFFF),
     popupBg: Color(0xFFFFFFFF),
-    sidebarBg: Color(0xFFE2E2E2),
-    middleBg: Color(0xFFEEEEF0),
-    chatBg: Color(0xFFF9F9FA),
+    sidebarBg: Color(0xFFE9E9E9),
+    sidebarBgDesktop: Color(0xFFE2E2E2),
+    middleBg: Color(0xFFEFEEED),
+    middleBgDesktop: Color(0xFFEEEEF0),
+    chatBg: Color(0xFFF5F5F5),
+    chatBgDesktop: Color(0xFFF9F9FA),
     conversationBg: Color(0xFFE8E8E8),
     inputBg: Color(0xFFDBDAD9),
     inputBgHover: Color(0xFFD5D4D3),
     searchBg: Color(0xFFFAFAFA),
     searchBgHover: Color(0xFFF6F6F7),
-    cellHover: Color(0xFFEEEEF0),
-    cellSelected: Color(0xFFD8E3FD),
-    cellTop: Color(0xFFE6E6E7),
+    cellHover: Color(0xFFDBDAD9),
+    cellHoverDesktop: Color(0xFFEEEEF0),
+    cellSelected: Color(0xFFC8C7C6),
+    cellSelectedDesktop: Color(0xFFD8E3FD),
+    cellTop: Color(0xFFE6E5E5),
+    cellTopDesktop: Color(0xFFE6E6E7),
     sidebarHoverBg: Color(0xFFDCDCDC),
     hoverOverlay: Color(0x0A000000),
     messageHighlight: Color(0x809E9E9E),
     sectionGap: Color(0xFFEBEBEB),
     bubbleSent: Color(0xF0A8BDFF),
     bubbleSentDesktop: Color(0xFFD6E4FF),
-    bubbleReceived: Color(0xFFEEEEF0),
+    bubbleReceived: Color(0xFFFFFFFF),
+    bubbleReceivedDesktop: Color(0xFFEEEEF0),
     bubbleSentText: Color(0xFF191919),
     bubbleReceivedText: Color(0xFF191919),
     bubbleQuoted: Color(0xFFF5F5F5),
@@ -214,16 +235,22 @@ class AppColors extends ThemeExtension<AppColors> {
     surface: Color(0xFF2C2C2E),
     popupBg: Color(0xFF323232),
     sidebarBg: Color(0xFF2C2C2E),
+    sidebarBgDesktop: Color(0xFF2C2C2E),
     middleBg: Color(0xFF252527),
+    middleBgDesktop: Color(0xFF252527),
     chatBg: Color(0xFF1C1C1E),
+    chatBgDesktop: Color(0xFF1C1C1E),
     conversationBg: Color(0xFF1C1C1E),
     inputBg: Color(0xFF3A3A3C),
     inputBgHover: Color(0xFF48484A),
     searchBg: Color(0xFF2C2C2E),
     searchBgHover: Color(0xFF323232),
     cellHover: Color(0x0DFFFFFF),
+    cellHoverDesktop: Color(0x0DFFFFFF),
     cellSelected: Color(0x1AFFFFFF),
+    cellSelectedDesktop: Color(0x1AFFFFFF),
     cellTop: Color(0xFF1C1C1E),
+    cellTopDesktop: Color(0xFF1C1C1E),
     sidebarHoverBg: Color(0xFF3A3A3C),
     hoverOverlay: Color(0x14FFFFFF),
     messageHighlight: Color(0x1FFFFFFF),
@@ -231,6 +258,7 @@ class AppColors extends ThemeExtension<AppColors> {
     bubbleSent: Color(0xFF409CFF),
     bubbleSentDesktop: Color(0xFF409CFF),
     bubbleReceived: Color(0xFF2C2C2E),
+    bubbleReceivedDesktop: Color(0xFF2C2C2E),
     bubbleSentText: Color(0xFFFFFFFF),
     bubbleReceivedText: Color(0xFFE0E0E4),
     bubbleQuoted: Color(0xFF3A3A3C),
@@ -259,16 +287,22 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? surface,
     Color? popupBg,
     Color? sidebarBg,
+    Color? sidebarBgDesktop,
     Color? middleBg,
+    Color? middleBgDesktop,
     Color? chatBg,
+    Color? chatBgDesktop,
     Color? conversationBg,
     Color? inputBg,
     Color? inputBgHover,
     Color? searchBg,
     Color? searchBgHover,
     Color? cellHover,
+    Color? cellHoverDesktop,
     Color? cellSelected,
+    Color? cellSelectedDesktop,
     Color? cellTop,
+    Color? cellTopDesktop,
     Color? sidebarHoverBg,
     Color? hoverOverlay,
     Color? messageHighlight,
@@ -276,6 +310,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? bubbleSent,
     Color? bubbleSentDesktop,
     Color? bubbleReceived,
+    Color? bubbleReceivedDesktop,
     Color? bubbleSentText,
     Color? bubbleReceivedText,
     Color? bubbleQuoted,
@@ -302,16 +337,22 @@ class AppColors extends ThemeExtension<AppColors> {
       surface: surface ?? this.surface,
       popupBg: popupBg ?? this.popupBg,
       sidebarBg: sidebarBg ?? this.sidebarBg,
+      sidebarBgDesktop: sidebarBgDesktop ?? this.sidebarBgDesktop,
       middleBg: middleBg ?? this.middleBg,
+      middleBgDesktop: middleBgDesktop ?? this.middleBgDesktop,
       chatBg: chatBg ?? this.chatBg,
+      chatBgDesktop: chatBgDesktop ?? this.chatBgDesktop,
       conversationBg: conversationBg ?? this.conversationBg,
       inputBg: inputBg ?? this.inputBg,
       inputBgHover: inputBgHover ?? this.inputBgHover,
       searchBg: searchBg ?? this.searchBg,
       searchBgHover: searchBgHover ?? this.searchBgHover,
       cellHover: cellHover ?? this.cellHover,
+      cellHoverDesktop: cellHoverDesktop ?? this.cellHoverDesktop,
       cellSelected: cellSelected ?? this.cellSelected,
+      cellSelectedDesktop: cellSelectedDesktop ?? this.cellSelectedDesktop,
       cellTop: cellTop ?? this.cellTop,
+      cellTopDesktop: cellTopDesktop ?? this.cellTopDesktop,
       sidebarHoverBg: sidebarHoverBg ?? this.sidebarHoverBg,
       hoverOverlay: hoverOverlay ?? this.hoverOverlay,
       messageHighlight: messageHighlight ?? this.messageHighlight,
@@ -319,6 +360,7 @@ class AppColors extends ThemeExtension<AppColors> {
       bubbleSent: bubbleSent ?? this.bubbleSent,
       bubbleSentDesktop: bubbleSentDesktop ?? this.bubbleSentDesktop,
       bubbleReceived: bubbleReceived ?? this.bubbleReceived,
+      bubbleReceivedDesktop: bubbleReceivedDesktop ?? this.bubbleReceivedDesktop,
       bubbleSentText: bubbleSentText ?? this.bubbleSentText,
       bubbleReceivedText: bubbleReceivedText ?? this.bubbleReceivedText,
       bubbleQuoted: bubbleQuoted ?? this.bubbleQuoted,
@@ -353,16 +395,22 @@ class AppColors extends ThemeExtension<AppColors> {
       surface: mix(surface, other.surface),
       popupBg: mix(popupBg, other.popupBg),
       sidebarBg: mix(sidebarBg, other.sidebarBg),
+      sidebarBgDesktop: mix(sidebarBgDesktop, other.sidebarBgDesktop),
       middleBg: mix(middleBg, other.middleBg),
+      middleBgDesktop: mix(middleBgDesktop, other.middleBgDesktop),
       chatBg: mix(chatBg, other.chatBg),
+      chatBgDesktop: mix(chatBgDesktop, other.chatBgDesktop),
       conversationBg: mix(conversationBg, other.conversationBg),
       inputBg: mix(inputBg, other.inputBg),
       inputBgHover: mix(inputBgHover, other.inputBgHover),
       searchBg: mix(searchBg, other.searchBg),
       searchBgHover: mix(searchBgHover, other.searchBgHover),
       cellHover: mix(cellHover, other.cellHover),
+      cellHoverDesktop: mix(cellHoverDesktop, other.cellHoverDesktop),
       cellSelected: mix(cellSelected, other.cellSelected),
+      cellSelectedDesktop: mix(cellSelectedDesktop, other.cellSelectedDesktop),
       cellTop: mix(cellTop, other.cellTop),
+      cellTopDesktop: mix(cellTopDesktop, other.cellTopDesktop),
       sidebarHoverBg: mix(sidebarHoverBg, other.sidebarHoverBg),
       hoverOverlay: mix(hoverOverlay, other.hoverOverlay),
       messageHighlight: mix(messageHighlight, other.messageHighlight),
@@ -370,6 +418,7 @@ class AppColors extends ThemeExtension<AppColors> {
       bubbleSent: mix(bubbleSent, other.bubbleSent),
       bubbleSentDesktop: mix(bubbleSentDesktop, other.bubbleSentDesktop),
       bubbleReceived: mix(bubbleReceived, other.bubbleReceived),
+      bubbleReceivedDesktop: mix(bubbleReceivedDesktop, other.bubbleReceivedDesktop),
       bubbleSentText: mix(bubbleSentText, other.bubbleSentText),
       bubbleReceivedText: mix(bubbleReceivedText, other.bubbleReceivedText),
       bubbleQuoted: mix(bubbleQuoted, other.bubbleQuoted),

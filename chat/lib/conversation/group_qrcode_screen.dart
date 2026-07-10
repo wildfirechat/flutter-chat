@@ -46,7 +46,7 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
               backgroundColor: Colors.black,
               foregroundColor: Colors.white,
             ),
-      backgroundColor: isDesktopShell ? context.colors.chatBg : Colors.black,
+      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : Colors.black,
       body: Center(
         child: Card(
           color: Colors.white,

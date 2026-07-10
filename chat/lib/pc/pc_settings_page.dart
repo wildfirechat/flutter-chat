@@ -183,7 +183,7 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.colors.chatBg,
+      backgroundColor: context.colors.chatBgDesktop,
       appBar: const PcPageHeader(title: "通用"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -379,7 +379,7 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.colors.chatBg,
+      backgroundColor: context.colors.chatBgDesktop,
       appBar: const PcPageHeader(title: "通知"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -467,7 +467,7 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
     };
 
     return Scaffold(
-      backgroundColor: context.colors.chatBg,
+      backgroundColor: context.colors.chatBgDesktop,
       appBar: const PcPageHeader(title: "外观与主题"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -586,14 +586,14 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
       builder: (context, userInfo, _) {
         if (userInfo == null) {
           return Scaffold(
-            backgroundColor: context.colors.chatBg,
+            backgroundColor: context.colors.chatBgDesktop,
             appBar: const PcPageHeader(title: "账号与安全"),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         return Scaffold(
-          backgroundColor: context.colors.chatBg,
+          backgroundColor: context.colors.chatBgDesktop,
           appBar: const PcPageHeader(title: "账号与安全"),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -705,7 +705,7 @@ class PcAboutSettingsDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: context.colors.chatBg,
+      backgroundColor: context.colors.chatBgDesktop,
       appBar: const PcPageHeader(title: "关于野火"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),

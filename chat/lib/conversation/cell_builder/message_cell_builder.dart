@@ -7,6 +7,7 @@ import 'package:imclient/imclient.dart';
 import '../../utilities.dart';
 import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
 
 abstract class MessageCellBuilder {
@@ -31,13 +32,14 @@ abstract class MessageCellBuilder {
 
   Widget build(BuildContext context) {
     final basePadding = model.showTimeLabel ? 5.0 : 3.0;
+    final verticalExtra = isDesktopShell ? 6.0 : 0.0;
     return Container(
       color: model.highlighted ? context.colors.messageHighlight : null,
       padding: EdgeInsets.fromLTRB(
         basePadding,
-        basePadding + 6,
+        basePadding + verticalExtra,
         basePadding,
-        basePadding + 6,
+        basePadding + verticalExtra,
       ),
       child: Column(
         children: [

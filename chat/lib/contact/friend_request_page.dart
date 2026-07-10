@@ -71,7 +71,7 @@ class FriendRequestPageState extends State<FriendRequestPage> {
               actions: actions,
               title: const Text("好友请求"),
             ),
-      backgroundColor: isDesktopShell ? context.colors.chatBg : null,
+      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
       body: SafeArea(
         child: ListView.builder(
           itemCount: requests.length,

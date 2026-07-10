@@ -323,7 +323,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
         selector: (_, model) => model.inputBarHeight,
         builder: (context, height, child) => Container(
           height: _effectiveHeight(height),
-          color: context.colors.chatBg,
+          color: context.colors.chatBgDesktop,
           child: child,
         ),
         child: Column(

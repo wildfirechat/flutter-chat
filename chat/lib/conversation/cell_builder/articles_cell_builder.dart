@@ -24,7 +24,7 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
       decoration: BoxDecoration(
         color: isSendMessage && isDesktopShell
             ? context.colors.bubbleSentDesktop
-            : context.colors.bubbleReceived,
+            : (isDesktopShell ? context.colors.bubbleReceivedDesktop : context.colors.bubbleReceived),
         borderRadius: BorderRadius.circular(8),
       ),
       clipBehavior: Clip.antiAlias,

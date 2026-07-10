@@ -103,12 +103,15 @@ class TextCellBuilder extends PortraitCellBuilder {
         ),
       );
     }
-    return LayoutBuilder(
-      builder: (context, constraints) => ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: constraints.maxWidth - 60),
-        child: child,
-      ),
-    );
+    if (isDesktopShell) {
+      return LayoutBuilder(
+        builder: (context, constraints) => ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: constraints.maxWidth - 60),
+          child: child,
+        ),
+      );
+    }
+    return child;
   }
 
 }

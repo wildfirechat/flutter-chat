@@ -470,7 +470,7 @@ class _ConversationPaneState extends State<ConversationPane> {
   Widget _buildMultiSelectToolBar(BuildContext context, ConversationViewModel viewModel) {
     return Container(
       height: 60,
-      color: context.colors.chatBg,
+      color: isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

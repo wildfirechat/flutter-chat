@@ -31,7 +31,9 @@ import 'package:chat/theme/app_colors.dart';
 
 /// 会话行的内容高度与分隔线高度。分隔线不随字号缩放,itemExtent 必须把它单独加上,
 /// 否则 s < 1 时内容比 extent 高,debug 下会报 overflow。
-const double _kConversationRowHeight = 70.0;
+const double _kConversationRowHeightMobile = 64.0;
+const double _kConversationRowHeightDesktop = 70.0;
+double get _kConversationRowHeight => isDesktopShell ? _kConversationRowHeightDesktop : _kConversationRowHeightMobile;
 const double _kDividerHeight = 0.5;
 
 double _conversationItemExtent(BuildContext context) =>
@@ -279,9 +281,9 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     var conversationInfo = widget.conversationInfo;
     final colors = context.colors;
     if (isDesktopShell) {
-      if (widget.isSelected) return colors.cellSelected;
-      if (hovered) return conversationInfo.isTop > 0 ? colors.cellTop : colors.cellHover;
-      return conversationInfo.isTop > 0 ? colors.cellTop : Colors.transparent;
+      if (widget.isSelected) return colors.cellSelectedDesktop;
+      if (hovered) return conversationInfo.isTop > 0 ? colors.cellTopDesktop : colors.cellHoverDesktop;
+      return conversationInfo.isTop > 0 ? colors.cellTopDesktop : Colors.transparent;
     }
     if (widget.isSelected) return colors.cellSelected;
     return conversationInfo.isTop > 0 ? colors.cellTop : colors.surface;
@@ -367,7 +369,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                               : conversationInfo.lastMessage != null
                                                   ? '${value.$4?.getReadableName() ?? "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
                                                   : '',
-                                          style: TextStyle(fontSize: 14.0, color: context.colors.textTertiary),
+                                          style: TextStyle(fontSize: isDesktopShell ? 14.0 : 12.0, color: context.colors.textTertiary),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -415,7 +417,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
             0.0,
           ),
           height: _kDividerHeight,
-          color: isDesktopShell ? context.colors.cellTop : context.colors.hairlineSoft,
+          color: isDesktopShell ? context.colors.cellTopDesktop : context.colors.hairlineSoft,
         ),
       ],
     );
@@ -459,7 +461,9 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
         : widget.conversationInfo.conversation.conversationType == ConversationType.Group
             ? Config.defaultGroupPortrait
             : Config.defaultChannelPortrait;
-    return Portrait(portrait, defaultPortrait, width: 44.0, height: 44.0, borderRadius: 6.0);
+    return isDesktopShell
+        ? Portrait(portrait, defaultPortrait, width: 44.0, height: 44.0, borderRadius: 6.0)
+        : Portrait(portrait, defaultPortrait, borderRadius: 6.0);
   }
 
 

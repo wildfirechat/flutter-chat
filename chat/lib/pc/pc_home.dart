@@ -751,7 +751,7 @@ class _PCHomeState extends State<PCHome> {
 
   Widget _buildMiddleColumn(BuildContext context) {
     return Container(
-      color: context.colors.middleBg,
+      color: context.colors.middleBgDesktop,
       child: Column(
         children: [
           Consumer<PCShellViewModel>(
@@ -834,7 +834,7 @@ class _MiddleColumnHeader extends StatelessWidget {
       height: PcTheme.headerHeight,
       padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
       alignment: Alignment.center,
-      color: colors.cellTop,
+      color: colors.cellTopDesktop,
       child: Row(
         children: [
           Expanded(
@@ -931,7 +931,7 @@ class _PlusMenuButton extends StatelessWidget {
           width: 20,
           height: 20,
           decoration: BoxDecoration(
-            color: hovered ? colors.inputBgHover : colors.cellTop,
+            color: hovered ? colors.inputBgHover : colors.cellTopDesktop,
             shape: BoxShape.circle,
             border: Border.all(color: colors.iconPrimary, width: 1),
           ),
@@ -960,7 +960,7 @@ class _PcSideBar extends StatelessWidget {
       onPanStart: (_) => windowManager.startDragging(),
       child: Container(
         decoration: BoxDecoration(
-          color: context.colors.sidebarBg,
+          color: context.colors.sidebarBgDesktop,
           border: Border(
             right: BorderSide(
               color: context.colors.hairline,
@@ -1241,7 +1241,7 @@ class _EmptyDetailPane extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: context.colors.chatBg,
+      color: context.colors.chatBgDesktop,
       child: Center(
         child: Opacity(
           opacity: 0.10,

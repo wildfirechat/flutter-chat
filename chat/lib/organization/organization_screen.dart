@@ -138,7 +138,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       builder: (context, viewModel, child) {
         final colors = context.colors;
         return Container(
-          color: isDesktopShell ? colors.chatBg : null,
+          color: isDesktopShell ? colors.chatBgDesktop : null,
           padding: EdgeInsets.symmetric(
             horizontal: isDesktopShell ? 12.0 : 16.0,
             vertical: isDesktopShell ? 8.0 : 12.0,
@@ -426,7 +426,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                       title: Text(viewModel.appBarTitle ?? '组织结构'),
                       actions: widget.selectMode ? [_buildDoneAction()] : null,
                     ),
-              backgroundColor: isDesktopShell ? context.colors.chatBg : null,
+              backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

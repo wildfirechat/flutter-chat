@@ -376,7 +376,7 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
       appBar: isDesktopShell
           ? PcPageHeader(title: _pageTitle(context))
           : AppBar(title: Text(_pageTitle(context))),
-      backgroundColor: isDesktopShell ? context.colors.chatBg : null,
+      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
       body: _buildBody(),
     );
   }

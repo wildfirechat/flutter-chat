@@ -93,10 +93,10 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       child: Column(
         crossAxisAlignment: isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          !isSendMessage && !isHiddenGroupMemberName
+          (isDesktopShell ? !isSendMessage && !isHiddenGroupMemberName : !isHiddenGroupMemberName)
               ? Text(
                   senderUserInfo != null ? senderUserInfo.getReadableName() : '<${model.message.fromUser}>',
-                  style: TextStyle(color: context.colors.messageSenderName, fontSize: 12),
+                  style: isDesktopShell ? TextStyle(color: context.colors.messageSenderName, fontSize: 12) : null,
                 )
               : Container(),
           Row(
@@ -117,7 +117,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                       // 桌面端用品牌蓝浅色调气泡,移动端维持原配色;暗色下两端都是实心系统蓝
                       color: isSendMessage
                           ? (isDesktopShell ? context.colors.bubbleSentDesktop : context.colors.bubbleSent)
-                          : context.colors.bubbleReceived,
+                          : (isDesktopShell ? context.colors.bubbleReceivedDesktop : context.colors.bubbleReceived),
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(8),
                         topLeft: Radius.circular(8),

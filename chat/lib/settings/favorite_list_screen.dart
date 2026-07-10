@@ -263,7 +263,7 @@ class _FavoriteListScreenState extends State<FavoriteListScreen> {
           : AppBar(
               title: Text(AppLocalizations.of(context)!.myFavorites),
             ),
-      backgroundColor: isDesktopShell ? context.colors.chatBg : null,
+      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
       body: _buildBody(),
     );
   }

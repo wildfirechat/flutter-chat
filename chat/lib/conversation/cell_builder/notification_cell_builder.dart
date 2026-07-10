@@ -12,6 +12,7 @@ import 'package:imclient/message/notification/recall_notificiation_content.dart'
 import '../input_bar/message_input_bar_controller.dart';
 import '../message_cell.dart';
 import 'message_cell_builder.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
 
 class NotificationCellBuilder extends MessageCellBuilder {
@@ -62,7 +63,9 @@ class NotificationCellBuilder extends MessageCellBuilder {
         : null;
 
     return Container(
-        padding: const EdgeInsets.fromLTRB(90, 0, 90, 0),
+        padding: isDesktopShell
+            ? const EdgeInsets.fromLTRB(90, 0, 90, 0)
+            : const EdgeInsets.fromLTRB(60, 0, 60, 0),
         child: notificaitonMsgDigest.isEmpty
             ? Container(
           width: 200,
@@ -79,7 +82,9 @@ class NotificationCellBuilder extends MessageCellBuilder {
             Text(
               notificaitonMsgDigest,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13, color: Color(0xFFA0A0A4)),
+              style: isDesktopShell
+                  ? const TextStyle(fontSize: 13, color: Color(0xFFA0A0A4))
+                  : const TextStyle(fontSize: 12),
             ),
             if (reeditWidget != null) ...[
               const SizedBox(width: 6),

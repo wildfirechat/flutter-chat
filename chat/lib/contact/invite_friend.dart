@@ -50,7 +50,7 @@ class InviteFriendPageState extends State<InviteFriendPage> {
               actions: actions,
               title: const Text('添加好友'),
             ),
-      backgroundColor: isDesktopShell ? context.colors.chatBg : null,
+      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
