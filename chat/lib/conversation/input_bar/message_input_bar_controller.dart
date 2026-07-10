@@ -464,6 +464,9 @@ class MessageInputBarController extends ChangeNotifier {
     Future.delayed(const Duration(milliseconds: 150), () {
       _isInsertingMention = false;
     });
+    if (!focusNode.hasFocus) {
+      focusNode.requestFocus();
+    }
     notifyListeners();
   }
 

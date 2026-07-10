@@ -280,7 +280,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                           showBadge: unreadFriendRequestCount > 0,
                           badgeContent: Text(
                             unreadFriendRequestCount > 99 ? '99+' : '$unreadFriendRequestCount',
-                            style: TextStyle(color: Colors.white, fontSize: isDesktopShell ? 12 : 10),
+                            style: TextStyle(color: Colors.white, fontSize: 12),
                           ),
                           badgeStyle: badge.BadgeStyle(
                             badgeColor: context.colors.badge,

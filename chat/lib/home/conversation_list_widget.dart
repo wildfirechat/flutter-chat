@@ -28,6 +28,7 @@ import '../config.dart';
 import '../conversation/conversation_screen.dart';
 import '../viewmodel/user_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/widget/desktop_popup_menu_item.dart';
 
 /// 会话行的内容高度与分隔线高度。分隔线不随字号缩放,itemExtent 必须把它单独加上,
 /// 否则 s < 1 时内容比 extent 高,debug 下会报 overflow。
@@ -333,7 +334,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                               : (conversationInfo.unreadCount.unread > 99
                                   ? '99+'
                                   : '${conversationInfo.unreadCount.unread}'),
-                          style: TextStyle(color: Colors.white, fontSize: isDesktopShell ? 12 : 10),
+                          style: TextStyle(color: Colors.white, fontSize: 12),
                         ),
                         badgeStyle: badge.BadgeStyle(
                           badgeColor: context.colors.badge,
@@ -487,41 +488,55 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
 
   void _onLongPressed(BuildContext context, ConversationInfo conversationInfo, Offset position) {
     final double itemHeight = isDesktopShell ? LayoutScale.scale(context, 34, cap: LayoutScale.rowCap) : kMinInteractiveDimension;
-    List<PopupMenuItem> items = [
-      PopupMenuItem(
-        value: 'delete',
-        height: itemHeight,
-        child: Text(AppLocalizations.of(context)!.deleteConversation),
-      )
-    ];
+    final List<Map<String, dynamic>> menuDefs = [];
 
     if (conversationInfo.isTop > 0) {
-      items.add(PopupMenuItem(
-        value: 'untop',
-        height: itemHeight,
-        child: Text(AppLocalizations.of(context)!.untop),
-      ));
+      menuDefs.add({
+        'value': 'untop',
+        'label': AppLocalizations.of(context)!.untop,
+      });
     } else {
-      items.add(PopupMenuItem(
-        value: 'top',
-        height: itemHeight,
-        child: Text(AppLocalizations.of(context)!.top),
-      ));
+      menuDefs.add({
+        'value': 'top',
+        'label': AppLocalizations.of(context)!.top,
+      });
     }
 
     if (conversationInfo.unreadCount.unread + conversationInfo.unreadCount.unreadMention + conversationInfo.unreadCount.unreadMentionAll > 0) {
-      items.add(PopupMenuItem(
-        value: 'clear_unread',
-        height: itemHeight,
-        child: Text(AppLocalizations.of(context)!.clearUnread),
-      ));
+      menuDefs.add({
+        'value': 'clear_unread',
+        'label': AppLocalizations.of(context)!.clearUnread,
+      });
     } else {
-      items.add(PopupMenuItem(
-        value: 'set_unread',
-        height: itemHeight,
-        child: Text(AppLocalizations.of(context)!.setUnread),
-      ));
+      menuDefs.add({
+        'value': 'set_unread',
+        'label': AppLocalizations.of(context)!.setUnread,
+      });
     }
+
+    // WeChat style: delete is dangerous and placed at the very end
+    menuDefs.add({
+      'value': 'delete',
+      'label': AppLocalizations.of(context)!.deleteConversation,
+      'isDanger': true,
+    });
+
+    final List<PopupMenuEntry<String>> items = menuDefs.map((def) {
+      if (isDesktopShell) {
+        return DesktopPopupMenuItem<String>(
+          value: def['value'] as String,
+          isDanger: def['isDanger'] == true,
+          height: itemHeight,
+          child: Text(def['label'] as String),
+        );
+      } else {
+        return PopupMenuItem<String>(
+          value: def['value'] as String,
+          height: itemHeight,
+          child: Text(def['label'] as String),
+        );
+      }
+    }).toList();
 
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context, listen: false);
     showMenu(

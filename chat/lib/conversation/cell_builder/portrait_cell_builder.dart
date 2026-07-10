@@ -63,6 +63,11 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       // 桌面端点头像弹用户信息卡片(微信 PC 形态),移动端仍整页打开
       onTap: () => isDesktopShell ? _showUserCard(context) : conversationController?.onPortraitTaped(context, model),
       onLongPress: () => conversationController?.onPortraitLongTaped(context, model),
+      onSecondaryTapUp: (details) {
+        if (!isSendMessage && isDesktopShell && model.message.conversation.conversationType == ConversationType.Group) {
+          conversationController?.onPortraitSecondaryTaped(context, model, details.globalPosition);
+        }
+      },
     );
   }
 

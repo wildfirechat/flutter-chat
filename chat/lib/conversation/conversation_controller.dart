@@ -35,6 +35,7 @@ import 'package:chat/config.dart';
 import 'package:chat/model/favorite_item.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/widget/popup_menu_overlay.dart';
+import 'package:chat/widget/desktop_popup_menu_item.dart';
 import 'package:http/http.dart' as http;
 import 'package:chat/l10n/app_localizations.dart';
 
@@ -434,6 +435,53 @@ class ConversationController extends ChangeNotifier {
           final messageInputBarController =
               Provider.of<MessageInputBarController>(context, listen: false);
           messageInputBarController.insertText("${userInfo.displayName} ");
+          if (!messageInputBarController.focusNode.hasFocus) {
+            messageInputBarController.focusNode.requestFocus();
+          }
+        }
+      });
+    }
+  }
+
+  void onPortraitSecondaryTaped(BuildContext context, UIMessage model, Offset globalPosition) {
+    debugPrint("on portrait secondary taped");
+    String userId = model.message.fromUser;
+    var conversation = model.message.conversation;
+    if (conversation.conversationType == ConversationType.Group) {
+      Imclient.getUserInfo(userId, groupId: conversation.target)
+          .then((userInfo) {
+        if (userInfo != null && context.mounted) {
+          final messageInputBarController =
+              Provider.of<MessageInputBarController>(context, listen: false);
+
+          final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox;
+          final localAnchor = overlayBox.globalToLocal(globalPosition);
+
+          showMenu<String>(
+            context: context,
+            position: RelativeRect.fromRect(localAnchor & Size.zero, Offset.zero & overlayBox.size),
+            constraints: BoxConstraints(minWidth: LayoutScale.scale(context, 120, cap: LayoutScale.rowCap)),
+            items: [
+              DesktopPopupMenuItem<String>(
+                value: 'mention',
+                height: LayoutScale.scale(context, 34, cap: LayoutScale.rowCap),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.alternate_email,
+                      size: LayoutScale.scale(context, 16, cap: LayoutScale.iconCap),
+                    ),
+                    SizedBox(width: LayoutScale.scale(context, 10, cap: LayoutScale.iconCap)),
+                    Text("@${userInfo.getReadableName()}"),
+                  ],
+                ),
+              )
+            ],
+          ).then((value) {
+            if (value == 'mention' && context.mounted) {
+              messageInputBarController.insertMention(userInfo);
+            }
+          });
         }
       });
     }
@@ -572,20 +620,26 @@ class ConversationController extends ChangeNotifier {
     final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox;
     final globalAnchor = anchorRect?.center ?? overlayBox.localToGlobal(overlayBox.size.center(Offset.zero));
     final localAnchor = overlayBox.globalToLocal(globalAnchor);
+
+    // Identify dangerous items and normal items, and put dangerous items at the end
+    final dangerousItems = menuItems.where((item) => item['value'] == 'delete').toList();
+    final normalItems = menuItems.where((item) => item['value'] != 'delete').toList();
+    final sortedItems = [...normalItems, ...dangerousItems];
+
     showMenu<String>(
       context: context,
       position: RelativeRect.fromRect(localAnchor & Size.zero, Offset.zero & overlayBox.size),
       constraints: BoxConstraints(minWidth: LayoutScale.scale(context, 140, cap: LayoutScale.rowCap)),
-      items: menuItems
-          .map((item) => PopupMenuItem<String>(
+      items: sortedItems
+          .map((item) => DesktopPopupMenuItem<String>(
                 value: item['value'],
+                isDanger: item['value'] == 'delete',
                 height: LayoutScale.scale(context, 34, cap: LayoutScale.rowCap),
                 child: Row(
                   children: [
                     Icon(
                       item['icon'],
                       size: LayoutScale.scale(context, 16, cap: LayoutScale.iconCap),
-                      color: const Color(0xFF5C5C5C),
                     ),
                     SizedBox(width: LayoutScale.scale(context, 10, cap: LayoutScale.iconCap)),
                     Text(item['label']),
