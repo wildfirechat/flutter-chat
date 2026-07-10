@@ -45,3 +45,4 @@ app.*.map.json
 
 build-profile.json5.local
 /avenginekit
+chat/android/build
