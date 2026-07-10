@@ -18,7 +18,6 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/portrait.dart';
-import 'package:chat/widget/section_divider.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
@@ -33,66 +32,100 @@ class MeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SelfProfile(),
-              const SectionDivider(),
-              OptionItem(
+      backgroundColor: context.colors.primaryBackground,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              color: context.colors.surface,
+              child: const SelfProfile(),
+            ),
+            const SizedBox(height: 18),
+            Container(
+              color: context.colors.surface,
+              child: OptionItem(
                 AppLocalizations.of(context)!.messageNotification,
-                leftImage: Image.asset('assets/images/setting_message_notification.png', width: 20.0, height: 20.0),
+                leftImage: Image.asset(
+                    'assets/images/setting_message_notification.png',
+                    width: 20.0,
+                    height: 20.0),
+                showBottomDivider: false,
                 onTap: () {
                   openPage(context, MessageNotificationSettings());
                 },
               ),
-              const SectionDivider(),
-              if (!isDesktopShell)
-                OptionItem(
-                  AppLocalizations.of(context)!.favorites,
-                  leftImage: Image.asset('assets/images/setting_favorite.png', width: 20.0, height: 20.0),
-                  onTap: () {
-                    openPage(context, const FavoriteListWidget(category: FavoriteCategory.all, isEmbedded: false));
-                  },
+            ),
+            const SizedBox(height: 18),
+            if (!isDesktopShell)
+              Container(
+                color: context.colors.surface,
+                child: Column(
+                  children: [
+                    OptionItem(
+                      AppLocalizations.of(context)!.favorites,
+                      leftImage: Image.asset(
+                          'assets/images/setting_favorite.png',
+                          width: 20.0,
+                          height: 20.0),
+                      onTap: () {
+                        openPage(
+                            context,
+                            const FavoriteListWidget(
+                                category: FavoriteCategory.all,
+                                isEmbedded: false));
+                      },
+                    ),
+                    OptionItem(
+                      AppLocalizations.of(context)!.files,
+                      leftImage: Image.asset('assets/images/setting_file.png',
+                          width: 20.0, height: 20.0),
+                      showBottomDivider: false,
+                      onTap: () {
+                        openPage(context, const FileRecordsScreen());
+                      },
+                    ),
+                  ],
                 ),
-              if (!isDesktopShell) const SectionDivider(),
-              if (!isDesktopShell)
-                OptionItem(
-                  AppLocalizations.of(context)!.files,
-                  leftImage: Image.asset('assets/images/setting_file.png', width: 20.0, height: 20.0),
-                  onTap: () {
-                    openPage(context, const FileRecordsScreen());
-                  },
-                ),
-              if (!isDesktopShell) const SectionDivider(),
-              OptionItem(
+              ),
+            if (!isDesktopShell) const SizedBox(height: 18),
+            Container(
+              color: context.colors.surface,
+              child: OptionItem(
                 AppLocalizations.of(context)!.backup_and_restore,
-                leftImage: const Icon(Icons.backup, color: Colors.blue, size: 20),
+                leftImage:
+                    const Icon(Icons.backup, color: Colors.blue, size: 20),
+                showBottomDivider: false,
                 onTap: () {
                   openPage(context, const BackupAndRestoreScreen());
                 },
               ),
-              const SectionDivider(),
-
-              OptionItem(
-                AppLocalizations.of(context)!.accountSafety,
-                leftImage: Image.asset('assets/images/setting_safety.png', width: 20.0, height: 20.0),
-                onTap: () {
-                  openPage(context, const AccountSafetyScreen());
-                },
+            ),
+            const SizedBox(height: 18),
+            Container(
+              color: context.colors.surface,
+              child: Column(
+                children: [
+                  OptionItem(
+                    AppLocalizations.of(context)!.accountSafety,
+                    leftImage: Image.asset('assets/images/setting_safety.png',
+                        width: 20.0, height: 20.0),
+                    onTap: () {
+                      openPage(context, const AccountSafetyScreen());
+                    },
+                  ),
+                  OptionItem(
+                    AppLocalizations.of(context)!.settings,
+                    leftImage: Image.asset('assets/images/setting_general.png',
+                        width: 20.0, height: 20.0),
+                    showBottomDivider: false,
+                    onTap: () {
+                      openPage(context, const GeneralSettings());
+                    },
+                  ),
+                ],
               ),
-              const SectionDivider(),
-              OptionItem(
-                AppLocalizations.of(context)!.settings,
-                leftImage: Image.asset('assets/images/setting_general.png', width: 20.0, height: 20.0),
-                showBottomDivider: true,
-                onTap: () {
-                  openPage(context, const GeneralSettings());
-                },
-              ),
-              const SectionDivider(),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -106,37 +139,50 @@ class SelfProfile extends StatelessWidget {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: source);
     if (image != null) {
-      Imclient.uploadMediaFile(image.path, MediaType.Media_Type_PORTRAIT, (url) {
+      Imclient.uploadMediaFile(image.path, MediaType.Media_Type_PORTRAIT,
+          (url) {
         Imclient.modifyMyInfo({ModifyMyInfoType.Modify_Portrait: url}, () {
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.modifyPortraitSuccess);
+          Fluttertoast.showToast(
+              msg: AppLocalizations.of(context)!.modifyPortraitSuccess);
         }, (code) {
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.modifyPortraitFail(code.toString()));
+          Fluttertoast.showToast(
+              msg: AppLocalizations.of(context)!
+                  .modifyPortraitFail(code.toString()));
         });
       }, (uploaded, total) {
         // progress
       }, (code) {
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.uploadPortraitFail(code.toString()));
+        Fluttertoast.showToast(
+            msg: AppLocalizations.of(context)!
+                .uploadPortraitFail(code.toString()));
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<FontSizeViewModel>(context); // Trigger rebuild when font size changes
+    Provider.of<FontSizeViewModel>(
+        context); // Trigger rebuild when font size changes
     return Selector<UserViewModel, UserInfo?>(
-      selector: (context, viewModel) => viewModel.getUserInfo(Imclient.currentUserId),
+      selector: (context, viewModel) =>
+          viewModel.getUserInfo(Imclient.currentUserId),
       builder: (context, userInfo, child) {
         if (userInfo == null) {
           return Container(
-            constraints: BoxConstraints(minHeight: LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap)),
+            constraints: BoxConstraints(
+                minHeight: LayoutScale.watchScale(context, 70.0,
+                    cap: LayoutScale.rowCap)),
             alignment: Alignment.center,
             child: Text(AppLocalizations.of(context)!.loading),
           );
         } else {
           return Container(
-              constraints: BoxConstraints(minHeight: LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap)),
-              margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+              constraints: BoxConstraints(
+                  minHeight: LayoutScale.watchScale(context, 70.0,
+                      cap: LayoutScale.rowCap)),
+              margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Portrait(
                     userInfo.portrait ?? Config.defaultUserPortrait,
@@ -153,7 +199,8 @@ class SelfProfile extends StatelessWidget {
                               children: <Widget>[
                                 ListTile(
                                   leading: const Icon(Icons.camera_alt),
-                                  title: Text(AppLocalizations.of(context)!.takePhoto),
+                                  title: Text(
+                                      AppLocalizations.of(context)!.takePhoto),
                                   onTap: () {
                                     Navigator.pop(context);
                                     _pickImage(ImageSource.camera, context);
@@ -161,7 +208,8 @@ class SelfProfile extends StatelessWidget {
                                 ),
                                 ListTile(
                                   leading: const Icon(Icons.photo_library),
-                                  title: Text(AppLocalizations.of(context)!.selectFromAlbum),
+                                  title: Text(AppLocalizations.of(context)!
+                                      .selectFromAlbum),
                                   onTap: () {
                                     Navigator.pop(context);
                                     _pickImage(ImageSource.gallery, context);
@@ -177,7 +225,8 @@ class SelfProfile extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       child: Container(
-                        margin: const EdgeInsets.only(left: 10, top: 10, bottom: 10),
+                        margin: const EdgeInsets.only(
+                            left: 10, top: 10, bottom: 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -191,9 +240,15 @@ class SelfProfile extends StatelessWidget {
                               margin: const EdgeInsets.only(top: 5),
                             ),
                             Container(
-                              constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 100),
+                              constraints: BoxConstraints(
+                                  maxWidth: View.of(context)
+                                              .physicalSize
+                                              .width /
+                                          View.of(context).devicePixelRatio -
+                                      100),
                               child: Text(
-                                AppLocalizations.of(context)!.wildfireId(userInfo.name),
+                                AppLocalizations.of(context)!
+                                    .wildfireId(userInfo.name),
                                 textAlign: TextAlign.left,
                                 style: TextStyle(
                                   fontSize: 12,

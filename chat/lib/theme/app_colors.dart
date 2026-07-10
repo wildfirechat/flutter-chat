@@ -18,6 +18,8 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.badge,
     required this.link,
     required this.surface,
+    required this.primaryBackground,
+    required this.bottomBarBg,
     required this.popupBg,
     required this.sidebarBg,
     required this.sidebarBgDesktop,
@@ -81,6 +83,12 @@ class AppColors extends ThemeExtension<AppColors> {
   // ---- 背景层 ----
   /// 卡片 / AppBar / Dialog / Scaffold 的基础面。
   final Color surface;
+
+  /// 全局页面基础背景色（如发现、我的、设置等列表页面背景）。
+  final Color primaryBackground;
+
+  /// 底部导航栏/标签栏背景色。
+  final Color bottomBarBg;
 
   /// 浮层(popup menu、@ 面板、气泡卡片)。暗色下比 [surface] 再亮一档,
   /// 才能从面板上浮起来 —— 暗色模式没有阴影可用,只能靠明度差分层。
@@ -180,6 +188,8 @@ class AppColors extends ThemeExtension<AppColors> {
     badge: Color(0xFFFA5151),
     link: Color(0xFF1F64E4),
     surface: Color(0xFFFFFFFF),
+    primaryBackground: Color(0xFFEBEBEB),
+    bottomBarBg: Color(0xFFF7F7F7),
     popupBg: Color(0xFFFFFFFF),
     sidebarBg: Color(0xFFE9E9E9),
     sidebarBgDesktop: Color(0xFFE2E2E2),
@@ -233,6 +243,8 @@ class AppColors extends ThemeExtension<AppColors> {
     badge: Color(0xFFFF453A),
     link: Color(0xFF0A84FF),
     surface: Color(0xFF2C2C2E),
+    primaryBackground: Color(0xFF1C1C1E),
+    bottomBarBg: Color(0xFF1C1C1E),
     popupBg: Color(0xFF323232),
     sidebarBg: Color(0xFF2C2C2E),
     sidebarBgDesktop: Color(0xFF2C2C2E),
@@ -285,6 +297,8 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? badge,
     Color? link,
     Color? surface,
+    Color? primaryBackground,
+    Color? bottomBarBg,
     Color? popupBg,
     Color? sidebarBg,
     Color? sidebarBgDesktop,
@@ -335,6 +349,8 @@ class AppColors extends ThemeExtension<AppColors> {
       badge: badge ?? this.badge,
       link: link ?? this.link,
       surface: surface ?? this.surface,
+      primaryBackground: primaryBackground ?? this.primaryBackground,
+      bottomBarBg: bottomBarBg ?? this.bottomBarBg,
       popupBg: popupBg ?? this.popupBg,
       sidebarBg: sidebarBg ?? this.sidebarBg,
       sidebarBgDesktop: sidebarBgDesktop ?? this.sidebarBgDesktop,
@@ -393,6 +409,8 @@ class AppColors extends ThemeExtension<AppColors> {
       badge: mix(badge, other.badge),
       link: mix(link, other.link),
       surface: mix(surface, other.surface),
+      primaryBackground: mix(primaryBackground, other.primaryBackground),
+      bottomBarBg: mix(bottomBarBg, other.bottomBarBg),
       popupBg: mix(popupBg, other.popupBg),
       sidebarBg: mix(sidebarBg, other.sidebarBg),
       sidebarBgDesktop: mix(sidebarBgDesktop, other.sidebarBgDesktop),

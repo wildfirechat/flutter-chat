@@ -61,13 +61,34 @@ class HomeTabBarState extends State<HomeTabBar> {
   void initState() {
     super.initState();
     appBarTitles = [];
-    pages = <Widget>[const ConversationListWidget(), ContactListWidget(), const WorkSpace(), const DiscoveryTab(), const MeTab()];
+    pages = <Widget>[
+      const ConversationListWidget(),
+      ContactListWidget(),
+      const WorkSpace(),
+      const DiscoveryTab(),
+      const MeTab()
+    ];
     tabImages = [
-      [getTabImage('assets/images/tabbar_chat.png'), getTabImage('assets/images/tabbar_chat_cover.png')],
-      [getTabImage('assets/images/tabbar_contact.png'), getTabImage('assets/images/tabbar_contact_cover.png')],
-      [getTabImage('assets/images/tabbar_work.png'), getTabImage('assets/images/tabbar_work_cover.png')],
-      [getTabImage('assets/images/tabbar_discover.png'), getTabImage('assets/images/tabbar_discover_cover.png')],
-      [getTabImage('assets/images/tabbar_me.png'), getTabImage('assets/images/tabbar_me_cover.png')]
+      [
+        getTabImage('assets/images/tabbar_chat.png'),
+        getTabImage('assets/images/tabbar_chat_cover.png')
+      ],
+      [
+        getTabImage('assets/images/tabbar_contact.png'),
+        getTabImage('assets/images/tabbar_contact_cover.png')
+      ],
+      [
+        getTabImage('assets/images/tabbar_work.png'),
+        getTabImage('assets/images/tabbar_work_cover.png')
+      ],
+      [
+        getTabImage('assets/images/tabbar_discover.png'),
+        getTabImage('assets/images/tabbar_discover_cover.png')
+      ],
+      [
+        getTabImage('assets/images/tabbar_me.png'),
+        getTabImage('assets/images/tabbar_me_cover.png')
+      ]
     ];
   }
 
@@ -144,20 +165,27 @@ class HomeTabBarState extends State<HomeTabBar> {
     Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => PickUserScreen(title: AppLocalizations.of(context)!.startChat, (context, members) async {
+          builder: (context) =>
+              PickUserScreen(title: AppLocalizations.of(context)!.startChat,
+                  (context, members) async {
                 if (members.isEmpty) {
                   showToast(msg: "请选择一位或者多位好友发起聊天");
                 } else if (members.length == 1) {
-                  Conversation conversation = Conversation(conversationType: ConversationType.Single, target: members[0]);
+                  Conversation conversation = Conversation(
+                      conversationType: ConversationType.Single,
+                      target: members[0]);
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
+                    MaterialPageRoute(
+                        builder: (context) => ConversationScreen(conversation)),
                   );
                 } else {
                   _showProcessingDialog(context, "群组创建中...");
 
-                  List<UserInfo> userInfos = await Imclient.getUserInfos(members);
-                  UserInfo? creator = await Imclient.getUserInfo(Imclient.currentUserId);
+                  List<UserInfo> userInfos =
+                      await Imclient.getUserInfos(members);
+                  UserInfo? creator =
+                      await Imclient.getUserInfo(Imclient.currentUserId);
                   String groupName = creator!.displayName!;
                   for (var user in userInfos) {
                     if (user.displayName != null) {
@@ -170,12 +198,17 @@ class HomeTabBarState extends State<HomeTabBar> {
                     }
                   }
 
-                  Imclient.createGroup(null, groupName, null, GroupType.Restricted.index, members, (strValue) {
+                  Imclient.createGroup(null, groupName, null,
+                      GroupType.Restricted.index, members, (strValue) {
                     _dismissProcessingDialog(context);
-                    Conversation conversation = Conversation(conversationType: ConversationType.Group, target: strValue);
+                    Conversation conversation = Conversation(
+                        conversationType: ConversationType.Group,
+                        target: strValue);
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              ConversationScreen(conversation)),
                     );
                   }, (errorCode) {
                     _dismissProcessingDialog(context);
@@ -231,7 +264,8 @@ class HomeTabBarState extends State<HomeTabBar> {
 
     switch (prefix) {
       case WfcScheme.qrCodePrefixUser:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => UserInfoWidget(value)));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => UserInfoWidget(value)));
         break;
       case WfcScheme.qrCodePrefixGroup:
         // Parse from parameter if exists
@@ -242,11 +276,17 @@ class HomeTabBarState extends State<HomeTabBar> {
         } catch (e) {
           // ignore
         }
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => GroupInfoScreen(groupId: value, from: from)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    GroupInfoScreen(groupId: value, from: from)));
         break;
       case WfcScheme.qrCodePrefixPcSession:
-        Navigator.push(context, MaterialPageRoute(builder: (context) => PCLoginScreen(token: value)));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => PCLoginScreen(token: value)));
         break;
       case WfcScheme.qrCodePrefixChannel:
         // TODO: Implement Channel
@@ -272,12 +312,10 @@ class HomeTabBarState extends State<HomeTabBar> {
       badgeContent: count == -1 // Friend request indicator
           ? null
           : Text(
-        count > 99 ? '99+' : '$count',
-        style: const TextStyle(color: Colors.white, fontSize: 10),
-      ),
-      badgeStyle: const badge.BadgeStyle(
-        badgeColor: Colors.red
-      ),
+              count > 99 ? '99+' : '$count',
+              style: const TextStyle(color: Colors.white, fontSize: 10),
+            ),
+      badgeStyle: const badge.BadgeStyle(badgeColor: Colors.red),
       child: child,
     );
   }
@@ -291,113 +329,128 @@ class HomeTabBarState extends State<HomeTabBar> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        systemNavigationBarColor: context.colors.cellTop,
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+        systemNavigationBarColor: context.colors.bottomBarBg,
         systemNavigationBarDividerColor: Colors.transparent,
-        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarIconBrightness:
+            isDark ? Brightness.light : Brightness.dark,
         systemNavigationBarContrastEnforced: false,
       ),
       child: Scaffold(
-            //布局结构
-            appBar: AppBar(
-              //选中每一项的标题和图标设置
-              title: Text(appBarTitles[_tabIndex]),
-              centerTitle: false,
-              actions: [
-                GestureDetector(
-                  onTap: () => _onTapSearchButton(context),
-                  child: const Icon(Icons.search_rounded),
-                ),
-                const Padding(padding: EdgeInsets.only(left: 8)),
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.add_circle_outline_rounded),
-                  offset: const Offset(10, 60),
-                  itemBuilder: (context) {
-                    return [
-                      PopupMenuItem(
-                        value: "chat",
-                        child: ListTile(
-                          leading: const Icon(Icons.chat_bubble_rounded),
-                          title: Text(AppLocalizations.of(context)!.startChat),
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: "add",
-                        child: ListTile(
-                          leading: const Icon(Icons.contact_phone_rounded),
-                          title: Text(AppLocalizations.of(context)!.addFriend),
-                        ),
-                      ),
-                      PopupMenuItem(
-                        value: "scan",
-                        child: ListTile(
-                          leading: const Icon(Icons.qr_code_scanner_rounded),
-                          title: Text(AppLocalizations.of(context)!.scanQrCode),
-                        ),
-                      ),
-                    ];
-                  },
-                  onSelected: (value) {
-                    switch (value) {
-                      case "chat":
-                        _startChat();
-                        break;
-                      case "add":
-                        _addFriend();
-                        break;
-                      case "scan":
-                        _scanQrCode();
-                        break;
-                    }
-                  },
-                ),
-                const Padding(padding: EdgeInsets.only(left: 16)),
-              ],
-            ),
-            body: _body,
-            bottomNavigationBar: CupertinoTabBar(
-              backgroundColor: context.colors.cellTop,
-              activeColor: context.colors.accent,
-              inactiveColor: context.colors.textSecondary,
-              height: 58.0,
-              border: Border(
-                top: BorderSide(
-                  color: context.colors.hairlineSoft,
-                  width: 0.0,
-                ),
-              ),
-              items: List.generate(appBarTitles.length, (index) {
-                Widget iconWidget;
-                if (index == 0) {
-                  iconWidget = Selector<ConversationListViewModel, int>(
-                    selector: (_, model) => model.unreadMessageCount,
-                    builder: (context, unreadCount, child) =>
-                        _buildBadge(unreadCount, getTabIcon(0)),
-                  );
-                } else if (index == 1) {
-                  iconWidget = Selector<ContactListViewModel, int>(
-                    selector: (_, model) => model.unreadFriendRequestCount,
-                    builder: (context, unreadFriendRequestCount, child) =>
-                        _buildBadge(unreadFriendRequestCount > 0 ? -1 : 0, getTabIcon(1)),
-                  );
-                } else {
-                  iconWidget = getTabIcon(index);
-                }
-                return BottomNavigationBarItem(
-                  icon: Padding(
-                    padding: const EdgeInsets.only(top: 5.0),
-                    child: iconWidget,
+        //布局结构
+        appBar: AppBar(
+          backgroundColor:
+              _tabIndex == pages.length - 1 ? context.colors.surface : null,
+          elevation: 0,
+          //选中每一项的标题和图标设置
+          title: _tabIndex == pages.length - 1
+              ? null
+              : Text(appBarTitles[_tabIndex]),
+          centerTitle: false,
+          actions: _tabIndex == pages.length - 1
+              ? null
+              : [
+                  GestureDetector(
+                    onTap: () => _onTapSearchButton(context),
+                    child: const Icon(Icons.search_rounded),
                   ),
-                  label: getTabTitle(index),
-                );
-              }),
-              currentIndex: _tabIndex,
-              onTap: (index) {
-                setState(() {
-                  _tabIndex = index;
-                });
-              },
+                  const Padding(padding: EdgeInsets.only(left: 8)),
+                  PopupMenuButton<String>(
+                    icon: const Icon(Icons.add_circle_outline_rounded),
+                    offset: const Offset(10, 60),
+                    itemBuilder: (context) {
+                      return [
+                        PopupMenuItem(
+                          value: "chat",
+                          child: ListTile(
+                            leading: const Icon(Icons.chat_bubble_rounded),
+                            title:
+                                Text(AppLocalizations.of(context)!.startChat),
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: "add",
+                          child: ListTile(
+                            leading: const Icon(Icons.contact_phone_rounded),
+                            title:
+                                Text(AppLocalizations.of(context)!.addFriend),
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: "scan",
+                          child: ListTile(
+                            leading: const Icon(Icons.qr_code_scanner_rounded),
+                            title:
+                                Text(AppLocalizations.of(context)!.scanQrCode),
+                          ),
+                        ),
+                      ];
+                    },
+                    onSelected: (value) {
+                      switch (value) {
+                        case "chat":
+                          _startChat();
+                          break;
+                        case "add":
+                          _addFriend();
+                          break;
+                        case "scan":
+                          _scanQrCode();
+                          break;
+                      }
+                    },
+                  ),
+                  const Padding(padding: EdgeInsets.only(left: 16)),
+                ],
+        ),
+        body: _body,
+        bottomNavigationBar: CupertinoTabBar(
+          backgroundColor: context.colors.bottomBarBg,
+          activeColor: context.colors.accent,
+          inactiveColor: context.colors.textSecondary,
+          height: 58.0,
+          border: Border(
+            top: BorderSide(
+              color: context.colors.hairlineSoft,
+              width: 0.0,
             ),
           ),
+          items: List.generate(appBarTitles.length, (index) {
+            Widget iconWidget;
+            if (index == 0) {
+              iconWidget = Selector<ConversationListViewModel, int>(
+                selector: (_, model) => model.unreadMessageCount,
+                builder: (context, unreadCount, child) =>
+                    _buildBadge(unreadCount, getTabIcon(0)),
+              );
+            } else if (index == 1) {
+              iconWidget = Selector<ContactListViewModel, int>(
+                selector: (_, model) => model.unreadFriendRequestCount,
+                builder: (context, unreadFriendRequestCount, child) =>
+                    _buildBadge(
+                        unreadFriendRequestCount > 0 ? -1 : 0, getTabIcon(1)),
+              );
+            } else {
+              iconWidget = getTabIcon(index);
+            }
+            return BottomNavigationBarItem(
+              icon: Padding(
+                padding: const EdgeInsets.only(top: 5.0),
+                child: iconWidget,
+              ),
+              label: getTabTitle(index),
+            );
+          }),
+          currentIndex: _tabIndex,
+          onTap: (index) {
+            setState(() {
+              _tabIndex = index;
+            });
+          },
+        ),
+      ),
     );
   }
 }

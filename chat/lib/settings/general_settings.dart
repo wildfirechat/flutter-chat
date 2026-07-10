@@ -10,7 +10,6 @@ import '../viewmodel/locale_view_model.dart';
 import '../viewmodel/theme_view_model.dart';
 import 'font_size_settings_screen.dart';
 import '../widget/option_item.dart';
-import '../widget/section_divider.dart';
 import 'package:chat/theme/app_colors.dart';
 
 class GeneralSettings extends StatelessWidget {
@@ -24,86 +23,112 @@ class GeneralSettings extends StatelessWidget {
           : AppBar(
               title: Text(AppLocalizations.of(context)!.settings),
             ),
-      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
+      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : context.colors.primaryBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              const SectionDivider(),
-              OptionItem(
-                AppLocalizations.of(context)!.privacySettings,
-                onTap: () {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                },
+              const SizedBox(height: 10),
+              Container(
+                color: context.colors.surface,
+                child: Column(
+                  children: [
+                    OptionItem(
+                      AppLocalizations.of(context)!.privacySettings,
+                      onTap: () {
+                        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                      },
+                    ),
+                    OptionItem(
+                      AppLocalizations.of(context)!.language,
+                      onTap: () {
+                        _showLanguageDialog(context);
+                      },
+                    ),
+                    OptionItem(
+                      AppLocalizations.of(context)!.fontSize,
+                      onTap: () {
+                        openPage(context, const FontSizeSettingsScreen());
+                      },
+                    ),
+                    OptionItem(
+                      AppLocalizations.of(context)!.theme,
+                      showBottomDivider: false,
+                      onTap: () {
+                        _showThemeDialog(context);
+                      },
+                    ),
+                  ],
+                ),
               ),
-              OptionItem(
-                AppLocalizations.of(context)!.language,
-                onTap: () {
-                  _showLanguageDialog(context);
-                },
+              const SizedBox(height: 18),
+              Container(
+                color: context.colors.surface,
+                child: OptionItem(
+                  AppLocalizations.of(context)!.about,
+                  showBottomDivider: false,
+                  onTap: () {
+                    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                  },
+                ),
               ),
-              OptionItem(
-                AppLocalizations.of(context)!.fontSize,
-                onTap: () {
-                  openPage(context, const FontSizeSettingsScreen());
-                },
+              const SizedBox(height: 18),
+              Container(
+                color: context.colors.surface,
+                child: Column(
+                  children: [
+                    OptionItem(
+                      AppLocalizations.of(context)!.userAgreement,
+                      onTap: () {
+                        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                      },
+                    ),
+                    OptionItem(
+                      AppLocalizations.of(context)!.privacyPolicy,
+                      onTap: () {
+                        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                      },
+                    ),
+                    OptionItem(
+                      AppLocalizations.of(context)!.complaints,
+                      showBottomDivider: false,
+                      onTap: () {
+                        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                      },
+                    ),
+                  ],
+                ),
               ),
-              OptionItem(
-                AppLocalizations.of(context)!.theme,
-                onTap: () {
-                  _showThemeDialog(context);
-                },
+              const SizedBox(height: 18),
+              Container(
+                color: context.colors.surface,
+                child: OptionItem(
+                  AppLocalizations.of(context)!.diagnostics,
+                  showBottomDivider: false,
+                  onTap: () {
+                    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                  },
+                ),
               ),
-              const SectionDivider(),
-              OptionItem(
-                AppLocalizations.of(context)!.about,
-                onTap: () {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                },
-              ),
-              const SectionDivider(),
-              OptionItem(
-                AppLocalizations.of(context)!.userAgreement,
-                onTap: () {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                },
-              ),
-              OptionItem(
-                AppLocalizations.of(context)!.privacyPolicy,
-                onTap: () {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                },
-              ),
-              OptionItem(
-                AppLocalizations.of(context)!.complaints,
-                onTap: () {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                },
-              ),
-              const SectionDivider(),
-              OptionItem(
-                AppLocalizations.of(context)!.diagnostics,
-                onTap: () {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                },
-              ),
-              const SectionDivider(),
-              GestureDetector(
-                onTap: () {
-                  _handleLogout(context);
-                },
-                child: Container(
-                  margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
-                  height: 36,
-                  child: Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.logout,
-                      style: TextStyle(color: context.colors.danger, fontSize: 16),
+              const SizedBox(height: 18),
+              Container(
+                color: context.colors.surface,
+                child: GestureDetector(
+                  onTap: () {
+                    _handleLogout(context);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
+                    height: 36,
+                    child: Center(
+                      child: Text(
+                        AppLocalizations.of(context)!.logout,
+                        style: TextStyle(color: context.colors.danger, fontSize: 16),
+                      ),
                     ),
                   ),
                 ),
               ),
-              const SectionDivider(),
             ],
           ),
         ),
