@@ -4,6 +4,7 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 已选目标的方格:头像 + 右上角删除按钮 + 名称。用于桌面端右栏。
 class SelectedAvatarTile extends StatelessWidget {
@@ -55,7 +56,7 @@ class SelectedAvatarTile extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             name,
-            style: TextStyle(fontSize: 12, color: context.colors.textPrimary, decoration: TextDecoration.none),
+            style: AppText.xs.copyWith(color: context.colors.textPrimary, decoration: TextDecoration.none),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
@@ -123,11 +124,7 @@ class SelectedListTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   name,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: context.colors.textPrimary,
-                    decoration: TextDecoration.none,
-                  ),
+                  style: AppText.sm.copyWith(color: context.colors.textPrimary, decoration: TextDecoration.none),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

@@ -28,6 +28,7 @@ import 'package:chat/viewmodel/font_size_view_model.dart';
 import '../config.dart';
 import '../pc/pc_platform.dart';
 import '../user_info_widget.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class MeTab extends StatelessWidget {
   const MeTab({super.key});
@@ -256,7 +257,7 @@ class SelfProfile extends StatelessWidget {
                             Text(
                               userInfo.displayName ?? userInfo.name,
                               textAlign: TextAlign.left,
-                              style: const TextStyle(fontSize: 18),
+                              style: AppText.lg,
                             ),
                             Container(
                               margin: const EdgeInsets.only(top: 5),
@@ -272,10 +273,7 @@ class SelfProfile extends StatelessWidget {
                                 AppLocalizations.of(context)!
                                     .wildfireId(userInfo.name),
                                 textAlign: TextAlign.left,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: context.colors.textSecondary,
-                                ),
+                                style: AppText.xs.copyWith(color: context.colors.textSecondary),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             )

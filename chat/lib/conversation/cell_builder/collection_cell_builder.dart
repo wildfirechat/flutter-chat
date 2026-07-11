@@ -4,6 +4,7 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import '../../ui_model/ui_message.dart';
 import 'portrait_cell_builder.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 接龙消息 Cell Builder
 /// 
@@ -50,11 +51,7 @@ class CollectionCellBuilder extends PortraitCellBuilder {
               Expanded(
                 child: Text(
                   content.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF333333),
-                  ),
+                  style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: Color(0xFF333333)),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -63,10 +60,7 @@ class CollectionCellBuilder extends PortraitCellBuilder {
               // 参与人数
               Text(
                 '${content.participantCount}${l10n.collectionPeopleCount}',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF999999),
-                ),
+                style: AppText.xs.copyWith(color: Color(0xFF999999)),
               ),
             ],
           ),
@@ -76,10 +70,7 @@ class CollectionCellBuilder extends PortraitCellBuilder {
             const SizedBox(height: 4),
             Text(
               content.desc,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF666666),
-              ),
+              style: AppText.sm.copyWith(color: Color(0xFF666666)),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -99,10 +90,7 @@ class CollectionCellBuilder extends PortraitCellBuilder {
             // 空提示
             Text(
               l10n.collectionEmptyHint,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF999999),
-              ),
+              style: AppText.sm.copyWith(color: Color(0xFF999999)),
             )
           else
             // 显示参与记录
@@ -116,10 +104,7 @@ class CollectionCellBuilder extends PortraitCellBuilder {
                     padding: const EdgeInsets.symmetric(vertical: 2),
                     child: Text(
                       '$index. ${item.content}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF333333),
-                      ),
+                      style: AppText.base.copyWith(color: Color(0xFF333333)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -132,10 +117,7 @@ class CollectionCellBuilder extends PortraitCellBuilder {
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
                       l10n.collectionMoreParticipants(remainingCount),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF999999),
-                      ),
+                      style: AppText.xs.copyWith(color: Color(0xFF999999)),
                     ),
                   ),
               ],
@@ -153,10 +135,7 @@ class CollectionCellBuilder extends PortraitCellBuilder {
           // 操作按钮
           Text(
             _getActionText(l10n),
-            style: TextStyle(
-              fontSize: 14,
-              color: _getActionColor(),
-            ),
+            style: AppText.base.copyWith(color: _getActionColor()),
           ),
         ],
       ),

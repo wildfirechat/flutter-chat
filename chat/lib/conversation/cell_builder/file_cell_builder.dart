@@ -9,6 +9,7 @@ import 'package:chat/utilities.dart';
 
 import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class FileCellBuilder extends PortraitCellBuilder {
   late FileMessageContent fileMessageContent;
@@ -23,7 +24,7 @@ class FileCellBuilder extends PortraitCellBuilder {
     Image image = Image.asset(imagePaht, width: 32.0, height: 32.0);
     Text nameText = Text(fileMessageContent.name, maxLines: 2, overflow: TextOverflow.ellipsis,);
     SizedBox padding = const SizedBox(width: 3, height: 3,);
-    Text sizeText = Text(Utilities.formatSize(fileMessageContent.size), style: const TextStyle(fontSize: 12),);
+    Text sizeText = Text(Utilities.formatSize(fileMessageContent.size), style: AppText.xs,);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

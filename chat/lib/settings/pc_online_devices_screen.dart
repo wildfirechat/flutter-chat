@@ -4,6 +4,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/pc_online_info.dart';
 import 'package:chat/config.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class PCOnlineDevicesScreen extends StatefulWidget {
   const PCOnlineDevicesScreen({super.key});
@@ -102,7 +103,7 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
                       const SizedBox(height: 16),
                       Text(
                         AppLocalizations.of(context)!.pcOnlineDeviceCount(_onlineInfos.length.toString()),
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: AppText.lg.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),

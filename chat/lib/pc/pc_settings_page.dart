@@ -21,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/theme/app_typography.dart';
 
 // ==========================================
 // 1. Middle Column: PcSettingsMenu
@@ -90,11 +91,7 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
                         Expanded(
                           child: Text(
                             item.title,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-                              color: context.colors.textPrimary,
-                            ),
+                            style: AppText.sm.copyWith(fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal, color: context.colors.textPrimary),
                           ),
                         ),
                       ],
@@ -613,12 +610,12 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                               children: [
                                 Text(
                                   userInfo.displayName ?? userInfo.name,
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+                                  style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   l10n.accountName(userInfo.name),
-                                  style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+                                  style: AppText.xs.copyWith(color: context.colors.textSecondary),
                                 ),
                               ],
                             ),
@@ -631,7 +628,7 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                             ),
-                            child: Text(l10n.signOut, style: const TextStyle(fontSize: 12)),
+                            child: Text(l10n.signOut, style: AppText.xs),
                           ),
                         ],
                       ),
@@ -725,12 +722,12 @@ class PcAboutSettingsDetail extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   l10n.appName,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+                  style: AppText.xl.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   l10n.aboutVersion("v1.0.0"),
-                  style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+                  style: AppText.xs.copyWith(color: context.colors.textSecondary),
                 ),
                 const SizedBox(height: 24),
                 Container(
@@ -743,7 +740,7 @@ class PcAboutSettingsDetail extends StatelessWidget {
                   child: Text(
                     l10n.aboutDescription,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 13, color: context.colors.textPrimary, height: 1.5),
+                    style: AppText.sm.copyWith(color: context.colors.textPrimary, height: 1.5),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -765,7 +762,7 @@ class PcAboutSettingsDetail extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   l10n.wechatContact,
-                  style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+                  style: AppText.xs.copyWith(color: context.colors.textSecondary),
                 ),
               ],
             ),
@@ -790,7 +787,7 @@ class _SettingsSectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         title,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: context.colors.textSecondary),
+        style: AppText.xs.copyWith(fontWeight: FontWeight.w600, color: context.colors.textSecondary),
       ),
     );
   }
@@ -838,9 +835,9 @@ class _SettingsSwitchRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
+                Text(title, style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
                 const SizedBox(height: 4),
-                Text(subtitle, style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
+                Text(subtitle, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
               ],
             ),
           ),
@@ -884,9 +881,9 @@ class _SettingsClickableRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
+                      Text(title, style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
                       const SizedBox(height: 4),
-                      Text(subtitle, style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
+                      Text(subtitle, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
                     ],
                   ),
                 ),
@@ -940,15 +937,15 @@ class _SettingsSelectorRowState extends State<_SettingsSelectorRow> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
+                        Text(widget.title, style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
                         const SizedBox(height: 4),
-                        Text(subtitle, style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
+                        Text(widget.subtitle, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
                       ],
                     ),
                   ),
                   Row(
                     children: [
-                      Text(valueText, style: TextStyle(fontSize: 13, color: context.colors.textSecondary)),
+                      Text(widget.valueText, style: AppText.sm.copyWith(color: context.colors.textSecondary)),
                       const SizedBox(width: 8),
                       Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: context.colors.textTertiary),
                     ],
@@ -993,9 +990,9 @@ class _SettingsSliderRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
+                    Text(title, style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
                     const SizedBox(height: 4),
-                    Text(subtitle, style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
+                    Text(subtitle, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
                   ],
                 ),
               ),
@@ -1009,7 +1006,7 @@ class _SettingsSliderRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text("A", style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
+                    Text("A", style: AppText.xs.copyWith(color: context.colors.textSecondary)),
                     Expanded(
                       child: SliderTheme(
                         data: SliderTheme.of(context).copyWith(
@@ -1031,7 +1028,7 @@ class _SettingsSliderRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Text("A", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
+                    Text("A", style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -1046,7 +1043,7 @@ class _SettingsSliderRow extends StatelessWidget {
                             textAlign: TextAlign.center,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
+                            style: AppText.xs.copyWith(color: context.colors.textSecondary),
                           ),
                         ),
                     ],
@@ -1086,12 +1083,7 @@ class _SettingsTextLink extends StatelessWidget {
           },
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
-              color: hovered ? context.colors.accentPressed : context.colors.accent,
-              decoration: TextDecoration.underline,
-              decorationColor: hovered ? context.colors.accentPressed : context.colors.accent,
-            ),
+            style: AppText.xs.copyWith(color: hovered ? context.colors.accentPressed : context.colors.accent, decoration: TextDecoration.underline, decorationColor: hovered ? context.colors.accentPressed : context.colors.accent),
           ),
         );
       },

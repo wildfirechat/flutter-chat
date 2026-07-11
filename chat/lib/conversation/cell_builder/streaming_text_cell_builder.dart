@@ -6,6 +6,7 @@ import 'package:flutter_linkify/flutter_linkify.dart';
 import 'package:chat/utilities.dart';
 
 import '../../ui_model/ui_message.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class StreamingTextCellBuilder extends PortraitCellBuilder {
   late String text;
@@ -35,12 +36,8 @@ class StreamingTextCellBuilder extends PortraitCellBuilder {
             Linkify(
               onOpen: (link) => Utilities.openLink(context, link.url),
               text: text,
-              style: const TextStyle(fontSize: 16),
-              linkStyle: const TextStyle(
-                fontSize: 16,
-                color: Colors.blue,
-                decoration: TextDecoration.underline,
-              ),
+              style: AppText.lg,
+              linkStyle: AppText.lg.copyWith(color: Colors.blue, decoration: TextDecoration.underline),
               options: const LinkifyOptions(
                 humanize: false,
               ),

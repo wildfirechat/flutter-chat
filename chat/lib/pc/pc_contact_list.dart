@@ -33,6 +33,7 @@ import 'package:imclient/model/domain_info.dart';
 
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 // ---- 中栏统一行度量(禁止散落硬编码,与 pc_theme 同一约定) ----
 // 分组头与子行的内容左缘对齐在 _kContentInset:分组头 = 14 边距 + 18 折叠箭头 + 4 间距。
@@ -455,7 +456,7 @@ class _SectionHeader extends StatelessWidget {
                   decoration: BoxDecoration(color: context.colors.badge, borderRadius: BorderRadius.circular(9)),
                   child: Text(
                     badgeCount > 99 ? '99+' : '$badgeCount',
-                    style: const TextStyle(fontSize: 10, color: Colors.white),
+                    style: AppText.xxs.copyWith(color: Colors.white),
                   ),
                 ),
             ],
@@ -480,7 +481,7 @@ class _GroupLabel extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: TextStyle(fontSize: 12, color: context.colors.textSecondary, fontWeight: FontWeight.w500),
+        style: AppText.xs.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -715,7 +716,7 @@ class _FriendRequestRow extends StatelessWidget {
             foregroundColor: isSelected ? Colors.white : context.colors.accent,
             side: BorderSide(color: isSelected ? Colors.white : context.colors.accent, width: 1),
             padding: const EdgeInsets.symmetric(horizontal: 10),
-            textStyle: const TextStyle(fontSize: 12),
+            textStyle: AppText.xs,
           ),
           child: Text(AppLocalizations.of(context)!.friendRequestAccept),
         ),

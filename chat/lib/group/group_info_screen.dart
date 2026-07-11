@@ -16,6 +16,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class GroupInfoScreen extends StatefulWidget {
   final String groupId;
@@ -118,12 +119,12 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
             const SizedBox(height: 16),
             Text(
               name,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+              style: AppText.xl.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
             ),
             const SizedBox(height: 8),
             Text(
               "群号: ${widget.groupId}",
-              style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
+              style: AppText.sm.copyWith(color: context.colors.textSecondary),
             ),
             const SizedBox(height: 40),
             Divider(height: 1, thickness: 0.5, color: context.colors.hairline),
@@ -154,12 +155,12 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
           const SizedBox(height: 16),
           Text(
             name,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: AppText.xl.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             "群号: ${widget.groupId}",
-            style: const TextStyle(fontSize: 14, color: Colors.grey),
+            style: AppText.base.copyWith(color: Colors.grey),
           ),
           const SizedBox(height: 40),
           _buildActionButton(groupInfo),
@@ -201,7 +202,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                 )
               : Text(
                   buttonText,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+                  style: AppText.base.copyWith(fontWeight: FontWeight.normal),
                 ),
         ),
       );

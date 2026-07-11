@@ -19,6 +19,7 @@ import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/wfc_scheme.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 enum _PCLoginView { qr, form }
 
@@ -261,12 +262,12 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
         children: [
           Text(
             l10n.appTitle,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+            style: AppText.xxl.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
           Text(
             _isScanned ? l10n.scanned : l10n.pcLoginQrHint,
-            style: TextStyle(fontSize: 14, color: context.colors.textSecondary),
+            style: AppText.base.copyWith(color: context.colors.textSecondary),
           ),
           const SizedBox(height: 32),
           Container(
@@ -284,7 +285,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
           if (_error != null) ...[
             Text(
               _error!,
-              style: TextStyle(color: context.colors.danger, fontSize: 13),
+              style: AppText.sm.copyWith(color: context.colors.danger),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
@@ -333,7 +334,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
             Text(
               _scannedUserName!,
               // QR 白板之上,固定深色字
-              style: const TextStyle(fontSize: 14, color: Color(0xFF333333)),
+              style: AppText.base.copyWith(color: Color(0xFF333333)),
             ),
           ],
         ],
@@ -377,7 +378,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
                         const SizedBox(width: 4),
                         Text(
                           l10n.loginCodeTitle,
-                          style: TextStyle(fontSize: 14, color: context.colors.link),
+                          style: AppText.base.copyWith(color: context.colors.link),
                         ),
                       ],
                     ),
@@ -389,7 +390,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
             Center(
               child: Text(
                 _form.isPasswordLogin ? l10n.loginWithPassword : l10n.loginCodeTitle,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: AppText.xl.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(height: 24),

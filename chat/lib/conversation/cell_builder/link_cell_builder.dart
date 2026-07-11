@@ -5,6 +5,7 @@ import '../../ui_model/ui_message.dart';
 import '../../utils/media_url_redirector.dart';
 import '../../utilities.dart';
 import 'portrait_cell_builder.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 链接消息 Cell Builder
 ///
@@ -58,11 +59,7 @@ class LinkCellBuilder extends PortraitCellBuilder {
                   if (linkContent.title.isNotEmpty)
                     Text(
                       linkContent.title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF576b95),
-                      ),
+                      style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: Color(0xFF576b95)),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -70,10 +67,7 @@ class LinkCellBuilder extends PortraitCellBuilder {
                     const SizedBox(height: 6),
                     Text(
                       linkContent.contentDigest,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF888888),
-                      ),
+                      style: AppText.sm.copyWith(color: Color(0xFF888888)),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -87,10 +81,7 @@ class LinkCellBuilder extends PortraitCellBuilder {
                         Expanded(
                           child: Text(
                             linkContent.url,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFFAAAAAA),
-                            ),
+                            style: AppText.xs.copyWith(color: Color(0xFFAAAAAA)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

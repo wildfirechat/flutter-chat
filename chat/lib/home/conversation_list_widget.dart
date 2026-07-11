@@ -16,6 +16,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
@@ -32,6 +33,7 @@ import '../viewmodel/user_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/desktop_popup_menu_item.dart';
 import 'package:chat/widget/middle_ellipsis_text.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 会话行的内容高度与分隔线高度。分隔线不随字号缩放,itemExtent 必须把它单独加上,
 /// 否则 s < 1 时内容比 extent 高,debug 下会报 overflow。
@@ -402,7 +404,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                 children: <Widget>[
                                   MiddleEllipsisText(
                                     Utilities.conversationTitle(context, conversationInfo.conversation, value.$1, value.$2, value.$3),
-                                    style: TextStyle(fontSize: 15.0, color: (isDesktopShell && widget.isSelected) ? Colors.white : null),
+                                    style: AppText.lg.copyWith(color: (isDesktopShell && widget.isSelected) ? Colors.white : null),
                                   ),
                                   Container(
                                     height: 2,
@@ -413,26 +415,30 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                       hasDraft
                                           ? Text(
                                               AppLocalizations.of(context)!.draftTag,
-                                              style: TextStyle(fontSize: 12.0, color: context.colors.danger),
+                                              style: AppText.xs.copyWith(color: context.colors.danger),
                                             )
                                           : Container(),
                                       if (_joinRequestCount > 0) ...[
                                         Text(
                                           '[${AppLocalizations.of(context)!.newJoinGroupRequestCount(_joinRequestCount)}]',
-                                          style: const TextStyle(fontSize: 12.0, color: Colors.red),
+                                          style: AppText.xs.copyWith(color: Colors.red),
                                         ),
                                         const SizedBox(width: 4),
                                       ],
                                       Expanded(
-                                        child: Text(
-                                          hasDraft
-                                              ? DraftData.displayText(conversationInfo.draft!)
-                                              : conversationInfo.lastMessage != null
-                                                  ? '${value.$4 != null ? MeshUserDisplay.getReadableName(value.$4!) : "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
-                                                  : '',
-                                          style: TextStyle(fontSize: 12.0, color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
+                                        // Selector 复用同一 UserInfo 实例不会因域名到达而重估，这里单独监听 MeshCache
+                                        child: AnimatedBuilder(
+                                          animation: MeshCache.instance,
+                                          builder: (context, child) => Text(
+                                            hasDraft
+                                                ? DraftData.displayText(conversationInfo.draft!)
+                                                : conversationInfo.lastMessage != null
+                                                    ? '${value.$4 != null ? MeshUserDisplay.getReadableName(value.$4!) : "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
+                                                    : '',
+                                            style: AppText.xs.copyWith(color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -447,10 +453,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                             padding: const EdgeInsets.only(right: 15.0),
                             child: Text(
                               Utilities.formatTime(context, conversationInfo.timestamp),
-                              style: TextStyle(
-                                fontSize: 10.0,
-                                color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary,
-                              ),
+                              style: AppText.xxs.copyWith(color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary),
                             ),
                           ),
                           if (conversationInfo.isSilent)

@@ -7,6 +7,7 @@ import 'package:chat/backup/backup_and_restore_screen.dart'; // For local backup
 import 'package:chat/backup/backup_manager.dart';
 
 import 'backup_models.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class BackupDestinationScreen extends StatefulWidget {
   final List<ConversationInfo> conversations;
@@ -145,7 +146,7 @@ class _BackupOptionCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text(title, style: AppText.lg.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
                     Text(subtitle, style: const TextStyle(color: Colors.grey)),
                   ],

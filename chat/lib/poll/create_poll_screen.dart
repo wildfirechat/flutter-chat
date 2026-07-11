@@ -6,6 +6,7 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import '../config.dart';
 import 'poll_service.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class CreatePollScreen extends StatefulWidget {
   final Conversation conversation;
@@ -248,10 +249,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                     )
                   : Text(
                       l10n.publish,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppText.lg.copyWith(fontWeight: FontWeight.w600),
                     ),
             ),
           ),
@@ -270,7 +268,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                   hintText: l10n.pollTitleHint,
                   border: InputBorder.none,
                 ),
-                style: const TextStyle(fontSize: 16),
+                style: AppText.lg,
                 onChanged: (_) => setState(() {}),
               ),
             ),
@@ -285,7 +283,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                   hintText: l10n.pollDescHint,
                   border: InputBorder.none,
                 ),
-                style: const TextStyle(fontSize: 16),
+                style: AppText.lg,
                 maxLines: 3,
               ),
             ),
@@ -411,7 +409,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
               hintText: '${_l10n.pollOption} ${index + 1}',
               border: InputBorder.none,
             ),
-            style: const TextStyle(fontSize: 16),
+            style: AppText.lg,
             onChanged: (_) => setState(() {}),
           ),
         ),
@@ -437,16 +435,13 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 16),
+            style: AppText.lg,
           ),
           Row(
             children: [
               Text(
                 value,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: AppText.base.copyWith(color: Colors.grey[600]),
               ),
               const SizedBox(width: 4),
               Icon(
@@ -477,7 +472,7 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 16),
+            style: AppText.lg,
           ),
           Transform.scale(
             scale: 0.6,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 通用弹出菜单覆盖层
 /// 支持自动定位（避免超出屏幕）、小三角指示器
@@ -211,7 +212,7 @@ class _PopupMenuItemState extends State<_PopupMenuItem> {
             const SizedBox(height: 5),
             Text(
               widget.item['label'],
-              style: const TextStyle(color: Colors.white, fontSize: 12),
+              style: AppText.xs.copyWith(color: Colors.white),
             ),
           ],
         ),

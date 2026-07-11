@@ -12,6 +12,7 @@ import 'package:chat/conversation/forward/widgets/conversation_display.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class ForwardConfirmationSheet extends StatefulWidget {
   final List<Conversation> targets;
@@ -87,7 +88,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
                           AppLocalizations.of(context)!.sendTo,
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+                          style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
                         ),
                       ),
                       _buildTargetsList(),
@@ -96,10 +97,10 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: TextField(
                           controller: _commentController,
-                          style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
+                          style: AppText.base.copyWith(color: context.colors.textPrimary),
                           decoration: InputDecoration(
                             hintText: AppLocalizations.of(context)!.leaveMessage,
-                            hintStyle: TextStyle(color: context.colors.textSecondary, fontSize: 14),
+                            hintStyle: AppText.base.copyWith(color: context.colors.textSecondary),
                             filled: true,
                             fillColor: context.colors.inputBg,
                             border: OutlineInputBorder(
@@ -118,14 +119,14 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                         children: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: context.colors.textSecondary, fontSize: 16)),
+                            child: Text(AppLocalizations.of(context)!.cancel, style: AppText.lg.copyWith(color: context.colors.textSecondary)),
                           ),
                           TextButton(
                             onPressed: () {
                               Navigator.pop(context);
                               widget.onConfirm(_commentController.text.isEmpty ? null : _commentController.text);
                             },
-                            child: Text(AppLocalizations.of(context)!.send, style: TextStyle(color: context.colors.accent, fontSize: 16, fontWeight: FontWeight.bold)),
+                            child: Text(AppLocalizations.of(context)!.send, style: AppText.lg.copyWith(color: context.colors.accent, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
@@ -173,7 +174,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
             Expanded(
               child: Text(
                 info.title,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+                style: AppText.lg.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -210,7 +211,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                     preview.text,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: context.colors.textSecondary, fontSize: 14),
+                    style: AppText.base.copyWith(color: context.colors.textSecondary),
                   ),
                 ),
               ],

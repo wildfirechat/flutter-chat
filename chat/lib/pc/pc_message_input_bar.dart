@@ -25,6 +25,7 @@ import 'package:chat/utils/screenshot_service.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 桌面形态输入栏:顶部拖拽条 + 工具条(表情/图片/文件/通话)+ 多行输入区 + 发送按钮。
 /// Enter 发送、Shift+Enter 换行;中文输入法组合期间的 Enter 交给输入法。
@@ -196,13 +197,13 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
           children: [
             Text(
               l10n.sendFile,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: ctx.colors.textPrimary),
+              style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: ctx.colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               l10n.confirmSendFile(fileName),
-              style: TextStyle(fontSize: 13, color: ctx.colors.textSecondary, height: 1.4),
+              style: AppText.sm.copyWith(color: ctx.colors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 20),
             Row(
@@ -391,7 +392,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
                   keyboardType: TextInputType.multiline,
-                  style: TextStyle(fontSize: 14, height: 1.5, color: context.colors.textPrimary),
+                  style: AppText.base.copyWith(height: 1.5, color: context.colors.textPrimary),
                   decoration: const InputDecoration(
                     isCollapsed: true,
                     border: InputBorder.none,
@@ -423,7 +424,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                         minimumSize: const Size(88, 30),
                         padding: const EdgeInsets.symmetric(horizontal: 24),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                        textStyle: AppText.sm.copyWith(fontWeight: FontWeight.w500),
                       ),
                       child: Text(l10n.send),
                     ),
@@ -534,14 +535,14 @@ class _QuoteChip extends StatelessWidget {
                         snapshot.data ?? '',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12, color: colors.textSecondary),
+                        style: AppText.xs.copyWith(color: colors.textSecondary),
                       ),
                     )
                   : Text(
                       digest,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: colors.textSecondary),
+                      style: AppText.xs.copyWith(color: colors.textSecondary),
                     ),
             ),
             const SizedBox(width: 6),

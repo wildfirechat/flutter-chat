@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chat/theme/app_colors.dart';
 import '../utils/layout_scale.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class OptionSwitchItem extends StatelessWidget {
   final String title;
@@ -36,7 +37,7 @@ class OptionSwitchItem extends StatelessWidget {
                   Expanded(
                     child: Text(
                       title,
-                      style: const TextStyle(fontSize: 16),
+                      style: AppText.lg,
                     ),
                   ),
                   Transform.scale(

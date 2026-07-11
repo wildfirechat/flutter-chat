@@ -42,6 +42,7 @@ import 'package:chat/workspace/work_space.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/call/voip_call_screen.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 桌面端三栏 Shell:侧栏(tab 切换)+ 中栏(搜索 + 各 tab 列表)+ 右栏(嵌套 Navigator 的详情区)。
 /// 会话/联系人/搜索结果点击通过回调注入,在右栏内打开;二级页面(群信息等)在右栏内部导航。
@@ -340,17 +341,13 @@ class _PCHomeState extends State<PCHome> {
           children: [
             Text(
               l10n.tips,
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: dialogContext.colors.textPrimary),
+              style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: dialogContext.colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               l10n.addFriendSearchHint,
-              style: TextStyle(
-                  fontSize: 13, color: dialogContext.colors.textSecondary, height: 1.4),
+              style: AppText.sm.copyWith(color: dialogContext.colors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 20),
             Row(
@@ -360,7 +357,7 @@ class _PCHomeState extends State<PCHome> {
                   onPressed: () => Navigator.pop(dialogContext),
                   style: TextButton.styleFrom(
                     foregroundColor: dialogContext.colors.textSecondary,
-                    textStyle: const TextStyle(fontSize: 13),
+                    textStyle: AppText.sm,
                   ),
                   child: Text(l10n.close),
                 ),
@@ -376,7 +373,7 @@ class _PCHomeState extends State<PCHome> {
                     foregroundColor: dialogContext.colors.onAccent,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(4)),
-                    textStyle: const TextStyle(fontSize: 13),
+                    textStyle: AppText.sm,
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
@@ -454,10 +451,7 @@ class _PCHomeState extends State<PCHome> {
               const SizedBox(height: 20),
               Text(
                 title,
-                style: TextStyle(
-                    fontSize: 13,
-                    color: context.colors.textPrimary,
-                    decoration: TextDecoration.none),
+                style: AppText.sm.copyWith(color: context.colors.textPrimary, decoration: TextDecoration.none),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -690,12 +684,7 @@ class _PCHomeState extends State<PCHome> {
                             children: [
                               Text(
                                 AppLocalizations.of(context)!.audioVideoCall,
-                                style: const TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  decoration: TextDecoration.none,
-                                ),
+                                style: AppText.xs.copyWith(color: Colors.white70, fontWeight: FontWeight.w500, decoration: TextDecoration.none),
                               ),
                               _buildMinimizeButton(model),
                             ],
@@ -774,11 +763,7 @@ class _PCHomeState extends State<PCHome> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     "设置",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: context.colors.textPrimary,
-                    ),
+                    style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                   ),
                 );
               }
@@ -904,8 +889,7 @@ class _MiddleColumnHeader extends StatelessWidget {
                           size: 15, color: colors.textSecondary),
                       const SizedBox(width: 4),
                       Text(l10n.search,
-                          style: TextStyle(
-                              fontSize: 12, color: colors.textSecondary)),
+                          style: AppText.xs.copyWith(color: colors.textSecondary)),
                     ],
                   ),
                 ),
@@ -1279,7 +1263,7 @@ class _WorkTabPlaceholder extends StatelessWidget {
     return Center(
       child: Text(
         AppLocalizations.of(context)!.tabWork,
-        style: TextStyle(fontSize: 13, color: context.colors.textTertiary),
+        style: AppText.sm.copyWith(color: context.colors.textTertiary),
       ),
     );
   }

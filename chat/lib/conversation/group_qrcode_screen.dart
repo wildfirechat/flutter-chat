@@ -7,6 +7,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class GroupQrCodeScreen extends StatefulWidget {
   final GroupInfo groupInfo;
@@ -70,10 +71,7 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
                     const SizedBox(width: 16),
                     Text(
                       groupInfo?.name ?? '',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppText.xl.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -89,12 +87,9 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   "扫一扫上面的二维码，加入群聊",
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 14,
-                  ),
+                  style: AppText.base.copyWith(color: Colors.grey),
                 ),
               ],
             ),

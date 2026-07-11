@@ -17,6 +17,7 @@ import 'package:chat/mesh/mesh_cache.dart';
 import '../contact/pick_user_screen.dart';
 import '../pc/pc_platform.dart';
 import '../pc/widgets/pc_page_header.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class GroupMuteScreen extends StatefulWidget {
   final GroupInfo groupInfo;
@@ -126,7 +127,7 @@ class _GroupMuteScreenState extends State<GroupMuteScreen> {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: const TextStyle(color: Colors.grey, fontSize: 13),
+        style: AppText.sm.copyWith(color: Colors.grey),
       ),
     );
   }

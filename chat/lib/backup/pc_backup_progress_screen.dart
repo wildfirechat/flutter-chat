@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation_info.dart';
 import 'package:chat/backup/backup_manager.dart';
 import 'package:chat/backup/backup_models.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class PCBackupProgressScreen extends StatefulWidget {
   final List<ConversationInfo> conversations;
@@ -139,7 +140,7 @@ class _PCBackupProgressScreenState extends State<PCBackupProgressScreen> {
             Text(
               _status,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: AppText.xl.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Text(

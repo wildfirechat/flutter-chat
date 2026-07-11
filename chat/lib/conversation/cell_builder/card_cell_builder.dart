@@ -6,6 +6,7 @@ import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
 
 import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class CardCellBuilder extends PortraitCellBuilder {
   late CardMessageContent cardMessageContent;
@@ -34,7 +35,7 @@ class CardCellBuilder extends PortraitCellBuilder {
       cardMessageContent.displayName!,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
-      style: const TextStyle(fontSize: 16),
+      style: AppText.lg,
     );
     SizedBox padding = const SizedBox(
       width: 3,
@@ -72,7 +73,7 @@ class CardCellBuilder extends PortraitCellBuilder {
             padding: const EdgeInsets.fromLTRB(4, 5, 0, 0),
             child: Text(
               hint,
-              style: const TextStyle(fontSize: 11, color: Colors.black26),
+              style: AppText.xs.copyWith(color: Colors.black26),
             ),
           ),
           padding,

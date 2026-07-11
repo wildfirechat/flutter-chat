@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../config.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 全局安全水印。
 ///
@@ -75,11 +76,7 @@ class _WatermarkPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final textStyle = TextStyle(
-      fontSize: 13,
-      color: color,
-      fontWeight: FontWeight.w400,
-    );
+    final textStyle = AppText.sm.copyWith(color: color, fontWeight: FontWeight.w400);
     final textPainter = TextPainter(
       text: TextSpan(text: text, style: textStyle),
       textDirection: ui.TextDirection.ltr,

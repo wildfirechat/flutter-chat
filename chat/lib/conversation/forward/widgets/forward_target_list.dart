@@ -15,6 +15,7 @@ import 'package:chat/viewmodel/search_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 转发目标列表:搜索为空时显示“创建群聊”入口 + 最近聊天,否则显示搜索结果。
 /// 移动端整页、桌面端左栏共用这一份。
@@ -175,10 +176,7 @@ class _ConversationTile extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: context.colors.textPrimary,
-                    fontSize: 15.0,
-                  ),
+                  style: AppText.lg.copyWith(color: context.colors.textPrimary),
                 ),
               ),
               if (showCheckbox) ...[
@@ -214,7 +212,7 @@ class _SectionHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: context.colors.sectionGap,
-      child: Text(title, style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
+      child: Text(title, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
     );
   }
 }
@@ -250,7 +248,7 @@ class _CreateGroupEntry extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 AppLocalizations.of(context)!.createGroupChat,
-                style: TextStyle(fontSize: 15, color: context.colors.textPrimary, decoration: TextDecoration.none),
+                style: AppText.lg.copyWith(color: context.colors.textPrimary, decoration: TextDecoration.none),
               ),
             ],
           ),

@@ -32,6 +32,7 @@ import '../utils/mesh_user_name.dart';
 import '../utils/online_state_builder.dart';
 import '../utils/online_state_formatter.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 // 行度量。itemExtentBuilder 与侧栏索引的跳转偏移必须共用下面两个函数,
 // 任何一边单独改写都会让 A-Z 跳转逐行累积偏差。
@@ -232,7 +233,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                         ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
                         : Text(
                             _currentLetter,
-                            style: const TextStyle(color: Colors.white, fontSize: 40),
+                            style: AppText.xxxl.copyWith(color: Colors.white),
                           ),
                   ),
                 ),
@@ -323,7 +324,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                   Expanded(
                       child: Text(
                     title,
-                    style: const TextStyle(fontSize: 15.0),
+                    style: AppText.lg,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   )),
@@ -379,7 +380,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                   Expanded(
                       child: Text(
                     org.name ?? '',
-                    style: const TextStyle(fontSize: 15.0),
+                    style: AppText.lg,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   )),
@@ -480,7 +481,7 @@ class _ContactListItemState extends State<ContactListItem> {
                     : (widget.contactInfo.category == '☆'
                         ? AppLocalizations.of(context)!.favFriend
                         : (widget.contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : widget.contactInfo.category)),
-                style: TextStyle(fontSize: 12.0, color: context.colors.textSecondary),
+                style: AppText.xs.copyWith(color: context.colors.textSecondary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -520,7 +521,7 @@ class _ContactListItemState extends State<ContactListItem> {
     if (ExternalTargetUtils.isExternalTarget(userInfo.userId)) {
       return MeshUserName(
         userInfo,
-        style: const TextStyle(fontSize: 15.0),
+        style: AppText.lg,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       );
@@ -532,12 +533,12 @@ class _ContactListItemState extends State<ContactListItem> {
         final showIndicator = OnlineStateFormatter.showIndicator(state);
         final statusText = OnlineStateFormatter.contactStatusText(state, l10n);
 
-        final nameSpan = MeshUserDisplay.getReadableNameSpan(userInfo);
+        final nameSpan = MeshUserDisplay.getReadableNameSpan(userInfo, style: AppText.lg);
         final spans = List<InlineSpan>.from(nameSpan.children ?? [nameSpan]);
         if (statusText != null && statusText.isNotEmpty) {
           spans.add(TextSpan(
             text: '($statusText)',
-            style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.secondary),
+            style: AppText.sm.copyWith(color: Theme.of(context).colorScheme.secondary),
           ));
         }
 

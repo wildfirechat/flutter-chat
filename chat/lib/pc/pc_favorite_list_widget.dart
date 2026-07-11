@@ -29,6 +29,7 @@ import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 收藏分类。
 ///
@@ -533,7 +534,7 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
                 children: [
                   Text(
                     item.title.isNotEmpty ? item.title : _getDefaultTitle(item),
-                    style: TextStyle(fontSize: 16, color: context.colors.textPrimary),
+                    style: AppText.lg.copyWith(color: context.colors.textPrimary),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -542,12 +543,12 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
                     children: [
                       Text(
                         item.origin,
-                        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+                        style: AppText.xs.copyWith(color: context.colors.textSecondary),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         Utilities.formatTime(context, item.timestamp),
-                        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+                        style: AppText.xs.copyWith(color: context.colors.textSecondary),
                       ),
                     ],
                   ),

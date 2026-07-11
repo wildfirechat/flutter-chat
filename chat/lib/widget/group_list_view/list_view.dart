@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'index_path.dart';
 import 'list_item.dart';
 import 'list_item_type.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// Signature for a function that creates a widget for a given [IndexPath], in a
 /// list.
@@ -368,7 +369,7 @@ class _GroupListViewState extends State<GroupListView> {
             ? widget.groupExpandBuilder!(context, indexPath.section)
             : ListTile(
                 dense: true,
-                title: const Text('全部展开', style: TextStyle(fontSize: 13)),
+                title: const Text('全部展开', style: AppText.sm),
                 visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
                 onTap: () {
                   setState(() {

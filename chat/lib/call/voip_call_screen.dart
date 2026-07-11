@@ -17,6 +17,7 @@ import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class VoipCallScreen extends StatefulWidget {
   final CallSession session;
@@ -431,12 +432,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                       _session.status == CallState.STATUS_CONNECTED
                           ? _formatDuration(_duration)
                           : _statusLabel(AppLocalizations.of(context)!),
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.5,
-                      ),
+                      style: AppText.lg.copyWith(color: Colors.white70, fontWeight: FontWeight.w400, letterSpacing: 0.5),
                     ),
                 ] else ...[
                     // Connected video call: show duration in top left
@@ -453,12 +449,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                                 color: Colors.black.withValues(alpha: 0.38),
                                 child: Text(
                                   _formatDuration(_duration),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    fontFeatures: [FontFeature.tabularFigures()],
-                                  ),
+                                  style: AppText.base.copyWith(color: Colors.white, fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()]),
                                 ),
                               ),
                             ),
@@ -484,12 +475,11 @@ class _VoipCallScreenState extends State<VoipCallScreen>
 
   Widget _buildUserInfo() {
     final bool isPulsing = _session.status == CallState.STATUS_OUTGOING || _session.status == CallState.STATUS_CONNECTING;
-    const nameStyle = TextStyle(
+    final nameStyle = AppText.xxl.copyWith(
       color: Colors.white,
-      fontSize: 26,
       fontWeight: FontWeight.w600,
       letterSpacing: 0.5,
-      shadows: [
+      shadows: const [
         Shadow(
           color: Colors.black45,
           offset: Offset(0, 2),
@@ -509,7 +499,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                 _targetUserInfo!,
                 style: nameStyle,
               )
-            : const Text(
+            : Text(
                 '',
                 style: nameStyle,
               ),
@@ -613,7 +603,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                 ),
                 child: Text(
                   _isCameraOff ? AppLocalizations.of(context)!.callCameraOn : AppLocalizations.of(context)!.callCameraOff,
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  style: AppText.sm.copyWith(color: Colors.white70),
                 ),
               ),
             ),
@@ -730,11 +720,7 @@ class _CallActionButtonState extends State<_CallActionButton> {
         const SizedBox(height: 8),
         Text(
           widget.label,
-          style: TextStyle(
-            color: widget.isActive ? Colors.white70 : Colors.white38,
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-          ),
+          style: AppText.xs.copyWith(color: widget.isActive ? Colors.white70 : Colors.white38, fontWeight: FontWeight.w400),
         ),
       ],
     );

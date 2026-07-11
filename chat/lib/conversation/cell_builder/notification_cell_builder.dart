@@ -14,6 +14,7 @@ import '../message_cell.dart';
 import 'message_cell_builder.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class NotificationCellBuilder extends MessageCellBuilder {
   String notificaitonMsgDigest = '';
@@ -57,7 +58,7 @@ class NotificationCellBuilder extends MessageCellBuilder {
       child: Text(
         AppLocalizations.of(context)?.reedit ?? '重新编辑',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 12, color: context.colors.link),
+        style: AppText.xs.copyWith(color: context.colors.link),
       ),
     )
         : null;
@@ -83,8 +84,8 @@ class NotificationCellBuilder extends MessageCellBuilder {
               notificaitonMsgDigest,
               textAlign: TextAlign.center,
               style: isDesktopShell
-                  ? const TextStyle(fontSize: 13, color: Color(0xFFA0A0A4))
-                  : const TextStyle(fontSize: 12),
+                  ? AppText.sm.copyWith(color: Color(0xFFA0A0A4))
+                  : AppText.xs,
             ),
             if (reeditWidget != null) ...[
               const SizedBox(width: 6),

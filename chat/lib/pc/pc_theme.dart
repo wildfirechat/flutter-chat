@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:chat/app_theme.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 桌面端设计令牌,布局骨架参照微信 PC:
 /// 三段纵深(侧栏 → 列表栏 → 聊天区)建立空间层次,
@@ -53,15 +54,18 @@ class PcTheme {
   /// 分隔条命中区厚度。视觉仍是贴边的 0.5 发丝线,加厚只为好抓。
   static const double resizeHandleThickness = 6;
 
-  // ---- 字号(桌面密度,比移动端小一号) ----
-  static TextStyle cellTitle(BuildContext context) => TextStyle(fontSize: 14, color: context.colors.textPrimary);
+  // ---- 角色化文字样式(桌面) ----
+  // 字号阶梯本身按大小命名(AppText.xs/base/lg…),刻意不带用途语义 ——「角色」这一层
+  // 就落在这里:桌面 cell/栏标题该用哪一档,由下面这几个方法钉死,调用点不要再自己挑档。
+  // 桌面比移动端密一号:cell 标题用 base(14),移动端同位置是 lg(16)。
+  static TextStyle cellTitle(BuildContext context) => AppText.base.copyWith(color: context.colors.textPrimary);
 
-  static TextStyle cellSubtitle(BuildContext context) => TextStyle(fontSize: 12, color: context.colors.textSecondary);
+  static TextStyle cellSubtitle(BuildContext context) => AppText.xs.copyWith(color: context.colors.textSecondary);
 
-  static TextStyle cellTime(BuildContext context) => TextStyle(fontSize: 11, color: context.colors.textTertiary);
+  static TextStyle cellTime(BuildContext context) => AppText.xs.copyWith(color: context.colors.textTertiary);
 
   static TextStyle paneTitle(BuildContext context) =>
-      TextStyle(fontSize: 17, fontWeight: FontWeight.w500, color: context.colors.textPrimary);
+      AppText.lg.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary);
 
   /// 桌面子树的 Theme 覆盖:去水波纹、桌面化的菜单/滚动条,
   /// 让复用的移动端二级页在右栏内也保持一致观感。
@@ -103,11 +107,11 @@ class PcTheme {
         elevation: 6,
         shadowColor: colors.shadow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        textStyle: TextStyle(fontSize: 13, color: colors.textPrimary),
+        textStyle: AppText.sm.copyWith(color: colors.textPrimary),
       ),
       tooltipTheme: TooltipThemeData(
         waitDuration: const Duration(milliseconds: 500),
-        textStyle: TextStyle(fontSize: 12, color: isDark ? colors.textPrimary : Colors.white),
+        textStyle: AppText.xs.copyWith(color: isDark ? colors.textPrimary : Colors.white),
         decoration: BoxDecoration(
           color: isDark ? colors.popupBg : const Color(0xCC000000),
           borderRadius: BorderRadius.circular(4),

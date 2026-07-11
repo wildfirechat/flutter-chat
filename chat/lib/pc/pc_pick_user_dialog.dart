@@ -20,6 +20,7 @@ import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 桌面端多选联系人的分栏形态(参照微信 PC):
 /// 左栏为可搜索的联系人列表(勾选框 + 分类字母段),右栏为「已选择」清单(可逐个移除),
@@ -247,14 +248,14 @@ class _PcPickUserViewState extends State<PcPickUserView> {
             Expanded(
               child: TextField(
                 controller: controller,
-                style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
+                style: AppText.sm.copyWith(color: context.colors.textPrimary),
                 cursorColor: context.colors.accent,
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                   hintText: hint,
-                  hintStyle: TextStyle(fontSize: 13, color: context.colors.textTertiary),
+                  hintStyle: AppText.sm.copyWith(color: context.colors.textTertiary),
                 ),
                 onChanged: onChanged,
               ),
@@ -281,7 +282,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               Expanded(
                 child: Text(
                   AppLocalizations.of(context)!.selectFromOrganization,
-                  style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
+                  style: AppText.sm.copyWith(color: context.colors.textPrimary),
                 ),
               ),
               Icon(Icons.chevron_right, size: LayoutScale.watchScale(context, 18.0, cap: LayoutScale.iconCap), color: context.colors.textTertiary),
@@ -369,14 +370,14 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                     children: [
                       Text(
                         title,
-                        style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
+                        style: AppText.sm.copyWith(color: context.colors.textPrimary),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (subtitle != null && subtitle.isNotEmpty)
                         Text(
                           subtitle,
-                          style: TextStyle(fontSize: 11, color: context.colors.textTertiary),
+                          style: AppText.xs.copyWith(color: context.colors.textTertiary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -398,7 +399,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       padding: const EdgeInsets.only(left: 16),
       child: Text(
         text,
-        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+        style: AppText.xs.copyWith(color: context.colors.textSecondary),
       ),
     );
   }
@@ -460,11 +461,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
               child: Text(
                 org.name,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: isLast ? context.colors.textPrimary : context.colors.accent,
-                  fontWeight: isLast ? FontWeight.w500 : FontWeight.normal,
-                ),
+                style: AppText.sm.copyWith(color: isLast ? context.colors.textPrimary : context.colors.accent, fontWeight: isLast ? FontWeight.w500 : FontWeight.normal),
               ),
             ),
           ),
@@ -542,7 +539,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
+              style: AppText.sm.copyWith(color: context.colors.textSecondary),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 12),
@@ -552,7 +549,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                   foregroundColor: context.colors.accent,
                   side: BorderSide(color: context.colors.hairline),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  textStyle: const TextStyle(fontSize: 13),
+                  textStyle: AppText.sm,
                 ),
                 child: const Text('重新加载'),
               ),
@@ -579,7 +576,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               Expanded(
                 child: Text(
                   '${org.name}(${org.memberCount ?? 0})',
-                  style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
+                  style: AppText.sm.copyWith(color: context.colors.textPrimary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -620,7 +617,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             l10n.pickedCount(picked.length.toString()),
-            style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
+            style: AppText.sm.copyWith(color: context.colors.textSecondary),
           ),
         ),
         Divider(height: 0.5, thickness: 0.5, color: context.colors.hairline),
@@ -632,7 +629,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                     child: Text(
                       l10n.pickContactHint,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 13, color: context.colors.textTertiary),
+                      style: AppText.sm.copyWith(color: context.colors.textTertiary),
                     ),
                   ),
                 )
@@ -668,13 +665,13 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                   child: userInfo.userId == '@all'
                       ? Text(
                           l10n.allMembers,
-                          style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
+                          style: AppText.sm.copyWith(color: context.colors.textPrimary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         )
                       : MeshUserName(
                           userInfo,
-                          style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
+                          style: AppText.sm.copyWith(color: context.colors.textPrimary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -710,7 +707,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               side: BorderSide(color: context.colors.hairline),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              textStyle: const TextStyle(fontSize: 13),
+              textStyle: AppText.sm,
             ),
             child: Text(l10n.cancel),
           ),
@@ -722,7 +719,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               disabledBackgroundColor: context.colors.accent.withValues(alpha: 0.4),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
               padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-              textStyle: const TextStyle(fontSize: 13),
+              textStyle: AppText.sm,
             ),
             child: Text(count > 0 ? l10n.doneWithCount(count.toString()) : l10n.done),
           ),

@@ -18,6 +18,7 @@ import 'package:chat/utils/non_cached_image.dart';
 import 'package:chat/widget/drag_to_dismiss.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_typography.dart';
 
 typedef PageToEnd = void Function(int messageId, bool tail);
 
@@ -546,7 +547,7 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
                 const SizedBox(height: 12),
                 Text(
                   '点击用系统播放器打开',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14),
+                  style: AppText.base.copyWith(color: Colors.white.withValues(alpha: 0.8)),
                 ),
               ],
             ),

@@ -6,6 +6,7 @@ import 'config.dart';
 import 'login/login_form_controller.dart';
 import 'utilities.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 移动端登录页(手机壳)。表单状态与登录流程在共享的 [LoginFormController],
 /// 桌面端 PCQRLoginScreen 的表单视图复用同一控制器。
@@ -49,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen> {
               padding: const EdgeInsets.fromLTRB(8, 40, 8, 10),
               child: Text(
                 _form.isPasswordLogin ? l10n.loginWithPassword : l10n.loginWithPhone,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: AppText.xl.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
             Padding(

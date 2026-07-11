@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 全局 NavigatorKey，桌面端自绘 Toast 需要依附其 Overlay。
 /// 请在 [MaterialApp] 创建后通过 [setToastNavigatorKey] 注入。
@@ -117,7 +118,7 @@ class _DesktopToastWidgetState extends State<_DesktopToastWidget>
                 child: Text(
                   widget.message,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: AppText.sm.copyWith(color: Colors.white),
                 ),
               ),
             ),

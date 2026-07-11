@@ -8,6 +8,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class ChannelInfoWidget extends StatefulWidget {
   final ChannelInfo? channelInfo;
@@ -111,12 +112,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
                       children: [
                         Text(
                           info.name ?? '',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: context.colors.textPrimary,
-                            decoration: TextDecoration.none,
-                          ),
+                          style: AppText.xl.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary, decoration: TextDecoration.none),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -170,21 +166,13 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
           width: 80,
           child: Text(
             label,
-            style: TextStyle(
-              fontSize: 14,
-              color: context.colors.textSecondary,
-              decoration: TextDecoration.none,
-            ),
+            style: AppText.base.copyWith(color: context.colors.textSecondary, decoration: TextDecoration.none),
           ),
         ),
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
-              fontSize: 14,
-              color: context.colors.textPrimary,
-              decoration: TextDecoration.none,
-            ),
+            style: AppText.base.copyWith(color: context.colors.textPrimary, decoration: TextDecoration.none),
           ),
         ),
       ],
@@ -205,7 +193,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
         ),
         child: Text(
           text,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+          style: AppText.base.copyWith(fontWeight: FontWeight.normal),
         ),
       ),
     );
@@ -237,8 +225,8 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     } else if(index == 1) {
       return Column(children: [
         Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-          const Text("名称:  ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-          Text(info.name ?? '', style: const TextStyle(fontSize: 16),),
+          Text("名称:  ", style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
+          Text(info.name ?? '', style: AppText.lg,),
         ],),),
         Container(
           margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
@@ -249,8 +237,8 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     } else if(index == 2) {
       return Column(children: [
         Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-          const Text("拥有者:  ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-          Text(info.owner ?? '', style: const TextStyle(fontSize: 16),),
+          Text("拥有者:  ", style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
+          Text(info.owner ?? '', style: AppText.lg,),
         ],),),
         Container(
           margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
@@ -261,8 +249,8 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     } else if(index == 3) {
       return Column(children: [
         Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-          const Text("描述:  ", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-          Expanded(child: Text(info.desc ?? '', style: const TextStyle(fontSize: 16),)),
+          Text("描述:  ", style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
+          Expanded(child: Text(info.desc ?? '', style: AppText.lg,)),
         ],),),
         Container(
           margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
@@ -273,9 +261,9 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     } else if(index == 4) {
       return GestureDetector(
         child: Column(children: [
-          const SizedBox(
+          SizedBox(
             height: 48,
-            child: Center(child: Text("清空历史消息", style: TextStyle(color: Colors.red, fontSize: 16),)),
+            child: Center(child: Text("清空历史消息", style: AppText.lg.copyWith(color: Colors.red),)),
           ),
           Container(
             margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
@@ -290,7 +278,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
         child: Column(children: [
           SizedBox(
             height: 48,
-            child: Center(child: Text(isListened?"取消订阅":"订阅频道", style: const TextStyle(color: Colors.red, fontSize: 16),)),
+            child: Center(child: Text(isListened?"取消订阅":"订阅频道", style: AppText.lg.copyWith(color: Colors.red),)),
           ),
           Container(
             margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
@@ -312,9 +300,9 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
       if (!isListened) return Container();
       return GestureDetector(
         child: Column(children: [
-          const SizedBox(
+          SizedBox(
             height: 48,
-            child: Center(child: Text("进入会话", style: TextStyle(color: Colors.blue, fontSize: 16),)),
+            child: Center(child: Text("进入会话", style: AppText.lg.copyWith(color: Colors.blue),)),
           ),
           Container(
             margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),

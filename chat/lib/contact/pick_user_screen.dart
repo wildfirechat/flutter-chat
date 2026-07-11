@@ -19,6 +19,7 @@ import 'package:chat/organization/organization_screen.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/utils/mesh_user_name.dart';
+import 'package:chat/theme/app_typography.dart';
 
 typedef OnPickUserCallback = void Function(BuildContext context, List<String> pickedUsers);
 
@@ -249,7 +250,7 @@ class _PickUserScreenState extends State<PickUserScreen> {
                   padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
                   child: Text(
                     viewModel.pickedUsers.isNotEmpty ? AppLocalizations.of(context)!.doneWithCount(viewModel.pickedUsers.length.toString()) : AppLocalizations.of(context)!.cancel,
-                    style: const TextStyle(fontSize: 18),
+                    style: AppText.lg,
                   ),
                 ),
               )
@@ -408,7 +409,7 @@ class _PickUserScreenState extends State<PickUserScreen> {
                                   ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
                                   : Text(
                                       _currentLetter,
-                                      style: const TextStyle(color: Colors.white, fontSize: 40),
+                                      style: AppText.xxxl.copyWith(color: Colors.white),
                                     ),
                             ),
                           ),
@@ -512,13 +513,13 @@ class SelectableUserItem extends StatelessWidget {
                           child: userInfo.userId == '@all'
                               ? Text(
                                   AppLocalizations.of(context)!.allMembers,
-                                  style: TextStyle(fontSize: 15.0, color: context.colors.textPrimary),
+                                  style: AppText.lg.copyWith(color: context.colors.textPrimary),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 )
                               : MeshUserName(
                                   userInfo,
-                                  style: TextStyle(fontSize: 15.0, color: context.colors.textPrimary),
+                                  style: AppText.lg.copyWith(color: context.colors.textPrimary),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -545,7 +546,7 @@ class SelectableUserItem extends StatelessWidget {
             alignment: Alignment.centerLeft,
             child: Text(
               contactInfo.category == '{' ? '#' : (contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : contactInfo.category),
-              style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+              style: AppText.xs.copyWith(color: context.colors.textSecondary),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

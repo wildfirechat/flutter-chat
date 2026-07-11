@@ -17,6 +17,7 @@ import 'package:chat/viewmodel/conversation_view_model.dart';
 import '../../ui_model/ui_message.dart';
 import '../mm_preview_view.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class TextCellBuilder extends PortraitCellBuilder {
   late TextMessageContent textMessageContent;
@@ -84,7 +85,7 @@ class TextCellBuilder extends PortraitCellBuilder {
               ),
               child: Text(
                 "${textMessageContent.quoteInfo!.userDisplayName ?? ''}: ${textMessageContent.quoteInfo!.messageDigest ?? ''}",
-                style: TextStyle(fontSize: 12, color: context.colors.bubbleQuotedText),
+                style: AppText.xs.copyWith(color: context.colors.bubbleQuotedText),
               ),
             ),
           )
@@ -102,12 +103,8 @@ class TextCellBuilder extends PortraitCellBuilder {
       final onSolidAccent = isSendMessage && Theme.of(context).brightness == Brightness.dark;
       child = RichTextMessageWidget(
         text: textMessageContent.text,
-        style: const TextStyle(fontSize: 16),
-        linkStyle: TextStyle(
-          fontSize: 16,
-          color: onSolidAccent ? context.colors.bubbleSentText : context.colors.link,
-          decoration: TextDecoration.underline,
-        ),
+        style: AppText.lg,
+        linkStyle: AppText.lg.copyWith(color: onSolidAccent ? context.colors.bubbleSentText : context.colors.link, decoration: TextDecoration.underline),
         onLinkTap: (url) => Utilities.openLink(context, url),
         isSingleEmoji: isSingleEmoji && !isDesktopShell,
         isLastMessage: isLastMessage,

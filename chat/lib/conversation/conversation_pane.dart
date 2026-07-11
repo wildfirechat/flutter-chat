@@ -31,6 +31,7 @@ import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 会话消息面板:消息列表 + 输入栏 + 多选工具栏,并承载进入/退出会话的完整生命周期
 /// (setConversation、清未读、聊天室加退、草稿保存)。
@@ -166,7 +167,7 @@ class _ConversationPaneState extends State<ConversationPane> {
         alignment: Alignment.center,
         child: Text(
           l10n.newJoinGroupRequestCount(_joinRequestCount),
-          style: const TextStyle(fontSize: 14, color: Colors.red),
+          style: AppText.base.copyWith(color: Colors.red),
         ),
       ),
     );
@@ -464,13 +465,13 @@ class _ConversationPaneState extends State<ConversationPane> {
           children: [
             Text(
               '发送文件',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+              style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               '确定要发送 $nameStr 吗？',
-              style: TextStyle(fontSize: 13, color: context.colors.textSecondary, height: 1.4),
+              style: AppText.sm.copyWith(color: context.colors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 20),
             Row(

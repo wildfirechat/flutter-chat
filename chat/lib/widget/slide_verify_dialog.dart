@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../app_server.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 滑动验证对话框回调
 abstract class SlideVerifyListener {
@@ -285,12 +286,9 @@ class _SlideVerifyDialogState extends State<SlideVerifyDialog>
           mainAxisSize: MainAxisSize.min,
           children: [
             // 标题
-            const Text(
+            Text(
               '安全验证',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppText.lg.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             // 验证图片区域
@@ -387,10 +385,7 @@ class _SlideVerifyDialogState extends State<SlideVerifyDialog>
               // 提示文字
               Text(
                 _hintText,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: _hintColor,
-                ),
+                style: AppText.base.copyWith(color: _hintColor),
               ),
               // 滑块按钮
               Positioned(

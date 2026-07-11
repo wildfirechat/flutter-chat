@@ -13,6 +13,7 @@ import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'message_input_bar_controller.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 持久化的键盘高度key
 const String _kKeyboardHeightKey = 'saved_keyboard_height';
@@ -242,7 +243,7 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
               digest,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: context.colors.bubbleQuotedText, fontSize: 13),
+              style: AppText.sm.copyWith(color: context.colors.bubbleQuotedText),
             ),
           ),
           const SizedBox(width: 8),

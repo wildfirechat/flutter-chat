@@ -5,6 +5,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import '../../ui_model/ui_message.dart';
 import '../../poll/poll_detail_screen.dart';
 import 'portrait_cell_builder.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 投票消息 Cell Builder
 ///
@@ -57,11 +58,7 @@ class PollCellBuilder extends PortraitCellBuilder {
                 Expanded(
                   child: Text(
                     content.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF333333),
-                    ),
+                    style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: Color(0xFF333333)),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -74,10 +71,7 @@ class PollCellBuilder extends PortraitCellBuilder {
               const SizedBox(height: 4),
               Text(
                 content.desc,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF666666),
-                ),
+                style: AppText.sm.copyWith(color: Color(0xFF666666)),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -103,10 +97,7 @@ class PollCellBuilder extends PortraitCellBuilder {
                 const SizedBox(width: 4),
                 Text(
                   '${content.totalVotes}${l10n.pollVotesCount}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                  style: AppText.xs.copyWith(color: Colors.grey[600]),
                 ),
                 const SizedBox(width: 12),
                 // 状态标签
@@ -122,12 +113,9 @@ class PollCellBuilder extends PortraitCellBuilder {
                     content.isEnded
                         ? l10n.pollStatusEnded
                         : l10n.pollStatusActive,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: content.isEnded
+                    style: AppText.xs.copyWith(color: content.isEnded
                           ? const Color(0xFF999999)
-                          : const Color(0xFF4CAF50),
-                    ),
+                          : const Color(0xFF4CAF50)),
                   ),
                 ),
               ],
@@ -138,10 +126,7 @@ class PollCellBuilder extends PortraitCellBuilder {
               const SizedBox(height: 4),
               Text(
                 content.getRemainingTimeText()!,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF999999),
-                ),
+                style: AppText.xs.copyWith(color: Color(0xFF999999)),
               ),
             ],
 
@@ -157,12 +142,9 @@ class PollCellBuilder extends PortraitCellBuilder {
             // 操作按钮
             Text(
               content.isEnded ? l10n.pollViewResult : l10n.pollJoinAction,
-              style: TextStyle(
-                fontSize: 14,
-                color: content.isEnded
+              style: AppText.base.copyWith(color: content.isEnded
                     ? const Color(0xFF999999)
-                    : const Color(0xFF576b95),
-              ),
+                    : const Color(0xFF576b95)),
             ),
           ],
         ),

@@ -6,6 +6,7 @@ import 'package:chat/utilities.dart';
 
 import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class CallStartCellBuilder extends PortraitCellBuilder {
   late CallStartMessageContent callStartMessageContent;
@@ -52,7 +53,7 @@ class CallStartCellBuilder extends PortraitCellBuilder {
       callStartMessageContent.audioOnly ? '[语音通话] $ext' : '[视频通话] $ext',
       overflow: TextOverflow.ellipsis,
       maxLines: 10,
-      style: const TextStyle(fontSize: 16),
+      style: AppText.lg,
     );
   }
 }

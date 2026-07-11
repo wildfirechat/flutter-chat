@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 桌面端定制上下文菜单项
 /// 支持悬停状态(hover)样式定制,以及危险操作(如删除)的高亮警示样式
@@ -57,11 +58,7 @@ class _DesktopPopupMenuItemState<T> extends State<DesktopPopupMenuItem<T>> {
               color: bgColor,
             ),
             child: DefaultTextStyle(
-              style: TextStyle(
-                fontSize: 13,
-                color: textColor,
-                fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily,
-              ),
+              style: AppText.sm.copyWith(color: textColor, fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily),
               child: IconTheme.merge(
                 data: IconThemeData(
                   color: iconColor,

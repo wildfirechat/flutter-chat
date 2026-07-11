@@ -5,6 +5,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'poll_model.dart';
 import 'poll_service.dart';
 import 'poll_detail_screen.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class PollListScreen extends StatefulWidget {
   final String? groupId;
@@ -145,10 +146,7 @@ class _PollListScreenState extends State<PollListScreen> {
             const SizedBox(height: 16),
             Text(
               l10n.pollEmptyList,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: AppText.lg.copyWith(color: Colors.grey[600]),
             ),
           ],
         ),
@@ -211,10 +209,7 @@ class _PollListScreenState extends State<PollListScreen> {
                   Expanded(
                     child: Text(
                       poll.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppText.lg.copyWith(fontWeight: FontWeight.w600),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -226,10 +221,7 @@ class _PollListScreenState extends State<PollListScreen> {
                 const SizedBox(height: 4),
                 Text(
                   poll.desc,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: AppText.base.copyWith(color: Colors.grey[600]),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -245,10 +237,7 @@ class _PollListScreenState extends State<PollListScreen> {
                   const SizedBox(width: 4),
                   Text(
                     '${poll.voterCount}${l10n.pollPeopleCount}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[500],
-                    ),
+                    style: AppText.sm.copyWith(color: Colors.grey[500]),
                   ),
                   const SizedBox(width: 16),
                   Icon(
@@ -259,19 +248,13 @@ class _PollListScreenState extends State<PollListScreen> {
                   const SizedBox(width: 4),
                   Text(
                     '${poll.totalVotes}${l10n.pollVotes}',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[500],
-                    ),
+                    style: AppText.sm.copyWith(color: Colors.grey[500]),
                   ),
                   const Spacer(),
                   if (poll.getRemainingTimeText() != null)
                     Text(
                       poll.getRemainingTimeText()!,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: poll.isEnded ? Colors.grey : Colors.green,
-                      ),
+                      style: AppText.xs.copyWith(color: poll.isEnded ? Colors.grey : Colors.green),
                     ),
                 ],
               ),
@@ -309,10 +292,7 @@ class _PollListScreenState extends State<PollListScreen> {
       ),
       child: Text(
         text,
-        style: TextStyle(
-          fontSize: 12,
-          color: color,
-        ),
+        style: AppText.xs.copyWith(color: color),
       ),
     );
   }

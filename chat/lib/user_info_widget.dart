@@ -32,6 +32,7 @@ import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/utils/mesh_user_name.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class UserInfoWidget extends StatefulWidget {
   const UserInfoWidget(this.userId, {this.inGroupId, super.key});
@@ -409,7 +410,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     nameList.add(MeshUserName(
       userInfo,
       textAlign: TextAlign.left,
-      style: const TextStyle(fontSize: 18),
+      style: AppText.lg,
     ));
     bool hasAlias = isFriend && userInfo.friendAlias != null && userInfo.friendAlias!.isNotEmpty;
     nameList.add(Container(
@@ -419,7 +420,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       nameList.add(Text(
         '${AppLocalizations.of(context)!.remark}:${userInfo.friendAlias!}',
         textAlign: TextAlign.left,
-        style: const TextStyle(fontSize: 12),
+        style: AppText.xs,
       ));
       nameList.add(Container(
         margin: EdgeInsets.only(top: hasAlias ? 3 : 6),
@@ -432,10 +433,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
             child: Text(
               AppLocalizations.of(context)!.wildfireId(userInfo.name),
               textAlign: TextAlign.left,
-              style: TextStyle(
-                fontSize: 12,
-                color: context.colors.textSecondary,
-              ),
+              style: AppText.xs.copyWith(color: context.colors.textSecondary),
               overflow: TextOverflow.ellipsis,
             )),
         if (isFriend && _isStarred)

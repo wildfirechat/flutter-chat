@@ -3,6 +3,7 @@ import 'package:imclient/imclient.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class PCLoginScreen extends StatefulWidget {
   final String token;
@@ -89,7 +90,7 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
             const SizedBox(height: 20),
              Text(
               AppLocalizations.of(context)!.pcLoginConfirmDesc,
-              style: const TextStyle(fontSize: 18),
+              style: AppText.lg,
             ),
             const SizedBox(height: 40),
             if (_isLoading)

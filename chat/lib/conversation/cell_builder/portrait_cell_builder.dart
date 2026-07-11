@@ -20,6 +20,7 @@ import '../../utils/mesh_user_name.dart';
 import '../../widget/portrait.dart';
 import 'message_cell_builder.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
   late bool isSendMessage;
@@ -103,11 +104,11 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
               ? senderUserInfo != null
                   ? MeshUserName(
                       senderUserInfo,
-                      style: isDesktopShell ? TextStyle(color: context.colors.messageSenderName, fontSize: 12) : null,
+                      style: isDesktopShell ? AppText.xs.copyWith(color: context.colors.messageSenderName) : null,
                     )
                   : Text(
                       '<${model.message.fromUser}>',
-                      style: isDesktopShell ? TextStyle(color: context.colors.messageSenderName, fontSize: 12) : null,
+                      style: isDesktopShell ? AppText.xs.copyWith(color: context.colors.messageSenderName) : null,
                     )
               : Container(),
           Row(

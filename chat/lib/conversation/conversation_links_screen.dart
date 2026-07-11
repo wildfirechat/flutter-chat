@@ -10,6 +10,7 @@ import '../../utilities.dart';
 import '../../utils/media_url_redirector.dart';
 import '../../viewmodel/user_view_model.dart';
 import '../../l10n/app_localizations.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 会话链接记录列表页
 ///
@@ -149,7 +150,7 @@ class _ConversationLinksScreenState extends State<ConversationLinksScreen> {
                               ].join('  '),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(fontSize: 12),
+                              style: AppText.xs,
                             ),
                             onTap: () => Utilities.openLink(context, content.url),
                           );

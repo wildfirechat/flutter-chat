@@ -8,6 +8,7 @@ import 'package:chat/utils/show_toast.dart';
 
 import '../contact/search_user.dart';
 import 'mesh_cache.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// Mesh 外部单位/域详情页。
 class DomainProfileScreen extends StatefulWidget {
@@ -128,9 +129,9 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(color: context.colors.textSecondary, fontSize: 12)),
+          Text(label, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
           const SizedBox(height: 4),
-          Text(value, style: TextStyle(color: context.colors.textPrimary, fontSize: 16)),
+          Text(value, style: AppText.lg.copyWith(color: context.colors.textPrimary)),
         ],
       ),
     );

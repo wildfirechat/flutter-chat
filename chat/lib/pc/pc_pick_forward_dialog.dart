@@ -19,6 +19,7 @@ import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/theme/app_typography.dart';
 
 
 /// 桌面端转发弹窗:左栏选目标,右栏确认发送。
@@ -199,7 +200,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
               ? Center(
                   child: Text(
                     AppLocalizations.of(context)!.noSearchResult,
-                    style: TextStyle(fontSize: 13, color: context.colors.textSecondary, decoration: TextDecoration.none),
+                    style: AppText.sm.copyWith(color: context.colors.textSecondary, decoration: TextDecoration.none),
                   ),
                 )
               : ListView.builder(
@@ -232,11 +233,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
             const SizedBox(width: 8),
             Text(
               AppLocalizations.of(context)!.createGroupChat,
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: context.colors.textPrimary,
-                  decoration: TextDecoration.none),
+              style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary, decoration: TextDecoration.none),
             ),
           ],
         ),
@@ -268,7 +265,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
       action: ElevatedButton(
         onPressed: _controller.hasSelection ? () => widget.onSelected(selected, _comment) : null,
         style: _actionButtonStyle(context),
-        child: Text(l10n.send, style: const TextStyle(fontSize: 13)),
+        child: Text(l10n.send, style: AppText.sm),
       ),
     );
   }
@@ -301,7 +298,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
                 width: 14,
                 height: 14,
                 child: CircularProgressIndicator(strokeWidth: 2, color: context.colors.onAccent))
-            : Text(l10n.createAndSend, style: const TextStyle(fontSize: 13)),
+            : Text(l10n.createAndSend, style: AppText.sm),
       ),
     );
   }
@@ -328,15 +325,11 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: colors.textPrimary,
-                      decoration: TextDecoration.none),
+                  style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary, decoration: TextDecoration.none),
                 ),
                 Text(
                   subtitle,
-                  style: TextStyle(fontSize: 12, color: colors.textSecondary, decoration: TextDecoration.none),
+                  style: AppText.xs.copyWith(color: colors.textSecondary, decoration: TextDecoration.none),
                 ),
               ],
             ),
@@ -348,7 +341,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
                 ? Center(
                     child: Text(
                       emptyHint,
-                      style: TextStyle(fontSize: 13, color: colors.textSecondary, decoration: TextDecoration.none),
+                      style: AppText.sm.copyWith(color: colors.textSecondary, decoration: TextDecoration.none),
                     ),
                   )
                 : ListView(
@@ -381,7 +374,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   ),
-                  child: Text(l10n.cancel, style: TextStyle(color: colors.textPrimary, fontSize: 13)),
+                  child: Text(l10n.cancel, style: AppText.sm.copyWith(color: colors.textPrimary)),
                 ),
                 const SizedBox(width: 12),
                 action,
@@ -398,10 +391,10 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
     final underline = UnderlineInputBorder(borderSide: BorderSide(color: colors.hairlineSoft, width: 0.5));
     return TextField(
       controller: _commentController,
-      style: const TextStyle(fontSize: 13),
+      style: AppText.sm,
       decoration: InputDecoration(
         hintText: AppLocalizations.of(context)!.leaveMessage,
-        hintStyle: TextStyle(color: colors.textSecondary, fontSize: 13),
+        hintStyle: AppText.sm.copyWith(color: colors.textSecondary),
         border: underline,
         enabledBorder: underline,
         focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: colors.accent, width: 1.0)),

@@ -13,6 +13,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 微信 PC 风格的 @ 提醒浮层:键入 '@' 后浮层出现在输入栏上方,随后续键入
 /// 就地过滤候选人(匹配显示名/拼音全拼/拼音首字母);上下键移动高亮并循环,
@@ -334,8 +335,7 @@ class _MentionRow extends StatelessWidget {
                   candidate.display,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontSize: 13, color: highlighted ? context.colors.onAccent : context.colors.textPrimary),
+                  style: AppText.sm.copyWith(color: highlighted ? context.colors.onAccent : context.colors.textPrimary),
                 ),
               ),
             ],

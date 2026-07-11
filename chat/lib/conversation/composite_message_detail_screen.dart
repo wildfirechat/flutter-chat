@@ -32,6 +32,7 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class CompositeMessageDetailScreen extends StatelessWidget {
   final CompositeMessageContent content;
@@ -102,11 +103,11 @@ class CompositeMessageDetailScreen extends StatelessWidget {
                       return userInfo != null
                           ? MeshUserName(
                               userInfo,
-                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              style: AppText.xs.copyWith(color: Colors.grey),
                             )
                           : Text(
                               "<${uiMessage.message.fromUser}>",
-                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              style: AppText.xs.copyWith(color: Colors.grey),
                             );
                     },
                   ),

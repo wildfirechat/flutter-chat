@@ -6,6 +6,7 @@ import 'package:imclient/model/conversation.dart';
 import '../conversation/conversation_screen.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class ChatroomList extends StatelessWidget {
   final List modelList = ['chatroom1', 'chatroom2', 'chatroom3'];
@@ -66,7 +67,7 @@ class ChatroomItemState extends State<ChatroomItem> {
       child: Padding(padding: const EdgeInsets.all(8), child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [Expanded(child: Container(child: Text((chatroomInfo == null || chatroomInfo!.title == null)?"聊天室":chatroomInfo!.title!, style: const TextStyle(fontSize: 16),),))],),
+          Row(children: [Expanded(child: Container(child: Text((chatroomInfo == null || chatroomInfo!.title == null)?"聊天室":chatroomInfo!.title!, style: AppText.lg,),))],),
           Container(
             margin: const EdgeInsets.fromLTRB(12.0, 4.0, 12.0, 4.0),
             height: 1,

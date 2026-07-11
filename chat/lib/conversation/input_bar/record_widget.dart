@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../conversation_controller.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class RecordWidget extends StatefulWidget {
   RecordWidget(this.conversation, {super.key});
@@ -231,11 +232,7 @@ class RecordState extends State<RecordWidget> {
                       ),
                       Text(
                         soundTipsText,
-                        style: const TextStyle(
-                          fontStyle: FontStyle.normal,
-                          color: Colors.white,
-                          fontSize: 14,
-                        ),
+                        style: AppText.base.copyWith(fontStyle: FontStyle.normal, color: Colors.white),
                       )
                     ],
                   ),

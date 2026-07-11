@@ -12,6 +12,7 @@ import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class SearchConversationResultView extends StatefulWidget {
   final Conversation conversation;
@@ -119,7 +120,7 @@ class _SearchConversationResultViewState extends State<SearchConversationResultV
                               ),
                               Text(
                                 Utilities.formatTime(context, message.serverTime),
-                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                style: AppText.xs.copyWith(color: Colors.grey),
                               ),
                             ],
                           ),

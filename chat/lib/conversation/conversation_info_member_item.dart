@@ -8,6 +8,7 @@ import 'package:chat/theme/app_colors.dart';
 import '../config.dart';
 import '../mesh/mesh_cache.dart';
 import '../utils/mesh_user_name.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class ConversationInfoMemberItem extends StatelessWidget {
   final UserInfo userInfo;
@@ -35,11 +36,7 @@ class ConversationInfoMemberItem extends StatelessWidget {
                 userInfo,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: context.colors.textSecondary,
-                  fontWeight: FontWeight.w400,
-                ),
+                style: AppText.xs.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.w400),
               ),
             ),
           ],

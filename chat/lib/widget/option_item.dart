@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chat/theme/app_colors.dart';
 import '../utils/layout_scale.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class OptionItem extends StatelessWidget {
   final String title;
@@ -45,7 +46,7 @@ class OptionItem extends StatelessWidget {
                   Text(
                     title,
                     maxLines: 1,
-                    style: const TextStyle(fontSize: 16),
+                    style: AppText.lg,
                   ),
                   const SizedBox(width: 8),
                   if (desc != null && desc!.isNotEmpty)
@@ -56,7 +57,7 @@ class OptionItem extends StatelessWidget {
                           desc!,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.right,
-                          style: TextStyle(color: colors.textSecondary, fontSize: 14),
+                          style: AppText.base.copyWith(color: colors.textSecondary),
                         ),
                       ),
                     )

@@ -4,6 +4,7 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import '../viewmodel/font_size_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 字号设置。上半部分是随字号实时变化的会话预览,下半部分是档位滑块。
 ///
@@ -28,11 +29,7 @@ class FontSizeSettingsScreen extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             child: Text(
               l10n.done,
-              style: TextStyle(
-                color: colors.accent,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+              style: AppText.lg.copyWith(color: colors.accent, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -90,7 +87,7 @@ class FontSizeSettingsScreen extends StatelessWidget {
         ),
         child: Text(
           time,
-          style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
+          style: AppText.xs.copyWith(color: context.colors.textSecondary),
         ),
       ),
     );
@@ -104,7 +101,7 @@ class FontSizeSettingsScreen extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         text,
-        style: TextStyle(color: context.colors.onAccent, fontWeight: FontWeight.bold, fontSize: 16),
+        style: AppText.lg.copyWith(color: context.colors.onAccent, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -124,7 +121,7 @@ class FontSizeSettingsScreen extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: 15, color: sent ? colors.bubbleSentText : colors.bubbleReceivedText),
+        style: AppText.lg.copyWith(color: sent ? colors.bubbleSentText : colors.bubbleReceivedText),
       ),
     );
   }
@@ -183,7 +180,7 @@ class _FontSizeSlider extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text('A', style: TextStyle(fontSize: 14, color: colors.textSecondary)),
+                  Text('A', style: AppText.base.copyWith(color: colors.textSecondary)),
                   Expanded(
                     child: SliderTheme(
                       data: SliderTheme.of(context).copyWith(
@@ -207,7 +204,7 @@ class _FontSizeSlider extends StatelessWidget {
                     ),
                   ),
                   Text('A',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: colors.textPrimary)),
+                      style: AppText.xxl.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -222,7 +219,7 @@ class _FontSizeSlider extends StatelessWidget {
                           textAlign: TextAlign.center,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 12, color: colors.textSecondary),
+                          style: AppText.xs.copyWith(color: colors.textSecondary),
                         ),
                       ),
                   ],

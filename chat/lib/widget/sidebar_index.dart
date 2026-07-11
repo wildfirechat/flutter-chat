@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class SidebarIndex extends StatelessWidget {
   final List<String> indexList;
@@ -60,7 +61,7 @@ class SidebarIndex extends StatelessWidget {
                                 child: Center(
                                   child: tag == '↑' 
                                     ? const Icon(Icons.arrow_upward, size: 12, color: Colors.black54)
-                                    : Text(tag, style: const TextStyle(fontSize: 10, color: Colors.black54))
+                                    : Text(tag, style: AppText.xxs.copyWith(color: Colors.black54))
                                 )
                             )).toList(),
                         )

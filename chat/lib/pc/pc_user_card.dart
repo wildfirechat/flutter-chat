@@ -13,6 +13,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/mesh_user_name.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 会话内点击头像弹出的用户信息卡片(参照微信 PC),代替整页 push。
 /// 跳转经 app_navigator 统一入口(Shell 状态注册在应用根部,浮层内也能取到)。
@@ -62,7 +63,7 @@ class _PcUserCard extends StatelessWidget {
                             cursor: SystemMouseCursors.click,
                             child: MeshUserName(
                               userInfo,
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+                              style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -71,7 +72,7 @@ class _PcUserCard extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           '${AppLocalizations.of(context)!.accountLabel}${userInfo.name}',
-                          style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+                          style: AppText.xs.copyWith(color: context.colors.textSecondary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -174,7 +175,7 @@ class _CardAction extends StatelessWidget {
             children: [
               Icon(icon, size: 20, color: context.colors.accent),
               const SizedBox(height: 5),
-              Text(label, style: TextStyle(fontSize: 11, color: context.colors.textSecondary)),
+              Text(label, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
             ],
           ),
         ),

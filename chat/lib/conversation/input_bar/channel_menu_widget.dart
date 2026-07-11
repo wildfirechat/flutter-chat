@@ -5,6 +5,7 @@ import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 
 import '../../workspace/wf_webview_screen.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class ChannelMenuWidget extends StatelessWidget {
   final List<ChannelMenu> menus;
@@ -45,7 +46,7 @@ class ChannelMenuWidget extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         menu.name ?? '',
-                        style: const TextStyle(fontSize: 16, color: Colors.black87),
+                        style: AppText.lg.copyWith(color: Colors.black87),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -66,7 +67,7 @@ class ChannelMenuWidget extends StatelessWidget {
                   ),
                   child: Text(
                     menu.name ?? '',
-                    style: const TextStyle(fontSize: 16, color: Colors.black87),
+                    style: AppText.lg.copyWith(color: Colors.black87),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

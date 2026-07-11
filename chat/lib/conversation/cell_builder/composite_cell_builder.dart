@@ -10,6 +10,7 @@ import 'package:chat/ui_model/ui_message.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class CompositeCellBuilder extends PortraitCellBuilder {
   late CompositeMessageContent compositeMessageContent;
@@ -32,7 +33,7 @@ class CompositeCellBuilder extends PortraitCellBuilder {
           children: [
             Text(
               compositeMessageContent.title,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: AppText.lg.copyWith(fontWeight: FontWeight.bold),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -74,7 +75,7 @@ class CompositeCellBuilder extends PortraitCellBuilder {
                       padding: const EdgeInsets.symmetric(vertical: 2),
                       child: Text(
                         "$senderName$preview",
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: AppText.xs.copyWith(color: Colors.grey),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -84,11 +85,11 @@ class CompositeCellBuilder extends PortraitCellBuilder {
               },
             ),
             if (compositeMessageContent.messages.length > 4)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 2),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 2),
                 child: Text(
                   "...",
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  style: AppText.xs.copyWith(color: Colors.grey),
                 ),
               ),
           ],

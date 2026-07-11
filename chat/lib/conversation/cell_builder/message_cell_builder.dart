@@ -9,6 +9,7 @@ import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 abstract class MessageCellBuilder {
   UIMessage model;
@@ -48,7 +49,7 @@ abstract class MessageCellBuilder {
                   padding: const EdgeInsets.all(3),
                   child: Text(
                     Utilities.formatMessageTime(context, model.message.serverTime),
-                    style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+                    style: AppText.xs.copyWith(color: context.colors.textSecondary),
                   ),
                 )
               : Container(),

@@ -7,6 +7,7 @@ import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/show_toast.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 微信式应用内相册选图(仅 Android/iOS,photo_manager 无桌面/ohos 实现)。
 /// 返回选中的图片文件;取消返回空列表;相册权限被拒时提示并引导到系统设置。
@@ -113,7 +114,7 @@ Widget? _buildTakePhotoItem(
             const SizedBox(height: 6),
             Text(
               l10n.takePhoto,
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
+              style: AppText.xs.copyWith(color: Colors.white70),
             ),
           ],
         ),

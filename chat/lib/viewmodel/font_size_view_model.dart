@@ -9,7 +9,7 @@ class FontSizeViewModel extends ChangeNotifier {
   /// PC 端旧版本用倍数存的 key,只在首次迁移时读一次,不再写入。
   static const String _legacyPcFontScaleKey = 'pc_font_scale';
 
-  static const List<double> _scaleFactors = [0.85, 1.0, 1.15, 1.30, 1.45];
+  static const List<double> _scaleFactors = [0.90, 1.0, 1.15, 1.30, 1.45];
   static const int _defaultIndex = 1;
 
   int _index = _defaultIndex;

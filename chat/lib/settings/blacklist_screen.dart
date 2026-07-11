@@ -7,6 +7,7 @@ import 'package:chat/config.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/mesh/mesh_cache.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 黑名单管理页面
 ///
@@ -111,7 +112,7 @@ class _BlacklistScreenState extends State<BlacklistScreen> {
           Icon(Icons.block, size: 64, color: Colors.grey[300]),
           const SizedBox(height: 16),
           Text(AppLocalizations.of(context)!.blacklistEmpty,
-              style: const TextStyle(fontSize: 16, color: Color(0xFF999999))),
+              style: AppText.lg.copyWith(color: Color(0xFF999999))),
         ],
       ),
     );
@@ -132,7 +133,7 @@ class _BlacklistScreenState extends State<BlacklistScreen> {
           return userInfo != null ? MeshUserName(userInfo) : Text(userId);
         },
       ),
-      subtitle: Text(userId, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
+      subtitle: Text(userId, style: AppText.xs.copyWith(color: Color(0xFF999999))),
       trailing: TextButton(
         onPressed: () => _removeFromBlacklist(userId),
         child: Text(AppLocalizations.of(context)!.blacklistRemove,

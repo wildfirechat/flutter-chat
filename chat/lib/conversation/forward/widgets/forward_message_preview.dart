@@ -8,6 +8,7 @@ import 'package:imclient/message/message.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 桌面端右栏的待转发消息预览:单条显示摘要(图片附缩略图),多条显示条数汇总。
 ///
@@ -47,7 +48,7 @@ class ForwardMessagePreview extends StatelessWidget {
             children: [
               Text(
                 text,
-                style: TextStyle(fontSize: 13, color: context.colors.textSecondary, height: 1.4, decoration: TextDecoration.none),
+                style: AppText.sm.copyWith(color: context.colors.textSecondary, height: 1.4, decoration: TextDecoration.none),
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -109,12 +110,12 @@ class ForwardMessagePreview extends StatelessWidget {
               children: [
                 Text(
                   oneByOne ? l10n.forwardOneByOne : l10n.forwardCombined,
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+                  style: AppText.sm.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   l10n.totalMessages('$count'),
-                  style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
+                  style: AppText.xs.copyWith(color: context.colors.textSecondary),
                 ),
               ],
             ),

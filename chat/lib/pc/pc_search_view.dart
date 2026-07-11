@@ -5,6 +5,7 @@ import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/search/search_portal_result_view.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 搜索浮层内容(参照微信 PC):
 /// 头部原位替换为聚焦态的真输入框,结果以圆角浮起卡片悬于列表上方,
@@ -108,12 +109,12 @@ class _PcSearchViewState extends State<PcSearchView> {
                               controller: _controller,
                               focusNode: _focusNode,
                               autofocus: true,
-                              style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
+                              style: AppText.sm.copyWith(color: context.colors.textPrimary),
                               decoration: InputDecoration(
                                 isCollapsed: true,
                                 border: InputBorder.none,
                                 hintText: l10n.search,
-                                hintStyle: TextStyle(fontSize: 13, color: context.colors.textSecondary),
+                                hintStyle: AppText.sm.copyWith(color: context.colors.textSecondary),
                               ),
                               onChanged: (text) => setState(() => _query = text.trim()),
                             ),
@@ -176,10 +177,7 @@ class _PcSearchViewState extends State<PcSearchView> {
           child: Center(
             child: Text(
               l10n.searchPrompt,
-              style: TextStyle(
-                fontSize: 13,
-                color: context.colors.textSecondary,
-              ),
+              style: AppText.sm.copyWith(color: context.colors.textSecondary),
             ),
           ),
         ),

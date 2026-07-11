@@ -6,6 +6,7 @@ import 'package:chat/pc/pc_platform.dart';
 import '../../ui_model/ui_message.dart';
 import 'portrait_cell_builder.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class ArticlesCellBuilder extends PortraitCellBuilder {
   late ArticlesMessageContent articlesContent;
@@ -54,11 +55,7 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
               padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
               child: Text(
                 articlesContent.title.isNotEmpty ? articlesContent.title : articles[0].title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: context.colors.textPrimary,
-                ),
+                style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -74,10 +71,7 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
                     Expanded(
                       child: Text(
                         articles[i].digest.isNotEmpty ? articles[i].digest : articles[i].title,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: context.colors.textSecondary,
-                        ),
+                        style: AppText.sm.copyWith(color: context.colors.textSecondary),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -104,7 +98,7 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
                 padding: const EdgeInsets.all(12),
                 child: Text(
                   '还有 ${articles.length - 3} 篇文章',
-                  style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+                  style: AppText.xs.copyWith(color: context.colors.textSecondary),
                 ),
               ),
           ] else
@@ -117,7 +111,7 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
                   Expanded(
                     child: Text(
                       articlesContent.title.isNotEmpty ? articlesContent.title : '[图文]',
-                      style: TextStyle(fontSize: 15, color: context.colors.textPrimary),
+                      style: AppText.lg.copyWith(color: context.colors.textPrimary),
                     ),
                   ),
                 ],

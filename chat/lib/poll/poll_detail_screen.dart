@@ -16,6 +16,7 @@ import 'dart:io';
 import '../widget/portrait.dart';
 import 'poll_model.dart';
 import 'poll_service.dart';
+import 'package:chat/theme/app_typography.dart';
 
 
 /// 投票详情页
@@ -475,10 +476,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                   Expanded(
                     child: Text(
                       _l10n.pollCreatorFormat(creatorName),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                      style: AppText.base.copyWith(color: Colors.grey[600]),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -492,11 +490,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
               // 标题 18sp 粗体
               Text(
                 poll!.title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF333333),
-                ),
+                style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: Color(0xFF333333)),
               ),
 
               // 描述 14sp 灰色
@@ -504,10 +498,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                 const SizedBox(height: 8),
                 Text(
                   poll!.desc,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: AppText.base.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ],
@@ -535,10 +526,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
     return Text(
       text,
-      style: TextStyle(
-        fontSize: 13,
-        color: color,
-      ),
+      style: AppText.sm.copyWith(color: color),
     );
   }
 
@@ -581,10 +569,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                 Expanded(
                   child: Text(
                     option.optionText,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: _getOptionTextColor(isMyVote, isSelected),
-                    ),
+                    style: AppText.lg.copyWith(color: _getOptionTextColor(isMyVote, isSelected)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -595,10 +580,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                   const SizedBox(width: 12),
                   Text(
                     '${option.votePercent}%',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: AppText.base.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ],
@@ -732,10 +714,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
       padding: const EdgeInsets.all(16),
       child: Text(
         statusParts.join(' · '),
-        style: TextStyle(
-          fontSize: 13,
-          color: Colors.grey[600],
-        ),
+        style: AppText.sm.copyWith(color: Colors.grey[600]),
         textAlign: TextAlign.center,
       ),
     );
@@ -819,10 +798,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         ),
         child: Text(
           _l10n.pollDelete,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppText.lg.copyWith(fontWeight: FontWeight.w500),
         ),
       );
     } else {
@@ -838,10 +814,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         ),
         child: Text(
           _l10n.pollClose,
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppText.lg.copyWith(fontWeight: FontWeight.w500),
         ),
       );
     }
@@ -866,10 +839,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
             ),
             child: Text(
               _l10n.pollExport,
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppText.lg.copyWith(fontWeight: FontWeight.w500),
             ),
           ),
         ),
@@ -889,10 +859,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
             ),
             child: Text(
               isEnded ? _l10n.pollDelete : _l10n.pollClose,
-              style: const TextStyle(
-                fontSize:  15,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppText.lg.copyWith(fontWeight: FontWeight.w500),
             ),
           ),
         ),
@@ -923,10 +890,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
           ),
           child: Text(
             _l10n.pollSubmitVote,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppText.lg.copyWith(fontWeight: FontWeight.w500),
           ),
         ),
       ),

@@ -12,6 +12,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'conversation_info_member_action_item.dart';
 import 'conversation_info_member_item.dart';
 import 'member_cell_anchor.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class GroupConversationInfoMembersView extends StatefulWidget {
   final Conversation conversation;
@@ -144,11 +145,7 @@ class _GroupConversationInfoMembersViewState extends State<GroupConversationInfo
                       },
                       child: Text(
                         _isExpanded ? "收起群成员 <" : "查看更多群成员 >",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: context.colors.accent,
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: AppText.base.copyWith(color: context.colors.accent, fontWeight: FontWeight.w500),
                       ),
                     ),
                   )

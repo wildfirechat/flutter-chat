@@ -11,6 +11,7 @@ import '../widget/portrait.dart';
 import 'collection_model.dart';
 import 'collection_service.dart';
 import '../config.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class CollectionDetailScreen extends StatefulWidget {
   final Message message;
@@ -242,10 +243,7 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
                 // ),
                 child: Text(
                   l10n.submit,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppText.lg.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -332,10 +330,7 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
                   Expanded(
                     child: Text(
                       '$creatorName ${_l10n.collectionCreatorSuffix} · ${collection!.participantCount}${_l10n.collectionPeopleCount}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF576b95),
-                      ),
+                      style: AppText.base.copyWith(color: Color(0xFF576b95)),
                     ),
                   ),
                 ],
@@ -345,11 +340,7 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
               // 标题
               Text(
                 collection!.title,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF333333),
-                ),
+                style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: Color(0xFF333333)),
               ),
               
               // 描述
@@ -357,10 +348,7 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
                 const SizedBox(height: 8),
                 Text(
                   collection!.desc,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF666666),
-                  ),
+                  style: AppText.base.copyWith(color: Color(0xFF666666)),
                 ),
               ],
               
@@ -369,10 +357,7 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
                 const SizedBox(height: 8),
                 Text(
                   '${_l10n.collectionTemplateLabel}${collection!.template}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF576b95),
-                  ),
+                  style: AppText.sm.copyWith(color: Color(0xFF576b95)),
                 ),
               ],
               
@@ -410,11 +395,7 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
             child: Center(
               child: Text(
                 '$displayIndex',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF576b95),
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppText.xs.copyWith(color: Color(0xFF576b95), fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -426,10 +407,7 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
                 ? _buildMyEditField()
                 : Text(
                     entry.content,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      color: Color(0xFF333333),
-                    ),
+                    style: AppText.lg.copyWith(color: Color(0xFF333333)),
                   ),
           ),
         ],
@@ -444,18 +422,12 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
         hintText: collection!.template.isNotEmpty 
             ? collection!.template 
             : _l10n.collectionJoinHint,
-        hintStyle: const TextStyle(
-          fontSize: 15,
-          color: Color(0xFF999999),
-        ),
+        hintStyle: AppText.lg.copyWith(color: Color(0xFF999999)),
         border: InputBorder.none,
         isDense: true,
         contentPadding: EdgeInsets.zero,
       ),
-      style: const TextStyle(
-        fontSize: 15,
-        color: Color(0xFF333333),
-      ),
+      style: AppText.lg.copyWith(color: Color(0xFF333333)),
       maxLines: 3,
       minLines: 1,
       onChanged: (_) => setState(() {}),
@@ -484,11 +456,7 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
             child: Center(
               child: Text(
                 '$index',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF576b95),
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppText.xs.copyWith(color: Color(0xFF576b95), fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -502,18 +470,12 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
                 hintText: collection!.template.isNotEmpty 
                     ? collection!.template 
                     : _l10n.collectionJoinHint,
-                hintStyle: const TextStyle(
-                  fontSize: 15,
-                  color: Color(0xFF999999),
-                ),
+                hintStyle: AppText.lg.copyWith(color: Color(0xFF999999)),
                 border: InputBorder.none,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
               ),
-              style: const TextStyle(
-                fontSize: 15,
-                color: Color(0xFF333333),
-              ),
+              style: AppText.lg.copyWith(color: Color(0xFF333333)),
               maxLines: 3,
               minLines: 1,
               onChanged: (_) => setState(() {}),

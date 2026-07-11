@@ -13,6 +13,7 @@ import 'model/employee.dart';
 import 'model/organization.dart';
 import 'organization_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class OrganizationScreen extends StatefulWidget {
   final int? initialOrganizationId;
@@ -75,10 +76,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
               child: Text(
                 AppLocalizations.of(context)!.organization,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontSize: 14,
-                ),
+                style: AppText.base.copyWith(color: Theme.of(context).colorScheme.primary),
               ),
             ),
           ),
@@ -100,13 +98,9 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
                 child: Text(
                   org.name,
-                  style: TextStyle(
-                    color: isLast
+                  style: AppText.base.copyWith(color: isLast
                         ? Theme.of(context).textTheme.bodyLarge?.color
-                        : Theme.of(context).colorScheme.primary,
-                    fontWeight: isLast ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 14,
-                  ),
+                        : Theme.of(context).colorScheme.primary, fontWeight: isLast ? FontWeight.bold : FontWeight.normal),
                 ),
               ),
             ),
@@ -186,11 +180,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       color: context.colors.chatBg,
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 13,
-          color: context.colors.textSecondary,
-          fontWeight: FontWeight.w500,
-        ),
+        style: AppText.sm.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -324,7 +314,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
             child: Text(
               l10n.orgNoSubOrgOrMembers,
               textAlign: TextAlign.center,
-              style: TextStyle(color: context.colors.textSecondary, fontSize: 14),
+              style: AppText.base.copyWith(color: context.colors.textSecondary),
             ),
           ),
         ),
@@ -372,7 +362,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
         child: Center(
           child: Text(
             AppLocalizations.of(context)!.noMatchedMembers,
-            style: TextStyle(color: context.colors.textSecondary, fontSize: 14),
+            style: AppText.base.copyWith(color: context.colors.textSecondary),
           ),
         ),
       );
@@ -395,7 +385,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       onPressed: _onDone,
       style: TextButton.styleFrom(
         foregroundColor: isDesktopShell ? context.colors.accent : null,
-        textStyle: isDesktopShell ? const TextStyle(fontSize: 14) : null,
+        textStyle: isDesktopShell ? AppText.base : null,
       ),
       child: Text(label),
     );
@@ -446,7 +436,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                             children: [
                               Icon(Icons.error_outline, color: context.colors.danger, size: 44),
                               const SizedBox(height: 12),
-                              Text(viewModel.error!, textAlign: TextAlign.center, style: const TextStyle(fontSize: 15)),
+                              Text(viewModel.error!, textAlign: TextAlign.center, style: AppText.lg),
                               const SizedBox(height: 16),
                               ElevatedButton.icon(
                                 icon: const Icon(Icons.refresh),

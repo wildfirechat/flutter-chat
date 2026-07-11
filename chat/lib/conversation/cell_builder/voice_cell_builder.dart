@@ -11,6 +11,7 @@ import 'package:imclient/message/sound_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
 
 import '../../ui_model/ui_message.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class VoicePlayStatusChangedEvent {
   int messageId;
@@ -113,7 +114,7 @@ class VoiceCellBuilder extends PortraitCellBuilder {
           const SizedBox(height: 6),
           Text(
             soundMessageContent.speechText!,
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
+            style: AppText.base.copyWith(color: Colors.black87),
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
           ),
@@ -146,7 +147,7 @@ class VoiceCellBuilder extends PortraitCellBuilder {
                 const SizedBox(width: 6),
                 Text(
                   AppLocalizations.of(context)!.convertingToText,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: AppText.xs.copyWith(color: Colors.grey),
                 ),
               ],
             ),

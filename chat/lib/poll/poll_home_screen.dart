@@ -4,6 +4,7 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import 'create_poll_screen.dart';
 import 'poll_list_screen.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class PollHomeScreen extends StatelessWidget {
   final String groupId;
@@ -98,18 +99,12 @@ class PollHomeScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppText.lg.copyWith(fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey[600],
-                    ),
+                    style: AppText.sm.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),

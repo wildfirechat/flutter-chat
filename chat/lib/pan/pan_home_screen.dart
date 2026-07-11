@@ -15,6 +15,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 加载失败类型。build 时再映射为本地化文案
 /// （initState 同步路径里不能做 InheritedWidget 查找）。
@@ -220,12 +221,12 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
                   Expanded(
                     child: Text(
                       displayName,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      style: AppText.lg.copyWith(fontWeight: FontWeight.w500),
                     ),
                   ),
                   Text(
                     AppLocalizations.of(context)!.panFileCount(space.fileCount),
-                    style: TextStyle(fontSize: 13, color: context.colors.textSecondary),
+                    style: AppText.sm.copyWith(color: context.colors.textSecondary),
                   ),
                 ],
               ),
@@ -242,7 +243,7 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
               const SizedBox(height: 8),
               Text(
                 '${formatPanSize(space.usedQuota)} / ${formatPanSize(space.totalQuota)}',
-                style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+                style: AppText.xs.copyWith(color: context.colors.textSecondary),
               ),
             ],
           ),
@@ -479,7 +480,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
         file.isFolder
             ? AppLocalizations.of(context)!.panItemCount(file.childCount)
             : '${file.sizeText}  ${file.creatorName ?? file.creatorId}',
-        style: TextStyle(fontSize: 12, color: context.colors.textSecondary),
+        style: AppText.xs.copyWith(color: context.colors.textSecondary),
       ),
       trailing: IconButton(
         icon: const Icon(Icons.more_horiz, size: 20),
@@ -609,7 +610,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(l10n.uploading, style: const TextStyle(fontSize: 16)),
+                Text(l10n.uploading, style: AppText.lg),
                 const SizedBox(height: 16),
                 ValueListenableBuilder<double>(
                   valueListenable: progressNotifier,

@@ -6,6 +6,7 @@ import 'package:chat/l10n/app_localizations.dart';
 
 
 import 'collection_service.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class CreateCollectionScreen extends StatefulWidget {
   final Conversation conversation;
@@ -164,10 +165,7 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
                     )
                   : Text(
                       l10n.done,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppText.lg.copyWith(fontWeight: FontWeight.w600),
                     ),
             ),
           ),
@@ -186,7 +184,7 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
                   hintText: l10n.collectionTitleHint,
                   border: InputBorder.none,
                 ),
-                style: const TextStyle(fontSize: 16),
+                style: AppText.lg,
                 onChanged: (_) => setState(() {}),
               ),
             ),
@@ -201,7 +199,7 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
                   hintText: l10n.collectionDescHint,
                   border: InputBorder.none,
                 ),
-                style: const TextStyle(fontSize: 16),
+                style: AppText.lg,
                 maxLines: 3,
               ),
             ),
@@ -215,18 +213,12 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
                 children: [
                   Text(
                     l10n.collectionTemplate,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppText.lg.copyWith(fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     l10n.collectionTemplateHint,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: AppText.xs.copyWith(color: Colors.grey[600]),
                   ),
                   TextField(
                     controller: _templateController,
@@ -235,7 +227,7 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.zero,
                     ),
-                    style: const TextStyle(fontSize: 16),
+                    style: AppText.lg,
                   ),
                 ],
               ),
@@ -283,16 +275,13 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 16),
+            style: AppText.lg,
           ),
           Row(
             children: [
               Text(
                 value,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: AppText.base.copyWith(color: Colors.grey[600]),
               ),
               const SizedBox(width: 4),
               Icon(

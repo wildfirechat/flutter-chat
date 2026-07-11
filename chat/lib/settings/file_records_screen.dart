@@ -23,6 +23,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/app_navigator.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class FileRecordsScreen extends StatelessWidget {
   const FileRecordsScreen({super.key});
@@ -605,11 +606,11 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
                     file.name ?? l10n.unknownFile,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13),
+                    style: AppText.sm,
                   ),
                   subtitle: Text(
                     subtitleParts.join('  '),
-                    style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
+                    style: AppText.xs.copyWith(color: context.colors.textSecondary),
                   ),
                   trailing: _canDelete(file)
                       ? IconButton(

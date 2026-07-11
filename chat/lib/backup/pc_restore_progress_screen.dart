@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:chat/backup/backup_manager.dart';
 import 'package:chat/backup/backup_models.dart';
 import 'package:intl/intl.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class PCRestoreProgressScreen extends StatefulWidget {
   const PCRestoreProgressScreen({Key? key}) : super(key: key);
@@ -236,7 +237,7 @@ class _PCRestoreProgressScreenState extends State<PCRestoreProgressScreen> {
               Text(
                 _status,
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: AppText.xl.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               Text(

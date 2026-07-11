@@ -4,6 +4,7 @@ import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 桌面端二级页面统一头部栏 (高度与整体 headerHeight 保持一致)
 /// 包含: 返回按钮、页面标题、可选右侧操作按钮 (actions)
@@ -100,12 +101,7 @@ class PcPageHeader extends StatelessWidget implements PreferredSizeWidget {
             child: titleWidget ??
                 Text(
                   title ?? '',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: colors.textPrimary,
-                    decoration: TextDecoration.none,
-                  ),
+                  style: AppText.lg.copyWith(fontWeight: FontWeight.w500, color: colors.textPrimary, decoration: TextDecoration.none),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

@@ -11,6 +11,7 @@ import '../viewmodel/theme_view_model.dart';
 import 'font_size_settings_screen.dart';
 import '../widget/option_item.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class GeneralSettings extends StatelessWidget {
   const GeneralSettings({super.key});
@@ -123,7 +124,7 @@ class GeneralSettings extends StatelessWidget {
                     child: Center(
                       child: Text(
                         AppLocalizations.of(context)!.logout,
-                        style: TextStyle(color: context.colors.danger, fontSize: 16),
+                        style: AppText.lg.copyWith(color: context.colors.danger),
                       ),
                     ),
                   ),

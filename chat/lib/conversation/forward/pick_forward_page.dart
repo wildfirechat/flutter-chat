@@ -18,6 +18,7 @@ import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
 import 'package:chat/widget/sidebar_index.dart';
+import 'package:chat/theme/app_typography.dart';
 
 typedef OnForwardTargetsSelected = void Function(List<Conversation> targets, String? comment);
 
@@ -160,7 +161,7 @@ class _PickForwardPageState extends State<PickForwardPage> {
             onPressed: _controller.toggleMultiSelect,
             child: Text(
               _controller.isMultiSelect ? l10n.singleSelect : l10n.multiSelect,
-              style: TextStyle(color: context.colors.accent, fontSize: 16),
+              style: AppText.lg.copyWith(color: context.colors.accent),
             ),
           ),
         ],
@@ -217,7 +218,7 @@ class _PickForwardPageState extends State<PickForwardPage> {
           children: [
             Text(
               l10n.selectedChatsCount('$count'),
-              style: TextStyle(color: context.colors.textPrimary, fontSize: 14),
+              style: AppText.base.copyWith(color: context.colors.textPrimary),
             ),
             const Spacer(),
             ElevatedButton(
@@ -270,7 +271,7 @@ class _PickForwardPageState extends State<PickForwardPage> {
                   onPressed: canConfirm ? () => _confirmMemberSelection(List<UserInfo>.from(viewModel.pickedUsers)) : null,
                   child: Text(
                     viewModel.pickedUsers.isNotEmpty ? '${l10n.confirm}(${viewModel.pickedUsers.length})' : l10n.confirm,
-                    style: TextStyle(color: canConfirm ? context.colors.accent : context.colors.textSecondary, fontSize: 16),
+                    style: AppText.lg.copyWith(color: canConfirm ? context.colors.accent : context.colors.textSecondary),
                   ),
                 ),
               ],
@@ -339,7 +340,7 @@ class _PickForwardPageState extends State<PickForwardPage> {
         alignment: Alignment.center,
         child: _currentLetter == '↑'
             ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
-            : Text(_currentLetter, style: const TextStyle(color: Colors.white, fontSize: 40)),
+            : Text(_currentLetter, style: AppText.xxxl.copyWith(color: Colors.white)),
       ),
     );
   }

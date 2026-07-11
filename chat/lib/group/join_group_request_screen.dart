@@ -13,6 +13,7 @@ import '../user_info_widget.dart';
 import '../viewmodel/user_view_model.dart';
 import '../widget/portrait.dart';
 import '../app_navigator.dart';
+import 'package:chat/theme/app_typography.dart';
 
 /// 入群申请管理页面
 ///
@@ -269,7 +270,7 @@ class _JoinGroupRequestItem extends StatelessWidget {
                   '${l10n.joinGroupReason}: ${request.reason}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  style: AppText.xs.copyWith(color: Colors.grey),
                 )
               : null,
           trailing: _buildTrailing(context),
@@ -302,7 +303,7 @@ class _JoinGroupRequestItem extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       text: TextSpan(
-        style: const TextStyle(fontSize: 15, color: Colors.black87),
+        style: AppText.lg.copyWith(color: Colors.black87),
         children: spans,
       ),
     );
@@ -364,7 +365,7 @@ class _JoinGroupRequestItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (statusLabel.isNotEmpty)
-          Text(statusLabel, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+          Text(statusLabel, style: AppText.sm.copyWith(color: Colors.grey)),
         PopupMenuButton<String>(
           onSelected: (value) {
             if (value == 'delete') onDelete();
