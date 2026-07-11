@@ -242,6 +242,10 @@ class _MyAppState extends State<MyApp> {
           status == kConnectionStatusRejected ||
           status == kConnectionStatusKickedOff ||
           status == kConnectionStatusLogout) {
+        // 应用主动退出时会触发 logout，此时不应清除登录态。
+        if (status == kConnectionStatusLogout && PCWindowManager().isQuitting) {
+          return;
+        }
         if (status != kConnectionStatusLogout) {
           Imclient.isLogined.then((value) {
             if (value) {

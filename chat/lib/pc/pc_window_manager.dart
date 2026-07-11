@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:imclient/imclient.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:chat/pc/pc_platform.dart';
@@ -33,6 +35,11 @@ class PCWindowManager {
   PCWindowManager._internal();
 
   bool _initialized = false;
+  bool _isQuitting = false;
+
+  /// 是否正在通过托盘/退出流程主动退出应用。
+  /// 用于区分"应用关闭导致的 disconnect"和"真正的登出"。
+  bool get isQuitting => _isQuitting;
 
   /// 初始化 window_manager。应在 [WidgetsFlutterBinding.ensureInitialized] 之后、
   /// runApp 之前调用。
@@ -90,11 +97,16 @@ class PCWindowManager {
     }
   }
 
-  /// 主动请求关闭窗口（退出应用时使用）。
+  /// 主动请求关闭窗口并退出应用（托盘菜单"退出"使用）。
   Future<void> closeWindow() async {
+    _isQuitting = true;
     await _saveWindowState();
     await windowManager.setPreventClose(false);
     await windowManager.close();
+    // 先断开 IM 连接,给 1 秒让网络包发出,再强制结束进程。
+    await Imclient.disconnect();
+    await Future.delayed(const Duration(seconds: 1));
+    exit(0);
   }
 
   Future<_WindowState?> _loadWindowState() async {
@@ -168,11 +180,22 @@ class _WindowListener extends WindowListener {
 
   @override
   void onWindowClose() async {
-    // 默认行为:先保存窗口状态,然后隐藏窗口(托盘接管)。
-    // 真正退出由托盘菜单或 Cmd+Q/Alt+F4 处理。
-    await PCWindowManager()._saveWindowState();
-    await windowManager.hide();
-    _setBackground(true);
+    if (PCWindowManager().isQuitting) {
+      return;
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final closeToExit = prefs.getBool('pc_close_to_exit') ?? false;
+
+    if (closeToExit) {
+      // 设置"点击关闭按钮退出应用"时,走完整退出流程(含 disconnect)
+      await PCWindowManager().closeWindow();
+    } else {
+      // 默认行为:先保存窗口状态,然后隐藏窗口(托盘接管)。
+      await PCWindowManager()._saveWindowState();
+      await windowManager.hide();
+      _setBackground(true);
+    }
   }
 
   @override
