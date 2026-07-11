@@ -254,6 +254,23 @@ class MMPreviewViewState extends State<MMPreviewView> {
                       }
                     }
                   })),
+          // Close button on desktop
+          if (isDesktopShell)
+            Positioned(
+              top: 24,
+              right: 24,
+              child: HoverBuilder(
+                builder: (context, isHovered) => Material(
+                  color: isHovered ? Colors.black.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.25),
+                  shape: const CircleBorder(),
+                  child: IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
+                    onPressed: () => Navigator.pop(context),
+                    tooltip: AppLocalizations.of(context)!.close,
+                  ),
+                ),
+              ),
+            ),
           // Left chevron button on desktop
           if (isDesktopShell && currentIndex > 0)
             Positioned(

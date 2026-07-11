@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart' as badge;
+import '../widgets/unread_badge.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:chat/l10n/app_localizations.dart';
@@ -308,16 +308,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
               child: Row(
                 children: <Widget>[
                   key == 'new_friend'
-                      ? badge.Badge(
-                          showBadge: unreadFriendRequestCount > 0,
-                          badgeContent: Text(
-                            unreadFriendRequestCount > 99 ? '99+' : '$unreadFriendRequestCount',
-                            style: TextStyle(color: Colors.white, fontSize: 12),
-                          ),
-                          badgeStyle: badge.BadgeStyle(
-                            badgeColor: context.colors.badge,
-                            padding: isDesktopShell ? const EdgeInsets.all(5) : const EdgeInsets.all(4),
-                          ),
+                      ? UnreadBadge(
+                          count: unreadFriendRequestCount,
                           child: _buildHeaderIcon(imagePath))
                       : _buildHeaderIcon(imagePath),
                   Container(

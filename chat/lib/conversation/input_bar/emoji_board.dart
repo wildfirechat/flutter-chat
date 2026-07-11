@@ -360,7 +360,6 @@ class _EmojiBoardState extends State<EmojiBoard> {
                     height: delSizeY - 2 * delPadding,
                     child: Image.asset(
                       'assets/images/input/del_emoji.png',
-                      color: context.colors.iconPrimary,
                     ),
                   ),
                 ),

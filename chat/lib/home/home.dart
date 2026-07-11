@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:badges/badges.dart' as badge;
+import '../widgets/unread_badge.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -303,19 +304,10 @@ class HomeTabBarState extends State<HomeTabBar> {
   }
 
   Widget _buildBadge(int count, Widget child) {
-    if (count == 0) {
-      return child;
-    }
-
-    return badge.Badge(
+    // count == -1 表示好友请求红点(无数字)
+    return UnreadBadge(
+      count: count,
       position: badge.BadgePosition.topEnd(top: 0, end: -12),
-      badgeContent: count == -1 // Friend request indicator
-          ? null
-          : Text(
-              count > 99 ? '99+' : '$count',
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-            ),
-      badgeStyle: badge.BadgeStyle(badgeColor: context.colors.badge, padding: const EdgeInsets.all(5)),
       child: child,
     );
   }

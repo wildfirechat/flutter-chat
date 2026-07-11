@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:badges/badges.dart' as badge;
+import '../widgets/unread_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:window_manager/window_manager.dart';
@@ -1137,16 +1138,10 @@ class _SideBarTab extends StatelessWidget {
                     : colors.iconSecondary.withValues(alpha: 0.7),
           );
           if (badgeCount != 0) {
-            icon = badge.Badge(
+            // badgeCount == -1 表示红点(无数字)
+            icon = UnreadBadge(
+              count: badgeCount,
               position: badge.BadgePosition.topEnd(top: -5, end: -9),
-              badgeContent: badgeCount == -1
-                  ? null
-                  : Text(
-                      badgeCount > 99 ? '99+' : '$badgeCount',
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
-                    ),
-              badgeStyle: badge.BadgeStyle(
-                  badgeColor: colors.badge, padding: const EdgeInsets.all(5)),
               child: icon,
             );
           }

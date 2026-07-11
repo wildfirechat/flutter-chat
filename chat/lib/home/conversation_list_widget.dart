@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:badges/badges.dart' as badge;
+import '../widgets/unread_badge.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
@@ -329,20 +329,9 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                   ),
               builder: (context, value, child) => Row(
                     children: <Widget>[
-                      badge.Badge(
-                        showBadge: conversationInfo.unreadCount.unread > 0,
-                        badgeContent: Text(
-                          conversationInfo.isSilent
-                              ? ''
-                              : (conversationInfo.unreadCount.unread > 99
-                                  ? '99+'
-                                  : '${conversationInfo.unreadCount.unread}'),
-                          style: TextStyle(color: Colors.white, fontSize: 12),
-                        ),
-                        badgeStyle: badge.BadgeStyle(
-                          badgeColor: context.colors.badge,
-                          padding: isDesktopShell ? const EdgeInsets.all(5) : const EdgeInsets.all(4),
-                        ),
+                      UnreadBadge(
+                        count: conversationInfo.unreadCount.unread,
+                        asDot: conversationInfo.isSilent,
                         child: _buildPortraitImage(conversationInfo.conversation, value.$1, value.$2, value.$3),
                       ),
                       Expanded(
