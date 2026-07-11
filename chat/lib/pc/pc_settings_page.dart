@@ -472,8 +472,8 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
                     title: l10n.interfaceLanguage,
                     subtitle: l10n.interfaceLanguageDesc,
                     valueText: currentLangText,
-                    onTap: (rowContext) {
-                      _showLanguageMenu(rowContext);
+                    onTap: (rowContext, tapPosition) {
+                      _showLanguageMenu(rowContext, tapPosition);
                     },
                   ),
                   const Divider(height: 0.5),
@@ -481,8 +481,8 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
                     title: l10n.appearanceTheme,
                     subtitle: l10n.appearanceThemeDesc,
                     valueText: currentThemeText,
-                    onTap: (rowContext) {
-                      _showThemeMenu(rowContext);
+                    onTap: (rowContext, tapPosition) {
+                      _showThemeMenu(rowContext, tapPosition);
                     },
                   ),
                   const Divider(height: 0.5),
@@ -502,25 +502,16 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
     );
   }
 
-  /// 把菜单锚定到被点击的那一行(selectorContext 来自行内的 Builder)。
-  static RelativeRect _menuPosition(BuildContext selectorContext) {
-    final RenderBox button = selectorContext.findRenderObject() as RenderBox;
-    final RenderBox overlay = Navigator.of(selectorContext).overlay!.context.findRenderObject() as RenderBox;
-    return RelativeRect.fromRect(
-      Rect.fromPoints(
-        button.localToGlobal(Offset.zero, ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
-      ),
-      Offset.zero & overlay.size,
-    );
-  }
-
-  void _showLanguageMenu(BuildContext selectorContext) {
+  void _showLanguageMenu(BuildContext selectorContext, Offset tapPosition) {
     final l10n = AppLocalizations.of(selectorContext)!;
     final localeViewModel = Provider.of<LocaleViewModel>(selectorContext, listen: false);
+    final overlay = Navigator.of(selectorContext).overlay!.context.findRenderObject() as RenderBox;
     showMenu<String>(
       context: selectorContext,
-      position: _menuPosition(selectorContext),
+      position: RelativeRect.fromRect(
+        overlay.globalToLocal(tapPosition) & Size.zero,
+        Offset.zero & overlay.size,
+      ),
       items: [
         PopupMenuItem(value: 'follow_system', child: Text(l10n.followSystem)),
         PopupMenuItem(value: 'zh', child: Text(l10n.simplifiedChinese)),
@@ -534,12 +525,16 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
     });
   }
 
-  void _showThemeMenu(BuildContext selectorContext) {
+  void _showThemeMenu(BuildContext selectorContext, Offset tapPosition) {
     final l10n = AppLocalizations.of(selectorContext)!;
     final themeViewModel = Provider.of<ThemeViewModel>(selectorContext, listen: false);
+    final overlay = Navigator.of(selectorContext).overlay!.context.findRenderObject() as RenderBox;
     showMenu<ThemeMode>(
       context: selectorContext,
-      position: _menuPosition(selectorContext),
+      position: RelativeRect.fromRect(
+        overlay.globalToLocal(tapPosition) & Size.zero,
+        Offset.zero & overlay.size,
+      ),
       items: [
         PopupMenuItem(value: ThemeMode.system, child: Text(l10n.followSystem)),
         PopupMenuItem(value: ThemeMode.light, child: Text(l10n.themeLight)),
@@ -905,18 +900,25 @@ class _SettingsClickableRow extends StatelessWidget {
   }
 }
 
-class _SettingsSelectorRow extends StatelessWidget {
+class _SettingsSelectorRow extends StatefulWidget {
   final String title;
   final String subtitle;
   final String valueText;
-  final void Function(BuildContext) onTap;
+  final void Function(BuildContext, Offset) onTap;
 
-  const _SettingsSelectorRow({
+  _SettingsSelectorRow({
     required this.title,
     required this.subtitle,
     required this.valueText,
     required this.onTap,
   });
+
+  @override
+  State<_SettingsSelectorRow> createState() => _SettingsSelectorRowState();
+}
+
+class _SettingsSelectorRowState extends State<_SettingsSelectorRow> {
+  Offset _tapPosition = Offset.zero;
 
   @override
   Widget build(BuildContext context) {
@@ -925,7 +927,10 @@ class _SettingsSelectorRow extends StatelessWidget {
       builder: (context, hovered) {
         return Builder(
           builder: (rowContext) => InkWell(
-            onTap: () => onTap(rowContext),
+            onTapDown: (details) {
+              _tapPosition = details.globalPosition;
+            },
+            onTap: () => widget.onTap(rowContext, _tapPosition),
             child: Container(
               color: hovered ? context.colors.hoverOverlay : Colors.transparent,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),

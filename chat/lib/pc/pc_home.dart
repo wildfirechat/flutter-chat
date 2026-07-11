@@ -74,9 +74,14 @@ class _PCHomeState extends State<PCHome> {
   double _resizeStartWidth = 0;
   double _resizeOffset = 0;
 
+  late final ScrollController _conversationScrollController;
+  final ValueNotifier<double> _conversationScrollOffset = ValueNotifier<double>(0.0);
+
   @override
   void initState() {
     super.initState();
+    _conversationScrollController = ScrollController();
+    _conversationScrollController.addListener(_onConversationScroll);
     // Shell 状态是应用级的(main.dart 注册),这里只做本次会话的初始化与打开器注入。
     _shellViewModel = context.read<PCShellViewModel>();
     _shellViewModel.reset();
@@ -87,8 +92,17 @@ class _PCHomeState extends State<PCHome> {
     _conversationListViewModel.addListener(_onConversationListChanged);
   }
 
+  void _onConversationScroll() {
+    if (_conversationScrollController.hasClients) {
+      _conversationScrollOffset.value = _conversationScrollController.offset;
+    }
+  }
+
   @override
   void dispose() {
+    _conversationScrollController.removeListener(_onConversationScroll);
+    _conversationScrollController.dispose();
+    _conversationScrollOffset.dispose();
     _conversationListViewModel.removeListener(_onConversationListChanged);
     // 路由替换时新 PCHome 先 initState、旧的后 dispose,只清掉仍属于自己的打开器
     if (_shellViewModel.conversationOpener == _openConversation) {
@@ -768,6 +782,38 @@ class _PCHomeState extends State<PCHome> {
                   ),
                 );
               }
+              if (shell.selectedTab == PCShellViewModel.tabChat) {
+                return Consumer<ConversationListViewModel>(
+                  builder: (context, conversationListVM, _) {
+                    return ValueListenableBuilder<double>(
+                      valueListenable: _conversationScrollOffset,
+                      builder: (context, offset, _) {
+                        final colors = context.colors;
+                        final list = conversationListVM.conversationList;
+                        Color headerBgColor = colors.middleBgDesktop;
+                         if (list.isNotEmpty) {
+                          double itemExtent = conversationItemExtent(context);
+                          int index = (offset / itemExtent).floor();
+                          if (index < 0) {
+                            index = 0;
+                          }
+                          if (index >= 0 && index < list.length) {
+                            if (list[index].isTop > 0) {
+                              headerBgColor = colors.cellTopDesktop;
+                            }
+                          }
+                        }
+                        return _MiddleColumnHeader(
+                          onSearchTap: _openSearchModal,
+                          onStartChat: _startChat,
+                          onAddFriend: _onAddFriend,
+                          backgroundColor: headerBgColor,
+                        );
+                      },
+                    );
+                  },
+                );
+              }
               return _MiddleColumnHeader(
                 onSearchTap: _openSearchModal,
                 onStartChat: _startChat,
@@ -796,6 +842,8 @@ class _PCHomeState extends State<PCHome> {
                     ConversationListWidget(
                       onConversationSelected: _openConversation,
                       selectedConversation: shell.selectedConversation,
+                      scrollController: _conversationScrollController,
+                      scrollOffset: _conversationScrollOffset,
                     ),
                     const PcContactList(),
                     const _WorkTabPlaceholder(),
@@ -817,21 +865,25 @@ class _MiddleColumnHeader extends StatelessWidget {
   final VoidCallback onSearchTap;
   final VoidCallback onStartChat;
   final VoidCallback onAddFriend;
+  final Color? backgroundColor;
 
-  const _MiddleColumnHeader(
-      {required this.onSearchTap,
+  const _MiddleColumnHeader({
+    required this.onSearchTap,
       required this.onStartChat,
-      required this.onAddFriend});
+    required this.onAddFriend,
+    this.backgroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
+    final resolvedBgColor = backgroundColor ?? colors.cellTopDesktop;
     return Container(
       height: PcTheme.headerHeight,
       padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
       alignment: Alignment.center,
-      color: colors.cellTopDesktop,
+      color: resolvedBgColor,
       child: Row(
         children: [
           Expanded(
@@ -861,7 +913,11 @@ class _MiddleColumnHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          _PlusMenuButton(onStartChat: onStartChat, onAddFriend: onAddFriend),
+          _PlusMenuButton(
+            onStartChat: onStartChat,
+            onAddFriend: onAddFriend,
+            backgroundColor: resolvedBgColor,
+          ),
         ],
       ),
     );
@@ -871,8 +927,13 @@ class _MiddleColumnHeader extends StatelessWidget {
 class _PlusMenuButton extends StatelessWidget {
   final VoidCallback onStartChat;
   final VoidCallback onAddFriend;
+  final Color? backgroundColor;
 
-  const _PlusMenuButton({required this.onStartChat, required this.onAddFriend});
+  const _PlusMenuButton({
+    required this.onStartChat,
+    required this.onAddFriend,
+    this.backgroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {

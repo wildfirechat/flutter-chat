@@ -136,13 +136,20 @@ class _PcSearchViewState extends State<PcSearchView> {
                   const SizedBox(width: 8),
                   // 占位的“+”,维持与常规头部一致的布局(不可交互)
                   Container(
-                    width: 28,
-                    height: 28,
+                    width: 20,
+                    height: 20,
                     decoration: BoxDecoration(
-                      color: context.colors.inputBg,
-                      borderRadius: BorderRadius.circular(4),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: context.colors.iconPrimary.withValues(alpha: 0.4),
+                        width: 1,
+                      ),
                     ),
-                    child: Icon(Icons.add, size: 18, color: context.colors.iconSecondary.withValues(alpha: 0.4)),
+                    child: Icon(
+                      Icons.add,
+                      size: 14,
+                      color: context.colors.iconSecondary.withValues(alpha: 0.4),
+                    ),
                   ),
                 ],
               ),

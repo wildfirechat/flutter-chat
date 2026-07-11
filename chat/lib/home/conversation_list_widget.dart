@@ -40,7 +40,7 @@ const double _kConversationRowHeightDesktop = 70.0;
 double get kConversationRowHeight => isDesktopShell ? _kConversationRowHeightDesktop : _kConversationRowHeightMobile;
 const double _kDividerHeight = 0.5;
 
-double _conversationItemExtent(BuildContext context) =>
+double conversationItemExtent(BuildContext context) =>
     LayoutScale.watchScale(context, kConversationRowHeight, cap: LayoutScale.rowCap) + _kDividerHeight;
 
 class ConversationListWidget extends StatelessWidget {
@@ -48,8 +48,16 @@ class ConversationListWidget extends StatelessWidget {
   /// 移动端不传,保持原有行为。
   final Function(Conversation conversation)? onConversationSelected;
   final Conversation? selectedConversation;
+  final ScrollController? scrollController;
+  final ValueNotifier<double>? scrollOffset;
 
-  const ConversationListWidget({super.key, this.onConversationSelected, this.selectedConversation});
+  const ConversationListWidget({
+    super.key,
+    this.onConversationSelected,
+    this.selectedConversation,
+    this.scrollController,
+    this.scrollOffset,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -64,10 +72,59 @@ class ConversationListWidget extends StatelessWidget {
             children: [
               const StatusNotificationHeader(),
               Expanded(
+                child: isDesktopShell && scrollOffset != null
+                    ? ValueListenableBuilder<double>(
+                        valueListenable: scrollOffset!,
+                        builder: (context, offset, child) {
+                          final list = conversationListViewModel.conversationList;
+                          final isFirstItemPinned = list.isNotEmpty && list[0].isTop > 0;
+                          final overscrollHeight = (offset < 0 && isFirstItemPinned) ? -offset : 0.0;
+                          return Stack(
+                            children: [
+                              Positioned.fill(
+                                child: Container(
+                                  color: context.colors.middleBgDesktop,
+                                ),
+                              ),
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                height: overscrollHeight,
+                                child: Container(
+                                  color: context.colors.cellTopDesktop,
+                                ),
+                              ),
+                              Positioned.fill(
+                                child: child!,
+                              ),
+                            ],
+                          );
+                        },
                 child: ListView.builder(
+                          controller: scrollController,
+                          itemCount: conversationListViewModel.conversationList.length,
+                          itemExtent: conversationItemExtent(context),
+                          key: ValueKey<int>(conversationListViewModel.conversationList.length),
+                          cacheExtent: 200,
+                          addRepaintBoundaries: true,
+                          addAutomaticKeepAlives: false,
+                          itemBuilder: (context, i) {
+                            ConversationInfo info = conversationListViewModel.conversationList[i];
+                            var key =
+                                '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
+                            return ConversationListItem(
+                              info,
+                              key: ValueKey(key),
+                              onTap: onConversationSelected,
+                              isSelected: info.conversation == selectedConversation,
+                            );
+                          },
+                        ),
+                      )
+                    : ListView.builder(
                     itemCount: conversationListViewModel.conversationList.length,
-                    // 使用 ListView.builder 的 key 参数确保列表项在顺序变化时能正确更新
-                    itemExtent: _conversationItemExtent(context),
+                        itemExtent: conversationItemExtent(context),
                     key: ValueKey<int>(conversationListViewModel.conversationList.length),
                     cacheExtent: 200,
                     addRepaintBoundaries: true,
@@ -82,7 +139,8 @@ class ConversationListWidget extends StatelessWidget {
                         onTap: onConversationSelected,
                         isSelected: info.conversation == selectedConversation,
                       );
-                    }),
+                        },
+                      ),
               ),
             ],
           ),
