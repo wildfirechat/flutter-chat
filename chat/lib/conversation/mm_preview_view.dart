@@ -46,7 +46,6 @@ class MMPreviewViewState extends State<MMPreviewView> {
   late int currentIndex;
   late PageController _pageController;
   bool isZoomed = false; // Add zoomed state
-  bool isDragging = false;
   final Map<int, int> _rotations = {};
   // 每张图一个缩放状态控制器(按 messageId 存,onLoadMore 前插后 index 会变)
   final Map<int, PhotoViewScaleStateController> _scaleStateControllers = {};
@@ -255,54 +254,6 @@ class MMPreviewViewState extends State<MMPreviewView> {
                       }
                     }
                   })),
-          if (!isDesktopShell && !isDragging)
-            Positioned(
-              bottom: 20,
-              child: Container(
-                  alignment: Alignment.center,
-                  width: MediaQuery.of(context).size.width,
-                  child: Text(
-                      "${currentIndex + 1}/${widget.mediaItems.length}",
-                      style: const TextStyle(
-                        decoration: TextDecoration.none,
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        shadows: [
-                          Shadow(color: Colors.black, offset: Offset(1, 1)),
-                        ],
-                      ))),
-            ),
-          if (!isDragging)
-            Positioned(
-              //右上角关闭
-              top: isDesktopShell ? 40 : 60,
-              right: isDesktopShell ? 20 : 40,
-              child: Container(
-                alignment: Alignment.centerLeft,
-                width: 36,
-                height: 36,
-                child: GestureDetector(
-                  onTap: () {
-                    //隐藏预览
-                    Navigator.pop(context);
-                  },
-                  child: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
-                ),
-              ),
-            ),
-          if (!isDesktopShell && !isDragging)
-            Positioned(
-              //数量显示
-              right: 20,
-              top: 20,
-              child: Text(
-                '${currentIndex + 1}/${widget.mediaItems.length}',
-                style: const TextStyle(
-                    color: Colors
-                        .white),
-              ),
-            ),
           // Left chevron button on desktop
           if (isDesktopShell && currentIndex > 0)
             Positioned(
@@ -389,16 +340,6 @@ class MMPreviewViewState extends State<MMPreviewView> {
                         onPressed: _saveCurrentMedia,
                         tooltip: AppLocalizations.of(context)!.saveAs,
                       ),
-                      const VerticalDivider(color: Colors.white24, width: 24, indent: 14, endIndent: 14),
-                      Text(
-                        "${currentIndex + 1} / ${widget.mediaItems.length}",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          decoration: TextDecoration.none,
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -441,16 +382,6 @@ class MMPreviewViewState extends State<MMPreviewView> {
           : () => widget.sourceRectProvider!(widget.mediaItems[currentIndex]),
       onDismiss: () {
         Navigator.pop(context);
-      },
-      onDragStart: () {
-        setState(() {
-          isDragging = true;
-        });
-      },
-      onDragEnd: () {
-        setState(() {
-          isDragging = false;
-        });
       },
       child: content,
     );

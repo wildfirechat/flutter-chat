@@ -209,14 +209,17 @@ class _DragToDismissState extends State<DragToDismiss>
     );
 
     // 飞回目标时逐帧裁剪:屏幕空间的裁剪 rect 换算回 child 坐标,
-    // 圆角保持屏幕 8(除以 scale 抵消变换),落点形状与气泡缩略图一致
+    // 圆角保持屏幕 8(除以 scale 抵消变换),落点形状与气泡缩略图一致。
+    // ClipRRect 必须常驻(不裁剪时 Clip.none),否则中途插入会改变树结构,
+    // 导致 PageView 子树被重建、页码跳回 initialPage
     final Rect? screenClip = _clipAnimation?.value;
-    if (screenClip != null) {
-      content = ClipRRect(
-        clipper: _RRectClipper(_toChildRect(screenClip), 8.0 / _scale),
-        child: content,
-      );
-    }
+    content = ClipRRect(
+      clipper: screenClip == null
+          ? null
+          : _RRectClipper(_toChildRect(screenClip), 8.0 / _scale),
+      clipBehavior: screenClip == null ? Clip.none : Clip.antiAlias,
+      child: content,
+    );
 
     return Stack(
       children: [

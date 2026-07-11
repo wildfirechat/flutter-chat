@@ -21,9 +21,11 @@ class SplashScreen extends StatelessWidget {
 //     }
 
     final colors = context.colors;
-    return SafeArea(
-        child: Container(
-          color: colors.surface,
+    // 背景色必须包在 SafeArea 外层:splash 作为 home 直接展示、没有 Scaffold,
+    // SafeArea 让出的状态栏/导航条区域若未绘制会渲染成黑边。
+    return Container(
+        color: colors.surface,
+        child: SafeArea(
           child: Column(
             children: [
               const Padding(padding: EdgeInsets.only(top: 120)),
