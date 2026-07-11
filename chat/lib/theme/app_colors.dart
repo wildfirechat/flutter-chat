@@ -205,7 +205,7 @@ class AppColors extends ThemeExtension<AppColors> {
     cellHover: Color(0xFFDBDAD9),
     cellHoverDesktop: Color(0xFFEEEEF0),
     cellSelected: Color(0xFFC8C7C6),
-    cellSelectedDesktop: Color(0xFFD8E3FD),
+    cellSelectedDesktop: Color(0xFF2B62DE),
     cellTop: Color(0xFFE6E5E5),
     cellTopDesktop: Color(0xFFE6E6E7),
     sidebarHoverBg: Color(0xFFDCDCDC),

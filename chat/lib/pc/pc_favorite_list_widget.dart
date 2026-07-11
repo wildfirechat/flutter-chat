@@ -1,17 +1,25 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:imclient/imclient.dart';
 import 'package:imclient/message/composite_message_content.dart';
 import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/link_message_content.dart';
+import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
+import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
+import 'package:imclient/message/unknown_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
+import 'package:imclient/model/conversation.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/conversation/composite_message_detail_screen.dart';
+import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/model/favorite_item.dart';
 import 'package:chat/pc/pc_platform.dart';
@@ -147,7 +155,213 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
     });
   }
 
-  void _onTapItem(FavoriteItem item) {
+  void _showFavoriteItemMenu(FavoriteItem item) {
+    final l10n = AppLocalizations.of(context)!;
+    final message = item.toMessage();
+    final content = message.content;
+    final canDownload = item.url.isNotEmpty &&
+        (content is ImageMessageContent ||
+            content is VideoMessageContent ||
+            content is FileMessageContent ||
+            content is SoundMessageContent);
+
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.open_in_new_outlined),
+              title: Text(l10n.open),
+              onTap: () {
+                Navigator.pop(ctx);
+                _openItem(item);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.share_outlined),
+              title: Text(l10n.forward),
+              onTap: () {
+                Navigator.pop(ctx);
+                _forwardItem(item);
+              },
+            ),
+            if (canDownload)
+              ListTile(
+                leading: const Icon(Icons.download_outlined),
+                title: Text(l10n.download),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _downloadItem(item);
+                },
+              ),
+            ListTile(
+              leading: Icon(Icons.delete_outline, color: context.colors.danger),
+              title: Text(l10n.delete, style: TextStyle(color: context.colors.danger)),
+              onTap: () {
+                Navigator.pop(ctx);
+                _showDeleteConfirm(item);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _forwardItem(FavoriteItem item) {
+    final message = item.toMessage();
+    if (message.content is UnknownMessageContent) {
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.unsupportedMessageType);
+      return;
+    }
+    showPickForwardTarget(
+      context,
+      messages: [message],
+      onSelected: (targets, comment) {
+        _sendForwardMessages(targets, [message], comment);
+      },
+    );
+  }
+
+  void _sendForwardMessages(List<Conversation> targets, List<Message> messages, String? comment) {
+    final l10n = AppLocalizations.of(context)!;
+    final total = targets.length * messages.length + (comment != null && comment.isNotEmpty ? targets.length : 0);
+    int successCount = 0;
+    int failCount = 0;
+
+    void checkComplete() {
+      if (successCount + failCount >= total) {
+        if (failCount == 0) {
+          Fluttertoast.showToast(msg: '${l10n.forward}${l10n.success}');
+        } else {
+          Fluttertoast.showToast(msg: '${l10n.send}${l10n.success}: $successCount, ${l10n.setFail}$failCount');
+        }
+      }
+    }
+
+    if (comment != null && comment.isNotEmpty) {
+      for (final target in targets) {
+        Imclient.sendMessage(
+          target,
+          TextMessageContent(comment),
+          successCallback: (_, __) {
+            successCount++;
+            checkComplete();
+          },
+          errorCallback: (_) {
+            failCount++;
+            checkComplete();
+          },
+        );
+      }
+    }
+    for (final target in targets) {
+      for (final msg in messages) {
+        Imclient.sendMessage(
+          target,
+          msg.content,
+          successCallback: (_, __) {
+            successCount++;
+            checkComplete();
+          },
+          errorCallback: (_) {
+            failCount++;
+            checkComplete();
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> _downloadItem(FavoriteItem item) async {
+    final l10n = AppLocalizations.of(context)!;
+    final fileName = item.title.isNotEmpty
+        ? item.title
+        : (item.favType == MESSAGE_CONTENT_TYPE_IMAGE
+            ? 'image_${item.favId}.jpg'
+            : item.favType == MESSAGE_CONTENT_TYPE_VIDEO
+                ? 'video_${item.favId}.mp4'
+                : item.favType == MESSAGE_CONTENT_TYPE_SOUND
+                    ? 'voice_${item.favId}.aac'
+                    : 'file_${item.favId}');
+    try {
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: l10n.saveFile,
+        fileName: fileName,
+      );
+      if (outputFile == null) return;
+
+      final url = item.url;
+      if (url.isEmpty) {
+        Fluttertoast.showToast(msg: l10n.saveFailSourceMissing);
+        return;
+      }
+
+      Imclient.getAuthorizedMediaUrl(
+        url,
+        item.messageUid,
+        _mediaTypeForFavType(item.favType).index,
+        (authorizedUrl) async {
+          try {
+            final client = HttpClient();
+            final request = await client.getUrl(Uri.parse(MediaUrlRedirector.redirect(authorizedUrl)));
+            final response = await request.close();
+            final bytes = await response.fold<List<int>>([], (prev, element) => prev..addAll(element));
+            await File(outputFile).writeAsBytes(bytes);
+            Fluttertoast.showToast(msg: l10n.saveSuccess);
+          } catch (e) {
+            Fluttertoast.showToast(msg: l10n.saveFail('$e'));
+          }
+        },
+        (errorCode) {
+          Fluttertoast.showToast(msg: l10n.saveFailSourceMissing);
+        },
+      );
+    } catch (e) {
+      Fluttertoast.showToast(msg: l10n.saveFail('$e'));
+    }
+  }
+
+  MediaType _mediaTypeForFavType(int favType) {
+    switch (favType) {
+      case MESSAGE_CONTENT_TYPE_IMAGE:
+        return MediaType.Media_Type_IMAGE;
+      case MESSAGE_CONTENT_TYPE_VIDEO:
+        return MediaType.Media_Type_VIDEO;
+      case MESSAGE_CONTENT_TYPE_SOUND:
+        return MediaType.Media_Type_VOICE;
+      case MESSAGE_CONTENT_TYPE_FILE:
+      default:
+        return MediaType.Media_Type_FILE;
+    }
+  }
+
+  void _showDeleteConfirm(FavoriteItem item) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context)!.deleteFavorite),
+        content: Text(AppLocalizations.of(context)!.deleteFavoriteConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _deleteItem(item);
+            },
+            child: Text(AppLocalizations.of(context)!.delete),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openItem(FavoriteItem item) {
     final message = item.toMessage();
     final content = message.content;
     if (content is ImageMessageContent || content is VideoMessageContent) {
@@ -298,29 +512,8 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
 
   Widget _buildItem(FavoriteItem item) {
     return InkWell(
-      onTap: () => _onTapItem(item),
-      onLongPress: () {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(AppLocalizations.of(context)!.deleteFavorite),
-            content: Text(AppLocalizations.of(context)!.deleteFavoriteConfirm),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(AppLocalizations.of(context)!.cancel),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _deleteItem(item);
-                },
-                child: Text(AppLocalizations.of(context)!.delete),
-              ),
-            ],
-          ),
-        );
-      },
+      onTap: () => _showFavoriteItemMenu(item),
+      onLongPress: () => _showFavoriteItemMenu(item),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(

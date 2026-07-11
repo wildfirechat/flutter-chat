@@ -620,6 +620,7 @@
   "copySuccess": "复制成功",
   "copyFail": "复制失败",
   "deleteFileConfirm": "确认要删除“{name}”吗？",
+  "download": "下载",
   "downloadOrOpen": "下载/打开",
   "share": "分享",
   "move": "移动",

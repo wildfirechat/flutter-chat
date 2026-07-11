@@ -1997,6 +1997,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get download => '下载';
+
+  @override
   String get downloadOrOpen => '下载/打开';
 
   @override

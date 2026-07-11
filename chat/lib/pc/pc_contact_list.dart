@@ -436,7 +436,7 @@ class _EntryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color getBgColor(bool hovered) {
-      if (isSelected) return context.colors.cellSelected;
+      if (isSelected) return context.colors.cellSelectedDesktop;
       if (hovered) return context.colors.cellHover;
       return Colors.transparent;
     }
@@ -457,7 +457,7 @@ class _EntryRow extends StatelessWidget {
               else
                 Portrait(portrait ?? defaultPortrait!, defaultPortrait!, width: _kIconBox, height: _kIconBox, borderRadius: 4),
               const SizedBox(width: _kIconGap),
-              Expanded(child: Text(title, style: PcTheme.cellTitle(context), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(child: Text(title, style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
         ),
@@ -479,7 +479,7 @@ class _ContactRow extends StatelessWidget {
     final isSelected = selectedId == 'user-${userInfo.userId}';
 
     Color getBgColor(bool hovered) {
-      if (isSelected) return context.colors.cellSelected;
+      if (isSelected) return context.colors.cellSelectedDesktop;
       if (hovered) return context.colors.cellHover;
       return Colors.transparent;
     }
@@ -497,7 +497,7 @@ class _ContactRow extends StatelessWidget {
             children: [
               Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
               const SizedBox(width: _kIconGap),
-              Expanded(child: Text(userInfo.getReadableName(), style: PcTheme.cellTitle(context), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(child: Text(userInfo.getReadableName(), style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
         ),
@@ -524,7 +524,7 @@ class _FriendRequestRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color getBgColor(bool hovered) {
-      if (isSelected) return context.colors.cellSelected;
+      if (isSelected) return context.colors.cellSelectedDesktop;
       if (hovered) return context.colors.cellHover;
       return Colors.transparent;
     }
@@ -548,9 +548,9 @@ class _FriendRequestRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(userInfo?.getReadableName() ?? '<${request.target}>',
-                        style: PcTheme.cellTitle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis),
                     if (request.reason != null && request.reason!.isNotEmpty)
-                      Text(request.reason!, style: PcTheme.cellSubtitle(context), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(request.reason!, style: PcTheme.cellSubtitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis),
                   ],
                 ),
               ),
@@ -572,8 +572,8 @@ class _FriendRequestRow extends StatelessWidget {
             Imclient.handleFriendRequest(request.target, true, "", onAccepted, (errorCode) {});
           },
           style: OutlinedButton.styleFrom(
-            foregroundColor: context.colors.accent,
-            side: BorderSide(color: context.colors.accent, width: 1),
+            foregroundColor: isSelected ? Colors.white : context.colors.accent,
+            side: BorderSide(color: isSelected ? Colors.white : context.colors.accent, width: 1),
             padding: const EdgeInsets.symmetric(horizontal: 10),
             textStyle: const TextStyle(fontSize: 12),
           ),
@@ -585,7 +585,7 @@ class _FriendRequestRow extends StatelessWidget {
       request.status == FriendRequestStatus.Accepted
           ? AppLocalizations.of(context)!.friendRequestAccepted
           : AppLocalizations.of(context)!.friendRequestRejected,
-      style: PcTheme.cellSubtitle(context),
+      style: PcTheme.cellSubtitle(context).copyWith(color: isSelected ? Colors.white : null),
     );
   }
 }

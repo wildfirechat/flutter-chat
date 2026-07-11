@@ -620,6 +620,7 @@
   "copySuccess": "Copied successfully",
   "copyFail": "Failed to copy",
   "deleteFileConfirm": "Are you sure you want to delete \"{name}\"?",
+  "download": "Download",
   "downloadOrOpen": "Download/Open",
   "share": "Share",
   "move": "Move",

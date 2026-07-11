@@ -1,12 +1,21 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/message/file_message_content.dart';
+import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
+import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/file_record.dart';
 import 'package:chat/utilities.dart';
+import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'package:chat/conversation/pick_conversation_screen.dart';
 import 'package:chat/contact/pick_user_screen.dart';
+import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:provider/provider.dart';
@@ -342,22 +351,164 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
     }
   }
 
-  Future<void> _openFile(BuildContext context, FileRecord file) async {
+  void _showFileActionMenu(BuildContext context, FileRecord file) {
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.share_outlined),
+              title: Text(l10n.forward),
+              onTap: () {
+                Navigator.pop(ctx);
+                _forwardFile(context, file);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.download_outlined),
+              title: Text(l10n.downloadOrOpen),
+              onTap: () {
+                Navigator.pop(ctx);
+                _downloadFile(context, file);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _forwardFile(BuildContext context, FileRecord file) async {
+    final l10n = AppLocalizations.of(context)!;
     final url = file.url;
     if (url.isEmpty) {
+      Fluttertoast.showToast(msg: l10n.saveFailSourceMissing);
       return;
     }
+
+    void showForward(String remoteUrl) {
+      final content = FileMessageContent();
+      content.name = file.name ?? 'file_${file.messageUid}';
+      content.size = file.size;
+      content.remoteUrl = remoteUrl;
+      final message = Message();
+      message.content = content;
+      showPickForwardTarget(
+        context,
+        messages: [message],
+        onSelected: (targets, comment) {
+          _sendForwardMessages(context, targets, [message], comment);
+        },
+      );
+    }
+
     Imclient.getAuthorizedMediaUrl(
       url,
       file.messageUid,
       MediaType.Media_Type_FILE.index,
       (authorizedUrl) {
-        Utilities.openLink(context, authorizedUrl);
+        if (!context.mounted) return;
+        showForward(authorizedUrl);
       },
       (errorCode) {
-        Utilities.openLink(context, url);
+        if (!context.mounted) return;
+        showForward(url);
       },
     );
+  }
+
+  void _sendForwardMessages(BuildContext context, List<Conversation> targets, List<Message> messages, String? comment) {
+    final l10n = AppLocalizations.of(context)!;
+    final total = targets.length * messages.length + (comment != null && comment.isNotEmpty ? targets.length : 0);
+    int successCount = 0;
+    int failCount = 0;
+
+    void checkComplete() {
+      if (successCount + failCount >= total) {
+        if (failCount == 0) {
+          Fluttertoast.showToast(msg: '${l10n.forward}${l10n.success}');
+        } else {
+          Fluttertoast.showToast(msg: '${l10n.send}${l10n.success}: $successCount, ${l10n.setFail}$failCount');
+        }
+      }
+    }
+
+    if (comment != null && comment.isNotEmpty) {
+      for (final target in targets) {
+        Imclient.sendMessage(
+          target,
+          TextMessageContent(comment),
+          successCallback: (_, __) {
+            successCount++;
+            checkComplete();
+          },
+          errorCallback: (_) {
+            failCount++;
+            checkComplete();
+          },
+        );
+      }
+    }
+    for (final target in targets) {
+      for (final msg in messages) {
+        Imclient.sendMessage(
+          target,
+          msg.content,
+          successCallback: (_, __) {
+            successCount++;
+            checkComplete();
+          },
+          errorCallback: (_) {
+            failCount++;
+            checkComplete();
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> _downloadFile(BuildContext context, FileRecord file) async {
+    final l10n = AppLocalizations.of(context)!;
+    final fileName = file.name ?? 'file_${file.messageUid}';
+    try {
+      String? outputFile = await FilePicker.platform.saveFile(
+        dialogTitle: l10n.saveFile,
+        fileName: fileName,
+      );
+      if (outputFile == null) return;
+
+      final url = file.url;
+      if (url.isEmpty) {
+        Fluttertoast.showToast(msg: l10n.saveFailSourceMissing);
+        return;
+      }
+
+      Imclient.getAuthorizedMediaUrl(
+        url,
+        file.messageUid,
+        MediaType.Media_Type_FILE.index,
+        (authorizedUrl) async {
+          try {
+            final client = HttpClient();
+            final request = await client.getUrl(Uri.parse(MediaUrlRedirector.redirect(authorizedUrl)));
+            final response = await request.close();
+            final bytes = await response.fold<List<int>>([], (prev, element) => prev..addAll(element));
+            await File(outputFile).writeAsBytes(bytes);
+            Fluttertoast.showToast(msg: l10n.saveSuccess);
+          } catch (e) {
+            Fluttertoast.showToast(msg: l10n.saveFail('$e'));
+          }
+        },
+        (errorCode) {
+          Fluttertoast.showToast(msg: l10n.saveFailSourceMissing);
+        },
+      );
+    } catch (e) {
+      Fluttertoast.showToast(msg: l10n.saveFail('$e'));
+    }
   }
 
   Future<void> _deleteFile(FileRecord file) async {
@@ -446,15 +597,23 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
                 ];
                 return ListTile(
                   leading: const Icon(Icons.insert_drive_file, size: 40),
-                  title: Text(file.name ?? l10n.unknownFile, maxLines: 2, overflow: TextOverflow.ellipsis),
-                  subtitle: Text(subtitleParts.join('  ')),
+                  title: Text(
+                    file.name ?? l10n.unknownFile,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 13),
+                  ),
+                  subtitle: Text(
+                    subtitleParts.join('  '),
+                    style: TextStyle(fontSize: 11, color: context.colors.textSecondary),
+                  ),
                   trailing: _canDelete(file)
                       ? IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.red),
                           onPressed: () => _deleteFile(file),
                         )
                       : null,
-                  onTap: () => _openFile(context, file),
+                  onTap: () => _showFileActionMenu(context, file),
                 );
               },
             ),

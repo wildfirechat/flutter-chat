@@ -470,7 +470,7 @@ class _PCHomeState extends State<PCHome> {
               _paneRoute(
                 FileListScreen(
                   title: AppLocalizations.of(context)!.chatFiles,
-                  onBack: () => Navigator.of(context).maybePop(),
+                  onBack: () => _paneNavKey.currentState!.maybePop(),
                   type: FileListType.conversation,
                   conversation: conversation,
                 ),
@@ -495,7 +495,7 @@ class _PCHomeState extends State<PCHome> {
               _paneRoute(
                 FileListScreen(
                   title: AppLocalizations.of(context)!.userFiles,
-                  onBack: () => Navigator.of(context).maybePop(),
+                  onBack: () => _paneNavKey.currentState!.maybePop(),
                   type: FileListType.user,
                   conversation: Conversation(
                     conversationType: ConversationType.Single,
@@ -846,7 +846,6 @@ class _MiddleColumnHeader extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.search_rounded,
                           size: 15, color: colors.textSecondary),
@@ -1135,7 +1134,7 @@ class _SideBarTab extends StatelessWidget {
                 ? colors.accent
                 : hovered
                     ? colors.iconPrimary
-                    : colors.iconSecondary,
+                    : colors.iconSecondary.withValues(alpha: 0.7),
           );
           if (badgeCount != 0) {
             icon = badge.Badge(
@@ -1205,7 +1204,7 @@ class _SideBarIconButton extends StatelessWidget {
               child: Icon(
                 icon,
                 size: 22,
-                color: hovered ? colors.iconPrimary : colors.iconSecondary,
+                color: hovered ? colors.iconPrimary : colors.iconSecondary.withValues(alpha: 0.7),
               ),
             ),
           ),

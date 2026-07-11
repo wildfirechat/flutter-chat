@@ -2019,6 +2019,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get download => 'Download';
+
+  @override
   String get downloadOrOpen => 'Download/Open';
 
   @override

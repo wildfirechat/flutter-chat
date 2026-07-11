@@ -34,7 +34,7 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
       body: SafeArea(
         child: ListView.builder(
             itemCount: conversationListViewModel.conversationList.length,
-            itemExtent: LayoutScale.watchScale(context, 64.0, cap: LayoutScale.rowCap) + 0.5,
+            itemExtent: LayoutScale.watchScale(context, kConversationRowHeight, cap: LayoutScale.rowCap) + 0.5,
             key: ValueKey<int>(conversationListViewModel.conversationList.length),
             itemBuilder: (context, i) {
               ConversationInfo info = conversationListViewModel.conversationList[i];

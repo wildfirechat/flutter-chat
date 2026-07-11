@@ -127,7 +127,9 @@ class _MyAppState extends State<MyApp> {
     setPCWindowNavKey(navKey);
     if (isDesktopShell) {
       _shell = context.read<PCShellViewModel>();
-      PCWindowManager().setupWindow();
+      // 桌面端窗口恢复逻辑已后移到 _initIMClient 中，等登录状态判定完成后再 show/focus，
+      // 避免未登录时窗口先闪到上次登录保存的位置。
+      // PCWindowManager().setupWindow();
       // 桌面端没有 AppLifecycleState.paused，用窗口事件判断前后台
       pcAppInBackground.addListener(() {
         _isBackground = pcAppInBackground.value;
@@ -324,7 +326,12 @@ class _MyAppState extends State<MyApp> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await OrganizationCache.instance.initialize();
     _currentUserId = prefs.getString("userId");
-    if (_currentUserId != null && prefs.getString("token") != null) {
+    final hasCredentials = _currentUserId != null && prefs.getString("token") != null;
+    if (isDesktopShell) {
+      // 桌面端先判断登录状态，已登录才恢复上次窗口位置，避免未登录时窗口先闪到旧位置
+      await PCWindowManager().setupWindow(restoreSavedState: hasCredentials);
+    }
+    if (hasCredentials) {
       Imclient.connect(Config.IM_Host, _currentUserId!, prefs.getString("token")!);
       Future.delayed(const Duration(seconds: 1), () {
         setState(() {

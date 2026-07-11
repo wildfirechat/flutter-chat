@@ -3818,6 +3818,12 @@ abstract class AppLocalizations {
   /// **'确认要删除“{name}”吗？'**
   String deleteFileConfirm(Object name);
 
+  /// No description provided for @download.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载'**
+  String get download;
+
   /// No description provided for @downloadOrOpen.
   ///
   /// In zh, this message translates to:

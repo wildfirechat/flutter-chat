@@ -175,7 +175,7 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
               Container(
                 color: context.colors.surface,
                 child: OptionItem(l10n.joinGroupRequests, showBottomDivider: false, onTap: () {
-                  openPage(context, JoinGroupRequestScreen(groupId: _groupInfo.target));
+                  pushPage(context, JoinGroupRequestScreen(groupId: _groupInfo.target));
                 }),
               ),
             ],

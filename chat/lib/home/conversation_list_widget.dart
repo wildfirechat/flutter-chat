@@ -34,11 +34,11 @@ import 'package:chat/widget/desktop_popup_menu_item.dart';
 /// 否则 s < 1 时内容比 extent 高,debug 下会报 overflow。
 const double _kConversationRowHeightMobile = 64.0;
 const double _kConversationRowHeightDesktop = 70.0;
-double get _kConversationRowHeight => isDesktopShell ? _kConversationRowHeightDesktop : _kConversationRowHeightMobile;
+double get kConversationRowHeight => isDesktopShell ? _kConversationRowHeightDesktop : _kConversationRowHeightMobile;
 const double _kDividerHeight = 0.5;
 
 double _conversationItemExtent(BuildContext context) =>
-    LayoutScale.watchScale(context, _kConversationRowHeight, cap: LayoutScale.rowCap) + _kDividerHeight;
+    LayoutScale.watchScale(context, kConversationRowHeight, cap: LayoutScale.rowCap) + _kDividerHeight;
 
 class ConversationListWidget extends StatelessWidget {
   /// 桌面端 Shell 注入:点击会话时回调(替代默认的全屏 push),并高亮选中会话。
@@ -305,8 +305,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     final cellChild = Column(
       children: <Widget>[
         Container(
-          height: LayoutScale.watchScale(context, _kConversationRowHeight, cap: LayoutScale.rowCap),
-          margin: const EdgeInsets.only(left: 15),
+          height: LayoutScale.watchScale(context, kConversationRowHeight, cap: LayoutScale.rowCap),
+          margin: EdgeInsets.only(left: isDesktopShell ? 11 : 15),
           child: Selector3<UserViewModel, GroupViewModel, ChannelViewModel,
                   (UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? channelInfo, UserInfo? lastMessageSenderUserInfo)>(
               selector: (context, userViewModel, groupViewModel, channelViewModel) => (
@@ -346,13 +346,13 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                           child: Container(
                               height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
                               alignment: Alignment.centerLeft,
-                              margin: const EdgeInsets.only(left: 15),
+                              margin: EdgeInsets.only(left: isDesktopShell ? 11 : 15),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: <Widget>[
                                   Text(
                                     Utilities.conversationTitle(context, conversationInfo.conversation, value.$1, value.$2, value.$3),
-                                    style: const TextStyle(fontSize: 15.0),
+                                    style: TextStyle(fontSize: 15.0, color: (isDesktopShell && widget.isSelected) ? Colors.white : null),
                                     maxLines: 1,
                                   ),
                                   Container(
@@ -381,7 +381,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                               : conversationInfo.lastMessage != null
                                                   ? '${value.$4?.getReadableName() ?? "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
                                                   : '',
-                                          style: TextStyle(fontSize: isDesktopShell ? 14.0 : 12.0, color: context.colors.textTertiary),
+                                          style: TextStyle(fontSize: 12.0, color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -400,7 +400,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                               Utilities.formatTime(context, conversationInfo.timestamp),
                               style: TextStyle(
                                 fontSize: 10.0,
-                                color: context.colors.textTertiary,
+                                color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary,
                               ),
                             ),
                           ),

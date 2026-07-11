@@ -44,26 +44,36 @@ class PCWindowManager {
     _initialized = true;
   }
 
-  /// 配置窗口参数。应在 App 首帧构建完成后调用（如 MyApp.initState 或首页 initState）。
-  Future<void> setupWindow() async {
+  /// 配置窗口参数。应在 [WidgetsFlutterBinding.ensureInitialized] 之后调用，
+  /// 通常在桌面端读取完登录状态后再执行，避免未登录时窗口先闪到上次保存的位置。
+  ///
+  /// [restoreSavedState] 为 true 时恢复上次记录的窗口大小、位置和最大化状态；
+  /// 为 false 时使用默认尺寸并居中显示，常用于未登录时避免窗口先跳到旧位置再变回登录页。
+  Future<void> setupWindow({bool restoreSavedState = true}) async {
     if (!_initialized) {
       await ensureInitialized();
     }
 
     await windowManager.setMinimumSize(const Size(_minWidth, _minHeight));
 
-    final state = await _loadWindowState();
-    if (state != null) {
-      await windowManager.setSize(state.size);
-      if (state.position != null) {
-        await windowManager.setPosition(state.position!);
-      }
-      if (state.isMaximized) {
-        await windowManager.maximize();
+    if (restoreSavedState) {
+      final state = await _loadWindowState();
+      if (state != null) {
+        await windowManager.setSize(state.size);
+        if (state.position != null) {
+          await windowManager.setPosition(state.position!);
+        }
+        if (state.isMaximized) {
+          await windowManager.maximize();
+        }
+      } else {
+        // 无保存状态:使用最小尺寸并居中
+        await windowManager.setSize(const Size(_minWidth, _minHeight));
+        await windowManager.center();
       }
     } else {
-      // 首次启动:默认 1280x720,居中
-      await windowManager.setSize(const Size(1280, 720));
+      // 未登录或明确不恢复：使用最小尺寸并居中，避免窗口闪到上次登录时的旧位置
+      await windowManager.setSize(const Size(_minWidth, _minHeight));
       await windowManager.center();
     }
 
