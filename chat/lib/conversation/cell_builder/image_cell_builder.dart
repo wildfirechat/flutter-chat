@@ -61,6 +61,8 @@ class ImageCellBuilder extends PortraitCellBuilder {
             imageUrl: MediaUrlRedirector.redirect(imageMessageContent.remoteUrl!),
             width: width,
             height: height,
+            memCacheWidth: (width * dpr).ceil(),
+            memCacheHeight: (height * dpr).ceil(),
             fit: BoxFit.cover,
             placeholder: (context, url) {
               // 加载中显示缩略图或占位符

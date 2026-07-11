@@ -30,10 +30,13 @@ class Portrait extends StatelessWidget {
       );
     } else {
       final redirectedUrl = MediaUrlRedirector.redirect(portrait);
+      final dpr = MediaQuery.of(context).devicePixelRatio;
       image = CachedNetworkImage(
         imageUrl: redirectedUrl,
         width: scaledWidth,
         height: scaledHeight,
+        memCacheWidth: (scaledWidth * dpr).ceil(),
+        memCacheHeight: (scaledHeight * dpr).ceil(),
         fit: BoxFit.cover,
         placeholder: (context, url) => Container(
           color: Colors.grey[200],

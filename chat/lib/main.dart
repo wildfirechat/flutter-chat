@@ -62,6 +62,12 @@ import 'package:chat/organization/organization_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 限制全局图片内存缓存，避免大图/头像过多时内存占用过高
+  PaintingBinding.instance.imageCache
+    ..maximumSize = 200
+    ..maximumSizeBytes = 50 << 20; // 50MB
+
   if (!isDesktopShell) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     // 状态栏/导航栏图标的明暗跟随主题,由 MyApp 里的 AnnotatedRegion 下发。
