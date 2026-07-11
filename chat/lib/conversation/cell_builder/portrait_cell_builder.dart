@@ -100,7 +100,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       child: Column(
         crossAxisAlignment: isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          (isDesktopShell ? !isSendMessage && !isHiddenGroupMemberName : !isHiddenGroupMemberName)
+          !isSendMessage && !isHiddenGroupMemberName
               // Selector 复用同一 UserInfo 实例不会因域名到达而重估，这里单独监听 MeshCache
               ? AnimatedBuilder(
                   animation: MeshCache.instance,

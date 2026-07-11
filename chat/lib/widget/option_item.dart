@@ -42,25 +42,26 @@ class OptionItem extends StatelessWidget {
                           child: leftImage ?? Icon(leftIcon, size: iconSize),
                         )
                       : const SizedBox.shrink(),
-                  Expanded(
-                    child: Text(
-                      title,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 16),
-                    ),
+                  Text(
+                    title,
+                    maxLines: 1,
+                    style: const TextStyle(fontSize: 16),
                   ),
-                  desc != null && desc!.isNotEmpty
-                      ? Container(
-                          constraints: const BoxConstraints(maxWidth: 200),
-                          margin: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Text(
-                            desc!,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.right,
-                            style: TextStyle(color: colors.textSecondary, fontSize: 14),
-                          ),
-                        )
-                      : Container(),
+                  const SizedBox(width: 8),
+                  if (desc != null && desc!.isNotEmpty)
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          desc!,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: TextStyle(color: colors.textSecondary, fontSize: 14),
+                        ),
+                      ),
+                    )
+                  else
+                    const Spacer(),
                   rightImage != null || rightIcon != null
                       ? Container(
                           height: iconSize,
