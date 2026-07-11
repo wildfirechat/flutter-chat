@@ -4232,6 +4232,18 @@ abstract class AppLocalizations {
   /// **'最多选择 {count} 人'**
   String maxSelectCount(Object count);
 
+  /// No description provided for @maxImageSelectLimit.
+  ///
+  /// In zh, this message translates to:
+  /// **'最多选择 {count} 张图片'**
+  String maxImageSelectLimit(Object count);
+
+  /// No description provided for @albumPermissionDenied.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法访问相册，请在系统设置中授予照片访问权限'**
+  String get albumPermissionDenied;
+
   /// No description provided for @noOrganizationData.
   ///
   /// In zh, this message translates to:

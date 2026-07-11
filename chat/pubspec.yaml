@@ -59,6 +59,9 @@ dependencies:
       url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
       path: "packages/image_picker/image_picker"
       ref: br_image_picker-v1.1.2_ohos
+  # 直接依赖仅为在 Android 上启用系统 Photo Picker(免相册权限、原生多选上限),见 main.dart
+  image_picker_android: ^0.8.13
+  image_picker_platform_interface: ^2.11.0
   # 本地补丁版(微信式手势:双指焦点缩放、双击定点放大),见 vendor/photo_view/PATCHES.md
   photo_view:
     path: ../vendor/photo_view
@@ -106,6 +109,8 @@ dependencies:
       path: permission_handler_ohos
       ref: br_permission_handler_v11.3.1_ohos
   wechat_camera_picker: ^4.2.1
+  # 微信式应用内相册多选(Android/iOS;ohos 无 photo_manager 实现,走系统选择器)
+  wechat_assets_picker: ^9.4.0
   video_player:
     git:
       url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"

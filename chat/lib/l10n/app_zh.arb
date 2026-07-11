@@ -689,6 +689,8 @@
   "blacklistRemove": "移除",
   "searchOrgMembers": "搜索成员",
   "maxSelectCount": "最多选择 {count} 人",
+  "maxImageSelectLimit": "最多选择 {count} 张图片",
+  "albumPermissionDenied": "无法访问相册，请在系统设置中授予照片访问权限",
   "noOrganizationData": "暂无组织架构数据",
   "orgNoSubOrgOrMembers": "该部门暂无下级部门或成员",
   "subDepartments": "下级部门",

@@ -2215,6 +2215,14 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String maxImageSelectLimit(Object count) {
+    return '最多选择 $count 张图片';
+  }
+
+  @override
+  String get albumPermissionDenied => '无法访问相册，请在系统设置中授予照片访问权限';
+
+  @override
   String get noOrganizationData => '暂无组织架构数据';
 
   @override

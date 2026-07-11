@@ -689,6 +689,8 @@
   "blacklistRemove": "Remove",
   "searchOrgMembers": "Search members",
   "maxSelectCount": "Select up to {count} people",
+  "maxImageSelectLimit": "Select up to {count} images",
+  "albumPermissionDenied": "Cannot access photo library. Please grant photo access in system settings.",
   "noOrganizationData": "No organization data available",
   "orgNoSubOrgOrMembers": "This department has no sub-departments or members",
   "subDepartments": "Sub-departments",

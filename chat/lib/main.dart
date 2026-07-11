@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:avenginekit/engine/call_state.dart';
 import 'package:flutter/foundation.dart';
@@ -15,6 +16,8 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/read_report.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:imclient/model/user_online_state.dart';
+import 'package:image_picker_android/image_picker_android.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:provider/provider.dart';
 import 'package:avenginekit/engine/avengine_callback.dart';
 import 'package:avenginekit/engine/call_session.dart';
@@ -71,6 +74,12 @@ void main() async {
   if (!isDesktopShell) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     // 状态栏/导航栏图标的明暗跟随主题,由 MyApp 里的 AnnotatedRegion 下发。
+  }
+  // image_picker 在 Android 上只剩"我"页拍照换头像在用,相册均已改走应用内
+  // asset picker。显式赋值实例,不依赖自动注册链上的类型判断——本项目出现过
+  // 插件注册链中断导致后续插件未注册的问题,届时 is 判断会静默失效
+  if (Platform.isAndroid) {
+    ImagePickerPlatform.instance = ImagePickerAndroid();
   }
   final PcLayoutViewModel? pcLayoutViewModel = isDesktopShell ? PcLayoutViewModel() : null;
   if (isDesktopShell) {

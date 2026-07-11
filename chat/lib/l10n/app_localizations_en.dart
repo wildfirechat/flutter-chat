@@ -2257,6 +2257,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String maxImageSelectLimit(Object count) {
+    return 'Select up to $count images';
+  }
+
+  @override
+  String get albumPermissionDenied =>
+      'Cannot access photo library. Please grant photo access in system settings.';
+
+  @override
   String get noOrganizationData => 'No organization data available';
 
   @override

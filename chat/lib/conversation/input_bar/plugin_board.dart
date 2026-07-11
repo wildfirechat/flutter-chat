@@ -10,6 +10,7 @@ import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/conversation/input_bar/wf_asset_picker_delegate.dart';
 import 'package:provider/provider.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
 import 'package:chat/l10n/app_localizations.dart';
@@ -28,6 +29,8 @@ class _PluginItem {
 
 class PluginBoard extends StatelessWidget {
   PluginBoard(this.conversation, {super.key, this.height});
+
+  static const int _maxImagePickCount = 9;
 
   final Conversation conversation;
   final double? height;
@@ -171,11 +174,25 @@ class PluginBoard extends StatelessWidget {
                 conversationController.onPickImage(conversation, value.files.first.path!);
               }
             });
+          } else if (Platform.isAndroid || Platform.isIOS) {
+            // 微信式应用内相册多选
+            _pickImagesWithAssetPicker(context, conversationController);
           } else {
+            // ohos:photo_manager 无实现,走系统多选选择器
             var picker = ImagePicker();
-            picker.pickImage(source: ImageSource.gallery).then((value) {
-              if (value != null) {
-                conversationController.onPickImage(conversation, value.path);
+            picker.pickMultiImage(limit: _maxImagePickCount).then((files) {
+              if (files.isEmpty) {
+                return;
+              }
+              // 系统选择器不一定支持 limit,超出时裁剪并提示
+              final selected = files.length > _maxImagePickCount
+                  ? files.sublist(0, _maxImagePickCount)
+                  : files;
+              if (files.length > _maxImagePickCount) {
+                showToast(msg: l10n.maxImageSelectLimit(_maxImagePickCount));
+              }
+              for (final file in selected) {
+                conversationController.onPickImage(conversation, file.path);
               }
             });
           }
@@ -261,6 +278,16 @@ class PluginBoard extends StatelessWidget {
           ),
         );
         break;
+    }
+  }
+
+  /// 微信式应用内相册多选(Android/iOS),最多 [_maxImagePickCount] 张
+  Future<void> _pickImagesWithAssetPicker(
+      BuildContext context, ConversationController conversationController) async {
+    final List<File> files =
+        await pickImagesWithWfAssetPicker(context, maxAssets: _maxImagePickCount);
+    for (final File file in files) {
+      conversationController.onPickImage(conversation, file.path);
     }
   }
 

@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:chat/conversation/input_bar/wf_asset_picker_delegate.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/im_constant.dart';
@@ -138,25 +141,42 @@ class SelfProfile extends StatelessWidget {
   void _pickImage(ImageSource source, BuildContext context) async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: source);
-    if (image != null) {
-      Imclient.uploadMediaFile(image.path, MediaType.Media_Type_PORTRAIT,
-          (url) {
-        Imclient.modifyMyInfo({ModifyMyInfoType.Modify_Portrait: url}, () {
-          Fluttertoast.showToast(
-              msg: AppLocalizations.of(context)!.modifyPortraitSuccess);
-        }, (code) {
-          Fluttertoast.showToast(
-              msg: AppLocalizations.of(context)!
-                  .modifyPortraitFail(code.toString()));
-        });
-      }, (uploaded, total) {
-        // progress
+    if (image != null && context.mounted) {
+      _uploadPortrait(image.path, context);
+    }
+  }
+
+  /// 相册选头像:Android/iOS 走微信式应用内相册(首格带"拍摄"入口),
+  /// 桌面/ohos 无 photo_manager 实现,仍走系统选择器
+  void _pickPortraitFromAlbum(BuildContext context) async {
+    if (Platform.isAndroid || Platform.isIOS) {
+      final files = await pickImagesWithWfAssetPicker(context,
+          maxAssets: 1, showTakePhotoEntry: true);
+      if (files.isNotEmpty && context.mounted) {
+        _uploadPortrait(files.first.path, context);
+      }
+    } else {
+      _pickImage(ImageSource.gallery, context);
+    }
+  }
+
+  void _uploadPortrait(String path, BuildContext context) {
+    Imclient.uploadMediaFile(path, MediaType.Media_Type_PORTRAIT, (url) {
+      Imclient.modifyMyInfo({ModifyMyInfoType.Modify_Portrait: url}, () {
+        Fluttertoast.showToast(
+            msg: AppLocalizations.of(context)!.modifyPortraitSuccess);
       }, (code) {
         Fluttertoast.showToast(
             msg: AppLocalizations.of(context)!
-                .uploadPortraitFail(code.toString()));
+                .modifyPortraitFail(code.toString()));
       });
-    }
+    }, (uploaded, total) {
+      // progress
+    }, (code) {
+      Fluttertoast.showToast(
+          msg: AppLocalizations.of(context)!
+              .uploadPortraitFail(code.toString()));
+    });
   }
 
   @override
@@ -192,27 +212,29 @@ class SelfProfile extends StatelessWidget {
                     onTap: () {
                       showModalBottomSheet(
                         context: context,
-                        builder: (BuildContext context) {
+                        // 弹层关闭后上传回调还会用到 context,这里必须把外层
+                        // context 传下去,不能用已 pop 的 sheetContext
+                        builder: (BuildContext sheetContext) {
                           return SafeArea(
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: <Widget>[
                                 ListTile(
                                   leading: const Icon(Icons.camera_alt),
-                                  title: Text(
-                                      AppLocalizations.of(context)!.takePhoto),
+                                  title: Text(AppLocalizations.of(sheetContext)!
+                                      .takePhoto),
                                   onTap: () {
-                                    Navigator.pop(context);
+                                    Navigator.pop(sheetContext);
                                     _pickImage(ImageSource.camera, context);
                                   },
                                 ),
                                 ListTile(
                                   leading: const Icon(Icons.photo_library),
-                                  title: Text(AppLocalizations.of(context)!
+                                  title: Text(AppLocalizations.of(sheetContext)!
                                       .selectFromAlbum),
                                   onTap: () {
-                                    Navigator.pop(context);
-                                    _pickImage(ImageSource.gallery, context);
+                                    Navigator.pop(sheetContext);
+                                    _pickPortraitFromAlbum(context);
                                   },
                                 ),
                               ],
