@@ -28,7 +28,7 @@ class ForwardMessagePreview extends StatelessWidget {
   }
 
   Widget _buildSingle(BuildContext context, Message message) {
-    final thumbnail = _buildThumbnail(message);
+    final thumbnail = _buildThumbnail(context, message);
 
     return FutureBuilder<String>(
       future: message.content.digest(message),
@@ -60,7 +60,7 @@ class ForwardMessagePreview extends StatelessWidget {
   }
 
   /// 图片消息优先用本地原图,其次用远端地址;其它类型不出图。
-  Widget? _buildThumbnail(Message message) {
+  Widget? _buildThumbnail(BuildContext context, Message message) {
     final content = message.content;
     if (content is! ImageMessageContent) return null;
 
@@ -70,7 +70,12 @@ class ForwardMessagePreview extends StatelessWidget {
     if (localPath != null && File(localPath).existsSync()) {
       image = FileImage(File(localPath));
     } else if (remoteUrl != null) {
-      image = CachedNetworkImageProvider(MediaUrlRedirector.redirect(remoteUrl));
+      final dpr = MediaQuery.devicePixelRatioOf(context);
+      image = ResizeImage(
+        CachedNetworkImageProvider(MediaUrlRedirector.redirect(remoteUrl)),
+        width: (80 * dpr).ceil(),
+        height: (80 * dpr).ceil(),
+      );
     } else {
       return null;
     }

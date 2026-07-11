@@ -65,6 +65,8 @@ class ChannelConversationInfoScreen extends StatelessWidget {
                     imageUrl: MediaUrlRedirector.redirect(channelInfo.portrait!),
                     width: 80,
                     height: 80,
+                    memCacheWidth: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+                    memCacheHeight: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
                   ),
                   Container(margin: const EdgeInsets.only(top: 10.0, bottom: 10), child: Text(channelInfo.name!))
                 ],
