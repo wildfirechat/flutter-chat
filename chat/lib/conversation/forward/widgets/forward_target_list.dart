@@ -14,6 +14,7 @@ import 'package:chat/viewmodel/conversation_list_view_model.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 
 /// 转发目标列表:搜索为空时显示“创建群聊”入口 + 最近聊天,否则显示搜索结果。
 /// 移动端整页、桌面端左栏共用这一份。
@@ -111,7 +112,7 @@ class ForwardTargetList extends StatelessWidget {
   Widget _buildUserTile(UserInfo user) {
     final conversation = Conversation(conversationType: ConversationType.Single, target: user.userId, line: 0);
     return _ConversationTile(
-      title: user.getReadableName(),
+      title: MeshUserDisplay.getReadableName(user),
       portrait: user.portrait ?? Config.defaultUserPortrait,
       defaultPortrait: Config.defaultUserPortrait,
       selected: controller.isSelected(conversation),

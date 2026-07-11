@@ -41,6 +41,7 @@ import cn.wildfirechat.message.core.PersistFlag;
 import cn.wildfirechat.model.ChannelInfo;
 import cn.wildfirechat.model.ChannelMenu;
 import cn.wildfirechat.model.ChatRoomInfo;
+import cn.wildfirechat.model.DomainInfo;
 import cn.wildfirechat.model.ChatRoomMembersInfo;
 import cn.wildfirechat.model.ClientState;
 import cn.wildfirechat.model.Conversation;
@@ -77,9 +78,11 @@ import cn.wildfirechat.remote.GetGroupMembersCallback;
 import cn.wildfirechat.remote.GetGroupsCallback;
 import cn.wildfirechat.remote.GetMessageCallback;
 import cn.wildfirechat.remote.GetOneRemoteMessageCallback;
+import cn.wildfirechat.remote.GetRemoteDomainsCallback;
 import cn.wildfirechat.remote.GetRemoteMessageCallback;
 import cn.wildfirechat.remote.GetUploadUrlCallback;
 import cn.wildfirechat.remote.GetUserInfoCallback;
+import cn.wildfirechat.remote.OnDomainInfoUpdateListener;
 import cn.wildfirechat.remote.SearchChannelCallback;
 import cn.wildfirechat.remote.SearchUserCallback;
 import cn.wildfirechat.remote.SendMessageCallback;
@@ -1105,7 +1108,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         String keyword = call.argument("keyword");
         int searchType = call.argument("searchType");
         int page = call.argument("page");
-        ChatManager.Instance().searchUser(keyword, ChatManager.SearchUserType.type(searchType), page, new SearchUserCallback() {
+        String domainId = call.argument("domainId");
+        SearchUserCallback callback = new SearchUserCallback() {
             @Override
             public void onSuccess(List<UserInfo> list) {
                 callbackBuilder(requestId).put("users", convertUserInfoList(list)).success("onSearchUserResult");
@@ -1114,6 +1118,36 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             @Override
             public void onFail(int i) {
                 callbackBuilder(requestId).fail(i);
+            }
+        };
+        if (!TextUtils.isEmpty(domainId)) {
+            ChatManager.Instance().searchUserEx2(keyword, domainId, ChatManager.SearchUserType.type(searchType), ChatManager.UserSearchUserType.All, page, callback);
+        } else {
+            ChatManager.Instance().searchUser(keyword, ChatManager.SearchUserType.type(searchType), page, callback);
+        }
+    }
+
+    private void isMeshEnabled(@NonNull MethodCall call, @NonNull Result result) {
+        result.success(ChatManager.Instance().isEnableMesh());
+    }
+
+    private void getDomainInfo(@NonNull MethodCall call, @NonNull Result result) {
+        String domainId = call.argument("domainId");
+        boolean refresh = call.argument("refresh");
+        DomainInfo domainInfo = ChatManager.Instance().getDomainInfo(domainId, refresh);
+        result.success(convertDomainInfo(domainInfo));
+    }
+
+    private void getRemoteDomains(@NonNull MethodCall call, @NonNull Result result) {
+        ChatManager.Instance().loadRemoteDomains(new GetRemoteDomainsCallback() {
+            @Override
+            public void onSuccess(List<DomainInfo> list) {
+                result.success(convertDomainInfoList(list));
+            }
+
+            @Override
+            public void onFail(int i) {
+                result.success(new ArrayList<Map<String, Object>>());
             }
         });
     }
@@ -2587,6 +2621,30 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         return output;
     }
 
+    private static Map<String, Object> convertDomainInfo(DomainInfo protoData) {
+        if (protoData == null) return null;
+        Map<String, Object> map = new HashMap<>();
+        map.put("domainId", protoData.domainId);
+        map.put("name", protoData.name);
+        map.put("desc", protoData.desc);
+        map.put("email", protoData.email);
+        map.put("tel", protoData.tel);
+        map.put("address", protoData.address);
+        map.put("extra", protoData.extra);
+        map.put("updateDt", protoData.updateDt);
+        return map;
+    }
+
+    private static List<Map<String, Object>> convertDomainInfoList(List<DomainInfo> protoDatas) {
+        List output = new ArrayList();
+        if (protoDatas != null) {
+            for (DomainInfo protoData : protoDatas) {
+                output.add(convertDomainInfo(protoData));
+            }
+        }
+        return output;
+    }
+
     private static Map<String, Object> convertGroupInfo(GroupInfo protoData) {
         if (protoData == null) return null;
 
@@ -3252,6 +3310,13 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                             Map<String, Object> data = new HashMap<>();
                             data.put("users", convertUserInfoList(list));
                             callback2UI("onUserInfoUpdated", data);
+                            break;
+                        }
+                        case "onDomainInfoUpdate": {
+                            DomainInfo domainInfo = (DomainInfo) args[0];
+                            Map<String, Object> data = new HashMap<>();
+                            data.put("domainInfo", convertDomainInfo(domainInfo));
+                            callback2UI("onDomainInfoUpdate", data);
                             break;
                         }
 //                        @Override

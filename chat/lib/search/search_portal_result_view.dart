@@ -15,6 +15,7 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import '../conversation/conversation_screen.dart';
 import '../utilities.dart';
+import '../utils/mesh_user_display.dart';
 import '../viewmodel/channel_view_model.dart';
 import '../viewmodel/group_view_model.dart';
 import '../viewmodel/user_view_model.dart';
@@ -195,7 +196,7 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
     return _SearchItem(
       leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 36, height: 36, borderRadius: 4.0),
       title: _buildHighlightedText(
-        userInfo.getReadableName(),
+        MeshUserDisplay.getReadableName(userInfo),
         widget.query,
         TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary),
         TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.colors.accent),
@@ -208,7 +209,7 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
     return _SearchItem(
       leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 36, height: 36, borderRadius: 4.0),
       title: _buildHighlightedText(
-        userInfo.getReadableName(),
+        MeshUserDisplay.getReadableName(userInfo),
         widget.query,
         TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.colors.textPrimary),
         TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: context.colors.accent),

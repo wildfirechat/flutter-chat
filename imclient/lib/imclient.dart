@@ -81,6 +81,7 @@ import 'model/chatroom_member_info.dart';
 import 'model/conversation.dart';
 import 'model/conversation_info.dart';
 import 'model/conversation_search_info.dart';
+import 'model/domain_info.dart';
 import 'model/file_record.dart';
 import 'model/friend_request.dart';
 import 'model/group_info.dart';
@@ -287,6 +288,12 @@ class ChannelInfoUpdateEvent {
   List<ChannelInfo> channelInfos;
 
   ChannelInfoUpdateEvent(this.channelInfos);
+}
+
+class DomainInfoUpdatedEvent {
+  DomainInfo? domainInfo;
+
+  DomainInfoUpdatedEvent({this.domainInfo});
 }
 
 class UserOnlineStateUpdatedEvent {
@@ -1023,14 +1030,30 @@ class Imclient {
     return ImclientPlatform.instance.getUserInfos(userIds, groupId: groupId);
   }
 
-  ///搜索用户
+  ///搜索用户，[domainId] 非空时搜索指定外部单位/域内的用户。
   static void searchUser(
       String keyword,
       int searchType,
       int page,
       OperationSuccessUserInfosCallback successCallback,
-      OperationFailureCallback errorCallback) {
-    ImclientPlatform.instance.searchUser(keyword, searchType, page, successCallback, errorCallback);
+      OperationFailureCallback errorCallback,
+      {String? domainId}) {
+    ImclientPlatform.instance.searchUser(keyword, searchType, page, successCallback, errorCallback, domainId: domainId);
+  }
+
+  ///是否开启了 Mesh（外部单位）功能。
+  static Future<bool> isMeshEnabled() async {
+    return ImclientPlatform.instance.isMeshEnabled();
+  }
+
+  ///获取指定域信息，[refresh] 为 true 时从服务器刷新。
+  static Future<DomainInfo?> getDomainInfo(String domainId, {bool refresh = false}) async {
+    return ImclientPlatform.instance.getDomainInfo(domainId, refresh: refresh);
+  }
+
+  ///获取所有可访问的远程域（外部单位）列表。
+  static Future<List<DomainInfo>> getRemoteDomains() async {
+    return ImclientPlatform.instance.getRemoteDomains();
   }
 
   ///异步获取用户信息

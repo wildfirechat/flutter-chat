@@ -42,6 +42,29 @@ ImclientPlugin *gIMClientInstance;
     result(@([WFCCNetworkService sharedInstance].isLogined));
 }
 
+- (void)isMeshEnabled:(NSDictionary *)dict result:(FlutterResult)result {
+    result(@([[WFCCIMService sharedWFCIMService] isMeshEnabled]));
+}
+
+- (void)getDomainInfo:(NSDictionary *)dict result:(FlutterResult)result {
+    NSString *domainId = dict[@"domainId"];
+    BOOL refresh = [dict[@"refresh"] boolValue];
+    WFCCDomainInfo *domainInfo = [[WFCCIMService sharedWFCIMService] getDomainInfo:domainId refresh:refresh];
+    result([self domainInfoToJson:domainInfo]);
+}
+
+- (void)getRemoteDomains:(NSDictionary *)dict result:(FlutterResult)result {
+    [[WFCCIMService sharedWFCIMService] getRemoteDomains:^(NSArray<WFCCDomainInfo *> *domainInfos) {
+        NSMutableArray *array = [[NSMutableArray alloc] initWithCapacity:domainInfos.count];
+        for (WFCCDomainInfo *domainInfo in domainInfos) {
+            [array addObject:[self domainInfoToJson:domainInfo]];
+        }
+        result(array);
+    } error:^(int errorCode) {
+        result(@[]);
+    }];
+}
+
 - (void)connect:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *host = dict[@"host"];
     NSString *userId = dict[@"userId"];
@@ -687,12 +710,21 @@ ImclientPlugin *gIMClientInstance;
     int searchType = [dict[@"searchType"] intValue];
     int page = [dict[@"page"] intValue];
     int requestId = [dict[@"requestId"] intValue];
+    NSString *domainId = dict[@"domainId"];
     
-    [[WFCCIMService sharedWFCIMService] searchUser:keyword searchType:(WFCCSearchUserType)searchType page:page success:^(NSArray<WFCCUserInfo *> *machedUsers) {
-        [self.channel invokeMethod:@"onSearchUserResult" arguments:@{@"requestId":@(requestId), @"users":[self convertModelList:machedUsers]}];
-    } error:^(int errorCode) {
-        [self callbackOperationFailure:requestId errorCode:errorCode];
-    }];
+    if (domainId.length) {
+        [[WFCCIMService sharedWFCIMService] searchUser:keyword domain:domainId searchType:(WFCCSearchUserType)searchType page:page success:^(NSArray<WFCCUserInfo *> *machedUsers) {
+            [self.channel invokeMethod:@"onSearchUserResult" arguments:@{@"requestId":@(requestId), @"users":[self convertModelList:machedUsers]}];
+        } error:^(int errorCode) {
+            [self callbackOperationFailure:requestId errorCode:errorCode];
+        }];
+    } else {
+        [[WFCCIMService sharedWFCIMService] searchUser:keyword searchType:(WFCCSearchUserType)searchType page:page success:^(NSArray<WFCCUserInfo *> *machedUsers) {
+            [self.channel invokeMethod:@"onSearchUserResult" arguments:@{@"requestId":@(requestId), @"users":[self convertModelList:machedUsers]}];
+        } error:^(int errorCode) {
+            [self callbackOperationFailure:requestId errorCode:errorCode];
+        }];
+    }
 }
 
 - (void)getUserInfoAsync:(NSDictionary *)dict result:(FlutterResult)result {
@@ -1890,6 +1922,22 @@ ImclientPlugin *gIMClientInstance;
     return arr;
 }
 
+- (NSDictionary *)domainInfoToJson:(WFCCDomainInfo *)domainInfo {
+    if (!domainInfo) {
+        return nil;
+    }
+    return @{
+        @"domainId": domainInfo.domainId ?: @"",
+        @"name": domainInfo.name ?: @"",
+        @"desc": domainInfo.desc ?: [NSNull null],
+        @"email": domainInfo.email ?: [NSNull null],
+        @"tel": domainInfo.tel ?: [NSNull null],
+        @"address": domainInfo.address ?: [NSNull null],
+        @"extra": domainInfo.extra ?: [NSNull null],
+        @"updateDt": @(domainInfo.updateDt)
+    };
+}
+
 - (WFCCConversation *)conversationFromDict:(NSDictionary *)conversation {
     if(!conversation || !conversation[@"type"]) {
         return nil;
@@ -1949,6 +1997,7 @@ ImclientPlugin *gIMClientInstance;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onGroupMemberUpdated:) name:kGroupMemberUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onChannelInfoUpdated:) name:kChannelInfoUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onUserInfoUpdated:) name:kUserInfoUpdated object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onDomainInfoUpdated:) name:kDomainInfoUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onFriendListUpdated:) name:kFriendListUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onFriendRequestUpdated:) name:kFriendRequestUpdated object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onJoinGroupRequestUpdated:) name:kJoinGroupRequestUpdated object:nil];
@@ -2051,6 +2100,14 @@ ImclientPlugin *gIMClientInstance;
 - (void)onUserInfoUpdated:(NSNotification *)notification {
     NSArray<WFCCUserInfo *> *updatedUserInfo = notification.userInfo[@"userInfoList"];
     [self.channel invokeMethod:@"onUserInfoUpdated" arguments:@{@"users":[self convertModelList:updatedUserInfo]}];
+}
+
+- (void)onDomainInfoUpdated:(NSNotification *)notification {
+    WFCCDomainInfo *domainInfo = notification.userInfo[@"domainInfo"];
+    if (![domainInfo isKindOfClass:[WFCCDomainInfo class]]) {
+        return;
+    }
+    [self.channel invokeMethod:@"onDomainInfoUpdate" arguments:@{@"domainInfo":[self domainInfoToJson:domainInfo]}];
 }
 
 - (void)onGroupInfoUpdated:(NSNotification *)notification {

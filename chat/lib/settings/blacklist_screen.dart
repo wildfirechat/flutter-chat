@@ -4,6 +4,8 @@ import 'package:imclient/model/user_info.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
+import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/mesh/mesh_cache.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 /// 黑名单管理页面
@@ -124,7 +126,12 @@ class _BlacklistScreenState extends State<BlacklistScreen> {
         height: 48,
         borderRadius: 6,
       ),
-      title: Text(userInfo?.getReadableName() ?? userId),
+      title: AnimatedBuilder(
+        animation: MeshCache.instance,
+        builder: (context, child) {
+          return Text(userInfo != null ? MeshUserDisplay.getReadableName(userInfo) : userId);
+        },
+      ),
       subtitle: Text(userId, style: const TextStyle(fontSize: 12, color: Color(0xFF999999))),
       trailing: TextButton(
         onPressed: () => _removeFromBlacklist(userId),

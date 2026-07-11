@@ -18,6 +18,7 @@ import 'package:chat/widget/sidebar_index.dart';
 import 'package:chat/organization/organization_screen.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 
 typedef OnPickUserCallback = void Function(BuildContext context, List<String> pickedUsers);
 
@@ -509,7 +510,7 @@ class SelectableUserItem extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.only(left: 12.0),
                           child: Text(
-                            userInfo.userId == '@all' ? AppLocalizations.of(context)!.allMembers: userInfo.displayName ?? userInfo.userId,
+                            userInfo.userId == '@all' ? AppLocalizations.of(context)!.allMembers : MeshUserDisplay.getReadableName(userInfo),
                             style: TextStyle(fontSize: 15.0, color: context.colors.textPrimary),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

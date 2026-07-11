@@ -9,6 +9,7 @@ import 'package:chat/conversation/composite_message_detail_screen.dart';
 import 'package:chat/ui_model/ui_message.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/app_navigator.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 
 class CompositeCellBuilder extends PortraitCellBuilder {
   late CompositeMessageContent compositeMessageContent;
@@ -67,7 +68,7 @@ class CompositeCellBuilder extends PortraitCellBuilder {
                     else if (index == 2) userInfo = data.$3;
                     else if (index == 3) userInfo = data.$4;
 
-                    String senderName = userInfo != null ? "${userInfo.getReadableName()}: " : "";
+                    String senderName = userInfo != null ? "${MeshUserDisplay.getReadableName(userInfo)}: " : "";
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),

@@ -12,6 +12,7 @@ import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 
 /// 微信 PC 风格的 @ 提醒浮层:键入 '@' 后浮层出现在输入栏上方,随后续键入
 /// 就地过滤候选人(匹配显示名/拼音全拼/拼音首字母);上下键移动高亮并循环,
@@ -272,7 +273,7 @@ class _MentionCandidate {
   _MentionCandidate._(this.user, this.display, this.isAllMembers)
       : _searchKey = '$display\n${PinyinHelper.getPinyinE(display, separator: '')}\n${PinyinHelper.getShortPinyin(display)}'.toLowerCase();
 
-  factory _MentionCandidate.fromUser(UserInfo user) => _MentionCandidate._(user, user.getReadableName(), false);
+  factory _MentionCandidate.fromUser(UserInfo user) => _MentionCandidate._(user, MeshUserDisplay.getReadableName(user), false);
 
   /// "@所有人" 伪候选:userId 固定 '@all',发送时转成 mentionedType 2
   factory _MentionCandidate.allMembers(String label) => _MentionCandidate._(UserInfo('@all')..displayName = label, label, true);

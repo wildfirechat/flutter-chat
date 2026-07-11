@@ -8,6 +8,8 @@ import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/mesh/mesh_cache.dart';
 
 class FavUsersPage extends StatefulWidget {
   const FavUsersPage({Key? key}) : super(key: key);
@@ -55,7 +57,12 @@ class FavUsersPageState extends State<FavUsersPage> {
         }
         return ListTile(
           leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
-          title: Text(userInfo.displayName ?? 'User'),
+          title: AnimatedBuilder(
+            animation: MeshCache.instance,
+            builder: (context, child) {
+              return Text(MeshUserDisplay.getReadableName(userInfo));
+            },
+          ),
           onTap: () {
             Navigator.push(
               context,

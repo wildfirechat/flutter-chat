@@ -20,6 +20,7 @@ import 'model/chatroom_member_info.dart';
 import 'model/conversation.dart';
 import 'model/conversation_info.dart';
 import 'model/conversation_search_info.dart';
+import 'model/domain_info.dart';
 import 'model/file_record.dart';
 import 'model/friend.dart';
 import 'model/friend_request.dart';
@@ -460,6 +461,11 @@ class ImclientPlatform extends PlatformInterface {
             _channelInfoUpdatedCallback!(data);
           }
           _eventBus.fire(ChannelInfoUpdateEvent(data));
+          break;
+        case 'onDomainInfoUpdate':
+          Map<dynamic, dynamic> args = call.arguments;
+          DomainInfo? domainInfo = _convertProtoDomainInfo(args['domainInfo']);
+          _eventBus.fire(DomainInfoUpdatedEvent(domainInfo: domainInfo));
           break;
         case 'onUserOnlineEvent':
           Map<dynamic, dynamic> args = call.arguments;
@@ -1294,6 +1300,33 @@ class ImclientPlatform extends PlatformInterface {
     }
 
     return userInfo;
+  }
+
+  static DomainInfo? _convertProtoDomainInfo(Map<dynamic, dynamic>? map) {
+    if (map == null) {
+      return null;
+    }
+    return DomainInfo.fromJson(map);
+  }
+
+  static List<DomainInfo> _convertProtoDomainInfos(List<dynamic>? datas) {
+    if (datas == null || datas.isEmpty) {
+      return [];
+    }
+    List<DomainInfo> list = [];
+    for (var element in datas) {
+      Map<dynamic, dynamic>? map;
+      if (element is String) {
+        map = jsonDecode(element) as Map<dynamic, dynamic>?;
+      } else if (element is Map) {
+        map = element;
+      }
+      DomainInfo? domainInfo = _convertProtoDomainInfo(map);
+      if (domainInfo != null) {
+        list.add(domainInfo);
+      }
+    }
+    return list;
   }
 
   static List<UserInfo> _convertProtoUserInfos(List<dynamic>? datas) {
@@ -2315,23 +2348,48 @@ class ImclientPlatform extends PlatformInterface {
     return _convertProtoUserInfos(datas);
   }
 
-  ///搜索用户
+  ///搜索用户，[domainId] 非空时搜索指定外部单位/域内的用户。
   void searchUser(
       String keyword,
       int searchType,
       int page,
       OperationSuccessUserInfosCallback successCallback,
-      OperationFailureCallback errorCallback) {
+      OperationFailureCallback errorCallback,
+      {String? domainId}) {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
 
-    _channel.invokeMethod("searchUser", {
+    Map<String, dynamic> args = {
       "requestId": requestId,
       "keyword": keyword,
       "searchType": searchType,
       "page": page
+    };
+    if (domainId != null && domainId.isNotEmpty) {
+      args["domainId"] = domainId;
+    }
+    _channel.invokeMethod("searchUser", args);
+  }
+
+  ///是否开启了 Mesh（外部单位）功能。
+  Future<bool> isMeshEnabled() async {
+    return await _channel.invokeMethod("isMeshEnabled") ?? false;
+  }
+
+  ///获取指定域信息，[refresh] 为 true 时从服务器刷新。
+  Future<DomainInfo?> getDomainInfo(String domainId, {bool refresh = false}) async {
+    Map<dynamic, dynamic>? data = await _channel.invokeMethod("getDomainInfo", {
+      "domainId": domainId,
+      "refresh": refresh,
     });
+    return _convertProtoDomainInfo(data);
+  }
+
+  ///获取所有可访问的远程域（外部单位）列表。
+  Future<List<DomainInfo>> getRemoteDomains() async {
+    List<dynamic>? datas = await _channel.invokeMethod("getRemoteDomains");
+    return _convertProtoDomainInfos(datas);
   }
 
   ///异步获取用户信息

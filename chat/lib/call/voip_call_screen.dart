@@ -15,6 +15,7 @@ import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 class VoipCallScreen extends StatefulWidget {
@@ -491,7 +492,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
         ),
         const SizedBox(height: 24),
         Text(
-          _targetUserInfo?.getReadableName() ?? '',
+          _targetUserInfo != null ? MeshUserDisplay.getReadableName(_targetUserInfo!) : '',
           style: const TextStyle(
             color: Colors.white,
             fontSize: 26,

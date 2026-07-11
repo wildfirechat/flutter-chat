@@ -547,8 +547,8 @@ function screenShot(): string {
 function getDomainInfo(domainId: string, refresh: boolean): string {
     return clientModule.getDomainInfo(domainId, refresh);
 }
-function loadRemoteDomains(successCB: VoidCallback, failCB: FailCallback): void {
-    clientModule.loadRemoteDomains(voidCallback(successCB), numberCallback(failCB));
+function loadRemoteDomains(successCB: StringCallback, failCB: FailCallback): void {
+    clientModule.loadRemoteDomains(stringCallback(successCB), numberCallback(failCB));
 }
 function isEnableMesh(): boolean {
     return clientModule.isEnableMesh() === 1;

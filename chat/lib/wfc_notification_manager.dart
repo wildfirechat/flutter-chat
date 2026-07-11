@@ -16,6 +16,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:imclient/model/pc_online_info.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_tray_manager.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 
 class WfcNotificationManager {
   static final WfcNotificationManager _instance = WfcNotificationManager._internal();
@@ -129,7 +130,7 @@ class WfcNotificationManager {
       String title = "";
       if (message.conversation.conversationType == ConversationType.Single) {
         UserInfo? userInfo = await Imclient.getUserInfo(message.conversation.target);
-        title = userInfo?.displayName ?? "新消息";
+        title = userInfo != null ? await MeshUserDisplay.resolveReadableName(userInfo) : "新消息";
       } else if (message.conversation.conversationType == ConversationType.Group) {
         GroupInfo? groupInfo = await Imclient.getGroupInfo(message.conversation.target);
         title = groupInfo?.name ?? "群聊";
@@ -169,7 +170,7 @@ class WfcNotificationManager {
 
       UserInfo? userInfo = await Imclient.getUserInfo(friendRequests[0], refresh: true);
       if (userInfo != null) {
-          String text = userInfo.displayName ?? "";
+          String text = await MeshUserDisplay.resolveReadableName(userInfo);
           if (friendRequests.length > 1) {
               text += " 等";
           }

@@ -5,10 +5,14 @@ import 'package:imclient/model/user_info.dart';
 import 'package:chat/user_info_widget.dart';
 
 import '../config.dart';
+import '../l10n/app_localizations.dart';
 import '../utils/media_url_redirector.dart';
+import '../utils/mesh_user_display.dart';
 
 class SearchUserDelegate extends SearchDelegate<String> {
-  SearchUserDelegate() : super(searchFieldLabel: "请输入电话号码或者账户");
+  final String? domainId;
+
+  SearchUserDelegate({this.domainId}) : super(searchFieldLabel: "请输入电话号码或者账户");
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -48,7 +52,7 @@ class SearchUserDelegate extends SearchDelegate<String> {
         finish = true;
     }, (errorCode) {
         finish = true;
-    });
+    }, domainId: domainId);
 
     while(!finish) {
       await Future.delayed(const Duration(microseconds: 100));
@@ -66,7 +70,7 @@ class SearchUserDelegate extends SearchDelegate<String> {
         child: Row(
           children: [
             Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (userInfo.portrait == null || userInfo.portrait!.isEmpty)?Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0):Image.network(MediaUrlRedirector.redirect(userInfo.portrait!), width: 40, height: 40,),),),
-            Text(userInfo.displayName!),
+            Expanded(child: Text(MeshUserDisplay.getReadableName(userInfo), overflow: TextOverflow.ellipsis)),
           ],
         ),
       ),
@@ -83,6 +87,7 @@ class SearchUserDelegate extends SearchDelegate<String> {
   
   @override
   Widget buildResults(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<List<UserInfo>>(
         future: searchUsersInServer(),
         builder: (context, snapshot) {
@@ -104,6 +109,13 @@ class SearchUserDelegate extends SearchDelegate<String> {
 
   @override
   Widget buildSuggestions(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (domainId != null && domainId!.isNotEmpty) {
+      return Container(
+        margin: const EdgeInsets.all(16),
+        child: Text(l10n.searchInCurrentDomain),
+      );
+    }
     if(query.isNotEmpty) {
       return Container();
     } else {

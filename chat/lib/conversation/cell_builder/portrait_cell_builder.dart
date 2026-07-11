@@ -16,6 +16,7 @@ import 'package:chat/viewmodel/user_view_model.dart';
 
 import '../../config.dart';
 import '../../ui_model/ui_message.dart';
+import '../../utils/mesh_user_display.dart';
 import '../../widget/portrait.dart';
 import 'message_cell_builder.dart';
 import 'package:chat/theme/app_colors.dart';
@@ -100,7 +101,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
         children: [
           (isDesktopShell ? !isSendMessage && !isHiddenGroupMemberName : !isHiddenGroupMemberName)
               ? Text(
-                  senderUserInfo != null ? senderUserInfo.getReadableName() : '<${model.message.fromUser}>',
+                  senderUserInfo != null ? MeshUserDisplay.getReadableName(senderUserInfo) : '<${model.message.fromUser}>',
                   style: isDesktopShell ? TextStyle(color: context.colors.messageSenderName, fontSize: 12) : null,
                 )
               : Container(),

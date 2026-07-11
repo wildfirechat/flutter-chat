@@ -18,6 +18,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 
 /// 桌面端多选联系人的分栏形态(参照微信 PC):
 /// 左栏为可搜索的联系人列表(勾选框 + 分类字母段),右栏为「已选择」清单(可逐个移除),
@@ -318,7 +319,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               width: LayoutScale.watchScale(context, 34.0, cap: LayoutScale.iconCap),
               height: LayoutScale.watchScale(context, 34.0, cap: LayoutScale.iconCap))
           : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 34, height: 34),
-      title: userId == '@all' ? l10n.allMembers : userInfo.displayName ?? userId,
+      title: userId == '@all' ? l10n.allMembers : MeshUserDisplay.getReadableName(userInfo),
     );
 
     if (!showCategory) return row;
@@ -662,14 +663,16 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                       height: LayoutScale.watchScale(context, 30.0, cap: LayoutScale.iconCap))
                   : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 30, height: 30),
               const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  userInfo.userId == '@all' ? l10n.allMembers : userInfo.displayName ?? userInfo.userId,
-                  style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                Expanded(
+                  child: Text(
+                    userInfo.userId == '@all'
+                        ? l10n.allMembers
+                        : MeshUserDisplay.getReadableName(userInfo),
+                    style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-              ),
               Icon(
                 Icons.remove_circle_outline,
                 size: LayoutScale.watchScale(context, 18.0, cap: LayoutScale.iconCap),

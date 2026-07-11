@@ -16,6 +16,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
@@ -379,7 +380,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                           hasDraft
                                               ? conversationInfo.draft!
                                               : conversationInfo.lastMessage != null
-                                                  ? '${value.$4?.getReadableName() ?? "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
+                                                  ? '${value.$4 != null ? MeshUserDisplay.getReadableName(value.$4!) : "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
                                                   : '',
                                           style: TextStyle(fontSize: 12.0, color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary),
                                           maxLines: 1,

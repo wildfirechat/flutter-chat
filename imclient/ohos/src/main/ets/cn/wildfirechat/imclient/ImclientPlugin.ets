@@ -186,7 +186,12 @@ import {
     getGroupMember,
     getGroupInfoEx,
     setDisableSyncDraft,
-    kickoffPCClient
+    kickoffPCClient,
+    getDomainInfo,
+    isEnableMesh,
+    loadRemoteDomains,
+    searchUserEx,
+    setDomainInfoCallback,
 } from './marsWrapper';
 import json from '@ohos.util.json';
 import map from '@hms.core.map.map';
@@ -334,7 +339,6 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
                 }
                 case 'onTrafficData':
                 case 'onErrorEvent':
-                case 'onDomainInfoUpdate':
                 case 'onConversationTopUpdate':
                 case 'onConversationSilentUpdate':
                 case 'onClearMessage':
@@ -344,12 +348,24 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
                     //ignore these events
                     break
                 }
+                case 'onDomainInfoUpdate': {
+                    let domainInfo = args[1]
+                    if (typeof domainInfo === 'string') {
+                        domainInfo = json.parse(domainInfo)
+                    }
+                    let data = {
+                        'domainInfo': domainInfo
+                    } as Record<string, Object>
+                    this.__callback2UI('onDomainInfoUpdate', data)
+                    break
+                }
                 default: {
                     console.log('unknown event', event, args)
                     break
                 }
             }
         })
+        setDomainInfoCallback((args: object) => {})
         // binding.getPlatformViewRegistry()
         //     .registerViewFactory(CHANNEL_VIEW_NAME, new QrReaderFactory(binding.getBinaryMessenger()))
     }
@@ -1043,20 +1059,43 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         // TODO
         console.error(`${call.method} is not implement`);
     }
+    _isMeshEnabled = (call: MethodCall, result: MethodResult) => {
+        result.success(isEnableMesh())
+    }
+    _getDomainInfo = (call: MethodCall, result: MethodResult) => {
+        let domainId = call.argument("domainId") as string
+        let refresh = call.argument("refresh") as boolean
+        let domainInfo = getDomainInfo(domainId, refresh)
+        result.success(domainInfo ? json.parse(domainInfo) : null)
+    }
+    _loadRemoteDomains = (call: MethodCall, result: MethodResult) => {
+        loadRemoteDomains((str: string) => {
+            result.success(str ? json.parse(str) : [])
+        }, (err: number) => {
+            result.success([])
+        })
+    }
     _searchUser = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
         let keyword = call.argument("keyword") as string
         let searchType = call.argument("searchType") as number
         let page = call.argument("page") as number
+        let domainId = call.argument("domainId") as string
 
-        searchUser(keyword, searchType, page, str => {
+        let successCB = (str: string) => {
             let obj = {
                 'requestId': requestId,
                 'users': json.parse(str)
             } as Record<string, Object>
             this.__callback2UI('onSearchUserResult', obj)
+        }
+        let failCB = this.__generalFailCallback(requestId)
 
-        }, this.__generalFailCallback(requestId))
+        if (domainId && domainId.length > 0) {
+            searchUserEx(domainId, keyword, searchType, page, successCB, failCB)
+        } else {
+            searchUser(keyword, searchType, page, successCB, failCB)
+        }
     }
     _getUserInfoAsync = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -1855,6 +1894,10 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         "updateMessageStatus": this._updateMessageStatus,
         "getMessageCount": this._getMessageCount,
         "searchUser": this._searchUser,
+        "isMeshEnabled": this._isMeshEnabled,
+        "getDomainInfo": this._getDomainInfo,
+        "getRemoteDomains": this._loadRemoteDomains,
+        "loadRemoteDomains": this._loadRemoteDomains,
         "getUserInfoAsync": this._getUserInfoAsync,
         "searchFriends": this._searchFriends,
         "getFriends": this._getFriends,

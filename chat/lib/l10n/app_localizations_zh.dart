@@ -308,6 +308,43 @@ class AppLocalizationsZh extends AppLocalizations {
   String get organization => '组织架构';
 
   @override
+  String get mesh => '外部单位';
+
+  @override
+  String get domainInfo => '单位信息';
+
+  @override
+  String get domainName => '单位名称';
+
+  @override
+  String get domainDesc => '单位描述';
+
+  @override
+  String get domainEmail => '邮箱';
+
+  @override
+  String get domainTel => '电话';
+
+  @override
+  String get domainAddress => '地址';
+
+  @override
+  String searchInDomain(Object domain) {
+    return '在单位 $domain 中搜索用户';
+  }
+
+  @override
+  String get searchInCurrentDomain => '在本单位搜索用户';
+
+  @override
+  String get searchUserInDomain => '在此单位中查找用户';
+
+  @override
+  String loadDomainFail(Object error) {
+    return '加载外部单位失败: $error';
+  }
+
+  @override
   String get fileTransfer => '文件传输助手';
 
   @override

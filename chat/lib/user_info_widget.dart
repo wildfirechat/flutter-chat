@@ -31,6 +31,10 @@ import 'package:chat/pc/widgets/pc_page_header.dart';
 
 import 'package:chat/l10n/app_localizations.dart';
 
+import 'package:chat/utils/external_target_utils.dart';
+import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/mesh/mesh_constants.dart';
+
 class UserInfoWidget extends StatefulWidget {
   const UserInfoWidget(this.userId, {this.inGroupId, super.key});
   final String userId;
@@ -403,9 +407,12 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       portrait = userInfo.portrait;
     }
 
+    final isExternal = ExternalTargetUtils.isExternalTarget(userInfo.userId);
+    final domainId = ExternalTargetUtils.getExternalDomain(userInfo.userId);
+
     List<Widget> nameList = [];
     nameList.add(Text(
-      userInfo.displayName!,
+      MeshUserDisplay.getReadableName(userInfo),
       textAlign: TextAlign.left,
       style: const TextStyle(fontSize: 18),
     ));
@@ -421,6 +428,16 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       ));
       nameList.add(Container(
         margin: EdgeInsets.only(top: hasAlias ? 3 : 6),
+      ));
+    }
+    if (isExternal && domainId != null) {
+      nameList.add(Container(
+        margin: const EdgeInsets.only(bottom: 6),
+        child: Text(
+          domainId,
+          textAlign: TextAlign.left,
+          style: TextStyle(fontSize: 12, color: MeshConstants.externalNameColor),
+        ),
       ));
     }
     nameList.add(Row(

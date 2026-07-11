@@ -18,6 +18,7 @@ import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 
 
 /// 桌面端转发弹窗:左栏选目标,右栏确认发送。
@@ -286,7 +287,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
           .map((user) => SelectedListTile(
                 portrait: user.portrait ?? Config.defaultUserPortrait,
                 defaultPortrait: Config.defaultUserPortrait,
-                name: user.displayName ?? user.userId,
+                name: MeshUserDisplay.getReadableName(user),
                 onRemove: () => viewModel!.pickUser(user, false),
               ))
           .toList(),

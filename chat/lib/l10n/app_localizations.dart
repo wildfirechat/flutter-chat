@@ -656,6 +656,72 @@ abstract class AppLocalizations {
   /// **'组织架构'**
   String get organization;
 
+  /// No description provided for @mesh.
+  ///
+  /// In zh, this message translates to:
+  /// **'外部单位'**
+  String get mesh;
+
+  /// No description provided for @domainInfo.
+  ///
+  /// In zh, this message translates to:
+  /// **'单位信息'**
+  String get domainInfo;
+
+  /// No description provided for @domainName.
+  ///
+  /// In zh, this message translates to:
+  /// **'单位名称'**
+  String get domainName;
+
+  /// No description provided for @domainDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'单位描述'**
+  String get domainDesc;
+
+  /// No description provided for @domainEmail.
+  ///
+  /// In zh, this message translates to:
+  /// **'邮箱'**
+  String get domainEmail;
+
+  /// No description provided for @domainTel.
+  ///
+  /// In zh, this message translates to:
+  /// **'电话'**
+  String get domainTel;
+
+  /// No description provided for @domainAddress.
+  ///
+  /// In zh, this message translates to:
+  /// **'地址'**
+  String get domainAddress;
+
+  /// No description provided for @searchInDomain.
+  ///
+  /// In zh, this message translates to:
+  /// **'在单位 {domain} 中搜索用户'**
+  String searchInDomain(Object domain);
+
+  /// No description provided for @searchInCurrentDomain.
+  ///
+  /// In zh, this message translates to:
+  /// **'在本单位搜索用户'**
+  String get searchInCurrentDomain;
+
+  /// No description provided for @searchUserInDomain.
+  ///
+  /// In zh, this message translates to:
+  /// **'在此单位中查找用户'**
+  String get searchUserInDomain;
+
+  /// No description provided for @loadDomainFail.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载外部单位失败: {error}'**
+  String loadDomainFail(Object error);
+
   /// No description provided for @fileTransfer.
   ///
   /// In zh, this message translates to:

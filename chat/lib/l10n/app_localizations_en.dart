@@ -310,6 +310,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get organization => 'Organization';
 
   @override
+  String get mesh => 'External';
+
+  @override
+  String get domainInfo => 'Organization Info';
+
+  @override
+  String get domainName => 'Name';
+
+  @override
+  String get domainDesc => 'Description';
+
+  @override
+  String get domainEmail => 'Email';
+
+  @override
+  String get domainTel => 'Phone';
+
+  @override
+  String get domainAddress => 'Address';
+
+  @override
+  String searchInDomain(Object domain) {
+    return 'Search users in $domain';
+  }
+
+  @override
+  String get searchInCurrentDomain => 'Search users in current organization';
+
+  @override
+  String get searchUserInDomain => 'Find users in this organization';
+
+  @override
+  String loadDomainFail(Object error) {
+    return 'Failed to load external organization: $error';
+  }
+
+  @override
   String get fileTransfer => 'File Transfer';
 
   @override

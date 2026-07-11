@@ -15,6 +15,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/quote_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 
 enum ChatInputBarStatus { keyboardStatus, pluginStatus, emojiStatus, recordStatus, muteStatus, pttStatus, menuStatus }
 
@@ -282,7 +283,7 @@ class MessageInputBarController extends ChangeNotifier {
     }
     _isInsertingMention = true;
 
-    final String name = user.getReadableName();
+    final String name = MeshUserDisplay.getReadableName(user);
     final String text = textEditingController.text;
     final int replaceEnd = (_mentionAtIndex + 1 + _mentionQuery.length).clamp(0, text.length);
     final String textToInsert = '@$name ';

@@ -8,6 +8,8 @@ import 'package:chat/pc/widgets/pc_page_header.dart';
 
 import '../config.dart';
 import '../utils/media_url_redirector.dart';
+import '../utils/mesh_user_display.dart';
+import '../mesh/mesh_cache.dart';
 import 'package:chat/theme/app_colors.dart';
 
 class FriendRequestPage extends StatefulWidget {
@@ -92,29 +94,34 @@ class FriendRequestPageState extends State<FriendRequestPage> {
       _loadUserInfo(request.target);
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: Row(
-        children: [
-          (userInfo == null || userInfo.portrait == null || userInfo.portrait!.isEmpty) ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(MediaUrlRedirector.redirect(userInfo.portrait!), width: 40, height: 40,),
-          const Padding(padding: EdgeInsets.all(8)),
-          Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(userInfo != null?userInfo.getReadableName():"<${request.target}>"),
-                  Text(request.reason??""),
-                ],
+    return AnimatedBuilder(
+      animation: MeshCache.instance,
+      builder: (context, child) {
+        return Padding(
+          padding: const EdgeInsets.all(8),
+          child: Row(
+            children: [
+              (userInfo == null || userInfo.portrait == null || userInfo.portrait!.isEmpty) ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(MediaUrlRedirector.redirect(userInfo.portrait!), width: 40, height: 40,),
+              const Padding(padding: EdgeInsets.all(8)),
+              Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(userInfo != null ? MeshUserDisplay.getReadableName(userInfo) : "<${request.target}>"),
+                      Text(request.reason??""),
+                    ],
+                  ),
               ),
+              SizedBox(
+                width: 80,
+                child: Center(
+                  child: request.status == FriendRequestStatus.WaitingAccept?OutlinedButton(onPressed: ()=>_acceptRequest(request.target), child: const Text("通过")):(request.status == FriendRequestStatus.Accepted?const Text("已通过"):const Text("已拒接")),
+                ),
+              ),
+            ],
           ),
-          SizedBox(
-            width: 80,
-            child: Center(
-              child: request.status == FriendRequestStatus.WaitingAccept?OutlinedButton(onPressed: ()=>_acceptRequest(request.target), child: const Text("通过")):(request.status == FriendRequestStatus.Accepted?const Text("已通过"):const Text("已拒接")),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 

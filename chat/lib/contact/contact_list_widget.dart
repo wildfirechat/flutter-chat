@@ -6,6 +6,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 import 'package:chat/config.dart';
+import 'package:imclient/imclient.dart';
 import 'package:chat/organization/model/organization.dart';
 import 'package:chat/organization/organization_view_model.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
@@ -20,8 +21,11 @@ import 'package:chat/viewmodel/font_size_view_model.dart';
 import '../user_info_widget.dart';
 import 'fav_groups.dart';
 import 'subscribed_channels.dart';
+import '../mesh/domain_list_screen.dart';
+import '../mesh/mesh_cache.dart';
 import '../pc/pc_platform.dart';
 import '../utils/layout_scale.dart';
+import '../utils/mesh_user_display.dart';
 import 'package:chat/theme/app_colors.dart';
 
 // 行度量。itemExtentBuilder 与侧栏索引的跳转偏移必须共用下面两个函数,
@@ -54,6 +58,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   final ScrollController _scrollController = ScrollController();
   String _currentLetter = '';
   bool _isTouchingIndex = false;
+  bool _meshEnabled = false;
 
   List<UIContactInfo>? _cachedContactList;
   int _cachedHeaderCount = 0;
@@ -94,7 +99,19 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     // 进入联系人列表时主动刷新一次，避免桌面端缺少事件回调导致空白。
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ContactListViewModel>().refresh();
+      _checkMeshEnabled();
     });
+  }
+
+  Future<void> _checkMeshEnabled() async {
+    try {
+      final enabled = await Imclient.isMeshEnabled();
+      if (mounted) {
+        setState(() => _meshEnabled = enabled);
+      }
+    } catch (_) {
+      // 忽略错误，默认不显示
+    }
   }
 
   @override
@@ -111,6 +128,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
       ['assets/images/contact_new_friend.png', AppLocalizations.of(context)!.newFriend, 'new_friend'],
       ['assets/images/contact_fav_group.png', AppLocalizations.of(context)!.favGroup, 'fav_group'],
       ['assets/images/contact_subscribed_channel.png', AppLocalizations.of(context)!.subscribedChannel, 'subscribed_channel'],
+      if (_meshEnabled)
+        [null, AppLocalizations.of(context)!.mesh, 'mesh'],
     ];
     return ChangeNotifierProvider<OrganizationViewModel>(
       create: (_) {
@@ -235,8 +254,16 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     return indexList;
   }
 
+  Widget _buildHeaderIcon(String? imagePath) {
+    final size = LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap);
+    if (imagePath == null || imagePath.isEmpty) {
+      return Icon(Icons.domain, size: size);
+    }
+    return Image.asset(imagePath, width: size, height: size);
+  }
+
   Widget _contactListFixHeader(BuildContext context, int index, int unreadFriendRequestCount, List<dynamic> fixHeaderList) {
-    String imagePath = fixHeaderList[index][0];
+    String? imagePath = fixHeaderList[index][0];
     String title = fixHeaderList[index][1];
     String key = fixHeaderList[index][2];
     return Material(
@@ -259,6 +286,11 @@ class _ContactListWidgetState extends State<ContactListWidget> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const SubscribedChannelsPage()),
+            );
+          } else if (key == "mesh") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DomainListScreen()),
             );
           } else {
             Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
@@ -286,9 +318,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                             badgeColor: context.colors.badge,
                             padding: isDesktopShell ? const EdgeInsets.all(5) : const EdgeInsets.all(4),
                           ),
-                          // TODO: Replace 'assets/images/contact_organization.png' with an actual asset if it doesn't exist
-                          child: Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)))
-                      : Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)),
+                          child: _buildHeaderIcon(imagePath))
+                      : _buildHeaderIcon(imagePath),
                   Container(
                     margin: const EdgeInsets.only(left: 16),
                   ),
@@ -392,9 +423,17 @@ class _ContactListItemState extends State<ContactListItem> {
 
   @override
   Widget build(BuildContext context) {
-    // 获取显示名称
-    final displayName = widget.contactInfo.userInfo.friendAlias ?? widget.contactInfo.userInfo.displayName ?? '<${widget.contactInfo.userInfo.userId}>';
+    return AnimatedBuilder(
+      animation: MeshCache.instance,
+      builder: (context, child) {
+        // 获取显示名称（含外部单位后缀）
+        final displayName = MeshUserDisplay.getReadableName(widget.contactInfo.userInfo);
+        return _buildContent(context, displayName);
+      },
+    );
+  }
 
+  Widget _buildContent(BuildContext context, String displayName) {
     Color getBgColor() {
       if (!isDesktopShell) return Colors.transparent;
       final selectedId = Provider.of<PCShellViewModel>(context).selectedContactItemId;

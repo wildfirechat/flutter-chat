@@ -22,6 +22,11 @@ import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/mesh/domain_list_screen.dart';
+import 'package:chat/mesh/domain_profile_screen.dart';
+import 'package:chat/mesh/mesh_cache.dart';
+import 'package:chat/utils/mesh_user_display.dart';
+import 'package:imclient/model/domain_info.dart';
 
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/theme/app_colors.dart';
@@ -68,18 +73,52 @@ class _PcContactListState extends State<PcContactList> {
   bool _orgExpanded = true;
   // 「联系人」(星标 / AI / 普通好友)默认展开
   bool _contactExpanded = true;
+  bool _meshEnabled = false;
+  bool _meshExpanded = false;
 
   List<FriendRequest>? _friendRequests;
   final Map<String, UserInfo> _requestUserInfos = {};
   List<String>? _favGroupIds;
   List<String>? _channelIds;
+  List<DomainInfo>? _meshDomains;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ContactListViewModel>().refresh();
+      _checkMeshEnabled();
     });
+  }
+
+  Future<void> _checkMeshEnabled() async {
+    try {
+      final enabled = await Imclient.isMeshEnabled();
+      if (mounted) {
+        setState(() => _meshEnabled = enabled);
+      }
+    } catch (_) {
+      // 忽略
+    }
+  }
+
+  void _toggleMesh() {
+    setState(() => _meshExpanded = !_meshExpanded);
+    if (_meshExpanded && _meshDomains == null) {
+      Imclient.getRemoteDomains().then((domains) {
+        if (mounted) {
+          setState(() => _meshDomains = domains);
+        }
+      }).catchError((_) {
+        if (mounted) {
+          setState(() => _meshDomains = []);
+        }
+      });
+    }
+  }
+
+  void _openMesh() {
+    openPage(context, const DomainListScreen());
   }
 
   void _toggleNewFriend() {
@@ -166,6 +205,16 @@ class _PcContactListState extends State<PcContactList> {
                 onTap: _toggleChannels,
               ),
               if (_channelsExpanded) ..._buildChannelRows(context),
+              // 「外部单位/Mesh」可折叠分组
+              if (_meshEnabled) ...[
+                _SectionHeader(
+                  icon: Icons.domain,
+                  title: l10n.mesh,
+                  expanded: _meshExpanded,
+                  onTap: _toggleMesh,
+                ),
+                if (_meshExpanded) ..._buildMeshRows(context),
+              ],
               // 「组织架构」可折叠分组
               if (hasOrg) ...[
                 _SectionHeader(
@@ -267,6 +316,28 @@ class _PcContactListState extends State<PcContactList> {
               openPage(context, ChannelInfoWidget(channelId: channelId, channelInfo: channelInfo));
             },
           );
+        },
+      );
+    }).toList();
+  }
+
+  List<Widget> _buildMeshRows(BuildContext context) {
+    final domains = _meshDomains;
+    if (domains == null) {
+      return [const _SectionLoadingRow()];
+    }
+    final shell = Provider.of<PCShellViewModel>(context);
+    final selectedId = shell.selectedContactItemId;
+    return domains.map((domain) {
+      final itemId = 'mesh-${domain.domainId}';
+      final isSelected = selectedId == itemId;
+      return _EntryRow(
+        icon: Icons.domain,
+        title: domain.name,
+        isSelected: isSelected,
+        onTap: () {
+          shell.selectContactItem(itemId);
+          openPage(context, DomainProfileScreen(domainId: domain.domainId));
         },
       );
     }).toList();
@@ -420,6 +491,7 @@ class _EntryRow extends StatelessWidget {
   final String? portrait;
   final String? defaultPortrait;
   final String? assetIcon;
+  final IconData? icon;
   final String title;
   final VoidCallback onTap;
   final bool isSelected;
@@ -428,6 +500,7 @@ class _EntryRow extends StatelessWidget {
     this.portrait,
     this.defaultPortrait,
     this.assetIcon,
+    this.icon,
     required this.title,
     required this.onTap,
     this.isSelected = false,
@@ -454,6 +527,8 @@ class _EntryRow extends StatelessWidget {
             children: [
               if (assetIcon != null)
                 SizedBox(width: _iconBox(context), height: _iconBox(context), child: Center(child: Image.asset(assetIcon!, width: LayoutScale.watchScale(context, 28), height: LayoutScale.watchScale(context, 28))))
+              else if (icon != null)
+                SizedBox(width: _iconBox(context), height: _iconBox(context), child: Center(child: Icon(icon, size: LayoutScale.watchScale(context, 28), color: context.colors.textSecondary)))
               else
                 Portrait(portrait ?? defaultPortrait!, defaultPortrait!, width: _kIconBox, height: _kIconBox, borderRadius: 4),
               const SizedBox(width: _kIconGap),
@@ -475,33 +550,38 @@ class _ContactRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedId = Provider.of<PCShellViewModel>(context).selectedContactItemId;
-    final isSelected = selectedId == 'user-${userInfo.userId}';
+    return AnimatedBuilder(
+      animation: MeshCache.instance,
+      builder: (context, child) {
+        final selectedId = Provider.of<PCShellViewModel>(context).selectedContactItemId;
+        final isSelected = selectedId == 'user-${userInfo.userId}';
 
-    Color getBgColor(bool hovered) {
-      if (isSelected) return context.colors.cellSelectedDesktop;
-      if (hovered) return context.colors.cellHover;
-      return Colors.transparent;
-    }
+        Color getBgColor(bool hovered) {
+          if (isSelected) return context.colors.cellSelectedDesktop;
+          if (hovered) return context.colors.cellHover;
+          return Colors.transparent;
+        }
 
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hovered) => GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Container(
-          height: _childRowHeight(context),
-          padding: const EdgeInsets.only(left: _kContentInset, right: 14),
-          color: getBgColor(hovered),
-          child: Row(
-            children: [
-              Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
-              const SizedBox(width: _kIconGap),
-              Expanded(child: Text(userInfo.getReadableName(), style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis)),
-            ],
+        return HoverBuilder(
+          cursor: SystemMouseCursors.click,
+          builder: (context, hovered) => GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+            child: Container(
+              height: _childRowHeight(context),
+              padding: const EdgeInsets.only(left: _kContentInset, right: 14),
+              color: getBgColor(hovered),
+              child: Row(
+                children: [
+                  Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
+                  const SizedBox(width: _kIconGap),
+                  Expanded(child: Text(MeshUserDisplay.getReadableName(userInfo), style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -523,43 +603,48 @@ class _FriendRequestRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color getBgColor(bool hovered) {
-      if (isSelected) return context.colors.cellSelectedDesktop;
-      if (hovered) return context.colors.cellHover;
-      return Colors.transparent;
-    }
+    return AnimatedBuilder(
+      animation: MeshCache.instance,
+      builder: (context, child) {
+        Color getBgColor(bool hovered) {
+          if (isSelected) return context.colors.cellSelectedDesktop;
+          if (hovered) return context.colors.cellHover;
+          return Colors.transparent;
+        }
 
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hovered) => GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Container(
-          height: _childRowHeight(context),
-          padding: const EdgeInsets.only(left: _kContentInset, right: 14),
-          color: getBgColor(hovered),
-          child: Row(
-            children: [
-              Portrait(userInfo?.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
-              const SizedBox(width: _kIconGap),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(userInfo?.getReadableName() ?? '<${request.target}>',
-                        style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    if (request.reason != null && request.reason!.isNotEmpty)
-                      Text(request.reason!, style: PcTheme.cellSubtitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  ],
-                ),
+        return HoverBuilder(
+          cursor: SystemMouseCursors.click,
+          builder: (context, hovered) => GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+            child: Container(
+              height: _childRowHeight(context),
+              padding: const EdgeInsets.only(left: _kContentInset, right: 14),
+              color: getBgColor(hovered),
+              child: Row(
+                children: [
+                  Portrait(userInfo?.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
+                  const SizedBox(width: _kIconGap),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(userInfo != null ? MeshUserDisplay.getReadableName(userInfo!) : '<${request.target}>',
+                            style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        if (request.reason != null && request.reason!.isNotEmpty)
+                          Text(request.reason!, style: PcTheme.cellSubtitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildTrailing(context),
+                ],
               ),
-              const SizedBox(width: 8),
-              _buildTrailing(context),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

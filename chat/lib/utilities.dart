@@ -10,6 +10,7 @@ import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
 import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 extension EmptyStringToNull on String? {
@@ -145,7 +146,10 @@ class Utilities {
     String title = '';
     switch (conversation.conversationType) {
       case ConversationType.Single:
-        title = userInfo?.getReadableName().emptyToNull ?? AppLocalizations.of(context)!.singleChat(conversation.target);
+        if (userInfo != null) {
+          title = MeshUserDisplay.getReadableName(userInfo);
+        }
+        title = title.emptyToNull ?? AppLocalizations.of(context)!.singleChat(conversation.target);
         break;
       case ConversationType.Group:
         title = groupInfo?.remark.emptyToNull ?? groupInfo?.name.emptyToNull ?? AppLocalizations.of(context)!.groupChatWithTarget(conversation.target);

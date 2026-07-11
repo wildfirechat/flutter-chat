@@ -181,6 +181,9 @@ class ImclientFfiChannel implements ImclientChannel {
       case _BridgeTag.joinGroupRequestUpdated:
         _emit('onJoinGroupRequestUpdated', null);
         break;
+      case _BridgeTag.domainInfoUpdated:
+        _emit('onDomainInfoUpdate', {'domainInfo': _json(str(1))});
+        break;
       case _BridgeTag.messageDelivered:
         final delivered = _json(str(1));
         if (delivered is Map) {
@@ -497,6 +500,7 @@ class ImclientFfiChannel implements ImclientChannel {
     _wf.setSettingUpdateListener(_bridge.fn('wfc_on_setting_updated'));
     _wf.setJoinGroupRequestUpdateListener(_bridge.fn('wfc_on_join_group_request_updated'));
     _wf.setChannelInfoUpdateListener(_bridge.fn('wfc_on_channelinfo_updated'));
+    _wf.setDomainInfoUpdateListener(_bridge.fn('wfc_on_domain_info_updated'));
   }
 
   // ---- 请求级回调指针 ----
@@ -519,6 +523,16 @@ class ImclientFfiChannel implements ImclientChannel {
     _internalString[id] = completer;
     invoke(_reqPtr(id));
     return completer.future.then(_reversedJsonList);
+  }
+
+  /// 通用字符串回调的内部等待。
+  Future<String> _awaitString(
+      void Function(Pointer<Void> pObj) invoke) {
+    final id = _nextInternalId--;
+    final completer = Completer<String>();
+    _internalString[id] = completer;
+    invoke(_reqPtr(id));
+    return completer.future;
   }
 
   // ---------------------------------------------------------------------
@@ -553,6 +567,22 @@ class ImclientFfiChannel implements ImclientChannel {
         return _wf.isLogin();
       case 'serverDeltaTime':
         return _wf.getServerDeltaTime();
+      case 'isMeshEnabled':
+        return _wf.isMeshEnabled();
+      case 'getDomainInfo':
+        return using((a) {
+          final domainId = _ns(a, _str(args, 'domainId'));
+          return _json(_outString((lp) => _wf.getDomainInfo(domainId.ptr, domainId.len, _bool(args, 'refresh'), lp)));
+        });
+      case 'getRemoteDomains':
+        {
+          final id = _nextInternalId--;
+          final completer = Completer<String>();
+          _internalString[id] = completer;
+          _wf.getRemoteDomains(_cbString, _cbError, _reqPtr(id), 0);
+          final json = await completer.future;
+          return _jsonList(json);
+        }
       case 'setBackupAddress':
         return using((a) {
           final host = _ns(a, _str(args, 'host'));
@@ -1244,8 +1274,15 @@ class ImclientFfiChannel implements ImclientChannel {
               {'requestId': requestId, 'users': _jsonList(json)});
           using((a) {
             final keyword = _ns(a, _str(args, 'keyword'));
-            _wf.searchUser(keyword.ptr, keyword.len, _int(args, 'searchType'),
-                _int(args, 'page'), _cbString, _cbError, _reqPtr(requestId), 0);
+            final domainId = _str(args, 'domainId');
+            if (domainId.isNotEmpty) {
+              final domain = _ns(a, domainId);
+              _wf.searchUserEx(keyword.ptr, keyword.len, domain.ptr, domain.len,
+                  _int(args, 'searchType'), 0, _int(args, 'page'), _cbString, _cbError, _reqPtr(requestId), 0);
+            } else {
+              _wf.searchUser(keyword.ptr, keyword.len, _int(args, 'searchType'),
+                  _int(args, 'page'), _cbString, _cbError, _reqPtr(requestId), 0);
+            }
           });
           return null;
         }
@@ -2249,6 +2286,7 @@ class _BridgeTag {
   static const int messageDelivered = 12;
   static const int messageReaded = 13;
   static const int joinGroupRequestUpdated = 14;
+  static const int domainInfoUpdated = 15;
 
   static const int generalVoidSuccess = 20;
   static const int generalStringSuccess = 21;

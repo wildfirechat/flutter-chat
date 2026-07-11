@@ -6,9 +6,12 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/repo/user_repo.dart';
 
+import '../mesh/mesh_cache.dart';
+
 class UserViewModel extends ChangeNotifier {
   late StreamSubscription? _userInfoUpdateSubscription;
   late StreamSubscription? _groupMembersUpdateSubscription;
+  late Listenable? _meshCacheListener;
 
   UserViewModel() {
     _userInfoUpdateSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
@@ -27,6 +30,10 @@ class UserViewModel extends ChangeNotifier {
       UserRepo.updateGroupUserInfos(groupId, updatedMembers);
       notifyListeners();
     });
+
+    // 外部单位/域名称变化时，依赖用户显示名的 widget 需要重绘
+    _meshCacheListener = MeshCache.instance;
+    _meshCacheListener?.addListener(notifyListeners);
   }
 
   void reset() {
@@ -63,5 +70,7 @@ class UserViewModel extends ChangeNotifier {
     _userInfoUpdateSubscription = null;
     _groupMembersUpdateSubscription?.cancel();
     _groupMembersUpdateSubscription = null;
+    _meshCacheListener?.removeListener(notifyListeners);
+    _meshCacheListener = null;
   }
 }

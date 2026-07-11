@@ -28,6 +28,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/media_cell_anchor.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
@@ -438,7 +439,7 @@ class ConversationController extends ChangeNotifier {
         if (userInfo != null) {
           final messageInputBarController =
               Provider.of<MessageInputBarController>(context, listen: false);
-          messageInputBarController.insertText("${userInfo.displayName} ");
+          messageInputBarController.insertText("${MeshUserDisplay.getReadableName(userInfo)} ");
           if (!messageInputBarController.focusNode.hasFocus) {
             messageInputBarController.focusNode.requestFocus();
           }
@@ -476,7 +477,7 @@ class ConversationController extends ChangeNotifier {
                       size: LayoutScale.scale(context, 16, cap: LayoutScale.iconCap),
                     ),
                     SizedBox(width: LayoutScale.scale(context, 10, cap: LayoutScale.iconCap)),
-                    Text("@${userInfo.getReadableName()}"),
+                    Text("@${MeshUserDisplay.getReadableName(userInfo)}"),
                   ],
                 ),
               )

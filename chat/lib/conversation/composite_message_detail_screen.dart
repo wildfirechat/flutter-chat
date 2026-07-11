@@ -14,6 +14,7 @@ import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/conversation/cell_builder/call_start_cell_builder.dart';
 import 'package:chat/conversation/cell_builder/card_cell_builder.dart';
 import 'package:chat/conversation/cell_builder/composite_cell_builder.dart';
@@ -99,7 +100,7 @@ class CompositeMessageDetailScreen extends StatelessWidget {
                     selector: (context, userViewModel) => userViewModel.getUserInfo(uiMessage.message.fromUser),
                     builder: (context, userInfo, child) {
                       return Text(
-                        userInfo?.getReadableName() ?? "<${uiMessage.message.fromUser}>",
+                        userInfo != null ? MeshUserDisplay.getReadableName(userInfo) : "<${uiMessage.message.fromUser}>",
                         style: const TextStyle(fontSize: 12, color: Colors.grey),
                       );
                     },

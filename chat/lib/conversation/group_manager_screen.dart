@@ -9,6 +9,8 @@ import 'package:imclient/model/user_info.dart';
 import 'package:chat/config.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/mesh/mesh_cache.dart';
 
 import '../contact/pick_user_screen.dart';
 import '../pc/pc_platform.dart';
@@ -105,21 +107,26 @@ class _GroupManagerScreenState extends State<GroupManagerScreen> {
   }
 
   Widget _buildMemberTile(BuildContext context, GroupMember member, String roleLabel, {required bool showRemove}) {
-    UserInfo? userInfo = _userInfoMap[member.memberId];
-    String name = userInfo?.getReadableName() ?? member.memberId;
-    return ListTile(
-      leading: Portrait(userInfo?.portrait ?? '', Config.defaultUserPortrait, width: 44, height: 44, borderRadius: 6),
-      title: Text(name),
-      subtitle: Text(roleLabel),
-      trailing: showRemove
-          ? TextButton(
-              onPressed: () => _removeManager(member.memberId),
-              child: Text(
-                AppLocalizations.of(context)!.remove,
-                style: const TextStyle(color: Colors.red),
-              ),
-            )
-          : null,
+    return AnimatedBuilder(
+      animation: MeshCache.instance,
+      builder: (context, child) {
+        UserInfo? userInfo = _userInfoMap[member.memberId];
+        String name = userInfo != null ? MeshUserDisplay.getReadableName(userInfo) : member.memberId;
+        return ListTile(
+          leading: Portrait(userInfo?.portrait ?? '', Config.defaultUserPortrait, width: 44, height: 44, borderRadius: 6),
+          title: Text(name),
+          subtitle: Text(roleLabel),
+          trailing: showRemove
+              ? TextButton(
+                  onPressed: () => _removeManager(member.memberId),
+                  child: Text(
+                    AppLocalizations.of(context)!.remove,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                )
+              : null,
+        );
+      },
     );
   }
 
