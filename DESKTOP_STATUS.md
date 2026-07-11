@@ -229,6 +229,9 @@ but the range of supported deployment target versions is 10.13 to 26.5.99.
 - `imclient/pubspec.yaml` 已声明 `windows`、`macos`、`linux` 平台。
 - `chat/pubspec.yaml` 描述已更新为支持桌面端。
 - 根目录 `README.md` 已补充桌面端编译说明与限制。
+- 媒体预览改用本地补丁版 `photo_view`（`vendor/photo_view`，见其 `PATCHES.md`）：
+  桌面端图片预览新增双击缩放（以点击位置为中心，双击复位）；图片有原始宽高时
+  缩放边界按真实尺寸计算，放大后拖动不会再拖出黑边。切换图片时缩放自动复位。
 
 ---
 

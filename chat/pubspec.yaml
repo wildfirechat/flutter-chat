@@ -59,7 +59,9 @@ dependencies:
       url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
       path: "packages/image_picker/image_picker"
       ref: br_image_picker-v1.1.2_ohos
-  photo_view: ^0.15.0
+  # 本地补丁版(微信式手势:双指焦点缩放、双击定点放大),见 vendor/photo_view/PATCHES.md
+  photo_view:
+    path: ../vendor/photo_view
   cached_network_image: ^3.2.3
   flutter_cache_manager: ^3.3.2
   # 不支持 ohos

@@ -5,6 +5,7 @@ import 'package:image/image.dart' as image;
 
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
+import 'package:chat/conversation/media_cell_anchor.dart';
 import 'package:imclient/tools.dart';
 
 import '../../ui_model/ui_message.dart';
@@ -27,6 +28,14 @@ class VideoCellBuilder extends PortraitCellBuilder {
 
   @override
   Widget buildMessageContent(BuildContext context) {
+    // 锚点登记缩略图位置,预览拖拽退出时缩回到这里
+    return MediaCellAnchor(
+      messageId: model.message.messageId,
+      child: _buildThumbnail(context),
+    );
+  }
+
+  Widget _buildThumbnail(BuildContext context) {
     // 获取缩略图的实际宽高
     int thumbWidth = 200;
     int thumbHeight = 200;

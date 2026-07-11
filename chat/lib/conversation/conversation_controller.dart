@@ -25,6 +25,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:avenginekit/engine/call_state.dart';
 import 'package:avenginekit/internal/avenginekit_impl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:chat/conversation/media_cell_anchor.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -304,6 +305,9 @@ class ConversationController extends ChangeNotifier {
                     MMPreviewView(
                   list,
                   defaultIndex: index,
+                  // 拖拽退出时缩回对应消息气泡的缩略图(气泡滚出屏幕则下滑退出)
+                  sourceRectProvider: (message) =>
+                      MediaCellAnchor.rectOf(message.messageId),
                   pageToEnd: (fromIndex, tail) {
                     if (tail) {
                       Imclient.getMessages(conversation, fromIndex, -10,

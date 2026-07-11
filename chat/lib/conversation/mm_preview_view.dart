@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -26,13 +27,16 @@ class MMPreviewView extends StatefulWidget {
   final PageToEnd? pageToEnd; // 切换回调
   final Axis direction; // 查看方向
   final BoxDecoration? decoration; // 背景设计
+  // 拖拽退出时缩回的目标(消息气泡缩略图)的全局 rect;返回 null 则退化为下滑退出
+  final Rect? Function(Message message)? sourceRectProvider;
 
   const MMPreviewView(this.mediaItems,
       {super.key,
       this.defaultIndex = 1,
       this.pageToEnd,
       this.direction = Axis.horizontal,
-      this.decoration});
+      this.decoration,
+      this.sourceRectProvider});
 
   @override
   State<MMPreviewView> createState() => MMPreviewViewState();
@@ -44,6 +48,8 @@ class MMPreviewViewState extends State<MMPreviewView> {
   bool isZoomed = false; // Add zoomed state
   bool isDragging = false;
   final Map<int, int> _rotations = {};
+  // 每张图一个缩放状态控制器(按 messageId 存,onLoadMore 前插后 index 会变)
+  final Map<int, PhotoViewScaleStateController> _scaleStateControllers = {};
 
   @override
   void initState() {
@@ -55,7 +61,44 @@ class MMPreviewViewState extends State<MMPreviewView> {
   @override
   void dispose() {
     _pageController.dispose();
+    for (final controller in _scaleStateControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
+  }
+
+  PhotoViewScaleStateController _scaleStateControllerFor(int messageId) {
+    return _scaleStateControllers.putIfAbsent(
+        messageId, () => PhotoViewScaleStateController());
+  }
+
+  // 有原始宽高时用真实尺寸,photo_view 的缩放边界/边缘吸附才准确;缺失时退回屏幕尺寸。
+  // 旋转 90°/270° 时宽高互换(桌面端工具栏可旋转)。
+  Size _imageChildSize(ImageMessageContent content, int quarterTurns) {
+    final double w = content.width.toDouble();
+    final double h = content.height.toDouble();
+    if (w <= 0 || h <= 0) {
+      return MediaQuery.of(context).size;
+    }
+    return quarterTurns.isOdd ? Size(h, w) : Size(w, h);
+  }
+
+  // 当前页媒体静止时在屏幕上的显示区域(contain 适配);尺寸未知或视频时为全屏
+  Rect _currentContentRect() {
+    final Size screen = MediaQuery.of(context).size;
+    final content = widget.mediaItems[currentIndex].content;
+    if (content is ImageMessageContent) {
+      final Size child = _imageChildSize(content, _rotations[currentIndex] ?? 0);
+      if (child != screen) {
+        final double s =
+            math.min(screen.width / child.width, screen.height / child.height);
+        return Rect.fromCenter(
+            center: screen.center(Offset.zero),
+            width: child.width * s,
+            height: child.height * s);
+      }
+    }
+    return Offset.zero & screen;
   }
 
   void onLoadMore(List<Message> moreItems, bool front) {
@@ -90,16 +133,13 @@ class MMPreviewViewState extends State<MMPreviewView> {
                       return PhotoViewGalleryPageOptions.customChild(
                         child: RotatedBox(
                           quarterTurns: rotation,
-                          child: Image.file(localFile, fit: BoxFit.contain),
+                          // childSize 为图片原始尺寸时由 transform 缩小显示,medium 采样避免锯齿
+                          child: Image.file(localFile, fit: BoxFit.contain, filterQuality: FilterQuality.medium),
                         ),
-                        childSize: MediaQuery.of(context).size,
+                        childSize: _imageChildSize(imageContent, rotation),
                         minScale: PhotoViewComputedScale.contained,
                         maxScale: PhotoViewComputedScale.covered * 2.5,
-                        onScaleEnd: (context, details, controllerValue) {
-                          setState(() {
-                            isZoomed = controllerValue.scale! > 1.05;
-                          });
-                        },
+                        scaleStateController: _scaleStateControllerFor(message.messageId),
                       );
                     }
                   }
@@ -107,30 +147,36 @@ class MMPreviewViewState extends State<MMPreviewView> {
                   // 使用网络图片（带缓存）
                   if (imageContent.remoteUrl != null && imageContent.remoteUrl!.isNotEmpty) {
                     final rotation = _rotations[index] ?? 0;
+                    final Size childSize = _imageChildSize(imageContent, rotation);
+                    final Size screenSize = MediaQuery.of(context).size;
+                    // childSize 为原图尺寸时整页被 contained 比例缩放,占位/错误图标反向缩放保持视觉大小
+                    final double containedScale = math.min(
+                        screenSize.width / childSize.width, screenSize.height / childSize.height);
+                    Widget keepVisualSize(Widget child) => Center(
+                        child: Transform.scale(scale: 1 / containedScale, child: child));
                     return PhotoViewGalleryPageOptions.customChild(
                       child: RotatedBox(
                         quarterTurns: rotation,
                         child: CachedNetworkImage(
                           imageUrl: MediaUrlRedirector.redirect(imageContent.remoteUrl!),
-                          placeholder: (context, url) => const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white30),
+                          placeholder: (context, url) => keepVisualSize(
+                            const CircularProgressIndicator(strokeWidth: 2, color: Colors.white30),
                           ),
-                          errorWidget: (context, url, error) => const Icon(
-                            Icons.broken_image_rounded,
-                            color: Colors.white30,
-                            size: 48,
+                          errorWidget: (context, url, error) => keepVisualSize(
+                            const Icon(
+                              Icons.broken_image_rounded,
+                              color: Colors.white30,
+                              size: 48,
+                            ),
                           ),
                           fit: BoxFit.contain,
+                          filterQuality: FilterQuality.medium,
                         ),
                       ),
-                      childSize: MediaQuery.of(context).size,
+                      childSize: childSize,
                       minScale: PhotoViewComputedScale.contained,
                       maxScale: PhotoViewComputedScale.covered * 2.5,
-                      onScaleEnd: (context, details, controllerValue) {
-                        setState(() {
-                          isZoomed = controllerValue.scale! > 1.05;
-                        });
-                      },
+                      scaleStateController: _scaleStateControllerFor(message.messageId),
                     );
                   }
 
@@ -166,9 +212,20 @@ class MMPreviewViewState extends State<MMPreviewView> {
               backgroundDecoration: widget.decoration ??
                   const BoxDecoration(color: Colors.transparent),
               pageController: _pageController,
+              // 双指缩放、双击缩放(含动画中途)都会走这里,isZoomed 驱动 DragToDismiss 开关
+              scaleStateChangedCallback: (state) {
+                final bool zoomed = state != PhotoViewScaleState.initial;
+                if (zoomed != isZoomed) {
+                  setState(() => isZoomed = zoomed);
+                }
+              },
               onPageChanged: (index) => setState(() {
                     currentIndex = index;
                     isZoomed = false;
+                    // 参考微信:切走页面时复位缩放,切回来是初始大小
+                    for (final controller in _scaleStateControllers.values) {
+                      controller.reset();
+                    }
                     if (widget.pageToEnd != null) {
                       Message message = widget.mediaItems[index];
                       if (index == 0) {
@@ -358,6 +415,10 @@ class MMPreviewViewState extends State<MMPreviewView> {
     // 手机端：保持拖拽关闭手势
     return DragToDismiss(
       enabled: !isZoomed,
+      contentRect: _currentContentRect,
+      dismissTargetRect: widget.sourceRectProvider == null
+          ? null
+          : () => widget.sourceRectProvider!(widget.mediaItems[currentIndex]),
       onDismiss: () {
         Navigator.pop(context);
       },

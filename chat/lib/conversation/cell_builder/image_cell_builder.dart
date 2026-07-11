@@ -2,10 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:image/image.dart' as image;
 
 import 'package:imclient/message/image_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
+import 'package:chat/conversation/media_cell_anchor.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:imclient/tools.dart';
 
@@ -24,6 +24,14 @@ class ImageCellBuilder extends PortraitCellBuilder {
 
   @override
   Widget buildMessageContent(BuildContext context) {
+    // 锚点登记缩略图位置,预览拖拽退出时大图缩回到这里
+    return MediaCellAnchor(
+      messageId: model.message.messageId,
+      child: _buildThumbnail(context),
+    );
+  }
+
+  Widget _buildThumbnail(BuildContext context) {
     Size imageSize = Tools.getImageSizeByOrgSizeToWeChat(imageMessageContent.width, imageMessageContent.height);
     double width = imageSize.width > 0 ? imageSize.width : 200;
     double height = imageSize.height > 0 ? imageSize.height : 200;
