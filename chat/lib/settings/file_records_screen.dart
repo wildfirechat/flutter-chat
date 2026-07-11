@@ -596,7 +596,11 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
                   Utilities.formatTime(context, file.timestamp),
                 ];
                 return ListTile(
-                  leading: const Icon(Icons.insert_drive_file, size: 40),
+                  leading: Image.asset(
+                    'assets/images/file_type/${Utilities.fileType(file.name ?? '')}.png',
+                    width: 40,
+                    height: 40,
+                  ),
                   title: Text(
                     file.name ?? l10n.unknownFile,
                     maxLines: 2,
