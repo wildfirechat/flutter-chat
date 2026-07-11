@@ -711,5 +711,16 @@
   "reload": "Reload",
   "searchFailed": "Search failed: {error}",
   "messageSettings": "Message Settings",
-  "unknownMessageNotImplemented": "This message type is not supported yet, please upgrade!"
+  "unknownMessageNotImplemented": "This message type is not supported yet, please upgrade!",
+  "pcOnline": "PC Online",
+  "padOnline": "Pad Online",
+  "webOnline": "Web Online",
+  "microAppOnline": "Mini Program Online",
+  "mobileOnline": "Mobile Online",
+  "busy": "Busy",
+  "away": "Away",
+  "mobileOnlineDaysAgo": "{count} days ago",
+  "mobileOnlineHoursAgo": "{count} hours ago",
+  "mobileOnlineMinutesAgo": "{count} mins ago",
+  "mobileOnlineJustNow": "just now"
 }

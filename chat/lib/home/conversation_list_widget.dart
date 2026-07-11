@@ -15,7 +15,6 @@ import 'package:provider/provider.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utilities.dart';
-import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
@@ -28,6 +27,7 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import '../config.dart';
 import '../conversation/conversation_screen.dart';
+import '../conversation/input_bar/draft_data.dart';
 import '../viewmodel/user_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/desktop_popup_menu_item.dart';
@@ -366,21 +366,17 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                         const SizedBox(width: 4),
                                       ],
                                       Expanded(
-                                        // Selector 复用同一 UserInfo 实例不会因域名到达而重估，这里单独监听 MeshCache
-                                        child: AnimatedBuilder(
-                                          animation: MeshCache.instance,
-                                          builder: (context, child) => Text(
-                                            hasDraft
-                                                ? conversationInfo.draft!
-                                                : conversationInfo.lastMessage != null
-                                                    ? '${value.$4 != null ? MeshUserDisplay.getReadableName(value.$4!) : "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
-                                                    : '',
-                                            style: TextStyle(fontSize: 12.0, color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
+                                        child: Text(
+                                          hasDraft
+                                              ? DraftData.displayText(conversationInfo.draft!)
+                                              : conversationInfo.lastMessage != null
+                                                  ? '${value.$4 != null ? MeshUserDisplay.getReadableName(value.$4!) : "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
+                                                  : '',
+                                          style: TextStyle(fontSize: 12.0, color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                      )
+                                      ),
                                     ],
                                   ),
                                 ],

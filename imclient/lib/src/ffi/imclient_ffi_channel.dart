@@ -184,6 +184,9 @@ class ImclientFfiChannel implements ImclientChannel {
       case _BridgeTag.domainInfoUpdated:
         _emit('onDomainInfoUpdate', {'domainInfo': _json(str(1))});
         break;
+      case _BridgeTag.onlineEventUpdated:
+        _emit('onUserOnlineEvent', {'states': _jsonList(str(1))});
+        break;
       case _BridgeTag.messageDelivered:
         final delivered = _json(str(1));
         if (delivered is Map) {
@@ -501,6 +504,7 @@ class ImclientFfiChannel implements ImclientChannel {
     _wf.setJoinGroupRequestUpdateListener(_bridge.fn('wfc_on_join_group_request_updated'));
     _wf.setChannelInfoUpdateListener(_bridge.fn('wfc_on_channelinfo_updated'));
     _wf.setDomainInfoUpdateListener(_bridge.fn('wfc_on_domain_info_updated'));
+    _wf.setOnlineEventListener(_bridge.fn('wfc_on_online_event_updated'));
   }
 
   // ---- 请求级回调指针 ----
@@ -2281,6 +2285,8 @@ class _BridgeTag {
   static const int messageReaded = 13;
   static const int joinGroupRequestUpdated = 14;
   static const int domainInfoUpdated = 15;
+
+  static const int onlineEventUpdated = 16;
 
   static const int generalVoidSuccess = 20;
   static const int generalStringSuccess = 21;

@@ -2336,4 +2336,43 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get unknownMessageNotImplemented =>
       'This message type is not supported yet, please upgrade!';
+
+  @override
+  String get pcOnline => 'PC Online';
+
+  @override
+  String get padOnline => 'Pad Online';
+
+  @override
+  String get webOnline => 'Web Online';
+
+  @override
+  String get microAppOnline => 'Mini Program Online';
+
+  @override
+  String get mobileOnline => 'Mobile Online';
+
+  @override
+  String get busy => 'Busy';
+
+  @override
+  String get away => 'Away';
+
+  @override
+  String mobileOnlineDaysAgo(Object count) {
+    return '$count days ago';
+  }
+
+  @override
+  String mobileOnlineHoursAgo(Object count) {
+    return '$count hours ago';
+  }
+
+  @override
+  String mobileOnlineMinutesAgo(Object count) {
+    return '$count mins ago';
+  }
+
+  @override
+  String get mobileOnlineJustNow => 'just now';
 }

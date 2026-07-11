@@ -8,7 +8,7 @@ import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/mesh/mesh_cache.dart';
 
 class FavUsersPage extends StatefulWidget {
@@ -60,7 +60,7 @@ class FavUsersPageState extends State<FavUsersPage> {
           title: AnimatedBuilder(
             animation: MeshCache.instance,
             builder: (context, child) {
-              return Text(MeshUserDisplay.getReadableName(userInfo));
+              return MeshUserName(userInfo);
             },
           ),
           onTap: () {

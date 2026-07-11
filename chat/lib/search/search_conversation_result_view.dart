@@ -8,7 +8,7 @@ import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
@@ -114,7 +114,7 @@ class _SearchConversationResultViewState extends State<SearchConversationResultV
                               AnimatedBuilder(
                                 animation: MeshCache.instance,
                                 builder: (context, child) {
-                                  return Text(userInfo != null ? MeshUserDisplay.getReadableName(userInfo) : message.fromUser);
+                                  return userInfo != null ? MeshUserName(userInfo) : Text(message.fromUser);
                                 },
                               ),
                               Text(

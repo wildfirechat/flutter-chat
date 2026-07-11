@@ -15,7 +15,7 @@ import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/utils/media_url_redirector.dart';
-import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 class VoipCallScreen extends StatefulWidget {
@@ -484,6 +484,19 @@ class _VoipCallScreenState extends State<VoipCallScreen>
 
   Widget _buildUserInfo() {
     final bool isPulsing = _session.status == CallState.STATUS_OUTGOING || _session.status == CallState.STATUS_CONNECTING;
+    const nameStyle = TextStyle(
+      color: Colors.white,
+      fontSize: 26,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.5,
+      shadows: [
+        Shadow(
+          color: Colors.black45,
+          offset: Offset(0, 2),
+          blurRadius: 8,
+        ),
+      ],
+    );
     return Column(
       children: [
         _PulsingAvatar(
@@ -491,22 +504,15 @@ class _VoipCallScreenState extends State<VoipCallScreen>
           isPulsing: isPulsing,
         ),
         const SizedBox(height: 24),
-        Text(
-          _targetUserInfo != null ? MeshUserDisplay.getReadableName(_targetUserInfo!) : '',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 26,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.5,
-            shadows: [
-              Shadow(
-                color: Colors.black45,
-                offset: Offset(0, 2),
-                blurRadius: 8,
+        _targetUserInfo != null
+            ? MeshUserName(
+                _targetUserInfo!,
+                style: nameStyle,
+              )
+            : const Text(
+                '',
+                style: nameStyle,
               ),
-            ],
-          ),
-        ),
       ],
     );
   }

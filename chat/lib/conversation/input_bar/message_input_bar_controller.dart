@@ -16,6 +16,7 @@ import 'package:imclient/model/quote_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'draft_data.dart';
 
 enum ChatInputBarStatus { keyboardStatus, pluginStatus, emojiStatus, recordStatus, muteStatus, pttStatus, menuStatus }
 
@@ -42,6 +43,7 @@ class MessageInputBarController extends ChangeNotifier {
 
   ChatInputBarStatus _status;
   Message? _quotedMessage;
+  QuoteInfo? _quoteInfo;
   ChannelInfo? channelInfo;
   Function(Conversation conversation)? onMentionTriggered;
   VoidCallback? onSend;
@@ -91,6 +93,10 @@ class MessageInputBarController extends ChangeNotifier {
 
   Message? get quotedMessage => _quotedMessage;
 
+  QuoteInfo? get quoteInfo => _quoteInfo;
+
+  bool get hasQuote => _quotedMessage != null || _quoteInfo != null;
+
   bool get hasMentionSession => _mentionAtIndex >= 0;
 
   String get mentionQuery => _mentionQuery;
@@ -104,8 +110,13 @@ class MessageInputBarController extends ChangeNotifier {
     }
   }
 
-  void setQuotedMessage(Message? message) {
+  void setQuotedMessage(Message? message) async {
     _quotedMessage = message;
+    if (message != null) {
+      _quoteInfo = await QuoteInfo.fromMessage(message);
+    } else {
+      _quoteInfo = null;
+    }
     notifyListeners();
   }
 
@@ -181,6 +192,7 @@ class MessageInputBarController extends ChangeNotifier {
       _sendTextMessage(conversation, textEditingController.text.trim());
       textEditingController.clear();
       _quotedMessage = null;
+      _quoteInfo = null;
       _mentionsList.clear();
       _endMentionSession();
       if (_conversationDraft.isNotEmpty) {
@@ -473,8 +485,8 @@ class MessageInputBarController extends ChangeNotifier {
 
   void _sendTextMessage(Conversation conversation, String text) async {
     TextMessageContent txt = TextMessageContent(text);
-    if (_quotedMessage != null) {
-      txt.quoteInfo = await QuoteInfo.fromMessage(_quotedMessage!);
+    if (_quoteInfo != null) {
+      txt.quoteInfo = _quoteInfo;
     }
     List<String> mentionedUsers = _mentionsList.map((e) => e.userId).toList();
     if (mentionedUsers.isNotEmpty) {
@@ -592,15 +604,50 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   String getDraft() {
-    return textEditingController.text;
+    if (_mentionsList.isEmpty && _quoteInfo == null) {
+      return textEditingController.text;
+    }
+    final draft = DraftData(content: textEditingController.text);
+    draft.mentions = _mentionsList
+        .map((m) => DraftMention(
+              uid: m.userId,
+              isMentionAll: m.userId == '@all',
+              start: m.start,
+              end: m.end,
+              displayName: m.displayName,
+            ))
+        .toList();
+    draft.quoteInfo = _quoteInfo;
+    return draft.toDraftString();
+  }
+
+  String getDraftDisplayText() {
+    return DraftData.displayText(getDraft());
   }
 
   void setDraft(String draft) {
     _endMentionSession();
-    textEditingController.text = draft;
-    textEditingController.selection = TextSelection(baseOffset: draft.length, extentOffset: draft.length);
-    _lastText = draft;
+    _mentionsList.clear();
+    _quotedMessage = null;
+    _quoteInfo = null;
+
+    final data = DraftData.fromDraftString(draft);
+    textEditingController.text = data.content;
+    textEditingController.selection = TextSelection(baseOffset: data.content.length, extentOffset: data.content.length);
+    _lastText = data.content;
     _conversationDraft = draft;
+
+    for (final m in data.mentions) {
+      _mentionsList.add(Mention(
+        m.uid,
+        m.displayName ?? m.uid,
+        m.start,
+        m.end,
+      ));
+    }
+    if (data.quoteInfo != null) {
+      _quoteInfo = data.quoteInfo;
+    }
     notifyListeners();
   }
 

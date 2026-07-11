@@ -7,7 +7,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:chat/config.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/mesh/mesh_cache.dart';
 
 class ReadReceiptDetailScreen extends StatefulWidget {
@@ -120,7 +120,7 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
           title: AnimatedBuilder(
             animation: MeshCache.instance,
             builder: (context, child) {
-              return Text(MeshUserDisplay.getReadableName(user));
+              return MeshUserName(user);
             },
           ),
         );

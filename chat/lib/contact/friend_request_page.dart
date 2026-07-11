@@ -9,7 +9,7 @@ import 'package:chat/pc/widgets/pc_page_header.dart';
 
 import '../config.dart';
 import '../utils/media_url_redirector.dart';
-import '../utils/mesh_user_display.dart';
+import '../utils/mesh_user_name.dart';
 import '../mesh/mesh_cache.dart';
 import 'package:chat/theme/app_colors.dart';
 
@@ -108,7 +108,7 @@ class FriendRequestPageState extends State<FriendRequestPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(userInfo != null ? MeshUserDisplay.getReadableName(userInfo) : "<${request.target}>"),
+                      userInfo != null ? MeshUserName(userInfo) : Text("<${request.target}>"),
                       Text(request.reason??""),
                     ],
                   ),

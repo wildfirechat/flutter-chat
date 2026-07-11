@@ -14,8 +14,7 @@ import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
-import 'package:chat/mesh/mesh_cache.dart';
-import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/conversation/cell_builder/call_start_cell_builder.dart';
 import 'package:chat/conversation/cell_builder/card_cell_builder.dart';
 import 'package:chat/conversation/cell_builder/composite_cell_builder.dart';
@@ -100,14 +99,15 @@ class CompositeMessageDetailScreen extends StatelessWidget {
                   Selector<UserViewModel, UserInfo?>(
                     selector: (context, userViewModel) => userViewModel.getUserInfo(uiMessage.message.fromUser),
                     builder: (context, userInfo, child) {
-                      // Selector 复用同一 UserInfo 实例不会因域名到达而重估，这里单独监听 MeshCache
-                      return AnimatedBuilder(
-                        animation: MeshCache.instance,
-                        builder: (context, child) => Text(
-                          userInfo != null ? MeshUserDisplay.getReadableName(userInfo) : "<${uiMessage.message.fromUser}>",
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      );
+                      return userInfo != null
+                          ? MeshUserName(
+                              userInfo,
+                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            )
+                          : Text(
+                              "<${uiMessage.message.fromUser}>",
+                              style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            );
                     },
                   ),
                 Container(

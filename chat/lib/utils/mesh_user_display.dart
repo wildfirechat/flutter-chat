@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:imclient/model/user_info.dart';
 import 'external_target_utils.dart';
 import '../mesh/mesh_cache.dart';
-import '../mesh/mesh_constants.dart';
 
 /// 外部用户显示辅助。
 class MeshUserDisplay {
@@ -33,14 +32,14 @@ class MeshUserDisplay {
   }
 
   /// 同步获取带域后缀的富文本名称。
+  /// [style] 会作用在基础名称上；域后缀默认使用黄色，字号比 [style] 的字号小 2。
   static TextSpan getReadableNameSpan(
     UserInfo userInfo, {
-    double? fontSize,
-    Color? domainColor,
+    TextStyle? style,
   }) {
     final domainId = ExternalTargetUtils.getExternalDomain(userInfo.userId);
     if (domainId == null) {
-      return TextSpan(text: userInfo.getReadableName());
+      return TextSpan(text: userInfo.getReadableName(), style: style);
     }
     String? domainName = MeshCache.instance.getDomainName(domainId);
     if (domainName == null || domainName.isEmpty) {
@@ -50,8 +49,7 @@ class MeshUserDisplay {
     return ExternalTargetUtils.buildExternalNameSpan(
       domainName == null ? userInfo.getReadableName() : _baseName(userInfo),
       domainName: domainName,
-      fontSize: fontSize,
-      domainColor: domainColor ?? MeshConstants.externalNameColor,
+      style: style,
     );
   }
 

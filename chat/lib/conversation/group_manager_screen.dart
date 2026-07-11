@@ -9,7 +9,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:chat/config.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/widget/portrait.dart';
-import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/mesh/mesh_cache.dart';
 
 import '../contact/pick_user_screen.dart';
@@ -111,10 +111,9 @@ class _GroupManagerScreenState extends State<GroupManagerScreen> {
       animation: MeshCache.instance,
       builder: (context, child) {
         UserInfo? userInfo = _userInfoMap[member.memberId];
-        String name = userInfo != null ? MeshUserDisplay.getReadableName(userInfo) : member.memberId;
         return ListTile(
           leading: Portrait(userInfo?.portrait ?? '', Config.defaultUserPortrait, width: 44, height: 44, borderRadius: 6),
-          title: Text(name),
+          title: userInfo != null ? MeshUserName(userInfo) : Text(member.memberId),
           subtitle: Text(roleLabel),
           trailing: showRemove
               ? TextButton(

@@ -7,7 +7,7 @@ import 'package:chat/theme/app_colors.dart';
 
 import '../config.dart';
 import '../mesh/mesh_cache.dart';
-import '../utils/mesh_user_display.dart';
+import '../utils/mesh_user_name.dart';
 
 class ConversationInfoMemberItem extends StatelessWidget {
   final UserInfo userInfo;
@@ -31,8 +31,8 @@ class ConversationInfoMemberItem extends StatelessWidget {
             SizedBox(
               // 纯文本行:完整跟随字号,否则最大档位下 12sp 的名字会被 16px 的盒子裁掉。
               height: LayoutScale.watchScale(context, 16.0, cap: LayoutScale.textCap),
-              child: Text(
-                MeshUserDisplay.getReadableName(userInfo),
+              child: MeshUserName(
+                userInfo,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
                 style: TextStyle(

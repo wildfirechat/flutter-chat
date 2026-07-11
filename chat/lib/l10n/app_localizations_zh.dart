@@ -2290,4 +2290,43 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get unknownMessageNotImplemented => '暂不支持此消息类型，请升级客户端！';
+
+  @override
+  String get pcOnline => '电脑在线';
+
+  @override
+  String get padOnline => '平板在线';
+
+  @override
+  String get webOnline => '网页在线';
+
+  @override
+  String get microAppOnline => '小程序在线';
+
+  @override
+  String get mobileOnline => '手机在线';
+
+  @override
+  String get busy => '忙碌';
+
+  @override
+  String get away => '离开';
+
+  @override
+  String mobileOnlineDaysAgo(Object count) {
+    return '$count天前';
+  }
+
+  @override
+  String mobileOnlineHoursAgo(Object count) {
+    return '$count时前';
+  }
+
+  @override
+  String mobileOnlineMinutesAgo(Object count) {
+    return '$count分前';
+  }
+
+  @override
+  String get mobileOnlineJustNow => '不久前';
 }

@@ -79,7 +79,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
   static const double _quoteChipRowHeight = 38;
 
   double get _minHeight =>
-      PcTheme.inputBarMinHeight + (_boundController?.quotedMessage != null ? _quoteChipRowHeight : 0);
+      PcTheme.inputBarMinHeight + (_boundController?.hasQuote == true ? _quoteChipRowHeight : 0);
 
   /// 会话区太矮时压缩输入栏,保证消息列表还剩得下内容。
   double get _maxHeight => math.max(_minHeight, widget.maxHeight);
@@ -400,7 +400,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                 ),
               ),
             ),
-            if (controller.quotedMessage != null)
+            if (controller.hasQuote)
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
                 child: _QuoteChip(controller: controller),
@@ -487,19 +487,26 @@ class _QuoteChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final quoted = controller.quotedMessage!;
-    final content = quoted.content;
+    final quoteInfo = controller.quoteInfo;
+    final quotedMessage = controller.quotedMessage;
     Widget? thumbnail;
-    if (content is ImageMessageContent && content.thumbnail != null) {
-      thumbnail = ClipRRect(
-        borderRadius: BorderRadius.circular(3),
-        child: Image.memory(content.thumbnail!, width: 24, height: 24, fit: BoxFit.cover),
-      );
-    } else if (content is VideoMessageContent && content.thumbnail != null) {
-      thumbnail = ClipRRect(
-        borderRadius: BorderRadius.circular(3),
-        child: Image.memory(content.thumbnail!, width: 24, height: 24, fit: BoxFit.cover),
-      );
+    String digest = '';
+    if (quotedMessage != null) {
+      final content = quotedMessage.content;
+      digest = content.digest(quotedMessage).toString();
+      if (content is ImageMessageContent && content.thumbnail != null) {
+        thumbnail = ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: Image.memory(content.thumbnail!, width: 24, height: 24, fit: BoxFit.cover),
+        );
+      } else if (content is VideoMessageContent && content.thumbnail != null) {
+        thumbnail = ClipRRect(
+          borderRadius: BorderRadius.circular(3),
+          child: Image.memory(content.thumbnail!, width: 24, height: 24, fit: BoxFit.cover),
+        );
+      }
+    } else if (quoteInfo != null) {
+      digest = quoteInfo.messageDigest ?? '';
     }
 
     final colors = context.colors;
@@ -520,15 +527,22 @@ class _QuoteChip extends StatelessWidget {
               const SizedBox(width: 6),
             ],
             Flexible(
-              child: FutureBuilder<String>(
-                future: content.digest(quoted),
-                builder: (context, snapshot) => Text(
-                  snapshot.data ?? '',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 12, color: colors.textSecondary),
-                ),
-              ),
+              child: quotedMessage != null
+                  ? FutureBuilder<String>(
+                      future: quotedMessage.content.digest(quotedMessage),
+                      builder: (context, snapshot) => Text(
+                        snapshot.data ?? '',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 12, color: colors.textSecondary),
+                      ),
+                    )
+                  : Text(
+                      digest,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12, color: colors.textSecondary),
+                    ),
             ),
             const SizedBox(width: 6),
             HoverBuilder(

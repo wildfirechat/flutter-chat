@@ -1820,7 +1820,7 @@ class Imclient {
   }
 
   ///获取用户的在线状态
-  static Future<UserOnlineState?> getUserOnlineState(String userId) async {
+  static UserOnlineState? getUserOnlineState(String userId) {
     return ImclientPlatform.instance.getUserOnlineState(userId);
   }
 

@@ -30,30 +30,26 @@ class ExternalTargetUtils {
 
   /// 构建带域后缀的富文本名称，例如 "张三@某单位"。
   /// [domainName] 为空时只返回 [name]。
+  /// 域后缀默认使用 [MeshConstants.externalNameColor]，字号比 [style] 的字号小 2。
   static TextSpan buildExternalNameSpan(
     String name, {
     String? domainName,
-    Color? color,
-    double? fontSize,
-    Color? domainColor,
+    TextStyle? style,
   }) {
-    final effectiveDomainColor = domainColor ?? MeshConstants.externalNameColor;
     final children = <TextSpan>[
-      TextSpan(text: name),
+      TextSpan(text: name, style: style),
     ];
     if (domainName != null && domainName.isNotEmpty) {
+      final baseFontSize = style?.fontSize ?? 14;
       children.add(TextSpan(
         text: '@$domainName',
         style: TextStyle(
-          color: effectiveDomainColor,
-          fontSize: fontSize,
+          color: MeshConstants.externalNameColor,
+          fontSize: baseFontSize > 2 ? baseFontSize - 2 : baseFontSize,
         ),
       ));
     }
-    return TextSpan(
-      children: children,
-      style: fontSize != null ? TextStyle(fontSize: fontSize) : null,
-    );
+    return TextSpan(children: children);
   }
 
   /// 返回普通文本形式的带域后缀名称。

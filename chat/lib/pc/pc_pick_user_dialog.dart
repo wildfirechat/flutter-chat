@@ -18,6 +18,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 
 /// 桌面端多选联系人的分栏形态(参照微信 PC):
@@ -664,14 +665,19 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                   : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 30, height: 30),
               const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                    userInfo.userId == '@all'
-                        ? l10n.allMembers
-                        : MeshUserDisplay.getReadableName(userInfo),
-                    style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  child: userInfo.userId == '@all'
+                      ? Text(
+                          l10n.allMembers,
+                          style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      : MeshUserName(
+                          userInfo,
+                          style: TextStyle(fontSize: 13, color: context.colors.textPrimary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                 ),
               Icon(
                 Icons.remove_circle_outline,

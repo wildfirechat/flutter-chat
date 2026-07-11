@@ -711,5 +711,16 @@
   "reload": "重新加载",
   "searchFailed": "搜索失败: {error}",
   "messageSettings": "消息设置",
-  "unknownMessageNotImplemented": "暂不支持此消息类型，请升级客户端！"
+  "unknownMessageNotImplemented": "暂不支持此消息类型，请升级客户端！",
+  "pcOnline": "电脑在线",
+  "padOnline": "平板在线",
+  "webOnline": "网页在线",
+  "microAppOnline": "小程序在线",
+  "mobileOnline": "手机在线",
+  "busy": "忙碌",
+  "away": "离开",
+  "mobileOnlineDaysAgo": "{count}天前",
+  "mobileOnlineHoursAgo": "{count}时前",
+  "mobileOnlineMinutesAgo": "{count}分前",
+  "mobileOnlineJustNow": "不久前"
 }

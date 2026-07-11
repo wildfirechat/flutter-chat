@@ -7,7 +7,7 @@ import 'package:chat/user_info_widget.dart';
 import '../config.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/media_url_redirector.dart';
-import '../utils/mesh_user_display.dart';
+import '../utils/mesh_user_name.dart';
 
 class SearchUserDelegate extends SearchDelegate<String> {
   final String? domainId;
@@ -70,7 +70,7 @@ class SearchUserDelegate extends SearchDelegate<String> {
         child: Row(
           children: [
             Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (userInfo.portrait == null || userInfo.portrait!.isEmpty)?Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0):Image.network(MediaUrlRedirector.redirect(userInfo.portrait!), width: 40, height: 40,),),),
-            Expanded(child: Text(MeshUserDisplay.getReadableName(userInfo), overflow: TextOverflow.ellipsis)),
+            Expanded(child: MeshUserName(userInfo, overflow: TextOverflow.ellipsis)),
           ],
         ),
       ),

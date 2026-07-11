@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import 'package:chat/config.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/model/user_info.dart';
 import 'package:chat/organization/model/organization.dart';
 import 'package:chat/organization/organization_view_model.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
@@ -25,7 +26,11 @@ import '../mesh/domain_list_screen.dart';
 import '../mesh/mesh_cache.dart';
 import '../pc/pc_platform.dart';
 import '../utils/layout_scale.dart';
+import '../utils/external_target_utils.dart';
 import '../utils/mesh_user_display.dart';
+import '../utils/mesh_user_name.dart';
+import '../utils/online_state_builder.dart';
+import '../utils/online_state_formatter.dart';
 import 'package:chat/theme/app_colors.dart';
 
 // 行度量。itemExtentBuilder 与侧栏索引的跳转偏移必须共用下面两个函数,
@@ -263,9 +268,9 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   }
 
   Widget _contactListFixHeader(BuildContext context, int index, int unreadFriendRequestCount, List<dynamic> fixHeaderList) {
-    String? imagePath = fixHeaderList[index][0];
-    String title = fixHeaderList[index][1];
-    String key = fixHeaderList[index][2];
+    String? imagePath = fixHeaderList[index][0] as String?;
+    String title = (fixHeaderList[index][1] as String?) ?? '';
+    String key = (fixHeaderList[index][2] as String?) ?? '';
     return Material(
       color: context.colors.surface,
       child: InkWell(
@@ -418,14 +423,12 @@ class _ContactListItemState extends State<ContactListItem> {
     return AnimatedBuilder(
       animation: MeshCache.instance,
       builder: (context, child) {
-        // 获取显示名称（含外部单位后缀）
-        final displayName = MeshUserDisplay.getReadableName(widget.contactInfo.userInfo);
-        return _buildContent(context, displayName);
+        return _buildContent(context, widget.contactInfo.userInfo);
       },
     );
   }
 
-  Widget _buildContent(BuildContext context, String displayName) {
+  Widget _buildContent(BuildContext context, UserInfo userInfo) {
     Color getBgColor() {
       if (!isDesktopShell) return Colors.transparent;
       final selectedId = Provider.of<PCShellViewModel>(context).selectedContactItemId;
@@ -444,13 +447,8 @@ class _ContactListItemState extends State<ContactListItem> {
           Container(
             margin: const EdgeInsets.only(left: 16),
           ),
-          Expanded(
-              child: Text(
-            displayName,
-            style: const TextStyle(fontSize: 15.0),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          )),
+          Expanded(child: _buildNameWithOnlineStatus(context, userInfo)),
+          if (!isDesktopShell) const SizedBox(width: 12),
         ],
       ),
     );
@@ -515,6 +513,55 @@ class _ContactListItemState extends State<ContactListItem> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildNameWithOnlineStatus(BuildContext context, UserInfo userInfo) {
+    if (ExternalTargetUtils.isExternalTarget(userInfo.userId)) {
+      return MeshUserName(
+        userInfo,
+        style: const TextStyle(fontSize: 15.0),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    return OnlineStateBuilder(
+      userId: userInfo.userId,
+      builder: (context, state) {
+        final l10n = AppLocalizations.of(context)!;
+        final showIndicator = OnlineStateFormatter.showIndicator(state);
+        final statusText = OnlineStateFormatter.contactStatusText(state, l10n);
+
+        final nameSpan = MeshUserDisplay.getReadableNameSpan(userInfo);
+        final spans = List<InlineSpan>.from(nameSpan.children ?? [nameSpan]);
+        if (statusText != null && statusText.isNotEmpty) {
+          spans.add(TextSpan(
+            text: '($statusText)',
+            style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.secondary),
+          ));
+        }
+
+        return Row(
+          children: [
+            Expanded(
+              child: Text.rich(
+                TextSpan(children: spans, style: nameSpan.style),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (showIndicator)
+              Padding(
+                padding: EdgeInsets.only(left: 8, right: isDesktopShell ? 16 : 0),
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 

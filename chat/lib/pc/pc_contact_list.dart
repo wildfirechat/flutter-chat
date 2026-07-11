@@ -24,7 +24,11 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/mesh/domain_profile_screen.dart';
 import 'package:chat/mesh/mesh_cache.dart';
+import 'package:chat/utils/external_target_utils.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/utils/mesh_user_name.dart';
+import 'package:chat/utils/online_state_builder.dart';
+import 'package:chat/utils/online_state_formatter.dart';
 import 'package:imclient/model/domain_info.dart';
 
 import 'package:chat/utils/layout_scale.dart';
@@ -571,11 +575,55 @@ class _ContactRow extends StatelessWidget {
                 children: [
                   Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
                   const SizedBox(width: _kIconGap),
-                  Expanded(child: Text(MeshUserDisplay.getReadableName(userInfo), style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  Expanded(child: _buildName(context, isSelected)),
                 ],
               ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildName(BuildContext context, bool isSelected) {
+    if (ExternalTargetUtils.isExternalTarget(userInfo.userId)) {
+      return MeshUserName(userInfo, style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis);
+    }
+    return OnlineStateBuilder(
+      userId: userInfo.userId,
+      builder: (context, state) {
+        final l10n = AppLocalizations.of(context)!;
+        final showIndicator = OnlineStateFormatter.showIndicator(state);
+        final statusText = OnlineStateFormatter.contactStatusText(state, l10n);
+
+        final nameSpan = MeshUserDisplay.getReadableNameSpan(userInfo);
+        final spans = List<InlineSpan>.from(nameSpan.children ?? [nameSpan]);
+        if (statusText != null && statusText.isNotEmpty) {
+          spans.add(TextSpan(
+            text: '($statusText)',
+            style: TextStyle(fontSize: 12, color: isSelected ? Colors.white70 : context.colors.textSecondary),
+          ));
+        }
+
+        return Row(
+          children: [
+            Expanded(
+              child: Text.rich(
+                TextSpan(children: spans, style: nameSpan.style),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (showIndicator)
+              Padding(
+                padding: const EdgeInsets.only(left: 8),
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                ),
+              ),
+          ],
         );
       },
     );
@@ -626,8 +674,19 @@ class _FriendRequestRow extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(userInfo != null ? MeshUserDisplay.getReadableName(userInfo!) : '<${request.target}>',
-                            style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        userInfo != null
+                            ? MeshUserName(
+                                userInfo!,
+                                style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )
+                            : Text(
+                                '<${request.target}>',
+                                style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                         if (request.reason != null && request.reason!.isNotEmpty)
                           Text(request.reason!, style: PcTheme.cellSubtitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis),
                       ],

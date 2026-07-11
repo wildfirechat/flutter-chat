@@ -24,6 +24,8 @@ import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'package:chat/group/join_group_request_screen.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
+import 'package:chat/utils/external_target_utils.dart';
+import 'package:chat/utils/online_state_cache.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/l10n/app_localizations.dart';
@@ -78,6 +80,7 @@ class _ConversationPaneState extends State<ConversationPane> {
     _joinGroupRequestSubscription = Imclient.IMEventBus.on<JoinGroupRequestUpdatedEvent>().listen((_) {
       _loadJoinRequestCount();
     });
+    _watchOnlineState(widget.conversation);
 
     if (isDesktopShell) {
       // 桌面端没有触摸下拉手势,滚动接近历史侧末端时自动加载更早的消息;
@@ -85,6 +88,38 @@ class _ConversationPaneState extends State<ConversationPane> {
       _scrollController.addListener(_autoLoadHistoryIfNeeded);
       WidgetsBinding.instance.addPostFrameCallback((_) => _autoLoadHistoryIfNeeded());
     }
+  }
+
+  Future<void> _watchOnlineState(Conversation conversation) async {
+    if (conversation.conversationType != ConversationType.Single) return;
+    if (ExternalTargetUtils.isExternalTarget(conversation.target)) return;
+    try {
+      final enabled = await OnlineStateCache.instance.isEnabled;
+      if (!enabled) return;
+      final isFriend = await Imclient.isMyFriend(conversation.target);
+      if (isFriend) return;
+      OnlineStateCache.instance.loadState(conversation.target);
+      Imclient.watchOnlineState(
+        conversation.conversationType,
+        [conversation.target],
+        3600,
+        (states) {},
+        (errorCode) {},
+      );
+    } catch (_) {
+      // ignore
+    }
+  }
+
+  void _unwatchOnlineState(Conversation conversation) {
+    if (conversation.conversationType != ConversationType.Single) return;
+    if (ExternalTargetUtils.isExternalTarget(conversation.target)) return;
+    Imclient.unwatchOnlineState(
+      conversation.conversationType,
+      [conversation.target],
+      () {},
+      (errorCode) {},
+    );
   }
 
   Future<void> _loadJoinRequestCount() async {
@@ -138,6 +173,15 @@ class _ConversationPaneState extends State<ConversationPane> {
   }
 
   @override
+  void didUpdateWidget(covariant ConversationPane oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.conversation != widget.conversation) {
+      _unwatchOnlineState(oldWidget.conversation);
+      _watchOnlineState(widget.conversation);
+    }
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     _joinGroupRequestSubscription?.cancel();
@@ -157,6 +201,7 @@ class _ConversationPaneState extends State<ConversationPane> {
         });
       }, (errorCode) {});
     }
+    _unwatchOnlineState(widget.conversation);
     super.dispose();
   }
 

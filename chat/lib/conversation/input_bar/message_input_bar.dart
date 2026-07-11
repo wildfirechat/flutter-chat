@@ -193,26 +193,34 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
 
   /// 构建引用消息组件
   Widget _buildQuoteWidget(MessageInputBarController controller) {
-    final content = controller.quotedMessage!.content;
+    final quoteInfo = controller.quoteInfo;
+    final quotedMessage = controller.quotedMessage;
     Widget? thumbnail;
+    String digest = '';
 
-    // 如果是图片消息，显示缩略图
-    if (content is ImageMessageContent) {
-      if (content.thumbnail != null) {
-        thumbnail = ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: Image.memory(content.thumbnail!, width: 40, height: 40, fit: BoxFit.cover),
-        );
+    if (quotedMessage != null) {
+      final content = quotedMessage.content;
+      digest = content.digest(quotedMessage).toString();
+      // 如果是图片消息，显示缩略图
+      if (content is ImageMessageContent) {
+        if (content.thumbnail != null) {
+          thumbnail = ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Image.memory(content.thumbnail!, width: 40, height: 40, fit: BoxFit.cover),
+          );
+        }
       }
-    }
-    // 如果是视频消息，显示缩略图
-    else if (content is VideoMessageContent) {
-      if (content.thumbnail != null) {
-        thumbnail = ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: Image.memory(content.thumbnail!, width: 40, height: 40, fit: BoxFit.cover),
-        );
+      // 如果是视频消息，显示缩略图
+      else if (content is VideoMessageContent) {
+        if (content.thumbnail != null) {
+          thumbnail = ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: Image.memory(content.thumbnail!, width: 40, height: 40, fit: BoxFit.cover),
+          );
+        }
       }
+    } else if (quoteInfo != null) {
+      digest = quoteInfo.messageDigest ?? '';
     }
 
     return Container(
@@ -230,16 +238,11 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
             const SizedBox(width: 8),
           ],
           Expanded(
-            child: FutureBuilder<String>(
-              future: content.digest(controller.quotedMessage!),
-              builder: (context, snapshot) {
-                return Text(
-                  snapshot.data ?? '',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: context.colors.bubbleQuotedText, fontSize: 13),
-                );
-              },
+            child: Text(
+              digest,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: context.colors.bubbleQuotedText, fontSize: 13),
             ),
           ),
           const SizedBox(width: 8),
@@ -307,7 +310,7 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
                                   ),
                                   cursorColor: context.colors.accent,
                                 ),
-                                if (controller.quotedMessage != null)
+                                if (controller.hasQuote)
                                   Padding(
                                       padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
                                       child: ClipRRect(

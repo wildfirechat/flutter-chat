@@ -1475,22 +1475,39 @@ class ImclientPlatform extends PlatformInterface {
     return chatroomInfo;
   }
 
-  static UserOnlineState _convertProtoUserOnlineState(Map<dynamic, dynamic> data) {
-    String userId = data['userId'];
+  static UserOnlineState _convertProtoUserOnlineState(dynamic data) {
+    //data value sample {"userId":"admin","customState":0,"customText":"on vacation","states":[{"platform":3,"state":0,"lastSeen":1783770115120}]}
+    Map<dynamic, dynamic>? map;
+    if (data is String) {
+      map = jsonDecode(data) as Map<dynamic, dynamic>?;
+    } else if (data is Map) {
+      map = data;
+    }
+    if (map == null) {
+      return UserOnlineState('');
+    }
+    String userId = map['userId'];
     UserOnlineState info = UserOnlineState(userId);
-    Map<dynamic, dynamic>? customState = data['customState'];
-    if(customState != null) {
-      info.customState = CustomState(customState['state']);
-      if(customState['text'] != null) {
-        info.customState!.text = customState['text'];
+    if (map['customState'] != null) {
+      info.customState = CustomState(map['customState']);
+      if (map['customText'] != null) {
+        info.customState!.text = map['customText'];
       }
     }
-    List? clientStates = data['clientStates'];
+    List? clientStates = map['states'];
     if(clientStates != null && clientStates.isNotEmpty) {
       info.clientStates = [];
-      for (Map<dynamic, dynamic> clientState in clientStates) {
-        ClientState state = ClientState(clientState['platform'], clientState['state'], clientState['lastSeen']);
-        info.clientStates!.add(state);
+      for (var clientState in clientStates) {
+        Map<dynamic, dynamic>? csMap;
+        if (clientState is String) {
+          csMap = jsonDecode(clientState) as Map<dynamic, dynamic>?;
+        } else if (clientState is Map) {
+          csMap = clientState;
+        }
+        if (csMap != null) {
+          ClientState state = ClientState(csMap['platform'], csMap['state'], csMap['lastSeen']);
+          info.clientStates!.add(state);
+        }
       }
     }
     return info;
@@ -3600,15 +3617,15 @@ class ImclientPlatform extends PlatformInterface {
         successCallback, errorCallback);
   }
 
-  Future<UserOnlineState?> getUserOnlineState(String userId) async {
-    //移动端原生 SDK 有查询接口，优先使用；桌面端 SDK 未实现（返回 null），回退到在线事件缓存。
-    Map<dynamic, dynamic>? map =
-        await _channel.invokeMethod("getUserOnlineState", {"userId": userId});
-    if (map != null) {
-      UserOnlineState state = _convertProtoUserOnlineState(map);
-      _userOnlineStateCache[state.userId] = state;
-      return state;
-    }
+  UserOnlineState? getUserOnlineState(String userId) {
+    // //移动端原生 SDK 有查询接口，优先使用；桌面端 SDK 未实现（返回 null），回退到在线事件缓存。
+    // Map<dynamic, dynamic>? map =
+    //     await _channel.invokeMethod("getUserOnlineState", {"userId": userId});
+    // if (map != null) {
+    //   UserOnlineState state = _convertProtoUserOnlineState(map);
+    //   _userOnlineStateCache[state.userId] = state;
+    //   return state;
+    // }
     return _userOnlineStateCache[userId];
   }
 

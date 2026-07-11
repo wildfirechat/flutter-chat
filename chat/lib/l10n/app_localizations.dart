@@ -4369,6 +4369,72 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'暂不支持此消息类型，请升级客户端！'**
   String get unknownMessageNotImplemented;
+
+  /// No description provided for @pcOnline.
+  ///
+  /// In zh, this message translates to:
+  /// **'电脑在线'**
+  String get pcOnline;
+
+  /// No description provided for @padOnline.
+  ///
+  /// In zh, this message translates to:
+  /// **'平板在线'**
+  String get padOnline;
+
+  /// No description provided for @webOnline.
+  ///
+  /// In zh, this message translates to:
+  /// **'网页在线'**
+  String get webOnline;
+
+  /// No description provided for @microAppOnline.
+  ///
+  /// In zh, this message translates to:
+  /// **'小程序在线'**
+  String get microAppOnline;
+
+  /// No description provided for @mobileOnline.
+  ///
+  /// In zh, this message translates to:
+  /// **'手机在线'**
+  String get mobileOnline;
+
+  /// No description provided for @busy.
+  ///
+  /// In zh, this message translates to:
+  /// **'忙碌'**
+  String get busy;
+
+  /// No description provided for @away.
+  ///
+  /// In zh, this message translates to:
+  /// **'离开'**
+  String get away;
+
+  /// No description provided for @mobileOnlineDaysAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}天前'**
+  String mobileOnlineDaysAgo(Object count);
+
+  /// No description provided for @mobileOnlineHoursAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}时前'**
+  String mobileOnlineHoursAgo(Object count);
+
+  /// No description provided for @mobileOnlineMinutesAgo.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}分前'**
+  String mobileOnlineMinutesAgo(Object count);
+
+  /// No description provided for @mobileOnlineJustNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'不久前'**
+  String get mobileOnlineJustNow;
 }
 
 class _AppLocalizationsDelegate
