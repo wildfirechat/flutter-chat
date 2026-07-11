@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/message/image_message_content.dart';
@@ -15,6 +14,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/utils/non_cached_image.dart';
 import 'package:chat/widget/drag_to_dismiss.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chat/l10n/app_localizations.dart';
@@ -125,18 +125,38 @@ class MMPreviewViewState extends State<MMPreviewView> {
                 if (message.content is ImageMessageContent) {
                   ImageMessageContent imageContent = message.content as ImageMessageContent;
 
-                  // 优先检查本地文件
+                  // 优先检查本地文件（大图预览不进入 Flutter ImageCache）
                   if (imageContent.localPath != null && imageContent.localPath!.isNotEmpty) {
                     File localFile = File(imageContent.localPath!);
                     if (localFile.existsSync()) {
                       final rotation = _rotations[index] ?? 0;
+                      final Size childSize = _imageChildSize(imageContent, rotation);
+                      final Size screenSize = MediaQuery.of(context).size;
+                      // childSize 为原图尺寸时整页被 contained 比例缩放,占位/错误图标反向缩放保持视觉大小
+                      final double containedScale = math.min(
+                          screenSize.width / childSize.width, screenSize.height / childSize.height);
+                      Widget keepVisualSize(Widget child) => Center(
+                          child: Transform.scale(scale: 1 / containedScale, child: child));
                       return PhotoViewGalleryPageOptions.customChild(
                         child: RotatedBox(
                           quarterTurns: rotation,
-                          // childSize 为图片原始尺寸时由 transform 缩小显示,medium 采样避免锯齿
-                          child: Image.file(localFile, fit: BoxFit.contain, filterQuality: FilterQuality.medium),
+                          child: NonCachedImage.file(
+                            path: imageContent.localPath!,
+                            placeholder: keepVisualSize(
+                              const CircularProgressIndicator(strokeWidth: 2, color: Colors.white30),
+                            ),
+                            errorWidget: keepVisualSize(
+                              const Icon(
+                                Icons.broken_image_rounded,
+                                color: Colors.white30,
+                                size: 48,
+                              ),
+                            ),
+                            fit: BoxFit.contain,
+                            filterQuality: FilterQuality.medium,
+                          ),
                         ),
-                        childSize: _imageChildSize(imageContent, rotation),
+                        childSize: childSize,
                         minScale: PhotoViewComputedScale.contained,
                         maxScale: PhotoViewComputedScale.covered * 2.5,
                         scaleStateController: _scaleStateControllerFor(message.messageId),
@@ -144,7 +164,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                     }
                   }
 
-                  // 使用网络图片（带缓存）
+                  // 使用网络图片（大图预览不进入 Flutter ImageCache，仍复用磁盘缓存）
                   if (imageContent.remoteUrl != null && imageContent.remoteUrl!.isNotEmpty) {
                     final rotation = _rotations[index] ?? 0;
                     final Size childSize = _imageChildSize(imageContent, rotation);
@@ -157,12 +177,12 @@ class MMPreviewViewState extends State<MMPreviewView> {
                     return PhotoViewGalleryPageOptions.customChild(
                       child: RotatedBox(
                         quarterTurns: rotation,
-                        child: CachedNetworkImage(
-                          imageUrl: MediaUrlRedirector.redirect(imageContent.remoteUrl!),
-                          placeholder: (context, url) => keepVisualSize(
+                        child: NonCachedImage.network(
+                          url: MediaUrlRedirector.redirect(imageContent.remoteUrl!),
+                          placeholder: keepVisualSize(
                             const CircularProgressIndicator(strokeWidth: 2, color: Colors.white30),
                           ),
-                          errorWidget: (context, url, error) => keepVisualSize(
+                          errorWidget: keepVisualSize(
                             const Icon(
                               Icons.broken_image_rounded,
                               color: Colors.white30,

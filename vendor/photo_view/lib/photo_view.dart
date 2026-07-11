@@ -1,5 +1,7 @@
 library photo_view;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:photo_view/src/controller/photo_view_controller.dart';
@@ -434,6 +436,7 @@ class _PhotoViewState extends State<PhotoView>
   late PhotoViewControllerBase _controller;
   late bool _controlledScaleStateController;
   late PhotoViewScaleStateController _scaleStateController;
+  StreamSubscription<PhotoViewScaleState>? _scaleStateSubscription;
 
   @override
   void initState() {
@@ -455,7 +458,8 @@ class _PhotoViewState extends State<PhotoView>
       _scaleStateController = widget.scaleStateController!;
     }
 
-    _scaleStateController.outputScaleStateStream.listen(scaleStateListener);
+    _scaleStateSubscription =
+        _scaleStateController.outputScaleStateStream.listen(scaleStateListener);
   }
 
   @override
@@ -484,6 +488,7 @@ class _PhotoViewState extends State<PhotoView>
 
   @override
   void dispose() {
+    _scaleStateSubscription?.cancel();
     if (_controlledController) {
       _controller.dispose();
     }
