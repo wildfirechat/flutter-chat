@@ -329,9 +329,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get domainAddress => '地址';
 
   @override
-  String searchInDomain(Object domain) {
-    return '在单位 $domain 中搜索用户';
-  }
+  String get searchUserNotFound => '没有找到呀，是不是输入的电话号码或者账户不对？';
 
   @override
   String get searchInCurrentDomain => '在本单位搜索用户';

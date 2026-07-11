@@ -33,6 +33,7 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/utils/external_target_utils.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/mesh/mesh_constants.dart';
 
 class UserInfoWidget extends StatefulWidget {
@@ -433,10 +434,19 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     if (isExternal && domainId != null) {
       nameList.add(Container(
         margin: const EdgeInsets.only(bottom: 6),
-        child: Text(
-          domainId,
-          textAlign: TextAlign.left,
-          style: TextStyle(fontSize: 12, color: MeshConstants.externalNameColor),
+        child: AnimatedBuilder(
+          animation: MeshCache.instance,
+          builder: (context, child) {
+            final domainName = MeshCache.instance.getDomainName(domainId);
+            if (domainName == null || domainName.isEmpty) {
+              MeshCache.instance.loadDomainInfo(domainId);
+            }
+            return Text(
+              domainName != null && domainName.isNotEmpty ? domainName : domainId,
+              textAlign: TextAlign.left,
+              style: TextStyle(fontSize: 12, color: MeshConstants.externalNameColor),
+            );
+          },
         ),
       ));
     }

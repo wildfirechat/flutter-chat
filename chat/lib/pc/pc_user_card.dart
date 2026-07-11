@@ -61,7 +61,7 @@ class _PcUserCard extends StatelessWidget {
                           child: MouseRegion(
                             cursor: SystemMouseCursors.click,
                             child: Text(
-                              userInfo != null ? MeshUserDisplay.getReadableName(userInfo) : '<$userId>',
+                              MeshUserDisplay.getReadableName(userInfo),
                               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,

@@ -93,7 +93,7 @@ class SearchUserDelegate extends SearchDelegate<String> {
         builder: (context, snapshot) {
           if(snapshot.connectionState == ConnectionState.done) {
             if(snapshot.data!.isEmpty) {
-              return const Center(child: Text("没有找到呀，是不是输入的电话号码或者账户不对？"),);
+              return Center(child: Text(l10n.searchUserNotFound),);
             } else {
               searchedUsers = snapshot.data!;
               return ListView.builder(

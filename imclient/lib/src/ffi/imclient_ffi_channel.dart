@@ -575,14 +575,8 @@ class ImclientFfiChannel implements ImclientChannel {
           return _json(_outString((lp) => _wf.getDomainInfo(domainId.ptr, domainId.len, _bool(args, 'refresh'), lp)));
         });
       case 'getRemoteDomains':
-        {
-          final id = _nextInternalId--;
-          final completer = Completer<String>();
-          _internalString[id] = completer;
-          _wf.getRemoteDomains(_cbString, _cbError, _reqPtr(id), 0);
-          final json = await completer.future;
-          return _jsonList(json);
-        }
+        return _jsonList(
+            await _awaitString((pObj) => _wf.getRemoteDomains(_cbString, _cbError, pObj, 0)));
       case 'setBackupAddress':
         return using((a) {
           final host = _ns(a, _str(args, 'host'));

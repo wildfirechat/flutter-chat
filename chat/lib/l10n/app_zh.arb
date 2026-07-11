@@ -100,7 +100,7 @@
   "domainEmail": "邮箱",
   "domainTel": "电话",
   "domainAddress": "地址",
-  "searchInDomain": "在单位 {domain} 中搜索用户",
+  "searchUserNotFound": "没有找到呀，是不是输入的电话号码或者账户不对？",
   "searchInCurrentDomain": "在本单位搜索用户",
   "searchUserInDomain": "在此单位中查找用户",
   "loadDomainFail": "加载外部单位失败: {error}",

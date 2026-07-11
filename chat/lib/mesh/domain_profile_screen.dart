@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:imclient/imclient.dart';
 import 'package:imclient/model/domain_info.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/pc_platform.dart';
@@ -8,6 +7,7 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/show_toast.dart';
 
 import '../contact/search_user.dart';
+import 'mesh_cache.dart';
 
 /// Mesh 外部单位/域详情页。
 class DomainProfileScreen extends StatefulWidget {
@@ -35,7 +35,7 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
   Future<void> _loadDomainInfo() async {
     setState(() => _loading = true);
     try {
-      final info = await Imclient.getDomainInfo(widget.domainId, refresh: true);
+      final info = await MeshCache.instance.loadDomainInfo(widget.domainId, refresh: true);
       if (mounted) {
         setState(() {
           _domainInfo = info;

@@ -11,8 +11,10 @@ import 'package:imclient/model/domain_info.dart';
 class MeshCache extends ChangeNotifier {
   MeshCache._() {
     _subscription = Imclient.IMEventBus.on<DomainInfoUpdatedEvent>().listen((event) {
-      if (event.domainInfo != null) {
-        _domains[event.domainInfo!.domainId] = event.domainInfo!;
+      final info = event.domainInfo;
+      if (info != null && info.domainId.isNotEmpty) {
+        _domains[info.domainId] = info;
+        _missing.remove(info.domainId);
         notifyListeners();
       }
     });
@@ -22,6 +24,11 @@ class MeshCache extends ChangeNotifier {
   static MeshCache get instance => _instance;
 
   final Map<String, DomainInfo> _domains = {};
+
+  // 本地取不到的域。SDK 未命中时会自行从服务器拉取并回调 DomainInfoUpdatedEvent，
+  // 这里挡住 build 路径的重复请求，等事件到达后再解除。
+  final Set<String> _missing = {};
+  final Map<String, Future<DomainInfo?>> _pending = {};
   StreamSubscription? _subscription;
 
   /// 获取缓存中的域信息，没有则返回 null。
@@ -34,32 +41,60 @@ class MeshCache extends ChangeNotifier {
     return _domains[domainId]?.name;
   }
 
-  /// 从缓存或远程加载域信息。
-  Future<DomainInfo?> loadDomainInfo(String domainId, {bool refresh = false}) async {
-    if (!refresh && _domains.containsKey(domainId)) {
-      return _domains[domainId];
+  /// 从缓存或远程加载域信息。同一 domainId 的并发调用共享一次请求；
+  /// 未命中的域会被负缓存，直到 [DomainInfoUpdatedEvent] 到达或 [refresh] 为 true。
+  Future<DomainInfo?> loadDomainInfo(String domainId, {bool refresh = false}) {
+    if (domainId.isEmpty) return Future.value(null);
+    if (!refresh) {
+      final cached = _domains[domainId];
+      if (cached != null) return Future.value(cached);
+      if (_missing.contains(domainId)) return Future.value(null);
     }
-    final info = await Imclient.getDomainInfo(domainId, refresh: refresh);
-    if (info != null) {
+    return _pending[domainId] ??= _fetchDomainInfo(domainId, refresh);
+  }
+
+  Future<DomainInfo?> _fetchDomainInfo(String domainId, bool refresh) async {
+    try {
+      final info = await Imclient.getDomainInfo(domainId, refresh: refresh);
+      // 桌面端未命中时返回空对象而不是 null，统一按缺失处理
+      if (info == null || info.domainId.isEmpty) {
+        _missing.add(domainId);
+        return null;
+      }
       _domains[domainId] = info;
+      _missing.remove(domainId);
       notifyListeners();
+      return info;
+    } catch (_) {
+      _missing.add(domainId);
+      return null;
+    } finally {
+      _pending.remove(domainId);
     }
-    return info;
   }
 
   /// 预加载多个域信息。
   Future<void> preloadDomainInfos(List<String> domainIds) async {
-    final futures = <Future>[];
-    for (final domainId in domainIds) {
-      if (_domains.containsKey(domainId)) continue;
-      futures.add(loadDomainInfo(domainId));
+    await Future.wait(domainIds.map(loadDomainInfo));
+  }
+
+  /// 用一批已取到的域信息回灌缓存（如 getRemoteDomains 的结果），
+  /// 让外部用户名后缀无需再逐个请求即可解析。
+  void putDomains(List<DomainInfo> domains) {
+    bool changed = false;
+    for (final domain in domains) {
+      if (domain.domainId.isEmpty) continue;
+      _domains[domain.domainId] = domain;
+      _missing.remove(domain.domainId);
+      changed = true;
     }
-    await Future.wait(futures);
+    if (changed) notifyListeners();
   }
 
   /// 清空缓存。
   void clear() {
     _domains.clear();
+    _missing.clear();
     notifyListeners();
   }
 

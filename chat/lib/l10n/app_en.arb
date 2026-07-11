@@ -100,7 +100,7 @@
   "domainEmail": "Email",
   "domainTel": "Phone",
   "domainAddress": "Address",
-  "searchInDomain": "Search users in {domain}",
+  "searchUserNotFound": "No user found. Please check the phone number or account.",
   "searchInCurrentDomain": "Search users in current organization",
   "searchUserInDomain": "Find users in this organization",
   "loadDomainFail": "Failed to load external organization: {error}",

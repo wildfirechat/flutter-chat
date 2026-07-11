@@ -60,6 +60,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/widget/watermark_overlay.dart';
+import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/organization/organization_cache.dart';
 import 'package:chat/organization/organization_service.dart';
 
@@ -260,6 +261,7 @@ class _MyAppState extends State<MyApp> {
           value.commit();
           OrganizationService.instance.clearOrgServiceAuthInfos();
           OrganizationCache.instance.clearCaches();
+          MeshCache.instance.clear();
           _firstConnected = false;
         });
 

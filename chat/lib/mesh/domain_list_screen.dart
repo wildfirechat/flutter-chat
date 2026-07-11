@@ -8,6 +8,7 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/app_navigator.dart';
 
 import 'domain_profile_screen.dart';
+import 'mesh_cache.dart';
 
 /// Mesh 外部单位/域列表页。
 ///
@@ -45,6 +46,7 @@ class _DomainListScreenState extends State<DomainListScreen> {
     });
     try {
       final domains = await Imclient.getRemoteDomains();
+      MeshCache.instance.putDomains(domains);
       if (mounted) {
         setState(() {
           _domains = domains;

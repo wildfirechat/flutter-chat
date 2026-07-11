@@ -331,9 +331,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get domainAddress => 'Address';
 
   @override
-  String searchInDomain(Object domain) {
-    return 'Search users in $domain';
-  }
+  String get searchUserNotFound =>
+      'No user found. Please check the phone number or account.';
 
   @override
   String get searchInCurrentDomain => 'Search users in current organization';

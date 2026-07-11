@@ -698,11 +698,11 @@ abstract class AppLocalizations {
   /// **'地址'**
   String get domainAddress;
 
-  /// No description provided for @searchInDomain.
+  /// No description provided for @searchUserNotFound.
   ///
   /// In zh, this message translates to:
-  /// **'在单位 {domain} 中搜索用户'**
-  String searchInDomain(Object domain);
+  /// **'没有找到呀，是不是输入的电话号码或者账户不对？'**
+  String get searchUserNotFound;
 
   /// No description provided for @searchInCurrentDomain.
   ///

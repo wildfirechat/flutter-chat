@@ -22,7 +22,6 @@ import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/mesh/domain_list_screen.dart';
 import 'package:chat/mesh/domain_profile_screen.dart';
 import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/utils/mesh_user_display.dart';
@@ -106,6 +105,7 @@ class _PcContactListState extends State<PcContactList> {
     setState(() => _meshExpanded = !_meshExpanded);
     if (_meshExpanded && _meshDomains == null) {
       Imclient.getRemoteDomains().then((domains) {
+        MeshCache.instance.putDomains(domains);
         if (mounted) {
           setState(() => _meshDomains = domains);
         }
@@ -115,10 +115,6 @@ class _PcContactListState extends State<PcContactList> {
         }
       });
     }
-  }
-
-  void _openMesh() {
-    openPage(context, const DomainListScreen());
   }
 
   void _toggleNewFriend() {

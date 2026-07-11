@@ -3,6 +3,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/friend_request.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 
@@ -115,7 +116,7 @@ class FriendRequestPageState extends State<FriendRequestPage> {
               SizedBox(
                 width: 80,
                 child: Center(
-                  child: request.status == FriendRequestStatus.WaitingAccept?OutlinedButton(onPressed: ()=>_acceptRequest(request.target), child: const Text("通过")):(request.status == FriendRequestStatus.Accepted?const Text("已通过"):const Text("已拒接")),
+                  child: request.status == FriendRequestStatus.WaitingAccept?OutlinedButton(onPressed: ()=>_acceptRequest(request.target), child: Text(AppLocalizations.of(context)!.friendRequestAccept)):(request.status == FriendRequestStatus.Accepted?Text(AppLocalizations.of(context)!.friendRequestAccepted):Text(AppLocalizations.of(context)!.friendRequestRejected)),
                 ),
               ),
             ],
