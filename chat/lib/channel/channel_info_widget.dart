@@ -6,7 +6,11 @@ import 'package:imclient/model/conversation.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/pc/widgets/pc_icon_action.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/pc/widgets/pc_pane_content.dart';
+import 'package:chat/pc/widgets/pc_profile.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 
@@ -50,16 +54,17 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final title = "频道信息";
+    final l10n = AppLocalizations.of(context)!;
+    // 桌面端:频道名字就写在正文里,标题栏再写一遍「频道详情」是多余的 —— 走无标题栏形态。
     final appBar = isDesktopShell
-        ? PcPageHeader(title: title)
-        : AppBar(title: Text(title));
+        ? const PcPageHeader(bare: true)
+        : AppBar(title: Text(l10n.channelDetails));
 
     Widget body;
     if (isLoading) {
       body = const Center(child: CircularProgressIndicator());
     } else if (channelInfo == null) {
-      body = const Center(child: Text("频道不存在"));
+      body = Center(child: Text(l10n.channelNotExist));
     } else if (isDesktopShell) {
       body = _buildPcBody(context, channelInfo!);
     } else {
@@ -70,130 +75,77 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     }
 
     return Scaffold(
+      backgroundColor: isDesktopShell ? context.colors.surface : null,
       appBar: appBar,
       body: SafeArea(child: body),
     );
   }
 
+  /// 桌面端右栏:与用户资料页同一套形态(限宽居中 + 弱分隔线 + 底部图标动作),
+  /// 见 pc_profile.dart。
   Widget _buildPcBody(BuildContext context, ChannelInfo info) {
-    return Container(
-      color: Colors.white,
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 360),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Header
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6.0),
-                    child: info.portrait != null && info.portrait!.isNotEmpty
-                        ? Image.network(
-                            MediaUrlRedirector.redirect(info.portrait!),
-                            width: 72,
-                            height: 72,
-                            fit: BoxFit.cover,
-                          )
-                        : Container(
-                            width: 72,
-                            height: 72,
-                            color: Colors.grey[200],
-                            child: const Icon(Icons.rss_feed, color: Colors.grey, size: 36),
-                          ),
-                  ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          info.name ?? '',
-                          style: AppText.xl.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary, decoration: TextDecoration.none),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Divider(height: 1, thickness: 0.5, color: context.colors.hairline),
-              const SizedBox(height: 20),
-              // Meta info
-              _buildPcMetaRow("功能介绍", info.desc ?? "暂无介绍"),
-              const SizedBox(height: 12),
-              _buildPcMetaRow("拥有者", info.owner ?? "无"),
-              const SizedBox(height: 20),
-              Divider(height: 1, thickness: 0.5, color: context.colors.hairline),
-              const SizedBox(height: 36),
-              // Action Buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (isListened) ...[
-                    _buildPcButton("进入会话", context.colors.accent, Colors.white, () {
-                      openConversation(context, Conversation(conversationType: ConversationType.Channel, target: info.channelId));
-                    }),
-                    const SizedBox(width: 16),
-                    _buildPcButton("取消订阅", Colors.grey[200]!, context.colors.textPrimary, () {
-                      _toggleSubscription(info);
-                    }),
-                  ] else ...[
-                    _buildPcButton("订阅频道", context.colors.accent, Colors.white, () {
-                      _toggleSubscription(info);
-                    }),
-                  ],
-                ],
-              ),
-              const SizedBox(height: 60), // Push content slightly up
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+    final l10n = AppLocalizations.of(context)!;
+    final accent = context.colors.accent;
+    final hasPortrait = info.portrait != null && info.portrait!.isNotEmpty;
 
-  Widget _buildPcMetaRow(String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 80,
-          child: Text(
-            label,
-            style: AppText.base.copyWith(color: context.colors.textSecondary, decoration: TextDecoration.none),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: AppText.base.copyWith(color: context.colors.textPrimary, decoration: TextDecoration.none),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPcButton(String text, Color bgColor, Color textColor, VoidCallback onPressed) {
-    return SizedBox(
-      width: 120,
-      height: 36,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: bgColor,
-          foregroundColor: textColor,
-          elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        ),
-        child: Text(
-          text,
-          style: AppText.base.copyWith(fontWeight: FontWeight.normal),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      child: PcPaneContent(
+        maxWidth: kPcProfileWidth,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            PcProfileHeader(
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: hasPortrait
+                    ? Image.network(
+                        MediaUrlRedirector.redirect(info.portrait!),
+                        width: 64,
+                        height: 64,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        width: 64,
+                        height: 64,
+                        color: context.colors.hoverOverlay,
+                        child: Icon(Icons.rss_feed, color: context.colors.textTertiary, size: 32),
+                      ),
+              ),
+              title: Text(
+                info.name ?? '',
+                style: PcProfileHeader.titleStyle(context),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const PcProfileDivider(),
+            PcProfileRow(label: l10n.channelIntro, value: info.desc, placeholder: l10n.noIntro),
+            PcProfileRow(label: l10n.channelOwner, value: info.owner),
+            const PcProfileDivider(),
+            PcProfileActions(children: [
+              if (isListened) ...[
+                PcIconAction(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  label: l10n.enterConversation,
+                  labelColor: accent,
+                  onTap: () => openConversation(context, Conversation(conversationType: ConversationType.Channel, target: info.channelId)),
+                ),
+                PcIconAction(
+                  icon: Icons.notifications_off_outlined,
+                  label: l10n.unsubscribeChannel,
+                  labelColor: accent,
+                  onTap: () => _toggleSubscription(info),
+                ),
+              ] else
+                PcIconAction(
+                  icon: Icons.add_circle_outline,
+                  label: l10n.subscribeChannel,
+                  labelColor: accent,
+                  onTap: () => _toggleSubscription(info),
+                ),
+            ]),
+          ],
         ),
       ),
     );

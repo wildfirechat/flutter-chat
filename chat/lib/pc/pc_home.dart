@@ -26,6 +26,7 @@ import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/pc/widgets/pc_resize_handle.dart';
 import 'package:chat/settings/file_records_screen.dart';
 import 'package:chat/pc/pc_settings_page.dart';
@@ -142,6 +143,11 @@ class _PCHomeState extends State<PCHome> {
     _paneNavKey.currentState?.popUntil((route) => route.isFirst);
   }
 
+  /// 「本栏首页」的路由设置:侧栏/中栏点开的页面都属于这一类 —— 它们是
+  /// pushAndRemoveUntil 上去的,下面压着的是空白占位页,没有"上一页"可回。
+  /// PcPageHeader 靠这个名字决定不显示返回键,见 [kPcPaneRootRoute]。
+  static const RouteSettings _paneRootSettings = RouteSettings(name: kPcPaneRootRoute);
+
   /// 右栏内的路由不做转场动画,桌面端切换详情应即时呈现。
   Route<dynamic> _paneRoute(Widget page, [RouteSettings? settings]) {
     return PageRouteBuilder(
@@ -171,12 +177,15 @@ class _PCHomeState extends State<PCHome> {
       {int? toFocusMessageId}) {
     _paneShowsConversation = true;
     _paneNavKey.currentState!.pushAndRemoveUntil(
-      _paneRoute(PcConversationPane(
-        conversation,
-        toFocusMessageId: toFocusMessageId,
-        key: ValueKey(
-            'pc-conv-${conversation.conversationType.index}-${conversation.target}-${conversation.line}-${toFocusMessageId ?? 0}'),
-      )),
+      _paneRoute(
+        PcConversationPane(
+          conversation,
+          toFocusMessageId: toFocusMessageId,
+          key: ValueKey(
+              'pc-conv-${conversation.conversationType.index}-${conversation.target}-${conversation.line}-${toFocusMessageId ?? 0}'),
+        ),
+        _paneRootSettings,
+      ),
       (route) => route.isFirst,
     );
   }
@@ -192,7 +201,7 @@ class _PCHomeState extends State<PCHome> {
     _paneShowsConversation = false;
     _tabPages[_shellViewModel.selectedTab] = page;
     _paneNavKey.currentState!.pushAndRemoveUntil(
-      _paneRoute(page),
+      _paneRoute(page, _paneRootSettings),
       (route) => route.isFirst,
     );
   }
@@ -464,7 +473,7 @@ class _PCHomeState extends State<PCHome> {
   void _openFileListScreen(FileListScreen screen) {
     _paneShowsConversation = false;
     _paneNavKey.currentState!.pushAndRemoveUntil(
-      _paneRoute(screen),
+      _paneRoute(screen, _paneRootSettings),
       (route) => route.isFirst,
     );
   }
@@ -473,6 +482,7 @@ class _PCHomeState extends State<PCHome> {
     _paneShowsConversation = false;
     _paneNavKey.currentState!.pushAndRemoveUntil(
       _paneRoute(
+        // 选择器本身是本栏首页;它里面 push 出来的文件列表不是(所以能返回到选择器)。
         PickConversationScreen(
           onConversationSelected: (_, conversation) {
             _paneNavKey.currentState!.push(
@@ -487,6 +497,7 @@ class _PCHomeState extends State<PCHome> {
             );
           },
         ),
+        _paneRootSettings,
       ),
       (route) => route.isFirst,
     );
@@ -518,6 +529,7 @@ class _PCHomeState extends State<PCHome> {
           },
           maxSelected: 1,
         ),
+        _paneRootSettings,
       ),
       (route) => route.isFirst,
     );
@@ -526,10 +538,13 @@ class _PCHomeState extends State<PCHome> {
   void _openFavoriteList(FavoriteCategory category) {
     _paneShowsConversation = false;
     _paneNavKey.currentState!.pushAndRemoveUntil(
-      _paneRoute(FavoriteListWidget(
-        category: category,
-        isEmbedded: false,
-      )),
+      _paneRoute(
+        FavoriteListWidget(
+          category: category,
+          isEmbedded: false,
+        ),
+        _paneRootSettings,
+      ),
       (route) => route.isFirst,
     );
   }

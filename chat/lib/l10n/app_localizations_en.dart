@@ -250,6 +250,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get modifyAlias => 'Modify Alias';
 
   @override
+  String get nickname => 'Nickname';
+
+  @override
   String get setAlias => 'Set Alias';
 
   @override
@@ -617,6 +620,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get channelDetails => 'Channel Details';
+
+  @override
+  String get channelNotExist => 'Channel not found';
+
+  @override
+  String get channelIntro => 'Introduction';
+
+  @override
+  String get channelOwner => 'Owner';
+
+  @override
+  String get noIntro => 'No introduction';
+
+  @override
+  String get enterConversation => 'Enter Chat';
+
+  @override
+  String get subscribeChannel => 'Subscribe';
+
+  @override
+  String get groupIdLabel => 'Group ID';
 
   @override
   String get unsubscribeChannel => 'Unsubscribe';

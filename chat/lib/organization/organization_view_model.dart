@@ -32,8 +32,6 @@ class OrganizationViewModel extends ChangeNotifier {
 
   String? get error => _error;
 
-  String? get appBarTitle => _breadcrumbPath.isNotEmpty ? _breadcrumbPath.last.name : null;
-
   List<Organization> get myOrganizations => _myOrganizations;
 
   List<Organization> get rootOrganizations => _rootOrganizations;

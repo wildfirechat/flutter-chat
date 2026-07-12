@@ -249,6 +249,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get modifyAlias => '修改昵称';
 
   @override
+  String get nickname => '昵称';
+
+  @override
   String get setAlias => '设置备注';
 
   @override
@@ -611,6 +614,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get channelDetails => '频道详情';
+
+  @override
+  String get channelNotExist => '频道不存在';
+
+  @override
+  String get channelIntro => '功能介绍';
+
+  @override
+  String get channelOwner => '拥有者';
+
+  @override
+  String get noIntro => '暂无介绍';
+
+  @override
+  String get enterConversation => '进入会话';
+
+  @override
+  String get subscribeChannel => '订阅频道';
+
+  @override
+  String get groupIdLabel => '群号';
 
   @override
   String get unsubscribeChannel => '取消订阅';

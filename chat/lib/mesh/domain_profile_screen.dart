@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:imclient/model/domain_info.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_icon_action.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/pc/widgets/pc_pane_content.dart';
+import 'package:chat/pc/widgets/pc_profile.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/show_toast.dart';
 
@@ -59,26 +62,26 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final body = _buildBody(context, l10n);
     if (isDesktopShell) {
       return Scaffold(
-        backgroundColor: context.colors.chatBgDesktop,
-        appBar: PcPageHeader(title: _domainInfo?.name ?? l10n.domainInfo),
-        body: body,
+        backgroundColor: context.colors.surface,
+        // 单位名字就写在正文里,标题栏不必再说一遍 —— 与用户/频道资料页一致。
+        appBar: const PcPageHeader(bare: true),
+        body: _buildDesktopBody(context, l10n),
       );
     }
     return Scaffold(
       appBar: AppBar(title: Text(_domainInfo?.name ?? l10n.domainInfo)),
-      body: body,
+      body: _buildMobileBody(context, l10n),
     );
   }
 
-  Widget _buildBody(BuildContext context, AppLocalizations l10n) {
+  /// 加载中 / 加载失败。两端共用。
+  Widget? _buildPlaceholder(AppLocalizations l10n) {
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    final info = _domainInfo;
-    if (info == null) {
+    if (_domainInfo == null) {
       return Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -93,6 +96,58 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
         ),
       );
     }
+    return null;
+  }
+
+  /// 桌面端右栏:与用户/频道资料页同一套形态,见 pc_profile.dart。
+  Widget _buildDesktopBody(BuildContext context, AppLocalizations l10n) {
+    final placeholder = _buildPlaceholder(l10n);
+    if (placeholder != null) {
+      return placeholder;
+    }
+    final info = _domainInfo!;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      child: PcPaneContent(
+        maxWidth: kPcProfileWidth,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // 外部单位没有头像,名字自己当头部。
+            PcProfileHeader(
+              title: Text(
+                info.name,
+                style: PcProfileHeader.titleStyle(context),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: info.desc,
+            ),
+            const PcProfileDivider(),
+            if (info.email != null && info.email!.isNotEmpty) PcProfileRow(label: l10n.domainEmail, value: info.email),
+            if (info.tel != null && info.tel!.isNotEmpty) PcProfileRow(label: l10n.domainTel, value: info.tel),
+            if (info.address != null && info.address!.isNotEmpty) PcProfileRow(label: l10n.domainAddress, value: info.address),
+            const PcProfileDivider(),
+            PcProfileActions(children: [
+              PcIconAction(
+                icon: Icons.person_search_outlined,
+                label: l10n.searchUserInDomain,
+                labelColor: context.colors.accent,
+                onTap: _searchUsersInDomain,
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMobileBody(BuildContext context, AppLocalizations l10n) {
+    final placeholder = _buildPlaceholder(l10n);
+    if (placeholder != null) {
+      return placeholder;
+    }
+    final info = _domainInfo!;
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(

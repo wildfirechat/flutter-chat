@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/widget/portrait.dart';
@@ -23,7 +24,6 @@ class OrganizationScreen extends StatefulWidget {
   final List<String>? disabledCheckedUserIds;
   final List<String>? initialSelectedUserIds;
   final ValueChanged<List<String>>? onSelected;
-  final bool showBackOnRoot;
 
   const OrganizationScreen({
     super.key,
@@ -34,7 +34,6 @@ class OrganizationScreen extends StatefulWidget {
     this.disabledCheckedUserIds,
     this.initialSelectedUserIds,
     this.onSelected,
-    this.showBackOnRoot = false,
   });
 
   @override
@@ -45,6 +44,11 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
   late OrganizationViewModel _viewModel;
   final TextEditingController _searchController = TextEditingController();
   late Set<String> _selectedUserIds;
+
+  /// 面包屑横向滚动。层级一深,末级(当前部门)会被顶到可视区右边外面 ——
+  /// 每次层级变化后把它滚到最右,保证"我在哪"始终看得见。
+  final ScrollController _breadcrumbScrollController = ScrollController();
+  int _breadcrumbDepth = 0;
 
   @override
   void initState() {
@@ -57,34 +61,61 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _breadcrumbScrollController.dispose();
     _viewModel.dispose();
     super.dispose();
   }
 
-  Widget _buildBreadcrumbs() {
+  /// 层级变化后把面包屑滚到最右,让末级(当前部门)露出来。
+  /// 只在深度真的变了时才滚,否则每次重建都会把用户手动滚过的位置拽回去。
+  void _keepCurrentCrumbVisible(int depth) {
+    if (depth == _breadcrumbDepth) return;
+    _breadcrumbDepth = depth;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_breadcrumbScrollController.hasClients) return;
+      _breadcrumbScrollController.animateTo(
+        _breadcrumbScrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  /// [inHeader] 为 true 时这条面包屑就是桌面端的标题栏内容(替代原来那个静态标题):
+  /// 它说的正是"当前在哪个部门",标题栏再写一遍就是重复。因此根层级也必须有东西显示,
+  /// 不能像移动端正文里的面包屑条那样在无路径时收起来。
+  Widget _buildBreadcrumbs({bool inHeader = false}) {
     return Consumer<OrganizationViewModel>(
       builder: (context, viewModel, child) {
         final path = viewModel.breadcrumbPath;
-        if (path.isEmpty) return const SizedBox.shrink();
+        _keepCurrentCrumbVisible(path.length);
+        if (path.isEmpty && !inHeader) return const SizedBox.shrink();
 
+        final bool atRoot = path.isEmpty;
         List<Widget> items = [];
-        // 根入口，点击关闭页面
+        // 根入口。在根层级它就是"当前位置",按末级样式渲染且不可点;
+        // 进到下级后才变成可点的链接(点击退回上一级)。
         items.add(
           InkWell(
-            onTap: () => Navigator.of(context).maybePop(),
+            onTap: atRoot ? null : () => Navigator.of(context).maybePop(),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
               child: Text(
                 AppLocalizations.of(context)!.organization,
-                style: AppText.base.copyWith(color: Theme.of(context).colorScheme.primary),
+                style: AppText.base.copyWith(
+                  color: atRoot ? context.colors.textPrimary : Theme.of(context).colorScheme.primary,
+                  fontWeight: atRoot ? FontWeight.bold : FontWeight.normal,
+                ),
               ),
             ),
           ),
         );
-        items.add(Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2.0),
-          child: Icon(Icons.chevron_right, size: 18.0, color: context.colors.textSecondary),
-        ));
+        if (!atRoot) {
+          items.add(Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2.0),
+            child: Icon(Icons.chevron_right, size: 18.0, color: context.colors.textSecondary),
+          ));
+        }
 
         for (int i = 0; i < path.length; i++) {
           final org = path[i];
@@ -113,16 +144,23 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           }
         }
 
+        // 层级深了横向滚动,不换行、不挤压标题栏的高度。
+        final crumbs = SingleChildScrollView(
+          controller: _breadcrumbScrollController,
+          scrollDirection: Axis.horizontal,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: inHeader ? 0.0 : 8.0, vertical: 4.0),
+            child: Row(children: items),
+          ),
+        );
+        if (inHeader) {
+          // 底色与内边距由 PcPageHeader 交代。
+          return crumbs;
+        }
         return Container(
           // 浅色下 chatBg 与原来的 Colors.grey[100] 同为 #F5F5F5,两端可以合并成一个令牌
           color: context.colors.chatBg,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-              child: Row(children: items),
-            ),
-          ),
+          child: crumbs,
         );
       },
     );
@@ -260,12 +298,9 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       onTap = isDisabled ? null : () => _toggleEmployeeSelection(emp.employeeId);
     } else {
       onTap = () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => UserInfoWidget(emp.employeeId),
-          ),
-        );
+        // 用 pushPage:桌面端在右栏 Navigator 里 push(组织架构还压在下面,可以返回),
+        // 而不是把整个右栏换掉;移动端仍是整页 push。
+        pushPage(context, UserInfoWidget(emp.employeeId));
       };
     }
 
@@ -406,23 +441,31 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
             },
             child: Scaffold(
               appBar: isDesktopShell
+                  // 桌面端不要静态标题:面包屑说的就是"当前在哪个部门",跟标题是同一件事。
+                  // 把面包屑放进标题栏,重复消掉,而三栏共用的 60px 水平线、返回键和
+                  // 选人模式的「确定」都还留在原位。
+                  // 不给返回键:层级内的后退由面包屑负责(点上级即回上级),再放一个返回键
+                  // 是第二套后退语义,两者还会打架。返回键只在这一页是被 push 出来的时候
+                  // 才出现(如从用户资料点部门进来),由 PcPageHeader 按导航栈自行判断。
                   ? PcPageHeader(
-                      title: viewModel.appBarTitle ?? AppLocalizations.of(context)!.organization,
-                      onBack: (viewModel.canNavigateBackInHierarchy() || widget.showBackOnRoot)
-                          ? () => Navigator.of(context).maybePop()
-                          : null,
+                      titleWidget: _buildBreadcrumbs(inHeader: true),
                       actions: widget.selectMode ? [_buildDoneAction()] : null,
                     )
+                  // 移动端标题固定为「组织架构」:当前部门由正文里的面包屑交代,
+                  // 标题跟着部门变会让人不知道自己还在不在组织架构里。
                   : AppBar(
-                      title: Text(viewModel.appBarTitle ?? AppLocalizations.of(context)!.organization),
+                      title: Text(AppLocalizations.of(context)!.organization),
                       actions: widget.selectMode ? [_buildDoneAction()] : null,
                     ),
               backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildBreadcrumbs(),
-                  const Divider(height: 1),
+                  // 移动端的面包屑仍是正文里的一条(标题栏归 AppBar);桌面端已经放进标题栏了。
+                  if (!isDesktopShell) ...[
+                    _buildBreadcrumbs(),
+                    const Divider(height: 1),
+                  ],
                   _buildSearchBar(),
                   if (viewModel.isLoading && viewModel.searchQuery.isEmpty)
                     const Expanded(child: Center(child: CircularProgressIndicator()))

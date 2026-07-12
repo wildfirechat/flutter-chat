@@ -27,7 +27,11 @@ import 'package:chat/organization/organization_cache.dart';
 import 'package:chat/organization/organization_screen.dart';
 import 'package:chat/organization/organization_service.dart';
 
+import 'package:chat/pc/pc_av_call.dart';
+import 'package:chat/pc/widgets/pc_icon_action.dart';
+import 'package:chat/pc/widgets/pc_profile.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/pc/widgets/pc_pane_content.dart';
 
 import 'package:chat/l10n/app_localizations.dart';
 
@@ -119,13 +123,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   }
 
   void _openOrganization(int organizationId) {
-    pushPage(
-      context,
-      OrganizationScreen(
-        initialOrganizationId: organizationId,
-        showBackOnRoot: true,
-      ),
-    );
+    // 返回键由 PcPageHeader 按导航栈自行判断:这一页是 push 出来的,组织架构还压在
+    // 用户资料上面,返回键自然会出现。
+    pushPage(context, OrganizationScreen(initialOrganizationId: organizationId));
   }
 
   Future<void> _refreshUserInfo() async {
@@ -187,13 +187,14 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     );
 
     return Scaffold(
-      // 桌面端整页一张白底,分组之间只由 SectionDivider 的弱线交代;移动端仍是白卡片 + 凹槽灰。
+      // 桌面端整页一张白底:正文限宽居中,分组之间只由弱分隔线交代,不套卡片
+      // (面板本来就是白的,再套一层白卡片只会多出一圈没有意义的边框)。
+      // 移动端仍是白卡片 + 凹槽灰。
       backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
       appBar: isDesktopShell
-          ? PcPageHeader(
-              title: AppLocalizations.of(context)!.userInfo,
-              actions: [actionsBuilder],
-            )
+          // 标题只会是「用户信息」这个恒定名词,信息量为零 —— 去掉标题,但顶区(返回键、
+          // 右上角菜单、三栏共用的 60px 水平线)必须留住,详见 PcPageHeader.bare。
+          ? PcPageHeader(bare: true, actions: [actionsBuilder])
           : AppBar(
               title: Text(AppLocalizations.of(context)!.userInfo),
               actions: [actionsBuilder],
@@ -211,96 +212,191 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                 bool isFriend = snapshot.data!;
                 bool isMe = widget.userId == Imclient.currentUserId;
 
-                return SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Container(
-                        color: context.colors.surface,
-                        child: _buildHeader(context, userInfo, isFriend),
-                      ),
-                      if (!_loadingOrg && _bottomRelationships.isNotEmpty) ...[
-                        const SectionDivider(),
-                        Container(
-                          color: context.colors.surface,
-                          child: _buildOrganizationSection(),
-                        ),
-                      ],
-                      if (isMe) ...[
-                        const SectionDivider(),
-                        Container(
-                          color: context.colors.surface,
-                          child: Column(
-                            children: [
-                              OptionItem(AppLocalizations.of(context)!.modifyAlias, onTap: () {
-                                _showSetDisplayNameDialog(context, userInfo);
-                              }),
-                              OptionItem(AppLocalizations.of(context)!.moreInfo, showBottomDivider: false, onTap: () {
-                                Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                              }),
-                            ],
-                          ),
-                        ),
-                        const SectionDivider(),
-                        Container(
-                          color: context.colors.surface,
-                          child: OptionButtonItem(AppLocalizations.of(context)!.sendMsg, () {
-                            _openSingleConversation(context);
-                          }, showBottomDivider: false),
-                        ),
-                      ] else if (isFriend) ...[
-                        const SectionDivider(),
-                        Container(
-                          color: context.colors.surface,
-                          child: Column(
-                            children: [
-                              OptionItem(AppLocalizations.of(context)!.setAlias, onTap: () {
-                                _showSetAliasDialog(context, userInfo);
-                              }),
-                              OptionItem(AppLocalizations.of(context)!.moreInfo, showBottomDivider: false, onTap: () {
-                                Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                              }),
-                            ],
-                          ),
-                        ),
-                        const SectionDivider(),
-                        Container(
-                          color: context.colors.surface,
-                          child: Column(
-                            children: [
-                              OptionButtonItem(AppLocalizations.of(context)!.sendMsg, () {
-                                _openSingleConversation(context);
-                              }, showBottomDivider: true),
-                              OptionButtonItem('视频聊天', () {
-                                // SingleVideoCallView callView = SingleVideoCallView(userId: userId, audioOnly: false);
-                                // Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
-                              }, showBottomDivider: false),
-                            ],
-                          ),
-                        ),
-                      ] else ...[
-                        const SectionDivider(),
-                        Container(
-                          color: context.colors.surface,
-                          child: OptionItem(AppLocalizations.of(context)!.moreInfo, showBottomDivider: false, onTap: () {
-                            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
-                          }),
-                        ),
-                        const SectionDivider(),
-                        Container(
-                          color: context.colors.surface,
-                          child: OptionButtonItem(AppLocalizations.of(context)!.addFriend, () {
-                            _openInviteFriendPage(context);
-                          }, showBottomDivider: false),
-                        ),
-                      ],
-                      const SizedBox(height: SectionDivider.gap),
-                    ],
-                  ),
-                );
+                return isDesktopShell
+                    ? _buildDesktopBody(context, userInfo, isFriend, isMe)
+                    : _buildMobileBody(context, userInfo, isFriend, isMe);
               },
             );
           },
         ),
+      ),
+    );
+  }
+
+  /// 桌面端右栏:限宽居中的一栏正文。头像/名字一组、资料行一组、底部图标动作一组,
+  /// 组与组之间只用一条弱分隔线,没有卡片、没有边框、没有右箭头。
+  Widget _buildDesktopBody(BuildContext context, UserInfo userInfo, bool isFriend, bool isMe) {
+    final l10n = AppLocalizations.of(context)!;
+
+    final List<Widget> infoRows = [];
+    if (isMe) {
+      // 自己这一行改的是昵称,不是备注 —— 备注是别人给自己起的名字。
+      infoRows.add(PcProfileRow(
+        label: l10n.nickname,
+        value: userInfo.displayName,
+        placeholder: l10n.modifyAlias,
+        onTap: () => _showSetDisplayNameDialog(context, userInfo),
+      ));
+    } else if (isFriend) {
+      infoRows.add(PcProfileRow(
+        label: l10n.remark,
+        value: userInfo.friendAlias,
+        placeholder: l10n.setAlias,
+        onTap: () => _showSetAliasDialog(context, userInfo),
+      ));
+    }
+    if (!_loadingOrg && _bottomRelationships.isNotEmpty) {
+      for (final rel in _bottomRelationships) {
+        final org = _bottomOrganizations[rel.organizationId];
+        infoRows.add(PcProfileRow(
+          label: l10n.organization,
+          value: org?.name ?? '${rel.organizationId}',
+          onTap: () => _openOrganization(rel.organizationId),
+        ));
+      }
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      child: PcPaneContent(
+        maxWidth: kPcProfileWidth,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildDesktopProfile(context, userInfo, isFriend),
+            const PcProfileDivider(),
+            if (infoRows.isNotEmpty) ...[
+              ...infoRows,
+              const PcProfileDivider(),
+            ],
+            PcProfileRow(
+              label: l10n.moreInfo,
+              onTap: () => Fluttertoast.showToast(msg: l10n.methodNotImpl),
+            ),
+            const PcProfileDivider(),
+            _buildDesktopActions(context, isFriend, isMe),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 头像 + 名字 + 野火号。
+  Widget _buildDesktopProfile(BuildContext context, UserInfo userInfo, bool isFriend) {
+    final portrait = (userInfo.portrait?.isNotEmpty ?? false) ? userInfo.portrait! : Config.defaultUserPortrait;
+    return PcProfileHeader(
+      leading: Portrait(portrait, Config.defaultUserPortrait, width: 64, height: 64, borderRadius: 4),
+      title: MeshUserName(
+        userInfo,
+        style: PcProfileHeader.titleStyle(context),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: AppLocalizations.of(context)!.wildfireId(userInfo.name),
+      trailing: isFriend && _isStarred ? const Icon(Icons.star, color: Colors.amber, size: 16) : null,
+    );
+  }
+
+  /// 发消息/通话/加好友:图标在上、文字在下,与 PC 用户卡片同一个形态。
+  /// 原先用的 OptionButtonItem 默认色是 danger,那是给「清空聊天记录」「解散群」
+  /// 这类操作用的(其余调用方全是这类),不该拿来做发消息。
+  Widget _buildDesktopActions(BuildContext context, bool isFriend, bool isMe) {
+    final l10n = AppLocalizations.of(context)!;
+    final accent = context.colors.accent;
+    final List<Widget> actions = [];
+    if (isMe || isFriend) {
+      actions.add(PcIconAction(
+        icon: Icons.chat_bubble_outline_rounded,
+        label: l10n.sendMsg,
+        labelColor: accent,
+        onTap: () => _openSingleConversation(context),
+      ));
+    }
+    // 给自己打电话没意义;AI 机器人也没有音视频能力(_isFriend 对机器人恒为 true)。
+    if (isFriend && !isMe && !Config.AI_ROBOTS.contains(widget.userId)) {
+      actions.add(PcIconAction(
+        icon: Icons.call_outlined,
+        label: l10n.audioCallAction,
+        labelColor: accent,
+        onTap: () => startSingleAvCall(context, widget.userId, audioOnly: true),
+      ));
+      actions.add(PcIconAction(
+        icon: Icons.videocam_outlined,
+        label: l10n.videoCallAction,
+        labelColor: accent,
+        onTap: () => startSingleAvCall(context, widget.userId, audioOnly: false),
+      ));
+    }
+    if (!isMe && !isFriend) {
+      actions.add(PcIconAction(
+        icon: Icons.person_add_alt_1_outlined,
+        label: l10n.addFriend,
+        labelColor: accent,
+        onTap: () => _openInviteFriendPage(context),
+      ));
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      // 译文过长时换行而非溢出(同 PC 用户卡片)。
+      child: Wrap(alignment: WrapAlignment.center, spacing: 24, runSpacing: 8, children: actions),
+    );
+  }
+
+  /// 移动端:整页凹槽灰 + 白卡片分组,由 SectionDivider 交代分组间隙。
+  Widget _buildMobileBody(BuildContext context, UserInfo userInfo, bool isFriend, bool isMe) {
+    final l10n = AppLocalizations.of(context)!;
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            color: context.colors.surface,
+            child: _buildHeader(context, userInfo, isFriend),
+          ),
+          if (!_loadingOrg && _bottomRelationships.isNotEmpty) ...[
+            const SectionDivider(),
+            Container(
+              color: context.colors.surface,
+              child: _buildOrganizationSection(),
+            ),
+          ],
+          const SectionDivider(),
+          Container(
+            color: context.colors.surface,
+            child: Column(
+              children: [
+                if (isMe)
+                  OptionItem(l10n.modifyAlias, onTap: () {
+                    _showSetDisplayNameDialog(context, userInfo);
+                  })
+                else if (isFriend)
+                  OptionItem(l10n.setAlias, onTap: () {
+                    _showSetAliasDialog(context, userInfo);
+                  }),
+                OptionItem(l10n.moreInfo, showBottomDivider: false, onTap: () {
+                  Fluttertoast.showToast(msg: l10n.methodNotImpl);
+                }),
+              ],
+            ),
+          ),
+          const SectionDivider(),
+          Container(
+            color: context.colors.surface,
+            child: OptionButtonItem(
+              isMe || isFriend ? l10n.sendMsg : l10n.addFriend,
+              () {
+                if (isMe || isFriend) {
+                  _openSingleConversation(context);
+                } else {
+                  _openInviteFriendPage(context);
+                }
+              },
+              // 发消息/加好友不是危险操作,不该走 OptionButtonItem 的 danger 默认色。
+              titleColor: context.colors.accent,
+              showBottomDivider: false,
+            ),
+          ),
+          const SizedBox(height: SectionDivider.gap),
+        ],
       ),
     );
   }
@@ -429,14 +525,15 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     }
     nameList.add(Row(
       children: [
-        Container(
-            constraints: BoxConstraints(maxWidth: View.of(context).physicalSize.width / View.of(context).devicePixelRatio - 120),
+        // 这里原先按「窗口宽度 − 120」限宽 —— 桌面端这一页只占右栏(窗口宽减侧栏和中栏),
+        // 那个值大出一大截,等于没限。宽度该由所在容器给,交给 Flexible。
+        Flexible(
             child: Text(
-              AppLocalizations.of(context)!.wildfireId(userInfo.name),
-              textAlign: TextAlign.left,
-              style: AppText.xs.copyWith(color: context.colors.textSecondary),
-              overflow: TextOverflow.ellipsis,
-            )),
+          AppLocalizations.of(context)!.wildfireId(userInfo.name),
+          textAlign: TextAlign.left,
+          style: AppText.xs.copyWith(color: context.colors.textSecondary),
+          overflow: TextOverflow.ellipsis,
+        )),
         if (isFriend && _isStarred)
           const Padding(
             padding: EdgeInsets.only(left: 4),

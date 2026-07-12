@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
 import 'package:chat/pc/pc_av_call.dart';
-import 'package:chat/pc/widgets/hover_builder.dart';
+import 'package:chat/pc/widgets/pc_icon_action.dart';
 import 'package:chat/pc/widgets/pc_popover.dart';
 import 'package:chat/user_info_widget.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -105,7 +105,7 @@ class _PcUserCard extends StatelessWidget {
                 spacing: 4,
                 runSpacing: 2,
                 children: [
-                  _CardAction(
+                  PcIconAction(
                     icon: Icons.chat_bubble_outline_rounded,
                     label: AppLocalizations.of(context)!.sendMsg,
                     onTap: () {
@@ -116,7 +116,7 @@ class _PcUserCard extends StatelessWidget {
                   ),
                   // 给自己发消息(当作文件传输助手)可用,但音视频通话对自己无意义。
                   if (!isSelf) ...[
-                    _CardAction(
+                    PcIconAction(
                       icon: Icons.call_outlined,
                       label: AppLocalizations.of(context)!.audioCallAction,
                       onTap: () {
@@ -124,7 +124,7 @@ class _PcUserCard extends StatelessWidget {
                         Navigator.of(context).pop();
                       },
                     ),
-                    _CardAction(
+                    PcIconAction(
                       icon: Icons.videocam_outlined,
                       label: AppLocalizations.of(context)!.videoCallAction,
                       onTap: () {
@@ -146,40 +146,5 @@ class _PcUserCard extends StatelessWidget {
   void _openProfile(BuildContext context) {
     pushPage(context, UserInfoWidget(userId, key: ValueKey('pc-user-$userId')));
     Navigator.of(context).pop();
-  }
-}
-
-/// 卡片底部操作项:图标 + 小字标签,尺寸随标签宽度收缩。
-class _CardAction extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _CardAction({required this.icon, required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hovered) => GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          decoration: BoxDecoration(
-            color: hovered ? context.colors.hoverOverlay : Colors.transparent,
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 20, color: context.colors.accent),
-              const SizedBox(height: 5),
-              Text(label, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

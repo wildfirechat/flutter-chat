@@ -542,6 +542,12 @@ abstract class AppLocalizations {
   /// **'修改昵称'**
   String get modifyAlias;
 
+  /// No description provided for @nickname.
+  ///
+  /// In zh, this message translates to:
+  /// **'昵称'**
+  String get nickname;
+
   /// No description provided for @setAlias.
   ///
   /// In zh, this message translates to:
@@ -1237,6 +1243,48 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'频道详情'**
   String get channelDetails;
+
+  /// No description provided for @channelNotExist.
+  ///
+  /// In zh, this message translates to:
+  /// **'频道不存在'**
+  String get channelNotExist;
+
+  /// No description provided for @channelIntro.
+  ///
+  /// In zh, this message translates to:
+  /// **'功能介绍'**
+  String get channelIntro;
+
+  /// No description provided for @channelOwner.
+  ///
+  /// In zh, this message translates to:
+  /// **'拥有者'**
+  String get channelOwner;
+
+  /// No description provided for @noIntro.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无介绍'**
+  String get noIntro;
+
+  /// No description provided for @enterConversation.
+  ///
+  /// In zh, this message translates to:
+  /// **'进入会话'**
+  String get enterConversation;
+
+  /// No description provided for @subscribeChannel.
+  ///
+  /// In zh, this message translates to:
+  /// **'订阅频道'**
+  String get subscribeChannel;
+
+  /// No description provided for @groupIdLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'群号'**
+  String get groupIdLabel;
 
   /// No description provided for @unsubscribeChannel.
   ///

@@ -5,7 +5,9 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/constants.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
+import 'package:chat/pc/widgets/pc_card.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/pc/widgets/pc_pane_content.dart';
 import 'package:chat/settings/account_safety_screen.dart';
 import 'package:chat/settings/blacklist_screen.dart';
 import 'package:chat/settings/notification_settings.dart';
@@ -182,72 +184,68 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
       backgroundColor: context.colors.chatBgDesktop,
       appBar: PcPageHeader(title: l10n.general),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _SettingsSectionTitle(l10n.chat),
-                _SettingsCard(children: [
-                  _SettingsSwitchRow(
-                    title: l10n.syncDraft,
-                    subtitle: l10n.syncDraftDesc,
-                    value: _syncDraftEnabled,
-                    onChanged: (val) {
-                      setState(() => _syncDraftEnabled = val);
-                      _updateUserSetting(kUserSettingDisableSyncDraft, val, revert: true);
-                    },
-                  ),
-                ]),
-                const SizedBox(height: 20),
-                _SettingsSectionTitle(l10n.startupAndWindow),
-                _SettingsCard(children: [
-                  _SettingsSwitchRow(
-                    title: l10n.closeToExitTitle,
-                    subtitle: l10n.closeToExitDesc,
-                    value: _closeToExit,
-                    onChanged: (val) {
-                      setState(() => _closeToExit = val);
-                      _saveLocalPreference('pc_close_to_exit', val);
-                      Fluttertoast.showToast(msg: l10n.setSuccess);
-                    },
-                  ),
-                  const Divider(height: 0.5),
-                  _SettingsSwitchRow(
-                    title: l10n.minimizeToTaskbarTitle,
-                    subtitle: l10n.minimizeToTaskbarDesc,
-                    value: _enableMinimize,
-                    onChanged: (val) {
-                      setState(() => _enableMinimize = val);
-                      _saveLocalPreference('pc_enable_minimize', val);
-                      Fluttertoast.showToast(msg: l10n.setSuccess);
-                    },
-                  ),
-                ]),
-                const SizedBox(height: 20),
-                _SettingsSectionTitle(l10n.termsOfService),
-                _SettingsCard(children: [
-                  _SettingsClickableRow(
-                    title: l10n.userAgreement,
-                    subtitle: l10n.userAgreementDesc,
-                    onTap: () {
-                      Fluttertoast.showToast(msg: l10n.methodNotImpl);
-                    },
-                  ),
-                  const Divider(height: 0.5),
-                  _SettingsClickableRow(
-                    title: l10n.privacyPolicy,
-                    subtitle: l10n.privacyPolicyDesc,
-                    onTap: () {
-                      Fluttertoast.showToast(msg: l10n.methodNotImpl);
-                    },
-                  ),
-                ]),
-              ],
-            ),
+        padding: PcPaneContent.defaultPadding,
+        child: PcPaneContent(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SettingsSectionTitle(l10n.chat),
+              PcCard(children: [
+                _SettingsSwitchRow(
+                  title: l10n.syncDraft,
+                  subtitle: l10n.syncDraftDesc,
+                  value: _syncDraftEnabled,
+                  onChanged: (val) {
+                    setState(() => _syncDraftEnabled = val);
+                    _updateUserSetting(kUserSettingDisableSyncDraft, val, revert: true);
+                  },
+                ),
+              ]),
+              const SizedBox(height: 20),
+              _SettingsSectionTitle(l10n.startupAndWindow),
+              PcCard(children: [
+                _SettingsSwitchRow(
+                  title: l10n.closeToExitTitle,
+                  subtitle: l10n.closeToExitDesc,
+                  value: _closeToExit,
+                  onChanged: (val) {
+                    setState(() => _closeToExit = val);
+                    _saveLocalPreference('pc_close_to_exit', val);
+                    Fluttertoast.showToast(msg: l10n.setSuccess);
+                  },
+                ),
+                const Divider(height: 0.5),
+                _SettingsSwitchRow(
+                  title: l10n.minimizeToTaskbarTitle,
+                  subtitle: l10n.minimizeToTaskbarDesc,
+                  value: _enableMinimize,
+                  onChanged: (val) {
+                    setState(() => _enableMinimize = val);
+                    _saveLocalPreference('pc_enable_minimize', val);
+                    Fluttertoast.showToast(msg: l10n.setSuccess);
+                  },
+                ),
+              ]),
+              const SizedBox(height: 20),
+              _SettingsSectionTitle(l10n.termsOfService),
+              PcCard(children: [
+                _SettingsClickableRow(
+                  title: l10n.userAgreement,
+                  subtitle: l10n.userAgreementDesc,
+                  onTap: () {
+                    Fluttertoast.showToast(msg: l10n.methodNotImpl);
+                  },
+                ),
+                const Divider(height: 0.5),
+                _SettingsClickableRow(
+                  title: l10n.privacyPolicy,
+                  subtitle: l10n.privacyPolicyDesc,
+                  onTap: () {
+                    Fluttertoast.showToast(msg: l10n.methodNotImpl);
+                  },
+                ),
+              ]),
+            ],
           ),
         ),
       ),
@@ -367,59 +365,55 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
       backgroundColor: context.colors.chatBgDesktop,
       appBar: PcPageHeader(title: l10n.notifications),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _SettingsSectionTitle(l10n.messageAlerts),
-                _SettingsCard(children: [
-                  _SettingsSwitchRow(
-                    title: l10n.receiveNewMessageNotification,
-                    subtitle: l10n.receiveNewMessageNotificationDesc,
-                    value: _receiveMsgNotification,
-                    onChanged: (val) {
-                      setState(() => _receiveMsgNotification = val);
-                      _updateUserSetting(kUserSettingGlobalSilent, val, revert: true);
-                    },
-                  ),
-                  const Divider(height: 0.5),
-                  _SettingsSwitchRow(
-                    title: l10n.receiveCallNotification,
-                    subtitle: l10n.receiveCallNotificationDesc,
-                    value: _receiveVoipNotification,
-                    onChanged: (val) {
-                      setState(() => _receiveVoipNotification = val);
-                      _updateUserSetting(kUserSettingVoipSilent, val, revert: true);
-                    },
-                  ),
-                  const Divider(height: 0.5),
-                  _SettingsSwitchRow(
-                    title: l10n.showNotificationDetail,
-                    subtitle: l10n.showNotificationDetailDesc,
-                    value: _showNotificationDetail,
-                    onChanged: (val) {
-                      setState(() => _showNotificationDetail = val);
-                      _updateUserSetting(kUserSettingHiddenNotificationDetail, val, revert: true);
-                    },
-                  ),
-                  const Divider(height: 0.5),
-                  _SettingsSwitchRow(
-                    title: l10n.noDisturb,
-                    subtitle: _noDisturbing && _noDisturbStartTime != _noDisturbEndTime
-                        ? l10n.noDisturbPeriod(NotificationSettings.formatNoDisturbTime(_noDisturbStartTime, _noDisturbEndTime))
-                        : l10n.noDisturbDesc,
-                    value: _noDisturbing,
-                    onChanged: (val) {
-                      _toggleNoDisturb(val);
-                    },
-                  ),
-                ]),
-              ],
-            ),
+        padding: PcPaneContent.defaultPadding,
+        child: PcPaneContent(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SettingsSectionTitle(l10n.messageAlerts),
+              PcCard(children: [
+                _SettingsSwitchRow(
+                  title: l10n.receiveNewMessageNotification,
+                  subtitle: l10n.receiveNewMessageNotificationDesc,
+                  value: _receiveMsgNotification,
+                  onChanged: (val) {
+                    setState(() => _receiveMsgNotification = val);
+                    _updateUserSetting(kUserSettingGlobalSilent, val, revert: true);
+                  },
+                ),
+                const Divider(height: 0.5),
+                _SettingsSwitchRow(
+                  title: l10n.receiveCallNotification,
+                  subtitle: l10n.receiveCallNotificationDesc,
+                  value: _receiveVoipNotification,
+                  onChanged: (val) {
+                    setState(() => _receiveVoipNotification = val);
+                    _updateUserSetting(kUserSettingVoipSilent, val, revert: true);
+                  },
+                ),
+                const Divider(height: 0.5),
+                _SettingsSwitchRow(
+                  title: l10n.showNotificationDetail,
+                  subtitle: l10n.showNotificationDetailDesc,
+                  value: _showNotificationDetail,
+                  onChanged: (val) {
+                    setState(() => _showNotificationDetail = val);
+                    _updateUserSetting(kUserSettingHiddenNotificationDetail, val, revert: true);
+                  },
+                ),
+                const Divider(height: 0.5),
+                _SettingsSwitchRow(
+                  title: l10n.noDisturb,
+                  subtitle: _noDisturbing && _noDisturbStartTime != _noDisturbEndTime
+                      ? l10n.noDisturbPeriod(NotificationSettings.formatNoDisturbTime(_noDisturbStartTime, _noDisturbEndTime))
+                      : l10n.noDisturbDesc,
+                  value: _noDisturbing,
+                  onChanged: (val) {
+                    _toggleNoDisturb(val);
+                  },
+                ),
+              ]),
+            ],
           ),
         ),
       ),
@@ -455,44 +449,40 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
       backgroundColor: context.colors.chatBgDesktop,
       appBar: PcPageHeader(title: l10n.appearanceAndTheme),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _SettingsSectionTitle(l10n.interfaceAppearance),
-                _SettingsCard(children: [
-                  _SettingsSelectorRow(
-                    title: l10n.interfaceLanguage,
-                    subtitle: l10n.interfaceLanguageDesc,
-                    valueText: currentLangText,
-                    onTap: (rowContext, tapPosition) {
-                      _showLanguageMenu(rowContext, tapPosition);
-                    },
-                  ),
-                  const Divider(height: 0.5),
-                  _SettingsSelectorRow(
-                    title: l10n.appearanceTheme,
-                    subtitle: l10n.appearanceThemeDesc,
-                    valueText: currentThemeText,
-                    onTap: (rowContext, tapPosition) {
-                      _showThemeMenu(rowContext, tapPosition);
-                    },
-                  ),
-                  const Divider(height: 0.5),
-                  _SettingsSliderRow(
-                    title: l10n.fontSize,
-                    subtitle: l10n.fontSizeDesc,
-                    index: fontSizeViewModel.index,
-                    itemCount: fontSizeViewModel.itemCount,
-                    onChanged: fontSizeViewModel.setFontSizeIndex,
-                  ),
-                ]),
-              ],
-            ),
+        padding: PcPaneContent.defaultPadding,
+        child: PcPaneContent(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SettingsSectionTitle(l10n.interfaceAppearance),
+              PcCard(children: [
+                _SettingsSelectorRow(
+                  title: l10n.interfaceLanguage,
+                  subtitle: l10n.interfaceLanguageDesc,
+                  valueText: currentLangText,
+                  onTap: (rowContext, tapPosition) {
+                    _showLanguageMenu(rowContext, tapPosition);
+                  },
+                ),
+                const Divider(height: 0.5),
+                _SettingsSelectorRow(
+                  title: l10n.appearanceTheme,
+                  subtitle: l10n.appearanceThemeDesc,
+                  valueText: currentThemeText,
+                  onTap: (rowContext, tapPosition) {
+                    _showThemeMenu(rowContext, tapPosition);
+                  },
+                ),
+                const Divider(height: 0.5),
+                _SettingsSliderRow(
+                  title: l10n.fontSize,
+                  subtitle: l10n.fontSizeDesc,
+                  index: fontSizeViewModel.index,
+                  itemCount: fontSizeViewModel.itemCount,
+                  onChanged: fontSizeViewModel.setFontSizeIndex,
+                ),
+              ]),
+            ],
           ),
         ),
       ),
@@ -578,99 +568,95 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
           backgroundColor: context.colors.chatBgDesktop,
           appBar: PcPageHeader(title: l10n.accountAndSecurity),
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 680),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _SettingsSectionTitle(l10n.currentLoginAccount),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: context.colors.surface,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: context.colors.hairline, width: 0.5),
-                      ),
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        children: [
-                          Portrait(
-                            userInfo.portrait ?? Config.defaultUserPortrait,
-                            Config.defaultUserPortrait,
-                            width: 54,
-                            height: 54,
-                            borderRadius: 6,
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  userInfo.displayName ?? userInfo.name,
-                                  style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  l10n.accountName(userInfo.name),
-                                  style: AppText.xs.copyWith(color: context.colors.textSecondary),
-                                ),
-                              ],
-                            ),
-                          ),
-                          OutlinedButton(
-                            onPressed: _handleLogout,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: context.colors.danger,
-                              side: BorderSide(color: context.colors.danger),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                            ),
-                            child: Text(l10n.signOut, style: AppText.xs),
-                          ),
-                        ],
-                      ),
+            padding: PcPaneContent.defaultPadding,
+            child: PcPaneContent(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _SettingsSectionTitle(l10n.currentLoginAccount),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: context.colors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: context.colors.hairline, width: 0.5),
                     ),
-                    const SizedBox(height: 20),
-                    _SettingsSectionTitle(l10n.securityAndData),
-                    _SettingsCard(children: [
-                      _SettingsClickableRow(
-                        title: l10n.changePassword,
-                        subtitle: l10n.changePasswordDesc,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
-                          );
-                        },
-                      ),
-                      const Divider(height: 0.5),
-                      _SettingsClickableRow(
-                        title: l10n.blacklist,
-                        subtitle: l10n.blacklistDesc,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const BlacklistScreen()),
-                          );
-                        },
-                      ),
-                      const Divider(height: 0.5),
-                      _SettingsClickableRow(
-                        title: l10n.backup_and_restore,
-                        subtitle: l10n.backupAndRestoreDesc,
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const BackupAndRestoreScreen()),
-                          );
-                        },
-                      ),
-                    ]),
-                  ],
-                ),
+                    padding: const EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        Portrait(
+                          userInfo.portrait ?? Config.defaultUserPortrait,
+                          Config.defaultUserPortrait,
+                          width: 54,
+                          height: 54,
+                          borderRadius: 6,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                userInfo.displayName ?? userInfo.name,
+                                style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                l10n.accountName(userInfo.name),
+                                style: AppText.xs.copyWith(color: context.colors.textSecondary),
+                              ),
+                            ],
+                          ),
+                        ),
+                        OutlinedButton(
+                          onPressed: _handleLogout,
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: context.colors.danger,
+                            side: BorderSide(color: context.colors.danger),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                          ),
+                          child: Text(l10n.signOut, style: AppText.xs),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _SettingsSectionTitle(l10n.securityAndData),
+                  PcCard(children: [
+                    _SettingsClickableRow(
+                      title: l10n.changePassword,
+                      subtitle: l10n.changePasswordDesc,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
+                        );
+                      },
+                    ),
+                    const Divider(height: 0.5),
+                    _SettingsClickableRow(
+                      title: l10n.blacklist,
+                      subtitle: l10n.blacklistDesc,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const BlacklistScreen()),
+                        );
+                      },
+                    ),
+                    const Divider(height: 0.5),
+                    _SettingsClickableRow(
+                      title: l10n.backup_and_restore,
+                      subtitle: l10n.backupAndRestoreDesc,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const BackupAndRestoreScreen()),
+                        );
+                      },
+                    ),
+                  ]),
+                ],
               ),
             ),
           ),
@@ -691,81 +677,77 @@ class PcAboutSettingsDetail extends StatelessWidget {
       backgroundColor: context.colors.chatBgDesktop,
       appBar: PcPageHeader(title: l10n.about),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 20),
-                // Logo
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: context.colors.shadow,
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      )
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.asset("assets/images/app_icon.png"),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.appName,
-                  style: AppText.xl.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.aboutVersion("v1.0.0"),
-                  style: AppText.xs.copyWith(color: context.colors.textSecondary),
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: context.colors.surface,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: context.colors.hairline, width: 0.5),
-                  ),
-                  child: Text(
-                    l10n.aboutDescription,
-                    textAlign: TextAlign.center,
-                    style: AppText.sm.copyWith(color: context.colors.textPrimary, height: 1.5),
-                  ),
-                ),
-                const SizedBox(height: 40),
-                // Links
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _SettingsTextLink(label: l10n.officialWebsite, url: "https://wildfirechat.cn"),
-                    const SizedBox(width: 12),
-                    Text("|", style: TextStyle(color: context.colors.textTertiary)),
-                    const SizedBox(width: 12),
-                    _SettingsTextLink(label: l10n.githubRepo, url: "https://github.com/wildfirechat"),
-                    const SizedBox(width: 12),
-                    Text("|", style: TextStyle(color: context.colors.textTertiary)),
-                    const SizedBox(width: 12),
-                    _SettingsTextLink(label: l10n.issueFeedback, url: "https://github.com/wildfirechat/issues"),
+        padding: PcPaneContent.defaultPadding,
+        child: PcPaneContent(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              // Logo
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: context.colors.shadow,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    )
                   ],
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.wechatContact,
-                  style: AppText.xs.copyWith(color: context.colors.textSecondary),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset("assets/images/app_icon.png"),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.appName,
+                style: AppText.xl.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.aboutVersion("v1.0.0"),
+                style: AppText.xs.copyWith(color: context.colors.textSecondary),
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                decoration: BoxDecoration(
+                  color: context.colors.surface,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: context.colors.hairline, width: 0.5),
+                ),
+                child: Text(
+                  l10n.aboutDescription,
+                  textAlign: TextAlign.center,
+                  style: AppText.sm.copyWith(color: context.colors.textPrimary, height: 1.5),
+                ),
+              ),
+              const SizedBox(height: 40),
+              // Links
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _SettingsTextLink(label: l10n.officialWebsite, url: "https://wildfirechat.cn"),
+                  const SizedBox(width: 12),
+                  Text("|", style: TextStyle(color: context.colors.textTertiary)),
+                  const SizedBox(width: 12),
+                  _SettingsTextLink(label: l10n.githubRepo, url: "https://github.com/wildfirechat"),
+                  const SizedBox(width: 12),
+                  Text("|", style: TextStyle(color: context.colors.textTertiary)),
+                  const SizedBox(width: 12),
+                  _SettingsTextLink(label: l10n.issueFeedback, url: "https://github.com/wildfirechat/issues"),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.wechatContact,
+                style: AppText.xs.copyWith(color: context.colors.textSecondary),
+              ),
+            ],
           ),
         ),
       ),
@@ -788,25 +770,6 @@ class _SettingsSectionTitle extends StatelessWidget {
       child: Text(
         title,
         style: AppText.xs.copyWith(fontWeight: FontWeight.w600, color: context.colors.textSecondary),
-      ),
-    );
-  }
-}
-
-class _SettingsCard extends StatelessWidget {
-  final List<Widget> children;
-  const _SettingsCard({required this.children});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: context.colors.hairline, width: 0.5),
-      ),
-      child: Column(
-        children: children,
       ),
     );
   }

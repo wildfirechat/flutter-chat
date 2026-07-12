@@ -14,6 +14,8 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/pc/widgets/pc_pane_content.dart';
+import 'package:chat/pc/widgets/pc_profile.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -70,15 +72,18 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       builder: (context, groupInfo, child) {
         if (groupInfo == null || groupInfo.updateDt == 0) {
           return Scaffold(
+            backgroundColor: isDesktopShell ? context.colors.surface : null,
             appBar: isDesktopShell
-                ? PcPageHeader(title: AppLocalizations.of(context)!.groupInfo)
+                ? const PcPageHeader(bare: true)
                 : AppBar(title: Text(AppLocalizations.of(context)!.groupInfo)),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
         return Scaffold(
+          backgroundColor: isDesktopShell ? context.colors.surface : null,
+          // 桌面端:群名字就写在正文里,标题栏再写一遍「群组信息」是多余的。
           appBar: isDesktopShell
-              ? PcPageHeader(title: AppLocalizations.of(context)!.groupInfo)
+              ? const PcPageHeader(bare: true)
               : AppBar(title: Text(AppLocalizations.of(context)!.groupInfo)),
           body: _buildBody(context, groupInfo),
         );
@@ -97,40 +102,44 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       portrait = MediaUrlRedirector.redirect(_remotePortrait!);
     }
 
+    // 桌面端右栏:与用户/频道/外部单位资料页同一套形态,见 pc_profile.dart。
     if (isDesktopShell) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6.0),
-              child: CachedNetworkImage(
-                imageUrl: portrait.isNotEmpty ? portrait : Config.defaultGroupPortrait,
-                width: 80,
-                height: 80,
-                memCacheWidth: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
-                memCacheHeight: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Image.asset(Config.defaultGroupPortrait, width: 80, height: 80, color: Colors.grey),
-                errorWidget: (context, url, error) => Image.asset(Config.defaultGroupPortrait, width: 80, height: 80, color: Colors.grey),
+      final l10n = AppLocalizations.of(context)!;
+      return SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+        child: PcPaneContent(
+          maxWidth: kPcProfileWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              PcProfileHeader(
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(4.0),
+                  child: CachedNetworkImage(
+                    imageUrl: portrait.isNotEmpty ? portrait : Config.defaultGroupPortrait,
+                    width: 64,
+                    height: 64,
+                    memCacheWidth: (64 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+                    memCacheHeight: (64 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Image.asset(Config.defaultGroupPortrait, width: 64, height: 64),
+                    errorWidget: (context, url, error) => Image.asset(Config.defaultGroupPortrait, width: 64, height: 64),
+                  ),
+                ),
+                title: Text(
+                  name,
+                  style: PcProfileHeader.titleStyle(context),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: '${l10n.groupIdLabel}: ${widget.groupId}',
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              name,
-              style: AppText.xl.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "群号: ${widget.groupId}",
-              style: AppText.sm.copyWith(color: context.colors.textSecondary),
-            ),
-            const SizedBox(height: 40),
-            Divider(height: 1, thickness: 0.5, color: context.colors.hairline),
-            const SizedBox(height: 36),
-            _buildActionButton(groupInfo),
-          ],
+              const PcProfileDivider(),
+              // 进入/加入群聊是这一页的主操作,而且要带 loading 态,所以留成实心按钮,
+              // 不用图标动作(那是发消息/通话这类平级操作的形态)。
+              Center(child: _buildActionButton(groupInfo)),
+            ],
+          ),
         ),
       );
     }
@@ -190,15 +199,16 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
           onPressed: _isLoading ? null : () => _onAction(groupInfo, isJoined),
           style: ElevatedButton.styleFrom(
             backgroundColor: context.colors.accent,
-            foregroundColor: Colors.white,
+            // 实心 accent 底上的前景色跟主题走,不能写死 Colors.white(暗色下 accent 变浅)。
+            foregroundColor: context.colors.onAccent,
             elevation: 0,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
           ),
           child: _isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  child: CircularProgressIndicator(color: context.colors.onAccent, strokeWidth: 2),
                 )
               : Text(
                   buttonText,
