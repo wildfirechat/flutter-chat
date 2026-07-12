@@ -2,11 +2,13 @@ import 'package:chat/backup/pick_conversation_screen.dart';
 import 'package:chat/backup/pc_restore_progress_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:imclient/imclient.dart';
 import 'package:intl/intl.dart';
-// import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import 'backup_manager.dart';
 import 'backup_models.dart';
+import 'backup_phase_localization.dart';
 
 class BackupAndRestoreScreen extends StatefulWidget {
   const BackupAndRestoreScreen({Key? key}) : super(key: key);
@@ -16,6 +18,7 @@ class BackupAndRestoreScreen extends StatefulWidget {
 }
 
 class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   List<BackupMetadata> _backups = [];
   bool _isLoading = true;
   bool _isBackingUp = false;
@@ -42,7 +45,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
       setState(() {
         _isLoading = false;
       });
-      Fluttertoast.showToast(msg: "Failed to load backups: $e");
+      Fluttertoast.showToast(msg: l10n.pcLoadBackupsFailed('$e'));
     }
   }
 
@@ -52,16 +55,16 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Delete Backup"),
-        content: const Text("Are you sure you want to delete this backup?"),
+        title: Text(l10n.deleteBackup),
+        content: Text(l10n.deleteBackupConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("Delete"),
+            child: Text(l10n.delete),
           ),
         ],
       ),
@@ -74,9 +77,9 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
       setState(() {
         _backups.remove(backup);
       });
-      Fluttertoast.showToast(msg: "Backup deleted");
+      Fluttertoast.showToast(msg: l10n.pcBackupDeleted);
     } catch (e) {
-      Fluttertoast.showToast(msg: "Failed to delete: $e");
+      Fluttertoast.showToast(msg: l10n.pcDeleteBackupFailed('$e'));
     }
   }
 
@@ -106,43 +109,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
 
     String? password;
     if (backup.encryption != null && backup.encryption!.enabled) {
-      final passwordController = TextEditingController();
-      final proceed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Enter Password"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (backup.encryption!.hint != null &&
-                  backup.encryption!.hint!.isNotEmpty)
-                Text("Hint: ${backup.encryption!.hint}"),
-              const SizedBox(height: 8),
-              TextField(
-                controller: passwordController,
-                decoration: const InputDecoration(
-                  labelText: "Password",
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text("Restore"),
-            ),
-          ],
-        ),
-      );
-
-      if (proceed != true) return;
-      password = passwordController.text;
+      password = Imclient.currentUserId;
     }
 
     if (!mounted) return;
@@ -151,17 +118,16 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Restore Backup"),
-        content: const Text(
-            "Restoring will merge messages from the backup into your current chat history. Existing messages will NOT be overwritten unless they are duplicates.\n\nDo you want to continue?"),
+        title: Text(l10n.restoreBackup),
+        content: Text(l10n.restoreBackupConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("Restore"),
+            child: Text(l10n.restoreBackup),
           ),
         ],
       ),
@@ -172,7 +138,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
     setState(() {
       _isRestoring = true;
       _progress =
-          BackupProgress(total: 0, current: 0, phase: "Starting restore...");
+          BackupProgress(total: 0, current: 0, phase: l10n.restoringConversations);
     });
 
     await BackupManager().restoreBackup(
@@ -189,20 +155,20 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
           _progress = null;
         });
         Fluttertoast.showToast(
-            msg: "Restored $msgCount messages and $mediaCount media files");
+            msg: l10n.restoreCompleted('$msgCount', '$mediaCount'));
       },
       onError: (error) {
         setState(() {
           _isRestoring = false;
           _progress = null;
         });
-        Fluttertoast.showToast(msg: "Restore failed: $error");
+        Fluttertoast.showToast(msg: l10n.pcRestoreFailed(error.toString()));
       },
     );
   }
 
   String _formatDate(String? isoString) {
-    if (isoString == null) return "Unknown";
+    if (isoString == null) return l10n.pcUnknownDate;
     try {
       final date = DateTime.parse(isoString).toLocal();
       return DateFormat('yyyy-MM-dd HH:mm').format(date);
@@ -225,7 +191,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _isBackingUp ? "Backing up..." : "Restoring...",
+                  _isBackingUp ? l10n.pcBackupMobileData : l10n.pcRestoreBackup,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
@@ -235,7 +201,9 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                       : null,
                 ),
                 const SizedBox(height: 16),
-                Text(_progress?.phase ?? "Processing..."),
+                Text(_progress != null
+                    ? localizeBackupPhase(l10n, _progress!.phase)
+                    : l10n.pcPreparing),
                 if (_progress != null)
                   Text("${_progress!.current} / ${_progress!.total}"),
                 const SizedBox(height: 24),
@@ -245,7 +213,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                     backgroundColor: Colors.red,
                     foregroundColor: Colors.white,
                   ),
-                  child: const Text("Cancel"),
+                  child: Text(l10n.cancel),
                 ),
               ],
             ),
@@ -261,7 +229,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
       children: [
         Scaffold(
           appBar: AppBar(
-            title: const Text("Backup & Restore"),
+            title: Text(l10n.backup_and_restore),
           ),
           body: Column(
             children: [
@@ -269,7 +237,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _backups.isEmpty
-                        ? const Center(child: Text("No backups found"))
+                        ? Center(child: Text(l10n.noBackupsFound))
                         : ListView.separated(
                             itemCount: _backups.length,
                             separatorBuilder: (ctx, index) =>
@@ -280,7 +248,10 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                                 leading: const Icon(Icons.backup),
                                 title: Text(_formatDate(backup.backupTime)),
                                 subtitle: Text(
-                                    "${backup.statistics?.totalConversations ?? 0} conversations, ${backup.statistics?.totalMessages ?? 0} messages"),
+                                    l10n.backupListSubtitle(
+                                      "${backup.statistics?.totalConversations ?? 0}",
+                                      "${backup.statistics?.totalMessages ?? 0}",
+                                    )),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -295,7 +266,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                                         onPressed: (_isBackingUp || _isRestoring)
                                             ? null
                                             : () => _restoreBackup(backup),
-                                        child: const Text("Restore"),
+                                        child: Text(l10n.restoreBackup),
                                       ),
                                   ],
                                 ),
@@ -314,7 +285,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: const Text("Create New Backup"),
+                        child: Text(l10n.createNewBackup),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -325,7 +296,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        child: const Text("Restore from PC"),
+                        child: Text(l10n.restoreFromPC),
                       ),
                     ),
                   ],

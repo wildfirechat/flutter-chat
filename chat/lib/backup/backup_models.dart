@@ -1,7 +1,11 @@
 
 class BackupMetadata {
+  String version;
+  String format;
   String? backupTime;
   String? userId;
+  String? appType;
+  String? backupMode;
   String? deviceName;
   BackupStatistics? statistics;
   List<BackupConversationInfo>? conversations;
@@ -9,8 +13,12 @@ class BackupMetadata {
   String? backupDir; // Local helper field
 
   BackupMetadata({
+    this.version = '1',
+    this.format = 'directory',
     this.backupTime,
     this.userId,
+    this.appType,
+    this.backupMode,
     this.deviceName,
     this.statistics,
     this.conversations,
@@ -20,8 +28,12 @@ class BackupMetadata {
 
   factory BackupMetadata.fromJson(Map<String, dynamic> json) {
     return BackupMetadata(
+      version: json['version'] ?? '1',
+      format: json['format'] ?? 'directory',
       backupTime: json['backupTime'],
       userId: json['userId'],
+      appType: json['appType'],
+      backupMode: json['backupMode'],
       deviceName: json['deviceName'],
       statistics: json['statistics'] != null
           ? BackupStatistics.fromJson(json['statistics'])
@@ -39,8 +51,12 @@ class BackupMetadata {
 
   Map<String, dynamic> toJson() {
     return {
+      'version': version,
+      'format': format,
       'backupTime': backupTime,
       'userId': userId,
+      'appType': appType,
+      'backupMode': backupMode,
       'deviceName': deviceName,
       'statistics': statistics?.toJson(),
       'conversations': conversations?.map((e) => e.toJson()).toList(),
@@ -90,6 +106,7 @@ class BackupStatistics {
 }
 
 class BackupConversationInfo {
+  String? conversationId;
   int type;
   String target;
   int line;
@@ -100,6 +117,7 @@ class BackupConversationInfo {
   int lastMessageTime;
 
   BackupConversationInfo({
+    this.conversationId,
     required this.type,
     required this.target,
     required this.line,
@@ -112,6 +130,7 @@ class BackupConversationInfo {
 
   factory BackupConversationInfo.fromJson(Map<String, dynamic> json) {
     return BackupConversationInfo(
+      conversationId: json['conversationId'],
       type: json['type'],
       target: json['target'],
       line: json['line'],
@@ -125,6 +144,7 @@ class BackupConversationInfo {
 
   Map<String, dynamic> toJson() {
     return {
+      'conversationId': conversationId,
       'type': type,
       'target': target,
       'line': line,
@@ -139,16 +159,22 @@ class BackupConversationInfo {
 
 class BackupEncryptionInfo {
   bool enabled;
+  String? algorithm;
+  String? keyDerivation;
   String? hint;
 
   BackupEncryptionInfo({
     required this.enabled,
+    this.algorithm,
+    this.keyDerivation,
     this.hint,
   });
 
   factory BackupEncryptionInfo.fromJson(Map<String, dynamic> json) {
     return BackupEncryptionInfo(
       enabled: json['enabled'] ?? false,
+      algorithm: json['algorithm'],
+      keyDerivation: json['keyDerivation'],
       hint: json['hint'],
     );
   }
@@ -156,6 +182,8 @@ class BackupEncryptionInfo {
   Map<String, dynamic> toJson() {
     return {
       'enabled': enabled,
+      'algorithm': algorithm,
+      'keyDerivation': keyDerivation,
       'hint': hint,
     };
   }

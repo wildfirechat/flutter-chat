@@ -1,24 +1,24 @@
-import 'package:chat/widget/section_divider.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
-
-import '../viewmodel/user_view_model.dart';
-import 'package:provider/provider.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import 'backup_destination_screen.dart';
 
 class PickConversationScreen extends StatefulWidget {
-  const PickConversationScreen({Key? key}) : super(key: key);
+  final void Function(List<ConversationInfo> conversations, bool includeMedia)? onSelected;
+
+  const PickConversationScreen({Key? key, this.onSelected}) : super(key: key);
 
   @override
   _PickConversationScreenState createState() => _PickConversationScreenState();
 }
 
 class _PickConversationScreenState extends State<PickConversationScreen> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   List<ConversationInfo> _conversations = [];
   final Set<ConversationInfo> _selectedConversations = {};
   bool _isLoading = true;
@@ -56,30 +56,35 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
   void _onNext() {
     if (_selectedConversations.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least one conversation')),
+        SnackBar(content: Text(l10n.pleaseSelectConversation)),
       );
       return;
     }
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BackupDestinationScreen(
-          conversations: _selectedConversations.toList(),
-          includeMedia: _includeMedia,
+    if (widget.onSelected != null) {
+      widget.onSelected!(_selectedConversations.toList(), _includeMedia);
+      Navigator.pop(context);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BackupDestinationScreen(
+            conversations: _selectedConversations.toList(),
+            includeMedia: _includeMedia,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Conversations'),
+        title: Text(l10n.selectConversations),
         actions: [
           TextButton(
             onPressed: _selectedConversations.isEmpty ? null : _onNext,
-            child: const Text('Next', style: TextStyle(color: Colors.black)),
+            child: Text(l10n.next, style: const TextStyle(color: Colors.black)),
           ),
         ],
       ),
@@ -88,13 +93,13 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
           : Column(
               children: [
                 CheckboxListTile(
-                  title: const Text('Select All'),
+                  title: Text(l10n.selectAll),
                   value: _selectedConversations.length == _conversations.length && _conversations.isNotEmpty,
                   onChanged: _toggleSelectAll,
                 ),
                 CheckboxListTile(
-                  title: const Text('Include Media'),
-                  subtitle: const Text('Images, Videos, Files, etc.'),
+                  title: Text(l10n.includeMedia),
+                  subtitle: Text(l10n.includeMediaDesc),
                   value: _includeMedia,
                   onChanged: (val) {
                     setState(() {
@@ -112,6 +117,7 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
                       return _ConversationItem(
                         info: info,
                         isChecked: _selectedConversations.contains(info),
+                        l10n: l10n,
                         onChanged: (checked) {
                           setState(() {
                             if (checked == true) {
@@ -135,11 +141,13 @@ class _ConversationItem extends StatelessWidget {
   final ConversationInfo info;
   final bool isChecked;
   final ValueChanged<bool?> onChanged;
+  final AppLocalizations l10n;
 
   const _ConversationItem({
     required this.info,
     required this.isChecked,
     required this.onChanged,
+    required this.l10n,
   });
 
   @override
@@ -158,7 +166,7 @@ class _ConversationItem extends StatelessWidget {
           }
           return CheckboxListTile(
             title: Text(title),
-            subtitle: Text("Type: Private"),
+            subtitle: Text(l10n.conversationTypeSingle),
             value: isChecked,
             onChanged: onChanged,
             secondary: const Icon(Icons.person),
@@ -174,7 +182,7 @@ class _ConversationItem extends StatelessWidget {
           }
           return CheckboxListTile(
             title: Text(title),
-            subtitle: Text("Type: Group"),
+            subtitle: Text(l10n.conversationTypeGroup),
             value: isChecked,
             onChanged: onChanged,
             secondary: const Icon(Icons.group),
@@ -185,7 +193,7 @@ class _ConversationItem extends StatelessWidget {
 
     return CheckboxListTile(
       title: Text(title),
-      subtitle: Text("Type: ${conversation.conversationType}"),
+      subtitle: Text(l10n.conversationTypeChannel),
       value: isChecked,
       onChanged: onChanged,
       secondary: const Icon(Icons.chat),

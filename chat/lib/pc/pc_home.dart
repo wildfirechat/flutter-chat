@@ -44,6 +44,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/call/voip_call_screen.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/backup/pc_backup_listener.dart';
 
 /// 桌面端三栏 Shell:侧栏(tab 切换)+ 中栏(搜索 + 各 tab 列表)+ 右栏(嵌套 Navigator 的详情区)。
 /// 会话/联系人/搜索结果点击通过回调注入,在右栏内打开;二级页面(群信息等)在右栏内部导航。
@@ -552,11 +553,12 @@ class _PCHomeState extends State<PCHome> {
   @override
   Widget build(BuildContext context) {
     // PCShellViewModel 由根 MultiProvider(main.dart)提供,这里不再重复注册。
-    return Theme(
-      data: PcTheme.themeData(context),
-      child: Focus(
-        autofocus: true,
-        onKeyEvent: (node, event) {
+    return PcBackupListener(
+      child: Theme(
+        data: PcTheme.themeData(context),
+        child: Focus(
+          autofocus: true,
+          onKeyEvent: (node, event) {
           if (event is! KeyDownEvent) {
             return KeyEventResult.ignored;
           }
@@ -645,7 +647,8 @@ class _PCHomeState extends State<PCHome> {
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildCallOverlay() {

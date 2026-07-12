@@ -8,7 +8,7 @@ import 'package:pointycastle/export.dart';
 class BackupCrypto {
   static const int SALT_LENGTH = 16;
   static const int IV_LENGTH = 16;
-  static const int PBKDF2_ITERATIONS = 10000;
+  static const int PBKDF2_ITERATIONS = 5000;
   static const int KEY_LENGTH = 32; // 256 bits
 
   static Map<String, dynamic> encryptData(Uint8List data, String password) {

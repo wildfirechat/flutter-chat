@@ -21,8 +21,18 @@ import 'package:imclient/model/message_payload.dart';
 
 import 'backup_models.dart';
 import 'backup_crypto.dart';
+import 'package:crypto/crypto.dart' as crypto;
+import 'package:chat/pc/pc_platform.dart';
 
+const String BACKUP_VERSION = "1";
+const String BACKUP_FORMAT = "directory";
+const String BACKUP_MODE_MESSAGE_WITH_MEDIA = "message_with_media";
+const String BACKUP_ENCRYPTION_ALGORITHM = "AES-256-CBC";
+const String BACKUP_KEY_DERIVATION = "PBKDF2-SHA256";
+const String BACKUP_APP_TYPE_MOBILE = "ios-chat";
+const String BACKUP_APP_TYPE_PC = "pc-chat";
 const String BACKUP_DIR_NAME = "backups";
+const String PC_BACKUP_RECEIVED_DIR_NAME = "Backups/received";
 const String METADATA_FILE_NAME = "metadata.json";
 const String CONVERSATIONS_DIR_NAME = "conversations";
 const String MEDIA_DIR_NAME = "media";
@@ -48,6 +58,41 @@ class BackupManager {
       await backupDir.create(recursive: true);
     }
     return backupDir.path;
+  }
+
+  Future<String> getPCBackupReceivedDirectory() async {
+    final appDocDir = await getApplicationDocumentsDirectory();
+    final backupDir = Directory(path.join(appDocDir.path, PC_BACKUP_RECEIVED_DIR_NAME));
+    if (!await backupDir.exists()) {
+      await backupDir.create(recursive: true);
+    }
+    return backupDir.path;
+  }
+
+  String get _currentAppType => isDesktopShell ? BACKUP_APP_TYPE_PC : BACKUP_APP_TYPE_MOBILE;
+
+  String _formatBackupTimestamp(DateTime dt) {
+    final utc = dt.toUtc();
+    return "${utc.year.toString().padLeft(4, '0')}-${utc.month.toString().padLeft(2, '0')}-${utc.day.toString().padLeft(2, '0')}T"
+        "${utc.hour.toString().padLeft(2, '0')}:${utc.minute.toString().padLeft(2, '0')}:${utc.second.toString().padLeft(2, '0')}Z";
+  }
+
+  String _formatTimestampForDirectory(DateTime dt) {
+    final utc = dt.toUtc();
+    return '${utc.year.toString().padLeft(4, '0')}-${utc.month.toString().padLeft(2, '0')}-${utc.day.toString().padLeft(2, '0')}T'
+        '${utc.hour.toString().padLeft(2, '0')}-${utc.minute.toString().padLeft(2, '0')}-${utc.second.toString().padLeft(2, '0')}';
+  }
+
+  String _calculateFileMd5(File file) {
+    final bytes = file.readAsBytesSync();
+    final digest = crypto.md5.convert(bytes);
+    return digest.toString();
+  }
+
+  String _getConversationDirectoryName(ConversationInfo info) {
+    final conv = info.conversation;
+    final encodedTarget = Uri.encodeComponent(conv.target);
+    return "conv_type${conv.conversationType.index}_${encodedTarget}_line${conv.line}";
   }
 
   Future<List<BackupMetadata>> getBackupList() async {
@@ -80,6 +125,36 @@ class BackupManager {
     }
   }
 
+
+  Future<List<BackupMetadata>> getBackupListForPC() async {
+    try {
+      final rootPath = await getPCBackupReceivedDirectory();
+      final rootDir = Directory(rootPath);
+      final List<BackupMetadata> backups = [];
+
+      if (await rootDir.exists()) {
+        final dirs = rootDir.listSync().whereType<Directory>();
+        for (var dir in dirs) {
+          final metadataFile = File(path.join(dir.path, METADATA_FILE_NAME));
+          if (await metadataFile.exists()) {
+            try {
+              final jsonStr = await metadataFile.readAsString();
+              final metadata = BackupMetadata.fromJson(jsonDecode(jsonStr));
+              metadata.backupDir = dir.path;
+              backups.add(metadata);
+            } catch (e) {
+              debugPrint("Error parsing PC metadata for ${dir.path}: $e");
+            }
+          }
+        }
+      }
+      backups.sort((a, b) => (b.backupTime ?? "").compareTo(a.backupTime ?? ""));
+      return backups;
+    } catch (e) {
+      debugPrint("Error getting PC backup list: $e");
+      return [];
+    }
+  }
   Future<void> deleteBackup(String backupPath) async {
     final dir = Directory(backupPath);
     if (await dir.exists()) {
@@ -91,6 +166,8 @@ class BackupManager {
     List<ConversationInfo>? conversationInfos, // Added argument
     String? password,
     String? passwordHint,
+    Future<String> Function()? targetDirectoryGetter,
+    String? appType,
     Function(BackupProgress)? onProgress,
     Function(BackupMetadata)? onSuccess,
     Function(String)? onError,
@@ -98,8 +175,10 @@ class BackupManager {
     _isCancelled = false;
     try {
       final startTime = DateTime.now();
-      final backupId = "backup_${startTime.millisecondsSinceEpoch}";
-      final rootPath = await getBackupRootDirectory();
+      final backupId = "backup_${_formatTimestampForDirectory(startTime)}";
+      final rootPath = targetDirectoryGetter != null
+          ? await targetDirectoryGetter()
+          : await getBackupRootDirectory();
       final backupDir = Directory(path.join(rootPath, backupId));
       await backupDir.create(recursive: true);
 
@@ -118,14 +197,14 @@ class BackupManager {
       int lastMessageTime = 0;
       List<BackupConversationInfo> backupConvInfos = [];
 
-      final progress = BackupProgress(total: totalConversations, current: 0, phase: "Backing up conversations...");
+      final progress = BackupProgress(total: totalConversations, current: 0, phase: "backupConversations");
       onProgress?.call(progress);
 
       for (var i = 0; i < targetConversationInfos.length; i++) {
         if (_isCancelled) throw Exception("Cancelled");
 
         final info = targetConversationInfos[i];
-        final convDirName = "${info.conversation.conversationType.index}_${info.conversation.target}_${info.conversation.line}";
+        final convDirName = _getConversationDirectoryName(info);
         final convDir = Directory(path.join(conversationsDir.path, convDirName));
         await convDir.create(recursive: true);
         final mediaDir = Directory(path.join(convDir.path, MEDIA_DIR_NAME));
@@ -139,6 +218,7 @@ class BackupManager {
         // Find first/last message time for this conversation
         int convFirstTime = 0;
         int convLastTime = 0;
+        int convMediaCount = 0;
 
         while (hasMore) {
           if (_isCancelled) throw Exception("Cancelled");
@@ -161,6 +241,7 @@ class BackupManager {
             if (backupMsg.mediaFileSize > 0) {
               mediaFileCount++;
               mediaTotalSize += backupMsg.mediaFileSize;
+              convMediaCount++;
             }
           }
 
@@ -171,8 +252,22 @@ class BackupManager {
           }
         }
 
-        // Save messages.json
-        String messagesJsonStr = jsonEncode({'messages': backupMessages.map((e) => e.toJson()).toList()});
+        // Build messages.json wrapper matching iOS format
+        final conversationSettings = {
+          'type': info.conversation.conversationType.index,
+          'target': info.conversation.target,
+          'line': info.conversation.line,
+          'isTop': info.isTop != 0 ? 1 : 0,
+          'isSilent': info.isSilent,
+          'draft': info.draft ?? '',
+        };
+        final messagesData = {
+          'version': BACKUP_VERSION,
+          'conversation': conversationSettings,
+          'settings': conversationSettings,
+          'messages': backupMessages.map((e) => e.toJson()).toList(),
+        };
+        String messagesJsonStr = jsonEncode(messagesData);
 
         // Encrypt if needed
         if (password != null && password.isNotEmpty) {
@@ -188,11 +283,13 @@ class BackupManager {
         if (lastMessageTime == 0 || (convLastTime > 0 && convLastTime > lastMessageTime)) lastMessageTime = convLastTime;
 
         backupConvInfos.add(BackupConversationInfo(
+            conversationId: convDirName,
             type: info.conversation.conversationType.index,
             target: info.conversation.target,
             line: info.conversation.line,
             directory: convDirName,
             messageCount: backupMessages.length,
+            mediaCount: convMediaCount,
             firstMessageTime: convFirstTime,
             lastMessageTime: convLastTime));
 
@@ -208,14 +305,24 @@ class BackupManager {
           firstMessageTime: firstMessageTime,
           lastMessageTime: lastMessageTime);
 
+      final encryptionInfo = BackupEncryptionInfo(
+        enabled: password != null && password.isNotEmpty,
+        algorithm: (password != null && password.isNotEmpty) ? BACKUP_ENCRYPTION_ALGORITHM : null,
+        keyDerivation: (password != null && password.isNotEmpty) ? BACKUP_KEY_DERIVATION : null,
+        hint: passwordHint,
+      );
+
       final metadata = BackupMetadata(
-          backupTime: startTime.toIso8601String(),
+          version: BACKUP_VERSION,
+          format: BACKUP_FORMAT,
+          backupTime: _formatBackupTimestamp(startTime),
           userId: Imclient.currentUserId,
+          appType: appType ?? _currentAppType,
+          backupMode: BACKUP_MODE_MESSAGE_WITH_MEDIA,
           deviceName: Platform.localHostname,
-          // Simple device name
           statistics: statistics,
           conversations: backupConvInfos,
-          encryption: BackupEncryptionInfo(enabled: password != null && password.isNotEmpty, hint: passwordHint),
+          encryption: encryptionInfo,
           backupDir: backupDir.path);
 
       final metadataFile = File(path.join(backupDir.path, METADATA_FILE_NAME));
@@ -237,7 +344,7 @@ class BackupManager {
 
     payload.contentType = content.meta.type;
     payload.content = encoded.content ?? '';
-    payload.searchableContent = await content.digest(msg);
+    payload.searchableContent = encoded.searchableContent ?? '';
     payload.pushContent = encoded.pushContent ?? '';
     payload.pushData = encoded.pushData ?? '';
     payload.binaryContent = encoded.binaryContent != null ? base64Encode(encoded.binaryContent!) : '';
@@ -248,6 +355,8 @@ class BackupManager {
     payload.mediaType = encoded.mediaType.index;
     payload.remoteMediaUrl = encoded.remoteMediaUrl ?? '';
 
+    int mediaFileSize = 0;
+
     // Media handling
     if (content is MediaMessageContent) {
       try {
@@ -256,20 +365,28 @@ class BackupManager {
         if (localPath != null && localPath.isNotEmpty) {
           final file = File(localPath);
           if (await file.exists()) {
-            final fileName = path.basename(localPath);
+            final fileSize = await file.length();
+            mediaFileSize = fileSize;
+
+            // Compute MD5 and name file as media_{md5_first16}.{ext}
+            final md5 = _calculateFileMd5(file);
+            final fileId = md5.length >= 16 ? md5.substring(0, 16) : md5;
+            final ext = path.extension(localPath);
+            final fileName = "media_$fileId$ext";
             final destFile = File(path.join(mediaDir.path, fileName));
             await file.copy(destFile.path);
 
-            final fileSize = await file.length();
             payload.localMediaInfo = BackupMediaInfo(
               fileName: fileName,
-              relativePath: "${MEDIA_DIR_NAME}/$fileName", // Force relative path
+              fileId: fileId,
+              relativePath: "$MEDIA_DIR_NAME/$fileName",
               fileSize: fileSize,
+              md5: md5,
             );
           }
         }
       } catch (e) {
-        // Ignore media error
+        debugPrint("Backup media error: $e");
       }
     }
 
@@ -280,9 +397,13 @@ class BackupManager {
         direction: msg.direction.index,
         status: msg.status.index,
         timestamp: msg.serverTime,
+        localExtra: msg.localExtra ?? '',
         payload: payload,
-        mediaFileSize: payload.localMediaInfo?.fileSize ?? 0);
+        mediaFileSize: mediaFileSize);
   }
+
+  /// Yield to the event loop so the UI can repaint between heavy batches.
+  Future<void> _yieldToUI() => Future.delayed(Duration.zero);
 
   Future<void> restoreBackup(
     String backupPath, {
@@ -307,7 +428,7 @@ class BackupManager {
       }
 
       final conversations = metadata.conversations ?? [];
-      final progress = BackupProgress(total: conversations.length, current: 0, phase: "Restoring conversations...");
+      final progress = BackupProgress(total: conversations.length, current: 0, phase: "restoringConversations");
       onProgress?.call(progress);
 
       int restoredMsgCount = 0;
@@ -331,28 +452,51 @@ class BackupManager {
           }
 
           final msgsJson = jsonDecode(msgsJsonStr);
-          final List<dynamic> msgList = msgsJson['messages'];
+          final List<dynamic> msgList;
+          if (msgsJson is Map<String, dynamic> && msgsJson.containsKey('messages')) {
+            msgList = msgsJson['messages'];
+          } else if (msgsJson is List) {
+            // Legacy format: messages array at root
+            msgList = msgsJson;
+          } else {
+            throw Exception("Invalid messages.json format");
+          }
 
-          List<Message> messagesToInsert = [];
+          // Process messages in batches to keep the UI responsive.
+          const batchSize = 100;
+          for (var start = 0; start < msgList.length; start += batchSize) {
+            if (_isCancelled) throw Exception("Cancelled");
+            final end = start + batchSize < msgList.length ? start + batchSize : msgList.length;
+            final batch = msgList.sublist(start, end);
 
-          for (var mJson in msgList) {
-            final backupMsg = BackupMessage.fromJson(mJson);
-            final msg = _convertToMessage(backupMsg, convInfo, convDir);
-            if (msg != null) {
-              messagesToInsert.add(msg);
+            final messagesToInsert = <Message>[];
+            for (var mJson in batch) {
+              final backupMsg = BackupMessage.fromJson(mJson);
+              final msg = _convertToMessage(backupMsg, convInfo, convDir);
+              if (msg != null) {
+                messagesToInsert.add(msg);
+                if (backupMsg.mediaFileSize > 0) {
+                  restoredMediaCount++;
+                }
+              }
+            }
+
+            for (var msg in messagesToInsert) {
+              if (_isCancelled) throw Exception("Cancelled");
+              await Imclient.insertMessage(msg.conversation, msg.fromUser, msg.content, msg.status.index, msg.serverTime, toUsers: msg.toUsers);
+            }
+            restoredMsgCount += messagesToInsert.length;
+
+            // Yield to the event loop so progress UI can repaint.
+            if (end < msgList.length) {
+              await _yieldToUI();
             }
           }
-
-          // Batch insert
-          for (var msg in messagesToInsert) {
-            if (_isCancelled) throw Exception("Cancelled");
-            await Imclient.insertMessage(msg.conversation, msg.fromUser, msg.content, msg.status.index, msg.serverTime, toUsers: msg.toUsers);
-          }
-          restoredMsgCount += messagesToInsert.length;
         }
 
         progress.current = i + 1;
         onProgress?.call(progress);
+        await _yieldToUI();
       }
 
       onSuccess?.call(restoredMsgCount, restoredMediaCount);
@@ -395,6 +539,7 @@ class BackupManager {
     }
 
     final msg = Message();
+    msg.messageUid = backupMsg.messageUid;
     msg.conversation = conversation;
     msg.content = content;
     msg.fromUser = backupMsg.fromUser;
@@ -474,9 +619,14 @@ class BackupManager {
     _isCancelled = false;
     try {
       int totalMessageCount = 0;
-      for (var info in conversationInfos) {
-        // TODO: Improve performance?
-        totalMessageCount += await Imclient.getMessageCount(info.conversation);
+      if (!isDesktopShell) {
+        for (var info in conversationInfos) {
+          try {
+            totalMessageCount += await Imclient.getMessageCount(info.conversation);
+          } catch (e) {
+            debugPrint('getMessageCount failed: $e');
+          }
+        }
       }
 
       final content = BackupRequestNotificationContent();
@@ -561,7 +711,7 @@ class BackupManager {
         password: password,
         passwordHint: passwordHint,
         onProgress: (progress) {
-          progress.phase = "Creating local backup...";
+          progress.phase = "creatingLocalBackup";
           onProgress?.call(progress);
         },
         onSuccess: (metadata) {
@@ -583,7 +733,7 @@ class BackupManager {
       final files = await backupDir.list(recursive: true).toList();
       final fileList = files.whereType<File>().toList();
 
-      final progress = BackupProgress(total: fileList.length, current: 0, phase: "Uploading to PC...");
+      final progress = BackupProgress(total: fileList.length, current: 0, phase: "uploadingToPC");
       onProgress?.call(progress);
 
       for (var i = 0; i < fileList.length; i++) {
@@ -741,7 +891,7 @@ class BackupManager {
 
       if (metadata.conversations == null) throw Exception("Invalid metadata");
 
-      final progress = BackupProgress(total: metadata.conversations!.length, phase: "Downloading files...");
+      final progress = BackupProgress(total: metadata.conversations!.length, phase: "downloadingFiles");
       onProgress?.call(progress);
 
       for (var i = 0; i < metadata.conversations!.length; i++) {

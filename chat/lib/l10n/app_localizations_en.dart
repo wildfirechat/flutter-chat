@@ -2402,4 +2402,338 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mobileOnlineJustNow => 'just now';
+
+  @override
+  String get pcBackupMobileInteraction => 'Mobile Interaction';
+
+  @override
+  String get pcBackupMobileData => 'Back Up Mobile Data';
+
+  @override
+  String get pcBackupMobileDataDesc =>
+      'When the mobile client chooses “Back Up to PC”, a confirmation dialog will pop up here to receive the uploaded backup.';
+
+  @override
+  String get pcRestoreToMobile => 'Restore Data to Mobile';
+
+  @override
+  String get pcRestoreToMobileDesc =>
+      'When the mobile client chooses “Restore from PC”, a confirmation dialog will pop up here to provide a local backup.';
+
+  @override
+  String get pcBackupLocalData => 'Back Up Local Data';
+
+  @override
+  String get pcBackupLocalDataDesc =>
+      'Select conversations and back up to the local backup folder';
+
+  @override
+  String get pcRestoreLocalData => 'Restore Local Data';
+
+  @override
+  String get pcRestoreLocalDataDesc =>
+      'Restore data from the local backup folder';
+
+  @override
+  String get pcOpenBackupFolder => 'Open Backup Folder';
+
+  @override
+  String get pcOpenBackupFolderDesc => 'View backup files in file explorer';
+
+  @override
+  String get pcReceivedBackups => 'Received Backups';
+
+  @override
+  String get pcNoBackups => 'No backups';
+
+  @override
+  String get pcInvalidBackupFolder =>
+      'The selected folder is not a valid backup';
+
+  @override
+  String get pcDeleteBackupConfirm =>
+      'Are you sure you want to delete this backup?';
+
+  @override
+  String get pcBackupDeleted => 'Backup deleted';
+
+  @override
+  String pcDeleteBackupFailed(String error) {
+    return 'Delete failed: $error';
+  }
+
+  @override
+  String get pcLocalBackup => 'Local Backup';
+
+  @override
+  String get pcBackupCompleted => 'Backup Completed';
+
+  @override
+  String get pcRestoreBackup => 'Restore Backup';
+
+  @override
+  String pcRestoreCompleted(String count) {
+    return 'Restore Completed\nRestored $count messages';
+  }
+
+  @override
+  String pcLoadBackupsFailed(String error) {
+    return 'Failed to load backups: $error';
+  }
+
+  @override
+  String get pcCannotOpenFolder => 'Cannot open folder';
+
+  @override
+  String pcOpenFolderFailed(String error) {
+    return 'Failed to open folder: $error';
+  }
+
+  @override
+  String get pcUnknownDate => 'Unknown';
+
+  @override
+  String get pcBackupRequestTitle => 'Backup Request';
+
+  @override
+  String pcBackupRequestContent(
+      String conversationCount, String messageCount, String includeMedia) {
+    return 'The mobile client requests to save the backup to this computer\n\nConversations: $conversationCount\nMessages: $messageCount\n$includeMedia media files\n\nStart backup?';
+  }
+
+  @override
+  String get pcIncludeMedia => 'Include';
+
+  @override
+  String get pcExcludeMedia => 'Exclude';
+
+  @override
+  String get pcStartBackup => 'Start Backup';
+
+  @override
+  String get pcRestoreRequestTitle => 'Restore Request';
+
+  @override
+  String get pcRestoreRequestContent =>
+      'The mobile client requests to restore a backup from this computer. Allow?';
+
+  @override
+  String get pcAllow => 'Allow';
+
+  @override
+  String get pcBackupReceivedTitle => 'Backup Complete';
+
+  @override
+  String pcBackupReceivedContent(String count, String path) {
+    return 'Successfully received $count files\nSave location: $path';
+  }
+
+  @override
+  String pcBackupReceivedFailed(String error) {
+    return 'Backup failed: $error';
+  }
+
+  @override
+  String pcStartBackupServerFailed(String error) {
+    return 'Failed to start backup server: $error';
+  }
+
+  @override
+  String get pcRestoreAllowed =>
+      'Allowed mobile client to restore backup from this computer';
+
+  @override
+  String pcStartRestoreServerFailed(String error) {
+    return 'Failed to start restore server: $error';
+  }
+
+  @override
+  String get pcReceivingBackup => 'Receiving Backup';
+
+  @override
+  String get pcReceivedFiles => 'Received files:';
+
+  @override
+  String get pcCurrentFile => 'Current file:';
+
+  @override
+  String get pcSaveLocation => 'Save location:';
+
+  @override
+  String get pcPreparing => 'Preparing...';
+
+  @override
+  String get pcKeepWindowOpenHint =>
+      'Please keep the window open, receiving backup data...';
+
+  @override
+  String get noBackupsFound => 'No backups found';
+
+  @override
+  String get createNewBackup => 'Create New Backup';
+
+  @override
+  String get restoreFromPC => 'Restore from PC';
+
+  @override
+  String get deleteBackup => 'Delete Backup';
+
+  @override
+  String get restoreBackup => 'Restore Backup';
+
+  @override
+  String get restoreBackupConfirm =>
+      'Restoring will merge messages from the backup into your current chat history. Existing messages will NOT be overwritten unless they are duplicates.\n\nContinue?';
+
+  @override
+  String restoreCompleted(String messageCount, String mediaCount) {
+    return 'Restored $messageCount messages and $mediaCount media files';
+  }
+
+  @override
+  String get backupCompleted => 'Backup completed';
+
+  @override
+  String get selectConversations => 'Select Conversations';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get selectAll => 'Select All';
+
+  @override
+  String get includeMedia => 'Include Media';
+
+  @override
+  String get includeMediaDesc => 'Images, videos, files, etc.';
+
+  @override
+  String get pleaseSelectConversation =>
+      'Please select at least one conversation';
+
+  @override
+  String get backupDestination => 'Backup Destination';
+
+  @override
+  String get backupToLocalStorage => 'Back Up to Local Storage';
+
+  @override
+  String get backupToLocalStorageDesc => 'Save backup files to this device';
+
+  @override
+  String get backupToPC => 'Back Up to PC';
+
+  @override
+  String get backupToPCOnline => 'PC client is online. Click to start.';
+
+  @override
+  String get backupToPCOffline => 'Back Up to PC (Offline)';
+
+  @override
+  String get backupToPCOfflineDesc => 'Please log in to the PC client first';
+
+  @override
+  String get pcWaitingForConfirmation => 'Waiting for PC confirmation...';
+
+  @override
+  String get pcPleaseConfirmOnPC =>
+      'Please confirm the backup request on your PC client';
+
+  @override
+  String get pcApproved => 'Approved';
+
+  @override
+  String pcConnectingTo(String ip, String port) {
+    return 'Connecting to $ip:$port';
+  }
+
+  @override
+  String get pcRequestRejected => 'Request Rejected';
+
+  @override
+  String get pcBackupRejectedDesc =>
+      'The PC client rejected the backup request';
+
+  @override
+  String get pcBackupCompletedDesc =>
+      'Your data has been successfully backed up to PC';
+
+  @override
+  String get pcBackupFailed => 'Backup Failed';
+
+  @override
+  String get pcClose => 'Close';
+
+  @override
+  String get pcFetchingBackupList => 'Fetching backup list...';
+
+  @override
+  String pcFoundBackups(String count) {
+    return 'Found $count backups';
+  }
+
+  @override
+  String get pcSelectBackup => 'Select Backup';
+
+  @override
+  String get pcPasswordRequired => 'Password Required';
+
+  @override
+  String pcRestoredMessages(String count) {
+    return 'Restored $count messages';
+  }
+
+  @override
+  String get deleteBackupConfirm =>
+      'Are you sure you want to delete this backup?';
+
+  @override
+  String get password => 'Password';
+
+  @override
+  String pcRestoreFailed(String error) {
+    return 'Restore failed: $error';
+  }
+
+  @override
+  String backupListSubtitle(String conversationCount, String messageCount) {
+    return '$conversationCount conversations, $messageCount messages';
+  }
+
+  @override
+  String get pcBackupProgressTitle => 'PC Backup Progress';
+
+  @override
+  String get pcRestoreProgressTitle => 'PC Restore Progress';
+
+  @override
+  String get pcRestoringBackup => 'Downloading & Restoring...';
+
+  @override
+  String get pcPasswordEntryCancelled => 'Password entry cancelled';
+
+  @override
+  String get pcBackupDefaultName => 'PC Backup';
+
+  @override
+  String get conversationTypeSingle => 'Private';
+
+  @override
+  String get conversationTypeGroup => 'Group';
+
+  @override
+  String get conversationTypeChannel => 'Channel';
+
+  @override
+  String get pcMobileOperationHintTitle =>
+      'Please operate on your mobile device';
+
+  @override
+  String get pcBackupMobileDataHint =>
+      'On your phone, go to Backup & Restore and choose \"Back Up to PC\". A confirmation dialog will pop up here.';
+
+  @override
+  String get pcRestoreToMobileHint =>
+      'On your phone, go to Backup & Restore and choose \"Restore from PC\". A confirmation dialog will pop up here.';
 }

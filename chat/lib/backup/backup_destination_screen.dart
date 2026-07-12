@@ -3,11 +3,11 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/pc_online_info.dart';
 import 'package:chat/backup/pc_backup_progress_screen.dart';
-import 'package:chat/backup/backup_and_restore_screen.dart'; // For local backup reuse logic if needed, or redirect
 import 'package:chat/backup/backup_manager.dart';
-
-import 'backup_models.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
+
+import 'backup_phase_localization.dart';
 
 class BackupDestinationScreen extends StatefulWidget {
   final List<ConversationInfo> conversations;
@@ -24,6 +24,7 @@ class BackupDestinationScreen extends StatefulWidget {
 }
 
 class _BackupDestinationScreenState extends State<BackupDestinationScreen> {
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
   List<PCOnlineInfo> _pcOnlineInfos = [];
   bool _isLoading = true;
 
@@ -87,7 +88,7 @@ class _BackupDestinationScreenState extends State<BackupDestinationScreen> {
     bool isPCOnline = _pcOnlineInfos.isNotEmpty;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Backup Destination')),
+      appBar: AppBar(title: Text(l10n.backupDestination)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView(
@@ -95,8 +96,8 @@ class _BackupDestinationScreenState extends State<BackupDestinationScreen> {
               children: [
                 _BackupOptionCard(
                   icon: Icons.phone_android,
-                  title: 'Backup to Local Storage',
-                  subtitle: 'Save backup files to this device.',
+                  title: l10n.backupToLocalStorage,
+                  subtitle: l10n.backupToLocalStorageDesc,
                   onTap: _onBackupToLocal,
                 ),
                 const SizedBox(height: 16),
@@ -104,10 +105,10 @@ class _BackupDestinationScreenState extends State<BackupDestinationScreen> {
                   opacity: isPCOnline ? 1.0 : 0.5,
                   child: _BackupOptionCard(
                     icon: Icons.computer,
-                    title: isPCOnline ? 'Backup to PC' : 'Backup to PC (Offline)',
+                    title: isPCOnline ? l10n.backupToPC : l10n.backupToPCOffline,
                     subtitle: isPCOnline
-                        ? 'PC Client is online. Click to start.'
-                        : 'Please login to PC Client first.',
+                        ? l10n.backupToPCOnline
+                        : l10n.backupToPCOfflineDesc,
                     onTap: isPCOnline ? _onBackupToPC : null,
                   ),
                 ),
@@ -175,24 +176,37 @@ class _LocalBackupProgressDialog extends StatefulWidget {
 }
 
 class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> {
-  String _status = "Starting...";
+  AppLocalizations get l10n => AppLocalizations.of(context)!;
+  String _status = "";
   double _progress = 0.0;
   bool _finished = false;
   String? _error;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    _startBackup();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _status = l10n.pcPreparing;
+      _startBackup();
+    }
   }
 
   void _startBackup() {
     BackupManager().createBackup(
       conversationInfos: widget.conversations,
+      password: Imclient.currentUserId,
+      passwordHint: null,
       onProgress: (p) {
         if (mounted) {
           setState(() {
-            _status = "${p.phase} (${p.current}/${p.total})";
+            _status = "${localizeBackupPhase(l10n, p.phase)} (${p.current}/${p.total})";
             if (p.total > 0) {
               _progress = p.current / p.total;
             }
@@ -202,7 +216,7 @@ class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> 
       onSuccess: (metadata) {
         if (mounted) {
           setState(() {
-            _status = "Backup Completed Successfully!";
+            _status = l10n.backupCompleted;
             _progress = 1.0;
             _finished = true;
           });
@@ -222,12 +236,12 @@ class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Local Backup"),
+      title: Text(l10n.pcLocalBackup),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (_error != null)
-            Text("Error: $_error", style: const TextStyle(color: Colors.red))
+            Text(l10n.backupFailed(_error!), style: const TextStyle(color: Colors.red))
           else ...[
             Text(_status),
             const SizedBox(height: 10),
@@ -243,7 +257,7 @@ class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> 
                Navigator.pop(context); // Close Destination Screen
                Navigator.pop(context); // Close Picker Screen (Back to List)
             },
-            child: const Text("Done"),
+            child: Text(l10n.done),
           )
         else
           TextButton(
@@ -251,7 +265,7 @@ class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> 
               BackupManager().cancelCurrentOperation();
               Navigator.pop(context);
             },
-            child: const Text("Cancel"),
+            child: Text(l10n.cancel),
           )
       ],
     );

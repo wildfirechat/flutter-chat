@@ -4489,6 +4489,577 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'不久前'**
   String get mobileOnlineJustNow;
+
+  /// No description provided for @pcBackupMobileInteraction.
+  ///
+  /// In zh, this message translates to:
+  /// **'手机端交互'**
+  String get pcBackupMobileInteraction;
+
+  /// No description provided for @pcBackupMobileData.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份手机数据'**
+  String get pcBackupMobileData;
+
+  /// No description provided for @pcBackupMobileDataDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'当手机端选择“备份到 PC”时，此处会弹出确认对话框，接收手机上传的备份。'**
+  String get pcBackupMobileDataDesc;
+
+  /// No description provided for @pcRestoreToMobile.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复数据到手机'**
+  String get pcRestoreToMobile;
+
+  /// No description provided for @pcRestoreToMobileDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'当手机端选择“从 PC 恢复”时，此处会弹出确认对话框，向手机提供本地备份。'**
+  String get pcRestoreToMobileDesc;
+
+  /// No description provided for @pcBackupLocalData.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份本地数据'**
+  String get pcBackupLocalData;
+
+  /// No description provided for @pcBackupLocalDataDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择会话并备份到本地备份文件夹'**
+  String get pcBackupLocalDataDesc;
+
+  /// No description provided for @pcRestoreLocalData.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复本地数据'**
+  String get pcRestoreLocalData;
+
+  /// No description provided for @pcRestoreLocalDataDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'从本地备份文件夹恢复数据'**
+  String get pcRestoreLocalDataDesc;
+
+  /// No description provided for @pcOpenBackupFolder.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开备份文件夹'**
+  String get pcOpenBackupFolder;
+
+  /// No description provided for @pcOpenBackupFolderDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'在资源管理器中查看备份文件'**
+  String get pcOpenBackupFolderDesc;
+
+  /// No description provided for @pcReceivedBackups.
+  ///
+  /// In zh, this message translates to:
+  /// **'已接收的备份'**
+  String get pcReceivedBackups;
+
+  /// No description provided for @pcNoBackups.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无备份'**
+  String get pcNoBackups;
+
+  /// No description provided for @pcInvalidBackupFolder.
+  ///
+  /// In zh, this message translates to:
+  /// **'所选文件夹不是有效的备份'**
+  String get pcInvalidBackupFolder;
+
+  /// No description provided for @pcDeleteBackupConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除这个备份吗？'**
+  String get pcDeleteBackupConfirm;
+
+  /// No description provided for @pcBackupDeleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份已删除'**
+  String get pcBackupDeleted;
+
+  /// No description provided for @pcDeleteBackupFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除失败: {error}'**
+  String pcDeleteBackupFailed(String error);
+
+  /// No description provided for @pcLocalBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'本地备份'**
+  String get pcLocalBackup;
+
+  /// No description provided for @pcBackupCompleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份完成'**
+  String get pcBackupCompleted;
+
+  /// No description provided for @pcRestoreBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复备份'**
+  String get pcRestoreBackup;
+
+  /// No description provided for @pcRestoreCompleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复完成\n已恢复 {count} 条消息'**
+  String pcRestoreCompleted(String count);
+
+  /// No description provided for @pcLoadBackupsFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'加载备份失败: {error}'**
+  String pcLoadBackupsFailed(String error);
+
+  /// No description provided for @pcCannotOpenFolder.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法打开文件夹'**
+  String get pcCannotOpenFolder;
+
+  /// No description provided for @pcOpenFolderFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'打开文件夹失败: {error}'**
+  String pcOpenFolderFailed(String error);
+
+  /// No description provided for @pcUnknownDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'未知'**
+  String get pcUnknownDate;
+
+  /// No description provided for @pcBackupRequestTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份请求'**
+  String get pcBackupRequestTitle;
+
+  /// No description provided for @pcBackupRequestContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'iOS端请求将备份保存到电脑端\n\n会话数量: {conversationCount}\n消息总数: {messageCount}\n{includeMedia}媒体文件\n\n是否开始备份？'**
+  String pcBackupRequestContent(
+      String conversationCount, String messageCount, String includeMedia);
+
+  /// No description provided for @pcIncludeMedia.
+  ///
+  /// In zh, this message translates to:
+  /// **'包含'**
+  String get pcIncludeMedia;
+
+  /// No description provided for @pcExcludeMedia.
+  ///
+  /// In zh, this message translates to:
+  /// **'不包含'**
+  String get pcExcludeMedia;
+
+  /// No description provided for @pcStartBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始备份'**
+  String get pcStartBackup;
+
+  /// No description provided for @pcRestoreRequestTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复请求'**
+  String get pcRestoreRequestTitle;
+
+  /// No description provided for @pcRestoreRequestContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'iOS端请求从电脑端恢复备份，是否允许？'**
+  String get pcRestoreRequestContent;
+
+  /// No description provided for @pcAllow.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许'**
+  String get pcAllow;
+
+  /// No description provided for @pcBackupReceivedTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份完成'**
+  String get pcBackupReceivedTitle;
+
+  /// No description provided for @pcBackupReceivedContent.
+  ///
+  /// In zh, this message translates to:
+  /// **'已成功接收 {count} 个文件\n保存位置: {path}'**
+  String pcBackupReceivedContent(String count, String path);
+
+  /// No description provided for @pcBackupReceivedFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份失败: {error}'**
+  String pcBackupReceivedFailed(String error);
+
+  /// No description provided for @pcStartBackupServerFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'启动备份服务器失败: {error}'**
+  String pcStartBackupServerFailed(String error);
+
+  /// No description provided for @pcRestoreAllowed.
+  ///
+  /// In zh, this message translates to:
+  /// **'已允许iOS端从电脑端恢复备份'**
+  String get pcRestoreAllowed;
+
+  /// No description provided for @pcStartRestoreServerFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'启动恢复服务器失败: {error}'**
+  String pcStartRestoreServerFailed(String error);
+
+  /// No description provided for @pcReceivingBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在接收备份'**
+  String get pcReceivingBackup;
+
+  /// No description provided for @pcReceivedFiles.
+  ///
+  /// In zh, this message translates to:
+  /// **'已接收文件:'**
+  String get pcReceivedFiles;
+
+  /// No description provided for @pcCurrentFile.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前文件:'**
+  String get pcCurrentFile;
+
+  /// No description provided for @pcSaveLocation.
+  ///
+  /// In zh, this message translates to:
+  /// **'保存位置:'**
+  String get pcSaveLocation;
+
+  /// No description provided for @pcPreparing.
+  ///
+  /// In zh, this message translates to:
+  /// **'准备中...'**
+  String get pcPreparing;
+
+  /// No description provided for @pcKeepWindowOpenHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请保持窗口开启，正在接收备份数据...'**
+  String get pcKeepWindowOpenHint;
+
+  /// No description provided for @noBackupsFound.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无备份'**
+  String get noBackupsFound;
+
+  /// No description provided for @createNewBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建新备份'**
+  String get createNewBackup;
+
+  /// No description provided for @restoreFromPC.
+  ///
+  /// In zh, this message translates to:
+  /// **'从 PC 恢复'**
+  String get restoreFromPC;
+
+  /// No description provided for @deleteBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除备份'**
+  String get deleteBackup;
+
+  /// No description provided for @restoreBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复备份'**
+  String get restoreBackup;
+
+  /// No description provided for @restoreBackupConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复将把备份中的消息合并到当前聊天记录中。现有消息不会被覆盖，除非它们是重复的。\n\n是否继续？'**
+  String get restoreBackupConfirm;
+
+  /// No description provided for @restoreCompleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'已恢复 {messageCount} 条消息和 {mediaCount} 个媒体文件'**
+  String restoreCompleted(String messageCount, String mediaCount);
+
+  /// No description provided for @backupCompleted.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份完成'**
+  String get backupCompleted;
+
+  /// No description provided for @selectConversations.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择会话'**
+  String get selectConversations;
+
+  /// No description provided for @next.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一步'**
+  String get next;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全选'**
+  String get selectAll;
+
+  /// No description provided for @includeMedia.
+  ///
+  /// In zh, this message translates to:
+  /// **'包含媒体'**
+  String get includeMedia;
+
+  /// No description provided for @includeMediaDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片、视频、文件等'**
+  String get includeMediaDesc;
+
+  /// No description provided for @pleaseSelectConversation.
+  ///
+  /// In zh, this message translates to:
+  /// **'请至少选择一个会话'**
+  String get pleaseSelectConversation;
+
+  /// No description provided for @backupDestination.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份目标'**
+  String get backupDestination;
+
+  /// No description provided for @backupToLocalStorage.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份到本地存储'**
+  String get backupToLocalStorage;
+
+  /// No description provided for @backupToLocalStorageDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'将备份文件保存到本设备'**
+  String get backupToLocalStorageDesc;
+
+  /// No description provided for @backupToPC.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份到 PC'**
+  String get backupToPC;
+
+  /// No description provided for @backupToPCOnline.
+  ///
+  /// In zh, this message translates to:
+  /// **'PC 客户端在线，点击开始'**
+  String get backupToPCOnline;
+
+  /// No description provided for @backupToPCOffline.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份到 PC（离线）'**
+  String get backupToPCOffline;
+
+  /// No description provided for @backupToPCOfflineDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'请先登录 PC 客户端'**
+  String get backupToPCOfflineDesc;
+
+  /// No description provided for @pcWaitingForConfirmation.
+  ///
+  /// In zh, this message translates to:
+  /// **'等待 PC 确认...'**
+  String get pcWaitingForConfirmation;
+
+  /// No description provided for @pcPleaseConfirmOnPC.
+  ///
+  /// In zh, this message translates to:
+  /// **'请在 PC 客户端确认备份请求'**
+  String get pcPleaseConfirmOnPC;
+
+  /// No description provided for @pcApproved.
+  ///
+  /// In zh, this message translates to:
+  /// **'已同意'**
+  String get pcApproved;
+
+  /// No description provided for @pcConnectingTo.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在连接 {ip}:{port}'**
+  String pcConnectingTo(String ip, String port);
+
+  /// No description provided for @pcRequestRejected.
+  ///
+  /// In zh, this message translates to:
+  /// **'请求被拒绝'**
+  String get pcRequestRejected;
+
+  /// No description provided for @pcBackupRejectedDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'PC 客户端拒绝了备份请求'**
+  String get pcBackupRejectedDesc;
+
+  /// No description provided for @pcBackupCompletedDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据已成功备份到 PC'**
+  String get pcBackupCompletedDesc;
+
+  /// No description provided for @pcBackupFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'备份失败'**
+  String get pcBackupFailed;
+
+  /// No description provided for @pcClose.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭'**
+  String get pcClose;
+
+  /// No description provided for @pcFetchingBackupList.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取备份列表中...'**
+  String get pcFetchingBackupList;
+
+  /// No description provided for @pcFoundBackups.
+  ///
+  /// In zh, this message translates to:
+  /// **'发现 {count} 个备份'**
+  String pcFoundBackups(String count);
+
+  /// No description provided for @pcSelectBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择备份'**
+  String get pcSelectBackup;
+
+  /// No description provided for @pcPasswordRequired.
+  ///
+  /// In zh, this message translates to:
+  /// **'需要密码'**
+  String get pcPasswordRequired;
+
+  /// No description provided for @pcRestoredMessages.
+  ///
+  /// In zh, this message translates to:
+  /// **'已恢复 {count} 条消息'**
+  String pcRestoredMessages(String count);
+
+  /// No description provided for @deleteBackupConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要删除这个备份吗？'**
+  String get deleteBackupConfirm;
+
+  /// No description provided for @password.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码'**
+  String get password;
+
+  /// No description provided for @pcRestoreFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复失败: {error}'**
+  String pcRestoreFailed(String error);
+
+  /// No description provided for @backupListSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'{conversationCount} 个会话，{messageCount} 条消息'**
+  String backupListSubtitle(String conversationCount, String messageCount);
+
+  /// No description provided for @pcBackupProgressTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'PC 备份进度'**
+  String get pcBackupProgressTitle;
+
+  /// No description provided for @pcRestoreProgressTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'PC 恢复进度'**
+  String get pcRestoreProgressTitle;
+
+  /// No description provided for @pcRestoringBackup.
+  ///
+  /// In zh, this message translates to:
+  /// **'下载并恢复中...'**
+  String get pcRestoringBackup;
+
+  /// No description provided for @pcPasswordEntryCancelled.
+  ///
+  /// In zh, this message translates to:
+  /// **'密码输入已取消'**
+  String get pcPasswordEntryCancelled;
+
+  /// No description provided for @pcBackupDefaultName.
+  ///
+  /// In zh, this message translates to:
+  /// **'PC 备份'**
+  String get pcBackupDefaultName;
+
+  /// No description provided for @conversationTypeSingle.
+  ///
+  /// In zh, this message translates to:
+  /// **'单聊'**
+  String get conversationTypeSingle;
+
+  /// No description provided for @conversationTypeGroup.
+  ///
+  /// In zh, this message translates to:
+  /// **'群聊'**
+  String get conversationTypeGroup;
+
+  /// No description provided for @conversationTypeChannel.
+  ///
+  /// In zh, this message translates to:
+  /// **'频道'**
+  String get conversationTypeChannel;
+
+  /// No description provided for @pcMobileOperationHintTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'请在手机上操作'**
+  String get pcMobileOperationHintTitle;
+
+  /// No description provided for @pcBackupMobileDataHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请在手机端进入“备份与恢复”，选择“备份到 PC”，电脑端将收到请求并弹出确认框。'**
+  String get pcBackupMobileDataHint;
+
+  /// No description provided for @pcRestoreToMobileHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请在手机端进入“备份与恢复”，选择“从 PC 恢复”，电脑端将收到请求并弹出确认框。'**
+  String get pcRestoreToMobileHint;
 }
 
 class _AppLocalizationsDelegate

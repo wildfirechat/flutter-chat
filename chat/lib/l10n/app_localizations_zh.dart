@@ -2356,4 +2356,323 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get mobileOnlineJustNow => '不久前';
+
+  @override
+  String get pcBackupMobileInteraction => '手机端交互';
+
+  @override
+  String get pcBackupMobileData => '备份手机数据';
+
+  @override
+  String get pcBackupMobileDataDesc => '当手机端选择“备份到 PC”时，此处会弹出确认对话框，接收手机上传的备份。';
+
+  @override
+  String get pcRestoreToMobile => '恢复数据到手机';
+
+  @override
+  String get pcRestoreToMobileDesc => '当手机端选择“从 PC 恢复”时，此处会弹出确认对话框，向手机提供本地备份。';
+
+  @override
+  String get pcBackupLocalData => '备份本地数据';
+
+  @override
+  String get pcBackupLocalDataDesc => '选择会话并备份到本地备份文件夹';
+
+  @override
+  String get pcRestoreLocalData => '恢复本地数据';
+
+  @override
+  String get pcRestoreLocalDataDesc => '从本地备份文件夹恢复数据';
+
+  @override
+  String get pcOpenBackupFolder => '打开备份文件夹';
+
+  @override
+  String get pcOpenBackupFolderDesc => '在资源管理器中查看备份文件';
+
+  @override
+  String get pcReceivedBackups => '已接收的备份';
+
+  @override
+  String get pcNoBackups => '暂无备份';
+
+  @override
+  String get pcInvalidBackupFolder => '所选文件夹不是有效的备份';
+
+  @override
+  String get pcDeleteBackupConfirm => '确定要删除这个备份吗？';
+
+  @override
+  String get pcBackupDeleted => '备份已删除';
+
+  @override
+  String pcDeleteBackupFailed(String error) {
+    return '删除失败: $error';
+  }
+
+  @override
+  String get pcLocalBackup => '本地备份';
+
+  @override
+  String get pcBackupCompleted => '备份完成';
+
+  @override
+  String get pcRestoreBackup => '恢复备份';
+
+  @override
+  String pcRestoreCompleted(String count) {
+    return '恢复完成\n已恢复 $count 条消息';
+  }
+
+  @override
+  String pcLoadBackupsFailed(String error) {
+    return '加载备份失败: $error';
+  }
+
+  @override
+  String get pcCannotOpenFolder => '无法打开文件夹';
+
+  @override
+  String pcOpenFolderFailed(String error) {
+    return '打开文件夹失败: $error';
+  }
+
+  @override
+  String get pcUnknownDate => '未知';
+
+  @override
+  String get pcBackupRequestTitle => '备份请求';
+
+  @override
+  String pcBackupRequestContent(
+      String conversationCount, String messageCount, String includeMedia) {
+    return 'iOS端请求将备份保存到电脑端\n\n会话数量: $conversationCount\n消息总数: $messageCount\n$includeMedia媒体文件\n\n是否开始备份？';
+  }
+
+  @override
+  String get pcIncludeMedia => '包含';
+
+  @override
+  String get pcExcludeMedia => '不包含';
+
+  @override
+  String get pcStartBackup => '开始备份';
+
+  @override
+  String get pcRestoreRequestTitle => '恢复请求';
+
+  @override
+  String get pcRestoreRequestContent => 'iOS端请求从电脑端恢复备份，是否允许？';
+
+  @override
+  String get pcAllow => '允许';
+
+  @override
+  String get pcBackupReceivedTitle => '备份完成';
+
+  @override
+  String pcBackupReceivedContent(String count, String path) {
+    return '已成功接收 $count 个文件\n保存位置: $path';
+  }
+
+  @override
+  String pcBackupReceivedFailed(String error) {
+    return '备份失败: $error';
+  }
+
+  @override
+  String pcStartBackupServerFailed(String error) {
+    return '启动备份服务器失败: $error';
+  }
+
+  @override
+  String get pcRestoreAllowed => '已允许iOS端从电脑端恢复备份';
+
+  @override
+  String pcStartRestoreServerFailed(String error) {
+    return '启动恢复服务器失败: $error';
+  }
+
+  @override
+  String get pcReceivingBackup => '正在接收备份';
+
+  @override
+  String get pcReceivedFiles => '已接收文件:';
+
+  @override
+  String get pcCurrentFile => '当前文件:';
+
+  @override
+  String get pcSaveLocation => '保存位置:';
+
+  @override
+  String get pcPreparing => '准备中...';
+
+  @override
+  String get pcKeepWindowOpenHint => '请保持窗口开启，正在接收备份数据...';
+
+  @override
+  String get noBackupsFound => '暂无备份';
+
+  @override
+  String get createNewBackup => '创建新备份';
+
+  @override
+  String get restoreFromPC => '从 PC 恢复';
+
+  @override
+  String get deleteBackup => '删除备份';
+
+  @override
+  String get restoreBackup => '恢复备份';
+
+  @override
+  String get restoreBackupConfirm =>
+      '恢复将把备份中的消息合并到当前聊天记录中。现有消息不会被覆盖，除非它们是重复的。\n\n是否继续？';
+
+  @override
+  String restoreCompleted(String messageCount, String mediaCount) {
+    return '已恢复 $messageCount 条消息和 $mediaCount 个媒体文件';
+  }
+
+  @override
+  String get backupCompleted => '备份完成';
+
+  @override
+  String get selectConversations => '选择会话';
+
+  @override
+  String get next => '下一步';
+
+  @override
+  String get selectAll => '全选';
+
+  @override
+  String get includeMedia => '包含媒体';
+
+  @override
+  String get includeMediaDesc => '图片、视频、文件等';
+
+  @override
+  String get pleaseSelectConversation => '请至少选择一个会话';
+
+  @override
+  String get backupDestination => '备份目标';
+
+  @override
+  String get backupToLocalStorage => '备份到本地存储';
+
+  @override
+  String get backupToLocalStorageDesc => '将备份文件保存到本设备';
+
+  @override
+  String get backupToPC => '备份到 PC';
+
+  @override
+  String get backupToPCOnline => 'PC 客户端在线，点击开始';
+
+  @override
+  String get backupToPCOffline => '备份到 PC（离线）';
+
+  @override
+  String get backupToPCOfflineDesc => '请先登录 PC 客户端';
+
+  @override
+  String get pcWaitingForConfirmation => '等待 PC 确认...';
+
+  @override
+  String get pcPleaseConfirmOnPC => '请在 PC 客户端确认备份请求';
+
+  @override
+  String get pcApproved => '已同意';
+
+  @override
+  String pcConnectingTo(String ip, String port) {
+    return '正在连接 $ip:$port';
+  }
+
+  @override
+  String get pcRequestRejected => '请求被拒绝';
+
+  @override
+  String get pcBackupRejectedDesc => 'PC 客户端拒绝了备份请求';
+
+  @override
+  String get pcBackupCompletedDesc => '数据已成功备份到 PC';
+
+  @override
+  String get pcBackupFailed => '备份失败';
+
+  @override
+  String get pcClose => '关闭';
+
+  @override
+  String get pcFetchingBackupList => '获取备份列表中...';
+
+  @override
+  String pcFoundBackups(String count) {
+    return '发现 $count 个备份';
+  }
+
+  @override
+  String get pcSelectBackup => '选择备份';
+
+  @override
+  String get pcPasswordRequired => '需要密码';
+
+  @override
+  String pcRestoredMessages(String count) {
+    return '已恢复 $count 条消息';
+  }
+
+  @override
+  String get deleteBackupConfirm => '确定要删除这个备份吗？';
+
+  @override
+  String get password => '密码';
+
+  @override
+  String pcRestoreFailed(String error) {
+    return '恢复失败: $error';
+  }
+
+  @override
+  String backupListSubtitle(String conversationCount, String messageCount) {
+    return '$conversationCount 个会话，$messageCount 条消息';
+  }
+
+  @override
+  String get pcBackupProgressTitle => 'PC 备份进度';
+
+  @override
+  String get pcRestoreProgressTitle => 'PC 恢复进度';
+
+  @override
+  String get pcRestoringBackup => '下载并恢复中...';
+
+  @override
+  String get pcPasswordEntryCancelled => '密码输入已取消';
+
+  @override
+  String get pcBackupDefaultName => 'PC 备份';
+
+  @override
+  String get conversationTypeSingle => '单聊';
+
+  @override
+  String get conversationTypeGroup => '群聊';
+
+  @override
+  String get conversationTypeChannel => '频道';
+
+  @override
+  String get pcMobileOperationHintTitle => '请在手机上操作';
+
+  @override
+  String get pcBackupMobileDataHint =>
+      '请在手机端进入“备份与恢复”，选择“备份到 PC”，电脑端将收到请求并弹出确认框。';
+
+  @override
+  String get pcRestoreToMobileHint =>
+      '请在手机端进入“备份与恢复”，选择“从 PC 恢复”，电脑端将收到请求并弹出确认框。';
 }

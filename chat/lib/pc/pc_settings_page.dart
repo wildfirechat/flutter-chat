@@ -11,7 +11,7 @@ import 'package:chat/pc/widgets/pc_pane_content.dart';
 import 'package:chat/settings/account_safety_screen.dart';
 import 'package:chat/settings/blacklist_screen.dart';
 import 'package:chat/settings/notification_settings.dart';
-import 'package:chat/backup/backup_and_restore_screen.dart';
+import 'package:chat/backup/pc_backup_restore_page.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/viewmodel/locale_view_model.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
@@ -651,7 +651,7 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const BackupAndRestoreScreen()),
+                          MaterialPageRoute(builder: (context) => const PcBackupRestorePage()),
                         );
                       },
                     ),
