@@ -79,7 +79,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
 
   void _updateLocalRender() {
       var stream = _session.getParticipantVideoStream(Imclient.currentUserId);
-      if (stream != null) {
+      if (stream != null && _localRenderer.srcObject == null) {
         _localRenderer.srcObject = stream;
       }
   }
@@ -243,6 +243,9 @@ class _VoipCallScreenState extends State<VoipCallScreen>
       });
       if (state == CallState.STATUS_CONNECTED) {
         _startTimer();
+        setState(() {
+          _setupConnectedState();
+        });
       }
     }
   }
@@ -271,7 +274,11 @@ class _VoipCallScreenState extends State<VoipCallScreen>
   void didMuteStateChanged(List<String> participants) {}
 
   @override
-  void didParticipantConnected(String userId, {bool screenSharing = false}) {}
+  void didParticipantConnected(String userId, {bool screenSharing = false}) {
+    setState(() {
+      _setupConnectedState();
+    });
+  }
 
   @override
   void didParticipantJoined(String userId, {bool screenSharing = false}) {}

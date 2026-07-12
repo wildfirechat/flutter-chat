@@ -46,6 +46,9 @@ class CallStartMessageContent extends MediaMessageContent {
   CallStartEndStatus
    */
   int status = 0;
+  /*
+ 0 未知；1 音视频免费版；2 音视频高级版
+ */
   int sdkType = 0;
   bool audioOnly = false;
   String pin = '';
