@@ -495,12 +495,7 @@ class ConversationController extends ChangeNotifier {
   void onReadedTaped(BuildContext context, UIMessage model) {
     debugPrint("on taped readed");
     if (model.message.conversation.conversationType == ConversationType.Group) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ReadReceiptDetailScreen(model.message),
-        ),
-      );
+      ReadReceiptDetailScreen.show(context, model.message);
     }
   }
 

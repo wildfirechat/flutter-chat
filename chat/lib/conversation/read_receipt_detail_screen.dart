@@ -9,11 +9,34 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/mesh/mesh_cache.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_dialog.dart';
+import 'package:chat/theme/app_colors.dart';
+import 'package:chat/app_navigator.dart';
+import 'package:chat/user_info_widget.dart';
+import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class ReadReceiptDetailScreen extends StatefulWidget {
   final Message message;
+  final bool asDialog;
 
-  const ReadReceiptDetailScreen(this.message, {super.key});
+  const ReadReceiptDetailScreen(this.message, {super.key, this.asDialog = false});
+
+  static Future<void> show(BuildContext context, Message message) {
+    if (isDesktopShell) {
+      return showPcDialog(
+        context: context,
+        width: 400,
+        height: 480,
+        builder: (_) => ReadReceiptDetailScreen(message, asDialog: true),
+      );
+    }
+    return Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => ReadReceiptDetailScreen(message)),
+    );
+  }
 
   @override
   State<ReadReceiptDetailScreen> createState() => _ReadReceiptDetailScreenState();
@@ -87,6 +110,38 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
 
   @override
   Widget build(BuildContext context) {
+    if (widget.asDialog) {
+      final colors = context.colors;
+      return PcDialogFrame(
+        title: AppLocalizations.of(context)!.readReceiptDetail,
+        child: Column(
+          children: [
+            TabBar(
+              controller: _tabController,
+              labelColor: colors.accent,
+              unselectedLabelColor: colors.textSecondary,
+              indicatorColor: colors.accent,
+              tabs: [
+                Tab(text: AppLocalizations.of(context)!.readCount(_readMembers.length.toString())),
+                Tab(text: AppLocalizations.of(context)!.unreadCount(_unreadMembers.length.toString())),
+              ],
+            ),
+            Expanded(
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildUserList(_readMembers),
+                        _buildUserList(_unreadMembers),
+                      ],
+                    ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.readReceiptDetail),
@@ -115,13 +170,44 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
       itemCount: users.length,
       itemBuilder: (context, index) {
         var user = users[index];
-        return ListTile(
-          leading: Portrait(user.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
-          title: AnimatedBuilder(
-            animation: MeshCache.instance,
-            builder: (context, child) {
-              return MeshUserName(user);
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              if (widget.asDialog) {
+                Navigator.pop(context); // Close the dialog on PC
+              }
+              openPage(context, UserInfoWidget(user.userId));
             },
+            hoverColor: context.colors.hoverOverlay,
+            child: Container(
+              height: LayoutScale.watchScale(context, isDesktopShell ? 52.0 : 56.0, cap: LayoutScale.rowCap),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                children: [
+                  Portrait(
+                    user.portrait ?? Config.defaultUserPortrait,
+                    Config.defaultUserPortrait,
+                    width: 40,
+                    height: 40,
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: AnimatedBuilder(
+                      animation: MeshCache.instance,
+                      builder: (context, child) {
+                        return MeshUserName(
+                          user,
+                          style: isDesktopShell ? AppText.base : AppText.lg,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },

@@ -6,6 +6,7 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_member.dart';
 import 'package:chat/conversation/read_receipt_detail_screen.dart';
+import 'package:chat/theme/app_colors.dart';
 
 class ReadReceiptStatusWidget extends StatefulWidget {
   final Message message;
@@ -143,12 +144,7 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
       double progress = _groupReadCount / _groupTotalCount;
       return GestureDetector(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ReadReceiptDetailScreen(widget.message),
-            ),
-          );
+          ReadReceiptDetailScreen.show(context, widget.message);
         },
         child: Container(
           margin: const EdgeInsets.only(right: 4, bottom: 2),
@@ -158,7 +154,7 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
             value: progress,
             strokeWidth: 2,
             backgroundColor: Colors.grey[300],
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.green),
+            valueColor: AlwaysStoppedAnimation<Color>(context.colors.accent),
           ),
         ),
       );
