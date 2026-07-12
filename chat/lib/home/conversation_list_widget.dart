@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 import '../widgets/unread_badge.dart';
 import 'package:flutter/cupertino.dart';
@@ -71,81 +73,81 @@ class ConversationListWidget extends StatelessWidget {
         // 桌面端中栏由 PCHome 铺 context.colors.middleBg,列表本身透明
         backgroundColor: isDesktopShell ? Colors.transparent : null,
         body: SafeArea(
-          child: Column(
-            children: [
-              const StatusNotificationHeader(),
-              Expanded(
-                child: isDesktopShell && scrollOffset != null
-                    ? ValueListenableBuilder<double>(
-                        valueListenable: scrollOffset!,
-                        builder: (context, offset, child) {
-                          final list = conversationListViewModel.conversationList;
-                          final isFirstItemPinned = list.isNotEmpty && list[0].isTop > 0;
-                          final overscrollHeight = (offset < 0 && isFirstItemPinned) ? -offset : 0.0;
-                          return Stack(
-                            children: [
-                              Positioned.fill(
-                                child: Container(
-                                  color: context.colors.middleBgDesktop,
+          child: SlidableAutoCloseBehavior(
+            child: Column(
+              children: [
+                const StatusNotificationHeader(),
+                Expanded(
+                  child: isDesktopShell && scrollOffset != null
+                      ? ValueListenableBuilder<double>(
+                          valueListenable: scrollOffset!,
+                          builder: (context, offset, child) {
+                            final list = conversationListViewModel.conversationList;
+                            final isFirstItemPinned = list.isNotEmpty && list[0].isTop > 0;
+                            final overscrollHeight = (offset < 0 && isFirstItemPinned) ? -offset : 0.0;
+                            return Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Container(
+                                    color: context.colors.middleBgDesktop,
+                                  ),
                                 ),
-                              ),
-                              Positioned(
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                height: overscrollHeight,
-                                child: Container(
-                                  color: context.colors.cellTopDesktop,
+                                Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  height: overscrollHeight,
+                                  child: Container(
+                                    color: context.colors.cellTopDesktop,
+                                  ),
                                 ),
-                              ),
-                              Positioned.fill(
-                                child: child!,
-                              ),
-                            ],
-                          );
-                        },
-                child: ListView.builder(
-                          controller: scrollController,
-                          itemCount: conversationListViewModel.conversationList.length,
-                          itemExtent: conversationItemExtent(context),
-                          key: ValueKey<int>(conversationListViewModel.conversationList.length),
-                          cacheExtent: 200,
-                          addRepaintBoundaries: true,
-                          addAutomaticKeepAlives: false,
-                          itemBuilder: (context, i) {
-                            ConversationInfo info = conversationListViewModel.conversationList[i];
-                            var key =
-                                '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
-                            return ConversationListItem(
-                              info,
-                              key: ValueKey(key),
-                              onTap: onConversationSelected,
-                              isSelected: info.conversation == selectedConversation,
+                                Positioned.fill(
+                                  child: child!,
+                                ),
+                              ],
                             );
                           },
+                  child: ListView.builder(
+                            controller: scrollController,
+                            itemCount: conversationListViewModel.conversationList.length,
+                            itemExtent: conversationItemExtent(context),
+                            cacheExtent: 200,
+                            addRepaintBoundaries: true,
+                            addAutomaticKeepAlives: false,
+                            itemBuilder: (context, i) {
+                              ConversationInfo info = conversationListViewModel.conversationList[i];
+                              var key =
+                                  '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
+                              return ConversationListItem(
+                                info,
+                                key: ValueKey(key),
+                                onTap: onConversationSelected,
+                                isSelected: info.conversation == selectedConversation,
+                              );
+                            },
+                          ),
+                        )
+                      : ListView.builder(
+                      itemCount: conversationListViewModel.conversationList.length,
+                          itemExtent: conversationItemExtent(context),
+                      cacheExtent: 200,
+                      addRepaintBoundaries: true,
+                      addAutomaticKeepAlives: false,
+                      itemBuilder: (context, i) {
+                        ConversationInfo info = conversationListViewModel.conversationList[i];
+                        var key =
+                            '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
+                        return ConversationListItem(
+                          info,
+                          key: ValueKey(key),
+                          onTap: onConversationSelected,
+                          isSelected: info.conversation == selectedConversation,
+                        );
+                          },
                         ),
-                      )
-                    : ListView.builder(
-                    itemCount: conversationListViewModel.conversationList.length,
-                        itemExtent: conversationItemExtent(context),
-                    key: ValueKey<int>(conversationListViewModel.conversationList.length),
-                    cacheExtent: 200,
-                    addRepaintBoundaries: true,
-                    addAutomaticKeepAlives: false,
-                    itemBuilder: (context, i) {
-                      ConversationInfo info = conversationListViewModel.conversationList[i];
-                      var key =
-                          '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
-                      return ConversationListItem(
-                        info,
-                        key: ValueKey(key),
-                        onTap: onConversationSelected,
-                        isSelected: info.conversation == selectedConversation,
-                      );
-                        },
-                      ),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -518,7 +520,28 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       );
     }
 
-    return Material(
+    final bool enableSwipe = Platform.isIOS || Platform.operatingSystem == 'ohos';
+    if (enableSwipe) {
+      final Widget mobileCell = Material(
+        color: _cellBackground(hovered),
+        child: InkWell(
+          onTap: onTap,
+          child: cellChild,
+        ),
+      );
+
+      return Slidable(
+        key: ValueKey(conversationInfo.conversation.target),
+        endActionPane: ActionPane(
+          motion: const ScrollMotion(),
+          extentRatio: 0.75,
+          children: _buildSlidableActions(context, conversationInfo),
+        ),
+        child: mobileCell,
+      );
+    }
+
+    final Widget mobileCellWithLongPress = Material(
       color: _cellBackground(hovered),
       child: InkWell(
         onTap: onTap,
@@ -530,6 +553,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
         ),
       ),
     );
+
+    return mobileCellWithLongPress;
   }
 
   /// 会话标题：外部域用户显示带黄色、小字号域后缀的富文本。
@@ -723,5 +748,64 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     }
 
     return Container();
+  }
+
+  List<Widget> _buildSlidableActions(BuildContext context, ConversationInfo conversationInfo) {
+    final List<Widget> actions = [];
+    final conversationListViewModel = Provider.of<ConversationListViewModel>(context, listen: false);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final Color topBgColor = isDark ? const Color(0xFF48484A) : const Color(0xFFC7C7CC);
+    final Color unreadBgColor = isDark ? const Color(0xFF0A84FF) : const Color(0xFF007AFF);
+    final Color deleteBgColor = context.colors.danger;
+
+    // 1. Top/Untop
+    final isTop = conversationInfo.isTop > 0;
+    actions.add(
+      SlidableAction(
+        onPressed: (context) {
+          conversationListViewModel.setConversationTop(conversationInfo.conversation, isTop ? 0 : 1);
+        },
+        backgroundColor: topBgColor,
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.zero,
+        label: isTop ? AppLocalizations.of(context)!.untop : AppLocalizations.of(context)!.top,
+      ),
+    );
+
+    // 2. Clear Unread / Set Unread
+    final hasUnread = conversationInfo.unreadCount.unread +
+            conversationInfo.unreadCount.unreadMention +
+            conversationInfo.unreadCount.unreadMentionAll >
+        0;
+    actions.add(
+      SlidableAction(
+        onPressed: (context) {
+          if (hasUnread) {
+            conversationListViewModel.clearConversationUnreadStatus(conversationInfo.conversation);
+          } else {
+            conversationListViewModel.markConversationAsUnRead(conversationInfo.conversation);
+          }
+        },
+        backgroundColor: unreadBgColor,
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.zero,
+        label: hasUnread ? AppLocalizations.of(context)!.clearUnread : AppLocalizations.of(context)!.setUnread,
+      ),
+    );
+
+    // 3. Delete
+    actions.add(
+      SlidableAction(
+        onPressed: (context) {
+          conversationListViewModel.removeConversation(conversationInfo.conversation);
+        },
+        backgroundColor: deleteBgColor,
+        foregroundColor: Colors.white,
+        padding: EdgeInsets.zero,
+        label: AppLocalizations.of(context)!.delete,
+      ),
+    );
+
+    return actions;
   }
 }

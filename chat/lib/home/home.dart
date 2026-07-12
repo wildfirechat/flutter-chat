@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:io';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:badges/badges.dart' as badge;
 import '../widgets/unread_badge.dart';
 import 'package:flutter/cupertino.dart';
@@ -55,6 +57,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   var tabImages;
   var _body;
   var pages;
+  PageController? _pageController;
 
   Image getTabImage(path) {
     return Image.asset(path, width: 20.0, height: 20.0);
@@ -65,11 +68,11 @@ class HomeTabBarState extends State<HomeTabBar> {
     super.initState();
     appBarTitles = [];
     pages = <Widget>[
-      const ConversationListWidget(),
-      ContactListWidget(),
-      const WorkSpace(),
-      const DiscoveryTab(),
-      const MeTab()
+      const _KeepAliveWrapper(child: ConversationListWidget()),
+      _KeepAliveWrapper(child: ContactListWidget()),
+      const _KeepAliveWrapper(child: WorkSpace()),
+      const _KeepAliveWrapper(child: DiscoveryTab()),
+      const _KeepAliveWrapper(child: MeTab())
     ];
     tabImages = [
       [
@@ -93,6 +96,13 @@ class HomeTabBarState extends State<HomeTabBar> {
         getTabImage('assets/images/tabbar_me_cover.png')
       ]
     ];
+    _pageController = PageController(initialPage: _tabIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -360,9 +370,20 @@ class HomeTabBarState extends State<HomeTabBar> {
 
   @override
   Widget build(BuildContext context) {
-    _body = IndexedStack(
+    final ScrollPhysics physics = (!isDesktopShell && Platform.isAndroid)
+        ? const PageScrollPhysics()
+        : const NeverScrollableScrollPhysics();
+    _body = PageView(
+      controller: _pageController,
+      physics: physics,
       children: pages,
-      index: _tabIndex,
+      onPageChanged: (index) {
+        if (_tabIndex != index) {
+          setState(() {
+            _tabIndex = index;
+          });
+        }
+      },
     );
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -443,12 +464,34 @@ class HomeTabBarState extends State<HomeTabBar> {
           }),
           currentIndex: _tabIndex,
           onTap: (index) {
-            setState(() {
-              _tabIndex = index;
-            });
+            if (_tabIndex != index) {
+              setState(() {
+                _tabIndex = index;
+              });
+              _pageController?.jumpToPage(index);
+            }
           },
         ),
       ),
     );
+  }
+}
+
+class _KeepAliveWrapper extends StatefulWidget {
+  final Widget child;
+  const _KeepAliveWrapper({Key? key, required this.child}) : super(key: key);
+
+  @override
+  State<_KeepAliveWrapper> createState() => _KeepAliveWrapperState();
+}
+
+class _KeepAliveWrapperState extends State<_KeepAliveWrapper> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }
