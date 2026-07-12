@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 
 class BottomActionSheetItem {
   final String label;
@@ -18,19 +21,18 @@ class BottomActionSheetItem {
 Future<void> showBottomActionSheet({
   required BuildContext context,
   required List<BottomActionSheetItem> items,
-  String? cancelLabel,
 }) {
-  final themeCancelLabel = cancelLabel ?? '取消';
-
   return showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent, // 保证圆角剪裁区域外部透明
     isScrollControlled: true,
     builder: (BuildContext sheetContext) {
+      final colors = sheetContext.colors;
+      final labelStyle = AppText.lg.copyWith(color: colors.textPrimary);
       return Container(
-        decoration: const BoxDecoration(
-          color: Color(0xFFF7F7F7), // 微信底色（灰色间隙色）
-          borderRadius: BorderRadius.only(
+        decoration: BoxDecoration(
+          color: colors.sectionGap, // 选项组之间的灰色间隙色
+          borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(12),
             topRight: Radius.circular(12),
           ),
@@ -41,7 +43,7 @@ Future<void> showBottomActionSheet({
           children: [
             // 选项组
             Material(
-              color: Colors.white,
+              color: colors.surface,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: items.asMap().entries.map((entry) {
@@ -65,28 +67,21 @@ Future<void> showBottomActionSheet({
                                 item.leading!,
                                 const SizedBox(width: 8),
                               ] else if (item.icon != null) ...[
-                                Icon(item.icon, size: 22, color: Colors.black87),
+                                Icon(item.icon, size: 22, color: colors.iconPrimary),
                                 const SizedBox(width: 8),
                               ],
-                              Text(
-                                item.label,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  color: Color(0xFF191919),
-                                ),
-                              ),
+                              Text(item.label, style: labelStyle),
                             ],
                           ),
                         ),
                       ),
                       if (index < items.length - 1)
-                        const Divider(
+                        Divider(
                           height: 0.5,
                           thickness: 0.5,
                           indent: 0,
                           endIndent: 0,
-                          color: Color(0xFFE5E5E5),
+                          color: colors.hairlineSoft,
                         ),
                     ],
                   );
@@ -96,11 +91,11 @@ Future<void> showBottomActionSheet({
             // 选项组与取消按钮之间的灰色间隙
             Container(
               height: 8,
-              color: const Color(0xFFF7F7F7),
+              color: colors.sectionGap,
             ),
             // 取消按钮及其底部安全区（整体响应点击反馈）
             Material(
-              color: Colors.white,
+              color: colors.surface,
               child: InkWell(
                 onTap: () => Navigator.pop(sheetContext),
                 child: SafeArea(
@@ -110,12 +105,8 @@ Future<void> showBottomActionSheet({
                     height: 64, // 增加高度以获得更好的触摸反馈体验
                     child: Center(
                       child: Text(
-                        themeCancelLabel,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF191919),
-                        ),
+                        AppLocalizations.of(sheetContext)!.cancel,
+                        style: labelStyle,
                       ),
                     ),
                   ),

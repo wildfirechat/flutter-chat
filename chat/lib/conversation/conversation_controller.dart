@@ -109,7 +109,6 @@ class ConversationController extends ChangeNotifier {
               },
             ),
           ],
-          cancelLabel: AppLocalizations.of(context)!.cancel,
         );
       } else if (conversation.conversationType == ConversationType.Group) {
           Imclient.getGroupMembers(conversation.target).then((groupMembers) {

@@ -419,7 +419,6 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                             },
                           ),
                         ],
-                        cancelLabel: AppLocalizations.of(context)!.cancel,
                       );
                     },
                     titleColor: context.colors.accent,
