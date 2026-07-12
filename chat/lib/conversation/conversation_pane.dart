@@ -97,8 +97,6 @@ class _ConversationPaneState extends State<ConversationPane> {
     try {
       final enabled = await OnlineStateCache.instance.isEnabled;
       if (!enabled) return;
-      final isFriend = await Imclient.isMyFriend(conversation.target);
-      if (isFriend) return;
       OnlineStateCache.instance.loadState(conversation.target);
       Imclient.watchOnlineState(
         conversation.conversationType,

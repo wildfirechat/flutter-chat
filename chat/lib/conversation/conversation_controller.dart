@@ -41,7 +41,9 @@ import 'package:chat/widget/desktop_popup_menu_item.dart';
 import 'package:http/http.dart' as http;
 import 'package:chat/l10n/app_localizations.dart';
 
+import '../collection/collection_service.dart';
 import '../collection/collection_detail_screen.dart';
+import '../poll/poll_service.dart';
 import '../poll/poll_detail_screen.dart';
 import '../contact/pick_user_screen.dart';
 import '../user_info_widget.dart';
@@ -374,6 +376,24 @@ class ConversationController extends ChangeNotifier {
       // } else if (model.message.conversation.conversationType == ConversationType.Group) {
       //   onPressCallBtn(context, model.message.conversation);
       // }
+    } else if (model.message.content is CollectionMessageContent) {
+      if (CollectionService.isAvailable) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CollectionDetailScreen(message: model.message),
+          ),
+        );
+      }
+    } else if (model.message.content is PollMessageContent) {
+      if (PollService.isAvailable) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PollDetailScreen.fromMessage(message: model.message),
+          ),
+        );
+      }
     }
   }
 

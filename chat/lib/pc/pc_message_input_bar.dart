@@ -10,6 +10,10 @@ import 'package:imclient/model/conversation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:super_clipboard/super_clipboard.dart';
+import 'package:chat/collection/create_collection_screen.dart';
+import 'package:chat/collection/collection_icon.dart';
+import 'package:chat/config.dart';
+import 'package:chat/poll/poll_home_screen.dart';
 import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
@@ -363,6 +367,36 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                     tooltip: l10n.filePicker,
                     onTap: () => _pickFile(conversationController, controller),
                   ),
+                  if (controller.conversation.conversationType == ConversationType.Group &&
+                      Config.collectionServerAddress != null &&
+                      Config.collectionServerAddress!.isNotEmpty)
+                    _ToolbarButton(
+                      iconWidget: CollectionIcon(size: 21, color: context.colors.iconSecondary),
+                      tooltip: l10n.collection,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CreateCollectionScreen(conversation: controller.conversation),
+                          ),
+                        );
+                      },
+                    ),
+                  if (controller.conversation.conversationType == ConversationType.Group &&
+                      Config.pollServerAddress != null &&
+                      Config.pollServerAddress!.isNotEmpty)
+                    _ToolbarButton(
+                      iconWidget: Icon(Icons.poll, size: 21, color: context.colors.iconSecondary),
+                      tooltip: l10n.poll,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PollHomeScreen(groupId: controller.conversation.target),
+                          ),
+                        );
+                      },
+                    ),
                   const Spacer(),
                   // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
                   // 单聊直接发起,群聊先弹选人对话框再发起(见 startAvCall)
@@ -440,11 +474,18 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
 }
 
 class _ToolbarButton extends StatefulWidget {
-  final IconData icon;
+  final IconData? icon;
+  final Widget? iconWidget;
   final String tooltip;
   final VoidCallback onTap;
 
-  const _ToolbarButton({super.key, required this.icon, required this.tooltip, required this.onTap});
+  const _ToolbarButton({
+    super.key,
+    this.icon,
+    this.iconWidget,
+    required this.tooltip,
+    required this.onTap,
+  }) : assert(icon != null || iconWidget != null);
 
   @override
   State<_ToolbarButton> createState() => _ToolbarButtonState();
@@ -472,7 +513,7 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
               color: _hovered ? context.colors.hoverOverlay : Colors.transparent,
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Icon(widget.icon, size: 21, color: context.colors.iconSecondary),
+            child: widget.iconWidget ?? Icon(widget.icon!, size: 21, color: context.colors.iconSecondary),
           ),
         ),
       ),

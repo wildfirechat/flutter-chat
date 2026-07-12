@@ -263,7 +263,16 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   Widget _buildHeaderIcon(String? imagePath) {
     final size = LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap);
     if (imagePath == null || imagePath.isEmpty) {
-      return Icon(Icons.domain, size: size);
+      // 外部单位/固定入口图标，与其他带色圆角背景的入口图标保持一致
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: const Color(0xFF3098F0),
+          borderRadius: BorderRadius.circular(size * 0.2),
+        ),
+        child: Icon(Icons.domain, size: size * 0.5, color: Colors.white),
+      );
     }
     return Image.asset(imagePath, width: size, height: size);
   }

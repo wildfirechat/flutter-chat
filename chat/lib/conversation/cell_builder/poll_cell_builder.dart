@@ -4,6 +4,7 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import '../../ui_model/ui_message.dart';
 import '../../poll/poll_detail_screen.dart';
+import '../../poll/poll_service.dart';
 import 'portrait_cell_builder.dart';
 import 'package:chat/theme/app_typography.dart';
 
@@ -18,6 +19,7 @@ class PollCellBuilder extends PortraitCellBuilder {
   }
 
   void _onTap(BuildContext context) {
+    if (!PollService.isAvailable) return;
     Navigator.push(
       context,
       MaterialPageRoute(
