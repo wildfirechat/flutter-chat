@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
@@ -8,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
 import 'package:chat/user_info_widget.dart';
+import 'package:chat/group/fav_group_event.dart';
 import 'package:chat/group/group_info_screen.dart';
 import 'package:chat/channel/channel_info_widget.dart';
 import 'package:chat/organization/model/organization.dart';
@@ -85,6 +88,7 @@ class _PcContactListState extends State<PcContactList> {
   List<String>? _favGroupIds;
   List<String>? _channelIds;
   List<DomainInfo>? _meshDomains;
+  late final StreamSubscription<FavGroupUpdatedEvent> _favGroupUpdatedSubscription;
 
   @override
   void initState() {
@@ -92,6 +96,32 @@ class _PcContactListState extends State<PcContactList> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ContactListViewModel>().refresh();
       _checkMeshEnabled();
+    });
+    // 右栏群信息页「从通讯录移除」/会话资料页「保存到通讯录」开关变更后刷新本列表;
+    // 被移除的群若正处于选中态,一并清掉(行即将消失,右栏也已清回占位页)。
+    _favGroupUpdatedSubscription = Imclient.IMEventBus.on<FavGroupUpdatedEvent>().listen((event) {
+      if (!mounted || _favGroupIds == null) {
+        return;
+      }
+      final shell = Provider.of<PCShellViewModel>(context, listen: false);
+      if (!event.isFav && shell.selectedContactItemId == 'group-${event.groupId}') {
+        shell.selectContactItem(null);
+      }
+      _loadFavGroups();
+    });
+  }
+
+  @override
+  void dispose() {
+    _favGroupUpdatedSubscription.cancel();
+    super.dispose();
+  }
+
+  void _loadFavGroups() {
+    Imclient.getFavGroups().then((groupIds) {
+      if (mounted) {
+        setState(() => _favGroupIds = groupIds ?? []);
+      }
     });
   }
 
@@ -148,11 +178,7 @@ class _PcContactListState extends State<PcContactList> {
   void _toggleGroups() {
     setState(() => _groupsExpanded = !_groupsExpanded);
     if (_groupsExpanded && _favGroupIds == null) {
-      Imclient.getFavGroups().then((groupIds) {
-        if (mounted) {
-          setState(() => _favGroupIds = groupIds);
-        }
-      });
+      _loadFavGroups();
     }
   }
 

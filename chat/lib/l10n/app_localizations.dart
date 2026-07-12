@@ -224,6 +224,18 @@ abstract class AppLocalizations {
   /// **'进入群聊'**
   String get enterGroup;
 
+  /// No description provided for @removeFromContacts.
+  ///
+  /// In zh, this message translates to:
+  /// **'从通讯录移除'**
+  String get removeFromContacts;
+
+  /// No description provided for @removeFromContactsConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'移除后，该群聊将不再保存到通讯录'**
+  String get removeFromContactsConfirm;
+
   /// No description provided for @joinFail.
   ///
   /// In zh, this message translates to:

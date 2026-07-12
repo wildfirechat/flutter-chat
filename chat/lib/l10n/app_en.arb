@@ -21,6 +21,8 @@
   "groupInfo": "Group Info",
   "joinGroup": "Join Group",
   "enterGroup": "Enter Group",
+  "removeFromContacts": "Remove from Contacts",
+  "removeFromContactsConfirm": "This group chat will no longer be saved to your contacts after removal.",
   "joinFail": "Join Failed: {error}",
   "groupName": "Group Name",
   "groupQrCode": "Group QR Code",

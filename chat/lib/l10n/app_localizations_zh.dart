@@ -78,6 +78,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enterGroup => '进入群聊';
 
   @override
+  String get removeFromContacts => '从通讯录移除';
+
+  @override
+  String get removeFromContactsConfirm => '移除后，该群聊将不再保存到通讯录';
+
+  @override
   String joinFail(Object error) {
     return '加入失败: $error';
   }

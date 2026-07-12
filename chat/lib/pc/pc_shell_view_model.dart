@@ -19,6 +19,10 @@ class PCShellViewModel extends ChangeNotifier {
   void Function(Conversation conversation, {int? toFocusMessageId})? conversationOpener;
   void Function(Widget page)? pageOpener;
 
+  /// 由 PCHome 注入。右栏当前页面自知失效时(如群聊被移出通讯录)经 [closePage]
+  /// 请求清空右栏回到占位欢迎页。
+  VoidCallback? paneCloser;
+
   int _selectedTab = tabChat;
   Conversation? _selectedConversation;
   String? _selectedContactItemId;
@@ -37,6 +41,7 @@ class PCShellViewModel extends ChangeNotifier {
     _callWindowMinimized = false;
     conversationOpener = null;
     pageOpener = null;
+    paneCloser = null;
   }
 
   String? get selectedContactItemId => _selectedContactItemId;
@@ -82,6 +87,10 @@ class PCShellViewModel extends ChangeNotifier {
 
   void openPage(Widget page) {
     pageOpener?.call(page);
+  }
+
+  void closePage() {
+    paneCloser?.call();
   }
 
   int get selectedTab => _selectedTab;

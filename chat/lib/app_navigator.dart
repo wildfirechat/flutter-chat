@@ -48,6 +48,12 @@ void openPage(BuildContext context, Widget page) {
   }
 }
 
+/// 关闭右栏当前页面,回到占位欢迎页(页面内容已失效时用,如群聊被移出通讯录)。
+/// 仅桌面 Shell 有效;移动端无对应形态,为 no-op,调用方自行决定是否 pop。
+void closePage(BuildContext context) {
+  _shellOf(context)?.closePage();
+}
+
 /// 在当前导航栈中 push 一个子页面（保留返回历史）。
 void pushPage(BuildContext context, Widget page) {
   final shell = _shellOf(context);

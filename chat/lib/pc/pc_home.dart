@@ -90,6 +90,7 @@ class _PCHomeState extends State<PCHome> {
     _shellViewModel.reset();
     _shellViewModel.conversationOpener = _openConversation;
     _shellViewModel.pageOpener = _openPage;
+    _shellViewModel.paneCloser = _closePage;
     _conversationListViewModel =
         Provider.of<ConversationListViewModel>(context, listen: false);
     _conversationListViewModel.addListener(_onConversationListChanged);
@@ -113,6 +114,9 @@ class _PCHomeState extends State<PCHome> {
     }
     if (_shellViewModel.pageOpener == _openPage) {
       _shellViewModel.pageOpener = null;
+    }
+    if (_shellViewModel.paneCloser == _closePage) {
+      _shellViewModel.paneCloser = null;
     }
     super.dispose();
   }
@@ -194,6 +198,13 @@ class _PCHomeState extends State<PCHome> {
   void _openUser(String userId) {
     _shellViewModel.selectContactItem('user-$userId');
     _openPage(UserInfoWidget(userId, key: ValueKey('pc-user-$userId')));
+  }
+
+  /// 右栏当前页面请求关闭(内容已失效,如群聊被移出通讯录):清回占位欢迎页,
+  /// 并丢弃当前 tab 缓存的页面,否则切走再切回会复原已失效的页面。
+  void _closePage() {
+    _tabPages.remove(_shellViewModel.selectedTab);
+    _clearRightPane();
   }
 
   /// 在右栏打开任意页面(用户详情/好友请求/组织架构/网页等)。

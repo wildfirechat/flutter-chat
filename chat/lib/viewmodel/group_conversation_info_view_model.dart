@@ -7,6 +7,7 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 
 import 'package:chat/app_server.dart';
+import 'package:chat/group/fav_group_event.dart';
 
 class GroupConversationInfoViewModel extends ChangeNotifier {
   late StreamSubscription<GroupMembersUpdatedEvent> _groupMembersUpdatedSubscription;
@@ -57,6 +58,7 @@ class GroupConversationInfoViewModel extends ChangeNotifier {
   void setFavGroup(String groupId, bool fav) {
     Imclient.setFavGroup(groupId, fav, () {
       _isFavGroup = fav;
+      Imclient.IMEventBus.fire(FavGroupUpdatedEvent(groupId, fav));
       notifyListeners();
     }, (errorCode) {});
   }

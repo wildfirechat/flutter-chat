@@ -12,10 +12,9 @@ import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
+import 'package:chat/group/fav_group_event.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
-import 'package:chat/pc/widgets/pc_pane_content.dart';
-import 'package:chat/pc/widgets/pc_profile.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -33,6 +32,8 @@ class GroupInfoScreen extends StatefulWidget {
 class _GroupInfoScreenState extends State<GroupInfoScreen> {
   bool _isLoading = false;
   String? _remotePortrait;
+  // 群聊是否已保存到通讯录(收藏群组);桌面端据此显示底部「从通讯录移除」栏。
+  bool _isFavGroup = false;
 
   @override
   void initState() {
@@ -41,6 +42,13 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadRemotePortraitIfNeeded();
     });
+    if (isDesktopShell) {
+      Imclient.isFavGroup(widget.groupId).then((fav) {
+        if (mounted && fav != _isFavGroup) {
+          setState(() => _isFavGroup = fav);
+        }
+      });
+    }
   }
 
   void _loadRemotePortraitIfNeeded() {
@@ -102,45 +110,54 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       portrait = MediaUrlRedirector.redirect(_remotePortrait!);
     }
 
-    // 桌面端右栏:与用户/频道/外部单位资料页同一套形态,见 pc_profile.dart。
+    // 桌面端(参照微信 PC):居中头像/群名/群号 + 「进入群聊」,
+    // 已保存到通讯录的群聊在底部固定一条「从通讯录移除」。
     if (isDesktopShell) {
       final l10n = AppLocalizations.of(context)!;
-      return SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-        child: PcPaneContent(
-          maxWidth: kPcProfileWidth,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              PcProfileHeader(
-                leading: ClipRRect(
-                  borderRadius: BorderRadius.circular(4.0),
-                  child: CachedNetworkImage(
-                    imageUrl: portrait.isNotEmpty ? portrait : Config.defaultGroupPortrait,
-                    width: 64,
-                    height: 64,
-                    memCacheWidth: (64 * MediaQuery.devicePixelRatioOf(context)).ceil(),
-                    memCacheHeight: (64 * MediaQuery.devicePixelRatioOf(context)).ceil(),
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Image.asset(Config.defaultGroupPortrait, width: 64, height: 64),
-                    errorWidget: (context, url, error) => Image.asset(Config.defaultGroupPortrait, width: 64, height: 64),
-                  ),
+      return Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
+              // 滚动视图横向是松约束,Column 会收缩到最宽子项再被靠左放置,
+              // 撑满宽度后其居中对齐才真正水平居中。
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6.0),
+                      child: CachedNetworkImage(
+                        imageUrl: portrait.isNotEmpty ? portrait : Config.defaultGroupPortrait,
+                        width: 80,
+                        height: 80,
+                        memCacheWidth: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+                        memCacheHeight: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Image.asset(Config.defaultGroupPortrait, width: 80, height: 80, color: Colors.grey),
+                        errorWidget: (context, url, error) => Image.asset(Config.defaultGroupPortrait, width: 80, height: 80, color: Colors.grey),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      name,
+                      style: AppText.xl.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '${l10n.groupIdLabel}: ${widget.groupId}',
+                      style: AppText.sm.copyWith(color: context.colors.textSecondary),
+                    ),
+                    const SizedBox(height: 40),
+                    _buildActionButton(groupInfo),
+                  ],
                 ),
-                title: Text(
-                  name,
-                  style: PcProfileHeader.titleStyle(context),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: '${l10n.groupIdLabel}: ${widget.groupId}',
               ),
-              const PcProfileDivider(),
-              // 进入/加入群聊是这一页的主操作,而且要带 loading 态,所以留成实心按钮,
-              // 不用图标动作(那是发消息/通话这类平级操作的形态)。
-              Center(child: _buildActionButton(groupInfo)),
-            ],
+            ),
           ),
-        ),
+          if (_isFavGroup) _buildRemoveFromContactsBar(context),
+        ],
       );
     }
 
@@ -168,7 +185,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            "群号: ${widget.groupId}",
+            '${AppLocalizations.of(context)!.groupIdLabel}: ${widget.groupId}',
             style: AppText.base.copyWith(color: Colors.grey),
           ),
           const SizedBox(height: 40),
@@ -232,6 +249,61 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
             : Text(buttonText),
       ),
     );
+  }
+
+  /// 底部「从通讯录移除」:纯文字按钮,红色,无悬停底色。
+  Widget _buildRemoveFromContactsBar(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12, bottom: 32),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: _confirmRemoveFromContacts,
+          child: Text(l10n.removeFromContacts, style: AppText.base.copyWith(color: context.colors.danger)),
+        ),
+      ),
+    );
+  }
+
+  void _confirmRemoveFromContacts() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.removeFromContacts),
+        content: Text(l10n.removeFromContactsConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _removeFromContacts();
+            },
+            child: Text(l10n.remove, style: TextStyle(color: context.colors.danger)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _removeFromContacts() {
+    Imclient.setFavGroup(widget.groupId, false, () {
+      if (!mounted) {
+        return;
+      }
+      _isFavGroup = false;
+      Imclient.IMEventBus.fire(FavGroupUpdatedEvent(widget.groupId, false));
+      // 本页在右栏的存在依据(通讯录中的群聊)已失效,清回占位欢迎页。
+      closePage(context);
+    }, (errorCode) {
+      if (mounted) {
+        Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.failed}: $errorCode");
+      }
+    });
   }
 
   void _onAction(GroupInfo groupInfo, bool isJoined) {

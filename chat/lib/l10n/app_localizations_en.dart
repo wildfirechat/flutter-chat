@@ -78,6 +78,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterGroup => 'Enter Group';
 
   @override
+  String get removeFromContacts => 'Remove from Contacts';
+
+  @override
+  String get removeFromContactsConfirm =>
+      'This group chat will no longer be saved to your contacts after removal.';
+
+  @override
   String joinFail(Object error) {
     return 'Join Failed: $error';
   }

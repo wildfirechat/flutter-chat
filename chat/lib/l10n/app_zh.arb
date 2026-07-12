@@ -21,6 +21,8 @@
   "groupInfo": "群组信息",
   "joinGroup": "加入群聊",
   "enterGroup": "进入群聊",
+  "removeFromContacts": "从通讯录移除",
+  "removeFromContactsConfirm": "移除后，该群聊将不再保存到通讯录",
   "joinFail": "加入失败: {error}",
   "groupName": "群聊名称",
   "groupQrCode": "群二维码",
