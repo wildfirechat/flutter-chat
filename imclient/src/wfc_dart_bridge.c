@@ -58,6 +58,12 @@ enum {
   kTagSendMessageError = 27,
   kTagUploadMediaProgress = 28,
   kTagConnectedToServer = 29,
+
+  kTagTrafficData = 30,
+  kTagErrorEvent = 31,
+  kTagSecretChatState = 32,
+  kTagSecretMsgBurnStart = 33,
+  kTagSecretMsgBurned = 34,
 };
 
 static Dart_Port_DL g_port = 0;
@@ -171,6 +177,38 @@ WFC_EXPORT void WFCAPI wfc_on_setting_updated(void) {
   Dart_CObject a[1] = {c_int(kTagSettingUpdated)};
   post(1, a);
 }
+
+// ---- 新增全局监听器 ----
+
+WFC_EXPORT void WFCAPI wfc_on_traffic_data(int send_bytes, int recv_bytes) {
+  Dart_CObject a[3] = {c_int(kTagTrafficData), c_int(send_bytes),
+                       c_int(recv_bytes)};
+  post(3, a);
+}
+
+WFC_EXPORT void WFCAPI wfc_on_error_event(int error_code, const char *msg,
+                                          size_t len) {
+  Dart_CObject a[3] = {c_int(kTagErrorEvent), c_int(error_code),
+                       c_bytes(msg, len)};
+  post(3, a);
+}
+
+WFC_EXPORT void WFCAPI wfc_on_secret_chat_state(int state, const char *target_id,
+                                                size_t len) {
+  Dart_CObject a[3] = {c_int(kTagSecretChatState), c_int(state),
+                       c_bytes(target_id, len)};
+  post(3, a);
+}
+
+WFC_EXPORT void WFCAPI wfc_on_secret_msg_burn_start(int source_id,
+                                                    const char *msg,
+                                                    size_t len) {
+  Dart_CObject a[3] = {c_int(kTagSecretMsgBurnStart), c_int(source_id),
+                       c_bytes(msg, len)};
+  post(3, a);
+}
+
+GLOBAL_STRING_LISTENER(wfc_on_secret_msg_burned, kTagSecretMsgBurned)
 
 // ---- 请求级回调（p_obj 携带 Dart 侧分配的 requestId） ----
 

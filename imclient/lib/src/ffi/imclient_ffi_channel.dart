@@ -249,6 +249,35 @@ class ImclientFfiChannel implements ImclientChannel {
           'total': message[3] as int,
         });
         break;
+      case _BridgeTag.trafficData:
+        _emit('onTrafficData', {
+          'sendBytes': message[1] as int,
+          'recvBytes': message[2] as int,
+        });
+        break;
+      case _BridgeTag.errorEvent:
+        _emit('onErrorEvent', {
+          'errorCode': message[1] as int,
+          'message': str(2),
+        });
+        break;
+      case _BridgeTag.secretChatState:
+        _emit('onSecretChatState', {
+          'state': message[1] as int,
+          'targetId': str(2),
+        });
+        break;
+      case _BridgeTag.secretMsgBurnStart:
+        _emit('onSecretMessageBurnStart', {
+          'sourceId': message[1] as int,
+          'message': str(2),
+        });
+        break;
+      case _BridgeTag.secretMsgBurned:
+        _emit('onSecretMessageBurned', {
+          'message': str(1),
+        });
+        break;
       default:
         debugPrint('[imclient][ffi] unknown bridge tag: $tag');
     }
@@ -510,6 +539,13 @@ class ImclientFfiChannel implements ImclientChannel {
     _wf.setDomainInfoUpdateListener(_bridge.fn('wfc_on_domain_info_updated'));
     _wf.setOnlineEventListener(_bridge.fn('wfc_on_online_event_updated'));
     _wf.setConferenceEventListener(_bridge.fn('wfc_on_conference_event'));
+    _wf.setTrafficDataListener(_bridge.fn('wfc_on_traffic_data'));
+    _wf.setErrorEventListener(_bridge.fn('wfc_on_error_event'));
+    _wf.setSecretChatStateListener(_bridge.fn('wfc_on_secret_chat_state'));
+    _wf.setSecretMessageBurnStateListener(
+      _bridge.fn('wfc_on_secret_msg_burn_start'),
+      _bridge.fn('wfc_on_secret_msg_burned'),
+    );
   }
 
   // ---- 请求级回调指针 ----
@@ -2338,6 +2374,12 @@ class _BridgeTag {
   static const int sendMessageError = 27;
   static const int uploadMediaProgress = 28;
   static const int connectedToServer = 29;
+
+  static const int trafficData = 30;
+  static const int errorEvent = 31;
+  static const int secretChatState = 32;
+  static const int secretMsgBurnStart = 33;
+  static const int secretMsgBurned = 34;
 }
 
 /// wfc_dart_bridge 导出符号绑定。
