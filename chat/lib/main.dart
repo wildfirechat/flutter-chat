@@ -23,7 +23,9 @@ import 'package:avenginekit/engine/avengine_callback.dart';
 import 'package:avenginekit/engine/call_session.dart';
 import 'package:avenginekit/engine/call_end_reason.dart';
 import 'package:avenginekit/engine/avenginekit.dart';
+import 'package:chat/call/callkit_service.dart';
 import 'package:chat/call/voip_call_screen.dart';
+import 'package:chat/share/share_service.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
@@ -158,6 +160,12 @@ class _MyAppState extends State<MyApp> {
     _initRepo();
     _avEngineCallback = MainAVEngineCallback(navKey, _shell);
     avEngineKit.init(_avEngineCallback);
+    CallKitService.instance.init();
+    ShareService.instance.init();
+    ShareService.instance.shareItemsStream.listen((items) {
+      debugPrint('Received shared items: $items');
+      // TODO: 展示会话选择器，把内容发送到选中的会话
+    });
     WfcNotificationManager().init();
     WfcNotificationManager().onNotificationTapped = _handleNotificationTap;
 
@@ -168,6 +176,7 @@ class _MyAppState extends State<MyApp> {
         _isBackground = true;
         debugPrint("goto background");
         updateAppBadge();
+        ShareService.instance.syncSharedDataOnBackground();
       } else if (state == AppLifecycleState.resumed) {
         debugPrint("goto foreground");
         _isBackground = false;
@@ -532,6 +541,10 @@ class MainAVEngineCallback implements AVEngineCallback {
   @override
   void didCallEnded(CallEndReason reason, int duration) {
     debugPrint('didCallEnded: $reason, $duration');
+    final session = avEngineKit.currentSession;
+    if (session != null) {
+      CallKitService.instance.reportCallEnded(session.callId);
+    }
   }
 
   @override
@@ -555,6 +568,7 @@ class MainAVEngineCallback implements AVEngineCallback {
   @override
   void onReceiveCall(CallSession session) {
     debugPrint('onReceiveCall: ${session.callId}');
+    CallKitService.instance.onReceiveCall(session);
     Future.delayed(const Duration(milliseconds: 100), () {
       if (session.status != CallState.STATUS_IDLE) {
         _presentCall(session);

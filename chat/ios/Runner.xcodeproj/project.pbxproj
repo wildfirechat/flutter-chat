@@ -7,19 +7,63 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02CA4840FCD3CFC8A6837624 /* ShareUtility.h in Headers */ = {isa = PBXBuildFile; fileRef = DECEDEC7F234AB2AE8A10A94 /* ShareUtility.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1232CDF528600D23EA04A91A /* MBProgressHUD.h in Headers */ = {isa = PBXBuildFile; fileRef = 3314A35AD4318CF305A3A51B /* MBProgressHUD.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		18CD9C18DB7F0D280B7C7A22 /* ShareExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = D71A1AFB468D329BA8D47665 /* ShareExtension.appex */; };
+		1E34432DDB7209DA2CC9187D /* ShareAppService.m in Sources */ = {isa = PBXBuildFile; fileRef = 926314E53303CF24AD96991B /* ShareAppService.m */; };
+		1E46D943FDB086B008C161DC /* ShareNavigationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 9DF20DE9AD772D43A34E31FD /* ShareNavigationController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		2425B8D03FD20455C62F6EE6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B8E46C5E8EA04D06EE6D00B /* Foundation.framework */; };
 		25535009011D4CB1ED015EBF /* libPods-Runner.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 12BCBF121A7E228EE7EFF771 /* libPods-Runner.a */; };
+		2C6CF41B312801593AE3EBBD /* ShareUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C2D31D2D78FAAD1F93F81D27 /* ShareUtility.m */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		50570B919BEF53EAF3B1F70E /* WFCCallKitManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 99E285BB8667334D218CAB06 /* WFCCallKitManager.h */; };
+		5637C2A9C7DFD3169833709D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 387178D10717B9BB561A73C6 /* CoreGraphics.framework */; };
+		5E68C076DC872B35A6E97C42 /* ConversationCell.m in Sources */ = {isa = PBXBuildFile; fileRef = AD23C99BD32E7BFFC2AB9362 /* ConversationCell.m */; };
+		6B688853C672D80F1521DA2C /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 9AD97076A40D7B75757DACD0 /* MBProgressHUD.m */; };
+		6C8C86C20DF563721900D0FD /* ShareNavigationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1E57CBA21C1EE8E3E670E4CE /* ShareNavigationController.m */; };
+		74149A5C9688C09B5F7300C9 /* ShareAppService.h in Headers */ = {isa = PBXBuildFile; fileRef = 2A51DF9E7591CD9BFAAC1A00 /* ShareAppService.h */; };
+		7FC33A9FEAB2D5D840D0C840 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F87E5066CD8EEAF0C8EDFD3 /* QuartzCore.framework */; };
+		91823349B0043D021B4E765D /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D0F63349655C3EAEA6DCFE4 /* MobileCoreServices.framework */; };
+		92D07DE3FDE8FFF641A93F45 /* ConversationListViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 282D152375D798581F8C5D62 /* ConversationListViewController.m */; };
 		978B8F6F1D3862AE00F588F7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AFFD8EE1D35381100E5BB4D /* AppDelegate.m */; };
 		97C146F31CF9000F007C117D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 97C146F21CF9000F007C117D /* main.m */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		A2D7E7CF296F2E6CEF6F3687 /* SharedConversation.h in Headers */ = {isa = PBXBuildFile; fileRef = 31FA6B19126282B654CE2A25 /* SharedConversation.h */; };
 		B7D702C52C2114650004B88D /* CallKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D702C42C2114650004B88D /* CallKit.framework */; };
 		B7D702C72C21146B0004B88D /* PushKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B7D702C62C21146B0004B88D /* PushKit.framework */; };
+		C5EC063FCA0287122D8FF274 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 23A5D087570F2F6D419EE087 /* UIKit.framework */; };
+		CC4E62CEC9B59D7F68D4833E /* ConversationListViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = A19A566E16D41628F4557CEE /* ConversationListViewController.h */; };
+		D54D8BDF55B40DC311952886 /* SharedConversation.m in Sources */ = {isa = PBXBuildFile; fileRef = E54505C3596246D4E6CBCED0 /* SharedConversation.m */; };
+		D913F6EF5ED07710A3479A55 /* ShareViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2FA0F821F2096C893CA14248 /* ShareViewController.m */; };
+		E0F3F113CD5A86BA11FC53ED /* ConversationCell.h in Headers */ = {isa = PBXBuildFile; fileRef = DA6696AB45C73CBD7448DA0B /* ConversationCell.h */; };
+		FA117B5774B9C4939379B65D /* WFCCallKitManager.m in Sources */ = {isa = PBXBuildFile; fileRef = FFA2D189D652A52C31001555 /* WFCCallKitManager.m */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		5390055564E7ED0AD618854C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 97C146E61CF9000F007C117D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EC3CA6D868BA0B375DEA00B2;
+			remoteInfo = ShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
+		328914978BF4627F36052BB8 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				18CD9C18DB7F0D280B7C7A22 /* ShareExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9705A1C41CF9048500538489 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -36,12 +80,29 @@
 		12BCBF121A7E228EE7EFF771 /* libPods-Runner.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Runner.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
+		1E57CBA21C1EE8E3E670E4CE /* ShareNavigationController.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = ShareNavigationController.m; path = ShareExtension/ShareNavigationController.m; sourceTree = "<group>"; };
+		23A5D087570F2F6D419EE087 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = "<group>"; };
+		282D152375D798581F8C5D62 /* ConversationListViewController.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = ConversationListViewController.m; path = ShareExtension/ConversationListViewController.m; sourceTree = "<group>"; };
+		2A51DF9E7591CD9BFAAC1A00 /* ShareAppService.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ShareAppService.h; path = ShareExtension/ShareAppService.h; sourceTree = "<group>"; };
+		2B565ACD38057B17BD1D8B22 /* ShareExtensionDebug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = ShareExtensionDebug.xcconfig; path = Flutter/ShareExtensionDebug.xcconfig; sourceTree = "<group>"; };
+		2E4B5C5F55F54EFABA7671CC /* ShareExtensionProfile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = ShareExtensionProfile.xcconfig; path = Flutter/ShareExtensionProfile.xcconfig; sourceTree = "<group>"; };
+		2FA0F821F2096C893CA14248 /* ShareViewController.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = ShareViewController.m; path = ShareExtension/ShareViewController.m; sourceTree = "<group>"; };
 		2FF694F68CBBB1DC008E9E15 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
+		31FA6B19126282B654CE2A25 /* SharedConversation.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = SharedConversation.h; path = ShareExtension/SharedConversation.h; sourceTree = "<group>"; };
+		3314A35AD4318CF305A3A51B /* MBProgressHUD.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = MBProgressHUD.h; path = ShareExtension/MBProgressHUD.h; sourceTree = "<group>"; };
+		3637281244D1960AE1C8B889 /* ShareExtensionRelease.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = ShareExtensionRelease.xcconfig; path = Flutter/ShareExtensionRelease.xcconfig; sourceTree = "<group>"; };
+		387178D10717B9BB561A73C6 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
+		3B8E46C5E8EA04D06EE6D00B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = "<group>"; };
 		3C3F95C955DF354278B56CD7 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
+		3D0F63349655C3EAEA6DCFE4 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = "<group>"; };
+		3F64E55B18D091A874F63CEF /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; name = Info.plist; path = ShareExtension/Info.plist; sourceTree = "<group>"; };
+		3F87E5066CD8EEAF0C8EDFD3 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
 		7AFFD8ED1D35381100E5BB4D /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		7AFFD8EE1D35381100E5BB4D /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		8C841F6D5C913E8BCD679497 /* ShareExtension.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; name = ShareExtension.entitlements; path = ShareExtension/ShareExtension.entitlements; sourceTree = "<group>"; };
+		926314E53303CF24AD96991B /* ShareAppService.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = ShareAppService.m; path = ShareExtension/ShareAppService.m; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -50,10 +111,22 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		99E285BB8667334D218CAB06 /* WFCCallKitManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = WFCCallKitManager.h; sourceTree = "<group>"; };
+		9AD97076A40D7B75757DACD0 /* MBProgressHUD.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = MBProgressHUD.m; path = ShareExtension/MBProgressHUD.m; sourceTree = "<group>"; };
+		9DF20DE9AD772D43A34E31FD /* ShareNavigationController.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ShareNavigationController.h; path = ShareExtension/ShareNavigationController.h; sourceTree = "<group>"; };
+		A19A566E16D41628F4557CEE /* ConversationListViewController.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ConversationListViewController.h; path = ShareExtension/ConversationListViewController.h; sourceTree = "<group>"; };
+		AD23C99BD32E7BFFC2AB9362 /* ConversationCell.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = ConversationCell.m; path = ShareExtension/ConversationCell.m; sourceTree = "<group>"; };
 		B7834E802AD0ED1C001C0128 /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
 		B7D702C42C2114650004B88D /* CallKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CallKit.framework; path = System/Library/Frameworks/CallKit.framework; sourceTree = SDKROOT; };
 		B7D702C62C21146B0004B88D /* PushKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PushKit.framework; path = System/Library/Frameworks/PushKit.framework; sourceTree = SDKROOT; };
+		C2D31D2D78FAAD1F93F81D27 /* ShareUtility.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = ShareUtility.m; path = ShareExtension/ShareUtility.m; sourceTree = "<group>"; };
 		D55326E4A8C7A97ECAF35CAD /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
+		D71A1AFB468D329BA8D47665 /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		DA6696AB45C73CBD7448DA0B /* ConversationCell.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ConversationCell.h; path = ShareExtension/ConversationCell.h; sourceTree = "<group>"; };
+		DECEDEC7F234AB2AE8A10A94 /* ShareUtility.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ShareUtility.h; path = ShareExtension/ShareUtility.h; sourceTree = "<group>"; };
+		E54505C3596246D4E6CBCED0 /* SharedConversation.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = SharedConversation.m; path = ShareExtension/SharedConversation.m; sourceTree = "<group>"; };
+		E94196BCB99EAE618711E4FE /* ShareViewController.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ShareViewController.h; path = ShareExtension/ShareViewController.h; sourceTree = "<group>"; };
+		FFA2D189D652A52C31001555 /* WFCCallKitManager.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = WFCCallKitManager.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +137,18 @@
 				25535009011D4CB1ED015EBF /* libPods-Runner.a in Frameworks */,
 				B7D702C52C2114650004B88D /* CallKit.framework in Frameworks */,
 				B7D702C72C21146B0004B88D /* PushKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB02310FF9812DD7BF2DC498 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				91823349B0043D021B4E765D /* MobileCoreServices.framework in Frameworks */,
+				2425B8D03FD20455C62F6EE6 /* Foundation.framework in Frameworks */,
+				C5EC063FCA0287122D8FF274 /* UIKit.framework in Frameworks */,
+				7FC33A9FEAB2D5D840D0C840 /* QuartzCore.framework in Frameworks */,
+				5637C2A9C7DFD3169833709D /* CoreGraphics.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -80,6 +165,31 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		2E3F4E5AC37DCD1145BE31A6 /* ShareExtension */ = {
+			isa = PBXGroup;
+			children = (
+				E94196BCB99EAE618711E4FE /* ShareViewController.h */,
+				2FA0F821F2096C893CA14248 /* ShareViewController.m */,
+				3F64E55B18D091A874F63CEF /* Info.plist */,
+				8C841F6D5C913E8BCD679497 /* ShareExtension.entitlements */,
+				31FA6B19126282B654CE2A25 /* SharedConversation.h */,
+				E54505C3596246D4E6CBCED0 /* SharedConversation.m */,
+				DA6696AB45C73CBD7448DA0B /* ConversationCell.h */,
+				AD23C99BD32E7BFFC2AB9362 /* ConversationCell.m */,
+				A19A566E16D41628F4557CEE /* ConversationListViewController.h */,
+				282D152375D798581F8C5D62 /* ConversationListViewController.m */,
+				2A51DF9E7591CD9BFAAC1A00 /* ShareAppService.h */,
+				926314E53303CF24AD96991B /* ShareAppService.m */,
+				DECEDEC7F234AB2AE8A10A94 /* ShareUtility.h */,
+				C2D31D2D78FAAD1F93F81D27 /* ShareUtility.m */,
+				3314A35AD4318CF305A3A51B /* MBProgressHUD.h */,
+				9AD97076A40D7B75757DACD0 /* MBProgressHUD.m */,
+				9DF20DE9AD772D43A34E31FD /* ShareNavigationController.h */,
+				1E57CBA21C1EE8E3E670E4CE /* ShareNavigationController.m */,
+			);
+			name = ShareExtension;
+			sourceTree = "<group>";
+		};
 		9740EEB11CF90186004384FC /* Flutter */ = {
 			isa = PBXGroup;
 			children = (
@@ -87,6 +197,9 @@
 				9740EEB21CF90195004384FC /* Debug.xcconfig */,
 				7AFA3C8E1D35360C0083082E /* Release.xcconfig */,
 				9740EEB31CF90195004384FC /* Generated.xcconfig */,
+				2B565ACD38057B17BD1D8B22 /* ShareExtensionDebug.xcconfig */,
+				3637281244D1960AE1C8B889 /* ShareExtensionRelease.xcconfig */,
+				2E4B5C5F55F54EFABA7671CC /* ShareExtensionProfile.xcconfig */,
 			);
 			name = Flutter;
 			sourceTree = "<group>";
@@ -99,6 +212,7 @@
 				97C146EF1CF9000F007C117D /* Products */,
 				08E129FDD942834FDAEB62CB /* Pods */,
 				B55F17F4340405E23AE76B44 /* Frameworks */,
+				2E3F4E5AC37DCD1145BE31A6 /* ShareExtension */,
 			);
 			sourceTree = "<group>";
 		};
@@ -106,6 +220,7 @@
 			isa = PBXGroup;
 			children = (
 				97C146EE1CF9000F007C117D /* Runner.app */,
+				D71A1AFB468D329BA8D47665 /* ShareExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -123,6 +238,8 @@
 				97C146F11CF9000F007C117D /* Supporting Files */,
 				1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */,
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
+				99E285BB8667334D218CAB06 /* WFCCallKitManager.h */,
+				FFA2D189D652A52C31001555 /* WFCCallKitManager.m */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -141,11 +258,49 @@
 				B7D702C62C21146B0004B88D /* PushKit.framework */,
 				B7D702C42C2114650004B88D /* CallKit.framework */,
 				12BCBF121A7E228EE7EFF771 /* libPods-Runner.a */,
+				D81D8AF486E1CE2F62235BC9 /* iOS */,
+				3D0F63349655C3EAEA6DCFE4 /* MobileCoreServices.framework */,
+				3B8E46C5E8EA04D06EE6D00B /* Foundation.framework */,
+				23A5D087570F2F6D419EE087 /* UIKit.framework */,
+				3F87E5066CD8EEAF0C8EDFD3 /* QuartzCore.framework */,
+				387178D10717B9BB561A73C6 /* CoreGraphics.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		D81D8AF486E1CE2F62235BC9 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		84D7501A5EC0F677701CF8F6 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A2D7E7CF296F2E6CEF6F3687 /* SharedConversation.h in Headers */,
+				E0F3F113CD5A86BA11FC53ED /* ConversationCell.h in Headers */,
+				CC4E62CEC9B59D7F68D4833E /* ConversationListViewController.h in Headers */,
+				74149A5C9688C09B5F7300C9 /* ShareAppService.h in Headers */,
+				02CA4840FCD3CFC8A6837624 /* ShareUtility.h in Headers */,
+				1232CDF528600D23EA04A91A /* MBProgressHUD.h in Headers */,
+				1E46D943FDB086B008C161DC /* ShareNavigationController.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9E35DD9D9006E8857B713012 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				50570B919BEF53EAF3B1F70E /* WFCCallKitManager.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		97C146ED1CF9000F007C117D /* Runner */ = {
@@ -153,11 +308,13 @@
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
 			buildPhases = (
 				F37DFA4D56245D8279CB6F4E /* [CP] Check Pods Manifest.lock */,
+				9E35DD9D9006E8857B713012 /* Headers */,
 				9740EEB61CF901F6004384FC /* Run Script */,
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
+				328914978BF4627F36052BB8 /* Embed App Extensions */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				E8476E2621346F4870EFA858 /* [CP] Embed Pods Frameworks */,
 				6375CCACFEFF83AD09FA0C03 /* [CP] Copy Pods Resources */,
@@ -165,11 +322,30 @@
 			buildRules = (
 			);
 			dependencies = (
+				AB489012DAA245B4517AD8A3 /* PBXTargetDependency */,
 			);
 			name = Runner;
 			productName = Runner;
 			productReference = 97C146EE1CF9000F007C117D /* Runner.app */;
 			productType = "com.apple.product-type.application";
+		};
+		EC3CA6D868BA0B375DEA00B2 /* ShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 25C8DD3188E2A7852DDDEDAB /* Build configuration list for PBXNativeTarget "ShareExtension" */;
+			buildPhases = (
+				140798426B3505D95DD3A22C /* Sources */,
+				FB02310FF9812DD7BF2DC498 /* Frameworks */,
+				5965CFFE3C9B11112D7E0B84 /* Resources */,
+				84D7501A5EC0F677701CF8F6 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ShareExtension;
+			productName = ShareExtension;
+			productReference = D71A1AFB468D329BA8D47665 /* ShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -199,11 +375,19 @@
 			projectRoot = "";
 			targets = (
 				97C146ED1CF9000F007C117D /* Runner */,
+				EC3CA6D868BA0B375DEA00B2 /* ShareExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		5965CFFE3C9B11112D7E0B84 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97C146EC1CF9000F007C117D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -232,7 +416,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
+			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\n";
 		};
 		6375CCACFEFF83AD09FA0C03 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -308,6 +492,21 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		140798426B3505D95DD3A22C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D913F6EF5ED07710A3479A55 /* ShareViewController.m in Sources */,
+				D54D8BDF55B40DC311952886 /* SharedConversation.m in Sources */,
+				5E68C076DC872B35A6E97C42 /* ConversationCell.m in Sources */,
+				92D07DE3FDE8FFF641A93F45 /* ConversationListViewController.m in Sources */,
+				1E34432DDB7209DA2CC9187D /* ShareAppService.m in Sources */,
+				2C6CF41B312801593AE3EBBD /* ShareUtility.m in Sources */,
+				6B688853C672D80F1521DA2C /* MBProgressHUD.m in Sources */,
+				6C8C86C20DF563721900D0FD /* ShareNavigationController.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97C146EA1CF9000F007C117D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -315,10 +514,20 @@
 				978B8F6F1D3862AE00F588F7 /* AppDelegate.m in Sources */,
 				97C146F31CF9000F007C117D /* main.m in Sources */,
 				1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */,
+				FA117B5774B9C4939379B65D /* WFCCallKitManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AB489012DAA245B4517AD8A3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ShareExtension;
+			target = EC3CA6D868BA0B375DEA00B2 /* ShareExtension */;
+			targetProxy = 5390055564E7ED0AD618854C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		97C146FA1CF9000F007C117D /* Main.storyboard */ = {
@@ -340,6 +549,33 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		01AB678DC2BEC1DB9107F9D1 /* Profile */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2E4B5C5F55F54EFABA7671CC /* ShareExtensionProfile.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CURRENT_PROJECT_VERSION = 0.1.1;
+				DEVELOPMENT_TEAM = Y8356M2VAP;
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.wildfirechat.messangerEx.ShareExtension;
+				PRODUCT_NAME = ShareExtension;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Profile;
+		};
 		249021D3217E4FDB00AE95B9 /* Profile */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -399,12 +635,17 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Y8356M2VAP;
 				ENABLE_BITCODE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USE_CALL_KIT=0",
+					"$(inherited)",
+				);
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = cn.wildfirechat.messangerEx;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -414,6 +655,59 @@
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Profile;
+		};
+		5AA908426B695A64D4C3000E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2B565ACD38057B17BD1D8B22 /* ShareExtensionDebug.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CURRENT_PROJECT_VERSION = 0.1.1;
+				DEVELOPMENT_TEAM = Y8356M2VAP;
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.wildfirechat.messangerEx.ShareExtension;
+				PRODUCT_NAME = ShareExtension;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		793E3EFC99B4A3FC42CFCA4C /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3637281244D1960AE1C8B889 /* ShareExtensionRelease.xcconfig */;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
+				CURRENT_PROJECT_VERSION = 0.1.1;
+				DEVELOPMENT_TEAM = Y8356M2VAP;
+				ENABLE_BITCODE = NO;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.wildfirechat.messangerEx.ShareExtension;
+				PRODUCT_NAME = ShareExtension;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
 		};
 		97C147031CF9000F007C117D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -529,12 +823,17 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Y8356M2VAP;
 				ENABLE_BITCODE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USE_CALL_KIT=0",
+					"$(inherited)",
+				);
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = cn.wildfirechat.messangerEx;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -554,12 +853,17 @@
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = Y8356M2VAP;
 				ENABLE_BITCODE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USE_CALL_KIT=0",
+					"$(inherited)",
+				);
 				INFOPLIST_FILE = Runner/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.social-networking";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = cn.wildfirechat.messangerEx;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -573,6 +877,16 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		25C8DD3188E2A7852DDDEDAB /* Build configuration list for PBXNativeTarget "ShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				793E3EFC99B4A3FC42CFCA4C /* Release */,
+				5AA908426B695A64D4C3000E /* Debug */,
+				01AB678DC2BEC1DB9107F9D1 /* Profile */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		97C146E91CF9000F007C117D /* Build configuration list for PBXProject "Runner" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

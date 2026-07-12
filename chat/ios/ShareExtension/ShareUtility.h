@@ -1,0 +1,17 @@
+//
+//  ShareUtility.h
+//  ShareExtension
+//
+
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface ShareUtility : NSObject
++ (UIImage *)generateThumbnail:(UIImage *)image
+                     withWidth:(CGFloat)targetWidth
+                    withHeight:(CGFloat)targetHeight;
+@end
+
+NS_ASSUME_NONNULL_END
