@@ -264,23 +264,32 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
   Widget _buildSubOrgTile(Organization subOrg) {
     final name = '${subOrg.name}(${subOrg.memberCount ?? 0})';
     final baseHeight = isDesktopShell ? 48.0 : 56.0;
+    // 用 minTileHeight 而不是外层 Container(minHeight):后者只会把容器撑高,
+    // ListTile 的内容仍按自身高度锚在顶部,导致行内不垂直居中。
+    return ListTile(
+      minTileHeight: LayoutScale.watchScale(context, baseHeight, cap: LayoutScale.rowCap),
+      leading: Icon(
+        Icons.corporate_fare,
+        color: Theme.of(context).colorScheme.secondary,
+        size: LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap),
+      ),
+      title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
+      trailing: Icon(
+        Icons.chevron_right,
+        size: LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap),
+      ),
+      onTap: () => _viewModel.navigateToOrganization(subOrg),
+    );
+  }
+
+  /// 部门行之间的分割线,左端与标题文字对齐(16 内边距 + 图标宽 + 16 标题间距)。
+  Widget _buildTileDivider() {
     return Container(
-      constraints: BoxConstraints(
-        minHeight: LayoutScale.watchScale(context, baseHeight, cap: LayoutScale.rowCap),
+      margin: EdgeInsets.only(
+        left: 16.0 + LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap) + 16.0,
       ),
-      child: ListTile(
-        leading: Icon(
-          Icons.corporate_fare,
-          color: Theme.of(context).colorScheme.secondary,
-          size: LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap),
-        ),
-        title: Text(name),
-        trailing: Icon(
-          Icons.chevron_right,
-          size: LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap),
-        ),
-        onTap: () => _viewModel.navigateToOrganization(subOrg),
-      ),
+      height: 0.5,
+      color: context.colors.hairlineSoft,
     );
   }
 
@@ -309,22 +318,18 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
         ? (isDesktopShell ? 64.0 : 72.0)
         : (isDesktopShell ? 48.0 : 56.0);
 
-    return Container(
-      constraints: BoxConstraints(
-        minHeight: LayoutScale.watchScale(context, baseHeight, cap: LayoutScale.rowCap),
-      ),
-      child: Opacity(
-        opacity: isDisabled ? 0.5 : 1.0,
-        child: ListTile(
-          leading: Portrait(
-            emp.portraitUrl ?? WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()),
-            Config.defaultUserPortrait,
-          ),
-          title: Text(emp.name),
-          subtitle: hasSubtitle ? Text(emp.title!) : null,
-          trailing: trailing,
-            onTap: onTap,
+    return Opacity(
+      opacity: isDisabled ? 0.5 : 1.0,
+      child: ListTile(
+        minTileHeight: LayoutScale.watchScale(context, baseHeight, cap: LayoutScale.rowCap),
+        leading: Portrait(
+          emp.portraitUrl ?? WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()),
+          Config.defaultUserPortrait,
         ),
+        title: Text(emp.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+        subtitle: hasSubtitle ? Text(emp.title!, maxLines: 1, overflow: TextOverflow.ellipsis) : null,
+        trailing: trailing,
+        onTap: onTap,
       ),
     );
   }
@@ -362,7 +367,10 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
         children: [
           if (subOrgs.isNotEmpty) ...[
             _buildSectionHeader(l10n.subDepartments),
-            ...subOrgs.map(_buildSubOrgTile),
+            for (int i = 0; i < subOrgs.length; i++) ...[
+              if (i > 0) _buildTileDivider(),
+              _buildSubOrgTile(subOrgs[i]),
+            ],
           ],
           if (employees.isNotEmpty) ...[
             _buildSectionHeader(l10n.members),

@@ -55,7 +55,7 @@ class MeTab extends StatelessWidget {
                     height: 20.0),
                 showBottomDivider: false,
                 onTap: () {
-                  openPage(context, MessageNotificationSettings());
+                  openPage(context, const MessageNotificationSettings());
                 },
               ),
             ),

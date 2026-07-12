@@ -5,6 +5,9 @@ import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
 import 'package:chat/conversation/conversation_screen.dart';
+import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
+import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 
@@ -54,9 +57,7 @@ class SubscribedChannelsPageState extends State<SubscribedChannelsPage> {
         if (channelInfo == null) {
           return Container();
         }
-        return ListTile(
-          leading: Portrait(channelInfo.portrait ?? Config.defaultChannelPortrait, Config.defaultChannelPortrait),
-          title: Text(channelInfo.name ?? 'Channel'),
+        return InkWell(
           onTap: () {
             Navigator.push(
               context,
@@ -67,6 +68,27 @@ class SubscribedChannelsPageState extends State<SubscribedChannelsPage> {
               ),
             );
           },
+          hoverColor: context.colors.hoverOverlay,
+          child: Container(
+            // 行高随字号档位缩放(封顶 rowCap),标题单行省略:
+            // 二者配套才能保证最大字号下行与行不重叠。
+            height: LayoutScale.watchScale(context, 56.0, cap: LayoutScale.rowCap),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                Portrait(channelInfo.portrait ?? Config.defaultChannelPortrait, Config.defaultChannelPortrait, width: 40, height: 40),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    channelInfo.name ?? 'Channel',
+                    style: AppText.lg,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );

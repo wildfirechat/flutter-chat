@@ -7,9 +7,12 @@ import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/channel/search_channel.dart';
 import 'package:chat/config.dart';
-import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
+import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/widget/portrait.dart';
 
 import '../conversation/conversation_screen.dart';
 
@@ -61,7 +64,7 @@ class ChannelListState extends State<ChannelList> {
 
   Widget _buildRow(BuildContext context, int index) {
     String channelId = channelIds![index];
-    return GestureDetector(child: ChannelItem(channelId), onTap: () => _toChat(channelId),);
+    return ChannelItem(channelId, onTap: () => _toChat(channelId));
   }
 
   void _toChat(String channelId) {
@@ -87,8 +90,9 @@ class ChannelListState extends State<ChannelList> {
 
 class ChannelItem extends StatefulWidget {
   final String channelId;
+  final VoidCallback? onTap;
 
-  const ChannelItem(this.channelId, {Key? key}) : super(key: key);
+  const ChannelItem(this.channelId, {Key? key, this.onTap}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => ChannelItemState();
@@ -120,18 +124,30 @@ class ChannelItemState extends State<ChannelItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(padding: const EdgeInsets.all(8), child: Column(children: [
-      Row(children: [
-        SizedBox(width: 40, height: 40, child: channelInfo == null || channelInfo!.portrait == null ? Image.asset(Config.defaultChannelPortrait) : Image.network(MediaUrlRedirector.redirect(channelInfo!.portrait!)),),
-        const Padding(padding: EdgeInsets.all(8)),
-        Expanded(child: Text(channelInfo == null || channelInfo!.name == null ? '频道<${widget.channelId}>' : channelInfo!.name!)),
-      ],),
-      Container(
-        margin: const EdgeInsets.fromLTRB(12.0, 4.0, 12.0, 4.0),
-        height: 1,
-        color: const Color(0xffebebeb),
-      )
-    ],),);
+    return InkWell(
+      onTap: widget.onTap,
+      hoverColor: context.colors.hoverOverlay,
+      child: Container(
+        // 行高随字号档位缩放(封顶 rowCap),标题单行省略:
+        // 二者配套才能保证最大字号下行与行不重叠。
+        height: LayoutScale.watchScale(context, 56.0, cap: LayoutScale.rowCap),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Row(
+          children: [
+            Portrait(channelInfo?.portrait ?? Config.defaultChannelPortrait, Config.defaultChannelPortrait, width: 40, height: 40),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                channelInfo?.name ?? '频道<${widget.channelId}>',
+                style: AppText.lg,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override

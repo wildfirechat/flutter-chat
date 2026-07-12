@@ -24,6 +24,7 @@ import 'package:chat/scanner/qr_scanner_screen.dart';
 import 'package:chat/group/group_info_screen.dart';
 import 'package:chat/user_info_widget.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/widget/popup_menu_overlay.dart';
 
 import 'package:chat/wfc_scheme.dart';
 import 'package:chat/pc/pc_login_screen.dart';
@@ -49,6 +50,7 @@ class HomeTabBarState extends State<HomeTabBar> {
 
   Color themeColor = Colors.orange;
   int _tabIndex = 0;
+  final GlobalKey _plusButtonKey = GlobalKey();
 
   var tabImages;
   var _body;
@@ -224,6 +226,50 @@ class HomeTabBarState extends State<HomeTabBar> {
     showSearch(context: context, delegate: SearchUserDelegate());
   }
 
+  void _showPlusMenu(BuildContext context) {
+    final renderBox =
+        _plusButtonKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) return;
+    final targetRect = renderBox.localToGlobal(Offset.zero) & renderBox.size;
+
+    PopupMenuOverlay.show(
+      context: context,
+      targetRect: targetRect,
+      listMode: true,
+      popupWidth: 160,
+      menuItems: [
+        {
+          'label': AppLocalizations.of(context)!.startChat,
+          'value': 'chat',
+          'icon': Icons.chat_bubble_rounded,
+        },
+        {
+          'label': AppLocalizations.of(context)!.addFriend,
+          'value': 'add',
+          'icon': Icons.contact_phone_rounded,
+        },
+        {
+          'label': AppLocalizations.of(context)!.scanQrCode,
+          'value': 'scan',
+          'icon': Icons.qr_code_scanner_rounded,
+        },
+      ],
+      onItemTap: (value) {
+        switch (value) {
+          case 'chat':
+            _startChat();
+            break;
+          case 'add':
+            _addFriend();
+            break;
+          case 'scan':
+            _scanQrCode();
+            break;
+        }
+      },
+    );
+  }
+
   void _scanQrCode() async {
     try {
       final result = await Navigator.push(
@@ -349,50 +395,10 @@ class HomeTabBarState extends State<HomeTabBar> {
                     child: const Icon(Icons.search_rounded),
                   ),
                   const Padding(padding: EdgeInsets.only(left: 8)),
-                  PopupMenuButton<String>(
-                    icon: const Icon(Icons.add_circle_outline_rounded),
-                    offset: const Offset(10, 60),
-                    itemBuilder: (context) {
-                      return [
-                        PopupMenuItem(
-                          value: "chat",
-                          child: ListTile(
-                            leading: const Icon(Icons.chat_bubble_rounded),
-                            title:
-                                Text(AppLocalizations.of(context)!.startChat),
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: "add",
-                          child: ListTile(
-                            leading: const Icon(Icons.contact_phone_rounded),
-                            title:
-                                Text(AppLocalizations.of(context)!.addFriend),
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: "scan",
-                          child: ListTile(
-                            leading: const Icon(Icons.qr_code_scanner_rounded),
-                            title:
-                                Text(AppLocalizations.of(context)!.scanQrCode),
-                          ),
-                        ),
-                      ];
-                    },
-                    onSelected: (value) {
-                      switch (value) {
-                        case "chat":
-                          _startChat();
-                          break;
-                        case "add":
-                          _addFriend();
-                          break;
-                        case "scan":
-                          _scanQrCode();
-                          break;
-                      }
-                    },
+                  GestureDetector(
+                    key: _plusButtonKey,
+                    onTap: () => _showPlusMenu(context),
+                    child: const Icon(Icons.add_circle_outline_rounded),
                   ),
                   const Padding(padding: EdgeInsets.only(left: 16)),
                 ],

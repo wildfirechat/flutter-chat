@@ -7,11 +7,14 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 
+import '../app_navigator.dart';
 import '../config.dart';
-import '../utils/media_url_redirector.dart';
+import '../user_info_widget.dart';
 import '../utils/mesh_user_name.dart';
 import '../mesh/mesh_cache.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
+import 'package:chat/widget/portrait.dart';
 
 class FriendRequestPage extends StatefulWidget {
   const FriendRequestPage({super.key});
@@ -98,28 +101,47 @@ class FriendRequestPageState extends State<FriendRequestPage> {
     return AnimatedBuilder(
       animation: MeshCache.instance,
       builder: (context, child) {
-        return Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              (userInfo == null || userInfo.portrait == null || userInfo.portrait!.isEmpty) ? Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0) : Image.network(MediaUrlRedirector.redirect(userInfo.portrait!), width: 40, height: 40,),
-              const Padding(padding: EdgeInsets.all(8)),
-              Expanded(
+        return InkWell(
+          onTap: () => pushPage(context, UserInfoWidget(request.target)),
+          hoverColor: context.colors.hoverOverlay,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              children: [
+                Portrait(userInfo?.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40, height: 40),
+                const SizedBox(width: 12),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      userInfo != null ? MeshUserName(userInfo) : Text("<${request.target}>"),
-                      Text(request.reason??""),
+                      userInfo != null
+                          ? MeshUserName(userInfo, style: AppText.lg, maxLines: 1, overflow: TextOverflow.ellipsis)
+                          : Text("<${request.target}>", style: AppText.lg, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      if (request.reason != null && request.reason!.isNotEmpty)
+                        Text(
+                          request.reason!,
+                          style: AppText.sm.copyWith(color: context.colors.textSecondary),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                     ],
                   ),
-              ),
-              SizedBox(
-                width: 80,
-                child: Center(
-                  child: request.status == FriendRequestStatus.WaitingAccept?OutlinedButton(onPressed: ()=>_acceptRequest(request.target), child: Text(AppLocalizations.of(context)!.friendRequestAccept)):(request.status == FriendRequestStatus.Accepted?Text(AppLocalizations.of(context)!.friendRequestAccepted):Text(AppLocalizations.of(context)!.friendRequestRejected)),
                 ),
-              ),
-            ],
+                const SizedBox(width: 12),
+                if (request.status == FriendRequestStatus.WaitingAccept)
+                  OutlinedButton(
+                    onPressed: () => _acceptRequest(request.target),
+                    child: Text(AppLocalizations.of(context)!.friendRequestAccept),
+                  )
+                else
+                  Text(
+                    request.status == FriendRequestStatus.Accepted
+                        ? AppLocalizations.of(context)!.friendRequestAccepted
+                        : AppLocalizations.of(context)!.friendRequestRejected,
+                    style: AppText.sm.copyWith(color: context.colors.textSecondary),
+                  ),
+              ],
+            ),
           ),
         );
       },

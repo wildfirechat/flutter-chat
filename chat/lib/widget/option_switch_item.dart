@@ -10,11 +10,15 @@ class OptionSwitchItem extends StatelessWidget {
   final ValueChanged<bool> onChanged;
   final bool showBottomDivider;
 
+  /// 开关左侧的说明文字(如免打扰时段),右对齐、次要色,同 [OptionItem] 的 desc。
+  final String? desc;
+
   const OptionSwitchItem(
     this.title,
     this.value,
     this.onChanged, {
     this.showBottomDivider = true,
+    this.desc,
     super.key,
   });
 
@@ -35,12 +39,26 @@ class OptionSwitchItem extends StatelessWidget {
               constraints: BoxConstraints(minHeight: rowHeight),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: AppText.lg,
-                    ),
+                  Text(
+                    title,
+                    maxLines: 1,
+                    style: AppText.lg,
                   ),
+                  const SizedBox(width: 8),
+                  if (desc != null && desc!.isNotEmpty)
+                    Expanded(
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          desc!,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.right,
+                          style: AppText.base.copyWith(color: colors.textSecondary),
+                        ),
+                      ),
+                    )
+                  else
+                    const Spacer(),
                   Transform.scale(
                     scale: 0.6,
                     child: Switch(

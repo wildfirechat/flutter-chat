@@ -19,6 +19,7 @@ class PopupMenuOverlay {
   /// [onItemTap] - 菜单项点击回调
   /// [popupWidth] - 菜单宽度，默认250
   /// [crossAxisCount] - 每行显示的菜单项数量，默认4
+  /// [listMode] - true 时竖排列表（图标+文字一行），false 时网格（图标在上文字在下）
   static void show({
     required BuildContext context,
     required Rect targetRect,
@@ -26,6 +27,7 @@ class PopupMenuOverlay {
     required Function(String value) onItemTap,
     double popupWidth = 250,
     int crossAxisCount = 4,
+    bool listMode = false,
   }) {
     // 如果已有菜单，先关闭
     if (_currentOverlay != null) {
@@ -38,9 +40,13 @@ class PopupMenuOverlay {
     final double itemWidth = (popupWidth - padding * 2) / crossAxisCount;
 
     // 计算菜单行数和高度
-    final int rowCount = (menuItems.length / crossAxisCount).ceil();
     const double itemHeight = 60;
-    final double menuHeight = rowCount * itemHeight + padding * 2;
+    const double listItemHeight = 56;
+    const double dividerHeight = 0.5;
+    final double menuHeight = listMode
+        ? menuItems.length * listItemHeight +
+            (menuItems.length - 1) * dividerHeight
+        : (menuItems.length / crossAxisCount).ceil() * itemHeight + padding * 2;
 
     final overlayState = Overlay.of(context);
     final screenSize = MediaQuery.of(context).size;
@@ -100,11 +106,12 @@ class PopupMenuOverlay {
           color: Colors.transparent,
           child: Stack(
             children: [
-              // 透明遮罩，点击关闭菜单
+              // 透明遮罩，点击或滑动关闭菜单
               Positioned.fill(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
                   onTap: dismiss,
+                  onPanStart: (_) => dismiss(),
                   child: Container(color: Colors.transparent),
                 ),
               ),
@@ -118,24 +125,51 @@ class PopupMenuOverlay {
                     if (!showAbove) _buildArrow(popupWidth, arrowLeft, true),
                     Container(
                       width: popupWidth,
-                      padding: const EdgeInsets.all(padding),
+                      padding: listMode
+                          ? EdgeInsets.zero
+                          : const EdgeInsets.all(padding),
+                      clipBehavior: Clip.antiAlias,
                       decoration: BoxDecoration(
                         color: const Color(0xFF4C4C4C),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: Wrap(
-                        alignment: WrapAlignment.start,
-                        children: menuItems.map((item) {
-                          return _PopupMenuItem(
-                            item: item,
-                            width: itemWidth,
-                            onTap: () {
-                              dismiss();
-                              onItemTap(item['value']);
-                            },
-                          );
-                        }).toList(),
-                      ),
+                      child: listMode
+                          ? Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                for (int i = 0; i < menuItems.length; i++) ...[
+                                  if (i > 0)
+                                    Container(
+                                      height: dividerHeight,
+                                      margin: const EdgeInsets.symmetric(
+                                          horizontal: 12),
+                                      color: Colors.white
+                                          .withValues(alpha: 0.12),
+                                    ),
+                                  _PopupMenuListItem(
+                                    item: menuItems[i],
+                                    height: listItemHeight,
+                                    onTap: () {
+                                      dismiss();
+                                      onItemTap(menuItems[i]['value']);
+                                    },
+                                  ),
+                                ],
+                              ],
+                            )
+                          : Wrap(
+                              alignment: WrapAlignment.start,
+                              children: menuItems.map((item) {
+                                return _PopupMenuItem(
+                                  item: item,
+                                  width: itemWidth,
+                                  onTap: () {
+                                    dismiss();
+                                    onItemTap(item['value']);
+                                  },
+                                );
+                              }).toList(),
+                            ),
                     ),
                     if (showAbove) _buildArrow(popupWidth, arrowLeft, false),
                   ],
@@ -213,6 +247,56 @@ class _PopupMenuItemState extends State<_PopupMenuItem> {
             Text(
               widget.item['label'],
               style: AppText.xs.copyWith(color: Colors.white),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PopupMenuListItem extends StatefulWidget {
+  final Map<String, dynamic> item;
+  final double height;
+  final VoidCallback onTap;
+
+  const _PopupMenuListItem({
+    Key? key,
+    required this.item,
+    required this.height,
+    required this.onTap,
+  }) : super(key: key);
+
+  @override
+  State<_PopupMenuListItem> createState() => _PopupMenuListItemState();
+}
+
+class _PopupMenuListItemState extends State<_PopupMenuListItem> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: Container(
+        height: widget.height,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        color: _isPressed ? Colors.black26 : Colors.transparent,
+        child: Row(
+          children: [
+            Icon(widget.item['icon'], color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                widget.item['label'],
+                style: AppText.base.copyWith(color: Colors.white),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
