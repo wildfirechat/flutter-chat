@@ -311,10 +311,10 @@ Imclient.setDeviceToken(pushType, deviceToken);
 
 ## iOS 平台 CallKit / Share Extension
 
-本项目 iOS 端已实现 CallKit 来电与系统级 Share Extension 分享，相关说明与移植文档如下：
+本项目 iOS 端已实现 CallKit 来电与系统级 Share Extension 分享，相关文档如下：
 
-- [功能说明](./SHARE_EXTENSION_CALLKIT_GUIDE.md)
-- [移植指南](./SHARE_EXTENSION_CALLKIT_PORTING.md)
+- [CallKit 功能说明与移植指南](./CALLKIT_GUIDE.md)
+- [Share Extension 功能说明与移植指南](./SHARE_EXTENSION_GUIDE.md)
 
 > 注意：CallKit 需要真机、VoIP Push 证书及服务器端配合才能完整验证；Share Extension 需要主应用与扩展配置同一个 App Group。
 
