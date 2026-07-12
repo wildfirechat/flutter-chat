@@ -550,26 +550,24 @@ class _ContactListItemState extends State<ContactListItem> {
             style: AppText.sm.copyWith(color: Theme.of(context).colorScheme.secondary),
           ));
         }
-
-        return Row(
-          children: [
-            Expanded(
-              child: Text.rich(
-                TextSpan(children: spans, style: nameSpan.style),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+        if (showIndicator) {
+          spans.add(WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
               ),
             ),
-            if (showIndicator)
-              Padding(
-                padding: EdgeInsets.only(left: 8, right: isDesktopShell ? 16 : 0),
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
-                ),
-              ),
-          ],
+          ));
+        }
+
+        return Text.rich(
+          TextSpan(children: spans, style: nameSpan.style),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         );
       },
     );

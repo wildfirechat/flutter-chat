@@ -31,7 +31,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 
-/// 桌面形态输入栏:顶部拖拽条 + 工具条(表情/图片/文件/通话)+ 多行输入区 + 发送按钮。
+/// 桌面形态输入栏:顶部拖拽条 + 工具条(表情/图片/文件/通话)+ 多行输入区。
 /// Enter 发送、Shift+Enter 换行;中文输入法组合期间的 Enter 交给输入法。
 /// 键入 '@' 弹出 [PcMentionOverlay] 就地选人(微信 PC 交互),浮层优先消费导航按键。
 /// 复用 [MessageInputBarController] 的文本/@提醒/引用/草稿逻辑,与手机形态共享一套状态。
@@ -318,7 +318,6 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     final conversationController = Provider.of<ConversationController>(context, listen: false);
     final layout = Provider.of<PcLayoutViewModel>(context, listen: false);
     final l10n = AppLocalizations.of(context)!;
-    final hasText = controller.textEditingController.text.trim().isNotEmpty;
 
     // 高度单独用 Selector 订阅:拖拽期间只重建外层 Container,
     // 输入框/工具条整棵子树作为 child 复用,不逐帧重建。
@@ -342,128 +341,123 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
               onDragDelta: (delta) => _onResizeDelta(layout, delta),
               onDragEnd: layout.persist,
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-              child: Row(
-                children: [
-                  _ToolbarButton(
-                    key: _emojiButtonKey,
-                    icon: Icons.sentiment_satisfied_outlined,
-                    tooltip: l10n.emoji,
-                    onTap: () => _showEmojiPopover(controller),
-                  ),
-                  _ToolbarButton(
-                    icon: Icons.image_outlined,
-                    tooltip: l10n.image,
-                    onTap: () => _pickImage(conversationController, controller),
-                  ),
-                  _ToolbarButton(
-                    icon: Icons.cut,
-                    tooltip: l10n.screenshotTool,
-                    onTap: () => _captureScreenshot(conversationController, controller),
-                  ),
-                  _ToolbarButton(
-                    icon: Icons.folder_outlined,
-                    tooltip: l10n.filePicker,
-                    onTap: () => _pickFile(conversationController, controller),
-                  ),
-                  if (controller.conversation.conversationType == ConversationType.Group &&
-                      Config.collectionServerAddress != null &&
-                      Config.collectionServerAddress!.isNotEmpty)
-                    _ToolbarButton(
-                      iconWidget: CollectionIcon(size: 21, color: context.colors.iconSecondary),
-                      tooltip: l10n.collection,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => CreateCollectionScreen(conversation: controller.conversation),
-                          ),
-                        );
-                      },
-                    ),
-                  if (controller.conversation.conversationType == ConversationType.Group &&
-                      Config.pollServerAddress != null &&
-                      Config.pollServerAddress!.isNotEmpty)
-                    _ToolbarButton(
-                      iconWidget: Icon(Icons.poll, size: 21, color: context.colors.iconSecondary),
-                      tooltip: l10n.poll,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => PollHomeScreen(groupId: controller.conversation.target),
-                          ),
-                        );
-                      },
-                    ),
-                  const Spacer(),
-                  // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
-                  // 单聊直接发起,群聊先弹选人对话框再发起(见 startAvCall)
-                  if (controller.conversation.conversationType == ConversationType.Single || controller.conversation.conversationType == ConversationType.Group) ...[
-                    _ToolbarButton(
-                      icon: Icons.call_outlined,
-                      tooltip: l10n.audioCallAction,
-                      onTap: () => startAvCall(context, controller.conversation, audioOnly: true),
-                    ),
-                    _ToolbarButton(
-                      icon: Icons.videocam_outlined,
-                      tooltip: l10n.videoCallAction,
-                      onTap: () => startAvCall(context, controller.conversation, audioOnly: false),
-                    ),
-                  ],
-                ],
-              ),
-            ),
             Expanded(
-              child: Focus(
-                onKeyEvent: (node, event) => _handleKeyEvent(node, event, controller),
-                child: TextField(
-                  controller: controller.textEditingController,
-                  focusNode: controller.focusNode,
-                  onChanged: controller.onTextChanged,
-                  maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  keyboardType: TextInputType.multiline,
-                  style: AppText.base.copyWith(height: 1.5, color: context.colors.textPrimary),
-                  decoration: const InputDecoration(
-                    isCollapsed: true,
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: context.colors.surface,
+                    border: Border.all(color: context.colors.hairline),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+                        child: Row(
+                          children: [
+                            _ToolbarButton(
+                              key: _emojiButtonKey,
+                              icon: Icons.sentiment_satisfied_outlined,
+                              tooltip: l10n.emoji,
+                              onTap: () => _showEmojiPopover(controller),
+                            ),
+                            _ToolbarButton(
+                              icon: Icons.image_outlined,
+                              tooltip: l10n.image,
+                              onTap: () => _pickImage(conversationController, controller),
+                            ),
+                            _ToolbarButton(
+                              icon: Icons.cut,
+                              tooltip: l10n.screenshotTool,
+                              onTap: () => _captureScreenshot(conversationController, controller),
+                            ),
+                            _ToolbarButton(
+                              icon: Icons.folder_outlined,
+                              tooltip: l10n.filePicker,
+                              onTap: () => _pickFile(conversationController, controller),
+                            ),
+                            if (controller.conversation.conversationType == ConversationType.Group &&
+                                Config.collectionServerAddress != null &&
+                                Config.collectionServerAddress!.isNotEmpty)
+                              _ToolbarButton(
+                                iconWidget: CollectionIcon(size: 21, color: context.colors.iconSecondary),
+                                tooltip: l10n.collection,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => CreateCollectionScreen(conversation: controller.conversation),
+                                    ),
+                                  );
+                                },
+                              ),
+                            if (controller.conversation.conversationType == ConversationType.Group &&
+                                Config.pollServerAddress != null &&
+                                Config.pollServerAddress!.isNotEmpty)
+                              _ToolbarButton(
+                                iconWidget: Icon(Icons.poll, size: 21, color: context.colors.iconSecondary),
+                                tooltip: l10n.poll,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PollHomeScreen(groupId: controller.conversation.target),
+                                    ),
+                                  );
+                                },
+                              ),
+                            const Spacer(),
+                            // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
+                            // 单聊直接发起,群聊先弹选人对话框再发起(见 startAvCall)
+                            if (controller.conversation.conversationType == ConversationType.Single || controller.conversation.conversationType == ConversationType.Group) ...[
+                              _ToolbarButton(
+                                icon: Icons.call_outlined,
+                                tooltip: l10n.audioCallAction,
+                                onTap: () => startAvCall(context, controller.conversation, audioOnly: true),
+                              ),
+                              _ToolbarButton(
+                                icon: Icons.videocam_outlined,
+                                tooltip: l10n.videoCallAction,
+                                onTap: () => startAvCall(context, controller.conversation, audioOnly: false),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Focus(
+                            onKeyEvent: (node, event) => _handleKeyEvent(node, event, controller),
+                            child: TextField(
+                              controller: controller.textEditingController,
+                              focusNode: controller.focusNode,
+                              onChanged: controller.onTextChanged,
+                              maxLines: null,
+                              expands: true,
+                              textAlignVertical: TextAlignVertical.top,
+                              keyboardType: TextInputType.multiline,
+                              style: AppText.base.copyWith(height: 1.5, color: context.colors.textPrimary),
+                              decoration: InputDecoration(
+                                isCollapsed: true,
+                                border: InputBorder.none,
+                                hintText: l10n.enterToSendHint,
+                                hintStyle: AppText.base.copyWith(color: context.colors.textTertiary),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (controller.hasQuote)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                          child: _QuoteChip(controller: controller),
+                        ),
+                    ],
                   ),
                 ),
-              ),
-            ),
-            if (controller.hasQuote)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
-                child: _QuoteChip(controller: controller),
-              ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-              child: Row(
-                children: [
-                  const Spacer(),
-                  Tooltip(
-                    message: l10n.enterToSendHint,
-                    child: ElevatedButton(
-                      onPressed: hasText ? controller.onSendButton : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.colors.accent,
-                        foregroundColor: context.colors.onAccent,
-                        disabledBackgroundColor: context.colors.inputBg,
-                        disabledForegroundColor: context.colors.textTertiary,
-                        elevation: 0,
-                        minimumSize: const Size(88, 30),
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                        textStyle: AppText.sm.copyWith(fontWeight: FontWeight.w500),
-                      ),
-                      child: Text(l10n.send),
-                    ),
-                  ),
-                ],
               ),
             ),
           ],
@@ -521,7 +515,7 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
   }
 }
 
-/// 引用消息条:摘要 + 缩略图(图片/视频)+ 取消按钮,显示在输入区与发送按钮之间。
+/// 引用消息条:摘要 + 缩略图(图片/视频)+ 取消按钮,显示在输入区上方。
 class _QuoteChip extends StatelessWidget {
   final MessageInputBarController controller;
 
