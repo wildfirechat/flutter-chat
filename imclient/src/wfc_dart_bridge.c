@@ -47,7 +47,7 @@ enum {
   kTagDomainInfoUpdated = 15,
 
   kTagOnlineEventUpdated = 16,
-
+  kTagConferenceEvent = 17,
   kTagGeneralVoidSuccess = 20,
   kTagGeneralStringSuccess = 21,
   kTagGeneralError = 22,
@@ -160,6 +160,7 @@ GLOBAL_STRING_LISTENER(wfc_on_message_delivered, kTagMessageDelivered)
 GLOBAL_STRING_LISTENER(wfc_on_message_readed, kTagMessageReaded)
 GLOBAL_STRING_LISTENER(wfc_on_domain_info_updated, kTagDomainInfoUpdated)
 GLOBAL_STRING_LISTENER(wfc_on_online_event_updated, kTagOnlineEventUpdated)
+GLOBAL_STRING_LISTENER(wfc_on_conference_event, kTagConferenceEvent);
 
 WFC_EXPORT void WFCAPI wfc_on_join_group_request_updated(void) {
   Dart_CObject a[1] = {c_int(kTagJoinGroupRequestUpdated)};
