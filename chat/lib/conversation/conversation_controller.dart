@@ -38,6 +38,7 @@ import 'package:chat/model/favorite_item.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/widget/popup_menu_overlay.dart';
 import 'package:chat/widget/desktop_popup_menu_item.dart';
+import 'package:chat/widget/bottom_action_sheet.dart';
 import 'package:http/http.dart' as http;
 import 'package:chat/l10n/app_localizations.dart';
 
@@ -89,46 +90,28 @@ class ConversationController extends ChangeNotifier {
     }
 
     if (avEngineKit.currentSession == null || avEngineKit.currentSession!.status == CallState.STATUS_IDLE) {
-        if (conversation.conversationType == ConversationType.Single) {
-          final double centerX = MediaQuery.of(context).size.width / 2;
-          final double centerY = MediaQuery.of(context).size.height / 2;
-
-          // 计算菜单位置
-          const double menuWidth = 150.0; // 菜单的宽度
-          const double menuHeight = 100.0; // 菜单的高度
-          final double left = centerX - (menuWidth / 2) - 36;
-          final double top = centerY - (menuHeight / 2) - 24;
-
-          showMenu(
-            context: context,
-            position: RelativeRect.fromLTRB(
-                left, top, left + menuWidth, top + menuHeight),
-            items: <PopupMenuEntry<String>>[
-              PopupMenuItem<String>(
-                value: 'voice',
-                child: SizedBox(
-                  width: menuWidth,
-                  child: Text(AppLocalizations.of(context)!.audioCallAction),
-                ),
-              ),
-              PopupMenuItem<String>(
-                value: 'video',
-                child: SizedBox(
-                  width: menuWidth,
-                  child: Text(AppLocalizations.of(context)!.videoCallAction),
-                ),
-              ),
-            ],
-          ).then((value) {
-            if (value == null) {
-              return;
-            }
-
-            bool isAudioOnly = value == 'voice';
-            avEngineKit.startCall(conversation, [conversation.target], isAudioOnly);
-            // Navigation will be handled by AVEngineCallback.onStartCall
-          });
-        } else if (conversation.conversationType == ConversationType.Group) {
+      if (conversation.conversationType == ConversationType.Single) {
+        showBottomActionSheet(
+          context: context,
+          items: [
+            BottomActionSheetItem(
+              label: AppLocalizations.of(context)!.videoCallAction,
+              icon: Icons.videocam_rounded,
+              onTap: () {
+                avEngineKit.startCall(conversation, [conversation.target], false);
+              },
+            ),
+            BottomActionSheetItem(
+              label: AppLocalizations.of(context)!.audioCallAction,
+              icon: Icons.call_rounded,
+              onTap: () {
+                avEngineKit.startCall(conversation, [conversation.target], true);
+              },
+            ),
+          ],
+          cancelLabel: AppLocalizations.of(context)!.cancel,
+        );
+      } else if (conversation.conversationType == ConversationType.Group) {
           Imclient.getGroupMembers(conversation.target).then((groupMembers) {
             List<String> members = [];
             for (var gm in groupMembers) {

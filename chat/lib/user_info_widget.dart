@@ -34,6 +34,7 @@ import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/pc/widgets/pc_pane_content.dart';
 
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/widget/bottom_action_sheet.dart';
 
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -381,18 +382,50 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
           const SectionDivider(),
           Container(
             color: context.colors.surface,
-            child: OptionButtonItem(
-              isMe || isFriend ? l10n.sendMsg : l10n.addFriend,
-              () {
-                if (isMe || isFriend) {
-                  _openSingleConversation(context);
-                } else {
-                  _openInviteFriendPage(context);
-                }
-              },
-              // 发消息/加好友不是危险操作,不该走 OptionButtonItem 的 danger 默认色。
-              titleColor: context.colors.accent,
-              showBottomDivider: false,
+            child: Column(
+              children: [
+                OptionButtonItem(
+                  isMe || isFriend ? l10n.sendMsg : l10n.addFriend,
+                  () {
+                    if (isMe || isFriend) {
+                      _openSingleConversation(context);
+                    } else {
+                      _openInviteFriendPage(context);
+                    }
+                  },
+                  // 发消息/加好友不是危险操作,不该走 OptionButtonItem 的 danger 默认色。
+                  titleColor: context.colors.accent,
+                  showBottomDivider: isFriend && !isMe && !Config.AI_ROBOTS.contains(widget.userId),
+                ),
+                if (isFriend && !isMe && !Config.AI_ROBOTS.contains(widget.userId))
+                  OptionButtonItem(
+                    l10n.audioVideoCall,
+                    () {
+                      showBottomActionSheet(
+                        context: context,
+                        items: [
+                          BottomActionSheetItem(
+                            label: AppLocalizations.of(context)!.videoCallAction,
+                            icon: Icons.videocam_rounded,
+                            onTap: () {
+                              startSingleAvCall(context, widget.userId, audioOnly: false);
+                            },
+                          ),
+                          BottomActionSheetItem(
+                            label: AppLocalizations.of(context)!.audioCallAction,
+                            icon: Icons.call_rounded,
+                            onTap: () {
+                              startSingleAvCall(context, widget.userId, audioOnly: true);
+                            },
+                          ),
+                        ],
+                        cancelLabel: AppLocalizations.of(context)!.cancel,
+                      );
+                    },
+                    titleColor: context.colors.accent,
+                    showBottomDivider: false,
+                  ),
+              ],
             ),
           ),
           const SizedBox(height: SectionDivider.gap),

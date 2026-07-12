@@ -71,7 +71,7 @@ class PluginBoard extends StatelessWidget {
       case "camera":
         return l10n.cameraCapture;
       case "call":
-        return l10n.voiceCall;
+        return l10n.videoCallAction;
       case "location":
         return l10n.location;
       case "file":

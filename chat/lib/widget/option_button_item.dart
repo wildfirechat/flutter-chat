@@ -19,17 +19,19 @@ class OptionButtonItem extends StatelessWidget {
     final btnHeight = LayoutScale.watchScale(context, 32.0, cap: LayoutScale.rowCap);
     return Column(
       children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: onTap,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
-            constraints: BoxConstraints(minHeight: btnHeight),
-            child: Center(
-                child: Text(
-              title,
-              style: TextStyle(color: titleColor ?? context.colors.danger),
-            )),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(15, 10, 5, 10),
+              constraints: BoxConstraints(minHeight: btnHeight),
+              child: Center(
+                  child: Text(
+                title,
+                style: TextStyle(color: titleColor ?? context.colors.danger),
+              )),
+            ),
           ),
         ),
         // 桌面端行间不画线,与 OptionItem 保持一致。
