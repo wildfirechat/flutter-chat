@@ -200,8 +200,10 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
     String digest = '';
 
     if (quotedMessage != null) {
+      // digest 在设置引用时已由 QuoteInfo.fromMessage 异步计算好，直接复用，
+      // 避免在 build 中直接调用 Future.toString() 出现 "Instance of 'Future<String>'"。
+      digest = quoteInfo?.messageDigest ?? '';
       final content = quotedMessage.content;
-      digest = content.digest(quotedMessage).toString();
       // 如果是图片消息，显示缩略图
       if (content is ImageMessageContent) {
         if (content.thumbnail != null) {

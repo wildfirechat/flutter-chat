@@ -1480,7 +1480,9 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   static UserOnlineState _convertProtoUserOnlineState(dynamic data) {
-    //data value sample {"userId":"admin","customState":0,"customText":"on vacation","states":[{"platform":3,"state":0,"lastSeen":1783770115120}]}
+    // 数据存在两种形态：
+    // 1. 移动端/桌面 FFI 原生返回：{"userId":"admin","customState":{"state":0,"text":"..."},"clientStates":[{"platform":3,"state":0,"lastSeen":...}]}
+    // 2. 旧格式/注释示例：{"userId":"admin","customState":0,"customText":"...","states":[{"platform":3,"state":0,"lastSeen":...}]}
     Map<dynamic, dynamic>? map;
     if (data is String) {
       map = jsonDecode(data) as Map<dynamic, dynamic>?;
@@ -1492,14 +1494,22 @@ class ImclientPlatform extends PlatformInterface {
     }
     String userId = map['userId'];
     UserOnlineState info = UserOnlineState(userId);
-    if (map['customState'] != null) {
-      info.customState = CustomState(map['customState']);
+
+    final rawCustomState = map['customState'];
+    if (rawCustomState is Map) {
+      info.customState = CustomState(rawCustomState['state']);
+      if (rawCustomState['text'] != null) {
+        info.customState!.text = rawCustomState['text'];
+      }
+    } else if (rawCustomState is int) {
+      info.customState = CustomState(rawCustomState);
       if (map['customText'] != null) {
         info.customState!.text = map['customText'];
       }
     }
-    List? clientStates = map['states'];
-    if(clientStates != null && clientStates.isNotEmpty) {
+
+    List? clientStates = map['clientStates'] ?? map['states'];
+    if (clientStates != null && clientStates.isNotEmpty) {
       info.clientStates = [];
       for (var clientState in clientStates) {
         Map<dynamic, dynamic>? csMap;
