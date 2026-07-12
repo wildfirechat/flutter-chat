@@ -203,7 +203,9 @@ class AppColors extends ThemeExtension<AppColors> {
     searchBg: Color(0xFFFAFAFA),
     searchBgHover: Color(0xFFF6F6F7),
     cellHover: Color(0xFFDBDAD9),
-    cellHoverDesktop: Color(0xFFEEEEF0),
+    // 半透明蒙层,叠在静止底色上(中栏灰面/置顶行),不能是实色 ——
+    // 实色一旦等于 middleBgDesktop,hover 就等于没画。
+    cellHoverDesktop: Color(0x14000000),
     cellSelected: Color(0xFFC8C7C6),
     cellSelectedDesktop: Color(0xFF2B62DE),
     cellTop: Color(0xFFE6E5E5),

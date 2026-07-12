@@ -337,7 +337,9 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     return RepaintBoundary(child: _buildCell(context, false));
   }
 
-  /// 桌面端:透明底衬在中栏灰面上,hover/选中分别加深;置顶会话微微加深。
+  /// 桌面端:透明底衬在中栏灰面上,选中走品牌色,置顶会话微微加深。
+  /// hover 是半透明蒙层,叠在该行的静止底色上 —— 置顶行自带一层加深,
+  /// 直接换成实色会跟它的静止态撞色,hover 就没了。
   /// 移动端:列表铺在 surface 上,没有 hover,置顶同样加深一档。
   ///
   /// 移动端原先用 CupertinoColors.systemBackground —— 那是 CupertinoDynamicColor,
@@ -347,8 +349,10 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     final colors = context.colors;
     if (isDesktopShell) {
       if (widget.isSelected) return colors.cellSelectedDesktop;
-      if (hovered) return conversationInfo.isTop > 0 ? colors.cellTopDesktop : colors.cellHoverDesktop;
-      return conversationInfo.isTop > 0 ? colors.cellTopDesktop : Colors.transparent;
+      final isTop = conversationInfo.isTop > 0;
+      if (!hovered) return isTop ? colors.cellTopDesktop : Colors.transparent;
+      // 蒙层要叠在实底上才有效:普通行的实底是 PCHome/本列表铺的中栏灰面
+      return Color.alphaBlend(colors.cellHoverDesktop, isTop ? colors.cellTopDesktop : colors.middleBgDesktop);
     }
     if (widget.isSelected) return colors.cellSelected;
     return conversationInfo.isTop > 0 ? colors.cellTop : colors.surface;
