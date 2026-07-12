@@ -4,159 +4,133 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import '../../ui_model/ui_message.dart';
 import 'portrait_cell_builder.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 
-/// 接龙消息 Cell Builder
-/// 
-/// 与 Android 端 conversation_item_collection_send/receive.xml 样式对齐
+/// 接龙消息气泡:标题 + 前 5 条参与记录预览。
+///
+/// 与 [PollCellBuilder] 同一条规则:气泡内一律继承气泡前景色,层级用字重/透明度表达。
+/// 点击进详情由 ConversationController 统一处理(与其他可点消息一致)。
 class CollectionCellBuilder extends PortraitCellBuilder {
+  static const int maxPreviewEntries = 5;
+
   late CollectionMessageContent content;
 
   CollectionCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
     content = model.message.content as CollectionMessageContent;
   }
 
+  Color _onBubble(BuildContext context) =>
+      isSendMessage ? context.colors.bubbleSentText : context.colors.bubbleReceivedText;
+
   @override
   Widget buildMessageContent(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
-    // 最多显示5条参与记录
+    final onBubble = _onBubble(context);
+
     final entries = content.entries.where((e) => e.deleted == 0).toList();
-    final displayEntries = entries.take(5).toList();
-    final remainingCount = content.participantCount - displayEntries.length;
-    
+    final preview = entries.take(maxPreviewEntries).toList();
+    final remaining = content.participantCount - preview.length;
+
     return Container(
       width: 220,
       padding: const EdgeInsets.all(12),
-      // decoration: BoxDecoration(
-      //   color: isSendMessage ? const Color(0xFF95EC69) : Colors.white,
-      //   borderRadius: BorderRadius.circular(4),
-      // ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 标题行：图标 + 标题 + 参与人数
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 接龙图标
-              Icon(
-                Icons.format_list_numbered_rtl,
-                size: 18,
-                color: const Color(0xFF576b95),
-              ),
+              Icon(Icons.format_list_numbered_rtl, size: 16, color: onBubble),
               const SizedBox(width: 6),
-              // 标题
               Expanded(
                 child: Text(
                   content.title,
-                  style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+                  style: AppText.base.copyWith(fontWeight: FontWeight.w600, color: onBubble),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 4),
-              // 参与人数
-              Text(
-                '${content.participantCount}${l10n.collectionPeopleCount}',
-                style: AppText.xs.copyWith(color: Color(0xFF999999)),
+              Opacity(
+                opacity: 0.7,
+                child: Text(
+                  '${content.participantCount}${l10n.collectionPeopleCount}',
+                  style: AppText.xs.copyWith(color: onBubble),
+                ),
               ),
             ],
           ),
-          
-          // 描述（如果有）
           if (content.desc.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text(
-              content.desc,
-              style: AppText.sm.copyWith(color: Color(0xFF666666)),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            Opacity(
+              opacity: 0.7,
+              child: Text(
+                content.desc,
+                style: AppText.xs.copyWith(color: onBubble),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
-          
-          // 分隔线
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Divider(
-              height: 0.5,
-              color: Color(0xFFe0e0e0),
-            ),
-          ),
-          
-          // 参与记录预览
-          if (displayEntries.isEmpty)
-            // 空提示
-            Text(
-              l10n.collectionEmptyHint,
-              style: AppText.sm.copyWith(color: Color(0xFF999999)),
+          const SizedBox(height: 8),
+          Opacity(opacity: 0.15, child: Divider(height: 0.5, thickness: 0.5, color: onBubble)),
+          const SizedBox(height: 8),
+          if (preview.isEmpty)
+            Opacity(
+              opacity: 0.7,
+              child: Text(
+                l10n.collectionEmptyHint,
+                style: AppText.xs.copyWith(color: onBubble),
+              ),
             )
           else
-            // 显示参与记录
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ...displayEntries.asMap().entries.map((entry) {
-                  final index = entry.key + 1;
-                  final item = entry.value;
-                  return Padding(
+                for (int i = 0; i < preview.length; i++)
+                  Padding(
                     padding: const EdgeInsets.symmetric(vertical: 2),
                     child: Text(
-                      '$index. ${item.content}',
-                      style: AppText.base.copyWith(color: Color(0xFF333333)),
+                      '${i + 1}. ${preview[i].content}',
+                      style: AppText.xs.copyWith(color: onBubble),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                  );
-                }).toList(),
-                
-                // 更多提示
-                if (remainingCount > 0)
+                  ),
+                if (remaining > 0)
                   Padding(
                     padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      l10n.collectionMoreParticipants(remainingCount),
-                      style: AppText.xs.copyWith(color: Color(0xFF999999)),
+                    child: Opacity(
+                      opacity: 0.7,
+                      child: Text(
+                        l10n.collectionMoreParticipants(remaining),
+                        style: AppText.xs.copyWith(color: onBubble),
+                      ),
                     ),
                   ),
               ],
             ),
-          
-          // 分隔线
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8),
-            child: Divider(
-              height: 0.5,
-              color: Color(0xFFe0e0e0),
-            ),
-          ),
-          
-          // 操作按钮
+          const SizedBox(height: 8),
+          Opacity(opacity: 0.15, child: Divider(height: 0.5, thickness: 0.5, color: onBubble)),
+          const SizedBox(height: 8),
           Text(
-            _getActionText(l10n),
-            style: AppText.base.copyWith(color: _getActionColor()),
+            _actionText(l10n),
+            style: AppText.xs.copyWith(fontWeight: FontWeight.w500, color: onBubble),
           ),
         ],
       ),
     );
   }
 
-  String _getActionText(AppLocalizations l10n) {
-    if (content.status == 1) {
-      return l10n.collectionStatusEnded;
-    } else if (content.status == 2) {
-      return l10n.collectionStatusCancelled;
-    } else {
-      return l10n.collectionJoinAction;
-    }
-  }
-
-  Color _getActionColor() {
-    if (content.status == 0) {
-      return const Color(0xFF576b95);
-    } else {
-      return const Color(0xFF999999);
+  String _actionText(AppLocalizations l10n) {
+    switch (content.status) {
+      case 1:
+        return l10n.collectionStatusEnded;
+      case 2:
+        return l10n.collectionStatusCancelled;
+      default:
+        return l10n.collectionJoinAction;
     }
   }
 }

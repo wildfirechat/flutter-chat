@@ -478,6 +478,7 @@
   "pollCsvTime": "时间",
   "pollDetailsSuffix": "投票明细",
   "pollDefaultFileName": "投票",
+  "pollForwardComingSoon": "转发投票功能开发中",
   "pollCreatorFormat": "由{creatorName}发起",
   "pollDaysLeft": "还剩{count}天",
   "pollHoursLeft": "还剩{count}小时",

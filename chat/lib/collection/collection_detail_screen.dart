@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/collection_message_content.dart';
@@ -7,16 +6,37 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_dialog.dart';
+import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 import '../widget/portrait.dart';
 import 'collection_model.dart';
 import 'collection_service.dart';
-import '../config.dart';
-import 'package:chat/theme/app_typography.dart';
 
+/// 接龙详情:接龙内容 + 参与清单,自己那条可就地编辑。
+///
+/// 清空自己的内容再提交即退出接龙(与 Android 一致),故提交按钮的文案是「提交」而非「参与」。
 class CollectionDetailScreen extends StatefulWidget {
   final Message message;
+  final bool asDialog;
 
-  const CollectionDetailScreen({super.key, required this.message});
+  const CollectionDetailScreen({super.key, required this.message, this.asDialog = false});
+
+  static Future<void> show(BuildContext context, Message message) {
+    if (isDesktopShell) {
+      return showPcDialog(
+        context: context,
+        width: 460,
+        height: 620,
+        builder: (_) => CollectionDetailScreen(message: message, asDialog: true),
+      );
+    }
+    return Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => CollectionDetailScreen(message: message)),
+    );
+  }
 
   @override
   State<CollectionDetailScreen> createState() => _CollectionDetailScreenState();
@@ -31,15 +51,12 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
   Collection? collection;
   bool isLoading = true;
   bool hasJoined = false;
-  bool isCreator = false;
-  int myEntryIndex = -1;
   String? myEntryContent;
 
   final TextEditingController _editController = TextEditingController();
   String? _originalContent;
-  final Map<int, TextEditingController> _entryControllers = {};
 
-  bool get _isServiceAvailable => CollectionService.isAvailable;
+  AppLocalizations get _l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -55,26 +72,25 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
   @override
   void dispose() {
     _editController.dispose();
-    for (var controller in _entryControllers.values) {
-      controller.dispose();
-    }
     super.dispose();
   }
 
   Future<void> _fetchCollectionDetail() async {
-    if (!_isServiceAvailable) {
+    if (!CollectionService.isAvailable) {
       setState(() => isLoading = false);
       return;
     }
 
     try {
       final result = await CollectionService.getCollection(collectionId, groupId);
+      if (!mounted) return;
       setState(() {
         collection = result;
         isLoading = false;
         _updateJoinStatus();
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => isLoading = false);
       Fluttertoast.showToast(msg: '${_l10n.collectionLoadFailed}: $e');
     }
@@ -84,22 +100,16 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
     if (collection == null) return;
 
     hasJoined = false;
-    myEntryIndex = -1;
     myEntryContent = null;
 
-    final entries = collection!.validEntries;
-    for (int i = 0; i < entries.length; i++) {
-      if (currentUserId == entries[i].userId) {
+    for (final entry in collection!.validEntries) {
+      if (currentUserId == entry.userId) {
         hasJoined = true;
-        myEntryIndex = i;
-        myEntryContent = entries[i].content;
+        myEntryContent = entry.content;
         break;
       }
     }
 
-    isCreator = currentUserId == collection!.creatorId;
-
-    // 初始化编辑框内容
     if (hasJoined && myEntryContent != null) {
       _editController.text = myEntryContent!;
       _originalContent = myEntryContent;
@@ -109,25 +119,23 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
     }
   }
 
-  AppLocalizations get _l10n => AppLocalizations.of(context)!;
-
+  /// 未参与:有内容才能提交;已参与:内容变了才能提交(清空 = 退出接龙)。
   bool get _canSubmit {
-    if (collection == null || !(collection!.isJoinable)) return false;
+    if (collection == null || !collection!.isJoinable) return false;
 
-    final currentContent = _editController.text.trim();
-    
+    final current = _editController.text.trim();
+
     if (hasJoined) {
-      if (currentContent.isEmpty) {
+      if (current.isEmpty) {
         return myEntryContent?.isNotEmpty ?? false;
       }
-      return currentContent != _originalContent;
-    } else {
-      return currentContent.isNotEmpty;
+      return current != _originalContent;
     }
+    return current.isNotEmpty;
   }
 
   Future<void> _onSubmit() async {
-    if (!_isServiceAvailable) {
+    if (!CollectionService.isAvailable) {
       Fluttertoast.showToast(msg: _l10n.collectionServiceNotConfigured);
       return;
     }
@@ -138,68 +146,48 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
       if (content.isEmpty) {
         _confirmDeleteEntry();
       } else {
-        await _updateEntry(content);
+        await _submitEntry(content, successMsg: _l10n.collectionUpdateSuccess, failedMsg: _l10n.collectionUpdateFailed);
       }
-    } else {
-      if (content.isEmpty) {
-        Fluttertoast.showToast(msg: _l10n.collectionJoinHint);
-        return;
-      }
-      await _joinCollection(content);
+      return;
     }
+
+    if (content.isEmpty) {
+      Fluttertoast.showToast(msg: _l10n.collectionJoinHint);
+      return;
+    }
+    await _submitEntry(content, successMsg: _l10n.collectionJoinSuccess, failedMsg: _l10n.collectionJoinFailed);
   }
 
-  Future<void> _joinCollection(String content) async {
+  /// 参与与修改是同一个接口,只有提示语不同。
+  Future<void> _submitEntry(String content, {required String successMsg, required String failedMsg}) async {
     try {
       await CollectionService.join(collectionId, groupId, content);
       if (mounted) {
-        Fluttertoast.showToast(msg: _l10n.collectionJoinSuccess);
+        Fluttertoast.showToast(msg: successMsg);
         Navigator.pop(context);
       }
     } catch (e) {
-      final errorMsg = e.toString();
-      if (errorMsg.contains('3003')) {
-        Fluttertoast.showToast(msg: _l10n.collectionNotInGroup);
-      } else {
-        Fluttertoast.showToast(msg: '${_l10n.collectionJoinFailed}: $errorMsg');
-      }
-    }
-  }
-
-  Future<void> _updateEntry(String content) async {
-    try {
-      await CollectionService.join(collectionId, groupId, content);
-      if (mounted) {
-        Fluttertoast.showToast(msg: _l10n.collectionUpdateSuccess);
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      final errorMsg = e.toString();
-      if (errorMsg.contains('3003')) {
-        Fluttertoast.showToast(msg: _l10n.collectionNotInGroup);
-      } else {
-        Fluttertoast.showToast(msg: '${_l10n.collectionUpdateFailed}: $errorMsg');
-      }
+      _toastError(e, failedMsg);
     }
   }
 
   void _confirmDeleteEntry() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(_l10n.confirm),
         content: Text(_l10n.confirmDeleteEntry),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(_l10n.cancel),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               _doDeleteEntry();
             },
-            child: Text(_l10n.delete, style: const TextStyle(color: Colors.red)),
+            child: Text(_l10n.delete, style: TextStyle(color: dialogContext.colors.danger)),
           ),
         ],
       ),
@@ -214,76 +202,94 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
         _fetchCollectionDetail();
       }
     } catch (e) {
-      final errorMsg = e.toString();
-      if (errorMsg.contains('3003')) {
-        Fluttertoast.showToast(msg: _l10n.collectionNotInGroup);
-      } else {
-        Fluttertoast.showToast(msg: '${_l10n.deleteFailed}: $errorMsg');
-      }
+      _toastError(e, _l10n.deleteFailed);
+    }
+  }
+
+  /// 3003 = 已不在该群;这个错在接龙里很常见,单独给一句人话。
+  void _toastError(Object e, String fallback) {
+    final msg = e.toString();
+    if (msg.contains('3003')) {
+      Fluttertoast.showToast(msg: _l10n.collectionNotInGroup);
+    } else {
+      Fluttertoast.showToast(msg: '$fallback: $msg');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final colors = context.colors;
+
+    final body = isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : collection == null
+            ? Center(
+                child: Text(
+                  _l10n.collectionLoadFailed,
+                  style: AppText.base.copyWith(color: colors.textSecondary),
+                ),
+              )
+            : _buildContent();
+
+    if (widget.asDialog) {
+      return PcDialogFrame(
+        title: _l10n.collectionDetail,
+        primary: (collection?.isJoinable ?? false)
+            ? PcDialogAction(label: _l10n.submit, onPressed: _canSubmit ? _onSubmit : null)
+            : null,
+        secondary: (collection?.isJoinable ?? false)
+            ? PcDialogAction(label: _l10n.cancel, onPressed: () => Navigator.pop(context))
+            : null,
+        child: Container(color: colors.primaryBackground, child: body),
+      );
+    }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: colors.primaryBackground,
       appBar: AppBar(
-        title: Text(l10n.collectionDetail),
+        title: Text(_l10n.collectionDetail),
         actions: [
           if (collection?.isJoinable ?? false)
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: TextButton(
                 onPressed: _canSubmit ? _onSubmit : null,
-                // style: TextButton.styleFrom(
-                //   foregroundColor: Colors.white,
-                //   disabledForegroundColor: Colors.white.withOpacity(0.5),
-                // ),
-                child: Text(
-                  l10n.submit,
-                  style: AppText.lg.copyWith(fontWeight: FontWeight.w600),
-                ),
+                child: Text(_l10n.submit, style: AppText.lg.copyWith(fontWeight: FontWeight.w600)),
               ),
             ),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : collection == null
-              ? Center(child: Text(l10n.collectionLoadFailed))
-              : _buildContent(),
+      body: body,
     );
   }
 
   Widget _buildContent() {
-    return Column(
+    final colors = context.colors;
+    final entries = collection!.validEntries;
+    // 未参与且接龙进行中时,清单末尾挂一行空的编辑位
+    final showNewEntryRow = collection!.isJoinable && !hasJoined;
+
+    return ListView(
+      padding: const EdgeInsets.all(16),
       children: [
-        Expanded(
-          child: CustomScrollView(
-            slivers: [
-              // 头部信息
-              SliverToBoxAdapter(
-                child: _buildHeader(),
-              ),
-              // 参与列表
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final entries = collection!.validEntries;
-                    if (index < entries.length) {
-                      return _buildEntryItem(index, entries[index]);
-                    }
-                    // 编辑行（未参与且接龙进行中）
-                    if (index == entries.length && collection!.isJoinable && !hasJoined) {
-                      return _buildEditRow(entries.length + 1);
-                    }
-                    return null;
-                  },
-                  childCount: _getItemCount(),
-                ),
-              ),
+        _buildHeader(),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            children: [
+              for (int i = 0; i < entries.length; i++) ...[
+                if (i > 0) Divider(height: 0.5, thickness: 0.5, color: colors.hairlineSoft),
+                _buildEntryRow(i + 1, entries[i]),
+              ],
+              if (showNewEntryRow) ...[
+                if (entries.isNotEmpty) Divider(height: 0.5, thickness: 0.5, color: colors.hairlineSoft),
+                _buildEntryRow(entries.length + 1, null),
+              ],
             ],
           ),
         ),
@@ -291,33 +297,51 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
     );
   }
 
-  int _getItemCount() {
-    if (collection == null) return 0;
-    int count = collection!.validEntries.length;
-    // 未参与且接龙进行中时，添加编辑行
-    if (collection!.isJoinable && !hasJoined) {
-      count += 1;
-    }
-    return count;
-  }
-
   Widget _buildHeader() {
-    return FutureBuilder<UserInfo?>(
-      future: Imclient.getUserInfo(collection!.creatorId),
-      builder: (context, snapshot) {
-        final creatorInfo = snapshot.data;
-        final creatorName = creatorInfo?.displayName ?? 
-                           creatorInfo?.name ?? 
-                           collection!.creatorId;
+    final colors = context.colors;
 
-        return Container(
-          color: Colors.white,
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 创建者信息
-              Row(
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            collection!.title,
+            style: AppText.xl.copyWith(fontWeight: FontWeight.w600, color: colors.textPrimary),
+          ),
+          if (collection!.desc.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              collection!.desc,
+              style: AppText.base.copyWith(color: colors.textSecondary),
+            ),
+          ],
+          if (collection!.template.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: colors.accentSoft,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                '${_l10n.collectionTemplateLabel}${collection!.template}',
+                style: AppText.xs.copyWith(color: colors.accent),
+              ),
+            ),
+          ],
+          const SizedBox(height: 14),
+          FutureBuilder<UserInfo?>(
+            future: Imclient.getUserInfo(collection!.creatorId),
+            builder: (context, snapshot) {
+              final creatorInfo = snapshot.data;
+              final creatorName = creatorInfo?.displayName ?? creatorInfo?.name ?? collection!.creatorId;
+              return Row(
                 children: [
                   Portrait(
                     creatorInfo?.portrait ?? '',
@@ -329,157 +353,82 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      '$creatorName ${_l10n.collectionCreatorSuffix} · ${collection!.participantCount}${_l10n.collectionPeopleCount}',
-                      style: AppText.base.copyWith(color: Color(0xFF576b95)),
+                      '$creatorName ${_l10n.collectionCreatorSuffix}',
+                      style: AppText.xs.copyWith(color: colors.textSecondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              
-              // 标题
-              Text(
-                collection!.title,
-                style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: Color(0xFF333333)),
-              ),
-              
-              // 描述
-              if (collection!.desc.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  collection!.desc,
-                  style: AppText.base.copyWith(color: Color(0xFF666666)),
-                ),
-              ],
-              
-              // 模板
-              if (collection!.template.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  '${_l10n.collectionTemplateLabel}${collection!.template}',
-                  style: AppText.sm.copyWith(color: Color(0xFF576b95)),
-                ),
-              ],
-              
-              // 分隔区域
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildEntryItem(int index, CollectionEntry entry) {
-    final isMyEntry = entry.userId == currentUserId;
-    final displayIndex = index + 1;
-
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // 序号圆形
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8F0FE),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFF576b95),
-                width: 1,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                '$displayIndex',
-                style: AppText.xs.copyWith(color: Color(0xFF576b95), fontWeight: FontWeight.w500),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          
-          // 内容
-          Expanded(
-            child: isMyEntry && collection!.isJoinable
-                ? _buildMyEditField()
-                : Text(
-                    entry.content,
-                    style: AppText.lg.copyWith(color: Color(0xFF333333)),
+                  Text(
+                    '${collection!.participantCount}${_l10n.collectionPeopleCount}',
+                    style: AppText.xs.copyWith(color: colors.textTertiary),
                   ),
+                ],
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMyEditField() {
-    return TextField(
-      controller: _editController,
-      decoration: InputDecoration(
-        hintText: collection!.template.isNotEmpty 
-            ? collection!.template 
-            : _l10n.collectionJoinHint,
-        hintStyle: AppText.lg.copyWith(color: Color(0xFF999999)),
-        border: InputBorder.none,
-        isDense: true,
-        contentPadding: EdgeInsets.zero,
-      ),
-      style: AppText.lg.copyWith(color: Color(0xFF333333)),
-      maxLines: 3,
-      minLines: 1,
-      onChanged: (_) => setState(() {}),
-    );
-  }
+  /// 清单里的一行。[entry] 为 null 表示末尾那行「轮到你了」的空位。
+  /// 自己那行在接龙进行中时是输入框,其余是纯文本。
+  Widget _buildEntryRow(int displayIndex, CollectionEntry? entry) {
+    final colors = context.colors;
+    final isMine = entry == null || entry.userId == currentUserId;
+    final editable = isMine && collection!.isJoinable;
 
-  Widget _buildEditRow(int index) {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      color: editable ? colors.accentSoft : Colors.transparent,
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 序号圆形
           Container(
-            width: 24,
-            height: 24,
+            width: 22,
+            height: 22,
+            margin: const EdgeInsets.only(top: 2),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8F0FE),
+              color: editable ? colors.accent : colors.hairlineSoft,
               shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFF576b95),
-                width: 1,
-              ),
             ),
             child: Center(
               child: Text(
-                '$index',
-                style: AppText.xs.copyWith(color: Color(0xFF576b95), fontWeight: FontWeight.w500),
+                '$displayIndex',
+                style: AppText.xxs.copyWith(
+                  color: editable ? colors.onAccent : colors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          
-          // 编辑框
+          const SizedBox(width: 10),
           Expanded(
-            child: TextField(
-              controller: _editController,
-              decoration: InputDecoration(
-                hintText: collection!.template.isNotEmpty 
-                    ? collection!.template 
-                    : _l10n.collectionJoinHint,
-                hintStyle: AppText.lg.copyWith(color: Color(0xFF999999)),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-              ),
-              style: AppText.lg.copyWith(color: Color(0xFF333333)),
-              maxLines: 3,
-              minLines: 1,
-              onChanged: (_) => setState(() {}),
-            ),
+            child: editable
+                ? TextField(
+                    controller: _editController,
+                    autofocus: entry == null,
+                    style: AppText.base.copyWith(color: colors.textPrimary),
+                    cursorColor: colors.accent,
+                    maxLines: 3,
+                    minLines: 1,
+                    decoration: InputDecoration(
+                      hintText: collection!.template.isNotEmpty ? collection!.template : _l10n.collectionJoinHint,
+                      hintStyle: AppText.base.copyWith(color: colors.textTertiary),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    onChanged: (_) => setState(() {}),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Text(
+                      entry!.content,
+                      style: AppText.base.copyWith(color: colors.textPrimary),
+                    ),
+                  ),
           ),
         ],
       ),

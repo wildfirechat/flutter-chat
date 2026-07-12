@@ -1,24 +1,28 @@
 import 'package:flutter/material.dart';
 
+import 'package:chat/theme/app_colors.dart';
+
 /// 群接龙图标
-/// 
+///
 /// 与 Android 端 ic_collection.xml 对应的 Flutter 实现
 /// 使用 CustomPainter 绘制相同的图标样式
 class CollectionIcon extends StatelessWidget {
   final double size;
-  final Color color;
+
+  /// 不传则跟随主题的次级图标色 —— 写死深灰在暗色下会糊在深色底上。
+  final Color? color;
 
   const CollectionIcon({
     super.key,
     this.size = 24,
-    this.color = const Color(0xFF585858),
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size(size, size),
-      painter: _CollectionIconPainter(color: color),
+      painter: _CollectionIconPainter(color: color ?? context.colors.iconSecondary),
     );
   }
 }
@@ -70,7 +74,7 @@ class _CollectionIconPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _CollectionIconPainter oldDelegate) => oldDelegate.color != color;
 }
 
 /// 接龙图标 Widget，用于插件面板
@@ -90,8 +94,8 @@ class CollectionIconWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = backgroundColor ?? Colors.grey[100]!;
-    final fgColor = iconColor ?? const Color(0xFF585858);
+    final bgColor = backgroundColor ?? context.colors.inputBg;
+    final fgColor = iconColor ?? context.colors.iconSecondary;
 
     return Container(
       width: size,

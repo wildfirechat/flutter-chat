@@ -1,42 +1,58 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
-
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/poll_message_content.dart';
-import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 
-
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_dialog.dart';
+import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 import '../widget/portrait.dart';
 import 'poll_model.dart';
 import 'poll_service.dart';
-import 'package:chat/theme/app_typography.dart';
 
-
-/// 投票详情页
-/// 
-/// 与 Android 端 PollDetailActivity 对齐
+/// 投票详情。
+///
+/// 两种模式(沿用 Android PollDetailActivity 的语义):
+/// - 投票模式:从消息进入,可勾选并提交;已投票/已结束则只读,并展示票数条。
+/// - 管理模式:创建者从「我的投票」进入,不投票,只做导出/结束/删除。
+///
+/// 移动端整页 + 底部操作栏,桌面端弹窗 + 操作栏,入口统一走 [show]。
 class PollDetailScreen extends StatefulWidget {
   final Message? message;
   final int? pollId;
+  final bool asDialog;
 
-  const PollDetailScreen({super.key, this.message, this.pollId})
+  const PollDetailScreen({super.key, this.message, this.pollId, this.asDialog = false})
       : assert(message != null || pollId != null, 'message or pollId must be provided');
 
-  /// 从消息进入（投票模式）
-  factory PollDetailScreen.fromMessage({required Message message}) {
-    return PollDetailScreen(message: message);
+  /// 从消息进入(投票模式)
+  static Future<void> showFromMessage(BuildContext context, Message message) {
+    return _show(context, (asDialog) => PollDetailScreen(message: message, asDialog: asDialog));
   }
 
-  /// 从列表进入（管理模式）
-  factory PollDetailScreen.fromList({required int pollId, String? groupId}) {
-    return PollDetailScreen(pollId: pollId);
+  /// 从列表进入(创建者为管理模式)
+  static Future<void> showFromList(BuildContext context, int pollId) {
+    return _show(context, (asDialog) => PollDetailScreen(pollId: pollId, asDialog: asDialog));
+  }
+
+  static Future<void> _show(BuildContext context, PollDetailScreen Function(bool asDialog) create) {
+    if (isDesktopShell) {
+      return showPcDialog(
+        context: context,
+        width: 460,
+        height: 620,
+        builder: (_) => create(true),
+      );
+    }
+    return Navigator.push(context, MaterialPageRoute(builder: (_) => create(false)));
   }
 
   @override
@@ -45,7 +61,6 @@ class PollDetailScreen extends StatefulWidget {
 
 class _PollDetailScreenState extends State<PollDetailScreen> {
   late int pollId;
-  late String? groupId;
   late String currentUserId;
 
   Poll? poll;
@@ -54,10 +69,9 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
   bool get _isServiceAvailable => PollService.isAvailable;
 
-  /// 是否是管理模式（从列表进入且是创建者）
+  /// 管理模式:从列表进入且是创建者
   bool get _isManagerMode => poll?.isCreator == true && widget.message == null;
 
-  /// 是否可以投票
   bool get _canVote {
     if (poll == null) return false;
     if (_isManagerMode) return false;
@@ -74,10 +88,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
     if (widget.message != null) {
       final content = widget.message!.content as PollMessageContent;
       pollId = int.tryParse(content.pollId) ?? 0;
-      groupId = content.groupId;
     } else {
       pollId = widget.pollId!;
-      groupId = null;
     }
     currentUserId = Imclient.currentUserId;
 
@@ -92,23 +104,24 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
     try {
       final result = await PollService.getPoll(pollId);
+      if (!mounted) return;
       setState(() {
         poll = result;
         isLoading = false;
-        // 恢复已选择的选项（仅投票模式下）
+        // 恢复已选择的选项(仅投票模式下)
         if (!_isManagerMode) {
           selectedOptionIds = Set.from(result.myOptionIds);
         }
       });
-      // 更新本地消息（如果有变化）
       _updateLocalMessageIfNeeded();
     } catch (e) {
+      if (!mounted) return;
       setState(() => isLoading = false);
       Fluttertoast.showToast(msg: '${_l10n.pollLoadFailed}: $e');
     }
   }
 
-  /// 如果本地消息内容有变化，更新本地消息
+  /// 服务端状态比消息里的快照新时,回写本地消息,气泡上的票数/状态才不会一直是旧的。
   void _updateLocalMessageIfNeeded() {
     if (widget.message == null || widget.message!.content is! PollMessageContent) {
       return;
@@ -117,65 +130,33 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
     final content = widget.message!.content as PollMessageContent;
     bool needUpdate = false;
 
-    // 检查状态是否有变化
     if (poll!.status != content.status) {
       content.status = poll!.status;
       needUpdate = true;
     }
 
-    // 检查总票数是否有变化
     if (poll!.totalVotes != content.totalVotes) {
       content.totalVotes = poll!.totalVotes;
       needUpdate = true;
     }
 
-    // 检查是否已过期
     final now = DateTime.now().millisecondsSinceEpoch;
     if (poll!.endTime > 0 && poll!.endTime < now && content.endTime >= now) {
       content.status = 1;
       needUpdate = true;
     }
 
-    // 如果有变化，更新本地消息
     if (needUpdate) {
       Imclient.updateMessage(widget.message!.messageId, content);
     }
   }
 
-  String _buildTitle() {
-    final l10n = _l10n;
-    // 多选投票模式下显示已选数量
+  /// 多选投票时在标题旁提示已选数量
+  String? get _selectionHint {
     if (poll != null && _canVote && poll!.isMultiChoice && selectedOptionIds.isNotEmpty) {
-      return l10n.pollSelectedCount(selectedOptionIds.length, poll!.maxSelect);
+      return _l10n.pollSelectedCount(selectedOptionIds.length, poll!.maxSelect);
     }
-    return l10n.pollDetail;
-  }
-
-  List<Widget> _buildAppBarActions() {
-    // 管理模式：显示转发按钮（仅创建者）
-    if (_isManagerMode) {
-      return [
-        IconButton(
-          icon: const Icon(Icons.share),
-          onPressed: _forwardPoll,
-        ),
-      ];
-    }
-
-    // 投票模式：根据是否可以投票显示提交按钮
-    if (_canVote && selectedOptionIds.isNotEmpty) {
-      return [
-        TextButton(
-          onPressed: _onSubmit,
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.white,
-          ),
-          child: Text(_l10n.pollSubmitVote),
-        ),
-      ];
-    }
-
-    return [];
+    return null;
   }
 
   Future<void> _onSubmit() async {
@@ -200,56 +181,24 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
     }
   }
 
-  void _forwardPoll() {
-    if (poll == null) return;
-
-    // 构建投票消息内容
-    final content = PollMessageContent();
-    content.pollId = poll!.pollId.toString();
-    content.groupId = poll!.groupId;
-    content.creatorId = poll!.creatorId;
-    content.title = poll!.title;
-    content.desc = poll!.desc;
-    content.visibility = poll!.visibility;
-    content.type = poll!.type;
-    content.anonymous = poll!.anonymous;
-    content.status = poll!.status;
-    content.endTime = poll!.endTime;
-    content.totalVotes = poll!.totalVotes;
-
-    // 构建消息对象
-    final forwardMessage = Message();
-    forwardMessage.content = content;
-    forwardMessage.conversation = Conversation(
-      conversationType: ConversationType.Group,
-      target: poll!.groupId,
-    );
-
-    // TODO: 跳转到转发页面
-    Fluttertoast.showToast(msg: '转发功能待实现');
-  }
-
   void _onOptionSelected(int optionId) {
     if (!_canVote) return;
 
     setState(() {
       if (poll!.isSingleChoice) {
-        // 单选
         if (selectedOptionIds.contains(optionId)) {
           selectedOptionIds.remove(optionId);
         } else {
-          selectedOptionIds.clear();
-          selectedOptionIds.add(optionId);
+          selectedOptionIds
+            ..clear()
+            ..add(optionId);
         }
       } else {
-        // 多选
         if (selectedOptionIds.contains(optionId)) {
           selectedOptionIds.remove(optionId);
         } else {
           if (poll!.maxSelect > 0 && selectedOptionIds.length >= poll!.maxSelect) {
-            Fluttertoast.showToast(
-              msg: _l10n.pollMaxSelectLimit(poll!.maxSelect),
-            );
+            Fluttertoast.showToast(msg: _l10n.pollMaxSelectLimit(poll!.maxSelect));
             return;
           }
           selectedOptionIds.add(optionId);
@@ -258,30 +207,30 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
     });
   }
 
-  Future<void> _closePoll() async {
-    showDialog(
+  Future<bool> _confirm({required String message, required String confirmLabel}) async {
+    final ok = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(_l10n.confirm),
-        content: Text(_l10n.pollCloseConfirm),
+        content: Text(message),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(_l10n.cancel),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _doClosePoll();
-            },
-            child: Text(_l10n.close, style: const TextStyle(color: Colors.red)),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(confirmLabel, style: TextStyle(color: dialogContext.colors.danger)),
           ),
         ],
       ),
     );
+    return ok == true;
   }
 
-  Future<void> _doClosePoll() async {
+  Future<void> _closePoll() async {
+    if (!await _confirm(message: _l10n.pollCloseConfirm, confirmLabel: _l10n.close)) return;
+
     try {
       await PollService.close(pollId);
       if (mounted) {
@@ -294,29 +243,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
   }
 
   Future<void> _deletePoll() async {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(_l10n.confirm),
-        content: Text(_l10n.pollDeleteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(_l10n.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _doDeletePoll();
-            },
-            child: Text(_l10n.delete, style: const TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
+    if (!await _confirm(message: _l10n.pollDeleteConfirm, confirmLabel: _l10n.delete)) return;
 
-  Future<void> _doDeletePoll() async {
     try {
       await PollService.delete(pollId);
       if (mounted) {
@@ -338,33 +266,31 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         return;
       }
 
-      // 生成 CSV 内容
       final buffer = StringBuffer();
-      // UTF-8 BOM
-      buffer.write('\uFEFF');
+      buffer.write('﻿'); // UTF-8 BOM,Excel 打开才不乱码
       buffer.write('${_l10n.pollCsvOption},${_l10n.pollCsvUser},${_l10n.pollCsvTime}\n');
 
       for (final detail in details) {
-        final timeStr = DateTime.fromMillisecondsSinceEpoch(detail.voteTime)
-            .toString()
-            .substring(0, 19);
+        final timeStr = DateTime.fromMillisecondsSinceEpoch(detail.voteTime).toString().substring(0, 19);
         buffer.write('${_escapeCsv(detail.optionText)},${_escapeCsv(detail.userName)},$timeStr\n');
       }
 
-      // 生成安全的文件名
-      final safeTitle = _safeFileName(poll!.title);
-      final fileName = '${safeTitle}_${_l10n.pollDetailsSuffix}.csv';
-
-      // 写入临时文件
+      final fileName = '${_safeFileName(poll!.title)}_${_l10n.pollDetailsSuffix}.csv';
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/$fileName');
       await file.writeAsString(buffer.toString(), encoding: const Utf8Codec());
 
-      // 分享文件
-      await _shareFile(file);
+      // 缺 share_plus 依赖,先把落盘路径给出去
+      Fluttertoast.showToast(msg: '${_l10n.pollShareDetails}: ${file.path}');
     } catch (e) {
       Fluttertoast.showToast(msg: '${_l10n.pollExportFailed}: $e');
     }
+  }
+
+  /// TODO: 接入转发选人流程(forward/),把 Poll 拼回 PollMessageContent 转发出去。
+  /// 先留入口:管理模式下创建者本就该能把投票再发一次,入口去掉了就没人记得补。
+  void _forwardPoll() {
+    Fluttertoast.showToast(msg: _l10n.pollForwardComingSoon);
   }
 
   String _escapeCsv(String field) {
@@ -378,343 +304,411 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
     if (fileName.isEmpty) {
       return _l10n.pollDefaultFileName;
     }
-
-    // 替换文件系统中的非法字符
     String safeName = fileName.replaceAll(RegExp(r'[/\\?%*|"<>]'), '_');
-
-    // 限制文件名长度
     if (safeName.length > 50) {
       safeName = safeName.substring(0, 50);
     }
-
     return safeName.isEmpty ? _l10n.pollDefaultFileName : safeName;
   }
 
-  Future<void> _shareFile(File file) async {
-    // 由于缺少 share_plus 依赖，暂时只显示保存成功提示
-    Fluttertoast.showToast(
-      msg: '${_l10n.pollShareDetails}: ${file.path}',
-    );
-  }
+  // ---- 外壳 ----
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    final body = isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : poll == null
+            ? Center(
+                child: Text(
+                  _l10n.pollLoadFailed,
+                  style: AppText.base.copyWith(color: colors.textSecondary),
+                ),
+              )
+            : _buildBody();
+
+    if (widget.asDialog) {
+      return PcDialogFrame(
+        title: _l10n.pollDetail,
+        subtitle: _selectionHint,
+        footerLeading: _buildFooterLeading(),
+        primary: _buildPrimaryAction(),
+        secondary: _buildSecondaryAction(),
+        child: Container(color: colors.primaryBackground, child: body),
+      );
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5), // gray5
+      backgroundColor: colors.primaryBackground,
       appBar: AppBar(
-        title: Text(_buildTitle()),
-        actions: _buildAppBarActions(),
+        title: Text(_selectionHint ?? _l10n.pollDetail),
+        actions: [
+          if (_isManagerMode)
+            IconButton(
+              icon: const Icon(Icons.share_outlined),
+              tooltip: _l10n.forward,
+              onPressed: _forwardPoll,
+            ),
+        ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : poll == null
-              ? Center(child: Text(_l10n.pollLoadFailed))
-              : _buildBody(),
-      bottomNavigationBar: _buildBottomBar(),
+      body: body,
+      bottomNavigationBar: _buildMobileBottomBar(),
     );
   }
 
-  Widget _buildBody() {
-    return Column(
+  /// 桌面端操作栏左侧的次要入口(管理模式):转发,以及实名投票时的导出明细。
+  /// 移动端这两项分别落在 AppBar 与底部栏上。
+  Widget? _buildFooterLeading() {
+    if (poll == null || !_isManagerMode) return null;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // 可滚动内容
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header（白色背景）
-                _buildHeader(),
-                // 选项列表（白色背景，与 Header 间隔 8dp）
-                Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  color: Colors.white,
-                  child: _buildOptionsList(),
-                ),
-                // Footer（灰色背景，与选项列表间隔 8dp）
-                Container(
-                  margin: const EdgeInsets.only(top: 8),
-                  child: _buildFooter(),
-                ),
-              ],
-            ),
+        _footerTextButton(icon: Icons.share_outlined, label: _l10n.forward, onPressed: _forwardPoll),
+        if (_canExport)
+          _footerTextButton(
+            icon: Icons.file_download_outlined,
+            label: _l10n.pollExport,
+            onPressed: _exportPoll,
           ),
-        ),
       ],
     );
   }
 
-  /// Header - 与 Android poll_detail_header.xml 对齐
-  Widget _buildHeader() {
-    return FutureBuilder<UserInfo?>(
-      future: Imclient.getUserInfo(poll!.creatorId),
-      builder: (context, snapshot) {
-        final creatorInfo = snapshot.data;
-        final creatorName = creatorInfo?.displayName ??
-            creatorInfo?.name ??
-            poll!.creatorId;
-
-        return Container(
-          color: Colors.white,
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 创建者信息行 - 与 Android 对齐
-              Row(
-                children: [
-                  // 头像 40dp
-                  Portrait(
-                    creatorInfo?.portrait ?? '',
-                    '',
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  // 创建者名称 - "由 %s 发起" 格式
-                  Expanded(
-                    child: Text(
-                      _l10n.pollCreatorFormat(creatorName),
-                      style: AppText.base.copyWith(color: Colors.grey[600]),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  // 状态标签（右侧）
-                  _buildHeaderStatusTag(),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // 标题 18sp 粗体
-              Text(
-                poll!.title,
-                style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: Color(0xFF333333)),
-              ),
-
-              // 描述 14sp 灰色
-              if (poll!.desc.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  poll!.desc,
-                  style: AppText.base.copyWith(color: Colors.grey[600]),
-                ),
-              ],
-            ],
-          ),
-        );
-      },
+  Widget _footerTextButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return TextButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 16),
+      label: Text(label),
+      style: TextButton.styleFrom(
+        foregroundColor: context.colors.textSecondary,
+        textStyle: AppText.sm,
+      ),
     );
   }
 
-  /// Header 状态标签 - 显示剩余时间或状态
-  Widget _buildHeaderStatusTag() {
-    String text;
-    Color color;
+  /// 匿名投票没有可导出的明细。
+  bool get _canExport => poll != null && _isManagerMode && poll!.anonymous != 1;
 
-    final remainingTime = poll!.getRemainingTimeText();
-    if (remainingTime != null && remainingTime.isNotEmpty) {
-      text = remainingTime;
-      color = Colors.orange;
-    } else if (poll!.isEnded) {
-      text = _l10n.pollStatusEnded;
-      color = Colors.grey;
-    } else {
-      return const SizedBox.shrink();
+  /// 主操作:管理模式是「结束/删除」,投票模式是「提交投票」;只读时无主操作。
+  PcDialogAction? _buildPrimaryAction() {
+    if (poll == null) return null;
+
+    if (_isManagerMode) {
+      final isEnded = poll!.isEnded;
+      return PcDialogAction(
+        label: isEnded ? _l10n.pollDelete : _l10n.pollClose,
+        onPressed: isEnded ? _deletePoll : _closePoll,
+        danger: isEnded,
+      );
     }
 
-    return Text(
-      text,
-      style: AppText.sm.copyWith(color: color),
+    if (_canVote) {
+      return PcDialogAction(
+        label: _l10n.pollSubmitVote,
+        onPressed: selectedOptionIds.isEmpty ? null : _onSubmit,
+      );
+    }
+
+    return null;
+  }
+
+  PcDialogAction? _buildSecondaryAction() {
+    if (poll == null || !_canVote) return null;
+    return PcDialogAction(label: _l10n.cancel, onPressed: () => Navigator.pop(context));
+  }
+
+  /// 移动端底部操作栏。管理模式实名投票时,导出与主操作并排。
+  Widget? _buildMobileBottomBar() {
+    final primary = _buildPrimaryAction();
+    final export = _canExport;
+    if (primary == null && !export) return null;
+
+    final colors = context.colors;
+    return Container(
+      color: colors.surface,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            if (export) ...[
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: _exportPoll,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: colors.accent,
+                    side: BorderSide(color: colors.accent),
+                    minimumSize: const Size(0, 44),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                  ),
+                  child: Text(_l10n.pollExport, style: AppText.lg.copyWith(fontWeight: FontWeight.w500)),
+                ),
+              ),
+              const SizedBox(width: 12),
+            ],
+            if (primary != null)
+              Expanded(
+                child: FilledButton(
+                  onPressed: primary.onPressed,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: primary.danger ? colors.danger : colors.accent,
+                    disabledBackgroundColor: (primary.danger ? colors.danger : colors.accent).withValues(alpha: 0.4),
+                    foregroundColor: colors.onAccent,
+                    disabledForegroundColor: colors.onAccent.withValues(alpha: 0.7),
+                    minimumSize: const Size(0, 44),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                  ),
+                  child: Text(primary.label, style: AppText.lg.copyWith(fontWeight: FontWeight.w500)),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 
-  /// 选项列表 - 与 Android item_poll_vote_option.xml 对齐
-  Widget _buildOptionsList() {
-    return Column(
-      children: poll!.options.asMap().entries.map((entry) {
-        final index = entry.key;
-        final option = entry.value;
-        final isSelected = selectedOptionIds.contains(option.optionId);
-        final showResult = poll!.shouldShowResult;
-        final hasVoted = !_canVote;
-        // 是否是我投票的选项（非管理模式下）
-        final isMyVote = !_isManagerMode && poll!.myOptionIds.contains(option.optionId);
+  // ---- 内容 ----
 
-        // 是否显示选中背景
-        final showSelectedBg = isMyVote || (isSelected && !hasVoted) || (isSelected && hasVoted);
+  Widget _buildBody() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(),
+          const SizedBox(height: 12),
+          _buildOptionsCard(),
+          const SizedBox(height: 12),
+          _buildMeta(),
+        ],
+      ),
+    );
+  }
 
-        return InkWell(
-          onTap: () => _onOptionSelected(option.optionId),
-          child: Container(
-            // 固定高度 56dp，与 Android 对齐
-            height: 56,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: showSelectedBg ? const Color(0xFFE8F4FD) : Colors.white,
-              border: Border(
-                bottom: index < poll!.options.length - 1
-                    ? BorderSide(color: Colors.grey[200]!)
-                    : BorderSide.none,
-              ),
+  Widget _buildHeader() {
+    final colors = context.colors;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            poll!.title,
+            style: AppText.xl.copyWith(fontWeight: FontWeight.w600, color: colors.textPrimary),
+          ),
+          if (poll!.desc.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              poll!.desc,
+              style: AppText.base.copyWith(color: colors.textSecondary),
             ),
-            child: Row(
-              children: [
-                // 左侧选择按钮或百分比
-                _buildOptionLeft(option, isSelected, isMyVote),
-                const SizedBox(width: 12),
+          ],
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              FutureBuilder<UserInfo?>(
+                future: Imclient.getUserInfo(poll!.creatorId),
+                builder: (context, snapshot) {
+                  final creatorInfo = snapshot.data;
+                  final creatorName = creatorInfo?.displayName ?? creatorInfo?.name ?? poll!.creatorId;
+                  return Expanded(
+                    child: Row(
+                      children: [
+                        Portrait(
+                          creatorInfo?.portrait ?? '',
+                          '',
+                          width: 24,
+                          height: 24,
+                          borderRadius: 12,
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            _l10n.pollCreatorFormat(creatorName),
+                            style: AppText.xs.copyWith(color: colors.textSecondary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              _buildStatusChip(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-                // 选项文字 - 16sp
+  /// 状态徽标:进行中(蓝) / 已投票(绿) / 已结束(灰)。
+  Widget _buildStatusChip() {
+    final colors = context.colors;
+    final String label;
+    final Color fg;
+    final Color bg;
+
+    if (poll!.isEnded) {
+      label = _l10n.pollStatusEnded;
+      fg = colors.textTertiary;
+      bg = colors.hairlineSoft;
+    } else if (poll!.hasVoted) {
+      label = _l10n.pollAlreadyVoted;
+      fg = colors.success;
+      bg = colors.successSoft;
+    } else {
+      label = _l10n.pollStatusActive;
+      fg = colors.accent;
+      bg = colors.accentSoft;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
+      child: Text(label, style: AppText.xxs.copyWith(color: fg)),
+    );
+  }
+
+  Widget _buildOptionsCard() {
+    final colors = context.colors;
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          for (int i = 0; i < poll!.options.length; i++) ...[
+            if (i > 0) Divider(height: 0.5, thickness: 0.5, color: colors.hairlineSoft),
+            _buildOptionRow(poll!.options[i]),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionRow(PollOption option) {
+    final colors = context.colors;
+    final isSelected = selectedOptionIds.contains(option.optionId);
+    final isMyVote = !_isManagerMode && poll!.myOptionIds.contains(option.optionId);
+    final showResult = poll!.shouldShowResult;
+
+    // 未出结果时靠勾选框表达选中;出结果后靠票数条,行底色再上色就太花了。
+    final highlight = _canVote && isSelected;
+
+    return InkWell(
+      onTap: _canVote ? () => _onOptionSelected(option.optionId) : null,
+      child: Container(
+        color: highlight ? colors.accentSoft : Colors.transparent,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                if (_canVote) ...[
+                  _buildCheckMark(isSelected),
+                  const SizedBox(width: 12),
+                ] else if (isMyVote) ...[
+                  Icon(Icons.check_circle, size: 20, color: colors.accent),
+                  const SizedBox(width: 12),
+                ],
                 Expanded(
                   child: Text(
                     option.optionText,
-                    style: AppText.lg.copyWith(color: _getOptionTextColor(isMyVote, isSelected)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                    style: AppText.base.copyWith(
+                      color: isMyVote || isSelected ? colors.accent : colors.textPrimary,
+                      fontWeight: isMyVote ? FontWeight.w500 : FontWeight.normal,
+                    ),
                   ),
                 ),
-
-                // 右侧百分比（显示结果时）
                 if (showResult) ...[
                   const SizedBox(width: 12),
                   Text(
-                    '${option.votePercent}%',
-                    style: AppText.base.copyWith(color: Colors.grey[600]),
+                    '${option.voteCount}${_l10n.pollVotes} · ${option.votePercent}%',
+                    style: AppText.xs.copyWith(color: isMyVote ? colors.accent : colors.textSecondary),
                   ),
                 ],
               ],
             ),
-          ),
-        );
-      }).toList(),
+            // 票数条:自己投的那项走主色,其余走灰阶 —— 结果的可读性来自长度,不是颜色。
+            if (showResult) ...[
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(2),
+                child: LinearProgressIndicator(
+                  value: (option.votePercent.clamp(0, 100)) / 100,
+                  minHeight: 4,
+                  backgroundColor: colors.hairlineSoft,
+                  valueColor: AlwaysStoppedAnimation<Color>(isMyVote ? colors.accent : colors.textTertiary),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 
-  /// 选项左侧指示器
-  Widget _buildOptionLeft(PollOption option, bool isSelected, bool isMyVote) {
-    final showResult = poll!.shouldShowResult;
-
-    // 管理模式：隐藏选择框，只留间距
-    if (_isManagerMode) {
-      return const SizedBox(width: 0);
-    }
-
-    // 可以投票：显示选择按钮（24x24）
-    if (_canVote) {
-      return _buildVoteCheckButton(isSelected);
-    }
-
-    // 已投票或已结束：显示选中标记或空白
-    if (showResult && isMyVote) {
-      // 已投票选项：蓝色圆形对勾
-      return Container(
-        width: 24,
-        height: 24,
-        decoration: const BoxDecoration(
-          color: Color(0xFF576b95),
-          shape: BoxShape.circle,
-        ),
-        child: const Icon(
-          Icons.check,
-          color: Colors.white,
-          size: 16,
-        ),
-      );
-    }
-
-    // 其他情况：空白占位（保持对齐）
-    return const SizedBox(width: 24);
-  }
-
-  /// 投票选择按钮 - 24x24
-  Widget _buildVoteCheckButton(bool isSelected) {
-    if (poll!.isSingleChoice) {
-      // 单选：圆形
-      return Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected ? const Color(0xFF576b95) : Colors.grey[400]!,
-            width: 2,
-          ),
-          color: isSelected ? const Color(0xFF576b95) : Colors.transparent,
-        ),
-        child: isSelected
-            ? const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 16,
-              )
-            : null,
-      );
-    } else {
-      // 多选：方形
-      return Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF576b95) : Colors.grey[400]!,
-            width: 2,
-          ),
-          color: isSelected ? const Color(0xFF576b95) : Colors.transparent,
-        ),
-        child: isSelected
-            ? const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 16,
-              )
-            : null,
-      );
-    }
-  }
-
-  Color _getOptionTextColor(bool isMyVote, bool isSelected) {
-    if (isMyVote) {
-      return const Color(0xFF576b95);
-    }
-    if (isSelected && _canVote) {
-      return const Color(0xFF576b95);
-    }
-    return const Color(0xFF333333);
-  }
-
-  /// Footer - 与 Android poll_detail_footer.xml 对齐
-  Widget _buildFooter() {
-    final statusParts = <String>[];
-
-    // 投票类型
-    statusParts.add(poll!.anonymous == 1 ? _l10n.pollAnonymous : _l10n.pollNamed);
-
-    // 参与人数
-    statusParts.add(_l10n.pollVoterCount(poll!.voterCount));
-
-    // 剩余时间
-    final remainingTime = _formatRemainingTime();
-    if (remainingTime.isNotEmpty) {
-      statusParts.add(remainingTime);
-    }
-
-    // 状态
-    if (poll!.isEnded) {
-      statusParts.add(_l10n.pollStatusEnded);
-    } else if (poll!.hasVoted) {
-      statusParts.add(_l10n.pollAlreadyVoted);
-    }
-
-    // 灰色背景，居中显示
+  /// 单选圆形、多选方形 —— 形状要和「能选几个」对得上。
+  Widget _buildCheckMark(bool isSelected) {
+    final colors = context.colors;
+    final isSingle = poll!.isSingleChoice;
     return Container(
+      width: 20,
+      height: 20,
+      decoration: BoxDecoration(
+        shape: isSingle ? BoxShape.circle : BoxShape.rectangle,
+        borderRadius: isSingle ? null : BorderRadius.circular(4),
+        border: Border.all(
+          color: isSelected ? colors.accent : colors.textTertiary,
+          width: 1.5,
+        ),
+        color: isSelected ? colors.accent : Colors.transparent,
+      ),
+      child: isSelected ? Icon(Icons.check, size: 14, color: colors.onAccent) : null,
+    );
+  }
+
+  /// 页脚一行灰字:实名/匿名 · N人参与 · 剩余时间 · 状态
+  Widget _buildMeta() {
+    final colors = context.colors;
+    final parts = <String>[
+      poll!.anonymous == 1 ? _l10n.pollAnonymous : _l10n.pollNamed,
+      _l10n.pollVoterCount(poll!.voterCount),
+    ];
+
+    final remaining = _formatRemainingTime();
+    if (remaining.isNotEmpty) {
+      parts.add(remaining);
+    }
+
+    if (poll!.isEnded) {
+      parts.add(_l10n.pollStatusEnded);
+    } else if (poll!.hasVoted) {
+      parts.add(_l10n.pollAlreadyVoted);
+    }
+
+    return SizedBox(
       width: double.infinity,
-      color: const Color(0xFFF5F5F5), // gray5，与页面背景一致
-      padding: const EdgeInsets.all(16),
       child: Text(
-        statusParts.join(' · '),
-        style: AppText.sm.copyWith(color: Colors.grey[600]),
+        parts.join(' · '),
+        style: AppText.xs.copyWith(color: colors.textTertiary),
         textAlign: TextAlign.center,
       ),
     );
@@ -727,9 +721,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
       return _l10n.pollNoDeadline;
     }
 
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final remaining = poll!.endTime - now;
-
+    final remaining = poll!.endTime - DateTime.now().millisecondsSinceEpoch;
     if (remaining <= 0) return '';
 
     final minutes = remaining ~/ 60000;
@@ -740,160 +732,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
       return _l10n.pollDaysLeft(days);
     } else if (hours > 0) {
       return _l10n.pollHoursLeft(hours);
-    } else {
-      return _l10n.pollMinutesLeft(minutes);
     }
-  }
-
-  /// 底部操作栏
-  Widget? _buildBottomBar() {
-    if (poll == null) return null;
-
-    // 管理模式：显示导出/关闭/删除按钮
-    if (_isManagerMode) {
-      return _buildManagerBottomBar();
-    }
-
-    // 投票模式：显示提交按钮（未投票且未结束时）
-    if (_canVote) {
-      return _buildVoteBottomBar();
-    }
-
-    return null;
-  }
-
-  /// 管理模式底部栏
-  Widget _buildManagerBottomBar() {
-    final isAnonymous = poll!.anonymous == 1;
-    final isEnded = poll!.isEnded;
-
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 12,
-        bottom: 12 + MediaQuery.of(context).padding.bottom,
-      ),
-      child: SafeArea(
-        child: isAnonymous
-            ? _buildAnonymousManagerButtons(isEnded)
-            : _buildNamedManagerButtons(isEnded),
-      ),
-    );
-  }
-
-  /// 匿名投票管理按钮
-  Widget _buildAnonymousManagerButtons(bool isEnded) {
-    if (isEnded) {
-      return ElevatedButton(
-        onPressed: _deletePoll,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.red,
-          foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 44),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        child: Text(
-          _l10n.pollDelete,
-          style: AppText.lg.copyWith(fontWeight: FontWeight.w500),
-        ),
-      );
-    } else {
-      return ElevatedButton(
-        onPressed: _closePoll,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF576b95),
-          foregroundColor: Colors.white,
-          minimumSize: const Size(double.infinity, 44),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        child: Text(
-          _l10n.pollClose,
-          style: AppText.lg.copyWith(fontWeight: FontWeight.w500),
-        ),
-      );
-    }
-  }
-
-  /// 实名投票管理按钮
-  Widget _buildNamedManagerButtons(bool isEnded) {
-    return Row(
-      children: [
-        // 导出按钮
-        Expanded(
-          flex: 1,
-          child: OutlinedButton(
-            onPressed: _exportPoll,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF576b95),
-              side: const BorderSide(color: Color(0xFF576b95)),
-              minimumSize: const Size(0, 44),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            child: Text(
-              _l10n.pollExport,
-              style: AppText.lg.copyWith(fontWeight: FontWeight.w500),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        // 关闭/删除按钮
-        Expanded(
-          flex: 1,
-          child: ElevatedButton(
-            onPressed: isEnded ? _deletePoll : _closePoll,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isEnded ? Colors.red : const Color(0xFF576b95),
-              foregroundColor: Colors.white,
-              minimumSize: const Size(0, 44),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-            ),
-            child: Text(
-              isEnded ? _l10n.pollDelete : _l10n.pollClose,
-              style: AppText.lg.copyWith(fontWeight: FontWeight.w500),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 投票模式底部栏
-  Widget _buildVoteBottomBar() {
-    return Container(
-      color: Colors.white,
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 12,
-        bottom: 12 + MediaQuery.of(context).padding.bottom,
-      ),
-      child: SafeArea(
-        child: ElevatedButton(
-          onPressed: selectedOptionIds.isNotEmpty ? _onSubmit : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF576b95),
-            foregroundColor: Colors.white,
-            minimumSize: const Size(double.infinity, 44),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          child: Text(
-            _l10n.pollSubmitVote,
-            style: AppText.lg.copyWith(fontWeight: FontWeight.w500),
-          ),
-        ),
-      ),
-    );
+    return _l10n.pollMinutesLeft(minutes);
   }
 }

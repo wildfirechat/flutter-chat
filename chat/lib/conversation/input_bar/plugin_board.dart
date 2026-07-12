@@ -263,20 +263,10 @@ class PluginBoard extends StatelessWidget {
         }
         break;
       case "collection":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CreateCollectionScreen(conversation: conversation),
-          ),
-        );
+        CreateCollectionScreen.show(context, conversation);
         break;
       case "poll":
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PollHomeScreen(groupId: conversation.target),
-          ),
-        );
+        PollHomeScreen.show(context, conversation.target);
         break;
     }
   }

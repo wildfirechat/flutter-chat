@@ -13,8 +13,12 @@ class AppColors extends ThemeExtension<AppColors> {
   const AppColors({
     required this.accent,
     required this.accentPressed,
+    required this.accentSoft,
     required this.onAccent,
     required this.danger,
+    required this.success,
+    required this.successSoft,
+    required this.warning,
     required this.badge,
     required this.link,
     required this.surface,
@@ -68,11 +72,22 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color accent;
   final Color accentPressed;
 
+  /// accent 的淡底:选中项底色、票数条、序号圆点、「进行中」标签底。
+  /// 暗色下是半透明蓝 —— 三栏底色不同,实色压不住。
+  final Color accentSoft;
+
   /// accent 实心底上的前景色。
   final Color onAccent;
 
   /// 危险操作(退出登录、删除)。
   final Color danger;
+
+  /// 正向状态(已投票、已参与)。暗色取 macOS 系统绿,与 [danger]/[accent] 同族。
+  final Color success;
+  final Color successSoft;
+
+  /// 提醒但不阻断(投票剩余时间)。
+  final Color warning;
 
   /// 未读角标。
   final Color badge;
@@ -183,8 +198,12 @@ class AppColors extends ThemeExtension<AppColors> {
   static const AppColors light = AppColors(
     accent: Color(0xFF1F64E4),
     accentPressed: Color(0xFF1A55C2),
+    accentSoft: Color(0xFFE8F0FE),
     onAccent: Color(0xFFFFFFFF),
     danger: Color(0xFFED4C4D),
+    success: Color(0xFF07C160),
+    successSoft: Color(0xFFE8F5E9),
+    warning: Color(0xFFFF9500),
     badge: Color(0xFFFA5151),
     link: Color(0xFF1F64E4),
     surface: Color(0xFFFFFFFF),
@@ -240,8 +259,12 @@ class AppColors extends ThemeExtension<AppColors> {
   static const AppColors dark = AppColors(
     accent: Color(0xFF0A84FF),
     accentPressed: Color(0xFF40A9FF),
+    accentSoft: Color(0x330A84FF),
     onAccent: Color(0xFFFFFFFF),
     danger: Color(0xFFFF453A),
+    success: Color(0xFF30D158),
+    successSoft: Color(0x3330D158),
+    warning: Color(0xFFFF9F0A),
     badge: Color(0xFFFF453A),
     link: Color(0xFF0A84FF),
     surface: Color(0xFF2C2C2E),
@@ -294,8 +317,12 @@ class AppColors extends ThemeExtension<AppColors> {
   AppColors copyWith({
     Color? accent,
     Color? accentPressed,
+    Color? accentSoft,
     Color? onAccent,
     Color? danger,
+    Color? success,
+    Color? successSoft,
+    Color? warning,
     Color? badge,
     Color? link,
     Color? surface,
@@ -346,8 +373,12 @@ class AppColors extends ThemeExtension<AppColors> {
     return AppColors(
       accent: accent ?? this.accent,
       accentPressed: accentPressed ?? this.accentPressed,
+      accentSoft: accentSoft ?? this.accentSoft,
       onAccent: onAccent ?? this.onAccent,
       danger: danger ?? this.danger,
+      success: success ?? this.success,
+      successSoft: successSoft ?? this.successSoft,
+      warning: warning ?? this.warning,
       badge: badge ?? this.badge,
       link: link ?? this.link,
       surface: surface ?? this.surface,
@@ -406,8 +437,12 @@ class AppColors extends ThemeExtension<AppColors> {
     return AppColors(
       accent: mix(accent, other.accent),
       accentPressed: mix(accentPressed, other.accentPressed),
+      accentSoft: mix(accentSoft, other.accentSoft),
       onAccent: mix(onAccent, other.onAccent),
       danger: mix(danger, other.danger),
+      success: mix(success, other.success),
+      successSoft: mix(successSoft, other.successSoft),
+      warning: mix(warning, other.warning),
       badge: mix(badge, other.badge),
       link: mix(link, other.link),
       surface: mix(surface, other.surface),

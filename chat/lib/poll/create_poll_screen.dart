@@ -1,17 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
-import '../config.dart';
-import 'poll_service.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_dialog.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/widget/form_card.dart';
+import 'package:chat/widget/option_item.dart';
+import 'package:chat/widget/option_switch_item.dart';
+import 'poll_service.dart';
 
+/// 发起投票。
+///
+/// 移动端是整页表单(AppBar 右上角「发布」),桌面端是弹窗(操作栏「取消 / 发布」)——
+/// 表单与提交逻辑同一份,只有外壳按端切换,入口统一走 [show]。
 class CreatePollScreen extends StatefulWidget {
   final Conversation conversation;
 
-  const CreatePollScreen({super.key, required this.conversation});
+  /// 桌面端以 [PcDialogFrame] 承载,不要自己带 Scaffold/AppBar。
+  final bool asDialog;
+
+  const CreatePollScreen({
+    super.key,
+    required this.conversation,
+    this.asDialog = false,
+  });
+
+  static Future<void> show(BuildContext context, Conversation conversation) {
+    if (isDesktopShell) {
+      return showPcDialog(
+        context: context,
+        width: 460,
+        height: 620,
+        builder: (_) => CreatePollScreen(conversation: conversation, asDialog: true),
+      );
+    }
+    return Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => CreatePollScreen(conversation: conversation)),
+    );
+  }
 
   @override
   State<CreatePollScreen> createState() => _CreatePollScreenState();
@@ -25,16 +55,18 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
   int _type = 1; // 1=单选, 2=多选
   int _maxSelect = 1;
   int _anonymous = 0;
-  int _visibility = 1; // 1=仅群内, 2=公开
+  final int _visibility = 1; // 1=仅群内, 2=公开
   int _showResult = 0; // 0=投票前隐藏, 1=始终显示
   int? _endTime;
 
   bool _isCreating = false;
 
-  static const int MIN_OPTIONS = 2;
-  static const int MAX_OPTIONS = 10;
+  static const int minOptions = 2;
+  static const int maxOptions = 10;
 
   bool get _isServiceAvailable => PollService.isAvailable;
+
+  AppLocalizations get _l10n => AppLocalizations.of(context)!;
 
   @override
   void initState() {
@@ -55,10 +87,8 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
   }
 
   void _addOption() {
-    if (_optionControllers.length >= MAX_OPTIONS) {
-      Fluttertoast.showToast(
-        msg: _l10n.pollMaxOptionsLimit(MAX_OPTIONS),
-      );
+    if (_optionControllers.length >= maxOptions) {
+      Fluttertoast.showToast(msg: _l10n.pollMaxOptionsLimit(maxOptions));
       return;
     }
     setState(() {
@@ -67,15 +97,17 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
   }
 
   void _removeOption(int index) {
-    if (_optionControllers.length <= MIN_OPTIONS) {
-      Fluttertoast.showToast(
-        msg: _l10n.pollMinOptionsRequired(MIN_OPTIONS),
-      );
+    if (_optionControllers.length <= minOptions) {
+      Fluttertoast.showToast(msg: _l10n.pollMinOptionsRequired(minOptions));
       return;
     }
     setState(() {
       _optionControllers[index].dispose();
       _optionControllers.removeAt(index);
+      // 选项减少后,「最多选几项」可能已越界
+      if (_maxSelect > _optionControllers.length) {
+        _maxSelect = _optionControllers.length;
+      }
     });
   }
 
@@ -128,105 +160,95 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
     }
   }
 
-  AppLocalizations get _l10n => AppLocalizations.of(context)!;
-
   Future<void> _pickEndTime() async {
     final now = DateTime.now();
     final date = await showDatePicker(
       context: context,
-      initialDate: now.add(const Duration(days: 1)),
+      initialDate: _endTime != null ? DateTime.fromMillisecondsSinceEpoch(_endTime!) : now.add(const Duration(days: 1)),
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
     );
+    if (date == null || !mounted) return;
 
-    if (date != null) {
-      final time = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
+    final time = await showTimePicker(
+      context: context,
+      initialTime: _endTime != null
+          ? TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(_endTime!))
+          : TimeOfDay.now(),
+    );
+    if (time == null) return;
 
-      if (time != null) {
-        final dateTime = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          time.hour,
-          time.minute,
-        );
-        setState(() {
-          _endTime = dateTime.millisecondsSinceEpoch;
-        });
-      }
-    }
+    setState(() {
+      _endTime = DateTime(date.year, date.month, date.day, time.hour, time.minute).millisecondsSinceEpoch;
+    });
   }
 
-  void _showPollTypeDialog() {
-    showDialog(
+  Future<void> _pickPollType() async {
+    final type = await showFormOptionPicker<int>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(_l10n.pollType),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<int>(
-              title: Text(_l10n.pollSingleChoice),
-              value: 1,
-              groupValue: _type,
-              onChanged: (value) {
-                Navigator.pop(context);
-                setState(() {
-                  _type = value!;
-                  _maxSelect = 1;
-                });
-              },
-            ),
-            RadioListTile<int>(
-              title: Text(_l10n.pollMultiChoice),
-              value: 2,
-              groupValue: _type,
-              onChanged: (value) {
-                Navigator.pop(context);
-                setState(() {
-                  _type = value!;
-                  _maxSelect = 2;
-                });
-              },
-            ),
-          ],
-        ),
-      ),
+      title: _l10n.pollType,
+      current: _type,
+      options: [
+        (value: 1, label: _l10n.pollSingleChoice),
+        (value: 2, label: _l10n.pollMultiChoice),
+      ],
     );
+    if (type == null) return;
+    setState(() {
+      _type = type;
+      // 单选恒为 1;切到多选时给一个合法的默认上限
+      _maxSelect = type == 1 ? 1 : _maxSelect.clamp(2, _optionControllers.length);
+    });
   }
 
-  void _showMaxSelectDialog() {
-    showDialog(
+  Future<void> _pickMaxSelect() async {
+    // 最多可选的上限是选项总数,下限 2(否则等同单选)
+    final choices = [
+      for (int n = 2; n <= _optionControllers.length; n++) (value: n, label: '$n${_l10n.pollOptions}'),
+    ];
+    if (choices.isEmpty) return;
+
+    final value = await showFormOptionPicker<int>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(_l10n.pollMaxSelect),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(
-            _optionControllers.length - 1,
-            (index) => RadioListTile<int>(
-              title: Text('${index + 2}${_l10n.pollOptions}'),
-              value: index + 2,
-              groupValue: _maxSelect,
-              onChanged: (value) {
-                Navigator.pop(context);
-                setState(() => _maxSelect = value!);
-              },
-            ),
-          ),
-        ),
-      ),
+      title: _l10n.pollMaxSelect,
+      current: _maxSelect,
+      options: choices,
     );
+    if (value == null) return;
+    setState(() => _maxSelect = value);
+  }
+
+  String _formatEndTime(int timestamp) {
+    final dt = DateTime.fromMillisecondsSinceEpoch(timestamp);
+    final mm = dt.month.toString().padLeft(2, '0');
+    final dd = dt.day.toString().padLeft(2, '0');
+    final hh = dt.hour.toString().padLeft(2, '0');
+    final min = dt.minute.toString().padLeft(2, '0');
+    return '$mm/$dd $hh:$min';
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = _l10n;
+
+    if (widget.asDialog) {
+      return PcDialogFrame(
+        title: l10n.createPoll,
+        primary: PcDialogAction(
+          label: l10n.publish,
+          onPressed: _canSubmit ? _createPoll : null,
+          busy: _isCreating,
+        ),
+        secondary: PcDialogAction(
+          label: l10n.cancel,
+          onPressed: _isCreating ? null : () => Navigator.pop(context),
+        ),
+        child: _buildForm(),
+      );
+    }
 
     return Scaffold(
+      backgroundColor: context.colors.primaryBackground,
       appBar: AppBar(
         title: Text(l10n.createPoll),
         actions: [
@@ -234,219 +256,110 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
             padding: const EdgeInsets.only(right: 8),
             child: TextButton(
               onPressed: _canSubmit ? _createPoll : null,
-              // style: TextButton.styleFrom(
-              //   foregroundColor: Colors.white,
-              //   disabledForegroundColor: Colors.white.withOpacity(0.5),
-              // ),
               child: _isCreating
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
+                        valueColor: AlwaysStoppedAnimation<Color>(context.colors.accent),
                       ),
                     )
-                  : Text(
-                      l10n.publish,
-                      style: AppText.lg.copyWith(fontWeight: FontWeight.w600),
-                    ),
+                  : Text(l10n.publish, style: AppText.lg.copyWith(fontWeight: FontWeight.w600)),
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 标题输入
-            _buildSection(
-              child: TextField(
+      body: _buildForm(),
+    );
+  }
+
+  Widget _buildForm() {
+    final l10n = _l10n;
+    final colors = context.colors;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 标题 + 描述
+          FormCard(
+            children: [
+              FormTextRow(
                 controller: _titleController,
-                decoration: InputDecoration(
-                  hintText: l10n.pollTitleHint,
-                  border: InputBorder.none,
-                ),
-                style: AppText.lg,
+                hint: l10n.pollTitleHint,
                 onChanged: (_) => setState(() {}),
               ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // 描述输入
-            _buildSection(
-              child: TextField(
+              FormTextRow(
                 controller: _descController,
-                decoration: InputDecoration(
-                  hintText: l10n.pollDescHint,
-                  border: InputBorder.none,
-                ),
-                style: AppText.lg,
+                hint: l10n.pollDescHint,
                 maxLines: 3,
+                style: AppText.base,
               ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // 选项列表
-            _buildSection(
-              child: Column(
-                children: [
-                  ..._optionControllers.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final controller = entry.value;
-                    return _buildOptionItem(index, controller);
-                  }).toList(),
-                  // 添加选项按钮
-                  if (_optionControllers.length < MAX_OPTIONS)
-                    InkWell(
-                      onTap: _addOption,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.add_circle_outline,
-                              color: Colors.grey[600],
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              l10n.pollAddOption,
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // 设置项
-            _buildSection(
-              child: Column(
-                children: [
-                  // 投票类型
-                  InkWell(
-                    onTap: _showPollTypeDialog,
-                    child: _buildSettingItem(
-                      title: l10n.pollType,
-                      value: _type == 1 ? l10n.pollSingleChoice : l10n.pollMultiChoice,
-                    ),
-                  ),
-
-                  // 多选时显示最多选几项
-                  if (_type == 2)
-                    InkWell(
-                      onTap: _showMaxSelectDialog,
-                      child: _buildSettingItem(
-                        title: l10n.pollMaxSelect,
-                        value: '$_maxSelect${l10n.pollOptions}',
-                      ),
-                    ),
-
-                  // 匿名投票
-                  _buildSwitchItem(
-                    title: l10n.pollAnonymousVote,
-                    value: _anonymous == 1,
-                    onChanged: (value) {
-                      setState(() => _anonymous = value ? 1 : 0);
-                    },
-                  ),
-
-                  // 显示结果
-                  _buildSwitchItem(
-                    title: l10n.pollShowResult,
-                    value: _showResult == 1,
-                    onChanged: (value) {
-                      setState(() => _showResult = value ? 1 : 0);
-                    },
-                  ),
-
-                  // 截止时间
-                  InkWell(
-                    onTap: _pickEndTime,
-                    child: _buildSettingItem(
-                      title: l10n.pollEndTime,
-                      value: _endTime == null
-                          ? l10n.pollNoEndTime
-                          : _formatEndTime(_endTime!),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSection({required Widget child}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: child,
-    );
-  }
-
-  Widget _buildOptionItem(int index, TextEditingController controller) {
-    return Row(
-      children: [
-        Expanded(
-          child: TextField(
-            controller: controller,
-            decoration: InputDecoration(
-              hintText: '${_l10n.pollOption} ${index + 1}',
-              border: InputBorder.none,
-            ),
-            style: AppText.lg,
-            onChanged: (_) => setState(() {}),
+            ],
           ),
-        ),
-        if (_optionControllers.length > MIN_OPTIONS)
-          IconButton(
-            icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
-            onPressed: () => _removeOption(index),
-          ),
-      ],
-    );
-  }
 
-  Widget _buildSettingItem({required String title, required String value}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!),
-        ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: AppText.lg,
-          ),
-          Row(
+          const SizedBox(height: 16),
+
+          // 选项
+          FormSectionLabel(l10n.pollOptionsTitle),
+          FormCard(
             children: [
-              Text(
-                value,
-                style: AppText.base.copyWith(color: Colors.grey[600]),
+              for (int i = 0; i < _optionControllers.length; i++) _buildOptionRow(i),
+              if (_optionControllers.length < maxOptions)
+                InkWell(
+                  onTap: _addOption,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Row(
+                      children: [
+                        Icon(Icons.add_circle_outline, size: 20, color: colors.accent),
+                        const SizedBox(width: 8),
+                        Text(l10n.pollAddOption, style: AppText.base.copyWith(color: colors.accent)),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // 设置。行间线由 FormCard 统一画,故各行都关掉自己的底线。
+          FormCard(
+            padding: EdgeInsets.zero,
+            children: [
+              OptionItem(
+                l10n.pollType,
+                desc: _type == 1 ? l10n.pollSingleChoice : l10n.pollMultiChoice,
+                showBottomDivider: false,
+                onTap: _pickPollType,
               ),
-              const SizedBox(width: 4),
-              Icon(
-                Icons.chevron_right,
-                color: Colors.grey[400],
+              if (_type == 2)
+                OptionItem(
+                  l10n.pollMaxSelect,
+                  desc: '$_maxSelect${l10n.pollOptions}',
+                  showBottomDivider: false,
+                  onTap: _pickMaxSelect,
+                ),
+              OptionSwitchItem(
+                l10n.pollAnonymousVote,
+                _anonymous == 1,
+                (v) => setState(() => _anonymous = v ? 1 : 0),
+                showBottomDivider: false,
+              ),
+              OptionSwitchItem(
+                l10n.pollShowResult,
+                _showResult == 1,
+                (v) => setState(() => _showResult = v ? 1 : 0),
+                showBottomDivider: false,
+              ),
+              OptionItem(
+                l10n.pollEndTime,
+                desc: _endTime == null ? l10n.pollNoEndTime : _formatEndTime(_endTime!),
+                showBottomDivider: false,
+                onTap: _pickEndTime,
               ),
             ],
           ),
@@ -455,39 +368,24 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
     );
   }
 
-  Widget _buildSwitchItem({
-    required String title,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!),
+  Widget _buildOptionRow(int index) {
+    return Row(
+      children: [
+        Expanded(
+          child: FormTextRow(
+            controller: _optionControllers[index],
+            hint: '${_l10n.pollOption} ${index + 1}',
+            onChanged: (_) => setState(() {}),
+          ),
         ),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: AppText.lg,
+        if (_optionControllers.length > minOptions)
+          IconButton(
+            icon: Icon(Icons.remove_circle_outline, size: 20, color: context.colors.textTertiary),
+            splashRadius: 18,
+            tooltip: _l10n.delete,
+            onPressed: () => _removeOption(index),
           ),
-          Transform.scale(
-            scale: 0.6,
-            child: Switch(
-              value: value,
-              onChanged: onChanged,
-            ),
-          ),
-        ],
-      ),
+      ],
     );
-  }
-
-  String _formatEndTime(int timestamp) {
-    final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    return '${dateTime.month}/${dateTime.day} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 }

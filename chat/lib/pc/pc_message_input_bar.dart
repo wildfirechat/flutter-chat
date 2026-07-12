@@ -384,14 +384,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                               _ToolbarButton(
                                 iconWidget: CollectionIcon(size: 21, color: context.colors.iconSecondary),
                                 tooltip: l10n.collection,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => CreateCollectionScreen(conversation: controller.conversation),
-                                    ),
-                                  );
-                                },
+                                onTap: () => CreateCollectionScreen.show(context, controller.conversation),
                               ),
                             if (controller.conversation.conversationType == ConversationType.Group &&
                                 Config.pollServerAddress != null &&
@@ -399,14 +392,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                               _ToolbarButton(
                                 iconWidget: Icon(Icons.poll, size: 21, color: context.colors.iconSecondary),
                                 tooltip: l10n.poll,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => PollHomeScreen(groupId: controller.conversation.target),
-                                    ),
-                                  );
-                                },
+                                onTap: () => PollHomeScreen.show(context, controller.conversation.target),
                               ),
                             const Spacer(),
                             // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:

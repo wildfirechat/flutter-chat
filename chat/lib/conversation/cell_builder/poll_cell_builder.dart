@@ -6,11 +6,13 @@ import '../../ui_model/ui_message.dart';
 import '../../poll/poll_detail_screen.dart';
 import '../../poll/poll_service.dart';
 import 'portrait_cell_builder.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 
-/// 投票消息 Cell Builder
+/// 投票消息气泡。
 ///
-/// 与 Android 端 conversation_item_poll_send/receive.xml 样式对齐
+/// 气泡内一律继承气泡的前景色(见 [_onBubble]),层级用字重/透明度表达,不用色相 ——
+/// 暗色下发送气泡是实心蓝,任何固定的灰或主色都会掉到读不出来。
 class PollCellBuilder extends PortraitCellBuilder {
   late PollMessageContent content;
 
@@ -18,135 +20,73 @@ class PollCellBuilder extends PortraitCellBuilder {
     content = model.message.content as PollMessageContent;
   }
 
+  Color _onBubble(BuildContext context) =>
+      isSendMessage ? context.colors.bubbleSentText : context.colors.bubbleReceivedText;
+
   void _onTap(BuildContext context) {
     if (!PollService.isAvailable) return;
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PollDetailScreen.fromMessage(message: model.message),
-      ),
-    );
+    PollDetailScreen.showFromMessage(context, model.message);
   }
 
   @override
   Widget buildMessageContent(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final onBubble = _onBubble(context);
+    final remaining = content.getRemainingTimeText();
+
+    // 元信息:票数 · 状态 · 剩余时间,合成一行,不再堆三个色块
+    final meta = <String>[
+      '${content.totalVotes}${l10n.pollVotesCount}',
+      content.isEnded ? l10n.pollStatusEnded : l10n.pollStatusActive,
+      if (remaining != null && remaining.isNotEmpty) remaining,
+    ].join(' · ');
 
     return InkWell(
       onTap: () => _onTap(context),
       child: Container(
         width: 220,
         padding: const EdgeInsets.all(12),
-        // decoration: BoxDecoration(
-        //   color: isSendMessage ? const Color(0xFF95EC69) : Colors.white,
-        //   borderRadius: BorderRadius.circular(4),
-        // ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 标题行：图标 + 标题
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 投票图标
-                Icon(
-                  Icons.poll,
-                  size: 18,
-                  color: const Color(0xFF576b95),
-                ),
+                Icon(Icons.poll, size: 16, color: onBubble),
                 const SizedBox(width: 6),
-                // 标题
                 Expanded(
                   child: Text(
                     content.title,
-                    style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+                    style: AppText.base.copyWith(fontWeight: FontWeight.w600, color: onBubble),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-
-            // 描述（如果有）
             if (content.desc.isNotEmpty) ...[
               const SizedBox(height: 4),
-              Text(
-                content.desc,
-                style: AppText.sm.copyWith(color: Color(0xFF666666)),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+              Opacity(
+                opacity: 0.7,
+                child: Text(
+                  content.desc,
+                  style: AppText.xs.copyWith(color: onBubble),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
-
-            // 分隔线
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Divider(
-                height: 0.5,
-                color: Color(0xFFe0e0e0),
-              ),
+            const SizedBox(height: 8),
+            Opacity(
+              opacity: 0.7,
+              child: Text(meta, style: AppText.xs.copyWith(color: onBubble)),
             ),
-
-            // 统计信息
-            Row(
-              children: [
-                Icon(
-                  Icons.people_outline,
-                  size: 14,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '${content.totalVotes}${l10n.pollVotesCount}',
-                  style: AppText.xs.copyWith(color: Colors.grey[600]),
-                ),
-                const SizedBox(width: 12),
-                // 状态标签
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: content.isEnded
-                        ? const Color(0xFFF5F5F5)
-                        : const Color(0xFFE8F5E9),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    content.isEnded
-                        ? l10n.pollStatusEnded
-                        : l10n.pollStatusActive,
-                    style: AppText.xs.copyWith(color: content.isEnded
-                          ? const Color(0xFF999999)
-                          : const Color(0xFF4CAF50)),
-                  ),
-                ),
-              ],
-            ),
-
-            // 剩余时间（如果有）
-            if (content.getRemainingTimeText() != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                content.getRemainingTimeText()!,
-                style: AppText.xs.copyWith(color: Color(0xFF999999)),
-              ),
-            ],
-
-            // 分隔线
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Divider(
-                height: 0.5,
-                color: Color(0xFFe0e0e0),
-              ),
-            ),
-
-            // 操作按钮
+            const SizedBox(height: 8),
+            Opacity(opacity: 0.15, child: Divider(height: 0.5, thickness: 0.5, color: onBubble)),
+            const SizedBox(height: 8),
             Text(
               content.isEnded ? l10n.pollViewResult : l10n.pollJoinAction,
-              style: AppText.base.copyWith(color: content.isEnded
-                    ? const Color(0xFF999999)
-                    : const Color(0xFF576b95)),
+              style: AppText.xs.copyWith(fontWeight: FontWeight.w500, color: onBubble),
             ),
           ],
         ),

@@ -478,6 +478,7 @@
   "pollCsvTime": "Time",
   "pollDetailsSuffix": "details",
   "pollDefaultFileName": "poll",
+  "pollForwardComingSoon": "Forwarding a poll isn't available yet",
   "pollCreatorFormat": "Created by {creatorName}",
   "pollDaysLeft": "{count} days left",
   "pollHoursLeft": "{count} hours left",

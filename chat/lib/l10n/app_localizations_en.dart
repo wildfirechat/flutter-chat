@@ -1551,6 +1551,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pollDefaultFileName => 'poll';
 
   @override
+  String get pollForwardComingSoon => 'Forwarding a poll isn\'t available yet';
+
+  @override
   String pollCreatorFormat(Object creatorName) {
     return 'Created by $creatorName';
   }

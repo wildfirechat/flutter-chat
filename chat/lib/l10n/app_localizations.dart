@@ -2966,6 +2966,12 @@ abstract class AppLocalizations {
   /// **'投票'**
   String get pollDefaultFileName;
 
+  /// No description provided for @pollForwardComingSoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'转发投票功能开发中'**
+  String get pollForwardComingSoon;
+
   /// No description provided for @pollCreatorFormat.
   ///
   /// In zh, this message translates to:

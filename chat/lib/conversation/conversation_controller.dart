@@ -378,21 +378,11 @@ class ConversationController extends ChangeNotifier {
       // }
     } else if (model.message.content is CollectionMessageContent) {
       if (CollectionService.isAvailable) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CollectionDetailScreen(message: model.message),
-          ),
-        );
+        CollectionDetailScreen.show(context, model.message);
       }
     } else if (model.message.content is PollMessageContent) {
       if (PollService.isAvailable) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PollDetailScreen.fromMessage(message: model.message),
-          ),
-        );
+        PollDetailScreen.showFromMessage(context, model.message);
       }
     }
   }

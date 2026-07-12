@@ -232,6 +232,10 @@ but the range of supported deployment target versions is 10.13 to 26.5.99.
 - 媒体预览改用本地补丁版 `photo_view`（`vendor/photo_view`，见其 `PATCHES.md`）：
   桌面端图片预览新增双击缩放（以点击位置为中心，双击复位）；图片有原始宽高时
   缩放边界按真实尺寸计算，放大后拖动不会再拖出黑边。切换图片时缩放自动复位。
+- 投票 / 接龙在桌面端改为弹窗（`showPcDialog` + `PcDialogFrame`），不再用整页
+  `MaterialPageRoute` 盖住三栏窗口。移动端仍是整页路由，两端共用同一份表单与提交逻辑，
+  入口统一走各页的 `show(context, ...)`。「我的投票」的删除在桌面端是 hover 出按钮
+  （鼠标没有左滑手势，只留 `Dismissible` 等于没有删除入口）。
 
 ---
 

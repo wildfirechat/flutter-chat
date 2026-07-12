@@ -1539,6 +1539,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pollDefaultFileName => '投票';
 
   @override
+  String get pollForwardComingSoon => '转发投票功能开发中';
+
+  @override
   String pollCreatorFormat(Object creatorName) {
     return '由$creatorName发起';
   }
