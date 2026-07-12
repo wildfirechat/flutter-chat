@@ -33,10 +33,10 @@ class OnlineStateCache extends ChangeNotifier {
 
   /// 从服务端拉取指定用户的在线状态并写入缓存。
   ///
-  /// 本方法仅同步返回查询结果，不会触发 [notifyListeners]；
-  /// 调用方应使用返回值渲染，并自行监听 [OnlineStateCache] 变化以响应后续更新。
+  /// 桌面端 [Imclient.getUserOnlineState] 返回 null，这里回退到本缓存，
+  /// 保证事件已到达时能同步取到状态。
   UserOnlineState? loadState(String userId) {
-    final state = Imclient.getUserOnlineState(userId);
+    final state = Imclient.getUserOnlineState(userId) ?? _states[userId];
     if (state != null) {
       _states[userId] = state;
     }

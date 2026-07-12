@@ -725,6 +725,10 @@ class ImclientPlatform extends PlatformInterface {
             data.add(info);
             _userOnlineStateCache[info.userId] = info;
           }
+          // 同步到事件总线，让 OnlineStateCache / OnlineStateBuilder 立即刷新。
+          if (data.isNotEmpty) {
+            _eventBus.fire(UserOnlineStateUpdatedEvent(data));
+          }
           var callback = _operationSuccessCallbackMap[requestId];
           if (callback != null) {
             callback(data);

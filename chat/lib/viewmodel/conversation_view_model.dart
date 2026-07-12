@@ -289,6 +289,8 @@ class ConversationViewModel extends ChangeNotifier {
     }
 
     _currentConversationInfo = await Imclient.getConversationInfo(conversation);
+    // 进入会话时刷新 target 资料，对齐 iOS 行为
+    _refreshTargetInfo(conversation);
     if (conversation.conversationType == ConversationType.Chatroom) {
       _noMoreLocalHistoryMsg = true;
       _noMoreNewerMsg = true;
@@ -622,6 +624,24 @@ class ConversationViewModel extends ChangeNotifier {
     if (_typingTimer != null) {
       _typingTimer!.cancel();
       _typingTimer = null;
+    }
+  }
+
+  /// 进入会话时刷新目标资料，让标题、头像等尽快拿到最新数据。
+  void _refreshTargetInfo(Conversation conversation) {
+    switch (conversation.conversationType) {
+      case ConversationType.Single:
+        Imclient.getUserInfo(conversation.target, refresh: true);
+        break;
+      case ConversationType.Group:
+        Imclient.getGroupInfo(conversation.target, refresh: true);
+        break;
+      case ConversationType.Channel:
+        Imclient.getChannelInfo(conversation.target, refresh: true);
+        break;
+      case ConversationType.Chatroom:
+      default:
+        break;
     }
   }
 

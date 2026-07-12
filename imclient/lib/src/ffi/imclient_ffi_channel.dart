@@ -10,6 +10,7 @@ import 'package:flutter/services.dart' show MethodCall, MissingPluginException;
 import 'package:path/path.dart' as path;
 
 import '../imclient_channel.dart';
+import '../../model/im_constant.dart';
 import 'wfclient_bindings.dart';
 
 /// 桌面端（macOS/Windows/Linux）imclient 通道的唯一实现。
@@ -2229,6 +2230,16 @@ class ImclientFfiChannel implements ImclientChannel {
       case 'setDefaultSilentWhenPcOnline':
       case 'setVoipNotificationSilent':
       case 'setEnableSyncDraft':
+        // 桌面端原生库未单独暴露 setEnableSyncDraft，通过 setUserSetting 写入
+        // Disable_Sync_Draft（scope=20）实现与移动端一致的行为。
+        return using((a) {
+          final key = _ns(a, '');
+          final value = _ns(a, _bool(args, 'enable') ? '0' : '1');
+          _wf.setUserSetting(UserSettingScope.Disable_Sync_Draft, key.ptr, key.len,
+              value.ptr, value.len, _cbVoid, _cbError,
+              _reqPtr(_int(args, 'requestId')), 0);
+          return null;
+        });
       case 'muteNotificationWhenPcOnline':
       case 'getNoDisturbingTimes':
       case 'setNoDisturbingTimes':

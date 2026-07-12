@@ -81,11 +81,11 @@ class ForwardTargetList extends StatelessWidget {
 
     if (searchViewModel.searchedFriends.isNotEmpty) {
       results.add(_SectionHeader(l10n.friends));
-      results.addAll(searchViewModel.searchedFriends.map(_buildUserTile));
+      results.addAll(searchViewModel.searchedFriends.map((u) => _buildUserTile(context, u)));
     }
     if (searchViewModel.searchedGroupInfos.isNotEmpty) {
       results.add(_SectionHeader(l10n.group));
-      results.addAll(List<GroupSearchInfo>.from(searchViewModel.searchedGroupInfos).map(_buildGroupTile));
+      results.addAll(List<GroupSearchInfo>.from(searchViewModel.searchedGroupInfos).map((g) => _buildGroupTile(context, g)));
     }
 
     if (results.isEmpty) {
@@ -99,7 +99,12 @@ class ForwardTargetList extends StatelessWidget {
     return ConversationDisplay(
       conversation: conversation,
       builder: (context, info) => _ConversationTile(
-        title: info.title,
+        title: Text(
+          info.title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppText.lg.copyWith(color: context.colors.textPrimary),
+        ),
         portrait: info.portrait,
         defaultPortrait: info.defaultPortrait,
         selected: controller.isSelected(conversation),
@@ -110,10 +115,17 @@ class ForwardTargetList extends StatelessWidget {
   }
 
   /// 搜索结果:标题/头像已随结果返回,不必再订阅 ViewModel,也不显示勾选框。
-  Widget _buildUserTile(UserInfo user) {
+  Widget _buildUserTile(BuildContext context, UserInfo user) {
     final conversation = Conversation(conversationType: ConversationType.Single, target: user.userId, line: 0);
     return _ConversationTile(
-      title: MeshUserDisplay.getReadableName(user),
+      title: Text.rich(
+        MeshUserDisplay.getReadableNameSpan(
+          user,
+          style: AppText.lg.copyWith(color: context.colors.textPrimary),
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       portrait: user.portrait ?? Config.defaultUserPortrait,
       defaultPortrait: Config.defaultUserPortrait,
       selected: controller.isSelected(conversation),
@@ -122,12 +134,17 @@ class ForwardTargetList extends StatelessWidget {
     );
   }
 
-  Widget _buildGroupTile(GroupSearchInfo groupSearchInfo) {
+  Widget _buildGroupTile(BuildContext context, GroupSearchInfo groupSearchInfo) {
     final groupInfo = groupSearchInfo.groupInfo;
     if (groupInfo == null) return const SizedBox.shrink();
     final conversation = Conversation(conversationType: ConversationType.Group, target: groupInfo.target, line: 0);
     return _ConversationTile(
-      title: groupInfo.name ?? 'Group',
+      title: Text(
+        groupInfo.name ?? 'Group',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppText.lg.copyWith(color: context.colors.textPrimary),
+      ),
       portrait: groupInfo.portrait ?? Config.defaultGroupPortrait,
       defaultPortrait: Config.defaultGroupPortrait,
       selected: controller.isSelected(conversation),
@@ -138,7 +155,7 @@ class ForwardTargetList extends StatelessWidget {
 }
 
 class _ConversationTile extends StatelessWidget {
-  final String title;
+  final Widget title;
   final String portrait;
   final String defaultPortrait;
   final bool selected;
@@ -171,14 +188,7 @@ class _ConversationTile extends StatelessWidget {
             children: [
               Portrait(portrait, defaultPortrait, borderRadius: 4.0),
               const SizedBox(width: 12.0),
-              Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.lg.copyWith(color: context.colors.textPrimary),
-                ),
-              ),
+              Expanded(child: title),
               if (showCheckbox) ...[
                 const SizedBox(width: 12.0),
                 selected

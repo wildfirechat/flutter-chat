@@ -152,7 +152,7 @@ class Utilities {
         title = title.emptyToNull ?? AppLocalizations.of(context)!.singleChat(conversation.target);
         break;
       case ConversationType.Group:
-        title = groupInfo?.remark.emptyToNull ?? groupInfo?.name.emptyToNull ?? AppLocalizations.of(context)!.groupChatWithTarget(conversation.target);
+        title = groupInfo?.remark.emptyToNull ?? groupInfo?.name.emptyToNull ?? AppLocalizations.of(context)!.groupChat;
         break;
       case ConversationType.Channel:
         title = channelInfo?.name.emptyToNull ?? AppLocalizations.of(context)!.channelWithTarget(conversation.target);

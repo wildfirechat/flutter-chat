@@ -209,7 +209,8 @@ class _ConversationPaneState extends State<ConversationPane> {
   @override
   void deactivate() {
     String draft = _inputBarController.getDraft();
-    if (draft.trim().isNotEmpty) {
+    // 只有草稿内容发生变化时才落库；空草稿也需要保存以清空之前的草稿，对齐 iOS 行为。
+    if (draft != _inputBarController.conversationDraft) {
       Imclient.setConversationDraft(widget.conversation, draft);
     }
     super.deactivate();

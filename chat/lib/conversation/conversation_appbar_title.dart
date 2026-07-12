@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/external_target_utils.dart';
+import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utils/online_state_builder.dart';
 import 'package:chat/utils/online_state_formatter.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
@@ -26,9 +27,28 @@ class ConversationAppbarTitle extends StatelessWidget {
     return Selector4<ConversationViewModel, UserViewModel, GroupViewModel, ChannelViewModel,
         (String? typingStatus, UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? targetChannelInfo)>(
       builder: (context, rec, __) {
-        final baseTitle = rec.$1 ?? Utilities.conversationTitle(context, conversation, rec.$2, rec.$3, rec.$4);
-        if (conversation.conversationType != ConversationType.Single ||
-            ExternalTargetUtils.isExternalTarget(conversation.target)) {
+        final typingStatus = rec.$1;
+        var baseTitle = typingStatus ?? Utilities.conversationTitle(context, conversation, rec.$2, rec.$3, rec.$4);
+        // 群组标题后追加当前群人数，对齐 iOS："群名称(人数)"
+        if (conversation.conversationType == ConversationType.Group && rec.$3 != null) {
+          baseTitle = '$baseTitle(${rec.$3!.memberCount})';
+        }
+        final isExternal = conversation.conversationType == ConversationType.Single &&
+            ExternalTargetUtils.isExternalTarget(conversation.target);
+
+        // 外部域用户的标题需要使用带黄色、小字号域后缀的富文本样式。
+        if (typingStatus == null && isExternal && rec.$2 != null) {
+          return Text.rich(
+            MeshUserDisplay.getReadableNameSpan(
+              rec.$2!,
+              style: DefaultTextStyle.of(context).style,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          );
+        }
+
+        if (conversation.conversationType != ConversationType.Single || isExternal) {
           return MiddleEllipsisText(baseTitle);
         }
         return OnlineStateBuilder(

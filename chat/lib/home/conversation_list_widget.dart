@@ -34,6 +34,7 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/desktop_popup_menu_item.dart';
 import 'package:chat/widget/middle_ellipsis_text.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/utils/external_target_utils.dart';
 
 /// 会话行的内容高度与分隔线高度。分隔线不随字号缩放,itemExtent 必须把它单独加上,
 /// 否则 s < 1 时内容比 extent 高,debug 下会报 overflow。
@@ -402,10 +403,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: <Widget>[
-                                  MiddleEllipsisText(
-                                    Utilities.conversationTitle(context, conversationInfo.conversation, value.$1, value.$2, value.$3),
-                                    style: AppText.lg.copyWith(color: (isDesktopShell && widget.isSelected) ? Colors.white : null),
-                                  ),
+                                  _buildConversationTitle(value.$1, value.$2, value.$3),
                                   Container(
                                     height: 2,
                                   ),
@@ -429,15 +427,12 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                         // Selector 复用同一 UserInfo 实例不会因域名到达而重估，这里单独监听 MeshCache
                                         child: AnimatedBuilder(
                                           animation: MeshCache.instance,
-                                          builder: (context, child) => Text(
-                                            hasDraft
-                                                ? DraftData.displayText(conversationInfo.draft!)
-                                                : conversationInfo.lastMessage != null
-                                                    ? '${value.$4 != null ? MeshUserDisplay.getReadableName(value.$4!) : "<${conversationInfo.lastMessage!.fromUser}>"} : $lastMsgDigest'
-                                                    : '',
-                                            style: AppText.xs.copyWith(color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
+                                          builder: (context, child) => _buildLastMessagePreview(
+                                            context,
+                                            hasDraft,
+                                            conversationInfo,
+                                            value.$4,
+                                            lastMsgDigest,
                                           ),
                                         ),
                                       ),
@@ -510,6 +505,64 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
           child: cellChild,
         ),
       ),
+    );
+  }
+
+  /// 会话标题：外部域用户显示带黄色、小字号域后缀的富文本。
+  Widget _buildConversationTitle(UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? targetChannelInfo) {
+    final conversation = widget.conversationInfo.conversation;
+    final titleStyle = AppText.lg.copyWith(
+      color: (isDesktopShell && widget.isSelected) ? Colors.white : null,
+    );
+    if (conversation.conversationType == ConversationType.Single &&
+        targetUserInfo != null &&
+        ExternalTargetUtils.isExternalTarget(targetUserInfo.userId)) {
+      return Text.rich(
+        MeshUserDisplay.getReadableNameSpan(targetUserInfo, style: titleStyle),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    return MiddleEllipsisText(
+      Utilities.conversationTitle(context, conversation, targetUserInfo, targetGroupInfo, targetChannelInfo),
+      style: titleStyle,
+    );
+  }
+
+  /// 最后一条消息摘要：外部域发送者名称使用带黄色、小字号域后缀的富文本。
+  Widget _buildLastMessagePreview(
+    BuildContext context,
+    bool hasDraft,
+    ConversationInfo conversationInfo,
+    UserInfo? lastMessageSender,
+    String lastMsgDigest,
+  ) {
+    final textStyle = AppText.xs.copyWith(
+      color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary,
+    );
+    if (hasDraft) {
+      return Text(
+        DraftData.displayText(conversationInfo.draft!),
+        style: textStyle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+    if (conversationInfo.lastMessage == null) {
+      return Text('', style: textStyle);
+    }
+    final senderName = lastMessageSender != null
+        ? MeshUserDisplay.getReadableNameSpan(lastMessageSender, style: textStyle)
+        : TextSpan(text: '<${conversationInfo.lastMessage!.fromUser}>', style: textStyle);
+    return Text.rich(
+      TextSpan(
+        children: [
+          senderName,
+          TextSpan(text: ' : $lastMsgDigest', style: textStyle),
+        ],
+      ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
   }
 

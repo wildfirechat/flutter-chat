@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/services.dart';
@@ -61,6 +62,8 @@ class MessageInputBarController extends ChangeNotifier {
 
   int _sendTypingTime = 0;
   final Map<String, String> _remoteUrlCache = {};
+  Timer? _saveDraftTimer;
+  StreamSubscription<ConversationDraftUpdatedEvent>? _draftUpdatedSubscription;
 
   MessageInputBarController({
     required this.conversation,
@@ -87,7 +90,19 @@ class MessageInputBarController extends ChangeNotifier {
         }
       });
     }
+
+    _draftUpdatedSubscription = Imclient.IMEventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
+      if (event.conversation != conversation) return;
+      final currentDraft = getDraft();
+      // 仅当本地未编辑（当前草稿与上次加载/保存的草稿一致）且远程草稿变化时才更新，
+      // 避免本地输入被远端同步覆盖。
+      if (currentDraft == _conversationDraft && event.draft != _conversationDraft) {
+        setDraft(event.draft);
+      }
+    });
   }
+
+  String get conversationDraft => _conversationDraft;
 
   ChatInputBarStatus get status => _status;
 
@@ -225,6 +240,7 @@ class MessageInputBarController extends ChangeNotifier {
 
     _lastText = text;
     _sendTyping(text);
+    _scheduleSaveDraft();
     notifyListeners();
   }
 
@@ -603,6 +619,20 @@ class MessageInputBarController extends ChangeNotifier {
     }
   }
 
+  /// 3 秒无输入后自动保存草稿，对齐 iOS WFCUChatInputBar 行为。
+  void _scheduleSaveDraft() {
+    _saveDraftTimer?.cancel();
+    _saveDraftTimer = Timer(const Duration(seconds: 3), _autoSaveDraft);
+  }
+
+  void _autoSaveDraft() {
+    final draft = getDraft();
+    if (draft != _conversationDraft) {
+      Imclient.setConversationDraft(conversation, draft);
+      _conversationDraft = draft;
+    }
+  }
+
   String getDraft() {
     if (_mentionsList.isEmpty && _quoteInfo == null) {
       return textEditingController.text;
@@ -741,6 +771,8 @@ class MessageInputBarController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _saveDraftTimer?.cancel();
+    _draftUpdatedSubscription?.cancel();
     super.dispose();
     textEditingController.dispose();
     focusNode.removeListener(_onFocusChanged);

@@ -73,12 +73,23 @@ class CompositeCellBuilder extends PortraitCellBuilder {
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Text(
-                        "$senderName$preview",
-                        style: AppText.xs.copyWith(color: Colors.grey),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      child: userInfo != null
+                          ? Text.rich(
+                              TextSpan(
+                                children: [
+                                  MeshUserDisplay.getReadableNameSpan(userInfo, style: AppText.xs.copyWith(color: Colors.grey)),
+                                  TextSpan(text: ': $preview', style: AppText.xs.copyWith(color: Colors.grey)),
+                                ],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
+                          : Text(
+                              preview,
+                              style: AppText.xs.copyWith(color: Colors.grey),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                     );
                   }),
                 );
