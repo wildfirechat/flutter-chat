@@ -32,7 +32,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
     return Selector<ChannelViewModel, ChannelInfo?>(
         builder: (context, channelInfo, child) {
           return Scaffold(
-            backgroundColor: context.colors.primaryBackground,
+            backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
             appBar: isDesktopShell
                 ? null
                 : AppBar(
@@ -127,7 +127,7 @@ class ChannelConversationInfoScreen extends StatelessWidget {
           ],
         ),
       ),
-      const SectionDivider(),
+      const SizedBox(height: SectionDivider.gap),
     ]));
   }
 

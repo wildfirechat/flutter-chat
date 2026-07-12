@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
 import '../utils/layout_scale.dart';
 import 'package:chat/theme/app_typography.dart';
 
+/// 分组列表里的一行(标题 + 可选左图标/右值/右箭头)。
+///
+/// 桌面端刻意做减法(微信 PC 形态):行间不画分隔线(分组之间由 [SectionDivider] 的
+/// 弱线交代),右箭头换成更细的一档,且不做 hover 反白 —— 可点性由鼠标指针交代。
 class OptionItem extends StatelessWidget {
   final String title;
   final String? desc;
@@ -27,7 +32,7 @@ class OptionItem extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        hoverColor: colors.hoverOverlay,
+        hoverColor: isDesktopShell ? Colors.transparent : colors.hoverOverlay,
         child: Column(
           children: [
             Container(
@@ -71,26 +76,34 @@ class OptionItem extends StatelessWidget {
                           child: rightImage ?? Icon(rightIcon, size: iconSize),
                         )
                       : const SizedBox.shrink(),
-                  showRightArrow
-                      ? Icon(Icons.chevron_right, size: LayoutScale.watchScale(context, 24.0), color: colors.textTertiary)
-                      : Container(),
+                  if (showRightArrow)
+                    isDesktopShell
+                        // 桌面端用更细的一档箭头(Material 的 chevron_right 在 PC 上过粗),
+                        // 右边距补回 8:细箭头本身没有 chevron_right 那圈内白边。
+                        ? Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Icon(Icons.arrow_forward_ios_rounded,
+                                size: LayoutScale.watchScale(context, 13.0), color: colors.textTertiary),
+                          )
+                        : Icon(Icons.chevron_right,
+                            size: LayoutScale.watchScale(context, 24.0), color: colors.textTertiary),
                 ],
               ),
             ),
-            showBottomDivider
-                ? Container(
-                    margin: EdgeInsets.fromLTRB(
-                      (leftImage != null || leftIcon != null)
-                          ? (15.0 + iconSize + 12.0)
-                          : 15.0,
-                      0.0,
-                      12.0,
-                      0.0,
-                    ),
-                    height: 0.5,
-                    color: colors.hairline,
-                  )
-                : Container(),
+            // 桌面端行间不画线:分组内靠留白,分组之间由 SectionDivider 的弱线交代。
+            if (showBottomDivider && !isDesktopShell)
+              Container(
+                margin: EdgeInsets.fromLTRB(
+                  (leftImage != null || leftIcon != null)
+                      ? (15.0 + iconSize + 12.0)
+                      : 15.0,
+                  0.0,
+                  12.0,
+                  0.0,
+                ),
+                height: 0.5,
+                color: colors.hairline,
+              ),
           ],
         ),
       ),

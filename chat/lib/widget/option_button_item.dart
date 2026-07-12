@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
 import '../utils/layout_scale.dart';
 
@@ -31,11 +32,12 @@ class OptionButtonItem extends StatelessWidget {
             )),
           ),
         ),
-        Container(
-          //margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-          height: showBottomDivider ? 0.5 : 0,
-          color: context.colors.hairline,
-        ),
+        // 桌面端行间不画线,与 OptionItem 保持一致。
+        if (showBottomDivider && !isDesktopShell)
+          Container(
+            height: 0.5,
+            color: context.colors.hairline,
+          ),
       ],
     );
   }

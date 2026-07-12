@@ -47,7 +47,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
         },
         child: Consumer<GroupConversationInfoViewModel>(
             builder: (context, viewModel, child) => Scaffold(
-                  backgroundColor: context.colors.primaryBackground,
+                  backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
                   appBar: isDesktopShell
                       ? null
                       : AppBar(
@@ -233,7 +233,7 @@ class GroupConversationInfoScreen extends StatelessWidget {
           ],
         ),
       ),
-      const SectionDivider(),
+      const SizedBox(height: SectionDivider.gap),
     ]));
   }
 

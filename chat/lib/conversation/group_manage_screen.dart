@@ -83,7 +83,7 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: context.colors.primaryBackground,
+      backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
       appBar: isDesktopShell
           ? PcPageHeader(
               title: '群管理',
@@ -179,7 +179,7 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
                 }),
               ),
             ],
-            const SectionDivider(),
+            const SizedBox(height: SectionDivider.gap),
           ],
         ),
       ),

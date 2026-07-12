@@ -35,7 +35,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
     return Selector<UserViewModel, UserInfo?>(
         builder: (context, userInfo, child) {
           return Scaffold(
-            backgroundColor: context.colors.primaryBackground,
+            backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
             appBar: isDesktopShell
                 ? null
                 : AppBar(
@@ -120,7 +120,7 @@ class SingleConversationInfoScreen extends StatelessWidget {
           _showClearMessageDialog(context, conversation);
         }, showBottomDivider: false),
       ),
-      const SectionDivider(),
+      const SizedBox(height: SectionDivider.gap),
     ]));
   }
 

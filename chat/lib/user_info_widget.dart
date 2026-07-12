@@ -187,7 +187,8 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     );
 
     return Scaffold(
-      backgroundColor: context.colors.primaryBackground,
+      // 桌面端整页一张白底,分组之间只由 SectionDivider 的弱线交代;移动端仍是白卡片 + 凹槽灰。
+      backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
       appBar: isDesktopShell
           ? PcPageHeader(
               title: AppLocalizations.of(context)!.userInfo,
@@ -292,7 +293,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                           }, showBottomDivider: false),
                         ),
                       ],
-                      const SectionDivider(),
+                      const SizedBox(height: SectionDivider.gap),
                     ],
                   ),
                 );
