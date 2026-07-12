@@ -993,6 +993,12 @@ class Imclient {
     return ImclientPlatform.instance.insertMessage(conversation, sender, content, status, serverTime, toUsers: toUsers);
   }
 
+  ///插入消息并保留原 messageUid（桌面端支持；移动端原生未实现）
+  static Future<Message> insertMessageEx(int messageUid, Conversation conversation, String sender,
+      MessageContent content, int status, int serverTime, {String localExtra = '', List<String>? toUsers}) async {
+    return ImclientPlatform.instance.insertMessageEx(messageUid, conversation, sender, content, status, serverTime, localExtra: localExtra, toUsers: toUsers);
+  }
+
   ///更新消息内容
   static Future<void> updateMessage(
       int messageId, MessageContent content) async {

@@ -1189,6 +1189,31 @@ class ImclientFfiChannel implements ImclientChannel {
               lenPtr);
           return _json(_takeDllString(p, lenPtr.value));
         });
+      case 'insertMessageEx':
+        return using((a) {
+          final c = _conv(args);
+          final target = _ns(a, c.target);
+          final sender = _ns(a, _str(args, 'sender'));
+          final content = _ns(a, _payloadJson(args['content'] as Map?));
+          final localExtra = _ns(a, _str(args, 'localExtra'));
+          final lenPtr = a<Size>();
+          final p = _wf.insertMessageEx(
+              _int(args, 'messageUid'),
+              c.type,
+              target.ptr,
+              target.len,
+              c.line,
+              sender.ptr,
+              sender.len,
+              content.ptr,
+              content.len,
+              _int(args, 'status'),
+              _int(args, 'serverTime'),
+              localExtra.ptr,
+              localExtra.len,
+              lenPtr);
+          return _json(_takeDllString(p, lenPtr.value));
+        });
       case 'updateMessage':
         return using((a) {
           final content = _ns(a, _payloadJson(args['content'] as Map?));

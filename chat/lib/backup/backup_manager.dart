@@ -481,9 +481,25 @@ class BackupManager {
               }
             }
 
-            for (var msg in messagesToInsert) {
-              if (_isCancelled) throw Exception("Cancelled");
-              await Imclient.insertMessage(msg.conversation, msg.fromUser, msg.content, msg.status.index, msg.serverTime, toUsers: msg.toUsers);
+            if (isDesktopShell) {
+              for (var msg in messagesToInsert) {
+                if (_isCancelled) throw Exception("Cancelled");
+                await Imclient.insertMessageEx(
+                  msg.messageUid ?? 0,
+                  msg.conversation,
+                  msg.fromUser,
+                  msg.content,
+                  msg.status.index,
+                  msg.serverTime,
+                  localExtra: msg.localExtra ?? '',
+                  toUsers: msg.toUsers,
+                );
+              }
+            } else {
+              for (var msg in messagesToInsert) {
+                if (_isCancelled) throw Exception("Cancelled");
+                await Imclient.insertMessage(msg.conversation, msg.fromUser, msg.content, msg.status.index, msg.serverTime, toUsers: msg.toUsers);
+              }
             }
             restoredMsgCount += messagesToInsert.length;
 
@@ -547,6 +563,7 @@ class BackupManager {
     msg.direction = MessageDirection.values[backupMsg.direction];
     msg.status = MessageStatus.values[backupMsg.status];
     msg.serverTime = backupMsg.timestamp;
+    msg.localExtra = backupMsg.localExtra;
 
     return msg;
   }

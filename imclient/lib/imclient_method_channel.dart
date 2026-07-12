@@ -2314,6 +2314,23 @@ class ImclientPlatform extends PlatformInterface {
     return _convertProtoMessage(datas)!;
   }
 
+  ///插入消息并保留原 messageUid（桌面端 FFI 支持；移动端原生未实现）
+  Future<Message> insertMessageEx(int messageUid, Conversation conversation, String sender,
+      MessageContent content, int status, int serverTime, {String localExtra = '', List<String>? toUsers}) async {
+    Map<dynamic, dynamic> datas = await _channel.invokeMethod("insertMessageEx", {
+      "messageUid": messageUid,
+      "conversation": _convertConversation(conversation),
+      "content": _convertMessageContent(content),
+      "status": status,
+      "sender": sender,
+      "serverTime": serverTime,
+      "localExtra": localExtra,
+      if (toUsers != null && toUsers.isNotEmpty) "toUsers": toUsers,
+    });
+    if (toUsers != null && toUsers.isNotEmpty) datas['toUsers'] = toUsers;
+    return _convertProtoMessage(datas)!;
+  }
+
   ///更新消息内容
   Future<void> updateMessage(
       int messageId, MessageContent content) async {

@@ -469,11 +469,17 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   void _insertMessages(int index, List<Message> msgs) {
-    var newMsgs = msgs.where((msg) => msg.messageId != 0).map((msg) => UIMessage(msg)).toList();
+    var newMsgs = msgs.where((msg) => msg.messageId != 0).toList();
     if (newMsgs.isEmpty) {
       return;
     }
-    _conversationMessageList.insertAll(index, newMsgs);
+    // 按时间倒序排列，确保消息列表顺序正确（远端拉取回来的顺序不一定可靠）
+    newMsgs.sort((a, b) {
+      int timeCompare = b.serverTime.compareTo(a.serverTime);
+      if (timeCompare != 0) return timeCompare;
+      return b.messageId.compareTo(a.messageId);
+    });
+    _conversationMessageList.insertAll(index, newMsgs.map((msg) => UIMessage(msg)));
     notifyListeners();
   }
 
@@ -504,7 +510,7 @@ class ConversationViewModel extends ChangeNotifier {
           }
           _isLoading = false;
           if (messages.isNotEmpty) {
-            _insertMessages(_conversationMessageList.length, messages.reversed.toList());
+            _insertMessages(_conversationMessageList.length, messages);
           } else {
             notifyListeners();
           }

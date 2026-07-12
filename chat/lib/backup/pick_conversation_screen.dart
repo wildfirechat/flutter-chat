@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
-import 'package:imclient/model/group_info.dart';
-import 'package:imclient/model/user_info.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/home/conversation_list_widget.dart';
 
 import 'backup_destination_screen.dart';
 
@@ -49,6 +48,16 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
         _selectedConversations.addAll(_conversations);
       } else {
         _selectedConversations.clear();
+      }
+    });
+  }
+
+  void _toggleConversation(ConversationInfo info, bool? checked) {
+    setState(() {
+      if (checked == true) {
+        _selectedConversations.add(info);
+      } else {
+        _selectedConversations.remove(info);
       }
     });
   }
@@ -109,94 +118,29 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
                 ),
                 const Divider(height: 1),
                 Expanded(
-                  child: ListView.separated(
+                  child: ListView.builder(
                     itemCount: _conversations.length,
-                    separatorBuilder: (ctx, i) => const Divider(height: 0.5, indent: 70),
+                    itemExtent: conversationItemExtent(context),
                     itemBuilder: (context, index) {
                       final info = _conversations[index];
-                      return _ConversationItem(
-                        info: info,
-                        isChecked: _selectedConversations.contains(info),
-                        l10n: l10n,
-                        onChanged: (checked) {
-                          setState(() {
-                            if (checked == true) {
-                              _selectedConversations.add(info);
-                            } else {
-                              _selectedConversations.remove(info);
-                            }
-                          });
-                        },
+                      final isChecked = _selectedConversations.contains(info);
+                      return ConversationListItem(
+                        info,
+                        key: ValueKey(
+                            '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.line}'),
+                        showSubtitle: false,
+                        enableLongPress: false,
+                        trailing: Checkbox(
+                          value: isChecked,
+                          onChanged: (checked) => _toggleConversation(info, checked),
+                        ),
+                        onTap: (conversation) => _toggleConversation(info, !isChecked),
                       );
                     },
                   ),
                 ),
               ],
             ),
-    );
-  }
-}
-
-class _ConversationItem extends StatelessWidget {
-  final ConversationInfo info;
-  final bool isChecked;
-  final ValueChanged<bool?> onChanged;
-  final AppLocalizations l10n;
-
-  const _ConversationItem({
-    required this.info,
-    required this.isChecked,
-    required this.onChanged,
-    required this.l10n,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final conversation = info.conversation;
-    String title = conversation.target;
-    // Widget portrait;
-
-    // Simple resolution logic
-    if (conversation.conversationType == ConversationType.Single) {
-      return FutureBuilder<UserInfo?>(
-        future: Imclient.getUserInfo(conversation.target),
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data != null) {
-            title = snapshot.data!.displayName ?? conversation.target;
-          }
-          return CheckboxListTile(
-            title: Text(title),
-            subtitle: Text(l10n.conversationTypeSingle),
-            value: isChecked,
-            onChanged: onChanged,
-            secondary: const Icon(Icons.person),
-          );
-        },
-      );
-    } else if (conversation.conversationType == ConversationType.Group) {
-      return FutureBuilder<GroupInfo?>(
-        future: Imclient.getGroupInfo(conversation.target),
-        builder: (context, snapshot) {
-          if (snapshot.hasData && snapshot.data != null) {
-            title = snapshot.data!.name ?? conversation.target;
-          }
-          return CheckboxListTile(
-            title: Text(title),
-            subtitle: Text(l10n.conversationTypeGroup),
-            value: isChecked,
-            onChanged: onChanged,
-            secondary: const Icon(Icons.group),
-          );
-        },
-      );
-    }
-
-    return CheckboxListTile(
-      title: Text(title),
-      subtitle: Text(l10n.conversationTypeChannel),
-      value: isChecked,
-      onChanged: onChanged,
-      secondary: const Icon(Icons.chat),
     );
   }
 }
