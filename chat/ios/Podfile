@@ -40,28 +40,56 @@ post_install do |installer|
     # Fix for super_native_extensions: the ObjC static library target and
     # the Rust build script both produce libsuper_native_extensions.a at the
     # same path, causing "Multiple commands produce".
+    # Additionally, cargokit_phony (symlinked to build.db) can cause this
+    # script to execute more than once per build; on re-runs we must not
+    # move away the ObjC static library that lipo has already produced.
     # Workaround:
-    #   1. Redirect Rust output to a unique file (librust_super_native_extensions.a)
-    #   2. Add -force_load for the Rust library in the Runner's linker flags
+    #   1. Save any existing libsuper_native_extensions.a (the ObjC archive)
+    #   2. Build the Rust library (produces libsuper_native_extensions.a)
+    #   3. Move Rust output to a unique file (librust_super_native_extensions.a)
+    #   4. Restore the saved ObjC archive so linking can find it
     if target.name == 'super_native_extensions'
       target.shell_script_build_phases.each do |phase|
         if phase.name&.include?('Build SuperNativeExtensions')
-          # Clear output_paths but set to the RENAMED output file
-          # (different from libsuper_native_extensions.a, so no conflict)
+          # Declare the renamed Rust library as the script output so Xcode
+          # doesn't treat libsuper_native_extensions.a as produced twice.
           phase.output_paths = ["${CONFIGURATION_BUILD_DIR}/librust_super_native_extensions.a"]
 
-          # Run the original build script, then rename the Rust output
-          # so it doesn't conflict with the ObjC static library
           phase.shell_script = %q{
+objc_lib="${CONFIGURATION_BUILD_DIR}/libsuper_native_extensions.a"
+objc_stash="${CONFIGURATION_BUILD_DIR}/libsuper_native_extensions_objc.a"
+rust_lib="${CONFIGURATION_BUILD_DIR}/librust_super_native_extensions.a"
+
+# If a previous run was interrupted and left a stale stash, restore it first.
+if [ -f "$objc_stash" ]; then
+  mv "$objc_stash" "$objc_lib"
+  echo "Restored stale ObjC static library stash"
+fi
+
+# If the ObjC static library already exists (e.g. from a previous lipo step
+# or a cached build), stash it so the Rust build below doesn't overwrite it
+# and the mv below doesn't move it away.
+if [ -f "$objc_lib" ]; then
+  mv "$objc_lib" "$objc_stash"
+  echo "Saved existing ObjC static library"
+fi
+
+# Build the Rust library; by default it writes libsuper_native_extensions.a
 sh "$PODS_TARGET_SRCROOT/../cargokit/build_pod.sh" ../rust super_native_extensions
 
-# Move Rust output to a unique name before ObjC compilation overwrites it
-if [ -f "${CONFIGURATION_BUILD_DIR}/libsuper_native_extensions.a" ]; then
-  mv "${CONFIGURATION_BUILD_DIR}/libsuper_native_extensions.a" \
-     "${CONFIGURATION_BUILD_DIR}/librust_super_native_extensions.a"
+# Move Rust output to a unique name so it doesn't collide with the ObjC
+# static library that lipo will create later.
+if [ -f "$objc_lib" ]; then
+  mv "$objc_lib" "$rust_lib"
   echo "Rust library renamed to librust_super_native_extensions.a"
 else
   echo "WARNING: Rust library not found at expected path"
+fi
+
+# Restore the ObjC static library if we stashed one earlier.
+if [ -f "$objc_stash" ]; then
+  mv "$objc_stash" "$objc_lib"
+  echo "Restored ObjC static library"
 fi
 }
         end
