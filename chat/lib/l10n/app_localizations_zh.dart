@@ -1720,6 +1720,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get callAnswerVideo => '视频接听';
 
   @override
+  String get callSwitchToVoice => '转语音';
+
+  @override
   String get callMute => '静音';
 
   @override
@@ -1736,6 +1739,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get callCameraOff => '关闭摄像头';
+
+  @override
+  String get remoteCameraOff => '对方已关闭摄像头';
+
+  @override
+  String get waitingForRemoteVideo => '等待对方画面';
 
   @override
   String get openFile => '打开文件';

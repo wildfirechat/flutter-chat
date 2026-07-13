@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:imclient/message/message.dart';
@@ -51,6 +52,15 @@ class RawVoipMessageContent extends MessageContent {
 
   @override
   Future<String> digest(Message message) async {
+    if (_type == VOIP_CONTENT_TYPE_START && _payload?.binaryContent != null) {
+      try {
+        final map = json.decode(utf8.decode(_payload!.binaryContent!)) as Map<String, dynamic>;
+        final audioOnly = (map['a'] as int? ?? 0) > 0;
+        return audioOnly ? '[语音通话]' : '[视频通话]';
+      } catch (e) {
+        // fall through
+      }
+    }
     return _voipDigest[_type] ?? '通话消息';
   }
 
@@ -71,7 +81,7 @@ class RawVoipMessageContent extends MessageContent {
     } else if (binary is String && binary.isNotEmpty) {
       payload.binaryContent = base64Decode(binary);
     } else if (binary != null) {
-      print('RawVoipMessageContent unexpected binary type: ${binary.runtimeType}');
+      log('RawVoipMessageContent unexpected binary type: ${binary.runtimeType}');
     }
     payload.localContent = map['localContent'] as String?;
     payload.mentionedType = (map['mentionedType'] as int?) ?? 0;

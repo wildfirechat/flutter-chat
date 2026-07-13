@@ -1735,6 +1735,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get callAnswerVideo => 'Video';
 
   @override
+  String get callSwitchToVoice => 'Switch to Voice';
+
+  @override
   String get callMute => 'Mute';
 
   @override
@@ -1751,6 +1754,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get callCameraOff => 'Camera Off';
+
+  @override
+  String get remoteCameraOff => 'Remote camera is off';
+
+  @override
+  String get waitingForRemoteVideo => 'Waiting for remote video';
 
   @override
   String get openFile => 'Open File';

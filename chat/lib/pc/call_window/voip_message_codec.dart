@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:avenginekit/messages/answer_message_content.dart';
@@ -134,7 +135,7 @@ class VoipMessageCodec {
     } else if (binary is String) {
       payload.binaryContent = base64Decode(binary);
     } else if (binary != null) {
-      print('VoipMessageCodec unexpected binary type: ${binary.runtimeType}');
+      log('VoipMessageCodec unexpected binary type: ${binary.runtimeType}');
     }
     payload.localContent = map['localContent'] as String?;
     payload.mentionedType = map['mentionedType'] as int? ?? 0;
@@ -149,7 +150,7 @@ class VoipMessageCodec {
   static MessageContent _createContent(int contentType) {
     final creator = _contentCreators[contentType];
     if (creator != null) return creator();
-    print('$_tag unknown voip content type $contentType, fallback to empty content');
+    log('$_tag unknown voip content type $contentType, fallback to empty content');
     return _TextLikeContent(contentType);
   }
 

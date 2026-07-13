@@ -5,6 +5,7 @@ import 'package:avenginekit/engine/call_session.dart';
 import 'package:avenginekit/engine/call_session_callback.dart';
 import 'package:avenginekit/engine/call_state.dart';
 import 'package:avenginekit/engine/call_end_reason.dart';
+import 'package:avenginekit/engine/participant_profile.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
@@ -36,8 +37,14 @@ class _VoipCallScreenState extends State<VoipCallScreen>
   bool _isSpeakerOn = false;
   bool _isCameraOff = false;
   bool _isSwapped = false;
+  bool _remoteVideoMuted = false;
   Duration _duration = Duration.zero;
   Timer? _timer;
+
+  /// 小窗（画中画）位置和尺寸
+  Offset _pipPosition = const Offset(20, 100);
+  static const double _pipWidth = 120;
+  static const double _pipHeight = 180;
 
   /// 已收到结束回调、等待关闭页面期间,状态文案固定为“通话结束”。
   bool _callEnded = false;
@@ -51,16 +58,19 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     super.initState();
     _session = widget.session;
     _session.setCallback(this);
+    _isMicMuted = _session.isAudioMuted;
+    _isCameraOff = _session.isVideoMuted;
     _loadTargetInfo();
-    
+
     _initRenderers().then((_) {
       if (mounted) {
-        if (_session.status == CallState.STATUS_CONNECTED) {
-          setState(() {
+        setState(() {
+          _refreshRenderers();
+          _updateRemoteVideoMuted();
+          if (_session.status == CallState.STATUS_CONNECTED) {
             _startTimer();
-            _setupConnectedState();
-          });
-        }
+          }
+        });
       }
     });
   }
@@ -70,30 +80,42 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     await _remoteRenderer.initialize();
   }
 
-  void _setupConnectedState() {
-      if (!_session.audioOnly) {
-          _updateLocalRender();
-          _updateRemoteRender();
-      }
+  /// 重新绑定当前可用的本地/远端视频流
+  void _refreshRenderers() {
+    _updateLocalRender();
+    _updateRemoteRender();
+  }
+
+  String get _remoteUserId {
+    var participants = _session.getParticipantIds();
+    return participants.firstWhere((uid) => uid != Imclient.currentUserId, orElse: () => '');
+  }
+
+  void _updateRemoteVideoMuted() {
+    final targetId = _remoteUserId;
+    if (targetId.isEmpty) return;
+    final profile = _session.getParticipantProfiles().firstWhere(
+      (p) => p.userId == targetId,
+      orElse: () => ParticipantProfile(targetId),
+    );
+    _remoteVideoMuted = profile.videoMuted;
   }
 
   void _updateLocalRender() {
-      var stream = _session.getParticipantVideoStream(Imclient.currentUserId);
-      if (stream != null && _localRenderer.srcObject == null) {
-        _localRenderer.srcObject = stream;
-      }
+    var stream = _session.getParticipantVideoStream(Imclient.currentUserId);
+    if (stream != null && _localRenderer.srcObject != stream) {
+      _localRenderer.srcObject = stream;
+    }
   }
 
   void _updateRemoteRender() {
-      // Find remote user
-      var participants = _session.getParticipantIds();
-      var targetId = participants.firstWhere((uid) => uid != Imclient.currentUserId, orElse: () => '');
-      if (targetId.isNotEmpty) {
-           var track = _session.getParticipantVideoStream(targetId);
-           if (track != null) {
-              _remoteRenderer.srcObject =track;
-           }
+    final targetId = _remoteUserId;
+    if (targetId.isNotEmpty) {
+      var stream = _session.getParticipantVideoStream(targetId);
+      if (stream != null && _remoteRenderer.srcObject != stream) {
+        _remoteRenderer.srcObject = stream;
       }
+    }
   }
 
   @override
@@ -248,21 +270,30 @@ class _VoipCallScreenState extends State<VoipCallScreen>
       if (state == CallState.STATUS_CONNECTED) {
         _startTimer();
         setState(() {
-          _setupConnectedState();
+          _refreshRenderers();
+          _updateRemoteVideoMuted();
         });
       }
     }
   }
 
   @override
-  void didChangeMode(bool audioOnly) {}
+  void didChangeMode(bool audioOnly) {
+    if (mounted) {
+      setState(() {
+        _isCameraOff = _session.isVideoMuted;
+      });
+    }
+  }
 
   @override
   void didCreateLocalVideo(MediaStream stream,
       {bool screenSharing = false}) {
     if (mounted) {
       setState(() {
-        _localRenderer.srcObject = stream;
+        if (_localRenderer.srcObject != stream) {
+          _localRenderer.srcObject = stream;
+        }
       });
     }
   }
@@ -275,12 +306,29 @@ class _VoipCallScreenState extends State<VoipCallScreen>
       {bool screenSharing = false}) {}
 
   @override
-  void didMuteStateChanged(List<String> participants) {}
+  void didMuteStateChanged(List<String> participants) {
+    if (!mounted) return;
+    final selfId = Imclient.currentUserId;
+    final remoteId = _remoteUserId;
+    setState(() {
+      if (participants.contains(selfId)) {
+        _isMicMuted = _session.isAudioMuted;
+        _isCameraOff = _session.isVideoMuted;
+      }
+      if (remoteId.isNotEmpty && participants.contains(remoteId)) {
+        final profile = _session.getParticipantProfiles().firstWhere(
+          (p) => p.userId == remoteId,
+          orElse: () => ParticipantProfile(remoteId),
+        );
+        _remoteVideoMuted = profile.videoMuted;
+      }
+    });
+  }
 
   @override
   void didParticipantConnected(String userId, {bool screenSharing = false}) {
     setState(() {
-      _setupConnectedState();
+      _refreshRenderers();
     });
   }
 
@@ -300,13 +348,23 @@ class _VoipCallScreenState extends State<VoipCallScreen>
       {bool screenSharing = false}) {
     if (mounted) {
       setState(() {
-        _remoteRenderer.srcObject = stream;
+        if (_remoteRenderer.srcObject != stream) {
+          _remoteRenderer.srcObject = stream;
+        }
+        _remoteVideoMuted = false;
       });
     }
   }
 
   @override
-  void didRemoveRemoteVideo(String userId) {}
+  void didRemoveRemoteVideo(String userId) {
+    if (mounted) {
+      setState(() {
+        _remoteRenderer.srcObject = null;
+        _remoteVideoMuted = true;
+      });
+    }
+  }
 
   @override
   void didReportAudioVolume(String userId, int volume) {}
@@ -320,7 +378,18 @@ class _VoipCallScreenState extends State<VoipCallScreen>
       {bool screenSharing = false}) {}
 
   @override
-  void didVideoMuted(String userId, bool muted) {}
+  void didVideoMuted(String userId, bool muted) {
+    if (!mounted) return;
+    if (userId == Imclient.currentUserId) {
+      setState(() {
+        _isCameraOff = muted;
+      });
+    } else if (userId == _remoteUserId) {
+      setState(() {
+        _remoteVideoMuted = muted;
+      });
+    }
+  }
 
   @override
   void didChangeInitiator(String initiator) {}
@@ -342,147 +411,240 @@ class _VoipCallScreenState extends State<VoipCallScreen>
 
   @override
   Widget build(BuildContext context) {
-    bool isVideoCall = !_session.audioOnly;
+    final bool isVideoMode = !_session.audioOnly;
+    final bool isConnected = _session.status == CallState.STATUS_CONNECTED;
+    final bool isOutgoingOrConnecting =
+        _session.status == CallState.STATUS_OUTGOING ||
+            _session.status == CallState.STATUS_CONNECTING;
+    final bool showLocalFullscreen = isVideoMode && isOutgoingOrConnecting;
+    final bool showPip = isVideoMode && isConnected;
+    final bool showRemoteFullscreen = isVideoMode && isConnected;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F121B),
-      body: Stack(
-        children: [
-          if (isVideoCall) ...[
-             // Remote View (Full Screen)
-             Positioned.fill(
-               child: RTCVideoView(
-                 _isSwapped ? _localRenderer : _remoteRenderer,
-                 objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                 mirror: _isSwapped ? true : false, // Mirror local if swapped
-               ),
-             ),
-             // Local View (Small Window)
-             Positioned(
-               right: 20,
-               top: 100,
-               width: 120,
-               height: 180,
-               child: GestureDetector(
-                 onTap: () {
-                   setState(() {
-                     _isSwapped = !_isSwapped;
-                   });
-                 },
-                 child: Container(
-                   decoration: BoxDecoration(
-                     border: Border.all(color: Colors.white24, width: 1),
-                     borderRadius: BorderRadius.circular(12),
-                     boxShadow: [
-                       BoxShadow(
-                         color: Colors.black.withValues(alpha: 0.3),
-                         blurRadius: 10,
-                         offset: const Offset(0, 4),
-                       )
-                     ],
-                   ),
-                   child: ClipRRect(
-                     borderRadius: BorderRadius.circular(12),
-                     child: RTCVideoView(
-                        _isSwapped ? _remoteRenderer : _localRenderer,
-                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                        mirror: !_isSwapped, // Mirror local if not swapped (default)
-                     ),
-                   ),
-                 ),
-               ),
-             ),
-          ] else ...[
-             // Audio Call Background
-             // Background Image (Blurred)
-              if (_targetUserInfo != null &&
-                  _targetUserInfo!.portrait != null &&
-                  _targetUserInfo!.portrait!.isNotEmpty)
-                Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: NetworkImage(MediaUrlRedirector.redirect(_targetUserInfo!.portrait!)),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                    child: Container(
-                      color: Colors.black.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+              // 语音通话背景
+              if (!isVideoMode) _buildAudioBackground(),
+              // 远端/本地视频层
+              if (showRemoteFullscreen) _buildMainVideo(),
+              if (showLocalFullscreen) _buildLocalPreviewFullscreen(),
+              // 可拖动、可切换的小窗（仅接通后显示）
+              if (showPip) _buildPipVideo(constraints),
 
-              if (_targetUserInfo == null ||
-                  _targetUserInfo!.portrait == null ||
-                  _targetUserInfo!.portrait!.isEmpty)
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Color(0xFF1E2638),
-                        Color(0xFF0F121B),
-                      ],
-                    ),
-                  ),
-                ),
-          ],
+              SafeArea(
+                child: Column(
+                  children: [
+                    // 未接通或语音通话时显示头像与状态
+                    if (!isVideoMode || !isConnected) ...[
+                      const SizedBox(height: 80),
+                      _buildUserInfo(),
 
-          SafeArea(
-            child: Column(
-              children: [
-                if (!isVideoCall || _session.status != CallState.STATUS_CONNECTED) ...[
-                    const SizedBox(height: 80),
-                    // User Info
-                    _buildUserInfo(),
-
-                     // Status / Duration
-                    const SizedBox(height: 24),
-                    Text(
-                      _session.status == CallState.STATUS_CONNECTED
-                          ? _formatDuration(_duration)
-                          : _statusLabel(AppLocalizations.of(context)!),
-                      style: AppText.lg.copyWith(color: Colors.white70, fontWeight: FontWeight.w400, letterSpacing: 0.5),
-                    ),
-                ] else ...[
-                    // Connected video call: show duration in top left
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                color: Colors.black.withValues(alpha: 0.38),
-                                child: Text(
-                                  _formatDuration(_duration),
-                                  style: AppText.base.copyWith(color: Colors.white, fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()]),
+                      const SizedBox(height: 24),
+                      Text(
+                        isConnected
+                            ? _formatDuration(_duration)
+                            : _statusLabel(AppLocalizations.of(context)!),
+                        style: AppText.lg.copyWith(color: Colors.white70, fontWeight: FontWeight.w400, letterSpacing: 0.5),
+                      ),
+                    ] else ...[
+                      // 视频通话已接通：左上角显示时长
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  color: Colors.black.withValues(alpha: 0.38),
+                                  child: Text(
+                                    _formatDuration(_duration),
+                                    style: AppText.base.copyWith(color: Colors.white, fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()]),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                ],
+                    ],
 
-                const Spacer(),
+                    const Spacer(),
 
-                // Buttons
-                _buildActionButtons(isVideoCall),
-                const SizedBox(height: 48),
-              ],
+                    _buildActionButtons(isVideoMode),
+                    const SizedBox(height: 48),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  /// 接通后的大画面（默认远端，切换后可显示本地）
+  Widget _buildMainVideo() {
+    final renderer = _isSwapped ? _localRenderer : _remoteRenderer;
+    final bool showOverlay = !_isSwapped &&
+        (_remoteVideoMuted || _remoteRenderer.srcObject == null);
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          RTCVideoView(
+            renderer,
+            objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+            mirror: _isSwapped,
+          ),
+          if (showOverlay) _buildRemoteOverlay(),
+        ],
+      ),
+    );
+  }
+
+  /// 远端无画面时的占位（头像+名字+提示）
+  Widget _buildRemoteOverlay() {
+    return Container(
+      color: const Color(0xFF0F121B),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Portrait(
+            _targetUserInfo?.portrait ?? '',
+            Config.defaultUserPortrait,
+            width: 120,
+            height: 120,
+            borderRadius: 60,
+          ),
+          const SizedBox(height: 24),
+          if (_targetUserInfo != null)
+            MeshUserName(
+              _targetUserInfo!,
+              style: AppText.xxl.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
             ),
+          const SizedBox(height: 12),
+          Text(
+            _remoteVideoMuted
+                ? AppLocalizations.of(context)!.remoteCameraOff
+                : AppLocalizations.of(context)!.waitingForRemoteVideo,
+            style: AppText.base.copyWith(color: Colors.white70),
           ),
         ],
       ),
     );
   }
 
+  /// 拨出/接听过程中，本地预览占满全屏
+  Widget _buildLocalPreviewFullscreen() {
+    return Positioned.fill(
+      child: RTCVideoView(
+        _localRenderer,
+        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+        mirror: true,
+      ),
+    );
+  }
+
+  /// 可拖动、可点击切换的小窗
+  Widget _buildPipVideo(BoxConstraints constraints) {
+    final maxX = constraints.maxWidth > _pipWidth
+        ? constraints.maxWidth - _pipWidth
+        : 0.0;
+    final maxY = constraints.maxHeight > _pipHeight
+        ? constraints.maxHeight - _pipHeight
+        : 0.0;
+
+    return Positioned(
+      left: _pipPosition.dx.clamp(0.0, maxX),
+      top: _pipPosition.dy.clamp(0.0, maxY),
+      width: _pipWidth,
+      height: _pipHeight,
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _isSwapped = !_isSwapped;
+          });
+        },
+        onPanUpdate: (details) {
+          setState(() {
+            _pipPosition = Offset(
+              (_pipPosition.dx + details.delta.dx).clamp(0.0, maxX),
+              (_pipPosition.dy + details.delta.dy).clamp(0.0, maxY),
+            );
+          });
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.white24, width: 1),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              )
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: RTCVideoView(
+              _isSwapped ? _remoteRenderer : _localRenderer,
+              objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+              mirror: !_isSwapped,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  /// 语音通话背景（模糊头像或渐变）
+  Widget _buildAudioBackground() {
+    if (_targetUserInfo != null &&
+        _targetUserInfo!.portrait != null &&
+        _targetUserInfo!.portrait!.isNotEmpty) {
+      return Positioned.fill(
+        child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: NetworkImage(MediaUrlRedirector.redirect(_targetUserInfo!.portrait!)),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              color: Colors.black.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+      );
+    }
+    return Positioned.fill(
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF1E2638),
+              Color(0xFF0F121B),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildUserInfo() {
     final bool isPulsing = _session.status == CallState.STATUS_OUTGOING || _session.status == CallState.STATUS_CONNECTING;
@@ -605,7 +767,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                   icon: Icons.phone_in_talk_outlined,
                   backgroundColor: Colors.white.withValues(alpha: 0.1),
                   onPressed: _onDowngradeToVoice,
-                  label: AppLocalizations.of(context)!.callAnswerAudio,
+                  label: AppLocalizations.of(context)!.callSwitchToVoice,
                 ),
             ],
           ),
@@ -642,6 +804,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                 iconColor: _isMicMuted ? Colors.black87 : Colors.white,
                 onPressed: _onToggleMic,
                 label: AppLocalizations.of(context)!.callMute,
+                isActive: _session.status == CallState.STATUS_CONNECTED,
               ),
               _CallActionButton(
                 icon: Icons.call_end,
@@ -701,36 +864,39 @@ class _CallActionButtonState extends State<_CallActionButton> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        GestureDetector(
-          onTap: widget.onPressed,
-          child: MouseRegion(
-            onEnter: (_) => setState(() => _isHovered = true),
-            onExit: (_) => setState(() => _isHovered = false),
-            cursor: SystemMouseCursors.click,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: 64,
-              height: 64,
-              transform: Matrix4.identity()..scale(_isHovered ? 1.06 : 1.0),
-              transformAlignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: widget.isActive 
-                    ? widget.backgroundColor 
-                    : Colors.white12,
-                boxShadow: [
-                  if (_isHovered)
-                    BoxShadow(
-                      color: widget.backgroundColor.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      spreadRadius: 2,
-                    )
-                ],
-              ),
-              child: Icon(
-                widget.icon,
-                color: widget.isActive ? widget.iconColor : Colors.white60,
-                size: 28,
+        IgnorePointer(
+          ignoring: !widget.isActive,
+          child: GestureDetector(
+            onTap: widget.onPressed,
+            child: MouseRegion(
+              onEnter: (_) => setState(() => _isHovered = true),
+              onExit: (_) => setState(() => _isHovered = false),
+              cursor: widget.isActive ? SystemMouseCursors.click : SystemMouseCursors.basic,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                width: 64,
+                height: 64,
+                transform: Matrix4.identity()..scale(_isHovered ? 1.06 : 1.0),
+                transformAlignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: widget.isActive 
+                      ? widget.backgroundColor 
+                      : Colors.white12,
+                  boxShadow: [
+                    if (_isHovered)
+                      BoxShadow(
+                        color: widget.backgroundColor.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      )
+                  ],
+                ),
+                child: Icon(
+                  widget.icon,
+                  color: widget.isActive ? widget.iconColor : Colors.white60,
+                  size: 28,
+                ),
               ),
             ),
           ),

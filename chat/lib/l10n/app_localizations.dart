@@ -3284,6 +3284,12 @@ abstract class AppLocalizations {
   /// **'视频接听'**
   String get callAnswerVideo;
 
+  /// No description provided for @callSwitchToVoice.
+  ///
+  /// In zh, this message translates to:
+  /// **'转语音'**
+  String get callSwitchToVoice;
+
   /// No description provided for @callMute.
   ///
   /// In zh, this message translates to:
@@ -3319,6 +3325,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'关闭摄像头'**
   String get callCameraOff;
+
+  /// No description provided for @remoteCameraOff.
+  ///
+  /// In zh, this message translates to:
+  /// **'对方已关闭摄像头'**
+  String get remoteCameraOff;
+
+  /// No description provided for @waitingForRemoteVideo.
+  ///
+  /// In zh, this message translates to:
+  /// **'等待对方画面'**
+  String get waitingForRemoteVideo;
 
   /// No description provided for @openFile.
   ///

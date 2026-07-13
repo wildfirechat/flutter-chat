@@ -15,6 +15,9 @@ import 'package:imclient/message/poll_message_content.dart';
 import 'package:imclient/message/composite_message_content.dart';
 import 'package:imclient/message/articles_message_content.dart';
 import 'package:imclient/message/link_message_content.dart';
+import 'package:imclient/message/message_content.dart';
+import 'package:chat/pc/call_window/raw_voip_message_content.dart';
+import 'cell_builder/raw_call_start_cell_builder.dart';
 import 'cell_builder/call_start_cell_builder.dart';
 import 'cell_builder/card_cell_builder.dart';
 import 'cell_builder/file_cell_builder.dart';
@@ -65,6 +68,9 @@ class _MessageCellState extends State<MessageCell> with AutomaticKeepAliveClient
       _cellBuilder = StickerCellBuilder(context, widget.model);
     } else if (widget.model.message.content is CallStartMessageContent) {
       _cellBuilder = CallStartCellBuilder(context, widget.model);
+    } else if (widget.model.message.content is RawVoipMessageContent &&
+               (widget.model.message.content as RawVoipMessageContent).meta.type == VOIP_CONTENT_TYPE_START) {
+      _cellBuilder = RawCallStartCellBuilder(context, widget.model);
     } else if (widget.model.message.content is SoundMessageContent) {
       _cellBuilder = VoiceCellBuilder(context, widget.model);
     } else if (widget.model.message.content is FileMessageContent) {

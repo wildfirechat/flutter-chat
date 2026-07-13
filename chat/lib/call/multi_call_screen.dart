@@ -703,11 +703,22 @@ class _MultiCallScreenState extends State<MultiCallScreen>
           ),
           if (isVideoCall) ...[
             const SizedBox(height: 16),
-            _CallActionButton(
-              icon: Icons.cameraswitch_outlined,
-              backgroundColor: Colors.white.withValues(alpha: 0.1),
-              onPressed: _onSwitchCamera,
-              label: l10n.callSwitchCamera,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _CallActionButton(
+                  icon: Icons.cameraswitch_outlined,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  onPressed: _onSwitchCamera,
+                  label: l10n.callSwitchCamera,
+                ),
+                _CallActionButton(
+                  icon: Icons.phone_in_talk_outlined,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  onPressed: _onDowngradeToVoice,
+                  label: l10n.callSwitchToVoice,
+                ),
+              ],
             ),
           ],
         ],
