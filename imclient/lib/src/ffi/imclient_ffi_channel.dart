@@ -539,7 +539,7 @@ class ImclientFfiChannel implements ImclientChannel {
     _wf.setDomainInfoUpdateListener(_bridge.fn('wfc_on_domain_info_updated'));
     _wf.setOnlineEventListener(_bridge.fn('wfc_on_online_event_updated'));
     _wf.setConferenceEventListener(_bridge.fn('wfc_on_conference_event'));
-    _wf.setTrafficDataListener(_bridge.fn('wfc_on_traffic_data'));
+    //_wf.setTrafficDataListener(_bridge.fn('wfc_on_traffic_data'));
     _wf.setErrorEventListener(_bridge.fn('wfc_on_error_event'));
     _wf.setSecretChatStateListener(_bridge.fn('wfc_on_secret_chat_state'));
     _wf.setSecretMessageBurnStateListener(
