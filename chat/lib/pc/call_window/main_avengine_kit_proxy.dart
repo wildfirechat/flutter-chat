@@ -241,6 +241,13 @@ class MainAvEngineKitProxy {
       final type = msg.content.meta.type;
       if (!_isVoipMessageType(type)) continue;
 
+      //发送的消息忽略掉
+      if (msg.direction == MessageDirection.MessageDirection_Send) continue;
+
+      // 忽略超过 1 分钟的旧 VOIP 消息，避免离线/历史消息误弹通话窗口。
+      final now = DateTime.now().millisecondsSinceEpoch;
+      if (msg.serverTime > 0 && now - msg.serverTime > 60 * 1000) continue;
+
       // 来电/邀请类消息需要先创建 Call 窗口。
       if (_callWindowId == null &&
           (type == mc.VOIP_CONTENT_TYPE_START ||
@@ -291,8 +298,10 @@ class MainAvEngineKitProxy {
       onReady: () {
         print('$_tag call window ready');
         _callWindowReady = true;
-        _flushEventQueue();
+        // 先发初始事件（如 startCall / incoming message），再处理队列里积压的消息，
+        // 确保 Call 窗口按正确时序初始化会话状态。
         _emitToCallWindow(initialEvent, initialArgs);
+        _flushEventQueue();
       },
       onClose: () {
         print('$_tag call window closed');
