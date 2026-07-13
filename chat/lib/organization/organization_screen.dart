@@ -426,10 +426,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
         : l10n.confirmWithCount(_selectedUserIds.length, widget.maxSelected);
     return TextButton(
       onPressed: _onDone,
-      style: TextButton.styleFrom(
-        foregroundColor: isDesktopShell ? context.colors.accent : null,
-        textStyle: isDesktopShell ? AppText.base : null,
-      ),
+      // 栏标题右侧的确认位,比桌面按钮默认的 13 号大一号才压得住标题。
+      style: isDesktopShell ? TextButton.styleFrom(textStyle: AppText.base) : null,
       child: Text(label),
     );
   }
@@ -489,7 +487,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                               const SizedBox(height: 12),
                               Text(viewModel.error!, textAlign: TextAlign.center, style: AppText.lg),
                               const SizedBox(height: 16),
-                              ElevatedButton.icon(
+                              FilledButton.icon(
                                 icon: const Icon(Icons.refresh),
                                 label: Text(AppLocalizations.of(context)!.reload),
                                 onPressed: () => viewModel.retryLoadData(),

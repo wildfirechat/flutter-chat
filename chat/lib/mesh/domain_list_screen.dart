@@ -99,7 +99,7 @@ class _DomainListScreenState extends State<DomainListScreen> {
           children: [
             Text(l10n.loadDomainFail(_error!)),
             const SizedBox(height: 8),
-            ElevatedButton(
+            FilledButton(
               onPressed: _loadDomains,
               child: Text(l10n.retry),
             ),

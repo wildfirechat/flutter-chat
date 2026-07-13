@@ -1,3 +1,4 @@
+import 'package:chat/app_theme.dart';
 import 'package:chat/config.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
@@ -208,60 +209,29 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       isJoined = true;
     }
 
-    if (isDesktopShell) {
-      return SizedBox(
-        width: 120,
-        height: 36,
-        child: ElevatedButton(
-          onPressed: _isLoading ? null : () => _onAction(groupInfo, isJoined),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: context.colors.accent,
-            // 实心 accent 底上的前景色跟主题走,不能写死 Colors.white(暗色下 accent 变浅)。
-            foregroundColor: context.colors.onAccent,
-            elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-          ),
-          child: _isLoading
-              ? SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(color: context.colors.onAccent, strokeWidth: 2),
-                )
-              : Text(
-                  buttonText,
-                  style: AppText.base.copyWith(fontWeight: FontWeight.normal),
-                ),
-        ),
-      );
-    }
-
+    // 观感来自全局按钮主题(app_theme.dart),两端只差布局:桌面定宽中档、移动通栏大档。
     return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton(
+      width: isDesktopShell ? 120 : double.infinity,
+      child: FilledButton(
         onPressed: _isLoading ? null : () => _onAction(groupInfo, isJoined),
+        style: isDesktopShell ? null : AppTheme.largeButtonStyle(),
+        // 加载中按钮已禁用(灰底),spinner 用默认主色。
         child: _isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-              )
+            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
             : Text(buttonText),
       ),
     );
   }
 
-  /// 底部「从通讯录移除」:纯文字按钮,红色,无悬停底色。
+  /// 底部「从通讯录移除」:危险色文字按钮。
   Widget _buildRemoveFromContactsBar(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(top: 12, bottom: 32),
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: _confirmRemoveFromContacts,
-          child: Text(l10n.removeFromContacts, style: AppText.base.copyWith(color: context.colors.danger)),
-        ),
+      child: TextButton(
+        onPressed: _confirmRemoveFromContacts,
+        style: TextButton.styleFrom(foregroundColor: context.colors.danger),
+        child: Text(l10n.removeFromContacts),
       ),
     );
   }

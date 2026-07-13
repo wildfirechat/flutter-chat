@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation_info.dart';
+import 'package:chat/app_theme.dart';
 import 'package:chat/backup/backup_manager.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 
 import 'backup_phase_localization.dart';
@@ -176,10 +178,10 @@ class _PCBackupProgressScreenState extends State<PCBackupProgressScreen> {
                 if (_isFinished)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: ElevatedButton(
+                    child: FilledButton(
                       onPressed: _onClose,
-                      style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12)),
+                      // 整页唯一主行动,叠大档。
+                      style: AppTheme.largeButtonStyle(),
                       child: Text(l10n.pcClose),
                     ),
                   ),
@@ -191,7 +193,7 @@ class _PCBackupProgressScreenState extends State<PCBackupProgressScreen> {
                          BackupManager().cancelCurrentOperation();
                          Navigator.pop(context);
                       },
-                      child: Text(l10n.cancel, style: const TextStyle(color: Colors.red)),
+                      child: Text(l10n.cancel, style: TextStyle(color: context.colors.danger)),
                     ),
                   ),
               ],

@@ -138,15 +138,12 @@ class PcDialogFrame extends StatelessWidget {
                 if (footerLeading != null) footerLeading!,
                 const Spacer(),
                 if (secondary != null) ...[
-                  OutlinedButton(
+                  // 形态走全局按钮主题(app_theme.dart);危险操作只换前景色,不描边。
+                  FilledButton.tonal(
                     onPressed: secondary!.onPressed,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: secondary!.danger ? colors.danger : colors.textPrimary,
-                      side: BorderSide(color: secondary!.danger ? colors.danger : colors.hairline),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                      textStyle: AppText.sm,
-                    ),
+                    style: secondary!.danger
+                        ? FilledButton.styleFrom(foregroundColor: colors.danger)
+                        : null,
                     child: Text(secondary!.label),
                   ),
                   const SizedBox(width: 12),
@@ -154,24 +151,15 @@ class PcDialogFrame extends StatelessWidget {
                 if (primary != null)
                   FilledButton(
                     onPressed: primary!.onPressed,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: primary!.danger ? colors.danger : colors.accent,
-                      disabledBackgroundColor:
-                          (primary!.danger ? colors.danger : colors.accent).withValues(alpha: 0.4),
-                      foregroundColor: colors.onAccent,
-                      disabledForegroundColor: colors.onAccent.withValues(alpha: 0.7),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                      padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-                      textStyle: AppText.sm,
-                    ),
+                    style: primary!.danger
+                        ? FilledButton.styleFrom(backgroundColor: colors.danger)
+                        : null,
+                    // busy 时按约定 onPressed 为 null,底是禁用灰,spinner 用默认主色。
                     child: primary!.busy
-                        ? SizedBox(
+                        ? const SizedBox(
                             width: 14,
                             height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(colors.onAccent),
-                            ),
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : Text(primary!.label),
                   ),

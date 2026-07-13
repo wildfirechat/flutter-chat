@@ -543,15 +543,10 @@ class _PcPickUserViewState extends State<PcPickUserView> {
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 12),
-              OutlinedButton(
+              // 重试是错误态的唯一行动,与其他屏的 retry 一致用实底主行动。
+              FilledButton(
                 onPressed: onRetry,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: context.colors.accent,
-                  side: BorderSide(color: context.colors.hairline),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  textStyle: AppText.sm,
-                ),
-                child: const Text('重新加载'),
+                child: Text(AppLocalizations.of(context)!.reload),
               ),
             ],
           ],
@@ -700,27 +695,13 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          OutlinedButton(
+          FilledButton.tonal(
             onPressed: () => Navigator.pop(context),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: context.colors.textPrimary,
-              side: BorderSide(color: context.colors.hairline),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-              textStyle: AppText.sm,
-            ),
             child: Text(l10n.cancel),
           ),
           const SizedBox(width: 12),
           FilledButton(
-            onPressed: () => widget.callback(context, viewModel.pickedUsers.map((u) => u.userId).toList()),
-            style: FilledButton.styleFrom(
-              backgroundColor: context.colors.accent,
-              disabledBackgroundColor: context.colors.accent.withValues(alpha: 0.4),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-              padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-              textStyle: AppText.sm,
-            ),
+            onPressed: viewModel.pickedUsers.isNotEmpty ? () => widget.callback(context, viewModel.pickedUsers.map((u) => u.userId).toList()) : null,
             child: Text(count > 0 ? l10n.doneWithCount(count.toString()) : l10n.done),
           ),
         ],

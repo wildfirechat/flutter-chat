@@ -88,7 +88,7 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
           children: [
             Text(l10n.loadDomainFail('')),
             const SizedBox(height: 8),
-            ElevatedButton(
+            FilledButton(
               onPressed: _loadDomainInfo,
               child: Text(l10n.retry),
             ),
@@ -167,7 +167,7 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: _searchUsersInDomain,
                 child: Text(l10n.searchUserInDomain),
               ),

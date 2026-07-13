@@ -129,7 +129,8 @@ class FriendRequestPageState extends State<FriendRequestPage> {
                 ),
                 const SizedBox(width: 12),
                 if (request.status == FriendRequestStatus.WaitingAccept)
-                  OutlinedButton(
+                  // 行内主行动,中档实底(微信「新的朋友」同款形态)。
+                  FilledButton(
                     onPressed: () => _acceptRequest(request.target),
                     child: Text(AppLocalizations.of(context)!.friendRequestAccept),
                   )

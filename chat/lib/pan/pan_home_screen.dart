@@ -177,7 +177,7 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
           children: [
             Text(message, style: TextStyle(color: context.colors.danger)),
             const SizedBox(height: 12),
-            ElevatedButton(
+            FilledButton(
               onPressed: _loadSpaces,
               child: Text(l10n.retry),
             ),
@@ -436,7 +436,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
           children: [
             Text(l10n.loadFailedRetry, style: TextStyle(color: context.colors.danger)),
             const SizedBox(height: 12),
-            ElevatedButton(
+            FilledButton(
               onPressed: _loadFiles,
               child: Text(l10n.retry),
             ),

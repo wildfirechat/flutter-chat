@@ -11,6 +11,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 import '../conversation_controller.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 
 class RecordWidget extends StatefulWidget {
@@ -30,10 +31,7 @@ class RecordState extends State<RecordWidget> {
   int _audioLevel = 1;
 
   OverlayEntry? overlayEntry;
-  String voiceIcon = "images/voice_volume_1.png";
-  double volume = 0.1;
   String soundTipsText = "手指上滑，取消发送";
-  String soundTitleText = "松开发送";
 
   late ConversationController conversationController;
 
@@ -47,7 +45,6 @@ class RecordState extends State<RecordWidget> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     soundTipsText = AppLocalizations.of(context)!.slideUpToCancel;
-    soundTitleText = AppLocalizations.of(context)!.releaseToSend;
   }
 
   Future<void> _initRecorder() async {
@@ -65,30 +62,49 @@ class RecordState extends State<RecordWidget> {
   @override
   Widget build(BuildContext context) {
     conversationController = Provider.of<ConversationController>(context, listen: false);
-    OutlinedButton btn;
-    if (_isRecording) {
-      btn = OutlinedButton(
-          style: OutlinedButton.styleFrom(
-            backgroundColor: _isReleaseCancel ? Colors.red : Colors.green,
-          ),
-          onPressed: () {},
-          child: Text(soundTitleText));
+    final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
+
+    // 三态:静止时对齐它替换掉的文字输入框的观感(surface 底 + 发丝描边),
+    // 录音中转品牌蓝,上滑待取消转危险红,文字始终居中。
+    final String label;
+    final Color background;
+    final Color foreground;
+    Border? border;
+    if (!_isRecording) {
+      label = l10n.holdToTalk;
+      background = colors.surface;
+      foreground = colors.textPrimary;
+      border = Border.all(color: colors.hairline);
+    } else if (_isReleaseCancel) {
+      label = l10n.releaseToCancel;
+      background = colors.danger;
+      foreground = colors.onAccent;
     } else {
-      btn = OutlinedButton(
-          style: OutlinedButton.styleFrom(
-            backgroundColor: Colors.white38,
-          ),
-          onPressed: () {},
-          child: Text(AppLocalizations.of(context)!.holdToTalk));
+      label = l10n.releaseToSend;
+      background = colors.accent;
+      foreground = colors.onAccent;
     }
 
+    // 这不是可点击的按钮,而是长按录音面,交互全在 GestureDetector 上,
+    // 所以用 Container 画形态,不再拿 OutlinedButton 当外壳。
     return GestureDetector(
-      child: btn,
       onLongPressDown: (details) => _onVoiceLongPressDown(),
       onLongPressStart: (details) => _onVoiceLongPressStart(context),
       onLongPressUp: () => _onVoiceLongPressUp(),
       onLongPressCancel: () => _onVoiceLongPressCancel(),
       onLongPressMoveUpdate: (LongPressMoveUpdateDetails details) => _onVoicePressMove(details),
+      child: Container(
+        height: 40,
+        margin: const EdgeInsets.fromLTRB(0, 5, 5, 5),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: background,
+          border: border,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(label, style: AppText.lg.copyWith(fontWeight: FontWeight.w500, color: foreground)),
+      ),
     );
   }
 
@@ -264,20 +280,20 @@ class RecordState extends State<RecordWidget> {
     double height = 25;
     double dy = details.localPosition.dy - 25;
     if (dy.abs() > height) {
-      if (mounted && soundTipsText != AppLocalizations.of(context)!.releaseToCancel) {
+      if (mounted && !_isReleaseCancel) {
         setState(() {
           soundTipsText = AppLocalizations.of(context)!.releaseToCancel;
-          soundTitleText = AppLocalizations.of(context)!.releaseToCancel;
           _isReleaseCancel = true;
         });
+        overlayEntry?.markNeedsBuild();
       }
     } else {
-      if (mounted && soundTipsText == AppLocalizations.of(context)!.releaseToCancel) {
+      if (mounted && _isReleaseCancel) {
         setState(() {
           soundTipsText = AppLocalizations.of(context)!.slideUpToCancel;
-          soundTitleText = AppLocalizations.of(context)!.releaseToSend;
           _isReleaseCancel = false;
         });
+        overlayEntry?.markNeedsBuild();
       }
     }
   }

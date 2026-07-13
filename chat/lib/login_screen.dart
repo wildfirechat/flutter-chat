@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'config.dart';
 import 'login/login_form_controller.dart';
 import 'utilities.dart';
+import 'package:chat/app_theme.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
 
@@ -80,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(
                       width: 8,
                     ),
-                    ElevatedButton(
+                    FilledButton(
                       onPressed: _form.canSendCode ? () => _form.sendCode(context) : null,
                       child: _form.isSentCode ? Text('${_form.waitResendCount} s') : Text(l10n.sendCode),
                     ),
@@ -125,8 +126,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
             ),
-            ElevatedButton(
+            FilledButton(
               onPressed: _form.canSubmit ? () => _form.submit(context) : null,
+              // 整页唯一主行动,叠大档。
+              style: AppTheme.largeButtonStyle(),
               child: Text(l10n.login),
             ),
             TextButton(

@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
@@ -332,10 +333,14 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
                 controller.textEditingController.text.isNotEmpty &&
                         controller.status != ChatInputBarStatus.recordStatus &&
                         controller.status != ChatInputBarStatus.pluginStatus
-                    ? ElevatedButton(onPressed: controller.onSendButton, child: const Text("发送"))
+                    ? FilledButton(
+                        onPressed: controller.onSendButton,
+                        style: FilledButton.styleFrom(minimumSize: const Size(44, 28)),
+                        child: Text(AppLocalizations.of(context)!.send))
                     : IconButton(
                         icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize), onPressed: controller.onPluginButton),
-              ]
+              ],
+              SizedBox( width : 8.0, ),
             ],
           ),
         ],

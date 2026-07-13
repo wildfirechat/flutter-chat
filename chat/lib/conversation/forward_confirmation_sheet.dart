@@ -7,6 +7,7 @@ import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/composite_message_content.dart';
+import 'package:chat/app_theme.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/conversation/forward/widgets/conversation_display.dart';
 import 'package:chat/widget/portrait.dart';
@@ -114,21 +115,31 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                       Divider(
                         color: context.colors.hairlineSoft,
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text(AppLocalizations.of(context)!.cancel, style: AppText.lg.copyWith(color: context.colors.textSecondary)),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              widget.onConfirm(_commentController.text.isEmpty ? null : _commentController.text);
-                            },
-                            child: Text(AppLocalizations.of(context)!.send, style: AppText.lg.copyWith(color: context.colors.accent, fontWeight: FontWeight.bold)),
-                          ),
-                        ],
+                      // 成对通栏操作(灰底次要 + 实底主行动),叠大档。
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: FilledButton.tonal(
+                                onPressed: () => Navigator.pop(context),
+                                style: AppTheme.largeButtonStyle(),
+                                child: Text(AppLocalizations.of(context)!.cancel),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  widget.onConfirm(_commentController.text.isEmpty ? null : _commentController.text);
+                                },
+                                style: AppTheme.largeButtonStyle(),
+                                child: Text(AppLocalizations.of(context)!.send),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

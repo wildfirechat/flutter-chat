@@ -607,15 +607,11 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                             ],
                           ),
                         ),
-                        OutlinedButton(
+                        FilledButton.tonal(
                           onPressed: _handleLogout,
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: context.colors.danger,
-                            side: BorderSide(color: context.colors.danger),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                          ),
-                          child: Text(l10n.signOut, style: AppText.xs),
+                          // 危险次要:灰底无边框,只换前景色,形态走全局按钮主题。
+                          style: FilledButton.styleFrom(foregroundColor: context.colors.danger),
+                          child: Text(l10n.signOut),
                         ),
                       ],
                     ),

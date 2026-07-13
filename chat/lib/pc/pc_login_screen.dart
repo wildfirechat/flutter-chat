@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:chat/app_server.dart';
+import 'package:chat/app_theme.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -98,11 +99,10 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
             else if (_canConfirm)
               Column(
                 children: [
-                  ElevatedButton(
+                  FilledButton(
                     onPressed: _confirmPCLogin,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                    ),
+                    // 登录确认是整页唯一主行动,叠大档。
+                    style: AppTheme.largeButtonStyle(),
                     child: Text(AppLocalizations.of(context)!.login),
                   ),
                   const SizedBox(height: 16),

@@ -221,14 +221,8 @@ class _PickForwardPageState extends State<PickForwardPage> {
               style: AppText.base.copyWith(color: context.colors.textPrimary),
             ),
             const Spacer(),
-            ElevatedButton(
+            FilledButton(
               onPressed: _controller.hasSelection ? () => _showConfirmationSheet(_controller.selectedConversations) : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.colors.accent,
-                disabledBackgroundColor: context.colors.accent.withValues(alpha: 0.4),
-                foregroundColor: context.colors.onAccent,
-                elevation: 0,
-              ),
               child: Text(l10n.sendWithCount('$count')),
             ),
           ],

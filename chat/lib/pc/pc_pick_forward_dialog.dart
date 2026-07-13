@@ -262,10 +262,9 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
                 ),
               ))
           .toList(),
-      action: ElevatedButton(
+      action: FilledButton(
         onPressed: _controller.hasSelection ? () => widget.onSelected(selected, _comment) : null,
-        style: _actionButtonStyle(context),
-        child: Text(l10n.send, style: AppText.sm),
+        child: Text(l10n.send),
       ),
     );
   }
@@ -288,17 +287,14 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
                 onRemove: () => viewModel!.pickUser(user, false),
               ))
           .toList(),
-      action: ElevatedButton(
+      action: FilledButton(
         onPressed: (pickedUsers.isNotEmpty && !_controller.creatingGroup)
             ? () => _createGroupAndSend(List<UserInfo>.from(pickedUsers))
             : null,
-        style: _actionButtonStyle(context),
+        // 建群中按钮已禁用(灰底),spinner 用默认主色。
         child: _controller.creatingGroup
-            ? SizedBox(
-                width: 14,
-                height: 14,
-                child: CircularProgressIndicator(strokeWidth: 2, color: context.colors.onAccent))
-            : Text(l10n.createAndSend, style: AppText.sm),
+            ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+            : Text(l10n.createAndSend),
       ),
     );
   }
@@ -367,14 +363,9 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                OutlinedButton(
+                FilledButton.tonal(
                   onPressed: () => Navigator.pop(context),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: colors.hairline, width: 0.5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  ),
-                  child: Text(l10n.cancel, style: AppText.sm.copyWith(color: colors.textPrimary)),
+                  child: Text(l10n.cancel),
                 ),
                 const SizedBox(width: 12),
                 action,
@@ -402,14 +393,4 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
       ),
     );
   }
-
-  /// 禁用态用主色透明版而不是单独一支浅蓝:暗色下浅蓝会比底面还亮。
-  static ButtonStyle _actionButtonStyle(BuildContext context) => ElevatedButton.styleFrom(
-        backgroundColor: context.colors.accent,
-        disabledBackgroundColor: context.colors.accent.withValues(alpha: 0.4),
-        foregroundColor: context.colors.onAccent,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      );
 }

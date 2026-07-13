@@ -732,13 +732,13 @@ class _FriendRequestRow extends StatelessWidget {
     if (request.status == FriendRequestStatus.WaitingAccept) {
       return SizedBox(
         height: 24,
-        child: OutlinedButton(
+        child: TextButton(
           onPressed: () {
             Imclient.handleFriendRequest(request.target, true, "", onAccepted, (errorCode) {});
           },
-          style: OutlinedButton.styleFrom(
+          // 密集列表行内的小号文字动作,无边框;选中行(accent 底)上反白。
+          style: TextButton.styleFrom(
             foregroundColor: isSelected ? Colors.white : context.colors.accent,
-            side: BorderSide(color: isSelected ? Colors.white : context.colors.accent, width: 1),
             padding: const EdgeInsets.symmetric(horizontal: 10),
             textStyle: AppText.xs,
           ),

@@ -7,6 +7,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/poll_message_content.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:chat/app_theme.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -436,17 +437,13 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         top: false,
         child: Row(
           children: [
+            // 通栏底栏叠大档;危险操作只换背景色,禁用态走 M3 默认灰。
             if (export) ...[
               Expanded(
-                child: OutlinedButton(
+                child: FilledButton.tonal(
                   onPressed: _exportPoll,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: colors.accent,
-                    side: BorderSide(color: colors.accent),
-                    minimumSize: const Size(0, 44),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                  ),
-                  child: Text(_l10n.pollExport, style: AppText.lg.copyWith(fontWeight: FontWeight.w500)),
+                  style: AppTheme.largeButtonStyle(),
+                  child: Text(_l10n.pollExport),
                 ),
               ),
               const SizedBox(width: 12),
@@ -455,15 +452,10 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
               Expanded(
                 child: FilledButton(
                   onPressed: primary.onPressed,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: primary.danger ? colors.danger : colors.accent,
-                    disabledBackgroundColor: (primary.danger ? colors.danger : colors.accent).withValues(alpha: 0.4),
-                    foregroundColor: colors.onAccent,
-                    disabledForegroundColor: colors.onAccent.withValues(alpha: 0.7),
-                    minimumSize: const Size(0, 44),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                  ),
-                  child: Text(primary.label, style: AppText.lg.copyWith(fontWeight: FontWeight.w500)),
+                  style: primary.danger
+                      ? FilledButton.styleFrom(backgroundColor: colors.danger).merge(AppTheme.largeButtonStyle())
+                      : AppTheme.largeButtonStyle(),
+                  child: Text(primary.label),
                 ),
               ),
           ],

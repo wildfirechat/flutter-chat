@@ -4,6 +4,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/pc_online_info.dart';
 import 'package:chat/config.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 
 class PCOnlineDevicesScreen extends StatefulWidget {
@@ -141,12 +142,10 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
                           leading: Icon(_getDeviceIcon(info), size: 36, color: Colors.grey),
                           title: Text(_getDeviceName(info)),
                           subtitle: Text("${AppLocalizations.of(context)!.loginTime}${DateTime.fromMillisecondsSinceEpoch(info.timestamp).toString().substring(0, 16)}"),
-                          trailing: OutlinedButton(
+                          trailing: FilledButton.tonal(
                             onPressed: () => _kickClient(info),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red,
-                              side: const BorderSide(color: Colors.red),
-                            ),
+                            // 危险次要:灰底无边框,只换前景色,形态走全局按钮主题。
+                            style: FilledButton.styleFrom(foregroundColor: context.colors.danger),
                             child: Text(AppLocalizations.of(context)!.logout),
                           ),
                         ),

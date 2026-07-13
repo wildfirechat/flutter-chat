@@ -4,6 +4,7 @@ import 'package:badges/badges.dart' as badge;
 import '../widgets/unread_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:chat/app_theme.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
@@ -376,10 +377,7 @@ class _PCHomeState extends State<PCHome> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  style: TextButton.styleFrom(
-                    foregroundColor: dialogContext.colors.textSecondary,
-                    textStyle: AppText.sm,
-                  ),
+                  style: AppTheme.mutedTextButtonStyle(dialogContext.colors),
                   child: Text(l10n.close),
                 ),
                 const SizedBox(width: 8),
@@ -389,15 +387,6 @@ class _PCHomeState extends State<PCHome> {
                     Navigator.pop(dialogContext);
                     _openSearchModal();
                   },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: dialogContext.colors.accent,
-                    foregroundColor: dialogContext.colors.onAccent,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(4)),
-                    textStyle: AppText.sm,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  ),
                   child: Text(l10n.gotIt),
                 ),
               ],

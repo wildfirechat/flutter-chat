@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:chat/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:desktop_drop/desktop_drop.dart';
@@ -478,16 +479,12 @@ class _ConversationPaneState extends State<ConversationPane> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(false),
-                  style: TextButton.styleFrom(foregroundColor: context.colors.textSecondary),
+                  style: AppTheme.mutedTextButtonStyle(context.colors),
                   child: const Text('取消'),
                 ),
                 const SizedBox(width: 8),
                 FilledButton(
                   onPressed: () => Navigator.of(ctx).pop(true),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: context.colors.accent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
                   child: const Text('发送'),
                 ),
               ],

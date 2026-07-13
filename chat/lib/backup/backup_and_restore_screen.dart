@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:intl/intl.dart';
+import 'package:chat/app_theme.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/theme/app_colors.dart';
 
 import 'backup_manager.dart';
 import 'backup_models.dart';
@@ -207,12 +209,9 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                 if (_progress != null)
                   Text("${_progress!.current} / ${_progress!.total}"),
                 const SizedBox(height: 24),
-                ElevatedButton(
+                FilledButton(
                   onPressed: _cancelOperation,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                  ),
+                  style: FilledButton.styleFrom(backgroundColor: context.colors.danger),
                   child: Text(l10n.cancel),
                 ),
               ],
@@ -262,7 +261,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                                             : () => _deleteBackup(backup),
                                       ),
                                       const SizedBox(width: 8),
-                                      ElevatedButton(
+                                      FilledButton(
                                         onPressed: (_isBackingUp || _isRestoring)
                                             ? null
                                             : () => _restoreBackup(backup),
@@ -278,24 +277,21 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                   children: [
+                    // 通栏主行动 + 通栏次要,叠大档。
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: (_isBackingUp || _isRestoring) ? null : _createNewBackup,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
+                        style: AppTheme.largeButtonStyle(),
                         child: Text(l10n.createNewBackup),
                       ),
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
                       width: double.infinity,
-                      child: OutlinedButton(
+                      child: FilledButton.tonal(
                         onPressed: (_isBackingUp || _isRestoring) ? null : _restoreFromPC,
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
+                        style: AppTheme.largeButtonStyle(),
                         child: Text(l10n.restoreFromPC),
                       ),
                     ),

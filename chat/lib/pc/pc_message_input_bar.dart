@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:chat/app_theme.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -215,17 +216,12 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(false),
-                  style: TextButton.styleFrom(foregroundColor: ctx.colors.textSecondary),
+                  style: AppTheme.mutedTextButtonStyle(ctx.colors),
                   child: Text(l10n.cancel),
                 ),
                 const SizedBox(width: 8),
                 FilledButton(
                   onPressed: () => Navigator.of(ctx).pop(true),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: ctx.colors.accent,
-                    foregroundColor: ctx.colors.onAccent,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                  ),
                   child: Text(l10n.send),
                 ),
               ],

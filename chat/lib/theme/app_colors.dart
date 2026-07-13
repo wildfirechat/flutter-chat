@@ -15,6 +15,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.accentPressed,
     required this.accentSoft,
     required this.onAccent,
+    required this.buttonSecondaryBg,
     required this.danger,
     required this.success,
     required this.successSoft,
@@ -78,6 +79,11 @@ class AppColors extends ThemeExtension<AppColors> {
 
   /// accent 实心底上的前景色。
   final Color onAccent;
+
+  /// 次要按钮(FilledButton.tonal)的灰色实底,两端通用(微信式:灰底无边框,
+  /// 配 [textPrimary] 前景)。同时钉进 colorScheme.secondaryContainer,
+  /// 裸 FilledButton.tonal 就能直接取到,见 app_theme.dart 的「按钮基线」。
+  final Color buttonSecondaryBg;
 
   /// 危险操作(退出登录、删除)。
   final Color danger;
@@ -200,6 +206,7 @@ class AppColors extends ThemeExtension<AppColors> {
     accentPressed: Color(0xFF1A55C2),
     accentSoft: Color(0xFFE8F0FE),
     onAccent: Color(0xFFFFFFFF),
+    buttonSecondaryBg: Color(0xFFF2F2F2),
     danger: Color(0xFFED4C4D),
     success: Color(0xFF07C160),
     successSoft: Color(0xFFE8F5E9),
@@ -261,6 +268,7 @@ class AppColors extends ThemeExtension<AppColors> {
     accentPressed: Color(0xFF40A9FF),
     accentSoft: Color(0x330A84FF),
     onAccent: Color(0xFFFFFFFF),
+    buttonSecondaryBg: Color(0xFF3A3A3C),
     danger: Color(0xFFFF453A),
     success: Color(0xFF30D158),
     successSoft: Color(0x3330D158),
@@ -319,6 +327,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? accentPressed,
     Color? accentSoft,
     Color? onAccent,
+    Color? buttonSecondaryBg,
     Color? danger,
     Color? success,
     Color? successSoft,
@@ -375,6 +384,7 @@ class AppColors extends ThemeExtension<AppColors> {
       accentPressed: accentPressed ?? this.accentPressed,
       accentSoft: accentSoft ?? this.accentSoft,
       onAccent: onAccent ?? this.onAccent,
+      buttonSecondaryBg: buttonSecondaryBg ?? this.buttonSecondaryBg,
       danger: danger ?? this.danger,
       success: success ?? this.success,
       successSoft: successSoft ?? this.successSoft,
@@ -439,6 +449,7 @@ class AppColors extends ThemeExtension<AppColors> {
       accentPressed: mix(accentPressed, other.accentPressed),
       accentSoft: mix(accentSoft, other.accentSoft),
       onAccent: mix(onAccent, other.onAccent),
+      buttonSecondaryBg: mix(buttonSecondaryBg, other.buttonSecondaryBg),
       danger: mix(danger, other.danger),
       success: mix(success, other.success),
       successSoft: mix(successSoft, other.successSoft),

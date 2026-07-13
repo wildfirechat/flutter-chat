@@ -8,6 +8,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:chat/app_server.dart';
+import 'package:chat/app_theme.dart';
 import 'package:chat/config.dart';
 import 'package:chat/login/login_form_controller.dart';
 import 'package:chat/main.dart';
@@ -427,7 +428,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
                   const SizedBox(width: 8),
                   SizedBox(
                     height: 46,
-                    child: ElevatedButton(
+                    child: FilledButton(
                       onPressed: _form.canSendCode ? () => _form.sendCode(context) : null,
                       child: _form.isSentCode ? Text('${_form.waitResendCount}s') : Text(l10n.sendCode),
                     ),
@@ -479,8 +480,10 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
             SizedBox(
               width: double.infinity,
               height: 46,
-              child: ElevatedButton(
+              child: FilledButton(
                 onPressed: _form.canSubmit ? () => _form.submit(context) : null,
+                // 整页唯一主行动,叠大档(高度由外层 46 钉死,与上方输入框等高)。
+                style: AppTheme.largeButtonStyle(),
                 child: Text(l10n.login),
               ),
             ),
