@@ -44,22 +44,17 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
             )
           : AppBar(
               title: const Text("群二维码"),
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
             ),
-      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : Colors.black,
+      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : context.colors.primaryBackground,
       body: Center(
-        child: Card(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: 250,
+                child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Portrait(
@@ -68,31 +63,51 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
                       width: 60,
                       height: 60,
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(height: 12),
                     Text(
                       groupInfo?.name ?? '',
-                      style: AppText.xl.copyWith(fontWeight: FontWeight.bold),
+                      style: AppText.xl.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: context.colors.textPrimary,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: 250,
-                  height: 250,
+              ),
+              const SizedBox(height: 24),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: SizedBox(
+                  width: 226,
+                  height: 226,
                   child: QrImageView(
                     data: qrCodeValue,
                     version: QrVersions.auto,
-                    size: 250.0,
-                    backgroundColor: Colors.white,
+                    size: 226.0,
+                    eyeStyle: const QrEyeStyle(
+                      eyeShape: QrEyeShape.square,
+                      color: Colors.black,
+                    ),
+                    dataModuleStyle: const QrDataModuleStyle(
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: Colors.black,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
-                Text(
-                  "扫一扫上面的二维码，加入群聊",
-                  style: AppText.base.copyWith(color: Colors.grey),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                "扫一扫上面的二维码，加入群聊",
+                style: AppText.base.copyWith(color: context.colors.textSecondary),
+              ),
+            ],
           ),
         ),
       ),

@@ -129,7 +129,6 @@ class ConversationController extends ChangeNotifier {
               },
             ),
           ],
-          cancelLabel: AppLocalizations.of(context)!.cancel,
         );
       }
       } else {
