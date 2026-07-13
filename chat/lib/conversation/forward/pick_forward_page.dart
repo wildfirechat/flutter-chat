@@ -18,6 +18,7 @@ import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
 import 'package:chat/widget/sidebar_index.dart';
+import 'package:chat/widget/app_bar_actions.dart';
 import 'package:chat/theme/app_typography.dart';
 
 typedef OnForwardTargetsSelected = void Function(List<Conversation> targets, String? comment);
@@ -157,12 +158,9 @@ class _PickForwardPageState extends State<PickForwardPage> {
       appBar: AppBar(
         title: Text(_controller.isMultiSelect ? l10n.pickMultipleChats : l10n.pickOneChat),
         actions: [
-          TextButton(
+          AppBarTextAction(
+            label: _controller.isMultiSelect ? l10n.singleSelect : l10n.multiSelect,
             onPressed: _controller.toggleMultiSelect,
-            child: Text(
-              _controller.isMultiSelect ? l10n.singleSelect : l10n.multiSelect,
-              style: AppText.lg.copyWith(color: context.colors.accent),
-            ),
           ),
         ],
       ),
@@ -261,12 +259,9 @@ class _PickForwardPageState extends State<PickForwardPage> {
               leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _exitMemberSelection),
               title: Text(l10n.createGroupChat),
               actions: [
-                TextButton(
+                AppBarTextAction(
+                  label: viewModel.pickedUsers.isNotEmpty ? '${l10n.confirm}(${viewModel.pickedUsers.length})' : l10n.confirm,
                   onPressed: canConfirm ? () => _confirmMemberSelection(List<UserInfo>.from(viewModel.pickedUsers)) : null,
-                  child: Text(
-                    viewModel.pickedUsers.isNotEmpty ? '${l10n.confirm}(${viewModel.pickedUsers.length})' : l10n.confirm,
-                    style: AppText.lg.copyWith(color: canConfirm ? context.colors.accent : context.colors.textSecondary),
-                  ),
                 ),
               ],
             ),

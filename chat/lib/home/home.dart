@@ -421,17 +421,16 @@ class HomeTabBarState extends State<HomeTabBar> {
           actions: _tabIndex == pages.length - 1
               ? null
               : [
-                  GestureDetector(
-                    onTap: () => _onTapSearchButton(context),
-                    child: const Icon(Icons.search_rounded),
+                  IconButton(
+                    onPressed: () => _onTapSearchButton(context),
+                    icon: const Icon(Icons.search_rounded),
                   ),
-                  const Padding(padding: EdgeInsets.only(left: 8)),
-                  GestureDetector(
+                  IconButton(
                     key: _plusButtonKey,
-                    onTap: () => _showPlusMenu(context),
-                    child: const Icon(Icons.add_circle_outline_rounded),
+                    onPressed: () => _showPlusMenu(context),
+                    icon: const Icon(Icons.add_circle_outline_rounded),
                   ),
-                  const Padding(padding: EdgeInsets.only(left: 16)),
+                  const SizedBox(width: 8),
                 ],
         ),
         body: _body,

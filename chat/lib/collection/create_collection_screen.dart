@@ -7,6 +7,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/widget/app_bar_actions.dart';
 import 'package:chat/widget/form_card.dart';
 import 'package:chat/widget/option_item.dart';
 import 'collection_service.dart';
@@ -173,21 +174,10 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
       appBar: AppBar(
         title: Text(l10n.createCollection),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: TextButton(
-              onPressed: _canSubmit ? _createCollection : null,
-              child: _isCreating
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(context.colors.accent),
-                      ),
-                    )
-                  : Text(l10n.done, style: AppText.lg.copyWith(fontWeight: FontWeight.w600)),
-            ),
+          AppBarTextAction(
+            label: l10n.done,
+            onPressed: _canSubmit ? _createCollection : null,
+            isLoading: _isCreating,
           ),
         ],
       ),

@@ -14,6 +14,7 @@ import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/repo/user_repo.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/widget/app_bar_actions.dart';
 import 'package:chat/widget/sidebar_index.dart';
 import 'package:chat/organization/organization_screen.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
@@ -244,16 +245,13 @@ class _PickUserScreenState extends State<PickUserScreen> {
           List<String> indexList = viewModel.isSearching ? [] : _getIndexList(viewModel.userList);
           final actions = [
             if (widget.maxSelected > 1)
-              GestureDetector(
-                onTap: () => _onPressedDone(context),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 16, 16, 8),
-                  child: Text(
-                    viewModel.pickedUsers.isNotEmpty ? AppLocalizations.of(context)!.doneWithCount(viewModel.pickedUsers.length.toString()) : AppLocalizations.of(context)!.cancel,
-                    style: AppText.lg,
-                  ),
-                ),
-              )
+              AppBarTextAction(
+                label: viewModel.pickedUsers.isNotEmpty
+                    ? AppLocalizations.of(context)!.doneWithCount(viewModel.pickedUsers.length.toString())
+                    : AppLocalizations.of(context)!.cancel,
+                onPressed: () => _onPressedDone(context),
+                textColor: viewModel.pickedUsers.isNotEmpty ? null : context.colors.textSecondary,
+              ),
           ];
 
           return Scaffold(

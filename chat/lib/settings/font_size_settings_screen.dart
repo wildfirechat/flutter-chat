@@ -5,6 +5,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import '../viewmodel/font_size_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/widget/app_bar_actions.dart';
 
 /// 字号设置。上半部分是随字号实时变化的会话预览,下半部分是档位滑块。
 ///
@@ -25,12 +26,9 @@ class FontSizeSettingsScreen extends StatelessWidget {
         backgroundColor: colors.conversationBg,
         foregroundColor: colors.textPrimary,
         actions: [
-          TextButton(
+          AppBarTextAction(
+            label: l10n.done,
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              l10n.done,
-              style: AppText.lg.copyWith(color: colors.accent, fontWeight: FontWeight.bold),
-            ),
           ),
         ],
       ),

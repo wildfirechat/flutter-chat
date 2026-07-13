@@ -12,6 +12,7 @@ import '../l10n/app_localizations.dart';
 import '../user_info_widget.dart';
 import '../viewmodel/user_view_model.dart';
 import '../widget/portrait.dart';
+import '../widget/app_bar_actions.dart';
 import '../app_navigator.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/layout_scale.dart';
@@ -185,9 +186,9 @@ class _JoinGroupRequestScreenState extends State<JoinGroupRequestScreen> {
         title: Text(l10n.joinGroupRequests),
         actions: [
           if (_requests.isNotEmpty)
-            TextButton(
+            AppBarTextAction(
+              label: l10n.clearJoinGroupRequests,
               onPressed: _clearAll,
-              child: Text(l10n.clearJoinGroupRequests),
             ),
         ],
       ),

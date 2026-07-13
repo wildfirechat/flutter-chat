@@ -57,15 +57,11 @@ class FriendRequestPageState extends State<FriendRequestPage> {
   @override
   Widget build(BuildContext context) {
     final actions = [
-      GestureDetector(
-        onTap: () => _clearAll(context),
-        child: const Row(
-          children: [
-            Icon(Icons.delete_outline_rounded),
-            Padding(padding: EdgeInsets.only(left: 16)),
-          ],
-        ),
-      )
+      IconButton(
+        icon: const Icon(Icons.delete_outline_rounded),
+        onPressed: () => _clearAll(context),
+      ),
+      const SizedBox(width: 8),
     ];
 
     return Scaffold(

@@ -28,15 +28,11 @@ class ChannelListState extends State<ChannelList> {
   @override
   Widget build(BuildContext context) {
     final actions = [
-      GestureDetector(
-        onTap: () => _searchChannel(),
-        child: Row(
-          children: [
-            const Icon(Icons.add_circle_outline_rounded),
-            const Padding(padding: EdgeInsets.only(left: 16)),
-          ],
-        ),
-      )
+      IconButton(
+        icon: const Icon(Icons.add_circle_outline_rounded),
+        onPressed: () => _searchChannel(),
+      ),
+      const SizedBox(width: 8),
     ];
 
     return Scaffold(

@@ -10,6 +10,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/widget/app_bar_actions.dart';
 import '../widget/portrait.dart';
 import 'collection_model.dart';
 import 'collection_service.dart';
@@ -250,12 +251,9 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
         title: Text(_l10n.collectionDetail),
         actions: [
           if (collection?.isJoinable ?? false)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: TextButton(
-                onPressed: _canSubmit ? _onSubmit : null,
-                child: Text(_l10n.submit, style: AppText.lg.copyWith(fontWeight: FontWeight.w600)),
-              ),
+            AppBarTextAction(
+              label: _l10n.submit,
+              onPressed: _canSubmit ? _onSubmit : null,
             ),
         ],
       ),

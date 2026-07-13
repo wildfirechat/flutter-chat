@@ -4,6 +4,7 @@ import 'package:chat/app_server.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/widget/app_bar_actions.dart';
 
 class GroupAnnouncementScreen extends StatefulWidget {
   final String groupId;
@@ -69,7 +70,8 @@ class _GroupAnnouncementScreenState extends State<GroupAnnouncementScreen> {
   Widget build(BuildContext context) {
     final actions = [
       if (widget.canEdit && !_isLoading)
-        TextButton(
+        AppBarTextAction(
+          label: _isEditing ? '完成' : '编辑',
           onPressed: () {
             if (_isEditing) {
               _saveAnnouncement();
@@ -79,10 +81,6 @@ class _GroupAnnouncementScreenState extends State<GroupAnnouncementScreen> {
               });
             }
           },
-          child: Text(
-            _isEditing ? '完成' : '编辑',
-            style: TextStyle(color: isDesktopShell ? context.colors.accent : Colors.white),
-          ),
         ),
     ];
 

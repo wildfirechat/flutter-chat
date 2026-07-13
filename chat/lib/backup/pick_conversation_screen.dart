@@ -4,6 +4,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/home/conversation_list_widget.dart';
+import 'package:chat/widget/app_bar_actions.dart';
 
 import 'backup_destination_screen.dart';
 
@@ -91,9 +92,9 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
       appBar: AppBar(
         title: Text(l10n.selectConversations),
         actions: [
-          TextButton(
+          AppBarTextAction(
+            label: l10n.next,
             onPressed: _selectedConversations.isEmpty ? null : _onNext,
-            child: Text(l10n.next, style: const TextStyle(color: Colors.black)),
           ),
         ],
       ),

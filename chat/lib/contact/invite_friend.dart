@@ -5,6 +5,7 @@ import 'package:imclient/imclient.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/widget/app_bar_actions.dart';
 
 class InviteFriendPage extends StatefulWidget {
   const InviteFriendPage(this.userId, {super.key});
@@ -25,17 +26,11 @@ class InviteFriendPageState extends State<InviteFriendPage> {
 
   @override
   Widget build(BuildContext context) {
+    final canSend = fieldController.text.trim().isNotEmpty;
     final actions = [
-      TextButton(
-        onPressed: () => _sendInvite(context),
-        child: Text(
-          "发送",
-          style: TextStyle(
-            color: fieldController.value.text.isEmpty
-                ? Colors.grey
-                : (isDesktopShell ? context.colors.accent : Colors.black),
-          ),
-        ),
+      AppBarTextAction(
+        label: "发送",
+        onPressed: canSend ? () => _sendInvite(context) : null,
       ),
     ];
 

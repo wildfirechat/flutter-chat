@@ -155,6 +155,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
         if (isMe) return Container();
 
         return PopupMenuButton<String>(
+          icon: const Icon(Icons.more_horiz_rounded),
           onSelected: (value) => _handleMenuSelection(value, isFriend),
           itemBuilder: (BuildContext context) {
             List<PopupMenuEntry<String>> items = [];
