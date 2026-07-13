@@ -50,11 +50,18 @@ class _PcBackupListenerState extends State<PcBackupListener> {
     for (final msg in event.messages) {
       final content = msg.content;
       if (content is BackupRequestNotificationContent) {
+        if (!_isFromCurrentUser(msg)) continue;
         _handleBackupRequest(msg, content);
       } else if (content is RestoreRequestNotificationContent) {
+        if (!_isFromCurrentUser(msg)) continue;
         _handleRestoreRequest(msg, content);
       }
     }
+  }
+
+  bool _isFromCurrentUser(Message msg) {
+    final currentUserId = Imclient.currentUserId;
+    return currentUserId.isNotEmpty && msg.fromUser == currentUserId;
   }
 
   void _handleBackupRequest(Message msg, BackupRequestNotificationContent content) {

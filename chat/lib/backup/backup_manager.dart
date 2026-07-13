@@ -610,6 +610,10 @@ class BackupManager {
       subscription = Imclient.IMEventBus.on<ReceiveMessagesEvent>().listen((event) {
         for (var m in event.messages) {
           if (m.content is RestoreResponseNotificationContent) {
+            final currentUserId = Imclient.currentUserId;
+            if (currentUserId.isEmpty || m.fromUser != currentUserId) {
+              continue;
+            }
             final response = m.content as RestoreResponseNotificationContent;
             cleanup();
             if (response.approved) {
@@ -682,6 +686,10 @@ class BackupManager {
       subscription = Imclient.IMEventBus.on<ReceiveMessagesEvent>().listen((event) {
         for (var m in event.messages) {
           if (m.content is BackupResponseNotificationContent) {
+            final currentUserId = Imclient.currentUserId;
+            if (currentUserId.isEmpty || m.fromUser != currentUserId) {
+              continue;
+            }
             final response = m.content as BackupResponseNotificationContent;
             cleanup();
             if (response.approved) {
