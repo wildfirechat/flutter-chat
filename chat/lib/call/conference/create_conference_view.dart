@@ -7,6 +7,7 @@ import 'package:imclient/imclient.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/widget/app_switch.dart';
 
 /// 创建会议页面
 class CreateConferenceView extends StatefulWidget {
@@ -114,25 +115,37 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
               decoration: const InputDecoration(labelText: '会议描述'),
             ),
             const SizedBox(height: 12),
-            SwitchListTile(
+            ListTile(
               title: const Text('仅音频'),
-              value: _audioOnly,
-              onChanged: (v) => setState(() => _audioOnly = v),
+              onTap: () => setState(() => _audioOnly = !_audioOnly),
+              trailing: AppSwitch(
+                value: _audioOnly,
+                onChanged: (v) => setState(() => _audioOnly = v),
+              ),
             ),
-            SwitchListTile(
+            ListTile(
               title: const Text('默认观众'),
-              value: _audience,
-              onChanged: (v) => setState(() => _audience = v),
+              onTap: () => setState(() => _audience = !_audience),
+              trailing: AppSwitch(
+                value: _audience,
+                onChanged: (v) => setState(() => _audience = v),
+              ),
             ),
-            SwitchListTile(
+            ListTile(
               title: const Text('高级版'),
-              value: _advance,
-              onChanged: (v) => setState(() => _advance = v),
+              onTap: () => setState(() => _advance = !_advance),
+              trailing: AppSwitch(
+                value: _advance,
+                onChanged: (v) => setState(() => _advance = v),
+              ),
             ),
-            SwitchListTile(
+            ListTile(
               title: const Text('录制'),
-              value: _record,
-              onChanged: (v) => setState(() => _record = v),
+              onTap: () => setState(() => _record = !_record),
+              trailing: AppSwitch(
+                value: _record,
+                onChanged: (v) => setState(() => _record = v),
+              ),
             ),
             const Spacer(),
             SizedBox(

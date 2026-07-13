@@ -3,6 +3,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
 import '../utils/layout_scale.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'app_switch.dart';
 
 class OptionSwitchItem extends StatelessWidget {
   final String title;
@@ -59,12 +60,9 @@ class OptionSwitchItem extends StatelessWidget {
                     )
                   else
                     const Spacer(),
-                  Transform.scale(
-                    scale: 0.6,
-                    child: Switch(
-                      value: value,
-                      onChanged: onChanged,
-                    ),
+                  AppSwitch(
+                    value: value,
+                    onChanged: onChanged,
                   )
                 ],
               ),

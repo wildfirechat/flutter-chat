@@ -24,6 +24,7 @@ import 'package:chat/app_navigator.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/widget/app_switch.dart';
 
 // ==========================================
 // 1. Middle Column: PcSettingsMenu
@@ -800,12 +801,9 @@ class _SettingsSwitchRow extends StatelessWidget {
               ],
             ),
           ),
-          Transform.scale(
-            scale: 0.6,
-            child: Switch(
-              value: value,
-              onChanged: onChanged,
-            ),
+          AppSwitch(
+            value: value,
+            onChanged: onChanged,
           ),
         ],
       ),

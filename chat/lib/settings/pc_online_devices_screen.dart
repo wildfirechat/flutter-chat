@@ -3,9 +3,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/pc_online_info.dart';
-import 'package:chat/config.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/widget/app_switch.dart';
 
 class PCOnlineDevicesScreen extends StatefulWidget {
   const PCOnlineDevicesScreen({super.key});
@@ -117,11 +117,20 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
                   ),
                   child: Column(
                     children: [
-                      SwitchListTile(
-                        value: _isMute,
-                        onChanged: _toggleMute,
-                        title: Text(AppLocalizations.of(context)!.mobileMute),
-                        subtitle: Text(AppLocalizations.of(context)!.mobileMuteDesc),
+                      ListTile(
+                        title: Text(
+                          AppLocalizations.of(context)!.mobileMute,
+                          style: AppText.lg,
+                        ),
+                        subtitle: Text(
+                          AppLocalizations.of(context)!.mobileMuteDesc,
+                          style: AppText.base.copyWith(color: context.colors.textSecondary),
+                        ),
+                        onTap: () => _toggleMute(!_isMute),
+                        trailing: AppSwitch(
+                          value: _isMute,
+                          onChanged: _toggleMute,
+                        ),
                       ),
                     ],
                   ),
