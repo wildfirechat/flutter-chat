@@ -174,7 +174,6 @@ class _ConversationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double rowHeight = LayoutScale.watchScale(context, 64.0, cap: LayoutScale.rowCap);
-    final double iconSize = LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap);
 
     return Material(
       color: Colors.transparent,
@@ -189,20 +188,11 @@ class _ConversationTile extends StatelessWidget {
               Portrait(portrait, defaultPortrait, borderRadius: 4.0),
               const SizedBox(width: 12.0),
               Expanded(child: title),
-              if (showCheckbox) ...[
-                const SizedBox(width: 12.0),
-                selected
-                    ? Icon(
-                        Icons.check_circle,
-                        color: context.colors.accent,
-                        size: iconSize,
-                      )
-                    : Icon(
-                        Icons.radio_button_unchecked,
-                        color: context.colors.textSecondary,
-                        size: iconSize,
-                      ),
-              ],
+              if (showCheckbox)
+                Checkbox(
+                  value: selected,
+                  onChanged: (_) => onTap(),
+                ),
             ],
           ),
         ),
