@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/call/conference/conference_home_screen.dart';
 import 'package:chat/channel/channel_list.dart';
 import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/discovery/chatroom_list.dart';
@@ -50,13 +51,13 @@ class DiscoveryTab extends StatelessWidget {
                       },
                     ),
                     OptionItem(
-                      l10n.channels,
+                      '会议',
                       leftImage: Image.asset('assets/images/discover_channel.png', width: 20.0, height: 20.0),
                       showBottomDivider: false,
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const ChannelList()),
+                          MaterialPageRoute(builder: (context) => const ConferenceHomeScreen()),
                         );
                       },
                     ),

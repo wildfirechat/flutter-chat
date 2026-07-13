@@ -11,6 +11,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
+import 'package:avenginekit/engine/call_session.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/conversation/pick_conversation_screen.dart';
@@ -43,6 +44,8 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/workspace/work_space.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/call/voip_call_screen.dart';
+import 'package:chat/call/multi_call_screen.dart';
+import 'package:chat/call/conference/conference_call_screen.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/backup/pc_backup_listener.dart';
@@ -665,7 +668,7 @@ class _PCHomeState extends State<PCHome> {
           top:
               model.callWindowMinimized ? -9999.0 : model.callWindowPosition.dy,
           width: 320,
-          height: 480,
+          height: 576,
           child: Material(
             elevation: 16,
             borderRadius: BorderRadius.circular(10),
@@ -679,7 +682,7 @@ class _PCHomeState extends State<PCHome> {
               ),
               child: Stack(
                 children: [
-                  VoipCallScreen(session: session),
+                  _buildCallScreen(session),
                   // Draggable handle / Header bar
                   Positioned(
                     left: 0,
@@ -718,6 +721,17 @@ class _PCHomeState extends State<PCHome> {
         );
       },
     );
+  }
+
+  Widget _buildCallScreen(CallSession session) {
+    if (session.conference) {
+      return ConferenceCallScreen(session: session);
+    }
+    if (session.conversation != null &&
+        session.conversation!.conversationType == ConversationType.Group) {
+      return MultiCallScreen(session: session);
+    }
+    return VoipCallScreen(session: session);
   }
 
   Widget _buildMinimizeButton(PCShellViewModel model) {

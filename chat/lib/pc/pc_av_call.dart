@@ -55,5 +55,6 @@ Future<void> _pickGroupMembersAndStart(BuildContext context, Conversation conver
     maxSelected: 9,
     candidates: candidates,
     disabledCheckedUsers: [Imclient.currentUserId],
+    showOrganizationEntry: false,
   );
 }

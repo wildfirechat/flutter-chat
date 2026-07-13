@@ -25,6 +25,8 @@ import 'package:avenginekit/engine/call_end_reason.dart';
 import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:chat/call/callkit_service.dart';
 import 'package:chat/call/voip_call_screen.dart';
+import 'package:chat/call/multi_call_screen.dart';
+import 'package:chat/call/conference/conference_call_screen.dart';
 import 'package:chat/share/share_service.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:chat/pc/pc_platform.dart';
@@ -549,7 +551,15 @@ class MainAVEngineCallback implements AVEngineCallback {
 
   @override
   void onJoinConference(CallSession session) {
-    // TODO: implement onJoinConference
+    debugPrint('onJoinConference: ${session.callId}');
+    if (shell != null) {
+      shell!.startCallSession(session);
+      return;
+    }
+    Navigator.of(navKey.currentContext!).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => ConferenceCallScreen(session: session), settings: const RouteSettings(name: "conferenceCall")),
+      (Route<dynamic> route) => route.settings.name != 'conferenceCall',
+    );
   }
 
   void _presentCall(CallSession session) {
@@ -557,7 +567,18 @@ class MainAVEngineCallback implements AVEngineCallback {
       shell!.startCallSession(session);
       return;
     }
-    if (session.conversation!.conversationType == ConversationType.Single) {
+
+    if (session.conference) {
+      Navigator.of(navKey.currentContext!).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => ConferenceCallScreen(session: session), settings: const RouteSettings(name: "conferenceCall")),
+        (Route<dynamic> route) => route.settings.name != 'conferenceCall',
+      );
+    } else if (session.conversation != null && session.conversation!.conversationType == ConversationType.Group) {
+      Navigator.of(navKey.currentContext!).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => MultiCallScreen(session: session), settings: const RouteSettings(name: "multiCall")),
+        (Route<dynamic> route) => route.settings.name != 'multiCall',
+      );
+    } else {
       VoipCallScreen callView = VoipCallScreen(session: session);
       navKey.currentState!.pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => callView, settings: const RouteSettings(name: "singleCall")),

@@ -212,6 +212,10 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     });
   }
 
+  void _onDowngradeToVoice() {
+    _session.downgrade2Voice();
+  }
+
   // --- CallSessionCallback ---
 
   @override
@@ -595,6 +599,13 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                   iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
                   onPressed: _onToggleSpeaker,
                   label: AppLocalizations.of(context)!.callSpeaker,
+                ),
+              if (isVideoCall)
+                _CallActionButton(
+                  icon: Icons.phone_in_talk_outlined,
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  onPressed: _onDowngradeToVoice,
+                  label: AppLocalizations.of(context)!.callAnswerAudio,
                 ),
             ],
           ),

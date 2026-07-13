@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/app_navigator.dart';
+import 'package:chat/call/conference/conference_home_screen.dart';
 import 'package:chat/channel/channel_list.dart';
 import 'package:chat/config.dart';
 import 'package:chat/discovery/chatroom_list.dart';
@@ -36,6 +37,11 @@ class PcDiscoveryList extends StatelessWidget {
           iconAsset: 'assets/images/discover_channel.png',
           title: l10n.channels,
           onTap: () => openPage(context, const ChannelList()),
+        ),
+        _DiscoveryRow(
+          iconAsset: 'assets/images/discover_channel.png',
+          title: '会议',
+          onTap: () => openPage(context, const ConferenceHomeScreen()),
         ),
         _DiscoveryRow(
           iconAsset: 'assets/images/discover_devdocs.png',

@@ -111,38 +111,64 @@ class ConversationController extends ChangeNotifier {
           ],
         );
       } else if (conversation.conversationType == ConversationType.Group) {
-          Imclient.getGroupMembers(conversation.target).then((groupMembers) {
-            List<String> members = [];
-            for (var gm in groupMembers) {
-              members.add(gm.memberId);
-            }
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => PickUserScreen(
-                        title: AppLocalizations.of(context)!.pickGroupMember,
-                        (context, members) async {
-                          if (members.isEmpty) {
-                            showToast(
-                                msg: AppLocalizations.of(context)!
-                                    .selectMemberToCall);
-                          } else {
-                            // Group call not implemented yet in this session
-                            showToast(msg: "群通话暂未实现");
-                          }
-                        },
-                        maxSelected: 9,
-                        candidates: members,
-                        disabledCheckedUsers: [Imclient.currentUserId],
-                      )),
-            );
-          });
-        }
+        showBottomActionSheet(
+          context: context,
+          items: [
+            BottomActionSheetItem(
+              label: AppLocalizations.of(context)!.videoCallAction,
+              icon: Icons.videocam_rounded,
+              onTap: () {
+                _startGroupCall(context, conversation, false);
+              },
+            ),
+            BottomActionSheetItem(
+              label: AppLocalizations.of(context)!.audioCallAction,
+              icon: Icons.call_rounded,
+              onTap: () {
+                _startGroupCall(context, conversation, true);
+              },
+            ),
+          ],
+          cancelLabel: AppLocalizations.of(context)!.cancel,
+        );
+      }
       } else {
         showToast(
             msg: AppLocalizations.of(context)!.callInProgress);
       }
+  }
+
+  void _startGroupCall(BuildContext context, Conversation conversation, bool audioOnly) {
+    Imclient.getGroupMembers(conversation.target).then((groupMembers) {
+      if (!context.mounted) return;
+      List<String> members = [];
+      for (var gm in groupMembers) {
+        members.add(gm.memberId);
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => PickUserScreen(
+                  title: AppLocalizations.of(context)!.pickGroupMember,
+                  (context, selectedMembers) async {
+                    final participants = selectedMembers.where((memberId) => memberId != Imclient.currentUserId).toList();
+                    if (participants.isEmpty) {
+                      showToast(
+                          msg: AppLocalizations.of(context)!
+                              .selectMemberToCall);
+                    } else {
+                      Navigator.pop(context);
+                      avEngineKit.startCall(conversation, participants, audioOnly);
+                    }
+                  },
+                  maxSelected: 9,
+                  candidates: members,
+                  disabledCheckedUsers: [Imclient.currentUserId],
+                  showOrganizationEntry: false,
+                )),
+      );
+    });
   }
 
   void onPressCardBtn(BuildContext context, Conversation conversation) {
