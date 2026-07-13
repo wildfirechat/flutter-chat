@@ -2,9 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
+import 'package:chat/pc/pc_av_call.dart';
 import 'package:chat/utilities.dart';
 
-import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
 import 'package:chat/theme/app_typography.dart';
 
@@ -49,11 +49,14 @@ class CallStartCellBuilder extends PortraitCellBuilder {
       ext = "未接通";
     }
 
-    return Text(
-      callStartMessageContent.audioOnly ? '[语音通话] $ext' : '[视频通话] $ext',
-      overflow: TextOverflow.ellipsis,
-      maxLines: 10,
-      style: AppText.lg,
+    return GestureDetector(
+      onTap: () => startAvCall(context, model.message.conversation, audioOnly: callStartMessageContent.audioOnly),
+      child: Text(
+        callStartMessageContent.audioOnly ? '[语音通话] $ext' : '[视频通话] $ext',
+        overflow: TextOverflow.ellipsis,
+        maxLines: 10,
+        style: AppText.lg,
+      ),
     );
   }
 }

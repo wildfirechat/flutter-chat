@@ -301,7 +301,11 @@ class _MultiCallScreenState extends State<MultiCallScreen>
 
   @override
   void didChangeMode(bool audioOnly) {
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {
+        _isCameraOff = _session.isVideoMuted;
+      });
+    }
   }
 
   @override
@@ -446,60 +450,12 @@ class _MultiCallScreenState extends State<MultiCallScreen>
       backgroundColor: const Color(0xFF0F121B),
       body: Stack(
         children: [
+          // 语音通话时给整个页面加一个柔和背景
+          if (!isVideoCall) _buildAudioBackground(),
           SafeArea(
             child: Column(
               children: [
-                if (_session.status != CallState.STATUS_CONNECTED) ...[
-                  const SizedBox(height: 48),
-                  Text(
-                    _statusLabel(l10n),
-                    style: AppText.lg.copyWith(
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 0.5),
-                  ),
-                ] else ...[
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            color: Colors.black.withValues(alpha: 0.38),
-                            child: Text(
-                              _formatDuration(_duration),
-                              style: AppText.base.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                  fontFeatures: [FontFeature.tabularFigures()]),
-                            ),
-                          ),
-                        ),
-                        if (speakingName.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF07C160).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '正在讲话: $speakingName',
-                              style: AppText.sm.copyWith(
-                                  color: const Color(0xFF07C160),
-                                  fontWeight: FontWeight.w500),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
+                _buildHeader(l10n, speakingName, items.length),
                 Expanded(
                   child: items.isEmpty
                       ? const Center(
@@ -516,31 +472,94 @@ class _MultiCallScreenState extends State<MultiCallScreen>
     );
   }
 
-  Widget _buildGrid(List<_ParticipantItem> items, bool isVideoCall) {
-    int crossAxisCount = items.length <= 2
-        ? 1
-        : items.length <= 4
-            ? 2
-            : 3;
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 0.85,
+  /// 顶部信息栏：未接通时显示状态，接通后显示时长、当前人数、正在讲话人
+  Widget _buildHeader(AppLocalizations l10n, String speakingName, int participantCount) {
+    final bool isConnected = _session.status == CallState.STATUS_CONNECTED;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isConnected ? _formatDuration(_duration) : _statusLabel(l10n),
+                  style: AppText.base.copyWith(
+                      color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '$participantCount 人通话${speakingName.isNotEmpty ? ' · 正在讲话: $speakingName' : ''}',
+                  style: AppText.sm.copyWith(color: Colors.white70),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        return _buildParticipantCell(items[index], isVideoCall);
+    );
+  }
+
+  /// 语音通话背景（头像高斯模糊 + 渐变遮罩）
+  Widget _buildAudioBackground() {
+    return Positioned.fill(
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF1E2638), Color(0xFF0F121B)],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGrid(List<_ParticipantItem> items, bool isVideoCall) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final count = items.length;
+        int crossAxisCount;
+        if (count == 1) {
+          crossAxisCount = 1;
+        } else if (count <= 4) {
+          crossAxisCount = 2;
+        } else {
+          crossAxisCount = 3;
+        }
+        final rows = (count / crossAxisCount).ceil();
+        final hSpacing = 8.0 * (crossAxisCount - 1);
+        final vSpacing = 8.0 * (rows - 1);
+        final availableW = constraints.maxWidth - hSpacing - 24; // 左右 padding 12
+        final availableH = constraints.maxHeight - vSpacing - 24; // 上下 padding 12
+        final cellW = availableW / crossAxisCount;
+        final cellH = availableH / rows;
+        final aspectRatio = cellW / cellH;
+
+        return GridView.builder(
+          padding: const EdgeInsets.all(12),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: aspectRatio > 0 ? aspectRatio : 1,
+          ),
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            return _buildParticipantCell(items[index], isVideoCall);
+          },
+        );
       },
     );
   }
 
   Widget _buildParticipantCell(_ParticipantItem item, bool isVideoCall) {
-    bool showVideo = isVideoCall && !item.videoMuted && item.renderer.srcObject != null;
     bool isSelf = item.userId == Imclient.currentUserId;
+    bool showVideo = isVideoCall && !item.videoMuted && item.renderer.srcObject != null;
     bool isSpeaking = item.volume > 0 && !item.audioMuted;
+    String name = isSelf ? '我' : _participantName(item.userInfo);
 
     return Container(
       decoration: BoxDecoration(
@@ -553,7 +572,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: Stack(
-          alignment: Alignment.center,
+          fit: StackFit.expand,
           children: [
             if (showVideo)
               RTCVideoView(
@@ -571,50 +590,68 @@ class _MultiCallScreenState extends State<MultiCallScreen>
                   ),
                 ),
                 child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Portrait(
-                        item.userInfo?.portrait ?? '',
-                        Config.defaultUserPortrait,
-                        width: 72,
-                        height: 72,
-                        borderRadius: 36,
-                      ),
-                    ],
+                  child: Portrait(
+                    item.userInfo?.portrait ?? '',
+                    Config.defaultUserPortrait,
+                    width: 72,
+                    height: 72,
+                    borderRadius: 36,
                   ),
                 ),
               ),
+            // 摄像头关闭提示
+            if (isVideoCall && item.videoMuted)
+              const Center(
+                child: Icon(Icons.videocam_off,
+                    color: Colors.white54, size: 36),
+              ),
+            // 底部信息条：名字 + 静音状态
             Positioned(
-              bottom: 8,
-              left: 8,
-              right: 8,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (item.audioMuted)
-                    const Icon(Icons.mic_off, color: Colors.white70, size: 16),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      isSelf
-                          ? '我'
-                          : _participantName(item.userInfo),
-                      style: AppText.sm.copyWith(color: Colors.white),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.6),
+                    ],
                   ),
-                ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (item.audioMuted)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 4),
+                        child: Icon(Icons.mic_off,
+                            color: Colors.white70, size: 14),
+                      ),
+                    Flexible(
+                      child: Text(
+                        name,
+                        style: AppText.sm.copyWith(color: Colors.white),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            if (item.volume > 0 && !item.audioMuted)
+            // 正在讲话角标
+            if (isSpeaking)
               Positioned(
                 top: 8,
                 right: 8,
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.8),
+                    color: const Color(0xFF07C160).withValues(alpha: 0.9),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.volume_up,
@@ -713,10 +750,12 @@ class _MultiCallScreenState extends State<MultiCallScreen>
                   label: l10n.callSwitchCamera,
                 ),
                 _CallActionButton(
-                  icon: Icons.phone_in_talk_outlined,
-                  backgroundColor: Colors.white.withValues(alpha: 0.1),
-                  onPressed: _onDowngradeToVoice,
-                  label: l10n.callSwitchToVoice,
+                  icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_mute_outlined,
+                  backgroundColor:
+                      _isSpeakerOn ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                  iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
+                  onPressed: _onToggleSpeaker,
+                  label: l10n.callSpeaker,
                 ),
               ],
             ),
