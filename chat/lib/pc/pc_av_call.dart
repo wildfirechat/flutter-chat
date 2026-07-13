@@ -7,6 +7,9 @@ import 'package:imclient/model/conversation.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
+import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
+import 'package:chat/pc/pc_platform.dart';
+
 /// 桌面端发起音视频通话的统一入口(输入栏按钮与用户信息卡片共用):
 /// - 单聊:直接按 [audioOnly] 指定类型发起,不弹选择菜单;
 /// - 群聊:先弹选人对话框(自己默认选中且不可取消,最多 9 人),选完真正发起。
@@ -18,7 +21,11 @@ void startAvCall(BuildContext context, Conversation conversation, {required bool
   }
   switch (conversation.conversationType) {
     case ConversationType.Single:
-      avEngineKit.startCall(conversation, [conversation.target], audioOnly);
+      if (isDesktopShell) {
+        MainAvEngineKitProxy.instance.startCall(conversation, [conversation.target], audioOnly);
+      } else {
+        avEngineKit.startCall(conversation, [conversation.target], audioOnly);
+      }
       break;
     case ConversationType.Group:
       _pickGroupMembersAndStart(context, conversation, audioOnly);
@@ -50,7 +57,11 @@ Future<void> _pickGroupMembersAndStart(BuildContext context, Conversation conver
         return;
       }
       Navigator.pop(pickerContext);
-      avEngineKit.startCall(conversation, participants, audioOnly);
+      if (isDesktopShell) {
+        MainAvEngineKitProxy.instance.startCall(conversation, participants, audioOnly);
+      } else {
+        avEngineKit.startCall(conversation, participants, audioOnly);
+      }
     },
     maxSelected: 9,
     candidates: candidates,

@@ -3,6 +3,8 @@ import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:avenginekit/engine/video_profile.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
+import 'package:chat/pc/pc_platform.dart';
 
 /// 加入会议页面
 class JoinConferenceView extends StatefulWidget {
@@ -44,7 +46,7 @@ class _JoinConferenceViewState extends State<JoinConferenceView> {
     });
   }
 
-  void _joinConference() {
+  void _joinConference() async {
     if (_conferenceInfo == null) return;
     setState(() => _loading = true);
     var conferenceId = _conferenceInfo!['conferenceId'] ?? _idController.text;
@@ -55,6 +57,21 @@ class _JoinConferenceViewState extends State<JoinConferenceView> {
     var audience = _conferenceInfo!['audience'] ?? false;
     var advance = _conferenceInfo!['advance'] ?? false;
     var host = _conferenceInfo!['owner'] ?? _conferenceInfo!['host'] ?? '';
+
+    if (isDesktopShell) {
+      await MainAvEngineKitProxy.instance.joinConference(
+        callId: conferenceId,
+        audioOnly: audioOnly,
+        pin: pin,
+        host: host,
+        title: title,
+        desc: desc,
+        audience: audience,
+        advance: advance,
+      );
+      if (mounted) Navigator.of(context).pop();
+      return;
+    }
 
     var session = avEngineKit.joinConference(
       conferenceId,

@@ -67,9 +67,20 @@ import 'package:chat/widget/watermark_overlay.dart';
 import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/organization/organization_cache.dart';
 import 'package:chat/organization/organization_service.dart';
+import 'package:chat/pc/call_window/call_window_app.dart';
+import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
 
-void main() async {
+void main([List<String>? args]) async {
+  final effectiveArgs = args ?? <String>[];
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 子窗口入口。
+  if (effectiveArgs.isNotEmpty && effectiveArgs[0] == 'multi_window') {
+    final windowId = int.parse(effectiveArgs[1]);
+    final arguments = effectiveArgs.length > 2 ? jsonDecode(effectiveArgs[2]) as Map<String, dynamic> : <String, dynamic>{};
+    runApp(CallWindowApp(windowId: windowId, arguments: arguments));
+    return;
+  }
 
   // 限制全局图片内存缓存，避免大图/头像过多时内存占用过高
   PaintingBinding.instance.imageCache
@@ -160,8 +171,6 @@ class _MyAppState extends State<MyApp> {
     }
     _initIMClient();
     _initRepo();
-    _avEngineCallback = MainAVEngineCallback(navKey, _shell);
-    avEngineKit.init(_avEngineCallback);
     CallKitService.instance.init();
     ShareService.instance.init();
     ShareService.instance.shareItemsStream.listen((items) {
@@ -232,7 +241,7 @@ class _MyAppState extends State<MyApp> {
 
     Imclient.setDefaultPortraitProvider(WFPortraitProvider.instance);
 
-    Imclient.init((int status) {
+    await Imclient.init((int status) {
       if (kDebugMode) {
         print(status);
       }
@@ -353,6 +362,14 @@ class _MyAppState extends State<MyApp> {
         print(onlineInfos);
       }
     });
+
+    // IM 初始化完成后立即安装音视频代理（桌面端通过子窗口承载，移动端直接初始化 avenginekit）。
+    if (isDesktopShell) {
+      MainAvEngineKitProxy.instance.install();
+    } else {
+      _avEngineCallback = MainAVEngineCallback(navKey, _shell);
+      avEngineKit.init(_avEngineCallback);
+    }
 
     Imclient.startLog();
     SharedPreferences prefs = await SharedPreferences.getInstance();

@@ -500,7 +500,7 @@ class Imclient {
   }
 
   ///初始化SDK。必须在程序启动之后在所有操作之前初始化，之后才可以做其它操作。
-  static void init(
+  static Future<void> init(
       ConnectionStatusChangedCallback connectionStatusChangedCallback,
       ReceiveMessageCallback receiveMessageCallback,
       RecallMessageCallback recallMessageCallback,
@@ -602,7 +602,7 @@ class Imclient {
     registerMessageContent(thingsDataContentMeta);
     registerMessageContent(thingsLostEventContentMeta);
 
-    ImclientPlatform.instance.init(connectionStatusChangedCallback,
+    return ImclientPlatform.instance.init(connectionStatusChangedCallback,
         receiveMessageCallback,
         recallMessageCallback,
         deleteMessageCallback,

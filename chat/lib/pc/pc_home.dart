@@ -655,83 +655,8 @@ class _PCHomeState extends State<PCHome> {
   }
 
   Widget _buildCallOverlay() {
-    return Consumer<PCShellViewModel>(
-      builder: (context, model, _) {
-        final session = model.activeCallSession;
-        if (session == null) {
-          return const SizedBox.shrink();
-        }
-
-        return Positioned(
-          left:
-              model.callWindowMinimized ? -9999.0 : model.callWindowPosition.dx,
-          top:
-              model.callWindowMinimized ? -9999.0 : model.callWindowPosition.dy,
-          width: 320,
-          height: 576,
-          child: Material(
-            elevation: 16,
-            borderRadius: BorderRadius.circular(10),
-            clipBehavior: Clip.antiAlias,
-            color: Colors.black,
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.15), width: 1.0),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Stack(
-                children: [
-                  _buildCallScreen(session),
-                  // Draggable handle / Header bar
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    height: 38,
-                    child: MouseRegion(
-                      cursor: SystemMouseCursors.grab,
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onPanUpdate: (details) {
-                          model.setCallWindowPosition(
-                              model.callWindowPosition + details.delta);
-                        },
-                        child: Container(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                AppLocalizations.of(context)!.audioVideoCall,
-                                style: AppText.xs.copyWith(color: Colors.white70, fontWeight: FontWeight.w500, decoration: TextDecoration.none),
-                              ),
-                              _buildMinimizeButton(model),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildCallScreen(CallSession session) {
-    if (session.conference) {
-      return ConferenceCallScreen(session: session);
-    }
-    if (session.conversation != null &&
-        session.conversation!.conversationType == ConversationType.Group) {
-      return MultiCallScreen(session: session);
-    }
-    return VoipCallScreen(session: session);
+    // 通话已迁移到独立 Call 窗口，主窗口不再显示浮窗。
+    return const SizedBox.shrink();
   }
 
   Widget _buildMinimizeButton(PCShellViewModel model) {

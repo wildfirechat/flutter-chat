@@ -1,7 +1,7 @@
 #import "ImclientPlugin.h"
 #import <WFChatClient/WFCChatClient.h>
 
-@interface ImclientPlugin () <ConnectToServerDelegate>
+@interface ImclientPlugin () <ConnectToServerDelegate, ConferenceEventDelegate>
 @property(nonatomic, strong)NSString *userId;
 @property(nonatomic, strong)NSString *token;
 
@@ -17,6 +17,7 @@ ImclientPlugin *gIMClientInstance;
                                      binaryMessenger:[registrar messenger]];
     ImclientPlugin* instance = [[ImclientPlugin alloc] init];
     [[WFCCNetworkService sharedInstance] setConnectToServerDelegate:instance];
+    [[WFCCNetworkService sharedInstance] setConferenceEventDelegate:instance];
     [instance observeIMEvents];
     [registrar addMethodCallDelegate:instance channel:channel];
     gIMClientInstance = instance;
@@ -2057,7 +2058,7 @@ ImclientPlugin *gIMClientInstance;
 }
 
 - (void)onConferenceEvent:(NSString *)event {
-    
+    [self.channel invokeMethod:@"onConferenceEvent" arguments:@{@"event": event}];
 }
 
 - (void)onUserOnlineStateUpdated:(NSNotification *)notification {

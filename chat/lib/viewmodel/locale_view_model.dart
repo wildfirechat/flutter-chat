@@ -8,8 +8,10 @@ class LocaleViewModel extends ChangeNotifier {
   Locale? _locale;
   String _localeMode = _followSystem; // 'follow_system', 'en', 'zh'
 
-  LocaleViewModel() {
-    _loadLocalePreference();
+  LocaleViewModel({bool autoLoad = true}) {
+    if (autoLoad) {
+      _loadLocalePreference();
+    }
   }
 
   Locale? get locale => _locale;
@@ -20,6 +22,10 @@ class LocaleViewModel extends ChangeNotifier {
     _localeMode = prefs.getString(_localeKey) ?? _followSystem;
     _updateLocale();
     notifyListeners();
+  }
+
+  Future<void> load() async {
+    await _loadLocalePreference();
   }
 
   void _updateLocale() {

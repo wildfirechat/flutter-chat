@@ -12,6 +12,12 @@
 
 #include "flutter/generated_plugin_registrant.h"
 
+#include <desktop_multi_window/desktop_multi_window_plugin.h>
+#include <flutter_webrtc/flutter_web_r_t_c_plugin.h>
+#include <window_manager/window_manager_plugin.h>
+#include <tray_manager/tray_manager_plugin.h>
+#include <screen_retriever_linux/screen_retriever_linux_plugin.h>
+
 struct _MyApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
@@ -79,6 +85,21 @@ static void my_application_activate(GApplication* application) {
   gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
+
+  desktop_multi_window_plugin_set_window_created_callback([](FlPluginRegistry* registry){
+    g_autoptr(FlPluginRegistrar) flutter_webrtc_registrar =
+        fl_plugin_registry_get_registrar_for_plugin(registry, "FlutterWebRTCPlugin");
+    flutter_web_r_t_c_plugin_register_with_registrar(flutter_webrtc_registrar);
+    g_autoptr(FlPluginRegistrar) window_manager_registrar =
+        fl_plugin_registry_get_registrar_for_plugin(registry, "WindowManagerPlugin");
+    window_manager_plugin_register_with_registrar(window_manager_registrar);
+    g_autoptr(FlPluginRegistrar) tray_manager_registrar =
+        fl_plugin_registry_get_registrar_for_plugin(registry, "TrayManagerPlugin");
+    tray_manager_plugin_register_with_registrar(tray_manager_registrar);
+    g_autoptr(FlPluginRegistrar) screen_retriever_registrar =
+        fl_plugin_registry_get_registrar_for_plugin(registry, "ScreenRetrieverLinuxPlugin");
+    screen_retriever_linux_plugin_register_with_registrar(screen_retriever_registrar);
+  });
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }

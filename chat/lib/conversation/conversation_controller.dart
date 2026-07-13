@@ -27,6 +27,7 @@ import 'package:avenginekit/internal/avenginekit_impl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/media_cell_anchor.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
+import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -98,14 +99,14 @@ class ConversationController extends ChangeNotifier {
               label: AppLocalizations.of(context)!.videoCallAction,
               icon: Icons.videocam_rounded,
               onTap: () {
-                avEngineKit.startCall(conversation, [conversation.target], false);
+                _startSingleCall(conversation, false);
               },
             ),
             BottomActionSheetItem(
               label: AppLocalizations.of(context)!.audioCallAction,
               icon: Icons.call_rounded,
               onTap: () {
-                avEngineKit.startCall(conversation, [conversation.target], true);
+                _startSingleCall(conversation, true);
               },
             ),
           ],
@@ -118,14 +119,14 @@ class ConversationController extends ChangeNotifier {
               label: AppLocalizations.of(context)!.videoCallAction,
               icon: Icons.videocam_rounded,
               onTap: () {
-                _startGroupCall(context, conversation, false);
+                _pickGroupMembersAndStartCall(context, conversation, false);
               },
             ),
             BottomActionSheetItem(
               label: AppLocalizations.of(context)!.audioCallAction,
               icon: Icons.call_rounded,
               onTap: () {
-                _startGroupCall(context, conversation, true);
+                _pickGroupMembersAndStartCall(context, conversation, true);
               },
             ),
           ],
@@ -137,7 +138,7 @@ class ConversationController extends ChangeNotifier {
       }
   }
 
-  void _startGroupCall(BuildContext context, Conversation conversation, bool audioOnly) {
+  void _pickGroupMembersAndStartCall(BuildContext context, Conversation conversation, bool audioOnly) {
     Imclient.getGroupMembers(conversation.target).then((groupMembers) {
       if (!context.mounted) return;
       List<String> members = [];
@@ -158,7 +159,7 @@ class ConversationController extends ChangeNotifier {
                               .selectMemberToCall);
                     } else {
                       Navigator.pop(context);
-                      avEngineKit.startCall(conversation, participants, audioOnly);
+                      _startGroupCall(conversation, participants, audioOnly);
                     }
                   },
                   maxSelected: 9,
@@ -168,6 +169,22 @@ class ConversationController extends ChangeNotifier {
                 )),
       );
     });
+  }
+
+  void _startSingleCall(Conversation conversation, bool audioOnly) {
+    if (isDesktopShell) {
+      MainAvEngineKitProxy.instance.startCall(conversation, [conversation.target], audioOnly);
+    } else {
+      avEngineKit.startCall(conversation, [conversation.target], audioOnly);
+    }
+  }
+
+  void _startGroupCall(Conversation conversation, List<String> participants, bool audioOnly) {
+    if (isDesktopShell) {
+      MainAvEngineKitProxy.instance.startCall(conversation, participants, audioOnly);
+    } else {
+      avEngineKit.startCall(conversation, participants, audioOnly);
+    }
   }
 
   void onPressCardBtn(BuildContext context, Conversation conversation) {

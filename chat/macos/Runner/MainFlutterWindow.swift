@@ -1,5 +1,13 @@
 import Cocoa
 import FlutterMacOS
+import desktop_multi_window
+import flutter_webrtc
+import window_manager
+import tray_manager
+import shared_preferences_foundation
+import path_provider_foundation
+import device_info_plus
+import sqflite_darwin
 
 /// 自定义交通灯按钮类型。
 private enum TrafficLightSymbol {
@@ -229,6 +237,20 @@ class MainFlutterWindow: NSWindow {
 
         // window_manager 需要接管窗口，取消默认最小尺寸等限制
         RegisterGeneratedPlugins(registry: flutterViewController)
+
+        FlutterMultiWindowPlugin.setOnWindowCreatedCallback { controller in
+          print("Call subwindow created, registering plugins")
+          // 在子窗口中注册通话所需的插件。
+          // flutter_webrtc 必须在 Call 窗口引擎中注册，否则 RTCVideoRenderer 无法初始化。
+          FlutterWebRTCPlugin.register(with: controller.registrar(forPlugin: "FlutterWebRTCPlugin"))
+          WindowManagerPlugin.register(with: controller.registrar(forPlugin: "WindowManagerPlugin"))
+          TrayManagerPlugin.register(with: controller.registrar(forPlugin: "TrayManagerPlugin"))
+          SharedPreferencesPlugin.register(with: controller.registrar(forPlugin: "SharedPreferencesPlugin"))
+          PathProviderPlugin.register(with: controller.registrar(forPlugin: "PathProviderPlugin"))
+          DeviceInfoPlusMacosPlugin.register(with: controller.registrar(forPlugin: "DeviceInfoPlusMacosPlugin"))
+          SqflitePlugin.register(with: controller.registrar(forPlugin: "SqflitePlugin"))
+          print("Call subwindow plugins registered")
+        }
 
         super.awakeFromNib()
     }

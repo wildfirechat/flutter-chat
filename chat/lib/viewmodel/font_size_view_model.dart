@@ -14,8 +14,10 @@ class FontSizeViewModel extends ChangeNotifier {
 
   int _index = _defaultIndex;
 
-  FontSizeViewModel() {
-    _loadFontSizePreference();
+  FontSizeViewModel({bool autoLoad = true}) {
+    if (autoLoad) {
+      _loadFontSizePreference();
+    }
   }
 
   int get index => _index;
@@ -38,6 +40,10 @@ class FontSizeViewModel extends ChangeNotifier {
       _index = loaded;
       notifyListeners();
     }
+  }
+
+  Future<void> load() async {
+    await _loadFontSizePreference();
   }
 
   int _findClosestIndex(double factor) {

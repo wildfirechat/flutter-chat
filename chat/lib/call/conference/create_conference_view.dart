@@ -6,6 +6,8 @@ import 'package:avenginekit/engine/video_profile.dart';
 import 'package:imclient/imclient.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
+import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/widget/app_switch.dart';
 
@@ -62,20 +64,34 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
 
     AppServer.updateConference(info, () async {
       try {
-        var session = await avEngineKit.startConference(
-          conferenceId,
-          _audioOnly,
-          pin,
-          Imclient.currentUserId,
-          _titleController.text,
-          _descController.text,
-          _audience,
-          _advance,
-          _record,
-          '',
-          '',
-        );
-        if (session != null && mounted) {
+        if (isDesktopShell) {
+          await MainAvEngineKitProxy.instance.startConference(
+            callId: conferenceId,
+            audioOnly: _audioOnly,
+            pin: pin,
+            host: Imclient.currentUserId,
+            title: _titleController.text,
+            desc: _descController.text,
+            audience: _audience,
+            advance: _advance,
+            record: _record,
+          );
+        } else {
+          await avEngineKit.startConference(
+            conferenceId,
+            _audioOnly,
+            pin,
+            Imclient.currentUserId,
+            _titleController.text,
+            _descController.text,
+            _audience,
+            _advance,
+            _record,
+            '',
+            '',
+          );
+        }
+        if (mounted) {
           Navigator.of(context).pop();
         }
       } catch (e) {

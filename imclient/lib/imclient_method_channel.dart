@@ -71,8 +71,13 @@ class ImclientPlatform extends PlatformInterface {
   /// 实际通信通道：移动端为 MethodChannel，桌面端为 dart:ffi 直连
   /// libMarsWrapper（见 src/ffi/imclient_ffi_channel.dart），取代原先
   /// macOS/Windows/Linux 三份原生插件实现。
-  late final ImclientChannel _channel =
-      debugChannelOverride ?? _createChannel();
+  late ImclientChannel _channel = debugChannelOverride ?? _createChannel();
+
+  /// 替换底层通信通道。用于 Call 窗口中把真实 IM 通道替换为代理通道。
+  /// 必须在首次调用任何 IM 接口之前设置。
+  set channel(ImclientChannel value) {
+    _channel = value;
+  }
 
   ImclientChannel _createChannel() {
     if (!kIsWeb &&
@@ -111,6 +116,15 @@ class ImclientPlatform extends PlatformInterface {
   _sendMediaMessageUploadedCallbackMap = {};
 
   static final Map<int, dynamic> _operationSuccessCallbackMap = {};
+
+  /// 供 Call 窗口代理使用，获取发送消息成功回调映射。
+  static Map<int, SendMessageSuccessCallback> get sendMessageSuccessCallbackMap => _sendMessageSuccessCallbackMap;
+
+  /// 供 Call 窗口代理使用，获取操作失败回调映射。
+  static Map<int, OperationFailureCallback> get errorCallbackMap => _errorCallbackMap;
+
+  /// 供 Call 窗口代理使用，获取通用操作成功回调映射。
+  static Map<int, dynamic> get operationSuccessCallbackMap => _operationSuccessCallbackMap;
 
   /// 桌面端撤回消息成功后 SDK 不主动分发 [onRecallMessage]，需要依据 requestId 补发。
   /// key: requestId, value: messageUid
@@ -231,7 +245,7 @@ class ImclientPlatform extends PlatformInterface {
 
   static DefaultPortraitProvider? defaultPortraitProvider;
 
-  void init(
+  Future<void> init(
       ConnectionStatusChangedCallback connectionStatusChangedCallback,
       ReceiveMessageCallback receiveMessageCallback,
       RecallMessageCallback recallMessageCallback,
@@ -264,6 +278,8 @@ class ImclientPlatform extends PlatformInterface {
     _onlineEventCallback = onlineEventCallback;
 
 
+    // initProto 在部分平台（如 iOS）的原生实现可能不返回 result，await 会导致启动卡死。
+    // 这里保持 fire-and-forget，与原始行为一致；_initialized 在设置完回调后立即置 true。
     _channel.invokeMethod('initProto');
     _initialized = true;
 
@@ -884,10 +900,10 @@ class ImclientPlatform extends PlatformInterface {
       msg.toUsers = Tools.convertDynamicList(toUsers);
     }
     msg.content =
-        decodeMessageContent(_convertProtoMessageContent(map['content']));
+        decodeMessageContent(_convertProtoMessageContent(map['content'] ?? map['payload']));
     msg.direction = MessageDirection.values[map['direction'] ?? 0];
     msg.status = MessageStatus.values[map['status'] ?? 0];
-    msg.serverTime = map.containsKey('serverTime') ? map['serverTime'] : map['timestamp'];
+    msg.serverTime = map.containsKey('serverTime') ? (map['serverTime'] ?? 0) : (map['timestamp'] ?? 0);
     msg.localExtra = map['localExtra'];
     return msg;
   }
@@ -1109,7 +1125,7 @@ class ImclientPlatform extends PlatformInterface {
       return MessagePayload();
     }
     MessagePayload payload = MessagePayload();
-    payload.contentType = map['type'];
+    payload.contentType = (map['type'] ?? map['contentType']) ?? 0;
     payload.searchableContent = map['searchableContent'];
     payload.pushContent = map['pushContent'];
     payload.pushData = map['pushData'];
