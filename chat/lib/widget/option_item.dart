@@ -92,17 +92,11 @@ class OptionItem extends StatelessWidget {
             ),
             // 桌面端行间不画线:分组内靠留白,分组之间由 SectionDivider 的弱线交代。
             if (showBottomDivider && !isDesktopShell)
-              Container(
-                margin: EdgeInsets.fromLTRB(
-                  (leftImage != null || leftIcon != null)
-                      ? (15.0 + iconSize + 12.0)
-                      : 15.0,
-                  0.0,
-                  12.0,
-                  0.0,
-                ),
-                height: 0.5,
-                color: colors.hairline,
+              Divider(
+                indent: (leftImage != null || leftIcon != null)
+                    ? (15.0 + iconSize + 12.0)
+                    : 15.0,
+                endIndent: 12.0,
               ),
           ],
         ),

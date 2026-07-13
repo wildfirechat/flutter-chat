@@ -93,7 +93,7 @@ class _BlacklistScreenState extends State<BlacklistScreen> {
                   onRefresh: _loadBlacklist,
                   child: ListView.separated(
                     itemCount: _blacklist.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1, indent: 72),
+                    separatorBuilder: (_, __) => const Divider(indent: 72),
                     itemBuilder: (context, index) {
                       final userId = _blacklist[index];
                       final userInfo = _userInfoCache[userId];

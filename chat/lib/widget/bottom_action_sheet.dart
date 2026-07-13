@@ -75,14 +75,7 @@ Future<void> showBottomActionSheet({
                           ),
                         ),
                       ),
-                      if (index < items.length - 1)
-                        Divider(
-                          height: 0.5,
-                          thickness: 0.5,
-                          indent: 0,
-                          endIndent: 0,
-                          color: colors.hairlineSoft,
-                        ),
+                      if (index < items.length - 1) const Divider(),
                     ],
                   );
                 }).toList(),

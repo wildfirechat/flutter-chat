@@ -239,8 +239,7 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                         ? Center(child: Text(l10n.noBackupsFound))
                         : ListView.separated(
                             itemCount: _backups.length,
-                            separatorBuilder: (ctx, index) =>
-                                const Divider(height: 1),
+                            separatorBuilder: (ctx, index) => const Divider(),
                             itemBuilder: (context, index) {
                               final backup = _backups[index];
                               return ListTile(

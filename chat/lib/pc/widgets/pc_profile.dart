@@ -142,11 +142,8 @@ class PcProfileDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 0.5,
-      margin: const EdgeInsets.symmetric(vertical: 12),
-      color: context.colors.hairline,
-    );
+    // height 24.5 = 上下各 12 的组间留白 + 0.5 的线。
+    return const Divider(height: 24.5);
   }
 }
 

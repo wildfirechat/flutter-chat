@@ -192,7 +192,7 @@ class _PcBackupRestorePageState extends State<PcBackupRestorePage> {
                     Icons.phone_iphone,
                     _showMobileBackupHint,
                   ),
-                  const Divider(height: 0.5),
+                  const Divider(),
                   _buildClickableRow(
                     l10n.pcRestoreToMobile,
                     l10n.pcRestoreToMobileDesc,
@@ -209,7 +209,7 @@ class _PcBackupRestorePageState extends State<PcBackupRestorePage> {
                     Icons.backup,
                     _backupLocalData,
                   ),
-                  const Divider(height: 0.5),
+                  const Divider(),
                   _buildClickableRow(
                     l10n.pcOpenBackupFolder,
                     l10n.pcOpenBackupFolderDesc,
@@ -236,7 +236,7 @@ class _PcBackupRestorePageState extends State<PcBackupRestorePage> {
                       final backup = entry.value;
                       return Column(
                         children: [
-                          if (index > 0) const Divider(height: 0.5),
+                          if (index > 0) const Divider(),
                           _buildBackupRow(backup),
                         ],
                       );

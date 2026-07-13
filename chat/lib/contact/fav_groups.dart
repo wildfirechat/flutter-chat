@@ -39,8 +39,11 @@ class FavGroupsPageState extends State<FavGroupsPage> {
       appBar: AppBar(
         title: const Text('收藏群组'),
       ),
-      body: ListView.builder(
+      body: ListView.separated(
         itemCount: favGroupIds.length,
+        separatorBuilder: (context, __) => Divider(
+          indent: 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 12.0,
+        ),
         itemBuilder: (context, index) {
           return _buildGroupItem(favGroupIds[index]);
         },

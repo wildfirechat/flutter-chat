@@ -15,6 +15,7 @@ import '../mesh/mesh_cache.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 class FriendRequestPage extends StatefulWidget {
   const FriendRequestPage({super.key});
@@ -79,8 +80,11 @@ class FriendRequestPageState extends State<FriendRequestPage> {
             ),
       backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
       body: SafeArea(
-        child: ListView.builder(
+        child: ListView.separated(
           itemCount: requests.length,
+          separatorBuilder: (context, __) => Divider(
+            indent: 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 12.0,
+          ),
           itemBuilder: _buildRow,
         ),
       ),

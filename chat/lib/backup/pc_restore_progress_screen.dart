@@ -217,7 +217,7 @@ class _PCRestoreProgressScreenState extends State<PCRestoreProgressScreen> {
         appBar: AppBar(title: Text(l10n.pcSelectBackup)),
         body: ListView.separated(
           itemCount: _backupList!.length,
-          separatorBuilder: (ctx, index) => const Divider(height: 1),
+          separatorBuilder: (ctx, index) => const Divider(),
           itemBuilder: (context, index) {
             final item = _backupList![index];
             return ListTile(

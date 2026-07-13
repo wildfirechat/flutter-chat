@@ -214,7 +214,7 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                     Fluttertoast.showToast(msg: l10n.setSuccess);
                   },
                 ),
-                const Divider(height: 0.5),
+                const Divider(),
                 _SettingsSwitchRow(
                   title: l10n.minimizeToTaskbarTitle,
                   subtitle: l10n.minimizeToTaskbarDesc,
@@ -236,7 +236,7 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                     Fluttertoast.showToast(msg: l10n.methodNotImpl);
                   },
                 ),
-                const Divider(height: 0.5),
+                const Divider(),
                 _SettingsClickableRow(
                   title: l10n.privacyPolicy,
                   subtitle: l10n.privacyPolicyDesc,
@@ -381,7 +381,7 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
                     _updateUserSetting(kUserSettingGlobalSilent, val, revert: true);
                   },
                 ),
-                const Divider(height: 0.5),
+                const Divider(),
                 _SettingsSwitchRow(
                   title: l10n.receiveCallNotification,
                   subtitle: l10n.receiveCallNotificationDesc,
@@ -391,7 +391,7 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
                     _updateUserSetting(kUserSettingVoipSilent, val, revert: true);
                   },
                 ),
-                const Divider(height: 0.5),
+                const Divider(),
                 _SettingsSwitchRow(
                   title: l10n.showNotificationDetail,
                   subtitle: l10n.showNotificationDetailDesc,
@@ -401,7 +401,7 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
                     _updateUserSetting(kUserSettingHiddenNotificationDetail, val, revert: true);
                   },
                 ),
-                const Divider(height: 0.5),
+                const Divider(),
                 _SettingsSwitchRow(
                   title: l10n.noDisturb,
                   subtitle: _noDisturbing && _noDisturbStartTime != _noDisturbEndTime
@@ -464,7 +464,7 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
                     _showLanguageMenu(rowContext, tapPosition);
                   },
                 ),
-                const Divider(height: 0.5),
+                const Divider(),
                 _SettingsSelectorRow(
                   title: l10n.appearanceTheme,
                   subtitle: l10n.appearanceThemeDesc,
@@ -473,7 +473,7 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
                     _showThemeMenu(rowContext, tapPosition);
                   },
                 ),
-                const Divider(height: 0.5),
+                const Divider(),
                 _SettingsSliderRow(
                   title: l10n.fontSize,
                   subtitle: l10n.fontSizeDesc,
@@ -629,7 +629,7 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                         );
                       },
                     ),
-                    const Divider(height: 0.5),
+                    const Divider(),
                     _SettingsClickableRow(
                       title: l10n.blacklist,
                       subtitle: l10n.blacklistDesc,
@@ -640,7 +640,7 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                         );
                       },
                     ),
-                    const Divider(height: 0.5),
+                    const Divider(),
                     _SettingsClickableRow(
                       title: l10n.backup_and_restore,
                       subtitle: l10n.backupAndRestoreDesc,

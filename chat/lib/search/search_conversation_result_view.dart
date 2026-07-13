@@ -13,6 +13,7 @@ import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 class SearchConversationResultView extends StatefulWidget {
   final Conversation conversation;
@@ -97,7 +98,9 @@ class _SearchConversationResultViewState extends State<SearchConversationResultV
               ? Center(child: Text(AppLocalizations.of(context)!.noSearchResult))
               : ListView.separated(
                   itemCount: _messages.length,
-                  separatorBuilder: (context, index) => const Divider(height: 1),
+                  separatorBuilder: (context, index) => Divider(
+                    indent: 16.0 + LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap) + 16.0,
+                  ),
                   itemBuilder: (context, index) {
                     var message = _messages[index];
                     return FutureBuilder<UserInfo?>(

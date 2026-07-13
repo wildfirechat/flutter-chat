@@ -23,6 +23,7 @@ import '../widget/group_list_view/index_path.dart';
 import 'search_conversation_result_view.dart';
 import '../user_info_widget.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/theme/app_typography.dart';
 
 // 需要 StatefulWidget 才能保持 SearchVieModel，实现实时搜索
@@ -114,16 +115,22 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                       ),
                     );
                   },
+                  // 暂时隐藏
+//                   separatorBuilder: (context, index) {
+//                     final items = groupedSearchResults.values.toList()[index.section];
+//                     if (index.index == items.length - 1) {
+//                       return const SizedBox(height: 0);
+//                     }
+//                     return Divider(
+//                       indent: 16.0 + LayoutScale.watchScale(context, 36.0, cap: LayoutScale.iconCap) + 12.0,
+//                     );
+//                   },
                   separatorBuilder: (context, index) => const SizedBox(height: 0),
                   sectionSeparatorBuilder: (context, section) => section == groupedSearchResults.length - 1
                       ? const SizedBox(height: 0)
                       : Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                          child: const Divider(
-                            height: 1,
-                            thickness: 0.5,
-                            color: Color(0xFFEEEEEE),
-                          ),
+                          child: const Divider(),
                         ),
                 );
         },
@@ -357,18 +364,11 @@ class _SearchItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color hoverColor = isDark 
-        ? Colors.white10 
-        : const Color(0xFFF2F2F2);
-
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        hoverColor: hoverColor,
-        splashColor: hoverColor.withValues(alpha: 0.1),
-        highlightColor: Colors.transparent,
+        hoverColor: context.colors.hoverOverlay,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(

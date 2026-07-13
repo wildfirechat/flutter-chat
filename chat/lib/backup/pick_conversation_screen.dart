@@ -116,7 +116,7 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
                     });
                   },
                 ),
-                const Divider(height: 1),
+                const Divider(),
                 Expanded(
                   child: ListView.builder(
                     itemCount: _conversations.length,

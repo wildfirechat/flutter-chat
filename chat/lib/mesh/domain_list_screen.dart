@@ -114,7 +114,7 @@ class _DomainListScreenState extends State<DomainListScreen> {
       onRefresh: _loadDomains,
       child: ListView.separated(
         itemCount: _domains.length,
-        separatorBuilder: (_, __) => const Divider(height: 0.5, indent: 16),
+        separatorBuilder: (_, __) => const Divider(indent: 16),
         itemBuilder: (context, index) {
           final domain = _domains[index];
           return ListTile(

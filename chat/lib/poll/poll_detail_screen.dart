@@ -586,7 +586,7 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
       child: Column(
         children: [
           for (int i = 0; i < poll!.options.length; i++) ...[
-            if (i > 0) Divider(height: 0.5, thickness: 0.5, color: colors.hairlineSoft),
+            if (i > 0) const Divider(),
             _buildOptionRow(poll!.options[i]),
           ],
         ],

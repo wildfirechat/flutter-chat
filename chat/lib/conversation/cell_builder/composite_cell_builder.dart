@@ -37,7 +37,8 @@ class CompositeCellBuilder extends PortraitCellBuilder {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const Divider(),
+            // height 16:标题与预览之间要留呼吸空间,不只是画线。
+            const Divider(height: 16),
             Selector<UserViewModel, (UserInfo?, UserInfo?, UserInfo?, UserInfo?)>(
               selector: (context, userViewModel) {
                 var msgs = compositeMessageContent.messages;

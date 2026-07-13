@@ -283,11 +283,11 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
           child: Column(
             children: [
               for (int i = 0; i < entries.length; i++) ...[
-                if (i > 0) Divider(height: 0.5, thickness: 0.5, color: colors.hairlineSoft),
+                if (i > 0) const Divider(),
                 _buildEntryRow(i + 1, entries[i]),
               ],
               if (showNewEntryRow) ...[
-                if (entries.isNotEmpty) Divider(height: 0.5, thickness: 0.5, color: colors.hairlineSoft),
+                if (entries.isNotEmpty) const Divider(),
                 _buildEntryRow(entries.length + 1, null),
               ],
             ],

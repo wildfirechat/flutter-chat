@@ -62,9 +62,11 @@ class ForwardTargetList extends StatelessWidget {
         _CreateGroupEntry(onTap: onCreateGroupTap),
         _SectionHeader(AppLocalizations.of(context)!.recentChats),
         Expanded(
-          child: ListView.builder(
+          child: ListView.separated(
             itemCount: conversationList.length,
-            itemExtent: LayoutScale.watchScale(context, 64.0, cap: LayoutScale.rowCap),
+            separatorBuilder: (context, __) => Divider(
+              indent: 16.0 + LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap) + 12.0,
+            ),
             itemBuilder: (context, i) {
               ConversationInfo info = conversationList[i];
               return _buildLiveTile(info.conversation, showCheckbox: true);

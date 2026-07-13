@@ -71,11 +71,7 @@ class OptionSwitchItem extends StatelessWidget {
             ),
             // 桌面端行间不画线,与 OptionItem 保持一致(同一组里混着有线/无线会很花)。
             if (showBottomDivider && !isDesktopShell)
-              Container(
-                margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-                height: 0.5,
-                color: colors.hairline,
-              ),
+              const Divider(indent: 12, endIndent: 12),
           ],
         ),
       ),

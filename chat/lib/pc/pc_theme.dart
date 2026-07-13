@@ -135,9 +135,8 @@ class PcTheme {
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         visualDensity: VisualDensity.compact,
       ),
-      // 按钮不在这里覆盖:形态的平台分叉在 app_theme.dart(那里挂在 MaterialApp 主题上,
+      // 按钮、分割线不在这里覆盖:基线在 app_theme.dart(那里挂在 MaterialApp 主题上,
       // 能覆盖到 PcTheme 子树之外的 PC 登录窗/根导航对话框),base.copyWith 自动继承。
-      dividerTheme: DividerThemeData(color: colors.hairline, thickness: 0.5, space: 0.5),
     );
   }
 }

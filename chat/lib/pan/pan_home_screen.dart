@@ -463,7 +463,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
       onRefresh: _loadFiles,
       child: ListView.separated(
         itemCount: _files.length,
-        separatorBuilder: (_, __) => const Divider(height: 1),
+        separatorBuilder: (_, __) => const Divider(),
         itemBuilder: (context, index) {
           final file = _files[index];
           return _buildFileItem(file);

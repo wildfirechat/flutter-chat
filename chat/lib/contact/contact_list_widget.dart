@@ -340,17 +340,11 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                 ],
               ),
             ),
-            Container(
-              margin: EdgeInsets.fromLTRB(
-                isDesktopShell
-                    ? 12.0
-                    : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
-                0.0,
-                12.0,
-                0.0,
-              ),
-              height: _kDividerHeight,
-              color: context.colors.hairlineSoft,
+            Divider(
+              indent: isDesktopShell
+                  ? 12.0
+                  : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
+              endIndent: 12.0,
             ),
           ],
         ),
@@ -396,17 +390,11 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                 ],
               ),
             ),
-            Container(
-              margin: EdgeInsets.fromLTRB(
-                isDesktopShell
-                    ? 12.0
-                    : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
-                0.0,
-                12.0,
-                0.0,
-              ),
-              height: _kDividerHeight,
-              color: context.colors.hairlineSoft,
+            Divider(
+              indent: isDesktopShell
+                  ? 12.0
+                  : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
+              endIndent: 12.0,
             ),
           ],
         ),
@@ -509,17 +497,11 @@ class _ContactListItemState extends State<ContactListItem> {
               child: contactRow,
             ),
           ),
-          Container(
-            margin: EdgeInsets.fromLTRB(
-              isDesktopShell
-                  ? 12.0
-                  : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
-              0.0,
-              12.0,
-              0.0,
-            ),
-            height: _kDividerHeight,
-            color: context.colors.hairlineSoft,
+          Divider(
+            indent: isDesktopShell
+                ? 12.0
+                : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
+            endIndent: 12.0,
           ),
         ],
       ),

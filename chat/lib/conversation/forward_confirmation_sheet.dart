@@ -112,9 +112,8 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                           ),
                         ),
                       ),
-                      Divider(
-                        color: context.colors.hairlineSoft,
-                      ),
+                      // height 16:留言框与底部按钮之间要留呼吸空间,不只是画线。
+                      const Divider(height: 16),
                       // 成对通栏操作(灰底次要 + 实底主行动),叠大档。
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -161,11 +160,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
       child: ListView.separated(
         shrinkWrap: true,
         itemCount: widget.targets.length,
-        separatorBuilder: (_, __) => Divider(
-          height: 0.4,
-          indent: 68,
-          color: context.colors.hairlineSoft,
-        ),
+        separatorBuilder: (_, __) => const Divider(indent: 68),
         itemBuilder: (context, index) {
           return _buildSingleTarget(widget.targets[index]);
         },

@@ -221,7 +221,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
           onChanged: viewModel.search,
         ),
         if (widget.showOrganizationEntry && !viewModel.isSearching) _buildOrganizationEntry(context),
-        Divider(height: 0.5, thickness: 0.5, color: context.colors.hairline),
+        const Divider(),
         Expanded(child: _buildContactList(context, viewModel)),
       ],
     );
@@ -419,7 +419,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               hint: '搜索成员',
               onChanged: orgVm.search,
             ),
-            Divider(height: 0.5, thickness: 0.5, color: context.colors.hairline),
+            const Divider(),
             Expanded(child: _buildOrgBody(context, orgVm, pickViewModel)),
           ],
         );
@@ -615,7 +615,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
             style: AppText.sm.copyWith(color: context.colors.textSecondary),
           ),
         ),
-        Divider(height: 0.5, thickness: 0.5, color: context.colors.hairline),
+        const Divider(),
         Expanded(
           child: picked.isEmpty
               ? Center(

@@ -584,7 +584,7 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
             },
             child: ListView.separated(
               itemCount: _files.length + (_hasMore ? 1 : 0),
-              separatorBuilder: (context, index) => const Divider(height: 1),
+              separatorBuilder: (context, index) => const Divider(),
               itemBuilder: (context, index) {
                 if (index == _files.length) {
                   return const Center(child: CircularProgressIndicator());

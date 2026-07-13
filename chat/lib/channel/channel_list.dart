@@ -51,8 +51,11 @@ class ChannelListState extends State<ChannelList> {
             ),
       body: SafeArea(child:
       channelIds == null ? const Center(child: CircularProgressIndicator(),) :
-      ListView.builder(
+      ListView.separated(
         itemCount: channelIds!.length,
+        separatorBuilder: (context, __) => Divider(
+          indent: 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 12.0,
+        ),
         itemBuilder: (BuildContext context, int index) { return _buildRow(context, index);},)
       ),
     );

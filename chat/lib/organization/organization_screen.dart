@@ -284,12 +284,15 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
 
   /// 部门行之间的分割线,左端与标题文字对齐(16 内边距 + 图标宽 + 16 标题间距)。
   Widget _buildTileDivider() {
-    return Container(
-      margin: EdgeInsets.only(
-        left: 16.0 + LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap) + 16.0,
-      ),
-      height: 0.5,
-      color: context.colors.hairlineSoft,
+    return Divider(
+      indent: 16.0 + LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap) + 16.0,
+    );
+  }
+
+  /// 员工行之间的分割线,左端与姓名文字对齐(16 内边距 + 头像宽 + 16 姓名间距)。
+  Widget _buildEmployeeDivider() {
+    return Divider(
+      indent: 16.0 + LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap) + 16.0,
     );
   }
 
@@ -374,7 +377,10 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           ],
           if (employees.isNotEmpty) ...[
             _buildSectionHeader(l10n.members),
-            ...employees.map(_buildEmployeeTile),
+            for (int i = 0; i < employees.length; i++) ...[
+              if (i > 0) _buildEmployeeDivider(),
+              _buildEmployeeTile(employees[i]),
+            ],
           ],
         ],
       ),
@@ -414,7 +420,12 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     return Expanded(
       child: ListView(
         padding: const EdgeInsets.symmetric(vertical: 0.0),
-        children: viewModel.searchResults.map(_buildEmployeeTile).toList(),
+        children: [
+          for (int i = 0; i < viewModel.searchResults.length; i++) ...[
+            if (i > 0) _buildEmployeeDivider(),
+            _buildEmployeeTile(viewModel.searchResults[i]),
+          ],
+        ],
       ),
     );
   }
@@ -470,7 +481,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                   // 移动端的面包屑仍是正文里的一条(标题栏归 AppBar);桌面端已经放进标题栏了。
                   if (!isDesktopShell) ...[
                     _buildBreadcrumbs(),
-                    const Divider(height: 1),
+                    const Divider(),
                   ],
                   _buildSearchBar(),
                   if (viewModel.isLoading && viewModel.searchQuery.isEmpty)

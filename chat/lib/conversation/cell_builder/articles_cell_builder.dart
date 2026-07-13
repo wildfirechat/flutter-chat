@@ -61,7 +61,7 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
               ),
             ),
             // 分隔线
-            Divider(height: 1, color: context.colors.hairlineSoft),
+            const Divider(),
             // 文章列表
             for (int i = 0; i < articles.length && i < 3; i++) ...[
               Padding(
@@ -91,7 +91,7 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
                 ),
               ),
               if (i < articles.length - 1 && i < 2)
-                Divider(height: 1, indent: 12, endIndent: 12, color: context.colors.hairlineSoft),
+                const Divider(indent: 12, endIndent: 12),
             ],
             if (articles.length > 3)
               Padding(

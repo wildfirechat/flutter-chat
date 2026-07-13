@@ -35,11 +35,7 @@ class OptionButtonItem extends StatelessWidget {
           ),
         ),
         // 桌面端行间不画线,与 OptionItem 保持一致。
-        if (showBottomDivider && !isDesktopShell)
-          Container(
-            height: 0.5,
-            color: context.colors.hairline,
-          ),
+        if (showBottomDivider && !isDesktopShell) const Divider(),
       ],
     );
   }

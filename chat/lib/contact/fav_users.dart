@@ -39,8 +39,9 @@ class FavUsersPageState extends State<FavUsersPage> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.favFriend),
       ),
-      body: ListView.builder(
+      body: ListView.separated(
         itemCount: favUserIds.length,
+        separatorBuilder: (_, __) => const Divider(indent: 72),
         itemBuilder: (context, index) {
           return _buildUserItem(favUserIds[index]);
         },

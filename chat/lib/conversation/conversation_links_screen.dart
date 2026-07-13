@@ -116,7 +116,7 @@ class _ConversationLinksScreenState extends State<ConversationLinksScreen> {
                       return ListView.separated(
                         physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: _links.length + (_hasMore ? 1 : 0),
-                        separatorBuilder: (context, index) => const Divider(height: 1),
+                        separatorBuilder: (context, index) => const Divider(),
                         itemBuilder: (context, index) {
                           if (index == _links.length) {
                             return const Center(child: CircularProgressIndicator());

@@ -96,8 +96,9 @@ class SearchUserDelegate extends SearchDelegate<String> {
               return Center(child: Text(l10n.searchUserNotFound),);
             } else {
               searchedUsers = snapshot.data!;
-              return ListView.builder(
+              return ListView.separated(
                 itemCount: searchedUsers.length,
+                separatorBuilder: (_, __) => const Divider(indent: 56),
                 itemBuilder: (context, index) => _buildRow(context, index),
               );
             }

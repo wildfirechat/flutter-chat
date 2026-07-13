@@ -74,7 +74,7 @@ class CollectionCellBuilder extends PortraitCellBuilder {
             ),
           ],
           const SizedBox(height: 8),
-          Opacity(opacity: 0.15, child: Divider(height: 0.5, thickness: 0.5, color: onBubble)),
+          Opacity(opacity: 0.15, child: Divider(color: onBubble)),
           const SizedBox(height: 8),
           if (preview.isEmpty)
             Opacity(
@@ -112,7 +112,7 @@ class CollectionCellBuilder extends PortraitCellBuilder {
               ],
             ),
           const SizedBox(height: 8),
-          Opacity(opacity: 0.15, child: Divider(height: 0.5, thickness: 0.5, color: onBubble)),
+          Opacity(opacity: 0.15, child: Divider(color: onBubble)),
           const SizedBox(height: 8),
           Text(
             _actionText(l10n),

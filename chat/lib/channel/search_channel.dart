@@ -69,11 +69,8 @@ class SearchChannelDelegate extends SearchDelegate<String> {
             Expanded(child: Text(channelInfo.name!)),
           ],
         ),
-        Container(
-          margin: const EdgeInsets.fromLTRB(12.0, 4.0, 12.0, 4.0),
-          height: 1,
-          color: const Color(0xffebebeb),
-        ),
+        // height 9 保留原 4+1+4 的行间留白。
+        const Divider(height: 9, indent: 12, endIndent: 12),
       ],),
       onTap: () => _toChannelInfoView(context, channelInfo),
     );

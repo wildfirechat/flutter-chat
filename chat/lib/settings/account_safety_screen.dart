@@ -32,7 +32,7 @@ class AccountSafetyScreen extends StatelessWidget {
                   );
                 },
               ),
-              const Divider(height: 1, indent: 56),
+              const Divider(indent: 56),
               OptionItem(
                 l10n.blacklist,
                 leftImage: const Icon(Icons.block, color: Colors.red, size: 20),

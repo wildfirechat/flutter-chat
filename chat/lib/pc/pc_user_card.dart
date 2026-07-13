@@ -96,7 +96,8 @@ class _PcUserCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Divider(indent: 16, endIndent: 16),
+            // height 16:信息区与操作区之间要留呼吸空间,不只是画线。
+            const Divider(height: 16, indent: 16, endIndent: 16),
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
               // 按钮宽度包住文字即可,不平分整行;译文过长时换行而非溢出。

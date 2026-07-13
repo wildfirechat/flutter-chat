@@ -64,11 +64,7 @@ class CardCellBuilder extends PortraitCellBuilder {
           padding,
           padding,
           padding,
-          Container(
-            margin: const EdgeInsets.fromLTRB(4.0, 0.0, 4.0, 0.0),
-            height: 0.5,
-            color: const Color(0xdbdbdbdb),
-          ),
+          const Divider(indent: 4, endIndent: 4),
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 5, 0, 0),
             child: Text(

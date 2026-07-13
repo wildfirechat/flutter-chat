@@ -14,6 +14,7 @@ import '../viewmodel/user_view_model.dart';
 import '../widget/portrait.dart';
 import '../app_navigator.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/utils/layout_scale.dart';
 
 /// 入群申请管理页面
 ///
@@ -196,9 +197,12 @@ class _JoinGroupRequestScreenState extends State<JoinGroupRequestScreen> {
             ? const Center(child: CircularProgressIndicator())
             : _requests.isEmpty
                 ? Center(child: Text(l10n.noJoinGroupRequests))
-                : ListView.builder(
+                : ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: _requests.length,
+                    separatorBuilder: (context, __) => Divider(
+                      indent: 16.0 + LayoutScale.watchScale(context, 44.0, cap: LayoutScale.iconCap) + 16.0,
+                    ),
                     itemBuilder: (context, index) {
                       final request = _requests[index];
                       return _JoinGroupRequestItem(

@@ -41,8 +41,11 @@ class SubscribedChannelsPageState extends State<SubscribedChannelsPage> {
       appBar: AppBar(
         title: const Text('频道'),
       ),
-      body: ListView.builder(
+      body: ListView.separated(
         itemCount: channelIds.length,
+        separatorBuilder: (context, __) => Divider(
+          indent: 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 12.0,
+        ),
         itemBuilder: (context, index) {
           return _buildChannelItem(channelIds[index]);
         },

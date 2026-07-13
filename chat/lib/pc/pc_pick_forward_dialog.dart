@@ -330,7 +330,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
               ],
             ),
           ),
-          Divider(color: colors.hairlineSoft, height: 1),
+          const Divider(),
           Expanded(
             flex: 3,
             child: tiles.isEmpty
@@ -357,7 +357,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
             ),
           ),
           const SizedBox(height: 12),
-          Divider(color: colors.hairlineSoft, height: 1),
+          const Divider(),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
             child: Row(

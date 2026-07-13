@@ -290,14 +290,10 @@ class _PickUserScreenState extends State<PickUserScreen> {
                         onTap: () => _openOrganizationPicker(context),
                       ),
                     ),
-                    Container(
-                      height: 0.5,
-                      margin: EdgeInsets.only(
-                        left: isDesktopShell
-                            ? 16.0
-                            : 16.0 + LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap) + 16.0,
-                      ),
-                      color: context.colors.hairlineSoft,
+                    Divider(
+                      indent: isDesktopShell
+                          ? 16.0
+                          : 16.0 + LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap) + 16.0,
                     ),
                   ],
                   Container(
@@ -552,11 +548,7 @@ class SelectableUserItem extends StatelessWidget {
             ),
           ),
         content,
-        Container(
-          margin: EdgeInsets.only(left: leftIndent),
-          height: 0.5,
-          color: context.colors.hairlineSoft,
-        ),
+        Divider(indent: leftIndent),
       ],
     );
 

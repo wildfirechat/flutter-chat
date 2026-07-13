@@ -168,11 +168,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
         const SizedBox(height: 20),
         SizedBox(width: 80, height: 80, child: info.portrait != null && info.portrait!.isNotEmpty ? Image.network(MediaUrlRedirector.redirect(info.portrait!)) : Container(color: Colors.grey),),
         const SizedBox(height: 20),
-        Container(
-          margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-          height: 0.5,
-          color: const Color(0xdbdbdbdb),
-        )
+        const Divider(indent: 12, endIndent: 12),
       ],);
     } else if(index == 1) {
       return Column(children: [
@@ -180,11 +176,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
           Text("名称:  ", style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
           Text(info.name ?? '', style: AppText.lg,),
         ],),),
-        Container(
-          margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-          height: 0.5,
-          color: const Color(0xdbdbdbdb),
-        ),
+        const Divider(indent: 12, endIndent: 12),
       ],);
     } else if(index == 2) {
       return Column(children: [
@@ -192,11 +184,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
           Text("拥有者:  ", style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
           Text(info.owner ?? '', style: AppText.lg,),
         ],),),
-        Container(
-          margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-          height: 0.5,
-          color: const Color(0xdbdbdbdb),
-        ),
+        const Divider(indent: 12, endIndent: 12),
       ],);
     } else if(index == 3) {
       return Column(children: [
@@ -204,11 +192,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
           Text("描述:  ", style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
           Expanded(child: Text(info.desc ?? '', style: AppText.lg,)),
         ],),),
-        Container(
-          margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-          height: 0.5,
-          color: const Color(0xdbdbdbdb),
-        ),
+        const Divider(indent: 12, endIndent: 12),
       ],);
     } else if(index == 4) {
       return GestureDetector(
@@ -217,11 +201,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
             height: 48,
             child: Center(child: Text("清空历史消息", style: AppText.lg.copyWith(color: Colors.red),)),
           ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-            height: 0.5,
-            color: const Color(0xdbdbdbdb),
-          ),
+          const Divider(indent: 12, endIndent: 12),
         ],),
         onTap: () {},
       );
@@ -232,11 +212,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
             height: 48,
             child: Center(child: Text(isListened?"取消订阅":"订阅频道", style: AppText.lg.copyWith(color: Colors.red),)),
           ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-            height: 0.5,
-            color: const Color(0xdbdbdbdb),
-          ),
+          const Divider(indent: 12, endIndent: 12),
         ],),
         onTap: () {
             Imclient.listenChannel(info.channelId, !isListened, () {
@@ -256,11 +232,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
             height: 48,
             child: Center(child: Text("进入会话", style: AppText.lg.copyWith(color: Colors.blue),)),
           ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(12.0, 0.0, 12.0, 0.0),
-            height: 0.5,
-            color: const Color(0xdbdbdbdb),
-          ),
+          const Divider(indent: 12, endIndent: 12),
         ],),
         onTap: () {
           openConversation(context, Conversation(conversationType: ConversationType.Channel, target: info.channelId));

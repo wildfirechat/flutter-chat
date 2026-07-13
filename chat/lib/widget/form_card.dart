@@ -26,7 +26,7 @@ class FormCard extends StatelessWidget {
     final rows = <Widget>[];
     for (int i = 0; i < children.length; i++) {
       if (i > 0) {
-        rows.add(Divider(height: 0.5, thickness: 0.5, color: colors.hairlineSoft));
+        rows.add(const Divider());
       }
       rows.add(children[i]);
     }

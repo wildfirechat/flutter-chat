@@ -48,7 +48,6 @@ class AppTheme {
         foregroundColor: colors.textPrimary,
         systemOverlayStyle: systemOverlayStyle(Brightness.light),
       ),
-      dividerTheme: base.dividerTheme.copyWith(color: colors.hairlineSoft),
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: colors.accent,
         selectionColor: colors.accent.withValues(alpha: 0.35),
@@ -86,7 +85,6 @@ class AppTheme {
         foregroundColor: colors.textPrimary,
         systemOverlayStyle: systemOverlayStyle(Brightness.dark),
       ),
-      dividerTheme: base.dividerTheme.copyWith(color: colors.hairlineSoft),
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: colors.accent,
         selectionColor: colors.accent.withValues(alpha: 0.35),
@@ -97,6 +95,12 @@ class AppTheme {
 
   static ThemeData _withColors(ThemeData base, AppColors colors) => base.copyWith(
         extensions: <ThemeExtension<dynamic>>[colors],
+        // ---- 分割线基线 ----
+        // 列表行间线全端统一:hairlineSoft、0.5 粗、0.5 占位,裸 `const Divider()`
+        // 即标准形态,调用点不要再传 color/thickness;内容对齐传 indent,
+        // 需要留白的场景显式传 height(例如气泡内 Divider(height: 16))。
+        // hairline 留给结构边界(header 下边线、栏间分隔),用 Border/VerticalDivider 画。
+        dividerTheme: DividerThemeData(color: colors.hairlineSoft, thickness: 0.5, space: 0.5),
         checkboxTheme: checkboxTheme(colors, base.brightness),
         switchTheme: switchTheme(colors, base.brightness),
         filledButtonTheme: FilledButtonThemeData(style: buttonShapeStyle()),

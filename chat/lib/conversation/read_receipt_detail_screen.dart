@@ -166,8 +166,11 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
   }
 
   Widget _buildUserList(List<UserInfo> users) {
-    return ListView.builder(
+    return ListView.separated(
       itemCount: users.length,
+      separatorBuilder: (context, __) => Divider(
+        indent: 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
+      ),
       itemBuilder: (context, index) {
         var user = users[index];
         return Material(
