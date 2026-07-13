@@ -158,6 +158,9 @@ class MainWindowEvents {
   /// Imclient.isLogined。
   static const String isLogined = 'imclient.isLogined';
 
+  /// Imclient.serverDeltaTime。
+  static const String serverDeltaTime = 'imclient.serverDeltaTime';
+
   /// 通话窗口状态变化（可选）。
   static const String voipStatusChanged = 'voip.statusChanged';
 

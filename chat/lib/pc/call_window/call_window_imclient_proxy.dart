@@ -58,6 +58,8 @@ class CallWindowImclientChannel implements ImclientChannel {
         return await _invokeSimple(MainWindowEvents.connectionStatus, arguments) as T?;
       case 'isLogined':
         return await _invokeSimple(MainWindowEvents.isLogined, arguments) as T?;
+      case 'serverDeltaTime':
+        return await _invokeSimple(MainWindowEvents.serverDeltaTime, arguments) as T?;
       default:
         throw UnsupportedError(
           '$_tag method $method is not supported in call window',

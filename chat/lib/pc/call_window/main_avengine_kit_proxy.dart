@@ -356,6 +356,7 @@ class MainAvEngineKitProxy {
     channel.register(MainWindowEvents.clientId, (_) async => await Imclient.clientId);
     channel.register(MainWindowEvents.connectionStatus, (_) async => await Imclient.connectionStatus);
     channel.register(MainWindowEvents.isLogined, (_) async => await Imclient.isLogined);
+    channel.register(MainWindowEvents.serverDeltaTime, (_) async => await Imclient.serverDeltaTime);
     channel.register(MainWindowEvents.voipStatusChanged, _handleVoipStatusChanged);
     channel.register(MainWindowEvents.windowClosed, _handleWindowClosed);
   }
