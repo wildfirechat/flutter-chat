@@ -206,6 +206,396 @@ abstract class AppLocalizations {
   /// **'会议功能暂未支持'**
   String get conferenceNotSupport;
 
+  /// No description provided for @conferenceTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'会议'**
+  String get conferenceTitle;
+
+  /// No description provided for @conferenceCreate.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建会议'**
+  String get conferenceCreate;
+
+  /// No description provided for @conferenceJoin.
+  ///
+  /// In zh, this message translates to:
+  /// **'加入会议'**
+  String get conferenceJoin;
+
+  /// No description provided for @conferenceOrder.
+  ///
+  /// In zh, this message translates to:
+  /// **'预定会议'**
+  String get conferenceOrder;
+
+  /// No description provided for @conferenceMemberList.
+  ///
+  /// In zh, this message translates to:
+  /// **'参会成员'**
+  String get conferenceMemberList;
+
+  /// No description provided for @conferenceHandUp.
+  ///
+  /// In zh, this message translates to:
+  /// **'举手'**
+  String get conferenceHandUp;
+
+  /// No description provided for @conferenceHandUpDone.
+  ///
+  /// In zh, this message translates to:
+  /// **'已举手'**
+  String get conferenceHandUpDone;
+
+  /// No description provided for @conferencePutDown.
+  ///
+  /// In zh, this message translates to:
+  /// **'放下'**
+  String get conferencePutDown;
+
+  /// No description provided for @conferencePutDownAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部放下'**
+  String get conferencePutDownAll;
+
+  /// No description provided for @conferenceApplyAudio.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请开麦'**
+  String get conferenceApplyAudio;
+
+  /// No description provided for @conferenceApplyVideo.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请开摄像头'**
+  String get conferenceApplyVideo;
+
+  /// No description provided for @conferenceApprove.
+  ///
+  /// In zh, this message translates to:
+  /// **'同意'**
+  String get conferenceApprove;
+
+  /// No description provided for @conferenceReject.
+  ///
+  /// In zh, this message translates to:
+  /// **'拒绝'**
+  String get conferenceReject;
+
+  /// No description provided for @conferenceApproveAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部同意'**
+  String get conferenceApproveAll;
+
+  /// No description provided for @conferenceRejectAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部拒绝'**
+  String get conferenceRejectAll;
+
+  /// No description provided for @conferenceMuteAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全体静音'**
+  String get conferenceMuteAll;
+
+  /// No description provided for @conferenceUnmuteAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消全体静音'**
+  String get conferenceUnmuteAll;
+
+  /// No description provided for @conferenceFocus.
+  ///
+  /// In zh, this message translates to:
+  /// **'焦点'**
+  String get conferenceFocus;
+
+  /// No description provided for @conferenceSetFocus.
+  ///
+  /// In zh, this message translates to:
+  /// **'设为焦点'**
+  String get conferenceSetFocus;
+
+  /// No description provided for @conferenceCancelFocus.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消焦点用户'**
+  String get conferenceCancelFocus;
+
+  /// No description provided for @conferenceAudience.
+  ///
+  /// In zh, this message translates to:
+  /// **'观众'**
+  String get conferenceAudience;
+
+  /// No description provided for @conferenceInviteStage.
+  ///
+  /// In zh, this message translates to:
+  /// **'邀请上麦'**
+  String get conferenceInviteStage;
+
+  /// No description provided for @conferenceSetAudience.
+  ///
+  /// In zh, this message translates to:
+  /// **'设为观众'**
+  String get conferenceSetAudience;
+
+  /// No description provided for @conferenceKick.
+  ///
+  /// In zh, this message translates to:
+  /// **'踢出会议'**
+  String get conferenceKick;
+
+  /// No description provided for @conferenceScreenShare.
+  ///
+  /// In zh, this message translates to:
+  /// **'共享'**
+  String get conferenceScreenShare;
+
+  /// No description provided for @conferenceGridView.
+  ///
+  /// In zh, this message translates to:
+  /// **'网格视图'**
+  String get conferenceGridView;
+
+  /// No description provided for @conferenceSpeakerView.
+  ///
+  /// In zh, this message translates to:
+  /// **'发言者视图'**
+  String get conferenceSpeakerView;
+
+  /// No description provided for @conferenceJoinMeeting.
+  ///
+  /// In zh, this message translates to:
+  /// **'加入会议'**
+  String get conferenceJoinMeeting;
+
+  /// No description provided for @conferenceMeetingEnded.
+  ///
+  /// In zh, this message translates to:
+  /// **'会议已结束'**
+  String get conferenceMeetingEnded;
+
+  /// No description provided for @conferenceFavorites.
+  ///
+  /// In zh, this message translates to:
+  /// **'即将开始'**
+  String get conferenceFavorites;
+
+  /// No description provided for @conferenceHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'历史记录'**
+  String get conferenceHistory;
+
+  /// No description provided for @conferenceNoFavorites.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无收藏会议'**
+  String get conferenceNoFavorites;
+
+  /// No description provided for @conferenceNoHistory.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无历史记录'**
+  String get conferenceNoHistory;
+
+  /// No description provided for @conferenceStartTime.
+  ///
+  /// In zh, this message translates to:
+  /// **'开始时间'**
+  String get conferenceStartTime;
+
+  /// No description provided for @conferenceEndTime.
+  ///
+  /// In zh, this message translates to:
+  /// **'结束时间'**
+  String get conferenceEndTime;
+
+  /// No description provided for @conferenceEnableMic.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启麦克风'**
+  String get conferenceEnableMic;
+
+  /// No description provided for @conferenceEnableCamera.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启摄像头'**
+  String get conferenceEnableCamera;
+
+  /// No description provided for @conferenceFav.
+  ///
+  /// In zh, this message translates to:
+  /// **'收藏会议'**
+  String get conferenceFav;
+
+  /// No description provided for @conferenceDestroy.
+  ///
+  /// In zh, this message translates to:
+  /// **'销毁会议'**
+  String get conferenceDestroy;
+
+  /// No description provided for @conferenceDestroyConfirm.
+  ///
+  /// In zh, this message translates to:
+  /// **'销毁后其他成员将无法加入，确认销毁？'**
+  String get conferenceDestroyConfirm;
+
+  /// No description provided for @conferenceCopied.
+  ///
+  /// In zh, this message translates to:
+  /// **'会议号已复制'**
+  String get conferenceCopied;
+
+  /// No description provided for @conferenceRequestUnmuteAudio.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请解除静音'**
+  String get conferenceRequestUnmuteAudio;
+
+  /// No description provided for @conferenceRequestUnmuteVideo.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请打开摄像头'**
+  String get conferenceRequestUnmuteVideo;
+
+  /// No description provided for @conferenceRequestUnmuteAudioDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'主持人不允许解除静音，您可以向主持人申请解除静音'**
+  String get conferenceRequestUnmuteAudioDesc;
+
+  /// No description provided for @conferenceRequestUnmuteVideoDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'主持人不允许打开摄像头，您可以向主持人申请打开摄像头'**
+  String get conferenceRequestUnmuteVideoDesc;
+
+  /// No description provided for @conferenceHostFocusSet.
+  ///
+  /// In zh, this message translates to:
+  /// **'主持人已设置了焦点用户'**
+  String get conferenceHostFocusSet;
+
+  /// No description provided for @conferenceCreated.
+  ///
+  /// In zh, this message translates to:
+  /// **'会议创建成功'**
+  String get conferenceCreated;
+
+  /// No description provided for @conferenceCreateFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建会议失败'**
+  String get conferenceCreateFailed;
+
+  /// No description provided for @conferenceJoinFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'加入会议失败'**
+  String get conferenceJoinFailed;
+
+  /// No description provided for @conferenceOrdered.
+  ///
+  /// In zh, this message translates to:
+  /// **'预定成功'**
+  String get conferenceOrdered;
+
+  /// No description provided for @conferenceOrderFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'预定失败'**
+  String get conferenceOrderFailed;
+
+  /// No description provided for @conferenceInputTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入会议标题'**
+  String get conferenceInputTitle;
+
+  /// No description provided for @conferenceOnlyCreate.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅创建'**
+  String get conferenceOnlyCreate;
+
+  /// No description provided for @conferenceCreateAndJoin.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建并加入'**
+  String get conferenceCreateAndJoin;
+
+  /// No description provided for @conferenceAudioOnly.
+  ///
+  /// In zh, this message translates to:
+  /// **'仅音频'**
+  String get conferenceAudioOnly;
+
+  /// No description provided for @conferenceDefaultAudience.
+  ///
+  /// In zh, this message translates to:
+  /// **'默认观众'**
+  String get conferenceDefaultAudience;
+
+  /// No description provided for @conferenceAdvanced.
+  ///
+  /// In zh, this message translates to:
+  /// **'高级版'**
+  String get conferenceAdvanced;
+
+  /// No description provided for @conferenceRecord.
+  ///
+  /// In zh, this message translates to:
+  /// **'录制'**
+  String get conferenceRecord;
+
+  /// No description provided for @conferenceAllowTurnOnMic.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许成员自助开麦'**
+  String get conferenceAllowTurnOnMic;
+
+  /// No description provided for @conferenceEnablePassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用密码'**
+  String get conferenceEnablePassword;
+
+  /// No description provided for @conferencePassword.
+  ///
+  /// In zh, this message translates to:
+  /// **'会议密码'**
+  String get conferencePassword;
+
+  /// No description provided for @conferenceEndTimeInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'结束时间不能早于当前时间'**
+  String get conferenceEndTimeInvalid;
+
+  /// No description provided for @conferenceTimeInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'结束时间不能早于开始时间'**
+  String get conferenceTimeInvalid;
+
+  /// No description provided for @conferenceSelectStartTime.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择开始时间'**
+  String get conferenceSelectStartTime;
+
+  /// No description provided for @conferenceSelectEndTime.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择结束时间'**
+  String get conferenceSelectEndTime;
+
   /// No description provided for @groupInfo.
   ///
   /// In zh, this message translates to:

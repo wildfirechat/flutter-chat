@@ -7,6 +7,7 @@ import 'package:avenginekit/engine/call_session_callback.dart';
 import 'package:avenginekit/engine/call_state.dart';
 import 'package:avenginekit/engine/call_end_reason.dart';
 import 'package:avenginekit/engine/participant_profile.dart';
+import 'package:avenginekit/engine/video_type.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/theme/app_colors.dart';
 
 import 'conference_manager.dart';
 import 'conference_participant_list_view.dart';
@@ -31,6 +33,15 @@ class _ParticipantItem {
   int volume = 0;
 
   _ParticipantItem({required this.userId, required this.renderer});
+}
+
+extension _FirstWhereOrNullExtension<E> on Iterable<E> {
+  E? firstWhereOrNull(bool Function(E) test) {
+    for (var element in this) {
+      if (test(element)) return element;
+    }
+    return null;
+  }
 }
 
 class ConferenceCallScreen extends StatefulWidget {
@@ -50,9 +61,9 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   bool _isMicMuted = false;
   bool _isCameraOff = false;
   bool _isSpeakerOn = false;
-  bool _callEnded = false;
   bool _showMemberList = false;
   int _currentLayout = 0; // 0 grid, 1 speaker
+  String? _localFocusUserId;
   Duration _duration = Duration.zero;
   Timer? _timer;
   late ConferenceManager _conferenceManager;
@@ -68,6 +79,25 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     _conferenceManager.setup(_session.callId, _session.pin, onStateChanged: () {
       if (mounted) setState(() {});
     });
+    _conferenceManager.onLocalMuteRequest = (audio, mute) {
+      if (audio) {
+        if (_isMicMuted != mute) {
+          _session.muteAudio(mute);
+          setState(() {
+            _isMicMuted = mute;
+            if (_selfItem != null) _selfItem!.audioMuted = mute;
+          });
+        }
+      } else {
+        if (_isCameraOff != mute) {
+          _session.muteVideo(mute);
+          setState(() {
+            _isCameraOff = mute;
+            if (_selfItem != null) _selfItem!.videoMuted = mute;
+          });
+        }
+      }
+    };
     _initSelf();
     _initRemoteParticipants();
   }
@@ -171,21 +201,80 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   }
 
   void _onToggleMic() {
-    _session.muteAudio(!_isMicMuted);
+    bool nextMute = !_isMicMuted;
+    if (!nextMute && _session.audience && !_conferenceManager.isOwner) {
+      var allowSwitch = _conferenceManager.conferenceInfo['allowSwitchMode'] == true;
+      if (!allowSwitch) {
+        _requestUnmute(true);
+        return;
+      }
+    }
+    _setMicMuted(nextMute);
+  }
+
+  void _setMicMuted(bool mute) {
+    _session.muteAudio(mute);
     setState(() {
-      _isMicMuted = !_isMicMuted;
+      _isMicMuted = mute;
       if (_selfItem != null) {
-        _selfItem!.audioMuted = _isMicMuted;
+        _selfItem!.audioMuted = mute;
       }
     });
   }
 
+  void _requestUnmute(bool audio) {
+    var allow = audio ? _conferenceManager.allowUnmuteAudio : _conferenceManager.allowUnmuteVideo;
+    if (allow) {
+      if (audio) {
+        _setMicMuted(false);
+      } else {
+        _setCameraOff(false);
+      }
+      return;
+    }
+    var loc = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(audio ? loc.conferenceRequestUnmuteAudio : loc.conferenceRequestUnmuteVideo),
+        content: Text(audio
+            ? loc.conferenceRequestUnmuteAudioDesc
+            : loc.conferenceRequestUnmuteVideoDesc),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(loc.cancel),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _conferenceManager.applyUnmute(audio, false);
+            },
+            child: Text(loc.confirm),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _onToggleCamera() {
-    _session.muteVideo(!_isCameraOff);
+    bool nextOff = !_isCameraOff;
+    if (!nextOff && _session.audience && !_conferenceManager.isOwner) {
+      var allowSwitch = _conferenceManager.conferenceInfo['allowSwitchMode'] == true;
+      if (!allowSwitch) {
+        _requestUnmute(false);
+        return;
+      }
+    }
+    _setCameraOff(nextOff);
+  }
+
+  void _setCameraOff(bool off) {
+    _session.muteVideo(off);
     setState(() {
-      _isCameraOff = !_isCameraOff;
+      _isCameraOff = off;
       if (_selfItem != null) {
-        _selfItem!.videoMuted = _isCameraOff;
+        _selfItem!.videoMuted = off;
       }
     });
   }
@@ -228,6 +317,10 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     setState(() {});
   }
 
+  void _onToggleHandUp() {
+    _conferenceManager.handUp(!_conferenceManager.isHandUp);
+  }
+
   // --- Callbacks ---
 
   @override
@@ -235,10 +328,12 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
 
   @override
   void didCallEndWithReason(CallEndReason reason) {
+    var durationMs = _duration.inMilliseconds;
+    var info = Map<String, dynamic>.from(_conferenceManager.conferenceInfo);
+    if (info.isNotEmpty) {
+      ConferenceManager.addHistory(info, durationMs);
+    }
     if (mounted) {
-      setState(() {
-        _callEnded = true;
-      });
       Future.delayed(const Duration(seconds: 1), () {
         if (!mounted) return;
         final shell = isDesktopShell ? context.read<PCShellViewModel>() : null;
@@ -449,7 +544,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     var speakingName = _speakingUserName;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F121B),
+      backgroundColor: context.colors.primaryBackground,
       body: Stack(
         children: [
           SafeArea(
@@ -461,9 +556,9 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
                     children: [
                       Expanded(
                         child: items.isEmpty
-                            ? const Center(
+                            ? Center(
                                 child: CircularProgressIndicator(
-                                    color: Colors.white))
+                                    color: context.colors.textPrimary))
                             : _currentLayout == 0
                                 ? _buildGrid(items)
                                 : _buildSpeakerLayout(items),
@@ -500,9 +595,9 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _session.title.isNotEmpty ? _session.title : '会议',
+                  _session.title.isNotEmpty ? _session.title : l10n.conferenceTitle,
                   style: AppText.base.copyWith(
-                      color: Colors.white, fontWeight: FontWeight.w600),
+                      color: context.colors.textPrimary, fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
@@ -512,14 +607,14 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
                       : _session.status == CallState.STATUS_INCOMING
                           ? '邀请您加入会议'
                           : '连接中...',
-                  style: AppText.sm.copyWith(color: Colors.white70),
+                  style: AppText.sm.copyWith(color: context.colors.textSecondary),
                 ),
                 if (speakingName.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
                     '正在讲话: $speakingName',
                     style: AppText.sm.copyWith(
-                        color: const Color(0xFF07C160),
+                        color: context.colors.success,
                         fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -527,17 +622,17 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.people_outline, color: Colors.white70),
+            icon: Icon(Icons.people_outline, color: context.colors.textSecondary),
             onPressed: _onToggleMemberList,
-            tooltip: '成员',
+            tooltip: l10n.conferenceMemberList,
           ),
           PopupMenuButton<int>(
-            icon: const Icon(Icons.view_comfy_outlined, color: Colors.white70),
+            icon: Icon(Icons.view_comfy_outlined, color: context.colors.textSecondary),
             tooltip: '布局',
             onSelected: _onLayoutChanged,
             itemBuilder: (context) => [
-              const PopupMenuItem(value: 0, child: Text('网格视图')),
-              const PopupMenuItem(value: 1, child: Text('发言者视图')),
+              PopupMenuItem(value: 0, child: Text(l10n.conferenceGridView)),
+              PopupMenuItem(value: 1, child: Text(l10n.conferenceSpeakerView)),
             ],
           ),
         ],
@@ -546,9 +641,21 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   }
 
   Widget _buildGrid(List<_ParticipantItem> items) {
-    int crossAxisCount = items.length <= 2
+    var focusId = _conferenceManager.currentFocusUser;
+    var sortedItems = List<_ParticipantItem>.from(items);
+    sortedItems.sort((a, b) {
+      if (a.userId == focusId) return -1;
+      if (b.userId == focusId) return 1;
+      if (a.isScreenSharing && !b.isScreenSharing) return -1;
+      if (!a.isScreenSharing && b.isScreenSharing) return 1;
+      if (!a.videoMuted && b.videoMuted) return -1;
+      if (a.videoMuted && !b.videoMuted) return 1;
+      return a.userId.compareTo(b.userId);
+    });
+
+    int crossAxisCount = sortedItems.length <= 2
         ? 1
-        : items.length <= 4
+        : sortedItems.length <= 4
             ? 2
             : 3;
     return GridView.builder(
@@ -559,22 +666,49 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
         mainAxisSpacing: 8,
         childAspectRatio: 1.2,
       ),
-      itemCount: items.length,
-      itemBuilder: (context, index) => _buildParticipantCell(items[index]),
+      itemCount: sortedItems.length,
+      itemBuilder: (context, index) => _buildParticipantCell(sortedItems[index]),
     );
   }
 
-  Widget _buildSpeakerLayout(List<_ParticipantItem> items) {
-    // Find speaker (max volume) or focus user
-    _ParticipantItem? focus;
-    int maxVolume = 0;
-    for (var item in items) {
-      if (item.volume > maxVolume) {
-        maxVolume = item.volume;
-        focus = item;
-      }
+  _ParticipantItem? _resolveFocusItem(List<_ParticipantItem> items) {
+    // 1. 主持人设置的焦点
+    var focusId = _conferenceManager.currentFocusUser;
+    var focusItem = items.firstWhereOrNull((i) => i.userId == focusId && focusId != null && focusId.isNotEmpty);
+    if (focusItem != null) return focusItem;
+
+    // 2. 本地个人焦点
+    var localFocusId = _localFocusUserId ?? _conferenceManager.localFocusUser;
+    var localItem = items.firstWhereOrNull((i) => i.userId == localFocusId && localFocusId != null && localFocusId.isNotEmpty);
+    if (localItem != null) return localItem;
+
+    // 3. 正在屏幕共享者
+    var screenSharer = items.firstWhereOrNull((i) => i.isScreenSharing);
+    if (screenSharer != null) return screenSharer;
+
+    // 4. 第一个未静音且有视频的用户
+    var videoUser = items.firstWhereOrNull((i) => !i.isAudience && !i.videoMuted && i.renderer.srcObject != null);
+    if (videoUser != null) return videoUser;
+
+    return items.firstOrNull;
+  }
+
+  void _applyFocusVideoType(_ParticipantItem? newFocus, _ParticipantItem? oldFocus) {
+    if (oldFocus != null && oldFocus.userId != Imclient.currentUserId && oldFocus.userId.isNotEmpty) {
+      _session.setParticipantVideoType(oldFocus.userId, oldFocus.isScreenSharing, VideoType.SMALL_STREAM);
     }
-    focus ??= items.firstOrNull;
+    if (newFocus != null && newFocus.userId != Imclient.currentUserId && newFocus.userId.isNotEmpty) {
+      _session.setParticipantVideoType(newFocus.userId, newFocus.isScreenSharing, VideoType.BIG_STREAM);
+    }
+  }
+
+  Widget _buildSpeakerLayout(List<_ParticipantItem> items) {
+    var focus = _resolveFocusItem(items);
+    var previousFocus = _previousFocusItem;
+    if (focus?.userId != previousFocus?.userId) {
+      _applyFocusVideoType(focus, previousFocus);
+      _previousFocusItem = focus;
+    }
 
     return Column(
       children: [
@@ -610,93 +744,130 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     );
   }
 
+  _ParticipantItem? _previousFocusItem;
+
   Widget _buildParticipantCell(_ParticipantItem item, {bool isFocus = false}) {
     bool isSelf = item.userId == Imclient.currentUserId;
     bool showVideo = !_session.audioOnly &&
         !item.videoMuted &&
         item.renderer.srcObject != null;
     bool isSpeaking = item.volume > 0 && !item.audioMuted;
+    bool isFocusUser = _conferenceManager.currentFocusUser == item.userId ||
+        (_localFocusUserId ?? _conferenceManager.localFocusUser) == item.userId;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E2638),
-        borderRadius: BorderRadius.circular(12),
-        border: isSpeaking
-            ? Border.all(color: const Color(0xFF07C160), width: 2)
-            : null,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            if (showVideo)
-              RTCVideoView(
-                item.renderer,
-                objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                mirror: isSelf,
-              )
-            else
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF1E2638), Color(0xFF0F121B)],
-                  ),
-                ),
-                child: Center(
-                  child: Portrait(
-                    item.userInfo?.portrait ?? '',
-                    Config.defaultUserPortrait,
-                    width: isFocus ? 96 : 64,
-                    height: isFocus ? 96 : 64,
-                    borderRadius: isFocus ? 48 : 32,
-                  ),
-                ),
-              ),
-            Positioned(
-              bottom: 8,
-              left: 8,
-              right: 8,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (item.audioMuted)
-                    const Icon(Icons.mic_off, color: Colors.white70, size: 16),
-                  if (item.isAudience)
-                    const Padding(
-                      padding: EdgeInsets.only(left: 4),
-                      child: Text('观众', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                    ),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      isSelf ? '我' : _participantName(item.userInfo),
-                      style: AppText.sm.copyWith(color: Colors.white),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (item.volume > 0 && !item.audioMuted)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
+    return GestureDetector(
+      onDoubleTap: () => _onDoubleTapVideo(item),
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.colors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: isSpeaking || isFocusUser
+              ? Border.all(
+                  color: isFocusUser ? context.colors.warning : context.colors.success,
+                  width: 2)
+              : null,
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (showVideo)
+                RTCVideoView(
+                  item.renderer,
+                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                  mirror: isSelf,
+                )
+              else
+                Container(
                   decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.8),
-                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [context.colors.surface, context.colors.primaryBackground],
+                    ),
                   ),
-                  child: const Icon(Icons.volume_up, color: Colors.white, size: 14),
+                  child: Center(
+                    child: Portrait(
+                      item.userInfo?.portrait ?? '',
+                      Config.defaultUserPortrait,
+                      width: isFocus ? 96 : 64,
+                      height: isFocus ? 96 : 64,
+                      borderRadius: isFocus ? 48 : 32,
+                    ),
+                  ),
+                ),
+              Positioned(
+                bottom: 8,
+                left: 8,
+                right: 8,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (item.audioMuted)
+                      Icon(Icons.mic_off, color: context.colors.textSecondary, size: 16),
+                    if (item.isAudience)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: Text(AppLocalizations.of(context)!.conferenceAudience,
+                            style: TextStyle(color: context.colors.textSecondary, fontSize: 12)),
+                      ),
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        isSelf ? '我' : _participantName(item.userInfo),
+                        style: AppText.sm.copyWith(color: context.colors.textPrimary),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-          ],
+              if (isFocusUser)
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Icon(Icons.highlight, color: context.colors.warning, size: 20),
+                ),
+              if (item.volume > 0 && !item.audioMuted)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: context.colors.success.withValues(alpha: 0.8),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.volume_up, color: context.colors.textPrimary, size: 14),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  void _onDoubleTapVideo(_ParticipantItem item) {
+    if (_conferenceManager.isOwner) {
+      if (_conferenceManager.currentFocusUser == item.userId) {
+        _conferenceManager.requestCancelFocus();
+      } else {
+        _conferenceManager.requestFocus(item.userId);
+      }
+    } else {
+      if (_conferenceManager.currentFocusUser != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.conferenceHostFocusSet)),
+        );
+      } else {
+        setState(() {
+          _localFocusUserId = item.userId;
+          _conferenceManager.localFocusUser = item.userId;
+        });
+      }
+    }
   }
 
   Widget _buildActionButtons(AppLocalizations l10n) {
@@ -706,13 +877,13 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
         children: [
           _CallActionButton(
             icon: Icons.call_end,
-            backgroundColor: const Color(0xFFFA5151),
+            backgroundColor: context.colors.danger,
             onPressed: _onHangup,
             label: l10n.callDecline,
           ),
           _CallActionButton(
             icon: Icons.call,
-            backgroundColor: const Color(0xFF07C160),
+            backgroundColor: context.colors.success,
             onPressed: _onAccept,
             label: l10n.callAnswer,
           ),
@@ -744,7 +915,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
             ),
             _CallActionButton(
               icon: Icons.call_end,
-              backgroundColor: const Color(0xFFFA5151),
+              backgroundColor: context.colors.danger,
               onPressed: _onHangup,
               label: l10n.callHangup,
             ),
@@ -752,13 +923,13 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
               icon: Icons.screen_share_outlined,
               backgroundColor: Colors.white.withValues(alpha: 0.1),
               onPressed: _onScreenShare,
-              label: '共享',
+              label: l10n.conferenceScreenShare,
             ),
             _CallActionButton(
               icon: Icons.people_outline,
               backgroundColor: Colors.white.withValues(alpha: 0.1),
               onPressed: _onToggleMemberList,
-              label: '成员',
+              label: l10n.conferenceMemberList,
             ),
           ],
         ),
@@ -778,6 +949,15 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
               onPressed: _onSwitchAudience,
               label: _session.audience ? '上麦' : '下麦',
             ),
+            if (!_conferenceManager.isOwner)
+              _CallActionButton(
+                icon: _conferenceManager.isHandUp ? Icons.pan_tool : Icons.pan_tool_outlined,
+                backgroundColor: _conferenceManager.isHandUp
+                    ? context.colors.success
+                    : Colors.white.withValues(alpha: 0.1),
+                onPressed: _onToggleHandUp,
+                label: _conferenceManager.isHandUp ? l10n.conferenceHandUpDone : l10n.conferenceHandUp,
+              ),
             _CallActionButton(
               icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_mute_outlined,
               backgroundColor:
@@ -799,7 +979,6 @@ class _CallActionButton extends StatefulWidget {
   final Color iconColor;
   final String label;
   final VoidCallback onPressed;
-  final bool isActive;
 
   const _CallActionButton({
     required this.icon,
@@ -807,7 +986,6 @@ class _CallActionButton extends StatefulWidget {
     this.iconColor = Colors.white,
     required this.label,
     required this.onPressed,
-    this.isActive = true,
   });
 
   @override
@@ -836,7 +1014,7 @@ class _CallActionButtonState extends State<_CallActionButton> {
               transformAlignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: widget.isActive ? widget.backgroundColor : Colors.white12,
+                color: widget.backgroundColor,
                 boxShadow: [
                   if (_isHovered)
                     BoxShadow(
@@ -848,7 +1026,7 @@ class _CallActionButtonState extends State<_CallActionButton> {
               ),
               child: Icon(
                 widget.icon,
-                color: widget.isActive ? widget.iconColor : Colors.white60,
+                color: widget.iconColor,
                 size: 24,
               ),
             ),
@@ -858,7 +1036,7 @@ class _CallActionButtonState extends State<_CallActionButton> {
         Text(
           widget.label,
           style: AppText.xs.copyWith(
-              color: widget.isActive ? Colors.white70 : Colors.white38,
+              color: context.colors.textSecondary,
               fontWeight: FontWeight.w400),
         ),
       ],

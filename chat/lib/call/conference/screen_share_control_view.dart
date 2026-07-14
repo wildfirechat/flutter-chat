@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:avenginekit/engine/call_session.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 屏幕共享控制条（占位实现）
 /// 桌面端屏幕分享需要 desktop_capturer 或平台通道支持，当前仅保留 UI 占位。
@@ -36,7 +37,7 @@ class ScreenShareControlView extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: const Color(0xFFFA5151),
+                color: context.colors.danger,
                 borderRadius: BorderRadius.circular(4),
               ),
               child: const Text(

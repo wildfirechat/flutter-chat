@@ -69,6 +69,201 @@ class AppLocalizationsZh extends AppLocalizations {
   String get conferenceNotSupport => '会议功能暂未支持';
 
   @override
+  String get conferenceTitle => '会议';
+
+  @override
+  String get conferenceCreate => '创建会议';
+
+  @override
+  String get conferenceJoin => '加入会议';
+
+  @override
+  String get conferenceOrder => '预定会议';
+
+  @override
+  String get conferenceMemberList => '参会成员';
+
+  @override
+  String get conferenceHandUp => '举手';
+
+  @override
+  String get conferenceHandUpDone => '已举手';
+
+  @override
+  String get conferencePutDown => '放下';
+
+  @override
+  String get conferencePutDownAll => '全部放下';
+
+  @override
+  String get conferenceApplyAudio => '申请开麦';
+
+  @override
+  String get conferenceApplyVideo => '申请开摄像头';
+
+  @override
+  String get conferenceApprove => '同意';
+
+  @override
+  String get conferenceReject => '拒绝';
+
+  @override
+  String get conferenceApproveAll => '全部同意';
+
+  @override
+  String get conferenceRejectAll => '全部拒绝';
+
+  @override
+  String get conferenceMuteAll => '全体静音';
+
+  @override
+  String get conferenceUnmuteAll => '取消全体静音';
+
+  @override
+  String get conferenceFocus => '焦点';
+
+  @override
+  String get conferenceSetFocus => '设为焦点';
+
+  @override
+  String get conferenceCancelFocus => '取消焦点用户';
+
+  @override
+  String get conferenceAudience => '观众';
+
+  @override
+  String get conferenceInviteStage => '邀请上麦';
+
+  @override
+  String get conferenceSetAudience => '设为观众';
+
+  @override
+  String get conferenceKick => '踢出会议';
+
+  @override
+  String get conferenceScreenShare => '共享';
+
+  @override
+  String get conferenceGridView => '网格视图';
+
+  @override
+  String get conferenceSpeakerView => '发言者视图';
+
+  @override
+  String get conferenceJoinMeeting => '加入会议';
+
+  @override
+  String get conferenceMeetingEnded => '会议已结束';
+
+  @override
+  String get conferenceFavorites => '即将开始';
+
+  @override
+  String get conferenceHistory => '历史记录';
+
+  @override
+  String get conferenceNoFavorites => '暂无收藏会议';
+
+  @override
+  String get conferenceNoHistory => '暂无历史记录';
+
+  @override
+  String get conferenceStartTime => '开始时间';
+
+  @override
+  String get conferenceEndTime => '结束时间';
+
+  @override
+  String get conferenceEnableMic => '开启麦克风';
+
+  @override
+  String get conferenceEnableCamera => '开启摄像头';
+
+  @override
+  String get conferenceFav => '收藏会议';
+
+  @override
+  String get conferenceDestroy => '销毁会议';
+
+  @override
+  String get conferenceDestroyConfirm => '销毁后其他成员将无法加入，确认销毁？';
+
+  @override
+  String get conferenceCopied => '会议号已复制';
+
+  @override
+  String get conferenceRequestUnmuteAudio => '申请解除静音';
+
+  @override
+  String get conferenceRequestUnmuteVideo => '申请打开摄像头';
+
+  @override
+  String get conferenceRequestUnmuteAudioDesc => '主持人不允许解除静音，您可以向主持人申请解除静音';
+
+  @override
+  String get conferenceRequestUnmuteVideoDesc => '主持人不允许打开摄像头，您可以向主持人申请打开摄像头';
+
+  @override
+  String get conferenceHostFocusSet => '主持人已设置了焦点用户';
+
+  @override
+  String get conferenceCreated => '会议创建成功';
+
+  @override
+  String get conferenceCreateFailed => '创建会议失败';
+
+  @override
+  String get conferenceJoinFailed => '加入会议失败';
+
+  @override
+  String get conferenceOrdered => '预定成功';
+
+  @override
+  String get conferenceOrderFailed => '预定失败';
+
+  @override
+  String get conferenceInputTitle => '请输入会议标题';
+
+  @override
+  String get conferenceOnlyCreate => '仅创建';
+
+  @override
+  String get conferenceCreateAndJoin => '创建并加入';
+
+  @override
+  String get conferenceAudioOnly => '仅音频';
+
+  @override
+  String get conferenceDefaultAudience => '默认观众';
+
+  @override
+  String get conferenceAdvanced => '高级版';
+
+  @override
+  String get conferenceRecord => '录制';
+
+  @override
+  String get conferenceAllowTurnOnMic => '允许成员自助开麦';
+
+  @override
+  String get conferenceEnablePassword => '启用密码';
+
+  @override
+  String get conferencePassword => '会议密码';
+
+  @override
+  String get conferenceEndTimeInvalid => '结束时间不能早于当前时间';
+
+  @override
+  String get conferenceTimeInvalid => '结束时间不能早于开始时间';
+
+  @override
+  String get conferenceSelectStartTime => '请选择开始时间';
+
+  @override
+  String get conferenceSelectEndTime => '请选择结束时间';
+
+  @override
   String get groupInfo => '群组信息';
 
   @override

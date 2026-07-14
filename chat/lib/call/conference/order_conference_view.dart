@@ -1,34 +1,31 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:avenginekit/engine/avenginekit.dart';
-import 'package:imclient/imclient.dart';
 import 'package:chat/app_server.dart';
-import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
-import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/widget/app_switch.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/theme/app_colors.dart';
-import 'package:chat/widget/app_switch.dart';
+import 'package:imclient/imclient.dart';
 
-/// 创建会议页面
-class CreateConferenceView extends StatefulWidget {
-  const CreateConferenceView({Key? key}) : super(key: key);
+/// 预定会议页面
+class OrderConferenceView extends StatefulWidget {
+  const OrderConferenceView({Key? key}) : super(key: key);
 
   @override
-  State<CreateConferenceView> createState() => _CreateConferenceViewState();
+  State<OrderConferenceView> createState() => _OrderConferenceViewState();
 }
 
-class _CreateConferenceViewState extends State<CreateConferenceView> {
+class _OrderConferenceViewState extends State<OrderConferenceView> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  DateTime _endTime = DateTime.now().add(const Duration(hours: 1));
+  DateTime? _startTime;
+  DateTime? _endTime;
   bool _audioOnly = false;
   bool _audience = false;
   bool _advance = false;
-  bool _record = false;
   bool _allowTurnOnMic = true;
   bool _enablePassword = false;
+  final TextEditingController _passwordController = TextEditingController();
   bool _loading = false;
 
   String _generatePin() {
@@ -40,17 +37,36 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
     return pin;
   }
 
-  Future<void> _pickEndTime() async {
+  Future<void> _pickStartTime() async {
     var date = await showDatePicker(
       context: context,
-      initialDate: _endTime,
+      initialDate: DateTime.now().add(const Duration(minutes: 5)),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (date == null) return;
     var time = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(_endTime),
+      initialTime: TimeOfDay.fromDateTime(DateTime.now().add(const Duration(minutes: 5))),
+    );
+    if (time == null) return;
+    setState(() {
+      _startTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    });
+  }
+
+  Future<void> _pickEndTime() async {
+    var initial = _startTime?.add(const Duration(hours: 1)) ?? DateTime.now().add(const Duration(hours: 1));
+    var date = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (date == null) return;
+    var time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial),
     );
     if (time == null) return;
     setState(() {
@@ -58,107 +74,64 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
     });
   }
 
-  Map<String, dynamic> _buildInfo() {
-    var pin = _generatePin();
-    return {
-      'conferenceTitle': _titleController.text,
-      'title': _titleController.text,
-      'desc': _descController.text,
-      'pin': pin,
-      'password': _enablePassword ? _passwordController.text : '',
-      'audioOnly': _audioOnly,
-      'audience': _audience,
-      'advance': _advance,
-      'record': _record,
-      'allowSwitchMode': _allowTurnOnMic,
-      'owner': Imclient.currentUserId,
-      'startTime': DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      'endTime': _endTime.millisecondsSinceEpoch ~/ 1000,
-    };
-  }
-
-  void _createConference({required bool join}) async {
+  void _orderConference() {
     if (_titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('请输入会议标题')),
       );
       return;
     }
-    if (_endTime.isBefore(DateTime.now())) {
+    if (_startTime == null || _endTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('结束时间不能早于当前时间')),
+        const SnackBar(content: Text('请选择开始和结束时间')),
       );
       return;
     }
+    if (_endTime!.isBefore(_startTime!)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('结束时间不能早于开始时间')),
+      );
+      return;
+    }
+
     setState(() => _loading = true);
 
-    var info = _buildInfo();
-    var pin = info['pin'] as String;
+    var info = {
+      'conferenceTitle': _titleController.text,
+      'title': _titleController.text,
+      'desc': _descController.text,
+      'pin': _generatePin(),
+      'password': _enablePassword ? _passwordController.text : '',
+      'owner': Imclient.currentUserId,
+      'startTime': _startTime!.millisecondsSinceEpoch ~/ 1000,
+      'endTime': _endTime!.millisecondsSinceEpoch ~/ 1000,
+      'audioOnly': _audioOnly,
+      'audience': _audience,
+      'advance': _advance,
+      'allowSwitchMode': _allowTurnOnMic,
+      'record': false,
+    };
 
-    AppServer.createConference(info, (conferenceId) async {
-      if (!join) {
-        if (mounted) {
-          setState(() => _loading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('会议创建成功')),
-          );
-          Navigator.of(context).pop();
-        }
-        return;
-      }
-
-      try {
-        if (isDesktopShell) {
-          await MainAvEngineKitProxy.instance.startConference(
-            callId: conferenceId,
-            audioOnly: _audioOnly,
-            pin: pin,
-            host: Imclient.currentUserId,
-            title: _titleController.text,
-            desc: _descController.text,
-            audience: _audience,
-            advance: _advance,
-            record: _record,
-          );
-        } else {
-          // ignore: await_only_futures
-          await avEngineKit.startConference(
-            conferenceId,
-            _audioOnly,
-            pin,
-            Imclient.currentUserId,
-            _titleController.text,
-            _descController.text,
-            _audience,
-            _advance,
-            _record,
-            '',
-            '',
-          );
-        }
-        if (mounted) {
-          Navigator.of(context).pop();
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('进入会议失败: $e')),
-          );
-        }
-      } finally {
-        if (mounted) setState(() => _loading = false);
+    AppServer.createConference(info, (conferenceId) {
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('预定成功')),
+        );
+        Navigator.of(context).pop();
       }
     }, (error) {
       if (mounted) {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建会议失败: $error')),
+          SnackBar(content: Text('预定失败: $error')),
         );
       }
     });
   }
 
-  String _formatTime(DateTime time) {
+  String _formatTime(DateTime? time) {
+    if (time == null) return '请选择';
     return '${time.month}/${time.day} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 
@@ -167,7 +140,7 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
     return Scaffold(
       backgroundColor: context.colors.primaryBackground,
       appBar: AppBar(
-        title: const Text('创建会议'),
+        title: const Text('预定会议'),
         backgroundColor: context.colors.surface,
       ),
       body: Padding(
@@ -186,6 +159,12 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
               decoration: const InputDecoration(labelText: '会议描述'),
             ),
             const SizedBox(height: 12),
+            ListTile(
+              title: Text('开始时间', style: TextStyle(color: context.colors.textPrimary)),
+              trailing: Text(_formatTime(_startTime),
+                  style: AppText.base.copyWith(color: context.colors.success)),
+              onTap: _pickStartTime,
+            ),
             ListTile(
               title: Text('结束时间', style: TextStyle(color: context.colors.textPrimary)),
               trailing: Text(_formatTime(_endTime),
@@ -214,13 +193,6 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
               ),
             ),
             ListTile(
-              title: Text('录制', style: TextStyle(color: context.colors.textPrimary)),
-              trailing: AppSwitch(
-                value: _record,
-                onChanged: (v) => setState(() => _record = v),
-              ),
-            ),
-            ListTile(
               title: Text('允许成员自助开麦', style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _allowTurnOnMic,
@@ -244,21 +216,13 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _loading ? null : () => _createConference(join: true),
+                onPressed: _loading ? null : _orderConference,
                 child: _loading
                     ? const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('创建并加入'),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: _loading ? null : () => _createConference(join: false),
-                child: const Text('仅创建'),
+                    : const Text('预定'),
               ),
             ),
           ],
