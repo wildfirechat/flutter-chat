@@ -130,12 +130,24 @@ class _CallWindowAppState extends State<CallWindowApp>
       //    否则 window_manager.ensureInitialized() 在 macOS 上会因
       //    registrar.view?.window 为 nil 而崩溃。
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _initWindowManager();
-        _loadPreferences();
+        _postFirstFrameInit();
       });
+      // 兜底：帧调度异常时 postFrameCallback 可能迟迟不来，但 window_manager
+      // 必须完成初始化（onWindowClose 监听、窗口样式都依赖它）。此时窗口早已
+      // show，registrar.view.window 已就绪，直接初始化是安全的。
+      Future.delayed(const Duration(seconds: 1), _postFirstFrameInit);
     } catch (e, s) {
       print('$_tag _init error: $e\n$s');
     }
+  }
+
+  bool _postFirstFrameInitDone = false;
+
+  void _postFirstFrameInit() {
+    if (_postFirstFrameInitDone) return;
+    _postFirstFrameInitDone = true;
+    _initWindowManager();
+    _loadPreferences();
   }
 
   Future<void> _loadPreferences() async {
@@ -341,11 +353,14 @@ class _CallWindowAppState extends State<CallWindowApp>
     await CallWindowEventChannel.invoke(0, MainWindowEvents.windowClosed, {
       'windowId': widget.windowId,
     });
+    // 不能走 windowManager.close()：若 ensureInitialized 尚未执行（帧被冻结
+    // 等场景），macOS 侧 close 会因 _mainWindow 为 nil 强解包直接崩溃进程，
+    // Dart 的 try/catch 捕不住。WindowController 走 desktop_multi_window
+    // 自己的通道，不依赖 window_manager 的初始化状态。
     try {
-      await windowManager.close();
-    } catch (e) {
-      // window_manager 初始化失败时回退到 WindowController。
       await WindowController.fromWindowId(widget.windowId).close();
+    } catch (e) {
+      print('$_tag close window failed: $e');
     }
   }
 
