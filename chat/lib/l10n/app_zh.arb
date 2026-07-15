@@ -911,5 +911,6 @@
   "conversationTypeChannel": "频道",
   "pcMobileOperationHintTitle": "请在手机上操作",
   "pcBackupMobileDataHint": "请在手机端进入“备份与恢复”，选择“备份到 PC”，电脑端将收到请求并弹出确认框。",
-  "pcRestoreToMobileHint": "请在手机端进入“备份与恢复”，选择“从 PC 恢复”，电脑端将收到请求并弹出确认框。"
+  "pcRestoreToMobileHint": "请在手机端进入“备份与恢复”，选择“从 PC 恢复”，电脑端将收到请求并弹出确认框。",
+  "multiCallWindowTitle": "多人通话"
 }

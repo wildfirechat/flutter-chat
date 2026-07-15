@@ -11,7 +11,6 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:avenginekit/engine/call_session.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/conversation/pick_conversation_screen.dart';
@@ -43,9 +42,6 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/workspace/work_space.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/call/voip_call_screen.dart';
-import 'package:chat/call/multi_call_screen.dart';
-import 'package:chat/call/conference/conference_call_screen.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/backup/pc_backup_listener.dart';
@@ -646,45 +642,11 @@ class _PCHomeState extends State<PCHome> {
                 ),
               ),
             ),
-            _buildCallOverlay(),
           ],
         ),
       ),
     ),
   );
-  }
-
-  Widget _buildCallOverlay() {
-    // 通话已迁移到独立 Call 窗口，主窗口不再显示浮窗。
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildMinimizeButton(PCShellViewModel model) {
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hovered) {
-        return GestureDetector(
-          onTap: () {
-            model.minimizeCallWindow(true);
-          },
-          child: Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: hovered
-                  ? Colors.white.withValues(alpha: 0.15)
-                  : Colors.transparent,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.remove_rounded,
-              color: Colors.white70,
-              size: 16,
-            ),
-          ),
-        );
-      },
-    );
   }
 
   /// 中栏与右栏之间的分隔条。作为右栏的浮层放置:发丝线贴左缘落在两栏交界处,
@@ -1030,7 +992,6 @@ class _PcSideBar extends StatelessWidget {
             onTabSelected: onTabSelected,
           ),
           const Spacer(),
-          _buildMinimizedCallTab(context, shell),
           _SideBarTab(
             tab: PCShellViewModel.tabMe,
             selectedIcon: Icons.settings_rounded,
@@ -1045,22 +1006,6 @@ class _PcSideBar extends StatelessWidget {
   );
 }
 
-  Widget _buildMinimizedCallTab(BuildContext context, PCShellViewModel shell) {
-    if (shell.activeCallSession == null || !shell.callWindowMinimized) {
-      return const SizedBox.shrink();
-    }
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Tooltip(
-        message: AppLocalizations.of(context)!.callOngoingClickRestore,
-        child: _PulsingCallButton(
-          onTap: () {
-            shell.minimizeCallWindow(false);
-          },
-        ),
-      ),
-    );
-  }
 
   Widget _buildAvatar(BuildContext context, PCShellViewModel shell) {
     return Consumer<UserViewModel>(
@@ -1239,120 +1184,6 @@ class _EmptyDetailPane extends StatelessWidget {
           opacity: 0.10,
           child:
               Image.asset('assets/images/app_icon.png', width: 72, height: 72),
-        ),
-      ),
-    );
-  }
-}
-
-class _PulsingCallButton extends StatefulWidget {
-  final VoidCallback onTap;
-  const _PulsingCallButton({required this.onTap});
-
-  @override
-  State<_PulsingCallButton> createState() => _PulsingCallButtonState();
-}
-
-class _PulsingCallButtonState extends State<_PulsingCallButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _pulseAnimation;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1600),
-    )..repeat();
-
-    _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-    );
-    _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-          tween: Tween<double>(begin: 1.0, end: 1.08)
-              .chain(CurveTween(curve: Curves.easeOut)),
-          weight: 50),
-      TweenSequenceItem(
-          tween: Tween<double>(begin: 1.08, end: 1.0)
-              .chain(CurveTween(curve: Curves.easeIn)),
-          weight: 50),
-    ]).animate(_controller);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: GestureDetector(
-        onTap: widget.onTap,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Outer pulse ring 1
-            AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                return Container(
-                  width: 38 + (16 * _pulseAnimation.value),
-                  height: 38 + (16 * _pulseAnimation.value),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.green
-                        .withValues(alpha: 0.4 * (1.0 - _pulseAnimation.value)),
-                  ),
-                );
-              },
-            ),
-            // Outer pulse ring 2
-            AnimatedBuilder(
-              animation: _pulseAnimation,
-              builder: (context, child) {
-                double val = (_pulseAnimation.value + 0.5) % 1.0;
-                return Container(
-                  width: 38 + (16 * val),
-                  height: 38 + (16 * val),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.green.withValues(alpha: 0.3 * (1.0 - val)),
-                  ),
-                );
-              },
-            ),
-            // Inner solid button
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF34C759), Color(0xFF248A3D)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: const Icon(
-                Icons.phone_in_talk_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
-          ],
         ),
       ),
     );

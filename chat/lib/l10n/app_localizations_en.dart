@@ -69,199 +69,203 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conferenceNotSupport => 'Conference not supported yet';
 
   @override
-  String get conferenceTitle => '会议';
+  String get conferenceTitle => 'Meeting';
 
   @override
-  String get conferenceCreate => '创建会议';
+  String get conferenceCreate => 'Create Meeting';
 
   @override
-  String get conferenceJoin => '加入会议';
+  String get conferenceJoin => 'Join Meeting';
 
   @override
-  String get conferenceOrder => '预定会议';
+  String get conferenceOrder => 'Schedule Meeting';
 
   @override
-  String get conferenceMemberList => '参会成员';
+  String get conferenceMemberList => 'Participants';
 
   @override
-  String get conferenceHandUp => '举手';
+  String get conferenceHandUp => 'Raise Hand';
 
   @override
-  String get conferenceHandUpDone => '已举手';
+  String get conferenceHandUpDone => 'Hand Raised';
 
   @override
-  String get conferencePutDown => '放下';
+  String get conferencePutDown => 'Lower Hand';
 
   @override
-  String get conferencePutDownAll => '全部放下';
+  String get conferencePutDownAll => 'Lower All Hands';
 
   @override
-  String get conferenceApplyAudio => '申请开麦';
+  String get conferenceApplyAudio => 'Unmute Requests';
 
   @override
-  String get conferenceApplyVideo => '申请开摄像头';
+  String get conferenceApplyVideo => 'Camera Requests';
 
   @override
-  String get conferenceApprove => '同意';
+  String get conferenceApprove => 'Approve';
 
   @override
-  String get conferenceReject => '拒绝';
+  String get conferenceReject => 'Reject';
 
   @override
-  String get conferenceApproveAll => '全部同意';
+  String get conferenceApproveAll => 'Approve All';
 
   @override
-  String get conferenceRejectAll => '全部拒绝';
+  String get conferenceRejectAll => 'Reject All';
 
   @override
-  String get conferenceMuteAll => '全体静音';
+  String get conferenceMuteAll => 'Mute All';
 
   @override
-  String get conferenceUnmuteAll => '取消全体静音';
+  String get conferenceUnmuteAll => 'Unmute All';
 
   @override
-  String get conferenceFocus => '焦点';
+  String get conferenceFocus => 'Focus';
 
   @override
-  String get conferenceSetFocus => '设为焦点';
+  String get conferenceSetFocus => 'Set as Focus';
 
   @override
-  String get conferenceCancelFocus => '取消焦点用户';
+  String get conferenceCancelFocus => 'Remove Focus';
 
   @override
-  String get conferenceAudience => '观众';
+  String get conferenceAudience => 'Audience';
 
   @override
-  String get conferenceInviteStage => '邀请上麦';
+  String get conferenceInviteStage => 'Invite to Speak';
 
   @override
-  String get conferenceSetAudience => '设为观众';
+  String get conferenceSetAudience => 'Move to Audience';
 
   @override
-  String get conferenceKick => '踢出会议';
+  String get conferenceKick => 'Remove from Meeting';
 
   @override
-  String get conferenceScreenShare => '共享';
+  String get conferenceScreenShare => 'Share';
 
   @override
-  String get conferenceGridView => '网格视图';
+  String get conferenceGridView => 'Grid View';
 
   @override
-  String get conferenceSpeakerView => '发言者视图';
+  String get conferenceSpeakerView => 'Speaker View';
 
   @override
-  String get conferenceJoinMeeting => '加入会议';
+  String get conferenceJoinMeeting => 'Join Meeting';
 
   @override
-  String get conferenceMeetingEnded => '会议已结束';
+  String get conferenceMeetingEnded => 'Meeting Ended';
 
   @override
-  String get conferenceFavorites => '即将开始';
+  String get conferenceFavorites => 'Upcoming';
 
   @override
-  String get conferenceHistory => '历史记录';
+  String get conferenceHistory => 'History';
 
   @override
-  String get conferenceNoFavorites => '暂无收藏会议';
+  String get conferenceNoFavorites => 'No favorite meetings';
 
   @override
-  String get conferenceNoHistory => '暂无历史记录';
+  String get conferenceNoHistory => 'No meeting history';
 
   @override
-  String get conferenceStartTime => '开始时间';
+  String get conferenceStartTime => 'Start Time';
 
   @override
-  String get conferenceEndTime => '结束时间';
+  String get conferenceEndTime => 'End Time';
 
   @override
-  String get conferenceEnableMic => '开启麦克风';
+  String get conferenceEnableMic => 'Enable Microphone';
 
   @override
-  String get conferenceEnableCamera => '开启摄像头';
+  String get conferenceEnableCamera => 'Enable Camera';
 
   @override
-  String get conferenceFav => '收藏会议';
+  String get conferenceFav => 'Favorite Meeting';
 
   @override
-  String get conferenceDestroy => '销毁会议';
+  String get conferenceDestroy => 'End Meeting';
 
   @override
-  String get conferenceDestroyConfirm => '销毁后其他成员将无法加入，确认销毁？';
+  String get conferenceDestroyConfirm =>
+      'Once ended, other participants will not be able to join. End this meeting?';
 
   @override
-  String get conferenceCopied => '会议号已复制';
+  String get conferenceCopied => 'Meeting ID copied';
 
   @override
-  String get conferenceRequestUnmuteAudio => '申请解除静音';
+  String get conferenceRequestUnmuteAudio => 'Request to Unmute';
 
   @override
-  String get conferenceRequestUnmuteVideo => '申请打开摄像头';
+  String get conferenceRequestUnmuteVideo => 'Request to Turn On Camera';
 
   @override
-  String get conferenceRequestUnmuteAudioDesc => '主持人不允许解除静音，您可以向主持人申请解除静音';
+  String get conferenceRequestUnmuteAudioDesc =>
+      'The host has muted everyone. You can ask the host to unmute you.';
 
   @override
-  String get conferenceRequestUnmuteVideoDesc => '主持人不允许打开摄像头，您可以向主持人申请打开摄像头';
+  String get conferenceRequestUnmuteVideoDesc =>
+      'The host does not allow cameras. You can ask the host to turn on your camera.';
 
   @override
-  String get conferenceHostFocusSet => '主持人已设置了焦点用户';
+  String get conferenceHostFocusSet => 'The host has set a focus user';
 
   @override
-  String get conferenceCreated => '会议创建成功';
+  String get conferenceCreated => 'Meeting created';
 
   @override
-  String get conferenceCreateFailed => '创建会议失败';
+  String get conferenceCreateFailed => 'Failed to create meeting';
 
   @override
-  String get conferenceJoinFailed => '加入会议失败';
+  String get conferenceJoinFailed => 'Failed to join meeting';
 
   @override
-  String get conferenceOrdered => '预定成功';
+  String get conferenceOrdered => 'Meeting scheduled';
 
   @override
-  String get conferenceOrderFailed => '预定失败';
+  String get conferenceOrderFailed => 'Failed to schedule meeting';
 
   @override
-  String get conferenceInputTitle => '请输入会议标题';
+  String get conferenceInputTitle => 'Enter meeting title';
 
   @override
-  String get conferenceOnlyCreate => '仅创建';
+  String get conferenceOnlyCreate => 'Create Only';
 
   @override
-  String get conferenceCreateAndJoin => '创建并加入';
+  String get conferenceCreateAndJoin => 'Create and Join';
 
   @override
-  String get conferenceAudioOnly => '仅音频';
+  String get conferenceAudioOnly => 'Audio Only';
 
   @override
-  String get conferenceDefaultAudience => '默认观众';
+  String get conferenceDefaultAudience => 'Join as Audience';
 
   @override
-  String get conferenceAdvanced => '高级版';
+  String get conferenceAdvanced => 'Advanced Version';
 
   @override
-  String get conferenceRecord => '录制';
+  String get conferenceRecord => 'Record';
 
   @override
-  String get conferenceAllowTurnOnMic => '允许成员自助开麦';
+  String get conferenceAllowTurnOnMic => 'Allow members to unmute themselves';
 
   @override
-  String get conferenceEnablePassword => '启用密码';
+  String get conferenceEnablePassword => 'Enable Password';
 
   @override
-  String get conferencePassword => '会议密码';
+  String get conferencePassword => 'Meeting Password';
 
   @override
-  String get conferenceEndTimeInvalid => '结束时间不能早于当前时间';
+  String get conferenceEndTimeInvalid => 'End time cannot be earlier than now';
 
   @override
-  String get conferenceTimeInvalid => '结束时间不能早于开始时间';
+  String get conferenceTimeInvalid =>
+      'End time cannot be earlier than start time';
 
   @override
-  String get conferenceSelectStartTime => '请选择开始时间';
+  String get conferenceSelectStartTime => 'Select start time';
 
   @override
-  String get conferenceSelectEndTime => '请选择结束时间';
+  String get conferenceSelectEndTime => 'Select end time';
 
   @override
   String get groupInfo => 'Group Info';
@@ -2947,4 +2951,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pcRestoreToMobileHint =>
       'On your phone, go to Backup & Restore and choose \"Restore from PC\". A confirmation dialog will pop up here.';
+
+  @override
+  String get multiCallWindowTitle => 'Group Call';
 }

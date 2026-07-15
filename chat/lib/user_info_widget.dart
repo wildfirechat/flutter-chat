@@ -27,7 +27,7 @@ import 'package:chat/organization/organization_cache.dart';
 import 'package:chat/organization/organization_screen.dart';
 import 'package:chat/organization/organization_service.dart';
 
-import 'package:chat/pc/pc_av_call.dart';
+import 'package:chat/call/av_call_launcher.dart';
 import 'package:chat/pc/widgets/pc_icon_action.dart';
 import 'package:chat/pc/widgets/pc_profile.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';

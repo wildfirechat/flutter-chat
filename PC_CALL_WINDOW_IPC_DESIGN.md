@@ -85,20 +85,22 @@ Flutter 桌面多窗口（通过 `desktop_multi_window`）会为每个子窗口�
 
 ```dart
 class CallWindowEventChannel {
-  /// 主窗口调用：向指定子窗口发送事件。
-  static Future<dynamic> invoke(int windowId, String event, dynamic args);
+  /// 向目标窗口发送事件(主窗口 → 子窗口传 callWindowId,子窗口 → 主窗口传 0)。
+  static Future<T?> invoke<T>(int targetWindowId, String method, dynamic args);
 
-  /// 任意窗口调用：设置当前窗口收到事件时的处理器。
-  static void listen(Future<dynamic> Function(String event, dynamic args)? handler);
+  /// 按事件名注册处理器,然后 listen() 开始接收。
+  void register(String method, Future<dynamic> Function(dynamic args) handler);
+  void listen();
 }
 ```
 
 实现原理：
 
-- 发送方把 `{event, args}` 通过 `DesktopMultiWindow.invokeMethod` 发到目标窗口；
-- 接收方通过 `DesktopMultiWindow.setMethodHandler` 接收，解出 `event`，调用业务注册的 `handler`。
-
-这样主窗口和子窗口之间传输的是「事件名 + 序列化参数」，而不是裸的 `MethodCall`。
+- 发送方直接以事件名作为 method,经 `DesktopMultiWindow.invokeMethod` 发到目标窗口;
+- 接收方通过 `DesktopMultiWindow.setMethodHandler` 接收,按 method 查找 `register` 过的处理器;
+- 跨窗口只传 Map/List/基本类型(method channel 原生支持),`_encode`/`_decode` 仅做
+  `Map<Object?,Object?>` → `Map<String,dynamic>` 的类型归一化,**不做 JSON 字符串化**;
+- `listen()` 底层的 `setMethodHandler` 是进程内全局唯一,每个窗口只允许一个 listen 中的实例。
 
 ---
 
@@ -106,25 +108,32 @@ class CallWindowEventChannel {
 
 ### 4.1 主窗口 → 子窗口（下行事件）
 
-主窗口在 `MainAvEngineKitProxy` 中定义了子窗口需要监听的事件：
+事件名常量定义在 `call_window_event_channel.dart` 的 `CallWindowEvents`(统一 `voip.` 前缀):
 
 ```dart
 class CallWindowEvents {
-  static const String startCall = 'startCall';
-  static const String message = 'message';
-  static const String conferenceEvent = 'conferenceEvent';
-  static const String connectionStatus = 'connectionStatus';
-  static const String ready = 'ready';
+  static const String message = 'voip.message';
+  static const String conferenceEvent = 'voip.conferenceEvent';
+  static const String connectionStatus = 'voip.connectionStatus';
+  static const String sendMessageResult = 'voip.sendMessageResult';
+  static const String startCall = 'voip.startCall';
+  static const String startConference = 'voip.startConference';
+  static const String joinConference = 'voip.joinConference';
 }
 ```
 
 | 事件 | 触发时机 | 参数 | 子窗口处理 |
 |------|---------|------|-----------|
-| `startCall` | 用户主动发起通话 | 会话、selfUserId、participants、audioOnly 等 | 初始化 CallSession 并进入 Outgoing 状态 |
-| `message` | 主窗口收到 VOIP 相关 IM 消息 | 序列化的 `Message` | 交给 `AVEngineKit.onReceiveMessages` |
-| `conferenceEvent` | 主窗口收到会议事件 | 事件字符串 | 交给 `AVEngineKit.onConferenceEvent` |
-| `connectionStatus` | IM 连接状态变化 | 状态码 | 子窗口可据此做重连/提示 |
-| `ready` | 子窗口初始化完成通知主窗口后，主窗口回 ack | 无 | 触发事件队列刷新 |
+| `voip.startCall` | 用户主动发起通话 | 会话、participants、audioOnly、callExtra | `avEngineKit.startCall` |
+| `voip.startConference` / `voip.joinConference` | 创建/加入会议 | callId、audioOnly、pin、host 等 | `avEngineKit.startConference/joinConference` |
+| `voip.message` | 主窗口收到 VOIP 相关 IM 消息 | 序列化的 `Message` | 解码后 fire `ReceiveMessagesEvent` 到子窗口 IMEventBus(avenginekit、ConferenceManager 等订阅者共享) |
+| `voip.conferenceEvent` | 主窗口收到会议事件 | 事件字符串 | fire `ConferenceEvent` 到子窗口 IMEventBus |
+| `voip.connectionStatus` | IM 连接状态变化 | 状态码 | fire `ConnectionStatusChangedEvent` 到子窗口 IMEventBus |
+| `voip.sendMessageResult` | 主窗口 sendMessage 收到服务器 ack/失败 | requestId、errorCode、messageUid、timestamp | `ImclientPlatform.dispatchSendMessageResult` 触发回调并清理 |
+
+> 子窗口把主窗口转发的事件统一 fire 到本 isolate 的 `IMEventBus`,与移动端的
+> 事件分发保持同构——**不要**绕过总线直调 `avEngineKit`,否则其它总线订阅者
+> (如 `ConferenceManager`)收不到消息。
 
 ### 4.2 子窗口 → 主窗口（上行调用）
 
@@ -157,19 +166,26 @@ class MainWindowEvents {
 
 主窗口和子窗口运行在不同 isolate，所有跨窗口传递的对象必须序列化为 `Map<String, dynamic>` 或 JSON。
 
-### 5.1 VOIP 消息：`VoipMessageCodec`
+### 5.1 线格式唯一定义处：`IpcCodec`
 
-文件：`chat/lib/pc/call_window/voip_message_codec.dart`
+文件：`chat/lib/pc/call_window/ipc_codec.dart`
 
-`Message` 和 `MessageContent` 没有内置的跨 isolate 序列化能力。`VoipMessageCodec` 只处理 avenginekit 关心的 VOIP 消息类型：
+`Message` / `MessagePayload` / `Conversation` 与 Map 的互转只在 `IpcCodec` 一处实现,
+主窗口编码、子窗口解码、`RawVoipMessageContent` 全部复用它:
 
 ```dart
-class VoipMessageCodec {
+class IpcCodec {
   static Map<String, dynamic> encodeMessage(Message message);
-  static Message decodeMessage(Map<String, dynamic> map);
-  static MessageContent decodeMessageContent(Map<String, dynamic> map);
+  static Map<String, dynamic> encodePayload(MessagePayload payload);
+  static MessagePayload decodePayload(Map<dynamic, dynamic> map);
+  static Map<String, dynamic> encodeConversation(Conversation conversation);
+  static Conversation decodeConversation(Map<dynamic, dynamic> map);
 }
 ```
+
+**线格式与 imclient 的 proto map 完全一致**(payload 与 conversation 都用 `'type'` key、
+`binaryContent` 为 base64),因此子窗口把主窗口返回的 map 直接交给
+`ImclientPlatform` 的 `_convertProtoXxx` 即可解析,SDK 层无需为 IPC 添加任何 key 别名。
 
 编码后的消息结构：
 
@@ -177,7 +193,7 @@ class VoipMessageCodec {
 {
   "messageId": 123,
   "messageUid": 456,
-  "conversation": {"conversationType": 0, "target": "userId", "line": 0},
+  "conversation": {"type": 0, "target": "userId", "line": 0},
   "fromUser": "userId",
   "toUsers": ["userId"],
   "direction": 0,
@@ -185,7 +201,7 @@ class VoipMessageCodec {
   "serverTime": 1783927749301,
   "localExtra": null,
   "content": {
-    "contentType": 400,
+    "type": 400,
     "searchableContent": "...",
     "binaryContent": "base64...",
     ...
@@ -193,11 +209,11 @@ class VoipMessageCodec {
 }
 ```
 
-注意：
+`binaryContent` 解码兼容 `Uint8List`、`List<int>`(MethodChannel 透传后常被重新
+实例化为 `_GrowableList`)和 base64 字符串三种形态。
 
-- 编码时用 `'content'` 作为 payload key；解码时同时兼容 `'content'` 和 `'payload'`；
-- `binaryContent` 在编码时做 base64，解码时支持 `Uint8List`、`List<int>`（MethodChannel 透传后常被重新实例化为 `_GrowableList`）和 base64 字符串；
-- `contentType` 兼容 `type` 别名，并做 `?? 0` 兜底。
+子窗口侧的 `VoipMessageCodec`(`voip_message_codec.dart`)只负责按 contentType
+实例化 avenginekit 的具体消息内容类,线格式解析全部委托 `IpcCodec`。
 
 ### 5.2 主窗口占位 VOIP 消息：`RawVoipMessageContent`
 
@@ -236,21 +252,27 @@ class ModelCodec {
 
 文件：`chat/lib/pc/call_window/call_window_imclient_proxy.dart`
 
-子窗口启动时，会执行 `Imclient.init(...)`，但这里把 `ImclientPlatform.instance.channel` 替换为一个代理通道：
+子窗口启动时**不执行** `Imclient.init`,只把 `ImclientPlatform.instance.channel` 替换为代理通道:
 
 ```dart
-class CallWindowImclientChannel extends ImclientChannel {
+class CallWindowImclientChannel implements ImclientChannel {
   @override
-  Future<dynamic> invokeMethod(String method, [dynamic arguments]) async {
-    // 把 IM 方法调用转发到主窗口
-    final result = await CallWindowEventChannel.invoke(_mainWindowId, _mapMethod(method), arguments);
-    // 对结果做类型转换，让上层 Imclient 接口无感知
-    return _adaptResult(method, result);
+  Future<T?> invokeMethod<T>(String method, [dynamic arguments]) async {
+    // 按 method 分发:sendMessage/getUserInfo/... 转发到主窗口执行
   }
 }
 ```
 
 这样，子窗口里的 `Imclient.sendMessage(...)`、`Imclient.getUserInfo(...)` 等调用，实际上都通过 IPC 发到了主窗口。
+
+`sendMessage` 的回调语义与移动端保持一致(两段式):
+
+1. 代理转发 `sendMessage`,主窗口 `Imclient.sendMessage` 返回**本地入库**的 message,
+   原样回传作为子窗口 `sendMessage` 的返回值;
+2. 主窗口收到服务器 ack/失败后,经 `voip.sendMessageResult` 事件回传
+   `{requestId, errorCode, messageUid, timestamp}`,子窗口调用
+   `ImclientPlatform.dispatchSendMessageResult` 按 `onSendMessageSuccess/Failure`
+   的既有语义触发回调、更新发送中消息并清理 requestId 关联状态。
 
 ### 6.2 主窗口侧：`MainAvEngineKitProxy`
 
@@ -479,9 +501,12 @@ void _onCallWindowClosed() {
 | 用户数据 | 共享内存 | 序列化后 IPC |
 | 插件注册 | 自动 | 子窗口需手动注册 |
 
-移动端代码通过 `isDesktopShell` 分支判断走哪条路：
+桌面/移动分流与"通话进行中"判断收敛在唯一入口 `chat/lib/call/av_call_launcher.dart`
+(`startAvCall` / `startSingleAvCall` / `startAvCallWithParticipants`),业务代码不再
+自行写 `isDesktopShell ? proxy : avEngineKit` 分支:
 
 ```dart
+// av_call_launcher.dart 内部
 if (isDesktopShell) {
   MainAvEngineKitProxy.instance.startCall(conversation, participants, audioOnly);
 } else {
@@ -539,14 +564,16 @@ if (isDesktopShell) {
 | 文件 | 作用 |
 |------|------|
 | `chat/lib/main.dart` | 子窗口入口 `args[0] == 'multi_window'`；安装 `MainAvEngineKitProxy` |
-| `chat/lib/pc/call_window/call_window_app.dart` | 子窗口根 Widget，初始化代理和 avenginekit |
+| `chat/lib/call/av_call_launcher.dart` | 发起音视频通话的唯一入口(桌面/移动分流 + 通话中判断) |
+| `chat/lib/pc/call_window/call_window_app.dart` | 子窗口根 Widget，初始化代理和 avenginekit,把主窗口事件 fire 到子窗口 IMEventBus |
 | `chat/lib/pc/call_window/call_window_manager.dart` | 创建/管理子窗口 |
-| `chat/lib/pc/call_window/call_window_event_channel.dart` | 跨窗口事件通道封装 |
-| `chat/lib/pc/call_window/main_avengine_kit_proxy.dart` | 主窗口代理：监听 IM、转发事件、代发消息 |
+| `chat/lib/pc/call_window/call_window_event_channel.dart` | 跨窗口事件通道封装 + 事件名常量 |
+| `chat/lib/pc/call_window/main_avengine_kit_proxy.dart` | 主窗口代理：监听 IM、转发事件、代发消息、回传发送结果 |
 | `chat/lib/pc/call_window/call_window_imclient_proxy.dart` | 子窗口 IM 代理：把 IM 调用转发给主窗口 |
-| `chat/lib/pc/call_window/voip_message_codec.dart` | VOIP 消息跨窗口编解码 |
+| `chat/lib/pc/call_window/ipc_codec.dart` | 跨窗口线格式唯一定义处(Message/Payload/Conversation ⇄ Map) |
+| `chat/lib/pc/call_window/voip_message_codec.dart` | 子窗口按 contentType 实例化 avenginekit 消息内容类 |
 | `chat/lib/pc/call_window/raw_voip_message_content.dart` | 主窗口占位 VOIP 消息内容类 |
-| `chat/lib/pc/call_window/model_codec.dart` | 用户/群成员信息跨窗口编解码 |
+| `chat/lib/pc/call_window/model_codec.dart` | 用户/群成员信息编码(proto 形态,子窗口用 SDK 转换器解码) |
 | `chat/macos/Runner/MainFlutterWindow.swift` | macOS 主窗口 + 子窗口插件注册 |
 | `chat/windows/runner/flutter_window.cpp` | Windows 主窗口 + 子窗口插件注册 |
 | `chat/linux/runner/my_application.cc` | Linux 主窗口 + 子窗口插件注册 |

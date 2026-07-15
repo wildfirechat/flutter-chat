@@ -1,17 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:event_bus/event_bus.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart' as mc;
 import 'package:imclient/model/conversation.dart';
-import 'package:imclient/model/group_member.dart';
-import 'package:imclient/model/message_payload.dart';
-import 'package:imclient/model/user_info.dart';
 
 import 'call_window_event_channel.dart';
 import 'call_window_manager.dart';
+import 'ipc_codec.dart';
 import 'model_codec.dart';
 import 'raw_voip_message_content.dart';
 
@@ -40,6 +37,9 @@ class MainAvEngineKitProxy {
   int? _callWindowId;
   bool _callWindowReady = false;
 
+  /// 桌面端"是否有通话进行中"的判断依据(主窗口不持有 avenginekit 会话)。
+  bool get callActive => _callWindowId != null;
+
   /// 待转发的事件队列（窗口未 ready 时缓存）。
   final List<_QueuedEvent> _eventQueue = [];
 
@@ -67,7 +67,7 @@ class MainAvEngineKitProxy {
     });
 
     // 监听 Call 窗口发回的事件。
-    final channel = CallWindowEventChannel(0);
+    final channel = CallWindowEventChannel();
     channel.listen();
     _registerMainWindowHandlers(channel);
   }
@@ -106,20 +106,11 @@ class MainAvEngineKitProxy {
       return;
     }
 
-    final selfUserId = Imclient.currentUserId;
-    final userInfos = await _getParticipantUserInfos(conversation, participants);
-    final groupMembers = conversation.conversationType == ConversationType.Group
-        ? await Imclient.getGroupMembers(conversation.target)
-        : <GroupMember>[];
-
     final args = <String, dynamic>{
-      'conversation': _conversationToJson(conversation),
-      'selfUserId': selfUserId,
+      'conversation': IpcCodec.encodeConversation(conversation),
       'participants': participants,
       'audioOnly': audioOnly,
       'callExtra': callExtra,
-      'participantUserInfos': userInfos.map((e) => ModelCodec.encodeUserInfo(e)).toList(),
-      'groupMemberUserInfos': groupMembers.map((e) => ModelCodec.encodeGroupMember(e)).toList(),
     };
 
     await _ensureCallWindow(
@@ -146,20 +137,7 @@ class MainAvEngineKitProxy {
     bool muteAudio = false,
     bool muteVideo = false,
   }) async {
-    if (_callWindowId != null) {
-      print('$_tag call already in progress');
-      return;
-    }
-
-    final completer = Completer<void>();
-    Imclient.joinChatroom(
-      callId,
-      () => completer.complete(),
-      (errorCode) => completer.complete(),
-    );
-    await completer.future;
-
-    final args = <String, dynamic>{
+    await _enterConference(CallWindowEvents.startConference, callId, {
       'callId': callId,
       'audioOnly': audioOnly,
       'pin': pin,
@@ -173,14 +151,7 @@ class MainAvEngineKitProxy {
       'callExtra': callExtra,
       'muteAudio': muteAudio,
       'muteVideo': muteVideo,
-    };
-
-    await _ensureCallWindow(
-      conversation: null,
-      isConference: true,
-      initialEvent: CallWindowEvents.startConference,
-      initialArgs: args,
-    );
+    });
   }
 
   /// 主动加入会议。
@@ -198,20 +169,7 @@ class MainAvEngineKitProxy {
     bool muteAudio = false,
     bool muteVideo = false,
   }) async {
-    if (_callWindowId != null) {
-      print('$_tag call already in progress');
-      return;
-    }
-
-    final completer = Completer<void>();
-    Imclient.joinChatroom(
-      callId,
-      () => completer.complete(),
-      (errorCode) => completer.complete(),
-    );
-    await completer.future;
-
-    final args = <String, dynamic>{
+    await _enterConference(CallWindowEvents.joinConference, callId, {
       'callId': callId,
       'audioOnly': audioOnly,
       'pin': pin,
@@ -224,12 +182,32 @@ class MainAvEngineKitProxy {
       'callExtra': callExtra,
       'muteAudio': muteAudio,
       'muteVideo': muteVideo,
-    };
+    });
+  }
+
+  /// 创建/加入会议的公共路径:先加入会议聊天室(失败也继续,只记日志,
+  /// 与既有行为一致),再拉起会议子窗口。
+  Future<void> _enterConference(String initialEvent, String callId, Map<String, dynamic> args) async {
+    if (_callWindowId != null) {
+      print('$_tag call already in progress');
+      return;
+    }
+
+    final completer = Completer<void>();
+    Imclient.joinChatroom(
+      callId,
+      () => completer.complete(),
+      (errorCode) {
+        print('$_tag joinChatroom $callId failed: $errorCode');
+        completer.complete();
+      },
+    );
+    await completer.future;
 
     await _ensureCallWindow(
       conversation: null,
       isConference: true,
-      initialEvent: CallWindowEvents.joinConference,
+      initialEvent: initialEvent,
       initialArgs: args,
     );
   }
@@ -256,7 +234,7 @@ class MainAvEngineKitProxy {
         await _ensureCallWindowFromIncomingMessage(msg);
       }
 
-      _emitToCallWindow(CallWindowEvents.message, _messageToJson(msg));
+      _emitToCallWindow(CallWindowEvents.message, IpcCodec.encodeMessage(msg));
     }
   }
 
@@ -270,7 +248,7 @@ class MainAvEngineKitProxy {
       conversation: conversation,
       isConference: isConference,
       initialEvent: CallWindowEvents.message,
-      initialArgs: _messageToJson(msg),
+      initialArgs: IpcCodec.encodeMessage(msg),
     );
   }
 
@@ -371,35 +349,53 @@ class MainAvEngineKitProxy {
   }
 
   Future<dynamic> _handleSendMessage(dynamic args) async {
-    final conversation = _conversationFromJson(args['conversation'] as Map<String, dynamic>);
+    final requestId = args['requestId'] as int?;
+    final conversation = IpcCodec.decodeConversation(args['conversation'] as Map<String, dynamic>);
     final contentJson = args['content'] as Map<String, dynamic>;
     final content = RawVoipMessageContent.fromMap(contentJson);
     final toUsers = (args['toUsers'] as List?)?.cast<String>();
     final expireDuration = args['expireDuration'] as int? ?? 0;
 
     try {
+      // 返回值是本地入库的 message;真正的成功/失败在服务器 ack 后经
+      // sendMessageResult 事件回传给 Call 窗口,保持与移动端一致的回调语义。
       final message = await Imclient.sendMessage(
         conversation,
         content,
         toUsers: toUsers,
         expireDuration: expireDuration,
-        successCallback: (messageUid, timestamp) {},
-        errorCallback: (errorCode) {},
+        successCallback: (messageUid, timestamp) {
+          _emitSendMessageResult(requestId, 0, messageUid: messageUid, timestamp: timestamp);
+        },
+        errorCallback: (errorCode) {
+          _emitSendMessageResult(requestId, errorCode);
+        },
       );
-      return _messageToJson(message);
+      return IpcCodec.encodeMessage(message);
     } catch (e) {
       print('$_tag sendMessage failed: $e');
+      _emitSendMessageResult(requestId, -1);
       // 即使主窗口发送失败/异常，也返回一个带原 payload 的失败消息，
       // 让 Call 窗口侧能正常走完回调，避免 contentType 缺失导致的二次崩溃。
       return _buildFailedMessage(conversation, contentJson, toUsers);
     }
   }
 
+  void _emitSendMessageResult(int? requestId, int errorCode, {int messageUid = 0, int timestamp = 0}) {
+    if (requestId == null) return;
+    _emitToCallWindow(CallWindowEvents.sendMessageResult, {
+      'requestId': requestId,
+      'errorCode': errorCode,
+      'messageUid': messageUid,
+      'timestamp': timestamp,
+    });
+  }
+
   Future<dynamic> _handleSendConferenceRequest(dynamic args) async {
     final sessionId = args['sessionId'] as int;
     final roomId = args['roomId'] as String;
     final request = args['request'] as String;
-    final advance = args['advance'] as bool? ?? false;
+    final advance = args['advanced'] as bool? ?? false;
     final data = args['data'] as String? ?? '';
 
     final completer = Completer<dynamic>();
@@ -430,7 +426,7 @@ class MainAvEngineKitProxy {
   Future<dynamic> _handleGetMessageByUid(dynamic args) async {
     final messageUid = args['messageUid'] as int;
     final message = await Imclient.getMessageByUid(messageUid);
-    return message != null ? _messageToJson(message) : null;
+    return message != null ? IpcCodec.encodeMessage(message) : null;
   }
 
   Future<dynamic> _handleGetUserInfo(dynamic args) async {
@@ -500,70 +496,6 @@ class MainAvEngineKitProxy {
         type == mc.VOIP_CONTENT_JOIN_CALL_REQUEST;
   }
 
-  Future<List<UserInfo>> _getParticipantUserInfos(
-      Conversation conversation, List<String> participants) async {
-    final allUserIds = [Imclient.currentUserId, ...participants];
-    final userInfos = await Imclient.getUserInfos(
-      allUserIds,
-      groupId: conversation.conversationType == ConversationType.Group
-          ? conversation.target
-          : null,
-    );
-    return userInfos;
-  }
-
-  Map<String, dynamic> _conversationToJson(Conversation conversation) {
-    return {
-      'conversationType': conversation.conversationType.index,
-      'target': conversation.target,
-      'line': conversation.line,
-    };
-  }
-
-  Conversation _conversationFromJson(Map<String, dynamic> json) {
-    // 兼容 IM channel 的 proto map（key 为 type）和本地编码（key 为 conversationType）。
-    final typeIndex = json['conversationType'] as int? ?? json['type'] as int;
-    return Conversation(
-      conversationType: ConversationType.values[typeIndex],
-      target: json['target'] as String,
-      line: json['line'] as int? ?? 0,
-    );
-  }
-
-  Map<String, dynamic> _messageToJson(Message message) {
-    final payload = message.content.encode();
-    return {
-      'messageId': message.messageId,
-      'messageUid': message.messageUid,
-      'conversation': _conversationToJson(message.conversation),
-      'fromUser': message.fromUser,
-      'toUsers': message.toUsers,
-      'direction': message.direction.index,
-      'status': message.status.index,
-      'serverTime': message.serverTime,
-      'localExtra': message.localExtra,
-      'content': _payloadToJson(payload),
-    };
-  }
-
-  Map<String, dynamic> _payloadToJson(MessagePayload payload) {
-    return {
-      'contentType': payload.contentType,
-      'searchableContent': payload.searchableContent,
-      'pushContent': payload.pushContent,
-      'pushData': payload.pushData,
-      'content': payload.content,
-      'binaryContent': payload.binaryContent != null ? base64Encode(payload.binaryContent!) : null,
-      'localContent': payload.localContent,
-      'mentionedType': payload.mentionedType,
-      'mentionedTargets': payload.mentionedTargets,
-      'mediaType': payload.mediaType.index,
-      'remoteMediaUrl': payload.remoteMediaUrl,
-      'localMediaPath': payload.localMediaPath,
-      'extra': payload.extra,
-    };
-  }
-
   Map<String, dynamic> _buildFailedMessage(
     Conversation conversation,
     Map<String, dynamic> contentJson,
@@ -573,14 +505,14 @@ class MainAvEngineKitProxy {
     return {
       'messageId': 0,
       'messageUid': null,
-      'conversation': _conversationToJson(conversation),
+      'conversation': IpcCodec.encodeConversation(conversation),
       'fromUser': Imclient.currentUserId,
       'toUsers': toUsers,
       'direction': MessageDirection.MessageDirection_Send.index,
       'status': MessageStatus.Message_Status_Send_Failure.index,
       'serverTime': DateTime.now().millisecondsSinceEpoch,
       'localExtra': null,
-      'content': _payloadToJson(payload),
+      'content': IpcCodec.encodePayload(payload),
     };
   }
 

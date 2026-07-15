@@ -9,14 +9,15 @@ import 'package:flutter/services.dart';
 /// - 主窗口调用 Call 窗口：invokeMethod(callWindowId, method, args)
 /// - Call 窗口调用主窗口：invokeMethod(0, method, args)
 ///
-/// 所有跨窗口消息都序列化为 JSON 字符串，避免 isolate 之间传递复杂对象。
+/// 跨窗口传递 Map/List/基本类型(method channel 原生支持),不做 JSON 字符串化;
+/// [_encode]/[_decode] 只做类型归一化。
+///
+/// 注意:[listen] 底层是 [DesktopMultiWindow.setMethodHandler],**进程内全局唯一**,
+/// 每个窗口(isolate)只允许存在一个正在 listen 的实例,后 listen 的会顶掉前者。
 class CallWindowEventChannel {
   static const String _tag = 'CallWindowEventChannel';
 
-  final int _windowId;
   final Map<String, Future<dynamic> Function(dynamic args)> _handlers = {};
-
-  CallWindowEventChannel(this._windowId);
 
   /// 注册消息处理器。
   void register(String method, Future<dynamic> Function(dynamic args) handler) {
@@ -103,6 +104,9 @@ class CallWindowEvents {
 
   /// 转发 IM 连接状态变化。
   static const String connectionStatus = 'voip.connectionStatus';
+
+  /// 回传 sendMessage 的服务器 ack/失败结果(requestId/errorCode/messageUid/timestamp)。
+  static const String sendMessageResult = 'voip.sendMessageResult';
 
   /// 主动发起单人/多人通话。
   static const String startCall = 'voip.startCall';

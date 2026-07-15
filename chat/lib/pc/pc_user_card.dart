@@ -4,7 +4,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
-import 'package:chat/pc/pc_av_call.dart';
+import 'package:chat/call/av_call_launcher.dart';
 import 'package:chat/pc/widgets/pc_icon_action.dart';
 import 'package:chat/pc/widgets/pc_popover.dart';
 import 'package:chat/user_info_widget.dart';

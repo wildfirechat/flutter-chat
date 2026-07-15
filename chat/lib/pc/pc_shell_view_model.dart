@@ -28,8 +28,6 @@ class PCShellViewModel extends ChangeNotifier {
   String? _selectedContactItemId;
 
   CallSession? _activeCallSession;
-  bool _callWindowMinimized = false;
-  Offset _callWindowPosition = const Offset(120, 80);
 
   /// 重置导航状态。PCHome 的 initState 调用(登出后再登录不残留上个账号的选中态)。
   /// 不 notify:调用点处于构建期,新子树随后整体首建,自然读到重置后的值。
@@ -38,7 +36,6 @@ class PCShellViewModel extends ChangeNotifier {
     _selectedConversation = null;
     _selectedContactItemId = null;
     _activeCallSession = null;
-    _callWindowMinimized = false;
     conversationOpener = null;
     pageOpener = null;
     paneCloser = null;
@@ -55,29 +52,14 @@ class PCShellViewModel extends ChangeNotifier {
   }
 
   CallSession? get activeCallSession => _activeCallSession;
-  bool get callWindowMinimized => _callWindowMinimized;
-  Offset get callWindowPosition => _callWindowPosition;
 
   void startCallSession(CallSession session) {
     _activeCallSession = session;
-    _callWindowMinimized = false;
-    _callWindowPosition = const Offset(120, 80);
     notifyListeners();
   }
 
   void endCallSession() {
     _activeCallSession = null;
-    _callWindowMinimized = false;
-    notifyListeners();
-  }
-
-  void minimizeCallWindow(bool minimize) {
-    _callWindowMinimized = minimize;
-    notifyListeners();
-  }
-
-  void setCallWindowPosition(Offset position) {
-    _callWindowPosition = position;
     notifyListeners();
   }
 

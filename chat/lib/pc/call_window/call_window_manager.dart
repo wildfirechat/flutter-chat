@@ -1,11 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
-import 'dart:math';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
-import 'package:window_manager/window_manager.dart';
 
 /// Call 窗口类型。
 enum CallWindowType {
@@ -130,17 +127,11 @@ class CallWindowManager {
 
   Future<void> _applyWindowStyle(WindowController controller, CallWindowType type) async {
     final size = _windowSizeFor(type);
-    final title = _windowTitleFor(type);
 
-    await controller.setTitle(title);
+    // 标题、无边框等样式由子窗口在启动后按自身 locale 通过 window_manager 设置。
     await controller.setFrame(
       Rect.fromLTWH(0, 0, size.width, size.height),
     );
-
-    // 会议窗口使用无边框样式，需要在子窗口侧通过 window_manager 设置。
-    if (type == CallWindowType.conference) {
-      // conference 子窗口会在启动后自行设置无边框。
-    }
   }
 
   Size _windowSizeFor(CallWindowType type) {
@@ -151,17 +142,6 @@ class CallWindowManager {
       case CallWindowType.multi:
       case CallWindowType.conference:
         return const Size(960, 600);
-    }
-  }
-
-  String _windowTitleFor(CallWindowType type) {
-    switch (type) {
-      case CallWindowType.single:
-        return '音视频通话';
-      case CallWindowType.multi:
-        return '多人通话';
-      case CallWindowType.conference:
-        return '会议';
     }
   }
 

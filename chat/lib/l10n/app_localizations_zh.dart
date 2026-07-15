@@ -2885,4 +2885,7 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String get pcRestoreToMobileHint =>
       '请在手机端进入“备份与恢复”，选择“从 PC 恢复”，电脑端将收到请求并弹出确认框。';
+
+  @override
+  String get multiCallWindowTitle => '多人通话';
 }

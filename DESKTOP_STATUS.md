@@ -324,3 +324,17 @@ analyze 0 error。
 - 应用 Linux 工程：`chat/linux/`
 - 平台限制代码：`chat/lib/conversation/input_bar/plugin_board.dart`
 - 通知代码：`chat/lib/wfc_notification_manager.dart`
+
+## 7. 2026-07-15 修复轮(针对 7628e4d..437e830 的 review 整改)
+
+### 7.1 PC 多窗口通话链路修复
+- **avenginekit 子模块指针**:chat 侧代码依赖 `video_type.dart`(avenginekit `conference_new` 分支 `0996f3e`),此前主仓库记录的指针停在 `8065436`,fresh clone 编译失败。已检出 `0996f3e`,指针变更需随下一次提交入库。
+- **子窗口事件桥**:主窗口转发来的 IM 消息/会议事件/连接状态,此前只直调 `avEngineKit`,子窗口 isolate 的 `IMEventBus` 无人 fire,导致 `ConferenceManager`(举手/申请开麦/全体静音等命令接收)在 PC 端完全失效。现统一 fire 到子窗口 `IMEventBus`,与移动端事件分发同构(`call_window_app.dart`)。
+- **sendMessage 回调语义**:主窗口现把真实的服务器 ack/失败经 `voip.sendMessageResult` 事件回传,子窗口经 `ImclientPlatform.dispatchSendMessageResult` 按移动端 `onSendMessageSuccess/Failure` 语义分发并清理 requestId 状态(修复:错误回调永不触发 + 回调 map/_sendingMessages 泄漏)。内部回调 map 不再对外公开。
+- **IPC 线格式统一**:新增 `chat/lib/pc/call_window/ipc_codec.dart`,是跨窗口线格式唯一定义处;格式与 imclient proto map 一致('type' key、binaryContent base64),SDK 侧此前为 IPC 加的 key 别名(`content ?? payload`、`type ?? contentType`)已回退。
+- **通话入口收敛**:`chat/lib/call/av_call_launcher.dart` 是发起音视频通话的唯一入口(桌面/移动分流 + "通话进行中"判断);`pc/pc_av_call.dart` 与 `conversation/av_single_call.dart` 已删除。
+
+### 7.2 其他
+- `setTrafficDataListener` 在桌面 FFI 侧已禁用(见 `imclient_ffi_channel.dart`,注册该监听会导致问题,待查)。
+- 会议相关 l10n:~65 个 `conference*` key 已补齐英文翻译;Call 子窗口标题走 l10n(`multiCallWindowTitle` 等)。
+- 已知遗留:会议历史/收藏由子窗口写 SharedPreferences、主窗口读,两个 isolate 各有内存缓存,主窗口列表可能要重启才刷新(待验证/加 reload)。

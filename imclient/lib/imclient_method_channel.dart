@@ -117,15 +117,6 @@ class ImclientPlatform extends PlatformInterface {
 
   static final Map<int, dynamic> _operationSuccessCallbackMap = {};
 
-  /// 供 Call 窗口代理使用，获取发送消息成功回调映射。
-  static Map<int, SendMessageSuccessCallback> get sendMessageSuccessCallbackMap => _sendMessageSuccessCallbackMap;
-
-  /// 供 Call 窗口代理使用，获取操作失败回调映射。
-  static Map<int, OperationFailureCallback> get errorCallbackMap => _errorCallbackMap;
-
-  /// 供 Call 窗口代理使用，获取通用操作成功回调映射。
-  static Map<int, dynamic> get operationSuccessCallbackMap => _operationSuccessCallbackMap;
-
   /// 桌面端撤回消息成功后 SDK 不主动分发 [onRecallMessage]，需要依据 requestId 补发。
   /// key: requestId, value: messageUid
   static final Map<int, int> _recallMessageRequestMap = {};
@@ -865,6 +856,59 @@ class ImclientPlatform extends PlatformInterface {
     _recallMessageRequestMap.remove(requestId);
   }
 
+  /// 供 PC 端 Call 窗口代理通道使用:主窗口异步回传发送结果后,按
+  /// onSendMessageSuccess / onSendMessageFailure 的既有语义触发回调、
+  /// 更新发送中消息并清理 requestId 关联状态,避免回调 map 泄漏。
+  static void dispatchSendMessageResult(int requestId, int errorCode,
+      {int messageUid = 0, int timestamp = 0}) {
+    if (errorCode == 0) {
+      var callback = _sendMessageSuccessCallbackMap[requestId];
+      if (callback != null) {
+        callback(messageUid, timestamp);
+      }
+      _removeSendMessageCallback(requestId);
+
+      Message? message = _sendingMessages.remove(requestId);
+      if (message == null) {
+        return;
+      }
+      message.messageUid = messageUid;
+      message.serverTime = timestamp;
+      message.status = MessageStatus.Message_Status_Sent;
+      _eventBus.fire(SendMessageSuccessEvent(message, message.messageId, messageUid, timestamp));
+    } else {
+      var callback = _errorCallbackMap[requestId];
+      if (callback != null) {
+        callback(errorCode);
+      }
+      _removeAllOperationCallback(requestId);
+
+      Message? message = _sendingMessages.remove(requestId);
+      if (message == null) {
+        return;
+      }
+      message.status = MessageStatus.Message_Status_Send_Failure;
+      _eventBus.fire(SendMessageFailureEvent(message, message.messageId, errorCode));
+    }
+  }
+
+  /// 供 PC 端 Call 窗口代理通道使用:按 onSendConferenceRequestSuccess /
+  /// onSendConferenceRequestFailure 的既有语义触发回调并清理关联状态。
+  static void dispatchConferenceRequestResult(int requestId, int errorCode, String result) {
+    if (errorCode == 0) {
+      var callback = _operationSuccessCallbackMap[requestId];
+      if (callback != null) {
+        callback(result);
+      }
+    } else {
+      var callback = _errorCallbackMap[requestId];
+      if (callback != null) {
+        callback(errorCode);
+      }
+    }
+    _removeOperationCallback(requestId);
+  }
+
   void registerMessage(MessageContentMeta contentMeta) {
     _contentMetaMap[contentMeta.type] = contentMeta;
     Map<String, dynamic> map = {};
@@ -900,7 +944,7 @@ class ImclientPlatform extends PlatformInterface {
       msg.toUsers = Tools.convertDynamicList(toUsers);
     }
     msg.content =
-        decodeMessageContent(_convertProtoMessageContent(map['content'] ?? map['payload']));
+        decodeMessageContent(_convertProtoMessageContent(map['content']));
     msg.direction = MessageDirection.values[map['direction'] ?? 0];
     msg.status = MessageStatus.values[map['status'] ?? 0];
     msg.serverTime = map.containsKey('serverTime') ? (map['serverTime'] ?? 0) : (map['timestamp'] ?? 0);
@@ -1125,7 +1169,7 @@ class ImclientPlatform extends PlatformInterface {
       return MessagePayload();
     }
     MessagePayload payload = MessagePayload();
-    payload.contentType = (map['type'] ?? map['contentType']) ?? 0;
+    payload.contentType = map['type'] ?? 0;
     payload.searchableContent = map['searchableContent'];
     payload.pushContent = map['pushContent'];
     payload.pushData = map['pushData'];

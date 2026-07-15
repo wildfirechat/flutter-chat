@@ -5480,6 +5480,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'请在手机端进入“备份与恢复”，选择“从 PC 恢复”，电脑端将收到请求并弹出确认框。'**
   String get pcRestoreToMobileHint;
+
+  /// No description provided for @multiCallWindowTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'多人通话'**
+  String get multiCallWindowTitle;
 }
 
 class _AppLocalizationsDelegate

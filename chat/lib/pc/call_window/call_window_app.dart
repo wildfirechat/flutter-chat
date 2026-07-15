@@ -1,25 +1,18 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:avenginekit/engine/avengine_callback.dart';
 import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:avenginekit/engine/call_end_reason.dart';
 import 'package:avenginekit/engine/call_session.dart';
 import 'package:avenginekit/engine/call_state.dart';
-import 'package:avenginekit/engine/call_state.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/imclient_method_channel.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../call/conference/conference_call_screen.dart';
-import '../../call/conference/join_conference_view.dart';
 import '../../call/multi_call_screen.dart';
 import '../../call/voip_call_screen.dart';
 import '../../l10n/app_localizations.dart';
@@ -31,7 +24,7 @@ import '../../viewmodel/user_view_model.dart';
 import 'call_window_event_channel.dart';
 import 'call_window_imclient_proxy.dart';
 import 'call_window_manager.dart';
-
+import 'ipc_codec.dart';
 import 'voip_message_codec.dart';
 
 /// Call 窗口的入口 Widget。
@@ -100,10 +93,14 @@ class _CallWindowAppState extends State<CallWindowApp>
       print('$_tag channel replaced');
 
       // 2. 监听主窗口转发来的事件。
-      _eventChannel = CallWindowEventChannel(widget.windowId);
+      _eventChannel = CallWindowEventChannel();
       _eventChannel.register(CallWindowEvents.message, _handleMessage);
       _eventChannel.register(CallWindowEvents.conferenceEvent, _handleConferenceEvent);
       _eventChannel.register(CallWindowEvents.connectionStatus, _handleConnectionStatus);
+      _eventChannel.register(CallWindowEvents.sendMessageResult, (args) async {
+        _imclientProxy.handleSendMessageResult(args);
+        return null;
+      });
       _eventChannel.register(CallWindowEvents.startCall, _handleStartCall);
       _eventChannel.register(CallWindowEvents.startConference, _handleStartConference);
       _eventChannel.register(CallWindowEvents.joinConference, _handleJoinConference);
@@ -147,7 +144,7 @@ class _CallWindowAppState extends State<CallWindowApp>
       await _fontSizeViewModel.load();
       await _localeViewModel.load();
       print('$_tag preferences loaded');
-    } catch (e, s) {
+    } catch (e) {
       print('$_tag load preferences failed: $e');
     }
   }
@@ -176,6 +173,8 @@ class _CallWindowAppState extends State<CallWindowApp>
     await windowManager.waitUntilReadyToShow();
     print('$_tag waitUntilReadyToShow done');
 
+    await windowManager.setTitle(_windowTitleFor(type));
+
     if (type == CallWindowType.conference) {
       print('$_tag set conference style');
       await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
@@ -189,26 +188,47 @@ class _CallWindowAppState extends State<CallWindowApp>
     print('$_tag show done');
   }
 
+  /// 子窗口没有挂在 MaterialApp 下的 context 可用,按当前语言设置直接解析 l10n。
+  String _windowTitleFor(CallWindowType type) {
+    final locale = basicLocaleListResolution(
+      [_localeViewModel.locale ?? WidgetsBinding.instance.platformDispatcher.locale],
+      AppLocalizations.supportedLocales,
+    );
+    final l10n = lookupAppLocalizations(locale);
+    switch (type) {
+      case CallWindowType.single:
+        return l10n.audioVideoCall;
+      case CallWindowType.multi:
+        return l10n.multiCallWindowTitle;
+      case CallWindowType.conference:
+        return l10n.conferenceTitle;
+    }
+  }
+
   //region 主窗口事件处理
+
+  // 主窗口转发来的事件统一 fire 到本 isolate 的 IMEventBus,与移动端的事件分发
+  // 保持同构:avenginekit(init 时已订阅)、ConferenceManager 等所有订阅者都能收到,
+  // 而不是只有 avenginekit 一家(直调 avEngineKit 会让其它总线订阅者收不到消息)。
 
   Future<dynamic> _handleMessage(dynamic args) async {
     final msg = _messageFromJson(args as Map<String, dynamic>);
-    avEngineKit.onReceiveMessages([msg], false);
+    Imclient.IMEventBus.fire(ReceiveMessagesEvent([msg], false));
     return null;
   }
 
   Future<dynamic> _handleConferenceEvent(dynamic args) async {
-    avEngineKit.onConferenceEvent(args as String);
+    Imclient.IMEventBus.fire(ConferenceEvent(args as String));
     return null;
   }
 
   Future<dynamic> _handleConnectionStatus(dynamic args) async {
-    _imclientProxy.dispatchMethodCall('connectionStatusChanged', args);
+    Imclient.IMEventBus.fire(ConnectionStatusChangedEvent(args as int));
     return null;
   }
 
   Future<dynamic> _handleStartCall(dynamic args) async {
-    final conversation = _conversationFromJson(args['conversation'] as Map<String, dynamic>);
+    final conversation = IpcCodec.decodeConversation(args['conversation'] as Map<String, dynamic>);
     final participants = (args['participants'] as List).cast<String>();
     final audioOnly = args['audioOnly'] as bool;
     final callExtra = args['callExtra'] as String? ?? '';
@@ -387,13 +407,5 @@ class _CallWindowAppState extends State<CallWindowApp>
 
   Message _messageFromJson(Map<String, dynamic> json) {
     return VoipMessageCodec.decodeMessage(json);
-  }
-
-  Conversation _conversationFromJson(Map<String, dynamic> json) {
-    return Conversation(
-      conversationType: ConversationType.values[json['conversationType'] as int],
-      target: json['target'] as String,
-      line: json['line'] as int? ?? 0,
-    );
   }
 }

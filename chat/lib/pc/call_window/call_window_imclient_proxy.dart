@@ -12,18 +12,15 @@ import 'call_window_event_channel.dart';
 /// 所有 IM 调用都通过 [CallWindowEventChannel] 转发到主窗口执行，
 /// 主窗口执行真实 [Imclient] 后再把结果返回。
 ///
-/// 对于 [sendMessage] / [sendConferenceRequest] 这类带异步回调的调用，
-/// 本代理会在 Call 窗口侧保存 requestId 到 callback 的映射，等主窗口
-/// 返回结果后再主动触发回调。
+/// 对于 [sendMessage] 这类带异步回调的调用，回调仍注册在
+/// [ImclientPlatform] 的既有 requestId 映射里;主窗口拿到服务器
+/// ack/失败后经 `voip.sendMessageResult` 事件回传,由
+/// [handleSendMessageResult] 走 [ImclientPlatform.dispatchSendMessageResult]
+/// 统一触发回调并清理,与移动端 onSendMessageSuccess/Failure 语义一致。
 class CallWindowImclientChannel implements ImclientChannel {
   static const String _tag = 'CallWindowImclientChannel';
 
   final int _mainWindowId = 0;
-  Future<dynamic> Function(MethodCall call)? _methodCallHandler;
-
-  int _requestId = 0;
-  final Map<int, Function> _successCallbacks = {};
-  final Map<int, Function> _errorCallbacks = {};
 
   @override
   Future<T?> invokeMethod<T>(String method, [dynamic arguments]) async {
@@ -69,14 +66,21 @@ class CallWindowImclientChannel implements ImclientChannel {
 
   @override
   void setMethodCallHandler(Future<dynamic> Function(MethodCall call)? handler) {
-    _methodCallHandler = handler;
+    // Call 窗口不执行 ImclientPlatform.init,没有原生事件会经此 handler 分发;
+    // 主窗口转发来的事件由 CallWindowApp 直接 fire 到本 isolate 的 IMEventBus。
   }
 
-  /// 主窗口把 IM 事件转发过来时，还原成 [MethodCall] 喂给 handler。
-  void dispatchMethodCall(String method, dynamic args) {
-    if (_methodCallHandler == null) return;
-    final call = MethodCall(method, args);
-    _methodCallHandler!(call);
+  /// 主窗口经 `voip.sendMessageResult` 回传的发送结果。
+  void handleSendMessageResult(dynamic args) {
+    final map = args as Map<dynamic, dynamic>;
+    final requestId = map['requestId'] as int?;
+    if (requestId == null) return;
+    ImclientPlatform.dispatchSendMessageResult(
+      requestId,
+      map['errorCode'] as int? ?? 0,
+      messageUid: map['messageUid'] as int? ?? 0,
+      timestamp: map['timestamp'] as int? ?? 0,
+    );
   }
 
   Future<dynamic> _sendMessage(dynamic args) async {
@@ -87,7 +91,9 @@ class CallWindowImclientChannel implements ImclientChannel {
     final expireDuration = map['expireDuration'] as int? ?? 0;
     final requestId = map['requestId'] as int;
 
-    final result = await CallWindowEventChannel.invoke(
+    // 返回值只是主窗口本地入库的 message(与移动端 sendMessage 的返回语义一致);
+    // 成功/失败回调由主窗口在服务器 ack 后经 sendMessageResult 事件异步回传。
+    return await CallWindowEventChannel.invoke(
       _mainWindowId,
       MainWindowEvents.sendMessage,
       {
@@ -98,21 +104,6 @@ class CallWindowImclientChannel implements ImclientChannel {
         'expireDuration': expireDuration,
       },
     );
-
-    final errorCode = (result is Map) ? (result['errorCode'] as int? ?? 0) : 0;
-    if (errorCode == 0) {
-      final successCb = _sendMessageSuccessCallback(requestId);
-      if (successCb != null) {
-        final messageUid = (result is Map) ? result['messageUid'] as int? ?? 0 : 0;
-        final serverTime = (result is Map) ? result['serverTime'] as int? ?? 0 : 0;
-        successCb(messageUid, serverTime);
-      }
-    } else {
-      final errorCb = _sendMessageErrorCallback(requestId);
-      errorCb?.call(errorCode);
-    }
-
-    return result;
   }
 
   Future<dynamic> _sendConferenceRequest(dynamic args) async {
@@ -120,7 +111,7 @@ class CallWindowImclientChannel implements ImclientChannel {
     final sessionId = map['sessionId'] as int;
     final roomId = map['roomId'] as String;
     final request = map['request'] as String;
-    final advance = map['advanced'] as bool? ?? false;
+    final advanced = map['advanced'] as bool? ?? false;
     final data = map['data'] as String? ?? '';
     final requestId = map['requestId'] as int;
 
@@ -132,31 +123,22 @@ class CallWindowImclientChannel implements ImclientChannel {
         'sessionId': sessionId,
         'roomId': roomId,
         'request': request,
-        'advance': advance,
+        'advanced': advanced,
         'data': data,
       },
     );
 
     final errorCode = (result is Map) ? (result['errorCode'] as int? ?? 0) : 0;
-    if (errorCode == 0) {
-      final successCb = _conferenceSuccessCallback(requestId);
-      if (successCb != null) {
-        final raw = (result is Map) ? result['result'] : null;
-        final String? payload;
-        if (raw == null) {
-          payload = null;
-        } else if (raw is String) {
-          payload = raw;
-        } else {
-          payload = jsonEncode(raw);
-        }
-        successCb(payload);
-      }
+    final raw = (result is Map) ? result['result'] : null;
+    final String payload;
+    if (raw == null) {
+      payload = '';
+    } else if (raw is String) {
+      payload = raw;
     } else {
-      final errorCb = _conferenceErrorCallback(requestId);
-      errorCb?.call(errorCode);
+      payload = jsonEncode(raw);
     }
-
+    ImclientPlatform.dispatchConferenceRequestResult(requestId, errorCode, payload);
     return result;
   }
 
@@ -247,21 +229,5 @@ class CallWindowImclientChannel implements ImclientChannel {
 
   Future<dynamic> _invokeSimple(String event, dynamic args) async {
     return await CallWindowEventChannel.invoke(_mainWindowId, event, args);
-  }
-
-  Function? _sendMessageSuccessCallback(int requestId) {
-    return ImclientPlatform.sendMessageSuccessCallbackMap[requestId];
-  }
-
-  Function? _sendMessageErrorCallback(int requestId) {
-    return ImclientPlatform.errorCallbackMap[requestId];
-  }
-
-  Function? _conferenceSuccessCallback(int requestId) {
-    return ImclientPlatform.operationSuccessCallbackMap[requestId];
-  }
-
-  Function? _conferenceErrorCallback(int requestId) {
-    return _sendMessageErrorCallback(requestId);
   }
 }

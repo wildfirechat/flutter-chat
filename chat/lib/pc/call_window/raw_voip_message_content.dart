@@ -1,10 +1,10 @@
 import 'dart:convert';
-import 'dart:developer';
-import 'dart:typed_data';
 
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/message_payload.dart';
+
+import 'ipc_codec.dart';
 
 /// 主窗口用来“占位”所有 VOIP 消息类型的通用内容类。
 ///
@@ -19,10 +19,10 @@ class RawVoipMessageContent extends MessageContent {
   MessagePayload? _payload;
 
   factory RawVoipMessageContent.fromMap(Map<String, dynamic> map) {
-    final type = (map['contentType'] as int?) ?? (map['type'] as int?) ?? 0;
-    final flag = _voipFlags[type] ?? MessageFlag.NOT_PERSIST;
-    final content = RawVoipMessageContent(type, flag);
-    content._payload = _payloadFromMap(map);
+    final payload = IpcCodec.decodePayload(map);
+    final flag = _voipFlags[payload.contentType] ?? MessageFlag.NOT_PERSIST;
+    final content = RawVoipMessageContent(payload.contentType, flag);
+    content._payload = payload;
     return content;
   }
 
@@ -62,35 +62,6 @@ class RawVoipMessageContent extends MessageContent {
       }
     }
     return _voipDigest[_type] ?? '通话消息';
-  }
-
-  static MessagePayload _payloadFromMap(Map<String, dynamic> map) {
-    final payload = MessagePayload();
-    payload.contentType = (map['contentType'] as int?) ?? (map['type'] as int?) ?? 0;
-    payload.searchableContent = map['searchableContent'] as String?;
-    payload.pushContent = map['pushContent'] as String?;
-    payload.pushData = map['pushData'] as String?;
-    payload.content = map['content'] as String?;
-    final binary = map['binaryContent'];
-    if (binary is Uint8List) {
-      payload.binaryContent = binary;
-    } else if (binary is List) {
-      // MethodChannel/FFI 透传时 Uint8List 常被重新实例化为 List<dynamic>
-      //（运行时类型如 _GrowableList），需要显式转回 Uint8List。
-      payload.binaryContent = Uint8List.fromList(List<int>.from(binary));
-    } else if (binary is String && binary.isNotEmpty) {
-      payload.binaryContent = base64Decode(binary);
-    } else if (binary != null) {
-      log('RawVoipMessageContent unexpected binary type: ${binary.runtimeType}');
-    }
-    payload.localContent = map['localContent'] as String?;
-    payload.mentionedType = (map['mentionedType'] as int?) ?? 0;
-    payload.mentionedTargets = (map['mentionedTargets'] as List?)?.cast<String>();
-    payload.mediaType = MediaType.values[(map['mediaType'] as int?) ?? 0];
-    payload.remoteMediaUrl = map['remoteMediaUrl'] as String?;
-    payload.localMediaPath = map['localMediaPath'] as String?;
-    payload.extra = map['extra'] as String?;
-    return payload;
   }
 }
 

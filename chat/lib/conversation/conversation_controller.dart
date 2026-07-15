@@ -27,7 +27,7 @@ import 'package:avenginekit/internal/avenginekit_impl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/media_cell_anchor.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
-import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
+import 'package:chat/call/av_call_launcher.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -99,14 +99,14 @@ class ConversationController extends ChangeNotifier {
               label: AppLocalizations.of(context)!.videoCallAction,
               icon: Icons.videocam_rounded,
               onTap: () {
-                _startSingleCall(conversation, false);
+                startAvCallWithParticipants(context, conversation, [conversation.target], audioOnly: false);
               },
             ),
             BottomActionSheetItem(
               label: AppLocalizations.of(context)!.audioCallAction,
               icon: Icons.call_rounded,
               onTap: () {
-                _startSingleCall(conversation, true);
+                startAvCallWithParticipants(context, conversation, [conversation.target], audioOnly: true);
               },
             ),
           ],
@@ -151,15 +151,15 @@ class ConversationController extends ChangeNotifier {
         MaterialPageRoute(
             builder: (context) => PickUserScreen(
                   title: AppLocalizations.of(context)!.pickGroupMember,
-                  (context, selectedMembers) async {
+                  (pickerContext, selectedMembers) async {
                     final participants = selectedMembers.where((memberId) => memberId != Imclient.currentUserId).toList();
                     if (participants.isEmpty) {
                       showToast(
-                          msg: AppLocalizations.of(context)!
+                          msg: AppLocalizations.of(pickerContext)!
                               .selectMemberToCall);
                     } else {
-                      Navigator.pop(context);
-                      _startGroupCall(conversation, participants, audioOnly);
+                      Navigator.pop(pickerContext);
+                      startAvCallWithParticipants(context, conversation, participants, audioOnly: audioOnly);
                     }
                   },
                   maxSelected: 9,
@@ -169,22 +169,6 @@ class ConversationController extends ChangeNotifier {
                 )),
       );
     });
-  }
-
-  void _startSingleCall(Conversation conversation, bool audioOnly) {
-    if (isDesktopShell) {
-      MainAvEngineKitProxy.instance.startCall(conversation, [conversation.target], audioOnly);
-    } else {
-      avEngineKit.startCall(conversation, [conversation.target], audioOnly);
-    }
-  }
-
-  void _startGroupCall(Conversation conversation, List<String> participants, bool audioOnly) {
-    if (isDesktopShell) {
-      MainAvEngineKitProxy.instance.startCall(conversation, participants, audioOnly);
-    } else {
-      avEngineKit.startCall(conversation, participants, audioOnly);
-    }
   }
 
   void onPressCardBtn(BuildContext context, Conversation conversation) {
