@@ -15,6 +15,7 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/call/conference/join_conference_view.dart';
+import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/contact/search_user.dart';
@@ -351,17 +352,21 @@ class HomeTabBarState extends State<HomeTabBar> {
         showToast(msg: AppLocalizations.of(context)!.channelNotSupport);
         break;
       case WfcScheme.qrCodePrefixConference:
-        String? password;
-        try {
-          Uri uri = Uri.parse(qrcode);
-          password = uri.queryParameters['pwd'];
-        } catch (e) {
-          // ignore
+        if (avEngineKit.isSupportConference()) {
+          String? password;
+          try {
+            Uri uri = Uri.parse(qrcode);
+            password = uri.queryParameters['pwd'];
+          } catch (e) {
+            // ignore
+          }
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => JoinConferenceView(initialConferenceId: value)));
+        } else {
+          showToast(msg: AppLocalizations.of(context)!.conferenceNotSupport);
         }
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => JoinConferenceView(initialConferenceId: value)));
         break;
       default:
         showToast(msg: AppLocalizations.of(context)!.scanResult(qrcode));

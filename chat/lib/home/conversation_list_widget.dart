@@ -600,9 +600,21 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     if (conversationInfo.lastMessage == null) {
       return Text('', style: textStyle);
     }
+    final message = conversationInfo.lastMessage!;
+    // 自己发出去的消息，或者收到的通知类消息，摘要前不显示发送者名字
+    final showSender = message.direction == MessageDirection.MessageDirection_Receive &&
+        message.content is! NotificationMessageContent;
+    if (!showSender) {
+      return Text(
+        lastMsgDigest,
+        style: textStyle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
     final senderName = lastMessageSender != null
         ? MeshUserDisplay.getReadableNameSpan(lastMessageSender, style: textStyle)
-        : TextSpan(text: '<${conversationInfo.lastMessage!.fromUser}>', style: textStyle);
+        : TextSpan(text: '<${message.fromUser}>', style: textStyle);
     return Text.rich(
       TextSpan(
         children: [

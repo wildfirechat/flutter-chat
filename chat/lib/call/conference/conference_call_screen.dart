@@ -770,6 +770,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: Stack(
+            fit: StackFit.expand,
             alignment: Alignment.center,
             children: [
               if (showVideo)

@@ -15,8 +15,11 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 
 /// 会议入口页：加入/发起/预定 + 收藏/历史列表
+/// [isEmbedded] 为 true 时用于 PC 中栏嵌入,不显示 Scaffold/AppBar/左侧操作面板。
 class ConferenceHomeScreen extends StatefulWidget {
-  const ConferenceHomeScreen({Key? key}) : super(key: key);
+  final bool isEmbedded;
+
+  const ConferenceHomeScreen({Key? key, this.isEmbedded = false}) : super(key: key);
 
   @override
   State<ConferenceHomeScreen> createState() => _ConferenceHomeScreenState();
@@ -220,6 +223,9 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isEmbedded) {
+      return _buildBodyContent(context);
+    }
     return Scaffold(
       backgroundColor: context.colors.primaryBackground,
       appBar: AppBar(
@@ -264,37 +270,63 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
             ),
           ),
           VerticalDivider(color: context.colors.hairlineSoft, width: 1),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('即将开始',
-                      style: AppText.base.copyWith(
-                          color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 12),
-                  if (_loadingFav && _favConferences.isEmpty)
-                    Center(
-                        child: CircularProgressIndicator(color: context.colors.iconSecondary)),
-                  if (!_loadingFav && _favConferences.isEmpty)
-                    Text('暂无收藏会议',
-                        style: TextStyle(color: context.colors.textSecondary)),
-                  ..._favConferences.map((e) => _buildConferenceTile(e)),
-                  const SizedBox(height: 24),
-                  Text('历史记录',
-                      style: AppText.base.copyWith(
-                          color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 12),
-                  if (_historyConferences.isEmpty)
-                    Text('暂无历史记录',
-                        style: TextStyle(color: context.colors.textSecondary)),
-                  ..._historyConferences
-                      .map((e) => _buildConferenceTile(e, isHistory: true)),
-                ],
-              ),
+          Expanded(child: _buildBodyContent(context)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBodyContent(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (widget.isEmbedded) ...[
+            _buildActionCard(
+              icon: Icons.login,
+              color: Colors.blue,
+              title: '加入会议',
+              subtitle: '输入会议 ID 加入',
+              onTap: () => _openJoin(context),
             ),
-          ),
+            _buildActionCard(
+              icon: Icons.video_call,
+              color: Colors.green,
+              title: '发起会议',
+              subtitle: '立即开始音视频会议',
+              onTap: () => _openCreate(context),
+            ),
+            _buildActionCard(
+              icon: Icons.calendar_today,
+              color: Colors.orange,
+              title: '预定会议',
+              subtitle: '安排未来会议',
+              onTap: () => _openOrder(context),
+            ),
+            const SizedBox(height: 24),
+          ],
+          Text('即将开始',
+              style: AppText.base.copyWith(
+                  color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          if (_loadingFav && _favConferences.isEmpty)
+            Center(
+                child: CircularProgressIndicator(color: context.colors.iconSecondary)),
+          if (!_loadingFav && _favConferences.isEmpty)
+            Text('暂无收藏会议',
+                style: TextStyle(color: context.colors.textSecondary)),
+          ..._favConferences.map((e) => _buildConferenceTile(e)),
+          const SizedBox(height: 24),
+          Text('历史记录',
+              style: AppText.base.copyWith(
+                  color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          if (_historyConferences.isEmpty)
+            Text('暂无历史记录',
+                style: TextStyle(color: context.colors.textSecondary)),
+          ..._historyConferences
+              .map((e) => _buildConferenceTile(e, isHistory: true)),
         ],
       ),
     );

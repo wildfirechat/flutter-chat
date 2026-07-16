@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/call/conference/conference_home_screen.dart';
@@ -38,11 +39,12 @@ class PcDiscoveryList extends StatelessWidget {
           title: l10n.channels,
           onTap: () => openPage(context, const ChannelList()),
         ),
-        _DiscoveryRow(
-          iconAsset: 'assets/images/discover_channel.png',
-          title: '会议',
-          onTap: () => openPage(context, const ConferenceHomeScreen()),
-        ),
+        if (avEngineKit.isSupportConference())
+          _DiscoveryRow(
+            iconAsset: 'assets/images/discover_channel.png',
+            title: '会议',
+            onTap: () => openPage(context, const ConferenceHomeScreen()),
+          ),
         _DiscoveryRow(
           iconAsset: 'assets/images/discover_devdocs.png',
           title: l10n.developmentDocumentation,

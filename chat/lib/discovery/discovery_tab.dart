@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/call/conference/conference_home_screen.dart';
@@ -50,17 +51,18 @@ class DiscoveryTab extends StatelessWidget {
                         );
                       },
                     ),
-                    OptionItem(
-                      '会议',
-                      leftImage: Image.asset('assets/images/discover_channel.png', width: 20.0, height: 20.0),
-                      showBottomDivider: false,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ConferenceHomeScreen()),
-                        );
-                      },
-                    ),
+                    if (avEngineKit.isSupportConference())
+                      OptionItem(
+                        '会议',
+                        leftImage: Image.asset('assets/images/discover_channel.png', width: 20.0, height: 20.0),
+                        showBottomDivider: false,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ConferenceHomeScreen()),
+                          );
+                        },
+                      ),
                   ],
                 ),
               ),

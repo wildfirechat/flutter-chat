@@ -11,6 +11,8 @@ import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
+import 'package:avenginekit/engine/avenginekit.dart';
+import 'package:avenginekit/engine/call_session.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/conversation/pick_conversation_screen.dart';
@@ -21,6 +23,7 @@ import 'package:chat/pc/pc_discovery_list.dart';
 import 'package:chat/pc/pc_favorite_categories_list.dart';
 import 'package:chat/pc/pc_favorite_list_widget.dart';
 import 'package:chat/pc/pc_file_records_list.dart';
+import 'package:chat/call/conference/conference_home_screen.dart';
 import 'package:chat/pc/pc_layout_view_model.dart';
 import 'package:chat/pc/pc_search_view.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
@@ -686,6 +689,17 @@ class _PCHomeState extends State<PCHome> {
                   ),
                 );
               }
+              if (avEngineKit.isSupportConference() && shell.selectedTab == PCShellViewModel.tabConference) {
+                return Container(
+                  height: PcTheme.headerHeight,
+                  padding: const EdgeInsets.only(left: 16),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    AppLocalizations.of(context)!.conferenceTitle,
+                    style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+                  ),
+                );
+              }
               if (shell.selectedTab == PCShellViewModel.tabChat) {
                 return Consumer<ConversationListViewModel>(
                   builder: (context, conversationListVM, _) {
@@ -739,6 +753,9 @@ class _PCHomeState extends State<PCHome> {
                   return PcFavoriteCategoriesList(
                     onOpenFavoriteList: _openFavoriteList,
                   );
+                }
+                if (avEngineKit.isSupportConference() && shell.selectedTab == PCShellViewModel.tabConference) {
+                  return const ConferenceHomeScreen(isEmbedded: true);
                 }
                 return IndexedStack(
                   index: shell.selectedTab,
@@ -973,6 +990,16 @@ class _PcSideBar extends StatelessWidget {
             label: l10n.favorites,
             onTabSelected: onTabSelected,
           ),
+          if (avEngineKit.isSupportConference()) ...[
+            const SizedBox(height: PcTheme.sidebarTabGap),
+            _SideBarTab(
+              tab: PCShellViewModel.tabConference,
+              selectedIcon: Icons.video_call,
+              normalIcon: Icons.video_call_outlined,
+              label: l10n.conferenceTitle,
+              onTabSelected: onTabSelected,
+            ),
+          ],
           if ((Config.workspaceUrl ?? '').isNotEmpty) ...[
             const SizedBox(height: PcTheme.sidebarTabGap),
             _SideBarTab(
@@ -1047,7 +1074,7 @@ class _SideBarTab extends StatelessWidget {
   final IconData normalIcon;
   final void Function(int tab) onTabSelected;
 
-  /// 仅用于无障碍:侧栏 hover 不弹提示气泡,图标靠选中态与 badge 自解释。
+  /// 用于 Tooltip 与无障碍。
   final String label;
 
   /// 0 不显示;-1 只显示红点;>0 显示数字。
@@ -1092,18 +1119,21 @@ class _SideBarTab extends StatelessWidget {
               child: icon,
             );
           }
-          return GestureDetector(
-            onTap: () => onTabSelected(tab),
-            child: Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: hovered && !selected
-                    ? colors.sidebarHoverBg
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
+          return Tooltip(
+            message: label,
+            child: GestureDetector(
+              onTap: () => onTabSelected(tab),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: hovered && !selected
+                      ? colors.sidebarHoverBg
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Center(child: icon),
               ),
-              child: Center(child: icon),
             ),
           );
         },
