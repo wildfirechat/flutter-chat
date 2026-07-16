@@ -17,7 +17,7 @@ import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/notification/call_add_participants_notificiation_content.dart';
 import 'package:imclient/message/notification/conference_invite_message_content.dart';
 
-import 'ipc_codec.dart';
+import '../multi_window/ipc_codec.dart';
 
 /// Call 窗口侧的 VOIP 消息解码器:线格式解析统一走 [IpcCodec],
 /// 本类只负责按 contentType 实例化 avenginekit 的具体消息内容类。

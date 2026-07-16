@@ -1886,10 +1886,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nextImage => 'Next (→)';
 
   @override
+  String get zoomIn => 'Zoom in';
+
+  @override
+  String get zoomOut => 'Zoom out';
+
+  @override
   String get rotateLeft => 'Rotate left';
 
   @override
   String get rotateRight => 'Rotate right';
+
+  @override
+  String get mediaPreviewTitle => 'Media Viewer';
 
   @override
   String get saveAs => 'Save as...';

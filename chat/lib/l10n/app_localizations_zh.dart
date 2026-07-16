@@ -1868,10 +1868,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nextImage => '下一张 (→)';
 
   @override
+  String get zoomIn => '放大';
+
+  @override
+  String get zoomOut => '缩小';
+
+  @override
   String get rotateLeft => '向左旋转';
 
   @override
   String get rotateRight => '向右旋转';
+
+  @override
+  String get mediaPreviewTitle => '图片查看';
 
   @override
   String get saveAs => '另存为...';

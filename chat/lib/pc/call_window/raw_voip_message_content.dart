@@ -4,7 +4,7 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/message_payload.dart';
 
-import 'ipc_codec.dart';
+import '../multi_window/ipc_codec.dart';
 
 /// 主窗口用来“占位”所有 VOIP 消息类型的通用内容类。
 ///

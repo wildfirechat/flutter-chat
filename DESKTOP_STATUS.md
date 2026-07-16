@@ -338,3 +338,20 @@ analyze 0 error。
 - `setTrafficDataListener` 在桌面 FFI 侧已禁用(见 `imclient_ffi_channel.dart`,注册该监听会导致问题,待查)。
 - 会议相关 l10n:~65 个 `conference*` key 已补齐英文翻译;Call 子窗口标题走 l10n(`multiCallWindowTitle` 等)。
 - 已知遗留:会议历史/收藏由子窗口写 SharedPreferences、主窗口读,两个 isolate 各有内存缓存,主窗口列表可能要重启才刷新(待验证/加 reload)。
+
+## 8. 2026-07-16 媒体预览独立窗口(参考微信)
+
+### 8.1 通用多窗口基础层 `chat/lib/pc/multi_window/`
+Call 窗口的 IPC 基础设施抽成与业务无关的一层,供所有子窗口(通话、媒体预览)复用:
+- `window_event_channel.dart`:`WindowEventChannel`(原 `CallWindowEventChannel`)。**每 isolate 单例**——`DesktopMultiWindow.setMethodHandler` 进程内全局唯一,主窗口的通话代理与媒体预览管理器把 handler 注册到同一张表,method 名用前缀区分(`voip.*`/`imclient.*`/`mediaPreview.*`)。
+- `ipc_codec.dart`:从 `call_window/` 平移,跨窗口线格式唯一定义处。
+- `sub_window_binding.dart`:`SubWindowWidgetsBinding`(原 `CallWindowWidgetsBinding`),子窗口通用的生命周期降级 binding。
+- 事件名常量留在 `call_window/call_window_events.dart`(原 `call_window_event_channel.dart`)。
+
+### 8.2 媒体预览窗口 `chat/lib/pc/media_preview_window/`
+- 桌面端图片/视频预览从主窗口 `showDialog` 改为独立子窗口(微信交互);移动端整页路由不变。三个调用点:会话内媒体消息、引用消息预览、收藏预览(后两者单条、不翻页)。
+- `media_preview_window_manager.dart`(主窗口):全局最多一个预览窗口,已打开时 `mediaPreview.show` 替换内容并置顶;首开尺寸随目标图片自适应(720×480~1280×820);子窗口翻到两端经 `mediaPreview.loadMore` 由主窗口代查 `Imclient.getMessages` 回传。
+- `media_preview_window_app.dart`(子窗口):不连接 IM、不替换 Imclient channel;`_windowKind=media_preview` 由 `main.dart` 分发;窗口标题/最小尺寸经 window_manager 首帧后设置(与 Call 窗口同样的初始化时序及兜底)。
+- `MMPreviewView` 桌面交互对齐微信:滚轮缩放(翻页禁用 PageView 滑动,走两侧按钮/←→键)、工具栏加放大/缩小按钮、ESC/关闭按钮经 `onClose` 关窗;旋转/缩放状态均按 messageId 存。
+- **子窗口插件注册**(`MainFlutterWindow.swift`):新增 `FilePickerPlugin`(另存为)、`UrlLauncherPlugin`(桌面视频降级系统播放器打开)。改动原生代码,需重新 `flutter run`。
+- 载荷裁剪:跨窗口编码时 `binaryContent`(缩略图)置空;`FavoriteItem.toMessage` 补齐 `direction/status/duration` 等 late 字段,避免跨窗口编码时未初始化崩溃。

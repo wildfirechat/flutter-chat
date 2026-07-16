@@ -28,6 +28,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/media_cell_anchor.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/call/av_call_launcher.dart';
+import 'package:chat/pc/media_preview_window/media_preview_window_manager.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -274,38 +275,11 @@ class ConversationController extends ChangeNotifier {
           list.addAll(newerMsgs);
           int index = eldMsgs.length;
           if (isDesktopShell) {
-            showDialog(
-              context: context,
-              barrierColor: Colors.black,
-              useSafeArea: false,
-              builder: (_) => MMPreviewView(
-                list,
-                defaultIndex: index,
-                pageToEnd: (fromIndex, tail) {
-                  if (tail) {
-                    Imclient.getMessages(conversation, fromIndex, -10,
-                        contentTypes: [
-                          MESSAGE_CONTENT_TYPE_IMAGE,
-                          MESSAGE_CONTENT_TYPE_VIDEO
-                        ]).then((value) {
-                      if (value.isNotEmpty) {
-                        _mmPreviewKey.currentState!.onLoadMore(value, false);
-                      }
-                    });
-                  } else {
-                    Imclient.getMessages(conversation, fromIndex, 10,
-                        contentTypes: [
-                          MESSAGE_CONTENT_TYPE_IMAGE,
-                          MESSAGE_CONTENT_TYPE_VIDEO
-                        ]).then((value) {
-                      if (value.isNotEmpty) {
-                        _mmPreviewKey.currentState!.onLoadMore(value, true);
-                      }
-                    });
-                  }
-                },
-                key: _mmPreviewKey,
-              ),
+            // 参考微信:媒体在独立窗口中预览,翻页到两端的加载由窗口管理器代查
+            MediaPreviewWindowManager.instance.show(
+              mediaItems: list,
+              defaultIndex: index,
+              conversation: conversation,
             );
           } else {
             Navigator.push(

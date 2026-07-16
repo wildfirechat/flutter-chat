@@ -155,6 +155,9 @@ class FavoriteItem {
     message.conversation = conversation;
     message.fromUser = sender;
     message.serverTime = timestamp;
+    // direction/status 是 late 字段,预览窗口跨窗口编码等场景会读取,给出确定值
+    message.direction = MessageDirection.MessageDirection_Receive;
+    message.status = MessageStatus.Message_Status_Readed;
 
     switch (favType) {
       case MESSAGE_CONTENT_TYPE_TEXT:
@@ -177,6 +180,8 @@ class FavoriteItem {
       case MESSAGE_CONTENT_TYPE_VIDEO:
         VideoMessageContent content = VideoMessageContent();
         content.remoteUrl = url;
+        // duration 是 late 字段,data 为空/解析失败时也要有确定值
+        content.duration = 0;
         if (data.isNotEmpty) {
           try {
             var map = json.decode(data);

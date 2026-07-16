@@ -21,10 +21,11 @@ import '../../viewmodel/font_size_view_model.dart';
 import '../../viewmodel/locale_view_model.dart';
 import '../../viewmodel/theme_view_model.dart';
 import '../../viewmodel/user_view_model.dart';
-import 'call_window_event_channel.dart';
+import '../multi_window/window_event_channel.dart';
+import 'call_window_events.dart';
 import 'call_window_imclient_proxy.dart';
 import 'call_window_manager.dart';
-import 'ipc_codec.dart';
+import '../multi_window/ipc_codec.dart';
 import 'voip_message_codec.dart';
 
 /// Call 窗口的入口 Widget。
@@ -51,7 +52,7 @@ class _CallWindowAppState extends State<CallWindowApp>
   static const String _tag = 'CallWindowApp';
 
   late final CallWindowImclientChannel _imclientProxy;
-  late final CallWindowEventChannel _eventChannel;
+  late final WindowEventChannel _eventChannel;
   late final FontSizeViewModel _fontSizeViewModel;
   late final ThemeViewModel _themeViewModel;
   late final PCShellViewModel _shellViewModel;
@@ -93,7 +94,7 @@ class _CallWindowAppState extends State<CallWindowApp>
       print('$_tag channel replaced');
 
       // 2. 监听主窗口转发来的事件。
-      _eventChannel = CallWindowEventChannel();
+      _eventChannel = WindowEventChannel();
       _eventChannel.register(CallWindowEvents.message, _handleMessage);
       _eventChannel.register(CallWindowEvents.conferenceEvent, _handleConferenceEvent);
       _eventChannel.register(CallWindowEvents.connectionStatus, _handleConnectionStatus);
@@ -114,7 +115,7 @@ class _CallWindowAppState extends State<CallWindowApp>
 
       // 4. 通知主窗口 Call 窗口已就绪。
       print('$_tag notify main window ready');
-      await CallWindowEventChannel.invoke(
+      await WindowEventChannel.invoke(
         0,
         MainWindowEvents.voipStatusChanged,
         {'status': 'ready', 'windowId': widget.windowId},
@@ -294,7 +295,7 @@ class _CallWindowAppState extends State<CallWindowApp>
     if (avEngineKit.currentSession != null && avEngineKit.currentSession!.status != CallState.STATUS_IDLE) {
       avEngineKit.currentSession!.hangup();
     }
-    await CallWindowEventChannel.invoke(0, MainWindowEvents.windowClosed, {
+    await WindowEventChannel.invoke(0, MainWindowEvents.windowClosed, {
       'windowId': widget.windowId,
     });
   }
@@ -343,14 +344,14 @@ class _CallWindowAppState extends State<CallWindowApp>
   //endregion
 
   void _notifyStatusChanged(String status, Map<String, dynamic> extra) {
-    CallWindowEventChannel.invoke(0, MainWindowEvents.voipStatusChanged, {
+    WindowEventChannel.invoke(0, MainWindowEvents.voipStatusChanged, {
       'status': status,
       ...extra,
     });
   }
 
   Future<void> _closeWindow() async {
-    await CallWindowEventChannel.invoke(0, MainWindowEvents.windowClosed, {
+    await WindowEventChannel.invoke(0, MainWindowEvents.windowClosed, {
       'windowId': widget.windowId,
     });
     // 不能走 windowManager.close()：若 ensureInitialized 尚未执行（帧被冻结

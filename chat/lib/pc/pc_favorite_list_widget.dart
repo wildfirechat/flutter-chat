@@ -21,6 +21,7 @@ import 'package:chat/app_server.dart';
 import 'package:chat/conversation/composite_message_detail_screen.dart';
 import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
+import 'package:chat/pc/media_preview_window/media_preview_window_manager.dart';
 import 'package:chat/model/favorite_item.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
@@ -366,24 +367,22 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
     final message = item.toMessage();
     final content = message.content;
     if (content is ImageMessageContent || content is VideoMessageContent) {
-      final preview = MMPreviewView(
-        [message],
-        defaultIndex: 0,
-        pageToEnd: (fromIndex, tail) {},
-      );
       if (isDesktopShell) {
-        showDialog(
-          context: context,
-          barrierColor: Colors.black,
-          useSafeArea: false,
-          builder: (_) => preview,
+        // 参考微信:收藏的图片/视频在独立窗口中预览(单条,不翻页)
+        MediaPreviewWindowManager.instance.show(
+          mediaItems: [message],
+          defaultIndex: 0,
         );
       } else {
         Navigator.push(
           context,
           PageRouteBuilder(
             opaque: false,
-            pageBuilder: (context, animation, secondaryAnimation) => preview,
+            pageBuilder: (context, animation, secondaryAnimation) => MMPreviewView(
+              [message],
+              defaultIndex: 0,
+              pageToEnd: (fromIndex, tail) {},
+            ),
           ),
         );
       }

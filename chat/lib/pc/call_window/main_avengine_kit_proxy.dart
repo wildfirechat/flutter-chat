@@ -6,9 +6,10 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart' as mc;
 import 'package:imclient/model/conversation.dart';
 
-import 'call_window_event_channel.dart';
+import '../multi_window/window_event_channel.dart';
+import 'call_window_events.dart';
 import 'call_window_manager.dart';
-import 'ipc_codec.dart';
+import '../multi_window/ipc_codec.dart';
 import 'model_codec.dart';
 import 'raw_voip_message_content.dart';
 
@@ -67,7 +68,7 @@ class MainAvEngineKitProxy {
     });
 
     // 监听 Call 窗口发回的事件。
-    final channel = CallWindowEventChannel();
+    final channel = WindowEventChannel();
     channel.listen();
     _registerMainWindowHandlers(channel);
   }
@@ -299,7 +300,7 @@ class MainAvEngineKitProxy {
   /// 转发事件到 Call 窗口，窗口未 ready 时入队。
   void _emitToCallWindow(String event, dynamic args) {
     if (_callWindowReady && _callWindowId != null) {
-      CallWindowEventChannel.invoke(_callWindowId!, event, args);
+      WindowEventChannel.invoke(_callWindowId!, event, args);
     } else {
       _eventQueue.add(_QueuedEvent(event, args));
     }
@@ -309,7 +310,7 @@ class MainAvEngineKitProxy {
     if (_callWindowId == null) return;
     while (_eventQueue.isNotEmpty) {
       final item = _eventQueue.removeAt(0);
-      CallWindowEventChannel.invoke(_callWindowId!, item.event, item.args);
+      WindowEventChannel.invoke(_callWindowId!, item.event, item.args);
     }
   }
 
@@ -320,7 +321,7 @@ class MainAvEngineKitProxy {
   }
 
   /// 注册 Call 窗口会调用的主窗口 IM 代理方法。
-  void _registerMainWindowHandlers(CallWindowEventChannel channel) {
+  void _registerMainWindowHandlers(WindowEventChannel channel) {
     channel.register(MainWindowEvents.sendMessage, _handleSendMessage);
     channel.register(MainWindowEvents.sendConferenceRequest, _handleSendConferenceRequest);
     channel.register(MainWindowEvents.updateMessageContent, _handleUpdateMessageContent);

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/message/image_message_content.dart';
@@ -10,8 +11,8 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/utils/non_cached_image.dart';
@@ -30,6 +31,8 @@ class MMPreviewView extends StatefulWidget {
   final BoxDecoration? decoration; // 背景设计
   // 拖拽退出时缩回的目标(消息气泡缩略图)的全局 rect;返回 null 则退化为下滑退出
   final Rect? Function(Message message)? sourceRectProvider;
+  // 桌面端关闭动作(独立预览窗口中是关窗);为空则退化为 Navigator.pop
+  final VoidCallback? onClose;
 
   const MMPreviewView(this.mediaItems,
       {super.key,
@@ -37,7 +40,8 @@ class MMPreviewView extends StatefulWidget {
       this.pageToEnd,
       this.direction = Axis.horizontal,
       this.decoration,
-      this.sourceRectProvider});
+      this.sourceRectProvider,
+      this.onClose});
 
   @override
   State<MMPreviewView> createState() => MMPreviewViewState();
@@ -47,9 +51,12 @@ class MMPreviewViewState extends State<MMPreviewView> {
   late int currentIndex;
   late PageController _pageController;
   bool isZoomed = false; // Add zoomed state
+  // 每张图的旋转角(quarterTurns),按 messageId 存(onLoadMore 前插后 index 会变)
   final Map<int, int> _rotations = {};
   // 每张图一个缩放状态控制器(按 messageId 存,onLoadMore 前插后 index 会变)
   final Map<int, PhotoViewScaleStateController> _scaleStateControllers = {};
+  // 每张图一个缩放控制器,桌面端滚轮/工具栏缩放需要读写 scale
+  final Map<int, PhotoViewController> _photoControllers = {};
 
   @override
   void initState() {
@@ -64,12 +71,47 @@ class MMPreviewViewState extends State<MMPreviewView> {
     for (final controller in _scaleStateControllers.values) {
       controller.dispose();
     }
+    for (final controller in _photoControllers.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
   PhotoViewScaleStateController _scaleStateControllerFor(int messageId) {
     return _scaleStateControllers.putIfAbsent(
         messageId, () => PhotoViewScaleStateController());
+  }
+
+  PhotoViewController _photoControllerFor(int messageId) {
+    return _photoControllers.putIfAbsent(messageId, () => PhotoViewController());
+  }
+
+  int get _currentMessageId => widget.mediaItems[currentIndex].messageId;
+
+  // 桌面端关闭:独立预览窗口里关窗,内嵌(对话框/整页路由)里出栈
+  void _requestClose() {
+    if (widget.onClose != null) {
+      widget.onClose!();
+    } else {
+      Navigator.pop(context);
+    }
+  }
+
+  // 参考微信:滚轮/工具栏按钮缩放当前图片,范围与手势缩放一致(contain ~ cover*2.5)
+  void _zoomBy(double factor) {
+    final Message message = widget.mediaItems[currentIndex];
+    final content = message.content;
+    if (content is! ImageMessageContent) return;
+    final controller = _photoControllers[message.messageId];
+    if (controller == null) return;
+    final Size viewport = MediaQuery.of(context).size;
+    final Size child = _imageChildSize(content, _rotations[message.messageId] ?? 0);
+    final double contained =
+        math.min(viewport.width / child.width, viewport.height / child.height);
+    final double maxScale =
+        math.max(viewport.width / child.width, viewport.height / child.height) * 2.5;
+    final double current = controller.scale ?? contained;
+    controller.scale = (current * factor).clamp(contained, maxScale).toDouble();
   }
 
   // 有原始宽高时用真实尺寸,photo_view 的缩放边界/边缘吸附才准确;缺失时退回屏幕尺寸。
@@ -88,7 +130,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
     final Size screen = MediaQuery.of(context).size;
     final content = widget.mediaItems[currentIndex].content;
     if (content is ImageMessageContent) {
-      final Size child = _imageChildSize(content, _rotations[currentIndex] ?? 0);
+      final Size child = _imageChildSize(content, _rotations[_currentMessageId] ?? 0);
       if (child != screen) {
         final double s =
             math.min(screen.width / child.width, screen.height / child.height);
@@ -113,12 +155,11 @@ class MMPreviewViewState extends State<MMPreviewView> {
 
   @override
   Widget build(BuildContext context) {
-    final content = Material(
-      color: Colors.transparent,
-      child: Stack(
-        children: [
-          PhotoViewGallery.builder(
-              scrollPhysics: const BouncingScrollPhysics(),
+    // 桌面端翻页走两侧按钮/方向键(与微信一致),滚轮专用于缩放
+    Widget gallery = PhotoViewGallery.builder(
+              scrollPhysics: isDesktopShell
+                  ? const NeverScrollableScrollPhysics()
+                  : const BouncingScrollPhysics(),
               builder: (BuildContext context, int index) {
                 Message message = widget.mediaItems[index];
 
@@ -129,7 +170,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                   if (imageContent.localPath != null && imageContent.localPath!.isNotEmpty) {
                     File localFile = File(imageContent.localPath!);
                     if (localFile.existsSync()) {
-                      final rotation = _rotations[index] ?? 0;
+                      final rotation = _rotations[message.messageId] ?? 0;
                       final Size childSize = _imageChildSize(imageContent, rotation);
                       final Size screenSize = MediaQuery.of(context).size;
                       // childSize 为原图尺寸时整页被 contained 比例缩放,占位/错误图标反向缩放保持视觉大小
@@ -159,6 +200,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                         childSize: childSize,
                         minScale: PhotoViewComputedScale.contained,
                         maxScale: PhotoViewComputedScale.covered * 2.5,
+                        controller: _photoControllerFor(message.messageId),
                         scaleStateController: _scaleStateControllerFor(message.messageId),
                       );
                     }
@@ -166,7 +208,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
 
                   // 使用网络图片（大图预览不进入 Flutter ImageCache，仍复用磁盘缓存）
                   if (imageContent.remoteUrl != null && imageContent.remoteUrl!.isNotEmpty) {
-                    final rotation = _rotations[index] ?? 0;
+                    final rotation = _rotations[message.messageId] ?? 0;
                     final Size childSize = _imageChildSize(imageContent, rotation);
                     final Size screenSize = MediaQuery.of(context).size;
                     // childSize 为原图尺寸时整页被 contained 比例缩放,占位/错误图标反向缩放保持视觉大小
@@ -196,6 +238,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                       childSize: childSize,
                       minScale: PhotoViewComputedScale.contained,
                       maxScale: PhotoViewComputedScale.covered * 2.5,
+                      controller: _photoControllerFor(message.messageId),
                       scaleStateController: _scaleStateControllerFor(message.messageId),
                     );
                   }
@@ -241,6 +284,9 @@ class MMPreviewViewState extends State<MMPreviewView> {
               },
               onPageChanged: (index) => setState(() {
                     currentIndex = index;
+                    if (index == _navTarget) {
+                      _navTarget = null;
+                    }
                     isZoomed = false;
                     // 参考微信:切走页面时复位缩放,切回来是初始大小
                     for (final controller in _scaleStateControllers.values) {
@@ -254,24 +300,25 @@ class MMPreviewViewState extends State<MMPreviewView> {
                         widget.pageToEnd!(message.messageId, true);
                       }
                     }
-                  })),
-          // Close button on desktop
-          if (isDesktopShell)
-            Positioned(
-              top: 24,
-              right: 24,
-              child: HoverBuilder(
-                builder: (context, isHovered) => Material(
-                  color: isHovered ? Colors.black.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.25),
-                  shape: const CircleBorder(),
-                  child: IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.white, size: 28),
-                    onPressed: () => Navigator.pop(context),
-                    tooltip: AppLocalizations.of(context)!.close,
-                  ),
-                ),
-              ),
-            ),
+                  }));
+    if (isDesktopShell) {
+      // 参考微信:滚轮向上放大、向下缩小当前图片
+      gallery = Listener(
+        onPointerSignal: (event) {
+          if (event is PointerScrollEvent) {
+            _zoomBy(math.exp(-event.scrollDelta.dy * 0.002));
+          }
+        },
+        child: gallery,
+      );
+    }
+
+    final content = Material(
+      color: Colors.transparent,
+      child: Stack(
+        children: [
+          gallery,
+          // 桌面端不再叠加悬浮关闭按钮:独立预览窗口有系统标题栏关闭键,ESC/空格也可关
           // Left chevron button on desktop
           if (isDesktopShell && currentIndex > 0)
             Positioned(
@@ -285,7 +332,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                     shape: const CircleBorder(),
                     child: IconButton(
                       icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 36),
-                      onPressed: () => _goToPage(currentIndex - 1),
+                      onPressed: () => _goToRelative(-1),
                       tooltip: AppLocalizations.of(context)!.previousImage,
                     ),
                   ),
@@ -305,7 +352,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                     shape: const CircleBorder(),
                     child: IconButton(
                       icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 36),
-                      onPressed: () => _goToPage(currentIndex + 1),
+                      onPressed: () => _goToRelative(1),
                       tooltip: AppLocalizations.of(context)!.nextImage,
                     ),
                   ),
@@ -330,12 +377,26 @@ class MMPreviewViewState extends State<MMPreviewView> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Zoom Out
+                      IconButton(
+                        icon: const Icon(Icons.zoom_out_rounded, color: Colors.white70, size: 20),
+                        onPressed: () => _zoomBy(1 / 1.25),
+                        tooltip: AppLocalizations.of(context)!.zoomOut,
+                      ),
+                      const SizedBox(width: 8),
+                      // Zoom In
+                      IconButton(
+                        icon: const Icon(Icons.zoom_in_rounded, color: Colors.white70, size: 20),
+                        onPressed: () => _zoomBy(1.25),
+                        tooltip: AppLocalizations.of(context)!.zoomIn,
+                      ),
+                      const SizedBox(width: 8),
                       // Rotate Left
                       IconButton(
                         icon: const Icon(Icons.rotate_left_rounded, color: Colors.white70, size: 20),
                         onPressed: () {
                           setState(() {
-                            _rotations[currentIndex] = ((_rotations[currentIndex] ?? 0) - 1 + 4) % 4;
+                            _rotations[_currentMessageId] = ((_rotations[_currentMessageId] ?? 0) - 1 + 4) % 4;
                           });
                         },
                         tooltip: AppLocalizations.of(context)!.rotateLeft,
@@ -346,7 +407,7 @@ class MMPreviewViewState extends State<MMPreviewView> {
                         icon: const Icon(Icons.rotate_right_rounded, color: Colors.white70, size: 20),
                         onPressed: () {
                           setState(() {
-                            _rotations[currentIndex] = ((_rotations[currentIndex] ?? 0) + 1) % 4;
+                            _rotations[_currentMessageId] = ((_rotations[_currentMessageId] ?? 0) + 1) % 4;
                           });
                         },
                         tooltip: AppLocalizations.of(context)!.rotateRight,
@@ -371,21 +432,19 @@ class MMPreviewViewState extends State<MMPreviewView> {
       // 桌面端：黑色背景、键盘翻页、禁用拖拽关闭
       return CallbackShortcuts(
         bindings: {
-          const SingleActivator(LogicalKeyboardKey.arrowLeft): () {
-            _goToPage(currentIndex - 1);
-          },
-          const SingleActivator(LogicalKeyboardKey.arrowRight): () {
-            _goToPage(currentIndex + 1);
-          },
-          const SingleActivator(LogicalKeyboardKey.escape): () {
-            Navigator.pop(context);
-          },
+          const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _goToRelative(-1),
+          const SingleActivator(LogicalKeyboardKey.arrowRight): () => _goToRelative(1),
+          const SingleActivator(LogicalKeyboardKey.escape): _requestClose,
+          const SingleActivator(LogicalKeyboardKey.space): _requestClose,
         },
         child: Focus(
           autofocus: true,
-          child: Container(
-            color: Colors.black,
-            child: content,
+          // 内部按钮(翻页/工具栏)点击后不许夺焦,否则空格会重触发该按钮而非关窗
+          child: ExcludeFocus(
+            child: Container(
+              color: Colors.black,
+              child: content,
+            ),
           ),
         ),
       );
@@ -405,12 +464,22 @@ class MMPreviewViewState extends State<MMPreviewView> {
     );
   }
 
+  // 长按方向键时按键连发比翻页动画快:animateToPage 未落定 currentIndex 就收到
+  // 下一次按键,若仍以 currentIndex 为基准会反复朝同一页做动画,表现为"一点点
+  // 移动"。以导航目标累进才能一次按键实打实翻一页,到达后清空回归 currentIndex。
+  int? _navTarget;
+
+  void _goToRelative(int delta) {
+    _goToPage((_navTarget ?? currentIndex) + delta);
+  }
+
   void _goToPage(int index) {
     if (index < 0 || index >= widget.mediaItems.length) return;
+    _navTarget = index;
     _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOutCubic,
     );
   }
 
@@ -457,19 +526,19 @@ class MMPreviewViewState extends State<MMPreviewView> {
 
       if (sourcePath != null && File(sourcePath).existsSync()) {
         await File(sourcePath).copy(outputFile);
-        Fluttertoast.showToast(msg: l10n.saveSuccess);
+        showToast(msg: l10n.saveSuccess);
       } else if (remoteUrl != null && remoteUrl.isNotEmpty) {
         final client = HttpClient();
         final request = await client.getUrl(Uri.parse(remoteUrl));
         final response = await request.close();
         final bytes = await response.fold<List<int>>([], (prev, element) => prev..addAll(element));
         await File(outputFile).writeAsBytes(bytes);
-        Fluttertoast.showToast(msg: l10n.saveSuccess);
+        showToast(msg: l10n.saveSuccess);
       } else {
-        Fluttertoast.showToast(msg: l10n.saveFailSourceMissing);
+        showToast(msg: l10n.saveFailSourceMissing);
       }
     } catch (e) {
-      Fluttertoast.showToast(msg: l10n.saveFail('$e'));
+      showToast(msg: l10n.saveFail('$e'));
     }
   }
 }

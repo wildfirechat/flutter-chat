@@ -12,6 +12,12 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 /// 解码图长期留在内存缓存中。
 class NonCachedImage extends StatefulWidget {
   final Future<Uint8List> Function() loader;
+
+  /// 图片来源标识(URL 或文件路径)。
+  ///
+  /// 父级重建时 [loader] 闭包实例总是新的,不能拿它判断"是否换了图";
+  /// 用来源标识比较,避免每次重建都重新加载(表现为图片闪一下占位符)。
+  final String source;
   final Widget placeholder;
   final Widget errorWidget;
   final BoxFit? fit;
@@ -20,6 +26,7 @@ class NonCachedImage extends StatefulWidget {
   const NonCachedImage({
     super.key,
     required this.loader,
+    required this.source,
     required this.placeholder,
     required this.errorWidget,
     this.fit,
@@ -41,6 +48,7 @@ class NonCachedImage extends StatefulWidget {
         final file = await DefaultCacheManager().getSingleFile(url);
         return file.readAsBytes();
       },
+      source: url,
       placeholder: placeholder,
       errorWidget: errorWidget,
       fit: fit,
@@ -60,6 +68,7 @@ class NonCachedImage extends StatefulWidget {
     return NonCachedImage(
       key: key,
       loader: () => File(path).readAsBytes(),
+      source: path,
       placeholder: placeholder,
       errorWidget: errorWidget,
       fit: fit,
@@ -86,7 +95,7 @@ class _NonCachedImageState extends State<NonCachedImage> {
   @override
   void didUpdateWidget(covariant NonCachedImage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.loader != widget.loader) {
+    if (oldWidget.source != widget.source) {
       _disposeImage();
       _load();
     }

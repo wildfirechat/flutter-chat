@@ -68,19 +68,25 @@ import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/organization/organization_cache.dart';
 import 'package:chat/organization/organization_service.dart';
 import 'package:chat/pc/call_window/call_window_app.dart';
-import 'package:chat/pc/call_window/call_window_binding.dart';
 import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
+import 'package:chat/pc/media_preview_window/media_preview_ipc.dart';
+import 'package:chat/pc/media_preview_window/media_preview_window_app.dart';
+import 'package:chat/pc/multi_window/sub_window_binding.dart';
 
 void main([List<String>? args]) async {
   final effectiveArgs = args ?? <String>[];
 
-  // 子窗口入口。必须用 CallWindowWidgetsBinding 而不是默认 binding：
+  // 子窗口入口。必须用 SubWindowWidgetsBinding 而不是默认 binding：
   // macOS 子引擎会收到错误的 hidden 生命周期状态导致帧调度被关闭。
   if (effectiveArgs.isNotEmpty && effectiveArgs[0] == 'multi_window') {
-    CallWindowWidgetsBinding.ensureInitialized();
+    SubWindowWidgetsBinding.ensureInitialized();
     final windowId = int.parse(effectiveArgs[1]);
     final arguments = effectiveArgs.length > 2 ? jsonDecode(effectiveArgs[2]) as Map<String, dynamic> : <String, dynamic>{};
-    runApp(CallWindowApp(windowId: windowId, arguments: arguments));
+    if (arguments[kWindowKindKey] == kMediaPreviewWindowKind) {
+      runApp(MediaPreviewWindowApp(windowId: windowId, arguments: arguments));
+    } else {
+      runApp(CallWindowApp(windowId: windowId, arguments: arguments));
+    }
     return;
   }
 

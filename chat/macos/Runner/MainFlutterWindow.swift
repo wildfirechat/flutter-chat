@@ -8,6 +8,8 @@ import shared_preferences_foundation
 import path_provider_foundation
 import device_info_plus
 import sqflite_darwin
+import file_picker
+import url_launcher_macos
 
 /// 自定义交通灯按钮类型。
 private enum TrafficLightSymbol {
@@ -239,8 +241,8 @@ class MainFlutterWindow: NSWindow {
         RegisterGeneratedPlugins(registry: flutterViewController)
 
         FlutterMultiWindowPlugin.setOnWindowCreatedCallback { controller in
-          print("Call subwindow created, registering plugins")
-          // 在子窗口中注册通话所需的插件。
+          print("Subwindow created, registering plugins")
+          // 在子窗口(通话/媒体预览)中注册所需插件。
           // flutter_webrtc 必须在 Call 窗口引擎中注册，否则 RTCVideoRenderer 无法初始化。
           FlutterWebRTCPlugin.register(with: controller.registrar(forPlugin: "FlutterWebRTCPlugin"))
           WindowManagerPlugin.register(with: controller.registrar(forPlugin: "WindowManagerPlugin"))
@@ -249,7 +251,10 @@ class MainFlutterWindow: NSWindow {
           PathProviderPlugin.register(with: controller.registrar(forPlugin: "PathProviderPlugin"))
           DeviceInfoPlusMacosPlugin.register(with: controller.registrar(forPlugin: "DeviceInfoPlusMacosPlugin"))
           SqflitePlugin.register(with: controller.registrar(forPlugin: "SqflitePlugin"))
-          print("Call subwindow plugins registered")
+          // 媒体预览窗口:另存为对话框 + 视频降级用系统播放器打开。
+          FilePickerPlugin.register(with: controller.registrar(forPlugin: "FilePickerPlugin"))
+          UrlLauncherPlugin.register(with: controller.registrar(forPlugin: "UrlLauncherPlugin"))
+          print("Subwindow plugins registered")
         }
 
         super.awakeFromNib()

@@ -6,6 +6,7 @@ import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
 import 'package:chat/widgets/rich_text_message.dart';
+import 'package:chat/pc/media_preview_window/media_preview_window_manager.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utilities.dart';
 import 'package:characters/characters.dart';
@@ -46,24 +47,22 @@ class TextCellBuilder extends PortraitCellBuilder {
               if (message != null) {
                 if (message.content is ImageMessageContent || message.content is VideoMessageContent) {
                   if (context.mounted) {
-                    final preview = MMPreviewView(
-                      [message],
-                      defaultIndex: 0,
-                      pageToEnd: (fromIndex, tail) {},
-                    );
                     if (isDesktopShell) {
-                      showDialog(
-                        context: context,
-                        barrierColor: Colors.black,
-                        useSafeArea: false,
-                        builder: (_) => preview,
+                      // 参考微信:引用的图片/视频在独立窗口中预览(单条,不翻页)
+                      MediaPreviewWindowManager.instance.show(
+                        mediaItems: [message],
+                        defaultIndex: 0,
                       );
                     } else {
                       Navigator.push(
                         context,
                         PageRouteBuilder(
                           opaque: false,
-                          pageBuilder: (context, animation, secondaryAnimation) => preview,
+                          pageBuilder: (context, animation, secondaryAnimation) => MMPreviewView(
+                            [message],
+                            defaultIndex: 0,
+                            pageToEnd: (fromIndex, tail) {},
+                          ),
                         ),
                       );
                     }

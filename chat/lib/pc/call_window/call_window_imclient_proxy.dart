@@ -5,11 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:imclient/imclient_method_channel.dart';
 import 'package:imclient/src/imclient_channel.dart';
 
-import 'call_window_event_channel.dart';
+import '../multi_window/window_event_channel.dart';
+import 'call_window_events.dart';
 
 /// Call 窗口中替换 [ImclientPlatform.instance._channel] 的代理实现。
 ///
-/// 所有 IM 调用都通过 [CallWindowEventChannel] 转发到主窗口执行，
+/// 所有 IM 调用都通过 [WindowEventChannel] 转发到主窗口执行，
 /// 主窗口执行真实 [Imclient] 后再把结果返回。
 ///
 /// 对于 [sendMessage] 这类带异步回调的调用，回调仍注册在
@@ -93,7 +94,7 @@ class CallWindowImclientChannel implements ImclientChannel {
 
     // 返回值只是主窗口本地入库的 message(与移动端 sendMessage 的返回语义一致);
     // 成功/失败回调由主窗口在服务器 ack 后经 sendMessageResult 事件异步回传。
-    return await CallWindowEventChannel.invoke(
+    return await WindowEventChannel.invoke(
       _mainWindowId,
       MainWindowEvents.sendMessage,
       {
@@ -115,7 +116,7 @@ class CallWindowImclientChannel implements ImclientChannel {
     final data = map['data'] as String? ?? '';
     final requestId = map['requestId'] as int;
 
-    final result = await CallWindowEventChannel.invoke(
+    final result = await WindowEventChannel.invoke(
       _mainWindowId,
       MainWindowEvents.sendConferenceRequest,
       {
@@ -147,7 +148,7 @@ class CallWindowImclientChannel implements ImclientChannel {
     final messageId = map['messageId'] as int;
     final contentMap = map['content'] as Map<dynamic, dynamic>;
 
-    await CallWindowEventChannel.invoke(
+    await WindowEventChannel.invoke(
       _mainWindowId,
       MainWindowEvents.updateMessageContent,
       {
@@ -161,7 +162,7 @@ class CallWindowImclientChannel implements ImclientChannel {
   Future<dynamic> _getMessageByUid(dynamic args) async {
     final map = args as Map<dynamic, dynamic>;
     final messageUid = map['messageUid'] as int;
-    final result = await CallWindowEventChannel.invoke(
+    final result = await WindowEventChannel.invoke(
       _mainWindowId,
       MainWindowEvents.getMessageByUid,
       {'messageUid': messageUid},
@@ -173,7 +174,7 @@ class CallWindowImclientChannel implements ImclientChannel {
     final map = args as Map<dynamic, dynamic>;
     final userId = map['userId'] as String;
     final refresh = map['refresh'] as bool? ?? false;
-    final result = await CallWindowEventChannel.invoke(
+    final result = await WindowEventChannel.invoke(
       _mainWindowId,
       MainWindowEvents.getUserInfo,
       {'userId': userId, 'refresh': refresh},
@@ -185,7 +186,7 @@ class CallWindowImclientChannel implements ImclientChannel {
     final map = args as Map<dynamic, dynamic>;
     final userIds = (map['userIds'] as List).cast<String>();
     final groupId = map['groupId'] as String?;
-    final result = await CallWindowEventChannel.invoke(
+    final result = await WindowEventChannel.invoke(
       _mainWindowId,
       MainWindowEvents.getUserInfos,
       {'userIds': userIds, 'groupId': groupId},
@@ -197,7 +198,7 @@ class CallWindowImclientChannel implements ImclientChannel {
     final map = args as Map<dynamic, dynamic>;
     final groupId = map['groupId'] as String;
     final refresh = map['refresh'] as bool? ?? false;
-    final result = await CallWindowEventChannel.invoke(
+    final result = await WindowEventChannel.invoke(
       _mainWindowId,
       MainWindowEvents.getGroupMembers,
       {'groupId': groupId, 'refresh': refresh},
@@ -208,7 +209,7 @@ class CallWindowImclientChannel implements ImclientChannel {
   Future<dynamic> _joinChatroom(dynamic args) async {
     final map = args as Map<dynamic, dynamic>;
     final chatroomId = map['chatroomId'] as String;
-    await CallWindowEventChannel.invoke(
+    await WindowEventChannel.invoke(
       _mainWindowId,
       MainWindowEvents.joinChatroom,
       {'chatroomId': chatroomId},
@@ -219,7 +220,7 @@ class CallWindowImclientChannel implements ImclientChannel {
   Future<dynamic> _quitChatroom(dynamic args) async {
     final map = args as Map<dynamic, dynamic>;
     final chatroomId = map['chatroomId'] as String;
-    await CallWindowEventChannel.invoke(
+    await WindowEventChannel.invoke(
       _mainWindowId,
       MainWindowEvents.quitChatroom,
       {'chatroomId': chatroomId},
@@ -228,6 +229,6 @@ class CallWindowImclientChannel implements ImclientChannel {
   }
 
   Future<dynamic> _invokeSimple(String event, dynamic args) async {
-    return await CallWindowEventChannel.invoke(_mainWindowId, event, args);
+    return await WindowEventChannel.invoke(_mainWindowId, event, args);
   }
 }

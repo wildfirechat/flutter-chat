@@ -3584,6 +3584,18 @@ abstract class AppLocalizations {
   /// **'下一张 (→)'**
   String get nextImage;
 
+  /// No description provided for @zoomIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'放大'**
+  String get zoomIn;
+
+  /// No description provided for @zoomOut.
+  ///
+  /// In zh, this message translates to:
+  /// **'缩小'**
+  String get zoomOut;
+
   /// No description provided for @rotateLeft.
   ///
   /// In zh, this message translates to:
@@ -3595,6 +3607,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'向右旋转'**
   String get rotateRight;
+
+  /// No description provided for @mediaPreviewTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片查看'**
+  String get mediaPreviewTitle;
 
   /// No description provided for @saveAs.
   ///
