@@ -95,6 +95,15 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
 
   final GlobalKey _bubbleKey = GlobalKey();
 
+  /// 气泡在窗口中的全局矩形,供子类(如文本 cell 内层手势)弹消息菜单时定位
+  Rect? get bubbleRect {
+    final renderBox = _bubbleKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) {
+      return null;
+    }
+    return renderBox.localToGlobal(Offset.zero) & renderBox.size;
+  }
+
   Widget _messageContentContainer(BuildContext context, UserInfo? senderUserInfo, bool isHiddenGroupMemberName) {
     return Flexible(
       child: Column(
@@ -153,14 +162,9 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                     ),
                   ),
                   onTap: () => conversationController?.onTapedCell(context, model),
-                  onDoubleTap: () => conversationController?.onDoubleTapedCell(model),
+                  // 不注册 onDoubleTap(原实现是空操作):注册了会参与手势竞技场,
+                  // 干扰文本消息 SelectionArea 的双击选词,还会给单击引入等待延迟。
                   onLongPressStart: (details) {
-                    final RenderBox? renderBox = _bubbleKey.currentContext?.findRenderObject() as RenderBox?;
-                    Rect? bubbleRect;
-                    if (renderBox != null) {
-                      final offset = renderBox.localToGlobal(Offset.zero);
-                      bubbleRect = offset & renderBox.size;
-                    }
                     conversationController?.onLongPressedCell(context, model, bubbleRect);
                   },
                   // 桌面端右键在鼠标位置弹出同一套消息菜单

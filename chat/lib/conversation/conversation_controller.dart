@@ -395,8 +395,39 @@ class ConversationController extends ChangeNotifier {
     _playingMessageId = model.message.messageId;
   }
 
-  void onDoubleTapedCell(UIMessage model) {
-    debugPrint("on double taped cell");
+  // 文本消息当前的部分选区。cell 的 SelectionArea 不参与焦点(为了弹菜单时保持高亮),
+  // 不会再因失焦自行清空,所以"同一时刻只有一条消息有高亮"由这里协调:
+  // 新消息上报选区时,回调上一条消息登记的 clearHighlight 清掉残留高亮。
+  int _textSelectionMessageId = 0;
+  String? _textSelectionText;
+  VoidCallback? _clearTextSelectionHighlight;
+
+  /// 文本消息 cell 的 SelectionArea 选区变化时上报;选区收起/清空时传 null
+  void setTextSelection(int messageId, String? selectedText, {VoidCallback? clearHighlight}) {
+    if (selectedText == null || selectedText.isEmpty) {
+      if (_textSelectionMessageId == messageId) {
+        _textSelectionMessageId = 0;
+        _textSelectionText = null;
+        _clearTextSelectionHighlight = null;
+      }
+    } else {
+      if (_textSelectionMessageId != 0 && _textSelectionMessageId != messageId) {
+        // 会同步触发上一条消息的 onSelectionChanged(null),其登记在下面被覆盖前已按 messageId 清掉
+        _clearTextSelectionHighlight?.call();
+      }
+      _textSelectionMessageId = messageId;
+      _textSelectionText = selectedText;
+      _clearTextSelectionHighlight = clearHighlight;
+    }
+  }
+
+  /// 文本消息 cell 销毁(滚出列表被回收)时解除登记
+  void detachTextSelection(int messageId) {
+    if (_textSelectionMessageId == messageId) {
+      _textSelectionMessageId = 0;
+      _textSelectionText = null;
+      _clearTextSelectionHighlight = null;
+    }
   }
 
   void onLongPressedCell(
@@ -501,6 +532,12 @@ class ConversationController extends ChangeNotifier {
   void _showPopupMenu(BuildContext context, UIMessage model, Rect? bubbleRect) {
     final messageInputBarController =
         Provider.of<MessageInputBarController>(context, listen: false);
+    // 先快照本条消息的选区给"复制"用;若弹的是另一条消息的菜单,顺手清掉残留高亮
+    final String? selectedText =
+        _textSelectionMessageId == model.message.messageId ? _textSelectionText : null;
+    if (_textSelectionMessageId != 0 && _textSelectionMessageId != model.message.messageId) {
+      _clearTextSelectionHighlight?.call();
+    }
     List<Map<String, dynamic>> menuItems = [
       {
         'label': AppLocalizations.of(context)!.delete,
@@ -580,9 +617,14 @@ class ConversationController extends ChangeNotifier {
       },
     ]);
 
+    // 部分选中时菜单只保留"复制"(只复制选中部分):其余操作都针对整条消息,此场景下无意义
+    if (selectedText != null && selectedText.isNotEmpty) {
+      menuItems.retainWhere((item) => item['value'] == 'copy');
+    }
+
     // 桌面端:标准垂直上下文菜单,锚定鼠标/气泡位置,showMenu 自动避让窗口边缘
     if (isDesktopShell) {
-      _showDesktopContextMenu(context, model, bubbleRect, menuItems, messageInputBarController);
+      _showDesktopContextMenu(context, model, bubbleRect, menuItems, messageInputBarController, selectedText);
       return;
     }
 
@@ -600,13 +642,13 @@ class ConversationController extends ChangeNotifier {
       targetRect: targetRect,
       menuItems: menuItems,
       onItemTap: (value) {
-        _handleMenuItemTap(context, value, model, messageInputBarController);
+        _handleMenuItemTap(context, value, model, messageInputBarController, selectedText: selectedText);
       },
     );
   }
 
   void _showDesktopContextMenu(BuildContext context, UIMessage model, Rect? anchorRect, List<Map<String, dynamic>> menuItems,
-      MessageInputBarController messageInputBarController) {
+      MessageInputBarController messageInputBarController, String? selectedText) {
     // 会话页位于右栏嵌套 Navigator 中,showMenu 的 position 相对其 overlay 解析;
     // anchorRect 是窗口全局坐标,必须先换算,否则菜单会向右偏移一个侧栏+中栏的宽度。
     final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox;
@@ -641,14 +683,14 @@ class ConversationController extends ChangeNotifier {
           .toList(),
     ).then((value) {
       if (value != null && context.mounted) {
-        _handleMenuItemTap(context, value, model, messageInputBarController);
+        _handleMenuItemTap(context, value, model, messageInputBarController, selectedText: selectedText);
       }
     });
   }
 
 
   void _handleMenuItemTap(BuildContext context, String value, UIMessage model,
-      MessageInputBarController messageInputBarController) async {
+      MessageInputBarController messageInputBarController, {String? selectedText}) async {
     switch (value) {
       case "delete":
         _showDeleteOptions(context, model);
@@ -656,7 +698,9 @@ class ConversationController extends ChangeNotifier {
       case "copy":
         if (model.message.content is TextMessageContent) {
           final content = model.message.content as TextMessageContent;
-          await Clipboard.setData(ClipboardData(text: content.text));
+          // 正文有部分选区时只复制选中的部分,否则复制整条消息
+          final textToCopy = (selectedText != null && selectedText.isNotEmpty) ? selectedText : content.text;
+          await Clipboard.setData(ClipboardData(text: textToCopy));
           showToast(msg: AppLocalizations.of(context)!.copy);
         }
         break;
