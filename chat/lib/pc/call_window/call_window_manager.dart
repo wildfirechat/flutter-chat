@@ -75,10 +75,12 @@ class CallWindowManager {
 
     // 先显示窗口（否则子窗口 window_manager 初始化时无法获取 view.window）。
     // 子窗口初始显示黑色加载页，等收到 startCall 事件后再渲染通话 UI。
+    // 必须先 center 再 show：插件创建的 NSWindow 初始位于屏幕原点（macOS 为左下角），
+    // 先 show 会在角落闪现一帧后才跳到屏幕中央。
     await _applyWindowStyle(controller, windowType);
-    await controller.show();
     await controller.center();
-    print('$_tag window shown and centered');
+    await controller.show();
+    print('$_tag window centered and shown');
 
     return controller.windowId;
   }

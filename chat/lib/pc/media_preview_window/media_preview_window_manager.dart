@@ -74,10 +74,12 @@ class MediaPreviewWindowManager {
 
     // 与 Call 窗口一致:先定尺寸并显示(子窗口 window_manager 初始化依赖已挂载
     // 的 NSWindow),标题、最小尺寸等样式由子窗口按自身 locale 设置。
+    // 必须先 center 再 show:插件创建的 NSWindow 初始位于屏幕原点(macOS 为左下角),
+    // 先 show 会在角落闪现一帧后才跳到屏幕中央。
     final size = _initialWindowSize(mediaItems, defaultIndex);
     await created.setFrame(Rect.fromLTWH(0, 0, size.width, size.height));
-    await created.show();
     await created.center();
+    await created.show();
   }
 
   void _installHandlers() {
