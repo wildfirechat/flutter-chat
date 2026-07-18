@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/sticker_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
@@ -20,6 +22,18 @@ import 'package:chat/utils/mesh_user_display.dart';
 import 'draft_data.dart';
 
 enum ChatInputBarStatus { keyboardStatus, pluginStatus, emojiStatus, recordStatus, muteStatus, pttStatus, menuStatus }
+
+/// 内联图片在输入框文本中的占位字符(U+FFFC OBJECT REPLACEMENT CHARACTER)。
+/// 第 N 个占位符对应 [MessageInputBarController._inlineImages] 的第 N 项。
+const String _inlineImagePlaceholder = '\uFFFC';
+
+int _countInlineImagePlaceholders(String text) {
+  int count = 0;
+  for (int i = 0; i < text.length; i++) {
+    if (text.codeUnitAt(i) == 0xFFFC) count++;
+  }
+  return count;
+}
 
 class Mention {
   final String userId;
@@ -37,7 +51,7 @@ class Mention {
 
 /// 控制器类，用于管理输入栏的状态
 class MessageInputBarController extends ChangeNotifier {
-  final TextEditingController textEditingController = EmojiTextEditingController();
+  final EmojiTextEditingController textEditingController = EmojiTextEditingController();
   final FocusNode focusNode = FocusNode();
   final Conversation conversation;
   final ConversationViewModel conversationViewModel;
@@ -49,6 +63,10 @@ class MessageInputBarController extends ChangeNotifier {
   Function(Conversation conversation)? onMentionTriggered;
   VoidCallback? onSend;
   final List<Mention> _mentionsList = [];
+
+  // 粘贴到输入框的内联图片本地路径,按占位符出现顺序一一对应(见 _inlineImagePlaceholder)。
+  // 仅在内存中维护:草稿不保存图片,切换会话即丢弃。
+  final List<String> _inlineImages = [];
   String _lastText = "";
   String _conversationDraft = "";
   bool _isInsertingMention = false;
@@ -74,6 +92,9 @@ class MessageInputBarController extends ChangeNotifier {
     focusNode.addListener(_onFocusChanged);
     // 纯光标移动不会触发 onTextChanged,需单独校验 @ 会话
     textEditingController.addListener(_onEditingValueChanged);
+    // 渲染层按占位符序号取对应图片路径,内联显示在输入框里
+    textEditingController.inlineImagePathResolver =
+        (ordinal) => ordinal < _inlineImages.length ? _inlineImages[ordinal] : null;
     _loadRemoteUrlCache();
 
     Imclient.getConversationInfo(conversation).then((conversationInfo) {
@@ -203,21 +224,33 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void onSendButton() {
-    if (textEditingController.text.isNotEmpty) {
-      _sendTextMessage(conversation, textEditingController.text.trim());
-      textEditingController.clear();
-      _quotedMessage = null;
-      _quoteInfo = null;
-      _mentionsList.clear();
-      _endMentionSession();
-      if (_conversationDraft.isNotEmpty) {
-        Imclient.setConversationDraft(conversation, '');
-        _conversationDraft = '';
-      }
-      _lastText = "";
-      onSend?.call();
-      notifyListeners();
+    // 以文本中实际存在的占位符数为准,防止极端场景(如 undo)下列表残留看不见的图片
+    final int placeholderCount = _countInlineImagePlaceholders(textEditingController.text);
+    final List<String> images = _inlineImages.take(placeholderCount).toList();
+    final String text = textEditingController.text.replaceAll(_inlineImagePlaceholder, '').trim();
+    if (images.isEmpty && text.isEmpty) {
+      return;
     }
+    // 先把内联图片逐张发出,再发文本(引用/@提醒随文本消息)
+    for (final path in images) {
+      conversationViewModel.sendMediaMessage(ImageMessageContent()..localPath = path);
+    }
+    if (text.isNotEmpty) {
+      _sendTextMessage(conversation, text);
+    }
+    _inlineImages.clear();
+    textEditingController.clear();
+    _quotedMessage = null;
+    _quoteInfo = null;
+    _mentionsList.clear();
+    _endMentionSession();
+    if (_conversationDraft.isNotEmpty) {
+      Imclient.setConversationDraft(conversation, '');
+      _conversationDraft = '';
+    }
+    _lastText = "";
+    onSend?.call();
+    notifyListeners();
   }
 
   void onTextChanged(String text) {
@@ -234,6 +267,8 @@ class MessageInputBarController extends ChangeNotifier {
       _updateMentionSession(text);
     }
 
+    text = _syncInlineImages(text);
+
     if (_mentionsList.isNotEmpty) {
       _handleMentionsChange(text);
     }
@@ -242,6 +277,85 @@ class MessageInputBarController extends ChangeNotifier {
     _sendTyping(text);
     _scheduleSaveDraft();
     notifyListeners();
+  }
+
+  /// 在光标处插入一张内联图片(微信 PC 交互:粘贴的图片直接显示在输入框里)。
+  /// 文本中插入占位字符,图片路径按占位符序号登记;选区若圈住已有图片则一并替换。
+  void insertInlineImage(String path) {
+    final String text = textEditingController.text;
+    TextSelection selection = textEditingController.selection;
+    if (!selection.isValid || selection.start < 0) {
+      selection = TextSelection.collapsed(offset: text.length);
+    }
+    final int start = selection.start;
+    final int end = selection.end;
+    final int before = _countInlineImagePlaceholders(text.substring(0, start));
+    final int inside = _countInlineImagePlaceholders(text.substring(start, end));
+    if (inside > 0) {
+      _inlineImages.removeRange(before, math.min(before + inside, _inlineImages.length));
+    }
+    final String newText = text.replaceRange(start, end, _inlineImagePlaceholder);
+    _inlineImages.insert(before, path);
+
+    textEditingController.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: start + 1),
+    );
+    if (_mentionsList.isNotEmpty) {
+      _handleMentionsChange(newText);
+    }
+    _lastText = newText;
+    if (!focusNode.hasFocus) {
+      focusNode.requestFocus();
+    }
+    notifyListeners();
+  }
+
+  /// 用户编辑后同步内联图片与占位符:删掉占位符时移除对应图片;
+  /// 粘贴文本里混入的外来 U+FFFC 一律剔除,避免占位符与图片错位。
+  /// 必须在 _lastText 更新前调用;返回(可能被改写的)最新文本。
+  String _syncInlineImages(String text) {
+    if (_inlineImages.isEmpty && !text.contains(_inlineImagePlaceholder)) {
+      return text;
+    }
+    final String old = _lastText;
+    int prefix = 0;
+    final int minLen = math.min(old.length, text.length);
+    while (prefix < minLen && old.codeUnitAt(prefix) == text.codeUnitAt(prefix)) {
+      prefix++;
+    }
+    // 相邻占位符是同一字符,退格删除时前后缀 diff 无法区分删的是哪个,用光标位置消歧
+    final TextSelection selection = textEditingController.selection;
+    if (text.length < old.length && selection.isValid && selection.isCollapsed && selection.start < prefix) {
+      prefix = selection.start;
+    }
+    int suffix = 0;
+    while (suffix < minLen - prefix &&
+        old.codeUnitAt(old.length - 1 - suffix) == text.codeUnitAt(text.length - 1 - suffix)) {
+      suffix++;
+    }
+
+    final String removed = old.substring(prefix, old.length - suffix);
+    final int removedImages = _countInlineImagePlaceholders(removed);
+    if (removedImages > 0) {
+      final int before = _countInlineImagePlaceholders(old.substring(0, prefix));
+      final int rangeStart = math.min(before, _inlineImages.length);
+      final int rangeEnd = math.min(before + removedImages, _inlineImages.length);
+      if (rangeStart < rangeEnd) {
+        _inlineImages.removeRange(rangeStart, rangeEnd);
+      }
+    }
+
+    final String inserted = text.substring(prefix, text.length - suffix);
+    if (_countInlineImagePlaceholders(inserted) > 0) {
+      final String cleaned = inserted.replaceAll(_inlineImagePlaceholder, '');
+      text = text.replaceRange(prefix, text.length - suffix, cleaned);
+      textEditingController.value = TextEditingValue(
+        text: text,
+        selection: TextSelection.collapsed(offset: prefix + cleaned.length),
+      );
+    }
+    return text;
   }
 
   /// 微信式 @ 会话跟踪:仅"单字符键入 '@'"开启会话(粘贴不触发);
@@ -634,19 +748,25 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   String getDraft() {
+    // 草稿暂不支持图片:剔除内联图片占位符,只保存文本
+    final String raw = textEditingController.text;
+    final String content = raw.replaceAll(_inlineImagePlaceholder, '');
     if (_mentionsList.isEmpty && _quoteInfo == null) {
-      return textEditingController.text;
+      return content;
     }
-    final draft = DraftData(content: textEditingController.text);
-    draft.mentions = _mentionsList
-        .map((m) => DraftMention(
-              uid: m.userId,
-              isMentionAll: m.userId == '@all',
-              start: m.start,
-              end: m.end,
-              displayName: m.displayName,
-            ))
-        .toList();
+    final draft = DraftData(content: content);
+    draft.mentions = _mentionsList.map((m) {
+      // 占位符被剔除后文本变短,mention 下标要减去其前方的占位符数
+      // (占位符不可能落在 mention 内部,start/end 平移量相同)
+      final int shift = _countInlineImagePlaceholders(raw.substring(0, math.min(m.start, raw.length)));
+      return DraftMention(
+        uid: m.userId,
+        isMentionAll: m.userId == '@all',
+        start: m.start - shift,
+        end: m.end - shift,
+        displayName: m.displayName,
+      );
+    }).toList();
     draft.quoteInfo = _quoteInfo;
     return draft.toDraftString();
   }
@@ -658,6 +778,8 @@ class MessageInputBarController extends ChangeNotifier {
   void setDraft(String draft) {
     _endMentionSession();
     _mentionsList.clear();
+    // 整段替换文本,占位符随之消失,对应的内联图片一并丢弃
+    _inlineImages.clear();
     _quotedMessage = null;
     _quoteInfo = null;
 
@@ -704,6 +826,7 @@ class MessageInputBarController extends ChangeNotifier {
       _handleMentionsChange(newText);
     }
     _lastText = newText;
+    _scheduleSaveDraft();
 
     notifyListeners();
   }
@@ -791,11 +914,47 @@ class _StickerInfo {
 class EmojiTextEditingController extends TextEditingController {
   EmojiTextEditingController({super.text});
 
+  /// 内联图片解析:第 ordinal 个占位符对应的本地图片路径,null 表示无对应图片。
+  /// 由 [MessageInputBarController] 绑定到它的内联图片列表。
+  String? Function(int ordinal)? inlineImagePathResolver;
+
+  /// 内联图片的最大显示高度。微信交互:图片按原始尺寸显示,最大不超过输入区高度;
+  /// 由输入栏用 LayoutBuilder 按当前视口高度实时更新。
+  double inlineImageMaxHeight = 80;
+
+  // buildTextSpan 期间的占位符游标,跨 before/composing/after 三段连续计数
+  int _inlineImageOrdinal = 0;
+
   // Regular expression to match emojis (covers standard emojis, emoticons, symbols, flag sequences, etc.)
   static final RegExp _emojiRegex = RegExp(
     r'[\u{1F300}-\u{1FAFF}]|[\u{1F000}-\u{1F0FF}]|[\u{1F1E6}-\u{1F1FF}]|[\u{2600}-\u{27BF}]|[\u{2300}-\u{23FF}]|[\u{2B50}]',
     unicode: true,
   );
+
+  /// ZWSP 锚点会让"点击文本末尾之后"的命中测试返回 text.length+1 的越界位置,
+  /// 所有编辑都走 value setter,在这里统一夹回文本末尾。
+  @override
+  set value(TextEditingValue newValue) {
+    if (newValue.selection.isValid &&
+        (newValue.selection.start > newValue.text.length || newValue.selection.end > newValue.text.length)) {
+      newValue = newValue.copyWith(
+        selection: TextSelection.collapsed(offset: newValue.text.length),
+      );
+    }
+    super.value = newValue;
+  }
+
+  /// 文本以换行结尾且末行含图片时,引擎的"幻影末行"会复制图片行的行高
+  /// (回车后出现图片一样高的空行)。追加一个零宽空格锚点让它自己形成正常行高的
+  /// 末行,幻影行随之消失。锚点不存在于真实文本中,越界光标由 value setter 兜底。
+  bool _needsTrailingLineAnchor(String text) {
+    if (!text.endsWith('\n')) {
+      return false;
+    }
+    final int prevBreak = text.lastIndexOf('\n', text.length - 2);
+    final String lastLine = text.substring(prevBreak + 1, text.length - 1);
+    return lastLine.contains(_inlineImagePlaceholder);
+  }
 
   @override
   TextSpan buildTextSpan({
@@ -805,31 +964,87 @@ class EmojiTextEditingController extends TextEditingController {
   }) {
     assert(!value.composing.isValid || !withComposing || value.composing.isCollapsed || (value.composing.start >= 0 && value.composing.end <= value.text.length));
 
+    _inlineImageOrdinal = 0;
     final bool hasComposing = value.composing.isValid && withComposing && !value.composing.isCollapsed;
 
+    final List<InlineSpan> children;
     if (!hasComposing) {
-      return _buildEmojiTextSpan(text, style);
-    }
+      children = <InlineSpan>[_buildEmojiTextSpan(text, style)];
+    } else {
+      final TextStyle composingStyle = style?.merge(const TextStyle(decoration: TextDecoration.underline))
+          ?? const TextStyle(decoration: TextDecoration.underline);
 
-    final TextStyle composingStyle = style?.merge(const TextStyle(decoration: TextDecoration.underline)) 
-        ?? const TextStyle(decoration: TextDecoration.underline);
+      final String beforeText = value.text.substring(0, value.composing.start);
+      final String composingText = value.text.substring(value.composing.start, value.composing.end);
+      final String afterText = value.text.substring(value.composing.end);
 
-    final String beforeText = value.text.substring(0, value.composing.start);
-    final String composingText = value.text.substring(value.composing.start, value.composing.end);
-    final String afterText = value.text.substring(value.composing.end);
-
-    return TextSpan(
-      style: style,
-      children: [
+      children = <InlineSpan>[
         _buildEmojiTextSpan(beforeText, style),
         _buildEmojiTextSpan(composingText, composingStyle),
         _buildEmojiTextSpan(afterText, style),
-      ],
+      ];
+    }
+    if (_needsTrailingLineAnchor(value.text)) {
+      children.add(const TextSpan(text: '\u200B'));
+    }
+    return TextSpan(style: style, children: children);
+  }
+
+  /// 先按内联图片占位符切段:占位符渲染为图片 WidgetSpan,其余文本做 emoji 处理。
+  /// 占位符与 WidgetSpan 一一对应(各占 1 个字符位),保证光标/选区位置映射不乱。
+  TextSpan _buildEmojiTextSpan(String text, TextStyle? style) {
+    final List<InlineSpan> children = [];
+    int runStart = 0;
+    for (int i = 0; i < text.length; i++) {
+      if (text.codeUnitAt(i) == 0xFFFC) {
+        if (i > runStart) {
+          _appendEmojiRuns(text.substring(runStart, i), style, children);
+        }
+        children.add(_buildInlineImageSpan(style));
+        runStart = i + 1;
+      }
+    }
+    if (runStart < text.length) {
+      _appendEmojiRuns(text.substring(runStart), style, children);
+    }
+    return TextSpan(style: style, children: children);
+  }
+
+  InlineSpan _buildInlineImageSpan(TextStyle? style) {
+    final String? path = inlineImagePathResolver?.call(_inlineImageOrdinal++);
+    if (path == null) {
+      // 没有对应图片(不应出现):原样保留占位字符,维持文本与 span 的长度一致
+      return TextSpan(text: _inlineImagePlaceholder, style: style);
+    }
+    // aboveBaseline:图片底边坐在文字基线上,行高(ascent)随图片增长,
+    // 后续文字与图片底部对齐(微信 PC 表现)。
+    // 注意 top/middle/bottom 三种对齐都不参与行高计算,超高部分会溢出行框、
+    // 盖住其他行/工具条,不要改回去(见 test/inline_image_input_test.dart)。
+    return WidgetSpan(
+      style: style,
+      alignment: PlaceholderAlignment.aboveBaseline,
+      baseline: TextBaseline.alphabetic,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 1),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: ConstrainedBox(
+            // 高度上限动态跟随输入区;宽度由文本段落宽度约束,600 只是兜底
+            constraints: BoxConstraints(maxWidth: 600, maxHeight: inlineImageMaxHeight),
+            child: Image.file(
+              File(path),
+              fit: BoxFit.contain,
+              // 解码高度固定上限,避免拖拽调高度时反复重新解码;不放大小图
+              cacheHeight: 800,
+              errorBuilder: (_, __, ___) => const SizedBox(width: 24, height: 24),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  TextSpan _buildEmojiTextSpan(String text, TextStyle? style) {
-    final List<InlineSpan> children = [];
+  void _appendEmojiRuns(String text, TextStyle? style, List<InlineSpan> children) {
     final baseFontSize = style?.fontSize ?? 16.0;
     // Scale emoji font size to make them look comparable to or slightly larger than text.
     final emojiStyle = style?.copyWith(
@@ -855,7 +1070,5 @@ class EmojiTextEditingController extends TextEditingController {
         return '';
       },
     );
-
-    return TextSpan(style: style, children: children);
   }
 }

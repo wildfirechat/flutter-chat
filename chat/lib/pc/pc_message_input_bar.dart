@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:chat/app_theme.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,7 +24,6 @@ import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_popover.dart';
 import 'package:chat/pc/widgets/pc_resize_handle.dart';
-import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/screenshot_service.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
@@ -34,6 +32,7 @@ import 'package:chat/theme/app_typography.dart';
 
 /// 桌面形态输入栏:顶部拖拽条 + 工具条(表情/图片/文件/通话)+ 多行输入区。
 /// Enter 发送、Shift+Enter 换行;中文输入法组合期间的 Enter 交给输入法。
+/// 粘贴图片时内联显示在输入框里(微信 PC 交互),发送时先逐张发图片再发文本。
 /// 键入 '@' 弹出 [PcMentionOverlay] 就地选人(微信 PC 交互),浮层优先消费导航按键。
 /// 复用 [MessageInputBarController] 的文本/@提醒/引用/草稿逻辑,与手机形态共享一套状态。
 ///
@@ -52,7 +51,6 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
   final GlobalKey _emojiButtonKey = GlobalKey();
   final LayerLink _inputBarLink = LayerLink();
   bool _isPickingFile = false;
-  String _textBeforePaste = '';
 
   /// 拖拽起点的高度与累计位移。用累计量而非逐帧增量,
   /// 这样拖到边界后继续拖不会“攒”出位移,回拖时立刻跟手。
@@ -113,11 +111,11 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     if (event is! KeyDownEvent) {
       return KeyEventResult.ignored;
     }
-    // Ctrl/Cmd+V 粘贴:如果剪贴板里有图片则走确认后发送,否则交给输入框处理文本粘贴
+    // Ctrl/Cmd+V 粘贴全量接管:剪贴板有图片则内联插入输入框(微信 PC 交互),
+    // 否则手动粘贴纯文本。不走 TextField 默认粘贴,避免图片剪贴板附带的元数据文本被贴进来。
     if (event.logicalKey == LogicalKeyboardKey.keyV && (HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed)) {
-      _textBeforePaste = controller.textEditingController.text;
       _handlePaste(controller);
-      return KeyEventResult.ignored;
+      return KeyEventResult.handled;
     }
     if (event.logicalKey != LogicalKeyboardKey.enter && event.logicalKey != LogicalKeyboardKey.numpadEnter) {
       return KeyEventResult.ignored;
@@ -136,22 +134,19 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     return KeyEventResult.handled;
   }
 
+  /// 粘贴:图片写入临时文件后内联插入输入框,非图片则插入剪贴板纯文本。
   Future<void> _handlePaste(MessageInputBarController controller) async {
     try {
       final clipboard = SystemClipboard.instance;
-      if (clipboard == null) {
+      final reader = clipboard == null ? null : await clipboard.read();
+      final format = reader == null ? null : _findAvailableImageFormat(reader);
+      if (reader == null || format == null) {
+        final data = await Clipboard.getData(Clipboard.kTextPlain);
+        final text = data?.text;
+        if (text != null && text.isNotEmpty) {
+          controller.insertText(text);
+        }
         return;
-      }
-      final reader = await clipboard.read();
-      final format = _findAvailableImageFormat(reader);
-      if (format == null) {
-        // 剪贴板里没有图片,交给 TextField 处理文本粘贴
-        return;
-      }
-      // 回退 TextField 粘入的图片元数据文本
-      if (controller.textEditingController.text != _textBeforePaste) {
-        controller.textEditingController.text = _textBeforePaste;
-        controller.textEditingController.selection = TextSelection.collapsed(offset: _textBeforePaste.length);
       }
       // super_clipboard 的 getFile 使用回调模式
       reader.getFile(format, (file) async {
@@ -165,13 +160,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
           final path = '${tempDir.path}/paste_${DateTime.now().millisecondsSinceEpoch}.$ext';
           await File(path).writeAsBytes(bytes);
           if (!mounted) return;
-          // 弹确认对话框
-          final fileName = path.split('/').last;
-          final confirmed = await _showSendConfirmDialog(fileName);
-          if (confirmed == true && mounted) {
-            final conversationController = Provider.of<ConversationController>(context, listen: false);
-            conversationController.onPickImage(controller.conversation, path);
-          }
+          controller.insertInlineImage(path);
         } catch (e) {
           debugPrint('paste image read failed: $e');
         }
@@ -186,50 +175,6 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     if (reader.canProvide(Formats.jpeg)) return Formats.jpeg;
     if (reader.canProvide(Formats.gif)) return Formats.gif;
     return null;
-  }
-
-  Future<bool?> _showSendConfirmDialog(String fileName) async {
-    final l10n = AppLocalizations.of(context)!;
-    return showPcDialog<bool>(
-      context: context,
-      width: 360,
-      barrierDismissible: false,
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              l10n.sendFile,
-              style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: ctx.colors.textPrimary),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              l10n.confirmSendFile(fileName),
-              style: AppText.sm.copyWith(color: ctx.colors.textSecondary, height: 1.4),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                  onPressed: () => Navigator.of(ctx).pop(false),
-                  style: AppTheme.mutedTextButtonStyle(ctx.colors),
-                  child: Text(l10n.cancel),
-                ),
-                const SizedBox(width: 8),
-                FilledButton(
-                  onPressed: () => Navigator.of(ctx).pop(true),
-                  child: Text(l10n.send),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   void _showEmojiPopover(MessageInputBarController controller) {
@@ -411,23 +356,39 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          child: Focus(
-                            onKeyEvent: (node, event) => _handleKeyEvent(node, event, controller),
-                            child: TextField(
-                              controller: controller.textEditingController,
-                              focusNode: controller.focusNode,
-                              onChanged: controller.onTextChanged,
-                              maxLines: null,
-                              expands: true,
-                              textAlignVertical: TextAlignVertical.top,
-                              keyboardType: TextInputType.multiline,
-                              style: AppText.base.copyWith(height: 1.5, color: context.colors.textPrimary),
-                              decoration: InputDecoration(
-                                isCollapsed: true,
-                                border: InputBorder.none,
-                                hintText: l10n.enterToSendHint,
-                                hintStyle: AppText.base.copyWith(color: context.colors.textTertiary),
-                              ),
+                          // 内联图片行高可能超出输入区视口,裁掉溢出绘制,防止盖住上方工具条
+                          child: ClipRect(
+                            child: LayoutBuilder(
+                              // LayoutBuilder 的作用:拖拽输入栏改变视口约束时重跑 builder,
+                              // 让 TextField 重建 span,图片高度上限实时跟随
+                              builder: (context, constraints) {
+                                // 48 = 图片行超出图片本身的部分(WidgetSpan 内边距 + 基线下
+                                // 行距,随字体约 15~20)+ 视觉余量,保证整行落在视口内
+                                controller.textEditingController.inlineImageMaxHeight =
+                                    (constraints.maxHeight - 48).clamp(40.0, 456.0).toDouble();
+                                return Focus(
+                                  onKeyEvent: (node, event) => _handleKeyEvent(node, event, controller),
+                                  child: TextField(
+                                    controller: controller.textEditingController,
+                                    focusNode: controller.focusNode,
+                                    onChanged: controller.onTextChanged,
+                                    maxLines: null,
+                                    expands: true,
+                                    // 默认 strut 会强制行高,内联图片/大字号都撑不开行框
+                                    // (溢出绘制盖住其他行),必须禁用。见 test/inline_image_input_test.dart
+                                    strutStyle: StrutStyle.disabled,
+                                    textAlignVertical: TextAlignVertical.top,
+                                    keyboardType: TextInputType.multiline,
+                                    style: AppText.base.copyWith(height: 1.5, color: context.colors.textPrimary),
+                                    decoration: InputDecoration(
+                                      isCollapsed: true,
+                                      border: InputBorder.none,
+                                      hintText: l10n.enterToSendHint,
+                                      hintStyle: AppText.base.copyWith(color: context.colors.textTertiary),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
