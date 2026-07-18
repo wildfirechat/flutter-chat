@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:super_clipboard/super_clipboard.dart';
@@ -32,7 +33,7 @@ import 'package:chat/theme/app_typography.dart';
 
 /// 桌面形态输入栏:顶部拖拽条 + 工具条(表情/图片/文件/通话)+ 多行输入区。
 /// Enter 发送、Shift+Enter 换行;中文输入法组合期间的 Enter 交给输入法。
-/// 粘贴图片时内联显示在输入框里(微信 PC 交互),发送时先逐张发图片再发文本。
+/// 粘贴的图片/文件内联显示在输入框里(微信 PC 交互),发送时先逐个发附件再发文本。
 /// 键入 '@' 弹出 [PcMentionOverlay] 就地选人(微信 PC 交互),浮层优先消费导航按键。
 /// 复用 [MessageInputBarController] 的文本/@提醒/引用/草稿逻辑,与手机形态共享一套状态。
 ///
@@ -111,8 +112,9 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     if (event is! KeyDownEvent) {
       return KeyEventResult.ignored;
     }
-    // Ctrl/Cmd+V 粘贴全量接管:剪贴板有图片则内联插入输入框(微信 PC 交互),
-    // 否则手动粘贴纯文本。不走 TextField 默认粘贴,避免图片剪贴板附带的元数据文本被贴进来。
+    // Ctrl/Cmd+V 粘贴全量接管:剪贴板有文件/图片则内联插入输入框(微信 PC 交互),
+    // 否则手动粘贴纯文本。不走 TextField 默认粘贴,避免文件/图片剪贴板附带的
+    // 元数据文本(如文件名)被贴进来。
     if (event.logicalKey == LogicalKeyboardKey.keyV && (HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed)) {
       _handlePaste(controller);
       return KeyEventResult.handled;
@@ -134,11 +136,20 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     return KeyEventResult.handled;
   }
 
-  /// 粘贴:图片写入临时文件后内联插入输入框,非图片则插入剪贴板纯文本。
+  /// 粘贴,按优先级处理(微信 PC 交互):
+  /// 1. 剪贴板是文件路径(Finder/资源管理器里复制的文件):图片文件直接内联显示,
+  ///    其他文件内联显示为文件卡片;
+  /// 2. 图片数据(截图等):写入临时文件后内联插入;
+  /// 3. 其余插入剪贴板纯文本。
   Future<void> _handlePaste(MessageInputBarController controller) async {
     try {
       final clipboard = SystemClipboard.instance;
       final reader = clipboard == null ? null : await clipboard.read();
+      // 文件路径优先于图片数据:复制的图片文件也带合成的图片数据格式,
+      // 走文件路径可直接用原文件,免去重新编码/落临时文件
+      if (reader != null && await _tryPasteFiles(reader, controller)) {
+        return;
+      }
       final format = reader == null ? null : _findAvailableImageFormat(reader);
       if (reader == null || format == null) {
         final data = await Clipboard.getData(Clipboard.kTextPlain);
@@ -176,6 +187,41 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     if (reader.canProvide(Formats.gif)) return Formats.gif;
     return null;
   }
+
+  /// 剪贴板携带文件路径时按条目顺序逐个内联插入,返回是否插入了内容。
+  /// 图片文件内联显示原图,其他文件显示为文件卡片;
+  /// 文件夹和已失效的路径跳过(与微信 PC 一致,不支持粘贴文件夹)。
+  Future<bool> _tryPasteFiles(ClipboardReader reader, MessageInputBarController controller) async {
+    if (!reader.canProvide(Formats.fileUri)) {
+      return false;
+    }
+    // 先按剪贴板条目顺序读全所有路径,再统一插入,保证多选文件的粘贴顺序稳定
+    final List<String> paths = [];
+    for (final item in reader.items) {
+      if (!item.canProvide(Formats.fileUri)) continue;
+      final uri = await item.readValue(Formats.fileUri);
+      if (uri != null) paths.add(uri.toFilePath());
+    }
+    bool inserted = false;
+    for (final path in paths) {
+      final file = File(path);
+      // File.exists 对文件夹返回 false,顺带滤掉文件夹
+      if (!await file.exists()) continue;
+      final int size = await file.length();
+      if (!mounted) break;
+      if (_isImageFile(path)) {
+        controller.insertInlineImage(path);
+      } else {
+        controller.insertInlineFile(path, p.basename(path), size);
+      }
+      inserted = true;
+    }
+    return inserted;
+  }
+
+  static const Set<String> _inlineImageExtensions = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'};
+
+  bool _isImageFile(String path) => _inlineImageExtensions.contains(p.extension(path).toLowerCase());
 
   void _showEmojiPopover(MessageInputBarController controller) {
     final renderBox = _emojiButtonKey.currentContext?.findRenderObject() as RenderBox?;
@@ -356,11 +402,13 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          // 内联图片行高可能超出输入区视口,裁掉溢出绘制,防止盖住上方工具条
+                          // 内联图片行可能超出输入区视口(如粘贴后拖矮输入栏),
+                          // 裁掉溢出绘制,防止盖住上方工具条
                           child: ClipRect(
                             child: LayoutBuilder(
-                              // LayoutBuilder 的作用:拖拽输入栏改变视口约束时重跑 builder,
-                              // 让 TextField 重建 span,图片高度上限实时跟随
+                              // 微信交互:粘贴的图片按原始尺寸内联显示,最大不超过可见输入区,
+                              // 粘贴后不出现滚动条。拖拽输入栏改变视口约束时 LayoutBuilder
+                              // 重跑,TextField 随之重建 span,图片高度上限实时跟随。
                               builder: (context, constraints) {
                                 // 48 = 图片行超出图片本身的部分(WidgetSpan 内边距 + 基线下
                                 // 行距,随字体约 15~20)+ 视觉余量,保证整行落在视口内
@@ -374,8 +422,9 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                                     onChanged: controller.onTextChanged,
                                     maxLines: null,
                                     expands: true,
-                                    // 默认 strut 会强制行高,内联图片/大字号都撑不开行框
-                                    // (溢出绘制盖住其他行),必须禁用。见 test/inline_image_input_test.dart
+                                    // 本引擎的默认 strut 会强制行高:内联图片/大字号都撑不开
+                                    // 行框,超高部分溢出绘制盖住其他行,必须禁用。
+                                    // 回归用例见 test/inline_image_input_test.dart
                                     strutStyle: StrutStyle.disabled,
                                     textAlignVertical: TextAlignVertical.top,
                                     keyboardType: TextInputType.multiline,

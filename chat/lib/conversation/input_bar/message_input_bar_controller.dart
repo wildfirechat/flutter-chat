@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/sticker_message_content.dart';
@@ -19,15 +20,37 @@ import 'package:imclient/model/quote_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/utilities.dart';
+import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 import 'draft_data.dart';
 
 enum ChatInputBarStatus { keyboardStatus, pluginStatus, emojiStatus, recordStatus, muteStatus, pttStatus, menuStatus }
 
 /// 内联图片在输入框文本中的占位字符(U+FFFC OBJECT REPLACEMENT CHARACTER)。
-/// 第 N 个占位符对应 [MessageInputBarController._inlineImages] 的第 N 项。
-const String _inlineImagePlaceholder = '\uFFFC';
+/// 第 N 个占位符对应 [MessageInputBarController._inlineAttachments] 的第 N 项。
+const String _inlineAttachmentPlaceholder = '\uFFFC';
 
-int _countInlineImagePlaceholders(String text) {
+/// 粘贴进输入框的一个内联附件(图片或文件),对应文本中的一个占位符
+/// (见 [_inlineAttachmentPlaceholder])。图片内联显示原图,文件显示为
+/// 文件卡片;发送时图片发图片消息,文件发文件消息(微信 PC 交互)。
+class InlineAttachment {
+  final String path;
+
+  /// 非空表示文件卡片,null 表示内联图片。
+  final String? fileName;
+  final int fileSize;
+
+  const InlineAttachment.image(this.path)
+      : fileName = null,
+        fileSize = 0;
+
+  const InlineAttachment.file(this.path, String this.fileName, this.fileSize);
+
+  bool get isFile => fileName != null;
+}
+
+int _countInlineAttachmentPlaceholders(String text) {
   int count = 0;
   for (int i = 0; i < text.length; i++) {
     if (text.codeUnitAt(i) == 0xFFFC) count++;
@@ -64,9 +87,9 @@ class MessageInputBarController extends ChangeNotifier {
   VoidCallback? onSend;
   final List<Mention> _mentionsList = [];
 
-  // 粘贴到输入框的内联图片本地路径,按占位符出现顺序一一对应(见 _inlineImagePlaceholder)。
-  // 仅在内存中维护:草稿不保存图片,切换会话即丢弃。
-  final List<String> _inlineImages = [];
+  // 粘贴到输入框的内联附件(图片/文件),按占位符出现顺序一一对应(见 _inlineAttachmentPlaceholder)。
+  // 仅在内存中维护:草稿不保存附件,切换会话即丢弃。
+  final List<InlineAttachment> _inlineAttachments = [];
   String _lastText = "";
   String _conversationDraft = "";
   bool _isInsertingMention = false;
@@ -92,9 +115,9 @@ class MessageInputBarController extends ChangeNotifier {
     focusNode.addListener(_onFocusChanged);
     // 纯光标移动不会触发 onTextChanged,需单独校验 @ 会话
     textEditingController.addListener(_onEditingValueChanged);
-    // 渲染层按占位符序号取对应图片路径,内联显示在输入框里
-    textEditingController.inlineImagePathResolver =
-        (ordinal) => ordinal < _inlineImages.length ? _inlineImages[ordinal] : null;
+    // 渲染层按占位符序号取对应附件,内联显示在输入框里
+    textEditingController.inlineAttachmentResolver =
+        (ordinal) => ordinal < _inlineAttachments.length ? _inlineAttachments[ordinal] : null;
     _loadRemoteUrlCache();
 
     Imclient.getConversationInfo(conversation).then((conversationInfo) {
@@ -224,21 +247,28 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void onSendButton() {
-    // 以文本中实际存在的占位符数为准,防止极端场景(如 undo)下列表残留看不见的图片
-    final int placeholderCount = _countInlineImagePlaceholders(textEditingController.text);
-    final List<String> images = _inlineImages.take(placeholderCount).toList();
-    final String text = textEditingController.text.replaceAll(_inlineImagePlaceholder, '').trim();
-    if (images.isEmpty && text.isEmpty) {
+    // 以文本中实际存在的占位符数为准,防止极端场景(如 undo)下列表残留看不见的附件
+    final int placeholderCount = _countInlineAttachmentPlaceholders(textEditingController.text);
+    final List<InlineAttachment> attachments = _inlineAttachments.take(placeholderCount).toList();
+    final String text = textEditingController.text.replaceAll(_inlineAttachmentPlaceholder, '').trim();
+    if (attachments.isEmpty && text.isEmpty) {
       return;
     }
-    // 先把内联图片逐张发出,再发文本(引用/@提醒随文本消息)
-    for (final path in images) {
-      conversationViewModel.sendMediaMessage(ImageMessageContent()..localPath = path);
+    // 先把内联附件按序逐个发出,再发文本(引用/@提醒随文本消息)
+    for (final attachment in attachments) {
+      if (attachment.isFile) {
+        conversationViewModel.sendMediaMessage(FileMessageContent()
+          ..name = attachment.fileName!
+          ..size = attachment.fileSize
+          ..localPath = attachment.path);
+      } else {
+        conversationViewModel.sendMediaMessage(ImageMessageContent()..localPath = attachment.path);
+      }
     }
     if (text.isNotEmpty) {
       _sendTextMessage(conversation, text);
     }
-    _inlineImages.clear();
+    _inlineAttachments.clear();
     textEditingController.clear();
     _quotedMessage = null;
     _quoteInfo = null;
@@ -267,7 +297,7 @@ class MessageInputBarController extends ChangeNotifier {
       _updateMentionSession(text);
     }
 
-    text = _syncInlineImages(text);
+    text = _syncInlineAttachments(text);
 
     if (_mentionsList.isNotEmpty) {
       _handleMentionsChange(text);
@@ -280,8 +310,14 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   /// 在光标处插入一张内联图片(微信 PC 交互:粘贴的图片直接显示在输入框里)。
-  /// 文本中插入占位字符,图片路径按占位符序号登记;选区若圈住已有图片则一并替换。
-  void insertInlineImage(String path) {
+  void insertInlineImage(String path) => _insertInlineAttachment(InlineAttachment.image(path));
+
+  /// 在光标处插入一个内联文件卡片(微信 PC 交互:粘贴的文件以卡片显示在输入框里)。
+  void insertInlineFile(String path, String name, int size) =>
+      _insertInlineAttachment(InlineAttachment.file(path, name, size));
+
+  /// 文本中插入占位字符,附件按占位符序号登记;选区若圈住已有附件则一并替换。
+  void _insertInlineAttachment(InlineAttachment attachment) {
     final String text = textEditingController.text;
     TextSelection selection = textEditingController.selection;
     if (!selection.isValid || selection.start < 0) {
@@ -289,13 +325,13 @@ class MessageInputBarController extends ChangeNotifier {
     }
     final int start = selection.start;
     final int end = selection.end;
-    final int before = _countInlineImagePlaceholders(text.substring(0, start));
-    final int inside = _countInlineImagePlaceholders(text.substring(start, end));
+    final int before = _countInlineAttachmentPlaceholders(text.substring(0, start));
+    final int inside = _countInlineAttachmentPlaceholders(text.substring(start, end));
     if (inside > 0) {
-      _inlineImages.removeRange(before, math.min(before + inside, _inlineImages.length));
+      _inlineAttachments.removeRange(before, math.min(before + inside, _inlineAttachments.length));
     }
-    final String newText = text.replaceRange(start, end, _inlineImagePlaceholder);
-    _inlineImages.insert(before, path);
+    final String newText = text.replaceRange(start, end, _inlineAttachmentPlaceholder);
+    _inlineAttachments.insert(before, attachment);
 
     textEditingController.value = TextEditingValue(
       text: newText,
@@ -311,11 +347,11 @@ class MessageInputBarController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 用户编辑后同步内联图片与占位符:删掉占位符时移除对应图片;
-  /// 粘贴文本里混入的外来 U+FFFC 一律剔除,避免占位符与图片错位。
+  /// 用户编辑后同步内联附件与占位符:删掉占位符时移除对应附件;
+  /// 粘贴文本里混入的外来 U+FFFC 一律剔除,避免占位符与附件错位。
   /// 必须在 _lastText 更新前调用;返回(可能被改写的)最新文本。
-  String _syncInlineImages(String text) {
-    if (_inlineImages.isEmpty && !text.contains(_inlineImagePlaceholder)) {
+  String _syncInlineAttachments(String text) {
+    if (_inlineAttachments.isEmpty && !text.contains(_inlineAttachmentPlaceholder)) {
       return text;
     }
     final String old = _lastText;
@@ -336,19 +372,19 @@ class MessageInputBarController extends ChangeNotifier {
     }
 
     final String removed = old.substring(prefix, old.length - suffix);
-    final int removedImages = _countInlineImagePlaceholders(removed);
-    if (removedImages > 0) {
-      final int before = _countInlineImagePlaceholders(old.substring(0, prefix));
-      final int rangeStart = math.min(before, _inlineImages.length);
-      final int rangeEnd = math.min(before + removedImages, _inlineImages.length);
+    final int removedCount = _countInlineAttachmentPlaceholders(removed);
+    if (removedCount > 0) {
+      final int before = _countInlineAttachmentPlaceholders(old.substring(0, prefix));
+      final int rangeStart = math.min(before, _inlineAttachments.length);
+      final int rangeEnd = math.min(before + removedCount, _inlineAttachments.length);
       if (rangeStart < rangeEnd) {
-        _inlineImages.removeRange(rangeStart, rangeEnd);
+        _inlineAttachments.removeRange(rangeStart, rangeEnd);
       }
     }
 
     final String inserted = text.substring(prefix, text.length - suffix);
-    if (_countInlineImagePlaceholders(inserted) > 0) {
-      final String cleaned = inserted.replaceAll(_inlineImagePlaceholder, '');
+    if (_countInlineAttachmentPlaceholders(inserted) > 0) {
+      final String cleaned = inserted.replaceAll(_inlineAttachmentPlaceholder, '');
       text = text.replaceRange(prefix, text.length - suffix, cleaned);
       textEditingController.value = TextEditingValue(
         text: text,
@@ -748,9 +784,9 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   String getDraft() {
-    // 草稿暂不支持图片:剔除内联图片占位符,只保存文本
+    // 草稿暂不支持附件:剔除内联附件占位符,只保存文本
     final String raw = textEditingController.text;
-    final String content = raw.replaceAll(_inlineImagePlaceholder, '');
+    final String content = raw.replaceAll(_inlineAttachmentPlaceholder, '');
     if (_mentionsList.isEmpty && _quoteInfo == null) {
       return content;
     }
@@ -758,7 +794,7 @@ class MessageInputBarController extends ChangeNotifier {
     draft.mentions = _mentionsList.map((m) {
       // 占位符被剔除后文本变短,mention 下标要减去其前方的占位符数
       // (占位符不可能落在 mention 内部,start/end 平移量相同)
-      final int shift = _countInlineImagePlaceholders(raw.substring(0, math.min(m.start, raw.length)));
+      final int shift = _countInlineAttachmentPlaceholders(raw.substring(0, math.min(m.start, raw.length)));
       return DraftMention(
         uid: m.userId,
         isMentionAll: m.userId == '@all',
@@ -778,8 +814,8 @@ class MessageInputBarController extends ChangeNotifier {
   void setDraft(String draft) {
     _endMentionSession();
     _mentionsList.clear();
-    // 整段替换文本,占位符随之消失,对应的内联图片一并丢弃
-    _inlineImages.clear();
+    // 整段替换文本,占位符随之消失,对应的内联附件一并丢弃
+    _inlineAttachments.clear();
     _quotedMessage = null;
     _quoteInfo = null;
 
@@ -911,19 +947,28 @@ class _StickerInfo {
   _StickerInfo({required this.path, required this.width, required this.height});
 }
 
+/// 输入框的富文本渲染控制器:emoji 适当放大,内联附件占位符(U+FFFC)渲染为
+/// 图片/文件卡片 WidgetSpan(微信 PC 的粘贴图片/文件交互)。
+///
+/// 本引擎(ohos fork)有两个已实测的怪癖,渲染方案围绕它们设计,回归用例见
+/// test/inline_image_input_test.dart:
+/// 1. TextField 默认 strut 强制行高,任何行内内容都撑不开行框——使用方必须
+///    传 strutStyle: StrutStyle.disabled,并配合 aboveBaseline 对齐
+///    (top/middle/bottom 不参与行高计算);
+/// 2. 尾随换行的"幻影末行"会整行复制上一行行高——见 [_needsTrailingLineAnchor]。
 class EmojiTextEditingController extends TextEditingController {
   EmojiTextEditingController({super.text});
 
-  /// 内联图片解析:第 ordinal 个占位符对应的本地图片路径,null 表示无对应图片。
-  /// 由 [MessageInputBarController] 绑定到它的内联图片列表。
-  String? Function(int ordinal)? inlineImagePathResolver;
+  /// 内联附件解析:第 ordinal 个占位符对应的附件(图片或文件),null 表示无对应附件。
+  /// 由 [MessageInputBarController] 绑定到它的内联附件列表。
+  InlineAttachment? Function(int ordinal)? inlineAttachmentResolver;
 
-  /// 内联图片的最大显示高度。微信交互:图片按原始尺寸显示,最大不超过输入区高度;
-  /// 由输入栏用 LayoutBuilder 按当前视口高度实时更新。
+  /// 内联图片的最大显示高度(逻辑像素)。图片按原始尺寸显示,超过则等比缩小。
+  /// PC 输入栏用 LayoutBuilder 按可见输入区高度实时更新,保证粘贴后不出滚动条。
   double inlineImageMaxHeight = 80;
 
   // buildTextSpan 期间的占位符游标,跨 before/composing/after 三段连续计数
-  int _inlineImageOrdinal = 0;
+  int _inlineAttachmentOrdinal = 0;
 
   // Regular expression to match emojis (covers standard emojis, emoticons, symbols, flag sequences, etc.)
   static final RegExp _emojiRegex = RegExp(
@@ -953,7 +998,7 @@ class EmojiTextEditingController extends TextEditingController {
     }
     final int prevBreak = text.lastIndexOf('\n', text.length - 2);
     final String lastLine = text.substring(prevBreak + 1, text.length - 1);
-    return lastLine.contains(_inlineImagePlaceholder);
+    return lastLine.contains(_inlineAttachmentPlaceholder);
   }
 
   @override
@@ -964,12 +1009,12 @@ class EmojiTextEditingController extends TextEditingController {
   }) {
     assert(!value.composing.isValid || !withComposing || value.composing.isCollapsed || (value.composing.start >= 0 && value.composing.end <= value.text.length));
 
-    _inlineImageOrdinal = 0;
+    _inlineAttachmentOrdinal = 0;
     final bool hasComposing = value.composing.isValid && withComposing && !value.composing.isCollapsed;
 
     final List<InlineSpan> children;
     if (!hasComposing) {
-      children = <InlineSpan>[_buildEmojiTextSpan(text, style)];
+      children = <InlineSpan>[_buildEmojiTextSpan(context, text, style)];
     } else {
       final TextStyle composingStyle = style?.merge(const TextStyle(decoration: TextDecoration.underline))
           ?? const TextStyle(decoration: TextDecoration.underline);
@@ -979,20 +1024,21 @@ class EmojiTextEditingController extends TextEditingController {
       final String afterText = value.text.substring(value.composing.end);
 
       children = <InlineSpan>[
-        _buildEmojiTextSpan(beforeText, style),
-        _buildEmojiTextSpan(composingText, composingStyle),
-        _buildEmojiTextSpan(afterText, style),
+        _buildEmojiTextSpan(context, beforeText, style),
+        _buildEmojiTextSpan(context, composingText, composingStyle),
+        _buildEmojiTextSpan(context, afterText, style),
       ];
     }
     if (_needsTrailingLineAnchor(value.text)) {
-      children.add(const TextSpan(text: '\u200B'));
+      children.add(const TextSpan(text: '\u200B')); // 幻影末行锚点,见 _needsTrailingLineAnchor
     }
     return TextSpan(style: style, children: children);
   }
 
-  /// 先按内联图片占位符切段:占位符渲染为图片 WidgetSpan,其余文本做 emoji 处理。
-  /// 占位符与 WidgetSpan 一一对应(各占 1 个字符位),保证光标/选区位置映射不乱。
-  TextSpan _buildEmojiTextSpan(String text, TextStyle? style) {
+  /// 先按内联附件占位符切段:占位符渲染为图片/文件卡片 WidgetSpan,其余文本做
+  /// emoji 处理。占位符与 WidgetSpan 一一对应(各占 1 个字符位),保证光标/选区
+  /// 位置映射不乱。
+  TextSpan _buildEmojiTextSpan(BuildContext context, String text, TextStyle? style) {
     final List<InlineSpan> children = [];
     int runStart = 0;
     for (int i = 0; i < text.length; i++) {
@@ -1000,7 +1046,7 @@ class EmojiTextEditingController extends TextEditingController {
         if (i > runStart) {
           _appendEmojiRuns(text.substring(runStart, i), style, children);
         }
-        children.add(_buildInlineImageSpan(style));
+        children.add(_buildInlineAttachmentSpan(context, style));
         runStart = i + 1;
       }
     }
@@ -1010,14 +1056,14 @@ class EmojiTextEditingController extends TextEditingController {
     return TextSpan(style: style, children: children);
   }
 
-  InlineSpan _buildInlineImageSpan(TextStyle? style) {
-    final String? path = inlineImagePathResolver?.call(_inlineImageOrdinal++);
-    if (path == null) {
-      // 没有对应图片(不应出现):原样保留占位字符,维持文本与 span 的长度一致
-      return TextSpan(text: _inlineImagePlaceholder, style: style);
+  InlineSpan _buildInlineAttachmentSpan(BuildContext context, TextStyle? style) {
+    final InlineAttachment? attachment = inlineAttachmentResolver?.call(_inlineAttachmentOrdinal++);
+    if (attachment == null) {
+      // 没有对应附件(不应出现):原样保留占位字符,维持文本与 span 的长度一致
+      return TextSpan(text: _inlineAttachmentPlaceholder, style: style);
     }
-    // aboveBaseline:图片底边坐在文字基线上,行高(ascent)随图片增长,
-    // 后续文字与图片底部对齐(微信 PC 表现)。
+    // aboveBaseline:附件底边坐在文字基线上,行高(ascent)随附件增长,
+    // 后续文字与附件底部对齐(微信 PC 表现)。
     // 注意 top/middle/bottom 三种对齐都不参与行高计算,超高部分会溢出行框、
     // 盖住其他行/工具条,不要改回去(见 test/inline_image_input_test.dart)。
     return WidgetSpan(
@@ -1026,20 +1072,68 @@ class EmojiTextEditingController extends TextEditingController {
       baseline: TextBaseline.alphabetic,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 1),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(4),
-          child: ConstrainedBox(
-            // 高度上限动态跟随输入区;宽度由文本段落宽度约束,600 只是兜底
-            constraints: BoxConstraints(maxWidth: 600, maxHeight: inlineImageMaxHeight),
-            child: Image.file(
-              File(path),
-              fit: BoxFit.contain,
-              // 解码高度固定上限,避免拖拽调高度时反复重新解码;不放大小图
-              cacheHeight: 800,
-              errorBuilder: (_, __, ___) => const SizedBox(width: 24, height: 24),
+        child: attachment.isFile ? _buildInlineFileCard(context, attachment) : _buildInlineImage(attachment),
+      ),
+    );
+  }
+
+  Widget _buildInlineImage(InlineAttachment attachment) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(4),
+      child: ConstrainedBox(
+        // 高度上限动态跟随输入区;宽度由文本段落宽度约束,600 只是兜底
+        constraints: BoxConstraints(maxWidth: 600, maxHeight: inlineImageMaxHeight),
+        child: Image.file(
+          File(attachment.path),
+          fit: BoxFit.contain,
+          // 解码高度固定上限,避免拖拽调高度时反复重新解码;不放大小图
+          cacheHeight: 800,
+          errorBuilder: (_, __, ___) => const SizedBox(width: 24, height: 24),
+        ),
+      ),
+    );
+  }
+
+  /// 文件卡片:类型图标 + 文件名 + 大小,样式对齐文件消息气泡
+  /// (微信 PC:粘贴的文件以卡片显示在输入框里,发送时发文件消息)。
+  Widget _buildInlineFileCard(BuildContext context, InlineAttachment attachment) {
+    final colors = context.colors;
+    return Container(
+      width: 220,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        border: Border.all(color: colors.hairline),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        children: [
+          Image.asset(
+            'assets/images/file_type/${Utilities.fileType(attachment.fileName!)}.png',
+            width: 32,
+            height: 32,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  attachment.fileName!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.sm.copyWith(color: colors.textPrimary),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  Utilities.formatSize(attachment.fileSize),
+                  style: AppText.xs.copyWith(color: colors.textSecondary),
+                ),
+              ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
