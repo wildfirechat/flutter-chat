@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter_slidable/flutter_slidable.dart';
 
 import '../widgets/unread_badge.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/notification/notification_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
@@ -520,7 +520,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       );
     }
 
-    final bool enableSwipe = Platform.isIOS || Platform.operatingSystem == 'ohos';
+    final bool enableSwipe = WfcPlatform.isIOS || WfcPlatform.isOhos;
     if (enableSwipe) {
       final Widget mobileCell = Material(
         color: _cellBackground(hovered),

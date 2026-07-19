@@ -5,9 +5,9 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_tray_manager.dart';
 
 GlobalKey<NavigatorState>? _navKey;
@@ -91,8 +91,8 @@ class PCWindowManager {
     await windowManager.show();
     await windowManager.focus();
 
-    // 窗口显示后初始化托盘
-    if (isDesktopShell) {
+    // 窗口显示后初始化托盘(tray_manager 仅原生桌面可用)
+    if (WfcPlatform.isNativeDesktop) {
       await PCTrayManager().init();
     }
   }

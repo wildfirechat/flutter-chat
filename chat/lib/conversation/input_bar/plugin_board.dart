@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
@@ -38,7 +39,8 @@ class PluginBoard extends StatelessWidget {
   List<_PluginItem> _getPluginItems() {
     final items = [
       _PluginItem('assets/images/input/album.png',  "album"),
-      if (isDesktopShell) _PluginItem('', "screenshot"),
+      // 截图依赖 flameshot,仅原生桌面可用(鸿蒙电脑无此能力)
+      if (WfcPlatform.isNativeDesktop) _PluginItem('', "screenshot"),
       if (!isDesktopShell) _PluginItem('assets/images/input/camera.png', "camera"),
       if (!isDesktopShell) _PluginItem('assets/images/input/call.png', "call"),
       if (!isDesktopShell) _PluginItem('assets/images/input/location.png', "location"),
@@ -174,7 +176,7 @@ class PluginBoard extends StatelessWidget {
                 conversationController.onPickImage(conversation, value.files.first.path!);
               }
             });
-          } else if (Platform.isAndroid || Platform.isIOS) {
+          } else if (WfcPlatform.isAndroid || WfcPlatform.isIOS) {
             // 微信式应用内相册多选
             _pickImagesWithAssetPicker(context, conversationController);
           } else {
@@ -199,7 +201,7 @@ class PluginBoard extends StatelessWidget {
         }
         break;
       case "camera":
-        if(!['android', 'ios'].contains(Platform.operatingSystem) ){
+        if (!(WfcPlatform.isAndroid || WfcPlatform.isIOS)) {
           showToast(msg: l10n.notSupportedOnCurrentPlatform);
           return;
         }

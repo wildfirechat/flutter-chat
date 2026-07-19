@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -104,12 +105,9 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
     });
   }
 
-  /// WFC 平台编号:Windows 3 / macOS 4 / Linux 7 / 其它 10。
+  /// WFC 平台编号:Windows 3 / macOS 4 / Linux 7 / 鸿蒙手机 10 / 平板 11 / 电脑 12。
   int _detectPlatform() {
-    if (Platform.isWindows) return 3;
-    if (Platform.isMacOS) return 4;
-    if (Platform.isLinux) return 7;
-    return 10;
+    return WfcPlatform.clientPlatformCode;
   }
 
   void _startPolling(String token) {

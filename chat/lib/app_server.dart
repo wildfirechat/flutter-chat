@@ -1,10 +1,10 @@
 
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:imclient/imclient.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
@@ -19,13 +19,9 @@ typedef AppServerHTTPCallback = Function(String response);
 class AppServer {
   static String? _authToken;
 
+  /// 客户端平台号:鸿蒙手机/平板/电脑分别上报 10/11/12,见 [WfcPlatform]。
   static int _detectClientPlatform() {
-    if (Platform.isAndroid) return 2;
-    if (Platform.isWindows) return 3;
-    if (Platform.isMacOS) return 4;
-    if (Platform.isIOS) return 1;
-    if (Platform.isLinux) return 7;
-    return 10; // unknown
+    return WfcPlatform.clientPlatformCode;
   }
 
   /// AppServer 地址，已兼容双网主备选择。

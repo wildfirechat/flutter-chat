@@ -13,6 +13,9 @@ class _OnlinePlatform {
   static const int linux = 7;
   static const int iPad = 8;
   static const int aPad = 9;
+  static const int harmony = 10;
+  static const int harmonyPad = 11;
+  static const int harmonyPC = 12;
 }
 
 /// 在线状态格式化工具。
@@ -34,7 +37,7 @@ class OnlineStateFormatter {
   static bool _hasMobileSession(UserOnlineState? state) {
     if (state?.clientStates == null) return false;
     return state!.clientStates!.any(
-      (cs) => (cs.platform == _OnlinePlatform.iOS || cs.platform == _OnlinePlatform.android) && cs.state == 1,
+      (cs) => (cs.platform == _OnlinePlatform.iOS || cs.platform == _OnlinePlatform.android || cs.platform == _OnlinePlatform.harmony) && cs.state == 1,
     );
   }
 
@@ -43,7 +46,7 @@ class OnlineStateFormatter {
     if (state?.clientStates == null) return 0;
     var lastSeen = 0;
     for (final cs in state!.clientStates!) {
-      if ((cs.platform == _OnlinePlatform.iOS || cs.platform == _OnlinePlatform.android) &&
+      if ((cs.platform == _OnlinePlatform.iOS || cs.platform == _OnlinePlatform.android || cs.platform == _OnlinePlatform.harmony) &&
           cs.state == 1 &&
           cs.lastSeen > lastSeen) {
         lastSeen = cs.lastSeen;
@@ -65,20 +68,23 @@ class OnlineStateFormatter {
     var hasOnline = false;
 
     for (final cs in state.clientStates!) {
-      if (cs.platform >= _OnlinePlatform.unset && cs.platform <= _OnlinePlatform.aPad && cs.state == 0) {
+      if (cs.platform >= _OnlinePlatform.unset && cs.platform <= _OnlinePlatform.harmonyPC && cs.state == 0) {
         hasOnline = true;
       }
-      if (cs.platform == _OnlinePlatform.iOS || cs.platform == _OnlinePlatform.android) {
+      if (cs.platform == _OnlinePlatform.iOS || cs.platform == _OnlinePlatform.android || cs.platform == _OnlinePlatform.harmony) {
         mobileState = cs.state;
       } else if (cs.platform == _OnlinePlatform.windows ||
           cs.platform == _OnlinePlatform.osx ||
-          cs.platform == _OnlinePlatform.linux) {
+          cs.platform == _OnlinePlatform.linux ||
+          cs.platform == _OnlinePlatform.harmonyPC) {
         pcState = cs.state;
       } else if (cs.platform == _OnlinePlatform.web) {
         webState = cs.state;
       } else if (cs.platform == _OnlinePlatform.wx) {
         wxState = cs.state;
-      } else if (cs.platform == _OnlinePlatform.iPad || cs.platform == _OnlinePlatform.aPad) {
+      } else if (cs.platform == _OnlinePlatform.iPad ||
+          cs.platform == _OnlinePlatform.aPad ||
+          cs.platform == _OnlinePlatform.harmonyPad) {
         padState = cs.state;
       }
     }

@@ -245,6 +245,9 @@ class ConversationViewModel extends ChangeNotifier {
     });
     _sendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
       var msg = event.message;
+      if(msg.messageId == 0) {
+        return;
+      }
       if (_currentConversation == msg.conversation) {
         // 使用 message.messageId 作为 key 去重,防止重复插入
         final existingIndex = _conversationMessageList.indexWhere(

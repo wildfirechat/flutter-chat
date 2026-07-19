@@ -26,7 +26,7 @@ import {
     MethodResult,
 } from '@ohos/flutter_ohos'
 import { UIAbility } from '@kit.AbilityKit';
-import { BusinessError } from '@kit.BasicServicesKit';
+import { BusinessError, deviceInfo } from '@kit.BasicServicesKit';
 import { window } from '@kit.ArkUI';
 import buffer  from '@ohos.buffer';
 import {
@@ -433,6 +433,11 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     _getClientId = (call: MethodCall, result: MethodResult) => {
         let clientId: string = getClientId()
         result.success(clientId)
+    }
+    _getDeviceType = (call: MethodCall, result: MethodResult) => {
+        // 返回 deviceInfo.deviceType('phone'/'tablet'/'2in1' 等),
+        // Dart 侧据此区分鸿蒙手机/平板/电脑,见 imclient_platform.dart
+        result.success(deviceInfo.deviceType)
     }
     _connect = (call: MethodCall, result: MethodResult) => {
         let token: string = call.argument("token");
@@ -1809,6 +1814,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     methods: Record<string, Function> = {
         "initProto": this._initProto,
         "getClientId": this._getClientId,
+        "getDeviceType": this._getDeviceType,
         "connect": this._connect,
         "getUserInfo": this._getUserInfo,
         "getUserInfos": this._getUserInfos,

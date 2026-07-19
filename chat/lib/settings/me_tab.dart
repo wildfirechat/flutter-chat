@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:chat/conversation/input_bar/wf_asset_picker_delegate.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:imclient/model/user_info.dart';
@@ -150,7 +149,7 @@ class SelfProfile extends StatelessWidget {
   /// 相册选头像:Android/iOS 走微信式应用内相册(首格带"拍摄"入口),
   /// 桌面/ohos 无 photo_manager 实现,仍走系统选择器
   void _pickPortraitFromAlbum(BuildContext context) async {
-    if (Platform.isAndroid || Platform.isIOS) {
+    if (WfcPlatform.isAndroid || WfcPlatform.isIOS) {
       final files = await pickImagesWithWfAssetPicker(context,
           maxAssets: 1, showTakePhotoEntry: true);
       if (files.isNotEmpty && context.mounted) {

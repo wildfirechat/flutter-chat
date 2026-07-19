@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:io';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:badges/badges.dart' as badge;
 import '../widgets/unread_badge.dart';
@@ -10,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
@@ -385,7 +385,7 @@ class HomeTabBarState extends State<HomeTabBar> {
 
   @override
   Widget build(BuildContext context) {
-    final ScrollPhysics physics = (!isDesktopShell && Platform.isAndroid)
+    final ScrollPhysics physics = (!isDesktopShell && WfcPlatform.isAndroid)
         ? const PageScrollPhysics()
         : const NeverScrollableScrollPhysics();
     _body = PageView(

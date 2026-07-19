@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:avenginekit/engine/call_state.dart';
 import 'package:flutter/foundation.dart';
@@ -8,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
@@ -92,6 +92,9 @@ void main([List<String>? args]) async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 鸿蒙上查询设备形态(手机/平板/电脑)并缓存,后续 isDesktopShell 等平台判断依赖此结果
+  await WfcPlatform.init();
+
   // 限制全局图片内存缓存，避免大图/头像过多时内存占用过高
   PaintingBinding.instance.imageCache
     ..maximumSize = 200
@@ -104,12 +107,15 @@ void main([List<String>? args]) async {
   // image_picker 在 Android 上只剩"我"页拍照换头像在用,相册均已改走应用内
   // asset picker。显式赋值实例,不依赖自动注册链上的类型判断——本项目出现过
   // 插件注册链中断导致后续插件未注册的问题,届时 is 判断会静默失效
-  if (Platform.isAndroid) {
+  if (WfcPlatform.isAndroid) {
     ImagePickerPlatform.instance = ImagePickerAndroid();
   }
   final PcLayoutViewModel? pcLayoutViewModel = isDesktopShell ? PcLayoutViewModel() : null;
   if (isDesktopShell) {
-    await PCWindowManager().ensureInitialized();
+    // window_manager 仅原生桌面(Windows/macOS/Linux)可用,鸿蒙电脑跳过
+    if (WfcPlatform.isNativeDesktop) {
+      await PCWindowManager().ensureInitialized();
+    }
     // 首帧之前读出上次的栏宽/输入栏高度,避免默认尺寸闪一下再跳
     await pcLayoutViewModel!.load();
   }
@@ -474,13 +480,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _updatePlatformBadge(int count) {
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
+    if (WfcPlatform.isIOS) {
 //       try {
 //         FlutterDynamicIcon.setApplicationIconBadgeNumber(count);
 //       } catch (e) {
 //         debugPrint('unsupport app icon badge number platform');
 //       }
-    } else if (isDesktopShell) {
+    } else if (WfcPlatform.isNativeDesktop) {
       // 桌面端:Dock(macOS)/任务栏(Windows) badge 目前通过托盘角标/标题模拟
       // tray_manager 没有 setBadge API,先更新托盘 tooltip 和未读闪烁。
       PCTrayManager().updateUnreadCount(count);

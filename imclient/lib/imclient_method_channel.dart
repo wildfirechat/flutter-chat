@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show Platform;
 
 import 'package:event_bus/event_bus.dart';
 import 'package:flutter/foundation.dart';
@@ -11,6 +10,7 @@ import 'package:imclient/tools.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'imclient.dart';
+import 'imclient_platform.dart';
 import 'message/message.dart';
 import 'message/message_content.dart';
 import 'message/unknown_message_content.dart';
@@ -80,8 +80,7 @@ class ImclientPlatform extends PlatformInterface {
   }
 
   ImclientChannel _createChannel() {
-    if (!kIsWeb &&
-        (Platform.isMacOS || Platform.isWindows || Platform.isLinux)) {
+    if (!kIsWeb && WfcPlatform.useFfiChannel) {
       return ImclientFfiChannel();
     }
     return MethodChannelImclientChannel(methodChannel);
@@ -618,8 +617,8 @@ class ImclientPlatform extends PlatformInterface {
             callback();
           }
 
-          // 桌面端 SDK 撤回成功后不回调 onRecallMessage，依据 requestId 补发通知。
-          if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+          // FFI 通道(Windows/macOS/Linux)撤回成功后不回调 onRecallMessage，依据 requestId 补发通知。
+          if (WfcPlatform.useFfiChannel) {
             int? recalledUid = _recallMessageRequestMap.remove(requestId);
             if (recalledUid != null) {
               _recallMessageCallback(recalledUid);
@@ -2147,9 +2146,9 @@ class ImclientPlatform extends PlatformInterface {
     Message message = _convertProtoMessage(fm)!;
     _sendingMessages[requestId] = message;
 
-    // 桌面平台(FFI)不会通过 MethodChannel 回调 onSendMessageStart,
+    // FFI 通道(Windows/macOS/Linux)不会通过 MethodChannel 回调 onSendMessageStart,
     // 需要在 sendMediaMessage 返回前主动发送 SendMessageStartEvent 通知 UI 层
-    if (message.messageId != 0 && (Platform.isWindows || Platform.isMacOS || Platform.isLinux)) {
+    if (message.messageId != 0 && WfcPlatform.useFfiChannel) {
       message.status = MessageStatus.Message_Status_Sending;
       _eventBus.fire(SendMessageStartEvent(message));
     }
@@ -2201,8 +2200,8 @@ class ImclientPlatform extends PlatformInterface {
     int requestId = _requestId++;
     _operationSuccessCallbackMap[requestId] = successCallback;
     _errorCallbackMap[requestId] = errorCallback;
-    // 桌面端 SDK 撤回成功后不保证回调 onRecallMessage，记录 requestId 用于补发通知。
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+    // FFI 通道(Windows/macOS/Linux)撤回成功后不保证回调 onRecallMessage，记录 requestId 用于补发通知。
+    if (WfcPlatform.useFfiChannel) {
       _recallMessageRequestMap[requestId] = messageUid;
     }
     _channel.invokeMethod('recallMessage',
