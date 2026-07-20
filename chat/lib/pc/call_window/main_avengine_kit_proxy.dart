@@ -220,8 +220,13 @@ class MainAvEngineKitProxy {
       final type = msg.content.meta.type;
       if (!_isVoipMessageType(type)) continue;
 
-      //发送的消息忽略掉
-      if (msg.direction == MessageDirection.MessageDirection_Send) continue;
+      //发送的信令/来电类消息忽略,避免 Call 窗口自己发出的消息回灌;
+      //但 ACCEPT/END 例外:多端同步场景(同账号其他端接听/挂断),
+      //本端 Call 窗口需要收到它们来结束振铃/通话。
+      if (msg.direction == MessageDirection.MessageDirection_Send &&
+          type != mc.VOIP_CONTENT_TYPE_ACCEPT &&
+          type != mc.VOIP_CONTENT_TYPE_ACCEPT_T &&
+          type != mc.VOIP_CONTENT_TYPE_END) continue;
 
       // 忽略超过 1 分钟的旧 VOIP 消息，避免离线/历史消息误弹通话窗口。
       final now = DateTime.now().millisecondsSinceEpoch;
