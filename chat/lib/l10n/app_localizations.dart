@@ -368,6 +368,24 @@ abstract class AppLocalizations {
   /// **'发言者视图'**
   String get conferenceSpeakerView;
 
+  /// No description provided for @conferenceLayout.
+  ///
+  /// In zh, this message translates to:
+  /// **'布局'**
+  String get conferenceLayout;
+
+  /// No description provided for @conferencePrevPage.
+  ///
+  /// In zh, this message translates to:
+  /// **'上一页'**
+  String get conferencePrevPage;
+
+  /// No description provided for @conferenceNextPage.
+  ///
+  /// In zh, this message translates to:
+  /// **'下一页'**
+  String get conferenceNextPage;
+
   /// No description provided for @conferenceJoinMeeting.
   ///
   /// In zh, this message translates to:

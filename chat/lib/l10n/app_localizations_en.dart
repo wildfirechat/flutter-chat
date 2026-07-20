@@ -150,6 +150,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conferenceSpeakerView => 'Speaker View';
 
   @override
+  String get conferenceLayout => 'Layout';
+
+  @override
+  String get conferencePrevPage => 'Previous';
+
+  @override
+  String get conferenceNextPage => 'Next';
+
+  @override
   String get conferenceJoinMeeting => 'Join Meeting';
 
   @override

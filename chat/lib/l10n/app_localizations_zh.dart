@@ -150,6 +150,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get conferenceSpeakerView => '发言者视图';
 
   @override
+  String get conferenceLayout => '布局';
+
+  @override
+  String get conferencePrevPage => '上一页';
+
+  @override
+  String get conferenceNextPage => '下一页';
+
+  @override
   String get conferenceJoinMeeting => '加入会议';
 
   @override

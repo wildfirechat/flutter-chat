@@ -11,29 +11,18 @@ import 'package:avenginekit/engine/video_type.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:chat/widget/portrait.dart';
-import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/theme/app_colors.dart';
 
+import 'conference_grid_layout.dart';
 import 'conference_manager.dart';
+import 'conference_mobile_layout.dart';
+import 'conference_participant_item.dart';
 import 'conference_participant_list_view.dart';
-
-class _ParticipantItem {
-  final String userId;
-  UserInfo? userInfo;
-  RTCVideoRenderer renderer;
-  bool videoMuted = false;
-  bool audioMuted = false;
-  bool isScreenSharing = false;
-  bool isAudience = false;
-  int volume = 0;
-
-  _ParticipantItem({required this.userId, required this.renderer});
-}
+import 'conference_speaker_layout.dart';
 
 extension _FirstWhereOrNullExtension<E> on Iterable<E> {
   E? firstWhereOrNull(bool Function(E) test) {
@@ -44,6 +33,15 @@ extension _FirstWhereOrNullExtension<E> on Iterable<E> {
   }
 }
 
+/// 会议通话界面。
+///
+/// 视频区布局按平台分流(见 PC_UI_ADAPTATION 设计):
+/// - 移动端:单一布局——第 0 页焦点大画面(叠加可拖动预览小窗),
+///   第 1..n 页 2x2 网格分页,见 [ConferenceMobileLayout]。
+/// - PC:两种布局可切换——宫格(9 人/页,箭头翻页)与演讲者
+///   (大画面+右侧缩略图条),见 [ConferenceGridLayout]/[ConferenceSpeakerLayout];
+///   主持人设置服务器焦点时强制演讲者视图。
+/// 大小流订阅由 [_syncSubscriptions] 按布局/页码/焦点统一调度。
 class ConferenceCallScreen extends StatefulWidget {
   final CallSession session;
 
@@ -56,17 +54,27 @@ class ConferenceCallScreen extends StatefulWidget {
 class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     implements CallSessionCallback {
   late CallSession _session;
-  final Map<String, _ParticipantItem> _participants = {};
-  _ParticipantItem? _selfItem;
+  final Map<String, ConferenceParticipantItem> _participants = {};
+  ConferenceParticipantItem? _selfItem;
   bool _isMicMuted = false;
   bool _isCameraOff = false;
   bool _isSpeakerOn = false;
   bool _showMemberList = false;
-  int _currentLayout = 0; // 0 grid, 1 speaker
+  int _currentLayout = 0; // PC 用户自选布局:0 宫格, 1 演讲者
   String? _localFocusUserId;
   Duration _duration = Duration.zero;
   Timer? _timer;
   late ConferenceManager _conferenceManager;
+
+  /// 移动端当前页码 / PC 宫格当前页码,驱动大小流订阅调度。
+  int _mobilePage = 0;
+  int _pcGridPage = 0;
+
+  /// 移动端成员弹层是否打开,通话结束时需先关弹层再退界面。
+  bool _memberSheetOpen = false;
+
+  /// 各参与者当前订阅的流类型,仅变化时才下发 setParticipantVideoType。
+  final Map<String, int> _subscriptionState = {};
 
   @override
   void initState() {
@@ -105,7 +113,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   Future<void> _initSelf() async {
     var renderer = RTCVideoRenderer();
     await renderer.initialize();
-    _selfItem = _ParticipantItem(userId: Imclient.currentUserId, renderer: renderer);
+    _selfItem = ConferenceParticipantItem(userId: Imclient.currentUserId, renderer: renderer);
     var info = await Imclient.getUserInfo(Imclient.currentUserId);
     _selfItem!.userInfo = info;
     _selfItem!.videoMuted = _session.isVideoMuted;
@@ -126,7 +134,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     if (_participants.containsKey(userId)) return;
     var renderer = RTCVideoRenderer();
     await renderer.initialize();
-    var item = _ParticipantItem(userId: userId, renderer: renderer);
+    var item = ConferenceParticipantItem(userId: userId, renderer: renderer);
     var info = await Imclient.getUserInfo(userId);
     item.userInfo = info;
     var stream = _session.getParticipantVideoStream(userId);
@@ -298,9 +306,34 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   }
 
   void _onToggleMemberList() {
-    setState(() {
-      _showMemberList = !_showMemberList;
-    });
+    if (isDesktopShell) {
+      setState(() {
+        _showMemberList = !_showMemberList;
+      });
+    } else {
+      _showMemberListSheet();
+    }
+  }
+
+  /// 移动端成员面板:底部弹层,不再挤压视频区。
+  void _showMemberListSheet() {
+    _memberSheetOpen = true;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.colors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (sheetContext) => FractionallySizedBox(
+        heightFactor: 0.7,
+        child: ConferenceParticipantListView(
+          session: _session,
+          conferenceManager: _conferenceManager,
+          onClose: () => Navigator.of(sheetContext).pop(),
+        ),
+      ),
+    ).whenComplete(() => _memberSheetOpen = false);
   }
 
   void _onLayoutChanged(int layout) {
@@ -340,7 +373,13 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
         if (shell != null && shell.activeCallSession != null) {
           shell.endCallSession();
         } else {
-          Navigator.of(context).pop();
+          final navigator = Navigator.of(context);
+          // 成员弹层还开着时先关弹层,否则只能关掉弹层而退不出界面
+          if (_memberSheetOpen) {
+            _memberSheetOpen = false;
+            navigator.pop();
+          }
+          navigator.pop();
         }
       });
     }
@@ -502,19 +541,158 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   @override
   void didGetStats(List<StatsReport> reports) {}
 
-  // --- UI Building ---
+  // --- 布局/焦点/订阅 ---
 
-  List<_ParticipantItem> get _allItems {
-    List<_ParticipantItem> items = [];
+  List<ConferenceParticipantItem> get _allItems {
+    List<ConferenceParticipantItem> items = [];
     if (_selfItem != null) items.add(_selfItem!);
     items.addAll(_participants.values);
     return items;
   }
 
-  List<_ParticipantItem> get _visibleItems {
-    var items = _allItems;
-    // Filter audience without video in speaker mode? Keep simple for now
-    return items;
+  List<ConferenceParticipantItem> get _visibleItems => _allItems;
+
+  /// PC 实际生效的布局:主持人设置了服务器焦点时强制演讲者视图(对齐 Electron)。
+  int get _effectiveLayout {
+    final hostFocus = _conferenceManager.currentFocusUser;
+    if (hostFocus != null && hostFocus.isNotEmpty) return 1;
+    return _currentLayout;
+  }
+
+  /// 排序:焦点 > 非观众 > 屏幕共享 > 开视频 > userId;
+  /// 移动端最后把自己固定到第一位(网格第一格)。
+  List<ConferenceParticipantItem> _sortItems(List<ConferenceParticipantItem> items) {
+    final focusId = _conferenceManager.currentFocusUser;
+    var sorted = List<ConferenceParticipantItem>.from(items);
+    sorted.sort((a, b) {
+      if (focusId != null && focusId.isNotEmpty) {
+        if (a.userId == focusId) return -1;
+        if (b.userId == focusId) return 1;
+      }
+      if (a.isAudience != b.isAudience) return a.isAudience ? 1 : -1;
+      if (a.isScreenSharing != b.isScreenSharing) return a.isScreenSharing ? -1 : 1;
+      if (a.videoMuted != b.videoMuted) return a.videoMuted ? 1 : -1;
+      return a.userId.compareTo(b.userId);
+    });
+    if (!isDesktopShell) {
+      var selfIndex = sorted.indexWhere((i) => i.userId == Imclient.currentUserId);
+      if (selfIndex > 0) {
+        var self = sorted.removeAt(selfIndex);
+        sorted.insert(0, self);
+      }
+    }
+    return sorted;
+  }
+
+  ConferenceParticipantItem? _resolveFocusItem(List<ConferenceParticipantItem> items) {
+    // 1. 主持人设置的焦点
+    var focusId = _conferenceManager.currentFocusUser;
+    var focusItem = items.firstWhereOrNull((i) => i.userId == focusId && focusId != null && focusId.isNotEmpty);
+    if (focusItem != null) return focusItem;
+
+    // 2. 本地个人焦点
+    var localFocusId = _localFocusUserId ?? _conferenceManager.localFocusUser;
+    var localItem = items.firstWhereOrNull((i) => i.userId == localFocusId && localFocusId != null && localFocusId.isNotEmpty);
+    if (localItem != null) return localItem;
+
+    // 3. 正在屏幕共享者
+    var screenSharer = items.firstWhereOrNull((i) => i.isScreenSharing);
+    if (screenSharer != null) return screenSharer;
+
+    // 4. 第一个未静音且有视频的用户
+    var videoUser = items.firstWhereOrNull((i) => !i.isAudience && !i.videoMuted && i.renderer.srcObject != null);
+    if (videoUser != null) return videoUser;
+
+    return items.firstOrNull;
+  }
+
+  bool _isFocusUser(ConferenceParticipantItem item) {
+    return _conferenceManager.currentFocusUser == item.userId ||
+        (_localFocusUserId ?? _conferenceManager.localFocusUser) == item.userId;
+  }
+
+  /// 移动端焦点页预览小窗内容:通常是自己;双人且焦点是自己时显示对方;
+  /// 多人且焦点是自己时不显示。
+  ConferenceParticipantItem? _resolvePreviewItem(
+      List<ConferenceParticipantItem> items, ConferenceParticipantItem? focus) {
+    final self = _selfItem;
+    if (self == null) return null;
+    if (focus != null && focus.userId == self.userId) {
+      if (items.length == 2) {
+        return items.firstWhereOrNull((i) => i.userId != self.userId);
+      }
+      return null;
+    }
+    return self;
+  }
+
+  /// 双人时点击预览小窗交换大小画面(切换本地焦点)。主持人已设焦点时不交换。
+  void _onSwapPreview() {
+    final items = _visibleItems;
+    if (items.length != 2) return;
+    final hostFocus = _conferenceManager.currentFocusUser;
+    if (hostFocus != null && hostFocus.isNotEmpty) return;
+    final focus = _resolveFocusItem(items);
+    final other = items.firstWhereOrNull((i) => i.userId != focus?.userId);
+    if (other == null) return;
+    setState(() {
+      _localFocusUserId = other.userId;
+      _conferenceManager.localFocusUser = other.userId;
+    });
+  }
+
+  /// 统一大小流订阅调度:按平台/布局/页码/焦点计算每个参与者的目标订阅,
+  /// 仅与缓存不一致时才下发 setParticipantVideoType。
+  /// - 移动端:焦点 BIG;焦点页预览 SMALL;当前网格页 SMALL;其余 NONE。
+  /// - PC 宫格:当前页全员 BIG,其余 NONE。
+  /// - PC 演讲者:焦点 BIG,其余 SMALL。
+  /// - 屏幕共享者恒 BIG;跳过自己(本地流无需订阅)。
+  void _syncSubscriptions(
+    List<ConferenceParticipantItem> sortedItems,
+    ConferenceParticipantItem? focus,
+    ConferenceParticipantItem? previewItem,
+  ) {
+    final desired = <String, int>{};
+    for (var i = 0; i < sortedItems.length; i++) {
+      final item = sortedItems[i];
+      if (item.userId == Imclient.currentUserId) continue;
+
+      int type;
+      if (isDesktopShell) {
+        if (_effectiveLayout == 0) {
+          final start = _pcGridPage * ConferenceGridLayout.pageSize;
+          type = (i >= start && i < start + ConferenceGridLayout.pageSize)
+              ? VideoType.BIG_STREAM
+              : VideoType.NONE;
+        } else {
+          type = item == focus ? VideoType.BIG_STREAM : VideoType.SMALL_STREAM;
+        }
+      } else {
+        if (item == focus) {
+          type = VideoType.BIG_STREAM;
+        } else if (item == previewItem) {
+          type = VideoType.SMALL_STREAM;
+        } else if (_mobilePage > 0) {
+          final start = (_mobilePage - 1) * 4;
+          type = (i >= start && i < start + 4)
+              ? VideoType.SMALL_STREAM
+              : VideoType.NONE;
+        } else {
+          type = VideoType.NONE;
+        }
+      }
+      if (item.isScreenSharing) type = VideoType.BIG_STREAM;
+      desired[item.userId] = type;
+    }
+
+    desired.forEach((userId, type) {
+      if (_subscriptionState[userId] != type) {
+        final item = sortedItems.firstWhereOrNull((e) => e.userId == userId);
+        _session.setParticipantVideoType(userId, item?.isScreenSharing ?? false, type);
+        _subscriptionState[userId] = type;
+      }
+    });
+    _subscriptionState.removeWhere((userId, _) => !desired.containsKey(userId));
   }
 
   String _participantName(UserInfo? info) {
@@ -524,7 +702,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
 
   String get _speakingUserName {
     int maxVolume = _selfItem?.volume ?? 0;
-    _ParticipantItem? speaking = _selfItem;
+    ConferenceParticipantItem? speaking = _selfItem;
     for (var item in _participants.values) {
       if (item.volume > maxVolume) {
         maxVolume = item.volume;
@@ -537,11 +715,19 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
         : _participantName(speaking.userInfo);
   }
 
+  // --- UI Building ---
+
   @override
   Widget build(BuildContext context) {
     var l10n = AppLocalizations.of(context)!;
     var items = _visibleItems;
+    var sortedItems = _sortItems(items);
+    var focus = _resolveFocusItem(items);
+    var previewItem = isDesktopShell ? null : _resolvePreviewItem(items, focus);
     var speakingName = _speakingUserName;
+
+    // 布局/页码/焦点变化统一反映到大小流订阅(内部有缓存,未变化时不发信令)
+    _syncSubscriptions(sortedItems, focus, previewItem);
 
     return Scaffold(
       backgroundColor: context.colors.primaryBackground,
@@ -559,11 +745,39 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
                             ? Center(
                                 child: CircularProgressIndicator(
                                     color: context.colors.textPrimary))
-                            : _currentLayout == 0
-                                ? _buildGrid(items)
-                                : _buildSpeakerLayout(items),
+                            : isDesktopShell
+                                ? (_effectiveLayout == 0
+                                    ? ConferenceGridLayout(
+                                        items: sortedItems,
+                                        audioOnly: _session.audioOnly,
+                                        isFocusUser: _isFocusUser,
+                                        onDoubleTapTile: _onDoubleTapVideo,
+                                        onPageChanged: (page) =>
+                                            setState(() => _pcGridPage = page),
+                                      )
+                                    : ConferenceSpeakerLayout(
+                                        focusItem: focus,
+                                        others: sortedItems
+                                            .where((i) => i != focus)
+                                            .toList(),
+                                        audioOnly: _session.audioOnly,
+                                        isFocusUser: _isFocusUser,
+                                        onDoubleTapTile: _onDoubleTapVideo,
+                                      ))
+                                : ConferenceMobileLayout(
+                                    items: sortedItems,
+                                    focusItem: focus,
+                                    previewItem: previewItem,
+                                    audioOnly: _session.audioOnly,
+                                    focusKey: focus?.userId,
+                                    isFocusUser: _isFocusUser,
+                                    onDoubleTapTile: _onDoubleTapVideo,
+                                    onSwapPreview: _onSwapPreview,
+                                    onPageChanged: (page) =>
+                                        setState(() => _mobilePage = page),
+                                  ),
                       ),
-                      if (_showMemberList)
+                      if (isDesktopShell && _showMemberList)
                         SizedBox(
                           width: 260,
                           child: ConferenceParticipantListView(
@@ -626,231 +840,23 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
             onPressed: _onToggleMemberList,
             tooltip: l10n.conferenceMemberList,
           ),
-          PopupMenuButton<int>(
-            icon: Icon(Icons.view_comfy_outlined, color: context.colors.textSecondary),
-            tooltip: '布局',
-            onSelected: _onLayoutChanged,
-            itemBuilder: (context) => [
-              PopupMenuItem(value: 0, child: Text(l10n.conferenceGridView)),
-              PopupMenuItem(value: 1, child: Text(l10n.conferenceSpeakerView)),
-            ],
-          ),
+          // 布局切换仅 PC 提供;移动端只有"焦点页+网格分页"一种布局
+          if (isDesktopShell)
+            PopupMenuButton<int>(
+              icon: Icon(Icons.view_comfy_outlined, color: context.colors.textSecondary),
+              tooltip: l10n.conferenceLayout,
+              onSelected: _onLayoutChanged,
+              itemBuilder: (context) => [
+                PopupMenuItem(value: 0, child: Text(l10n.conferenceGridView)),
+                PopupMenuItem(value: 1, child: Text(l10n.conferenceSpeakerView)),
+              ],
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildGrid(List<_ParticipantItem> items) {
-    var focusId = _conferenceManager.currentFocusUser;
-    var sortedItems = List<_ParticipantItem>.from(items);
-    sortedItems.sort((a, b) {
-      if (a.userId == focusId) return -1;
-      if (b.userId == focusId) return 1;
-      if (a.isScreenSharing && !b.isScreenSharing) return -1;
-      if (!a.isScreenSharing && b.isScreenSharing) return 1;
-      if (!a.videoMuted && b.videoMuted) return -1;
-      if (a.videoMuted && !b.videoMuted) return 1;
-      return a.userId.compareTo(b.userId);
-    });
-
-    int crossAxisCount = sortedItems.length <= 2
-        ? 1
-        : sortedItems.length <= 4
-            ? 2
-            : 3;
-    return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 1.2,
-      ),
-      itemCount: sortedItems.length,
-      itemBuilder: (context, index) => _buildParticipantCell(sortedItems[index]),
-    );
-  }
-
-  _ParticipantItem? _resolveFocusItem(List<_ParticipantItem> items) {
-    // 1. 主持人设置的焦点
-    var focusId = _conferenceManager.currentFocusUser;
-    var focusItem = items.firstWhereOrNull((i) => i.userId == focusId && focusId != null && focusId.isNotEmpty);
-    if (focusItem != null) return focusItem;
-
-    // 2. 本地个人焦点
-    var localFocusId = _localFocusUserId ?? _conferenceManager.localFocusUser;
-    var localItem = items.firstWhereOrNull((i) => i.userId == localFocusId && localFocusId != null && localFocusId.isNotEmpty);
-    if (localItem != null) return localItem;
-
-    // 3. 正在屏幕共享者
-    var screenSharer = items.firstWhereOrNull((i) => i.isScreenSharing);
-    if (screenSharer != null) return screenSharer;
-
-    // 4. 第一个未静音且有视频的用户
-    var videoUser = items.firstWhereOrNull((i) => !i.isAudience && !i.videoMuted && i.renderer.srcObject != null);
-    if (videoUser != null) return videoUser;
-
-    return items.firstOrNull;
-  }
-
-  void _applyFocusVideoType(_ParticipantItem? newFocus, _ParticipantItem? oldFocus) {
-    if (oldFocus != null && oldFocus.userId != Imclient.currentUserId && oldFocus.userId.isNotEmpty) {
-      _session.setParticipantVideoType(oldFocus.userId, oldFocus.isScreenSharing, VideoType.SMALL_STREAM);
-    }
-    if (newFocus != null && newFocus.userId != Imclient.currentUserId && newFocus.userId.isNotEmpty) {
-      _session.setParticipantVideoType(newFocus.userId, newFocus.isScreenSharing, VideoType.BIG_STREAM);
-    }
-  }
-
-  Widget _buildSpeakerLayout(List<_ParticipantItem> items) {
-    var focus = _resolveFocusItem(items);
-    var previousFocus = _previousFocusItem;
-    if (focus?.userId != previousFocus?.userId) {
-      _applyFocusVideoType(focus, previousFocus);
-      _previousFocusItem = focus;
-    }
-
-    return Column(
-      children: [
-        if (focus != null)
-          Expanded(
-            flex: 3,
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: _buildParticipantCell(focus, isFocus: true),
-            ),
-          ),
-        if (items.length > 1)
-          Expanded(
-            flex: 1,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: items.length,
-              itemBuilder: (context, index) {
-                var item = items[index];
-                if (item == focus) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: SizedBox(
-                    width: 140,
-                    child: _buildParticipantCell(item),
-                  ),
-                );
-              },
-            ),
-          ),
-      ],
-    );
-  }
-
-  _ParticipantItem? _previousFocusItem;
-
-  Widget _buildParticipantCell(_ParticipantItem item, {bool isFocus = false}) {
-    bool isSelf = item.userId == Imclient.currentUserId;
-    bool showVideo = !_session.audioOnly &&
-        !item.videoMuted &&
-        item.renderer.srcObject != null;
-    bool isSpeaking = item.volume > 0 && !item.audioMuted;
-    bool isFocusUser = _conferenceManager.currentFocusUser == item.userId ||
-        (_localFocusUserId ?? _conferenceManager.localFocusUser) == item.userId;
-
-    return GestureDetector(
-      onDoubleTap: () => _onDoubleTapVideo(item),
-      child: Container(
-        decoration: BoxDecoration(
-          color: context.colors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: isSpeaking || isFocusUser
-              ? Border.all(
-                  color: isFocusUser ? context.colors.warning : context.colors.success,
-                  width: 2)
-              : null,
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: Stack(
-            fit: StackFit.expand,
-            alignment: Alignment.center,
-            children: [
-              if (showVideo)
-                RTCVideoView(
-                  item.renderer,
-                  objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                  mirror: isSelf,
-                )
-              else
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [context.colors.surface, context.colors.primaryBackground],
-                    ),
-                  ),
-                  child: Center(
-                    child: Portrait(
-                      item.userInfo?.portrait ?? '',
-                      Config.defaultUserPortrait,
-                      width: isFocus ? 96 : 64,
-                      height: isFocus ? 96 : 64,
-                      borderRadius: isFocus ? 48 : 32,
-                    ),
-                  ),
-                ),
-              Positioned(
-                bottom: 8,
-                left: 8,
-                right: 8,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (item.audioMuted)
-                      Icon(Icons.mic_off, color: context.colors.textSecondary, size: 16),
-                    if (item.isAudience)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4),
-                        child: Text(AppLocalizations.of(context)!.conferenceAudience,
-                            style: TextStyle(color: context.colors.textSecondary, fontSize: 12)),
-                      ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        isSelf ? '我' : _participantName(item.userInfo),
-                        style: AppText.sm.copyWith(color: context.colors.textPrimary),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isFocusUser)
-                Positioned(
-                  top: 8,
-                  left: 8,
-                  child: Icon(Icons.highlight, color: context.colors.warning, size: 20),
-                ),
-              if (item.volume > 0 && !item.audioMuted)
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: context.colors.success.withValues(alpha: 0.8),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(Icons.volume_up, color: context.colors.textPrimary, size: 14),
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _onDoubleTapVideo(_ParticipantItem item) {
+  void _onDoubleTapVideo(ConferenceParticipantItem item) {
     if (_conferenceManager.isOwner) {
       if (_conferenceManager.currentFocusUser == item.userId) {
         _conferenceManager.requestCancelFocus();
