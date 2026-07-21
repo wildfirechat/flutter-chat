@@ -1,11 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 
 class SplashScreen extends StatelessWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,15 +26,25 @@ class SplashScreen extends StatelessWidget {
     return Container(
         color: colors.surface,
         child: SafeArea(
-          child: Column(
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              const Padding(padding: EdgeInsets.only(top: 120)),
-              Center(child: Image.asset('assets/images/app_icon.png', width: 180.0, height: 180.0),),
-              const Padding(padding: EdgeInsets.only(top: 16)),
-              Center(child: Text("野火IM", style: AppText.xxl.copyWith(color: colors.textPrimary, decoration: TextDecoration.none),),),
-              Expanded(child: Container()),
-              Center(child: Text("沟通如此简单!", style: AppText.lg.copyWith(color: colors.textSecondary, decoration: TextDecoration.none),),),
-              const Padding(padding: EdgeInsets.only(bottom: 120))
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset('assets/images/app_icon.png', width: 180.0, height: 180.0),
+                  const Padding(padding: EdgeInsets.only(top: 16)),
+                  Text("野火IM", style: AppText.xxl.copyWith(color: colors.textPrimary, decoration: TextDecoration.none)),
+                ],
+              ),
+              Positioned(
+                bottom: 120,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Text("沟通如此简单!", style: AppText.lg.copyWith(color: colors.textSecondary, decoration: TextDecoration.none)),
+                ),
+              ),
             ],
           ),
         ));
