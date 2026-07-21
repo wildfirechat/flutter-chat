@@ -9,7 +9,7 @@
 #ifndef WFClient_h
 #define WFClient_h
 
-#ifdef WIN32
+#ifdef _WIN32
 #ifdef PROTOWRAPPER_EXPORTS
 #define PROTOWRAPPER_API __declspec(dllexport)
 #else
@@ -478,6 +478,8 @@ extern "C" PROTOWRAPPER_API void WFCAPI unwatchOnlineState(int conversationType,
 extern "C" PROTOWRAPPER_API bool WFCAPI isEnableUserOnlineState();
 
 extern "C" PROTOWRAPPER_API void WFCAPI sendConferenceRequest(long long sessionId, const char *croomId, size_t roomId_len, const char *crequest, size_t request_len, bool advance, const char *cdata, size_t data_len, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType);
+
+extern "C" PROTOWRAPPER_API void WFCAPI sendMomentsRequest(const char *cpath, size_t path_len, const char *cdata, size_t data_len, fun_general_string_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType);
 
 extern "C" PROTOWRAPPER_API void WFCAPI requireLock(const char *clockId, size_t lockId_len, int duration, fun_general_void_success_callback successBlock, fun_general_error_callback errorBlock, void *pObject, int objectDataType);
 
