@@ -6,8 +6,6 @@ import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/message_payload.dart';
 import 'package:momentclient/momentclient.dart';
 
-import 'momentclient_method_channel.dart';
-
 
 // ignore: non_constant_identifier_names
 MessageContent MomentFeedMessageContentCreator() {
@@ -36,17 +34,19 @@ class MomentFeedMessageContent extends MessageContent {
     Map<dynamic, dynamic> map = json.decode(
         utf8.decode(payload.binaryContent!));
     feedId = map["feedId"];
-    type = map['t'];
+    type = WFMContentType.values[map['t']];
     sender = map['s'];
     text = map['c'];
-    List<dynamic> ms = map['ms'];
+    List<dynamic>? ms = map['ms'];
     medias = [];
-    for (var value in ms) {
-      if(value is Map) {
-        medias!.add(MethodChannelMomentClient.entryFromMap(value));
+    if(ms != null) {
+      for (var value in ms) {
+        if(value is Map) {
+          medias!.add(MomentClientImpl.entryFromMap(value));
+        }
       }
     }
-      extra = map['e'];
+    extra = map['e'];
   }
 
   @override
@@ -59,7 +59,7 @@ class MomentFeedMessageContent extends MessageContent {
       map['c'] = text;
     }
     if(medias != null && medias!.isNotEmpty) {
-      map['ms'] = MethodChannelMomentClient.feedEntryList2Map(medias!);
+      map['ms'] = MomentClientImpl.feedEntryList2Map(medias!);
     }
     if(toUsers != null && toUsers!.isNotEmpty) {
       map['to'] = toUsers;

@@ -153,6 +153,7 @@ import {
     searchMyFiles,
     searchUser,
     sendConferenceRequest,
+    sendMomentsRequest,
     sendFriendRequest,
     sendMessage,
     setBackupAddress,
@@ -1675,6 +1676,14 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
             this.__callback2UI('onSendConferenceRequestSuccess', {'requestId': requestId, 'result': str} as Record<string, Object>)
         }, this.__generalFailCallback(requestId))
     }
+    _sendMomentsRequest = (call: MethodCall, result: MethodResult) => {
+        let requestId = call.argument("requestId") as number
+        let path = call.argument("path") as string
+        let data = call.argument("data") as string
+        sendMomentsRequest(path, data, str => {
+            this.__callback2UI('onSendMomentsRequestSuccess', {'requestId': requestId, 'result': str} as Record<string, Object>)
+        }, this.__generalFailCallback(requestId))
+    }
     _isForceBigFilesUpload = (call: MethodCall, result: MethodResult) => {
         // native 层暂无对应接口，默认返回 false
         result.success(false)
@@ -1997,6 +2006,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         "unwatchOnlineState": this._unwatchOnlineState,
         "isEnableUserOnlineState": this._isEnableUserOnlineState,
         "sendConferenceRequest": this._sendConferenceRequest,
+        "sendMomentsRequest": this._sendMomentsRequest,
         "isForceBigFilesUpload": this._isForceBigFilesUpload,
         "setDefaultSilentWhenPcOnline": this._setDefaultSilentWhenPcOnline,
         "getConversationFiles": this._getConversationFiles,

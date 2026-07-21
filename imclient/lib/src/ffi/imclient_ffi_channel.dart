@@ -2142,6 +2142,27 @@ class ImclientFfiChannel implements ImclientChannel {
           });
           return null;
         }
+      case 'sendMomentsRequest':
+        {
+          final requestId = _int(args, 'requestId');
+          _pendingString[requestId] = (json) => _emit(
+              'onSendMomentsRequestSuccess',
+              {'requestId': requestId, 'error': 0, 'result': json});
+          using((a) {
+            final path = _ns(a, _str(args, 'path'));
+            final data = _ns(a, _str(args, 'data'));
+            _wf.sendMomentsRequest(
+                path.ptr,
+                path.len,
+                data.ptr,
+                data.len,
+                _cbString,
+                _cbError,
+                _reqPtr(requestId),
+                0);
+          });
+          return null;
+        }
       case 'getConversationFiles':
         {
           final requestId = _int(args, 'requestId');

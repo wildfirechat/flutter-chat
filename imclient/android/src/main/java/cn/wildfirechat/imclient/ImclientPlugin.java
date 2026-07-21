@@ -20,6 +20,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -2306,6 +2307,39 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             }
         });
         result.success(null);
+    }
+
+    private void sendMomentsRequest(@NonNull MethodCall call, @NonNull Result result) {
+        int requestId = call.argument("requestId");
+        String path = call.argument("path");
+        String data = call.argument("data");
+
+        ChatManager.Instance().sendMomentsRequest(path, data.getBytes(StandardCharsets.UTF_8), new GeneralCallbackBytes() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                byte[] decodedData = decodeMomentData(bytes, path);
+                String responseString = new String(decodedData, StandardCharsets.UTF_8);
+                callbackBuilder(requestId).put("result", responseString).success("onSendMomentsRequestSuccess");
+            }
+
+            @Override
+            public void onFail(int i) {
+                callbackBuilder(requestId).put("errorCode", i).success("onSendMomentsRequestFailure");
+            }
+        });
+        result.success(null);
+    }
+
+    // usePB=true 时 /moments_pb/feed/pull 和 /moments_pb/feed/pull_one 返回 protobuf，
+    // 需要先调用 ChatManager.decodeData 解码为 JSON 字符串。
+    private byte[] decodeMomentData(byte[] data, String path) {
+        if (path.startsWith("/moments_pb/feed/pull_one")) {
+            return ChatManager.Instance().decodeData(1, data, false);
+        } else if (path.startsWith("/moments_pb/feed/pull")) {
+            return ChatManager.Instance().decodeData(0, data, false);
+        } else {
+            return ChatManager.Instance().decodeData(data);
+        }
     }
     //- (void)isEnableUserOnlineState:(NSDictionary *)dict result:(FlutterResult)result {
 //        WFCCUserCustomState *customState = [[WFCCIMService sharedWFCIMService] getMyCustomState];

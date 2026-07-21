@@ -39,8 +39,11 @@ dependencies:
     path: ../avenginekit/
 
 
-  #  momentclient:
-  #  path: ../momentclient/
+  momentclient:
+    path: ../momentclient/
+
+  momentkit:
+    path: ../momentkit/
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

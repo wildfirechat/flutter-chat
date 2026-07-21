@@ -6,8 +6,6 @@ import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/message_payload.dart';
 import 'package:momentclient/momentclient.dart';
 
-import 'momentclient_method_channel.dart';
-
 
 
 // ignore: non_constant_identifier_names
@@ -45,13 +43,13 @@ class MomentCommentMessageContent extends MessageContent {
         utf8.decode(payload.binaryContent!));
     feedId = map["feedId"];
     commentId = map["commentId"];
-    replyCommentId = map["replyCommentId"];
+    replyCommentId = map["replyId"];
     serverTime = map["serverTime"];
     type = WFMCommentType.values[map['type']];
     sender = map['sender'];
     text = map['text'];
     replyTo = map['replyTo'];
-    extra = map['extra'];
+    extra = map['e'];
 
     feedType = WFMContentType.values[map['ftype']];
     feedSender = map['fsender'];
@@ -61,7 +59,7 @@ class MomentCommentMessageContent extends MessageContent {
       feedMedias = [];
       for (var value in ms) {
         if(value is Map) {
-          feedMedias!.add(MethodChannelMomentClient.entryFromMap(value));
+          feedMedias!.add(MomentClientImpl.entryFromMap(value));
         }
       }
     }
@@ -79,7 +77,7 @@ class MomentCommentMessageContent extends MessageContent {
       map['text'] = text;
     }
     if(replyCommentId != null) {
-      map['replyCommentId'] = replyCommentId;
+      map['replyId'] = replyCommentId;
     }
     if(replyTo != null) {
       map['replyTo'] = replyTo;
@@ -88,7 +86,7 @@ class MomentCommentMessageContent extends MessageContent {
       map['fcontent'] = feedText;
     }
     if(feedMedias != null && feedMedias!.isNotEmpty) {
-      map['fMedias'] = MethodChannelMomentClient.feedEntryList2Map(feedMedias!);
+      map['fmedias'] = MomentClientImpl.feedEntryList2Map(feedMedias!);
     }
     if(extra != null) {
       map['e'] = extra;

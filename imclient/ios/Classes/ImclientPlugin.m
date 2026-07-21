@@ -1901,6 +1901,53 @@ ImclientPlugin *gIMClientInstance;
     }];
 }
 
+- (void)sendMomentsRequest:(NSDictionary *)dict result:(FlutterResult)result {
+    int requestId = [dict[@"requestId"] intValue];
+    NSString *path = dict[@"path"];
+    NSString *data = dict[@"data"];
+    NSData *body = [data dataUsingEncoding:NSUTF8StringEncoding];
+
+    [[WFCCIMService sharedWFCIMService] postMomentsRequest:path data:body success:^(NSData *responseData) {
+        NSData *decodedData = [self decodeMomentData:responseData path:path];
+        NSString *responseString = [[NSString alloc] initWithData:decodedData encoding:NSUTF8StringEncoding];
+        [self.channel invokeMethod:@"onSendMomentsRequestSuccess" arguments:@{@"requestId":@(requestId), @"result":responseString ?: @""}];
+    } error:^(int error_code) {
+        [self.channel invokeMethod:@"onSendMomentsRequestFailure" arguments:@{@"requestId":@(requestId), @"errorCode":@(error_code)}];
+    }];
+}
+
+// usePB=true 时 /moments_pb/feed/pull 和 /moments_pb/feed/pull_one 返回 protobuf，
+// 需要通过运行时调用 WFCCNetworkService 的内部解码方法 decodeData:gzip:type:。
+- (NSData *)decodeMomentData:(NSData *)data path:(NSString *)path {
+    int type = -1;
+    if ([path hasPrefix:@"/moments_pb/feed/pull_one"]) {
+        type = 1;
+    } else if ([path hasPrefix:@"/moments_pb/feed/pull"]) {
+        type = 0;
+    }
+
+    SEL selector = type >= 0 ? @selector(decodeData:gzip:type:) : @selector(decodeData:);
+    if (![[WFCCNetworkService sharedInstance] respondsToSelector:selector]) {
+        return data;
+    }
+
+    NSMethodSignature *signature = [[WFCCNetworkService sharedInstance] methodSignatureForSelector:selector];
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+    [invocation setTarget:[WFCCNetworkService sharedInstance]];
+    [invocation setSelector:selector];
+    [invocation setArgument:&data atIndex:2];
+    if (type >= 0) {
+        BOOL gzip = NO;
+        [invocation setArgument:&gzip atIndex:3];
+        [invocation setArgument:&type atIndex:4];
+    }
+    [invocation invoke];
+
+    __unsafe_unretained NSData *decodedData = nil;
+    [invocation getReturnValue:&decodedData];
+    return decodedData ?: data;
+}
+
 
 #pragma mark - tools
 - (void)callbackOperationStringSuccess:(int)requestId strValue:(NSString *)strValue  {

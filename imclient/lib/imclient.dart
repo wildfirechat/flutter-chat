@@ -1877,6 +1877,15 @@ class Imclient {
         sessionId, roomId, request, advanced, data, successCallback, errorCallback);
   }
 
+  ///发送朋友圈服务请求
+  static void sendMomentsRequest(
+      String path,
+      String data,
+      OperationSuccessStringCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    ImclientPlatform.instance.sendMomentsRequest(path, data, successCallback, errorCallback);
+  }
+
   ///获取会话文件记录
   static void getConversationFiles(
       int beforeMessageUid,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:momentkit/momentkit.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/call/conference/conference_home_screen.dart';
 import 'package:chat/channel/channel_list.dart';
@@ -29,6 +30,17 @@ class DiscoveryTab extends StatelessWidget {
                 color: context.colors.surface,
                 child: Column(
                   children: [
+                    OptionItem(
+                      '朋友圈',
+                      leftIcon: Icons.dynamic_feed_rounded,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const FeedListPage()),
+                        );
+                      },
+                    ),
                     OptionItem(
                       l10n.chatroom,
                       leftImage: Image.asset('assets/images/discover_chatroom.png', width: 20.0, height: 20.0),

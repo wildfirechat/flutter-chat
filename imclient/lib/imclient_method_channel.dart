@@ -590,6 +590,26 @@ class ImclientPlatform extends PlatformInterface {
           }
           _removeOperationCallback(requestId);
           break;
+        case 'onSendMomentsRequestSuccess':
+          Map<dynamic, dynamic> args = call.arguments;
+          int requestId = args['requestId'];
+          String result = args['result'];
+          var callback = _operationSuccessCallbackMap[requestId];
+          if (callback != null) {
+            callback(result);
+          }
+          _removeOperationCallback(requestId);
+          break;
+        case 'onSendMomentsRequestFailure':
+          Map<dynamic, dynamic> args = call.arguments;
+          int requestId = args['requestId'];
+          int errorCode = args['errorCode'];
+          var callback = _errorCallbackMap[requestId];
+          if (callback != null) {
+            callback(errorCode);
+          }
+          _removeOperationCallback(requestId);
+          break;
         case 'onUploadMediaUploaded':
           Map<dynamic, dynamic> args = call.arguments;
           int requestId = args['requestId'];
@@ -3784,6 +3804,22 @@ class ImclientPlatform extends PlatformInterface {
       "roomId": roomId,
       "request": request,
       "advanced": advanced,
+      "data": data,
+    });
+  }
+
+  void sendMomentsRequest(
+      String path,
+      String data,
+      OperationSuccessStringCallback successCallback,
+      OperationFailureCallback errorCallback) {
+    int requestId = _requestId++;
+    _operationSuccessCallbackMap[requestId] = successCallback;
+    _errorCallbackMap[requestId] = errorCallback;
+
+    _channel.invokeMethod("sendMomentsRequest", {
+      "requestId": requestId,
+      "path": path,
       "data": data,
     });
   }

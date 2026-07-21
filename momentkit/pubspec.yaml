@@ -1,0 +1,27 @@
+name: momentkit
+description: 野火朋友圈 UI 组件库，纯 Dart 实现，支持 Android、iOS、HarmonyOS、Windows、macOS 和 Linux
+version: 0.0.1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.6 <4.0.0'
+  flutter: ">=3.3.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  imclient:
+    path: ../imclient/
+
+  momentclient:
+    path: ../momentclient/
+
+  cached_network_image: ^3.2.3
+  file_picker: ^8.0.7
+  video_player: ^2.9.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0

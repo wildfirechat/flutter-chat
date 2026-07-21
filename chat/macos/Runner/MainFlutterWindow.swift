@@ -10,6 +10,7 @@ import device_info_plus
 import sqflite_darwin
 import file_picker
 import url_launcher_macos
+import video_player_avfoundation
 
 /// 自定义交通灯按钮类型。
 private enum TrafficLightSymbol {
@@ -254,6 +255,8 @@ class MainFlutterWindow: NSWindow {
           // 媒体预览窗口:另存为对话框 + 视频降级用系统播放器打开。
           FilePickerPlugin.register(with: controller.registrar(forPlugin: "FilePickerPlugin"))
           UrlLauncherPlugin.register(with: controller.registrar(forPlugin: "UrlLauncherPlugin"))
+          // 朋友圈窗口:视频动态播放。
+          FVPVideoPlayerPlugin.register(with: controller.registrar(forPlugin: "FVPVideoPlayerPlugin"))
           print("Subwindow plugins registered")
         }
 

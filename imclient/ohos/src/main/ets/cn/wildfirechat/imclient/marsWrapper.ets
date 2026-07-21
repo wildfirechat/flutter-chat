@@ -401,6 +401,9 @@ function searchUser(keyword: string, searchType: number, page: number, successCB
 function sendConferenceRequest(sessionId: string, roomId: string, request: string, data: string, advance: boolean, successCB: StringCallback, failCB: FailCallback): void {
     clientModule.sendConferenceRequest(sessionId, roomId, request, data, stringCallback(successCB), numberCallback(failCB), advance);
 }
+function sendMomentsRequest(path: string, data: string, successCB: StringCallback, failCB: FailCallback): void {
+    clientModule.sendMomentsRequest(path, data, stringCallback(successCB), numberCallback(failCB));
+}
 function sendFriendRequest(userId: string, reason: string, extra: string, successCB: VoidCallback, failCB: FailCallback): void {
     clientModule.sendFriendRequest(userId, reason, extra, voidCallback(successCB), numberCallback(failCB));
 }
@@ -714,6 +717,7 @@ export { searchMessageEx2 as searchMessageEx2 };
 export { searchMyFiles as searchMyFiles };
 export { searchUser as searchUser };
 export { sendConferenceRequest as sendConferenceRequest };
+export { sendMomentsRequest as sendMomentsRequest };
 export { sendFriendRequest as sendFriendRequest };
 export { sendMessage as sendMessage };
 export { setBackupAddress as setBackupAddress };

@@ -25,6 +25,7 @@ import 'package:chat/pc/pc_favorite_list_widget.dart';
 import 'package:chat/pc/pc_file_records_list.dart';
 import 'package:chat/call/conference/conference_home_screen.dart';
 import 'package:chat/pc/pc_layout_view_model.dart';
+import 'package:chat/pc/moment_window/moment_window_manager.dart';
 import 'package:chat/pc/pc_search_view.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/pc/pc_theme.dart';
@@ -1017,6 +1018,14 @@ class _PcSideBar extends StatelessWidget {
             normalIcon: Icons.explore_outlined,
             label: l10n.tabDiscovery,
             onTabSelected: onTabSelected,
+          ),
+          const SizedBox(height: PcTheme.sidebarTabGap),
+          _SideBarIconButton(
+            icon: Icons.dynamic_feed_rounded,
+            tooltip: '朋友圈',
+            onTap: () {
+              MomentWindowManager.instance.show();
+            },
           ),
           const Spacer(),
           _SideBarTab(
