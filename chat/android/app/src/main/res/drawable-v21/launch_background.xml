@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 启动页:主题背景色 + 居中火焰图标,与 iOS LaunchScreen 风格一致 -->
+<!-- 原生启动页仅作为过渡占位,避免 Flutter 首帧渲染前白屏。
+     完整启动页由 Flutter 的 SplashScreen 负责,跟随系统主题背景色实现无缝衔接。 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="?android:colorBackground" />
-    <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/launch_image" />
-    </item>
 </layer-list>
