@@ -342,29 +342,35 @@ class _FeedListPageState extends State<FeedListPage> {
                 }
                 return false;
               },
-              child: ListView.builder(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: (_isHome ? 1 : 0) + _feeds.length + 1,
-                itemBuilder: (context, index) {
-                  if (_isHome) {
-                    if (index == 0) return _buildHeader();
-                    index -= 1;
-                  }
-                  if (index == _feeds.length) return _buildFooter();
-                  final feed = _feeds[index];
-                  return FeedItemWidget(
-                    key: ValueKey(feed.feedId),
-                    feed: feed,
-                    selfUserId: _selfUserId,
-                    onTapMedia: _onTapMedia,
-                    onTapUser: _onTapUser,
-                    onToggleLike: _onToggleLike,
-                    onComment: _onComment,
-                    onDeleteComment: _onDeleteComment,
-                    onDeleteFeed: _onDeleteFeed,
-                  );
-                },
+              // 内容居中显示，最大宽度 640（对齐微信 PC 的居中栏）
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 640),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: (_isHome ? 1 : 0) + _feeds.length + 1,
+                    itemBuilder: (context, index) {
+                      if (_isHome) {
+                        if (index == 0) return _buildHeader();
+                        index -= 1;
+                      }
+                      if (index == _feeds.length) return _buildFooter();
+                      final feed = _feeds[index];
+                      return FeedItemWidget(
+                        key: ValueKey(feed.feedId),
+                        feed: feed,
+                        selfUserId: _selfUserId,
+                        onTapMedia: _onTapMedia,
+                        onTapUser: _onTapUser,
+                        onToggleLike: _onToggleLike,
+                        onComment: _onComment,
+                        onDeleteComment: _onDeleteComment,
+                        onDeleteFeed: _onDeleteFeed,
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ),

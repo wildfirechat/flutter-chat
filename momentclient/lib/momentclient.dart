@@ -197,14 +197,6 @@ class MomentClientImpl {
   static final MomentClientImpl _instance = MomentClientImpl._();
   static MomentClientImpl get instance => _instance;
 
-  static int _requestId = 0;
-  static final Map<int, MomentPostSuccessCallback> _successCallbackMap = {};
-  static final Map<int, MomentVoidSuccessCallback> _voidSuccessCallbackMap = {};
-  static final Map<int, ProfilesSuccessCallback> _profilesSuccessCallbackMap = {};
-  static final Map<int, FeedsSuccessCallback> _feedsSuccessCallbackMap = {};
-  static final Map<int, FeedSuccessCallback> _feedSuccessCallbackMap = {};
-  static final Map<int, FailureCallback> _errorCallbackMap = {};
-
   static late OnReceiveNewCommentCallback _receiveNewCommentCallback;
   static late OnReceiveMentionedFeedCallback _receiveMentionedFeedCallback;
 
@@ -241,15 +233,6 @@ class MomentClientImpl {
     });
   }
 
-  void _removeAllOperationCallback(int requestId) {
-    _successCallbackMap.remove(requestId);
-    _errorCallbackMap.remove(requestId);
-    _voidSuccessCallbackMap.remove(requestId);
-    _profilesSuccessCallbackMap.remove(requestId);
-    _feedsSuccessCallbackMap.remove(requestId);
-    _feedSuccessCallbackMap.remove(requestId);
-  }
-
   Future<Feed> postFeed(WFMContentType type,
       {String? text,
       List<FeedEntry>? medias,
@@ -259,14 +242,6 @@ class MomentClientImpl {
       String? extra,
       void Function(int feedId, int timestamp)? successCallback,
       void Function(int errorCode)? errorCallback}) async {
-    int requestId = _requestId++;
-    if (successCallback != null) {
-      _successCallbackMap[requestId] = successCallback;
-    }
-    if (errorCallback != null) {
-      _errorCallbackMap[requestId] = errorCallback;
-    }
-
     Feed feed = Feed();
     feed.sender = Imclient.currentUserId;
     feed.type = type;
@@ -284,18 +259,10 @@ class MomentClientImpl {
       Map<String, dynamic> map = jsonDecode(result);
       feed.feedId = map['id'];
       feed.serverTime = map['timestamp'];
-      var callback = _successCallbackMap[requestId];
-      if (callback != null) {
-        callback(feed.feedId!, feed.serverTime!);
-      }
-      _removeAllOperationCallback(requestId);
+      successCallback?.call(feed.feedId!, feed.serverTime!);
       completer.complete(feed);
     }, (int errorCode) {
-      var callback = _errorCallbackMap[requestId];
-      if (callback != null) {
-        callback(errorCode);
-      }
-      _removeAllOperationCallback(requestId);
+      errorCallback?.call(errorCode);
       if (!completer.isCompleted) {
         completer.completeError(errorCode);
       }
@@ -305,28 +272,16 @@ class MomentClientImpl {
 
   void deleteFeed(int feedId, MomentVoidSuccessCallback successCallback,
       FailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _voidSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-
     String data = jsonEncode({'id': feedId});
     Imclient.sendMomentsRequest(_path('/feed/recall'), data, (_) {
-      var callback = _voidSuccessCallbackMap[requestId];
-      if (callback != null) callback();
-      _removeAllOperationCallback(requestId);
+      successCallback();
     }, (int errorCode) {
-      var callback = _errorCallbackMap[requestId];
-      if (callback != null) callback(errorCode);
-      _removeAllOperationCallback(requestId);
+      errorCallback(errorCode);
     });
   }
 
   void getFeeds(int fromIndex, int count, String? user,
       FeedsSuccessCallback feedsSuccessCallback, FailureCallback failureCallback) {
-    int requestId = _requestId++;
-    _feedsSuccessCallbackMap[requestId] = feedsSuccessCallback;
-    _errorCallbackMap[requestId] = failureCallback;
-
     Map<String, dynamic> dataDict = {};
     if (fromIndex > 0) {
       dataDict['feedId'] = fromIndex;
@@ -357,32 +312,20 @@ class MomentClientImpl {
         });
       }
 
-      var callback = _feedsSuccessCallbackMap[requestId];
-      if (callback != null) callback(feeds);
-      _removeAllOperationCallback(requestId);
+      feedsSuccessCallback(feeds);
     }, (int errorCode) {
-      var callback = _errorCallbackMap[requestId];
-      if (callback != null) callback(errorCode);
-      _removeAllOperationCallback(requestId);
+      failureCallback(errorCode);
     });
   }
 
   void getFeed(int feedId, FeedSuccessCallback feedSuccessCallback,
       FailureCallback failureCallback) {
-    int requestId = _requestId++;
-    _feedSuccessCallbackMap[requestId] = feedSuccessCallback;
-    _errorCallbackMap[requestId] = failureCallback;
-
     String data = jsonEncode({'feedId': feedId});
     Imclient.sendMomentsRequest(_pbPath('/feed/pull_one'), data, (String result) {
       Map<String, dynamic> map = jsonDecode(result);
-      var callback = _feedSuccessCallbackMap[requestId];
-      if (callback != null) callback(_feedFromMap(map));
-      _removeAllOperationCallback(requestId);
+      feedSuccessCallback(_feedFromMap(map));
     }, (int errorCode) {
-      var callback = _errorCallbackMap[requestId];
-      if (callback != null) callback(errorCode);
-      _removeAllOperationCallback(requestId);
+      failureCallback(errorCode);
     });
   }
 
@@ -393,14 +336,6 @@ class MomentClientImpl {
       String? extra,
       void Function(int commentId, int timestamp)? successCallback,
       void Function(int errorCode)? errorCallback}) async {
-    int requestId = _requestId++;
-    if (successCallback != null) {
-      _successCallbackMap[requestId] = successCallback;
-    }
-    if (errorCallback != null) {
-      _errorCallbackMap[requestId] = errorCallback;
-    }
-
     Comment comment = Comment();
     comment.sender = Imclient.currentUserId;
     comment.feedId = feedId;
@@ -417,18 +352,10 @@ class MomentClientImpl {
       Map<String, dynamic> map = jsonDecode(result);
       comment.commentId = map['id'];
       comment.serverTime = map['timestamp'];
-      var callback = _successCallbackMap[requestId];
-      if (callback != null) {
-        callback(comment.commentId!, comment.serverTime!);
-      }
-      _removeAllOperationCallback(requestId);
+      successCallback?.call(comment.commentId!, comment.serverTime!);
       completer.complete(comment);
     }, (int errorCode) {
-      var callback = _errorCallbackMap[requestId];
-      if (callback != null) {
-        callback(errorCode);
-      }
-      _removeAllOperationCallback(requestId);
+      errorCallback?.call(errorCode);
       if (!completer.isCompleted) {
         completer.completeError(errorCode);
       }
@@ -438,19 +365,11 @@ class MomentClientImpl {
 
   void deleteComment(int commentId, int feedId,
       MomentVoidSuccessCallback successCallback, FailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _voidSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-
     String data = jsonEncode({'id': commentId, 'id2': feedId});
     Imclient.sendMomentsRequest(_path('/comment/recall'), data, (_) {
-      var callback = _voidSuccessCallbackMap[requestId];
-      if (callback != null) callback();
-      _removeAllOperationCallback(requestId);
+      successCallback();
     }, (int errorCode) {
-      var callback = _errorCallbackMap[requestId];
-      if (callback != null) callback(errorCode);
-      _removeAllOperationCallback(requestId);
+      errorCallback(errorCode);
     });
   }
 
@@ -501,15 +420,10 @@ class MomentClientImpl {
 
   void getUserProfile(String? userId, ProfilesSuccessCallback successCallback,
       FailureCallback failureCallback) {
-    int requestId = _requestId++;
-    _profilesSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = failureCallback;
-
     String targetUserId = userId ?? Imclient.currentUserId;
     _profileFromStore(targetUserId).then((cachedProfile) {
       if (cachedProfile != null) {
-        var callback = _profilesSuccessCallbackMap[requestId];
-        if (callback != null) callback(cachedProfile);
+        successCallback(cachedProfile);
       }
 
       Map<String, dynamic> dataDict = {'u': targetUserId};
@@ -521,14 +435,10 @@ class MomentClientImpl {
           _path('/profiles/pull'), jsonEncode(dataDict), (String result) {
         Map<String, dynamic> map = jsonDecode(result);
         MomentProfiles profile = _profileFromMap(map);
-        var callback = _profilesSuccessCallbackMap[requestId];
-        if (callback != null) callback(profile);
+        successCallback(profile);
         _profileToStore(targetUserId, profile);
-        _removeAllOperationCallback(requestId);
       }, (int errorCode) {
-        var callback = _errorCallbackMap[requestId];
-        if (callback != null) callback(errorCode);
-        _removeAllOperationCallback(requestId);
+        failureCallback(errorCode);
       });
     });
   }
@@ -536,10 +446,6 @@ class MomentClientImpl {
   void updateMyProfile(WFMUpdateUserProfileType updateProfileType,
       String? strValue, int? intValue, MomentVoidSuccessCallback successCallback,
       FailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _voidSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-
     Map<String, dynamic> dataDict = {'t': updateProfileType.index};
     if (strValue != null && strValue.isNotEmpty) {
       dataDict['v'] = strValue;
@@ -550,23 +456,15 @@ class MomentClientImpl {
 
     Imclient.sendMomentsRequest(
         _path('/profiles/value/push'), jsonEncode(dataDict), (_) {
-      var callback = _voidSuccessCallbackMap[requestId];
-      if (callback != null) callback();
-      _removeAllOperationCallback(requestId);
+      successCallback();
     }, (int errorCode) {
-      var callback = _errorCallbackMap[requestId];
-      if (callback != null) callback(errorCode);
-      _removeAllOperationCallback(requestId);
+      errorCallback(errorCode);
     });
   }
 
   void updateBlackOrBlockList(bool isBlock, List<String>? addList,
       List<String>? removeList, MomentVoidSuccessCallback successCallback,
       FailureCallback errorCallback) {
-    int requestId = _requestId++;
-    _voidSuccessCallbackMap[requestId] = successCallback;
-    _errorCallbackMap[requestId] = errorCallback;
-
     Map<String, dynamic> dataDict = {'b': isBlock};
     if (addList != null && addList.isNotEmpty) {
       dataDict['al'] = addList;
@@ -577,13 +475,9 @@ class MomentClientImpl {
 
     Imclient.sendMomentsRequest(
         _path('/profiles/list/push'), jsonEncode(dataDict), (_) {
-      var callback = _voidSuccessCallbackMap[requestId];
-      if (callback != null) callback();
-      _removeAllOperationCallback(requestId);
+      successCallback();
     }, (int errorCode) {
-      var callback = _errorCallbackMap[requestId];
-      if (callback != null) callback(errorCode);
-      _removeAllOperationCallback(requestId);
+      errorCallback(errorCode);
     });
   }
 
