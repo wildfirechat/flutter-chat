@@ -39,6 +39,15 @@
   "tabAll": "All",
   "chatRecords": "Chat History",
   "locateToChatPosition": "Locate in Chat",
+  "backToLatest": "Back to Latest",
+  "backToLatestWithCount": "{count} new messages",
+  "@backToLatestWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "muteNotification": "Mute Notifications",
   "stickTop": "Sticky on Top",
   "saveToContact": "Save to Contacts",

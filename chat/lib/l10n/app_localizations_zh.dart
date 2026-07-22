@@ -338,6 +338,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get locateToChatPosition => '定位到聊天位置';
 
   @override
+  String get backToLatest => '回到最新';
+
+  @override
+  String backToLatestWithCount(String count) {
+    return '$count条新消息';
+  }
+
+  @override
   String get muteNotification => '消息免打扰';
 
   @override

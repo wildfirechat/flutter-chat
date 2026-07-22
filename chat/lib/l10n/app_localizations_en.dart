@@ -343,6 +343,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get locateToChatPosition => 'Locate in Chat';
 
   @override
+  String get backToLatest => 'Back to Latest';
+
+  @override
+  String backToLatestWithCount(String count) {
+    return '$count new messages';
+  }
+
+  @override
   String get muteNotification => 'Mute Notifications';
 
   @override

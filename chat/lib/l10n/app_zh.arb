@@ -107,6 +107,15 @@
   "tabAll": "全部",
   "chatRecords": "聊天记录",
   "locateToChatPosition": "定位到聊天位置",
+  "backToLatest": "回到最新",
+  "backToLatestWithCount": "{count}条新消息",
+  "@backToLatestWithCount": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "muteNotification": "消息免打扰",
   "stickTop": "置顶聊天",
   "saveToContact": "保存到通讯录",

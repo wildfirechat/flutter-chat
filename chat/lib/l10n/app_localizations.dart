@@ -740,6 +740,18 @@ abstract class AppLocalizations {
   /// **'定位到聊天位置'**
   String get locateToChatPosition;
 
+  /// No description provided for @backToLatest.
+  ///
+  /// In zh, this message translates to:
+  /// **'回到最新'**
+  String get backToLatest;
+
+  /// No description provided for @backToLatestWithCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}条新消息'**
+  String backToLatestWithCount(String count);
+
   /// No description provided for @muteNotification.
   ///
   /// In zh, this message translates to:

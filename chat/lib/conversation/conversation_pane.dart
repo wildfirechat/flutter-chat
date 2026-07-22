@@ -314,6 +314,47 @@ class _ConversationPaneState extends State<ConversationPane> {
     }
   }
 
+  /// 「回到最新」悬浮按钮：定位到历史消息后出现；角标显示这期间的新消息数。
+  Widget _buildBackToLatestButton(BuildContext context, ConversationViewModel conversationViewModel) {
+    final l10n = AppLocalizations.of(context)!;
+    final pending = conversationViewModel.pendingNewMessageCount;
+    return Material(
+      color: context.colors.surface,
+      borderRadius: BorderRadius.circular(18),
+      elevation: 2,
+      shadowColor: context.colors.shadow,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: () {
+          conversationViewModel.backToLatest();
+          // 列表重建后滚到最新一条（reverse 列表的 0 位置）
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients) {
+              _scrollController.jumpTo(0);
+            }
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.keyboard_double_arrow_down_rounded,
+                  size: 18, color: context.colors.accent),
+              const SizedBox(width: 4),
+              Text(
+                pending > 0
+                    ? l10n.backToLatestWithCount(pending > 99 ? '99+' : '$pending')
+                    : l10n.backToLatest,
+                style: AppText.sm.copyWith(color: context.colors.accent),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
@@ -342,8 +383,10 @@ class _ConversationPaneState extends State<ConversationPane> {
                   if (_joinRequestCount > 0)
                     _buildJoinRequestBanner(context),
                   Expanded(
-                    child: GestureDetector(
-                      child: NotificationListener(
+                    child: Stack(
+                      children: [
+                        GestureDetector(
+                          child: NotificationListener(
                         onNotification: notificationFunction,
                         child: CustomScrollView(
                           controller: _scrollController,
@@ -408,6 +451,16 @@ class _ConversationPaneState extends State<ConversationPane> {
                       onTap: () {
                         _inputBarController.resetStatus();
                       },
+                        ),
+                        // 定位到历史消息后显示「回到最新」悬浮按钮（对齐微信），
+                        // 角标为这期间新收到的消息数；位于消息区右下角
+                        if (!conversationViewModel.noMoreNewerMsg)
+                          Positioned(
+                            right: 16,
+                            bottom: 16,
+                            child: _buildBackToLatestButton(context, conversationViewModel),
+                          ),
+                      ],
                     ),
                   ),
                   conversationViewModel.isMultiSelectMode ? _buildMultiSelectToolBar(context, conversationViewModel) : widget.inputBar,

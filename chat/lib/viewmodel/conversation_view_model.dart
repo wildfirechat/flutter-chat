@@ -38,6 +38,11 @@ class ConversationViewModel extends ChangeNotifier {
   int focusMessageIndex = 0;
   String? _conversationTypingStatus;
 
+  /// 定位到历史消息后（还没加载回最新）期间新收到的消息数，
+  /// 用于「回到最新」按钮上的角标；回到最新或重新进入会话时清零。
+  int _pendingNewMessageCount = 0;
+  int get pendingNewMessageCount => _pendingNewMessageCount;
+
   Timer? _typingTimer;
   final Map<String, int> _typingUserTime = {};
 
@@ -131,8 +136,25 @@ class ConversationViewModel extends ChangeNotifier {
 
   ConversationViewModel() {
     _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
-      // 定位到某条消息时，如果还没加载到最后，就不将新收到的消息加入到列表
-      if (_currentConversation == null || !_noMoreNewerMsg) {
+      // 定位到某条消息时，如果还没加载到最后，就不将新收到的消息加入到列表，
+      // 只统计数量用于「回到最新」按钮角标（消息本身已入本地库，回到最新时会带出）
+      if (_currentConversation != null && !_noMoreNewerMsg) {
+        var count = 0;
+        for (final msg in event.messages) {
+          if (msg.conversation == _currentConversation &&
+              msg.messageId != 0 &&
+              msg.content is! TypingMessageContent &&
+              msg.content.meta.type != 80) {
+            count++;
+          }
+        }
+        if (count > 0) {
+          _pendingNewMessageCount += count;
+          notifyListeners();
+        }
+        return;
+      }
+      if (_currentConversation == null) {
         return;
       }
       var newMsg = false;
@@ -286,6 +308,7 @@ class ConversationViewModel extends ChangeNotifier {
     _session++;
     _noMoreRemoteHistoryMsg = false;
     _conversationMessageList = [];
+    _pendingNewMessageCount = 0;
     focusMessageIndex = 0;
     _conversationTypingStatus = null;
     _currentConversation = conversation;
@@ -337,6 +360,30 @@ class ConversationViewModel extends ChangeNotifier {
         });
       }
     }
+  }
+
+  /// 回到最新：定位历史消息后调用，重新加载最新一页并清掉新消息角标。
+  /// 滚动位置由调用方（面板）重置。
+  void backToLatest() {
+    final conversation = _currentConversation;
+    if (conversation == null) return;
+    _session++;
+    final session = _session;
+    _pendingNewMessageCount = 0;
+    focusMessageIndex = 0;
+    _noMoreLocalHistoryMsg = false;
+    _noMoreNewerMsg = true;
+    Imclient.getMessages(conversation, 0, 20).then((messages) {
+      if (session != _session || _currentConversation != conversation) return;
+      _conversationMessageList = messages
+          .where((message) => message.messageId != 0)
+          .map((message) => UIMessage(message))
+          .toList();
+      if (messages.length < 20) {
+        _noMoreLocalHistoryMsg = true;
+      }
+      notifyListeners();
+    });
   }
 
   void _loadMessagesAround(int messageId) async {
