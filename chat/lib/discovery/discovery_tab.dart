@@ -32,7 +32,7 @@ class DiscoveryTab extends StatelessWidget {
                   children: [
                     if (Config.ENABLE_MOMENTS)
                       OptionItem(
-                        '朋友圈',
+                        l10n.momentWindowTitle,
                         leftIcon: Icons.dynamic_feed_rounded,
                         onTap: () {
                           Navigator.push(
@@ -66,7 +66,7 @@ class DiscoveryTab extends StatelessWidget {
                     ),
                     if (avEngineKit.isSupportConference())
                       OptionItem(
-                        '会议',
+                        l10n.conferenceTitle,
                         leftImage: Image.asset('assets/images/discover_channel.png', width: 20.0, height: 20.0),
                         showBottomDivider: false,
                         onTap: () {
