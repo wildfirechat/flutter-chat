@@ -27,10 +27,26 @@ import 'package:chat/app_navigator.dart';
 
 import 'package:chat/theme/app_colors.dart';
 
-class SingleConversationInfoScreen extends StatelessWidget {
+class SingleConversationInfoScreen extends StatefulWidget {
   const SingleConversationInfoScreen(this.conversation, {super.key});
 
   final Conversation conversation;
+
+  @override
+  State<SingleConversationInfoScreen> createState() =>
+      _SingleConversationInfoScreenState();
+}
+
+class _SingleConversationInfoScreenState
+    extends State<SingleConversationInfoScreen> {
+  Conversation get conversation => widget.conversation;
+
+  @override
+  void initState() {
+    super.initState();
+    // 进入会话设置页时强制同步一次对方资料（refresh 触发服务器同步）
+    Imclient.getUserInfo(conversation.target, refresh: true);
+  }
 
   @override
   Widget build(BuildContext context) {

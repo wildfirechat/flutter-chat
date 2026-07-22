@@ -27,15 +27,14 @@ class GroupConversationInfoViewModel extends ChangeNotifier {
   void setup(String groupId) async {
     try {
       _isFavGroup = await Imclient.isFavGroup(groupId);
+      // 进入群设置时强制同步一次群信息与群成员（refresh 触发服务器同步），
+      // 避免本地数据缺失/过期导致页面一直停在加载中。
+      await Future.wait([
+        Imclient.getGroupInfo(groupId, refresh: true),
+        Imclient.getGroupMembers(groupId, refresh: true),
+      ]);
       _groupMember = await Imclient.getGroupMember(groupId, Imclient.currentUserId);
-      debugPrint('[GroupConvInfo] group=$groupId currentUserId=${Imclient.currentUserId} localMember=${_groupMember == null ? "null" : "ok"}');
-      if (_groupMember == null) {
-        // 本地没有自己的群成员记录（群成员数据尚未同步）时页面会一直停在
-        // 加载中，从服务器刷新一次群成员再查。
-        await Imclient.getGroupMembers(groupId, refresh: true);
-        _groupMember = await Imclient.getGroupMember(groupId, Imclient.currentUserId);
-        debugPrint('[GroupConvInfo] group=$groupId memberAfterRefresh=${_groupMember == null ? "still null" : "ok"}');
-      }
+      debugPrint('[GroupConvInfo] group=$groupId member=${_groupMember == null ? "null" : "ok"}');
     } catch (e, s) {
       debugPrint('[GroupConvInfo] setup error: $e\n$s');
     }

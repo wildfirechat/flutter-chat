@@ -128,6 +128,7 @@ class ConversationListWidget extends StatelessWidget {
                           ),
                         )
                       : ListView.builder(
+                      controller: scrollController,
                       itemCount: conversationListViewModel.conversationList.length,
                           itemExtent: conversationItemExtent(context),
                       cacheExtent: 200,

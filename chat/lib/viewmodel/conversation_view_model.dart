@@ -637,13 +637,21 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   /// 进入会话时刷新目标资料，让标题、头像等尽快拿到最新数据。
+  /// 已进入会话并强制同步过资料的会话 key：控制每个会话只在首次进入时
+  /// 同步一次，避免切会话/重建页面时反复打服务器。
+  final Set<String> _refreshedTargetKeys = {};
+
   void _refreshTargetInfo(Conversation conversation) {
+    final key =
+        '${conversation.conversationType.index}-${conversation.target}-${conversation.line}';
+    if (!_refreshedTargetKeys.add(key)) return;
     switch (conversation.conversationType) {
       case ConversationType.Single:
         Imclient.getUserInfo(conversation.target, refresh: true);
         break;
       case ConversationType.Group:
         Imclient.getGroupInfo(conversation.target, refresh: true);
+        Imclient.getGroupMembers(conversation.target, refresh: true);
         break;
       case ConversationType.Channel:
         Imclient.getChannelInfo(conversation.target, refresh: true);

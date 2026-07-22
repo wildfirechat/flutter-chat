@@ -24,10 +24,26 @@ import '../utils/media_url_redirector.dart';
 import 'conversation_files_screen.dart';
 import 'package:chat/theme/app_colors.dart';
 
-class ChannelConversationInfoScreen extends StatelessWidget {
+class ChannelConversationInfoScreen extends StatefulWidget {
   const ChannelConversationInfoScreen(this.conversation, {super.key});
 
   final Conversation conversation;
+
+  @override
+  State<ChannelConversationInfoScreen> createState() =>
+      _ChannelConversationInfoScreenState();
+}
+
+class _ChannelConversationInfoScreenState
+    extends State<ChannelConversationInfoScreen> {
+  Conversation get conversation => widget.conversation;
+
+  @override
+  void initState() {
+    super.initState();
+    // 进入频道设置页时强制同步一次频道信息（refresh 触发服务器同步）
+    Imclient.getChannelInfo(conversation.target, refresh: true);
+  }
 
   @override
   Widget build(BuildContext context) {

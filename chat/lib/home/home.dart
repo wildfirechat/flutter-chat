@@ -56,6 +56,12 @@ class HomeTabBarState extends State<HomeTabBar> {
   int _tabIndex = 0;
   final GlobalKey _plusButtonKey = GlobalKey();
 
+  /// 消息 tab 会话列表的滚动控制器（移动端），用于双击 tab 滚动到第一个未读会话
+  final ScrollController _conversationScrollController = ScrollController();
+
+  /// 上一次点击消息 tab 的时间，用于识别双击
+  DateTime? _lastChatTabTapTime;
+
   var tabImages;
   var _body;
   var pages;
@@ -70,7 +76,9 @@ class HomeTabBarState extends State<HomeTabBar> {
     super.initState();
     appBarTitles = [];
     pages = <Widget>[
-      const _KeepAliveWrapper(child: ConversationListWidget()),
+      _KeepAliveWrapper(
+          child: ConversationListWidget(
+              scrollController: _conversationScrollController)),
       _KeepAliveWrapper(child: ContactListWidget()),
       const _KeepAliveWrapper(child: WorkSpace()),
       const _KeepAliveWrapper(child: DiscoveryTab()),
@@ -104,6 +112,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   @override
   void dispose() {
     _pageController?.dispose();
+    _conversationScrollController.dispose();
     super.dispose();
   }
 
@@ -151,6 +160,27 @@ class HomeTabBarState extends State<HomeTabBar> {
 
   void _onTapSearchButton(BuildContext context) {
     showSearch(context: context, delegate: SearchPortalDelegate());
+  }
+
+  /// 双击消息 tab：把第一个有未读的会话滚动到列表顶部
+  void _scrollToFirstUnreadConversation() {
+    final model =
+        Provider.of<ConversationListViewModel>(context, listen: false);
+    final list = model.conversationList;
+    int target = -1;
+    for (int i = 0; i < list.length; i++) {
+      final unread = list[i].unreadCount;
+      if (unread.unread + unread.unreadMention + unread.unreadMentionAll > 0) {
+        target = i;
+        break;
+      }
+    }
+    if (target < 0 || !_conversationScrollController.hasClients) return;
+    final extent = conversationItemExtent(context);
+    final offset = (target * extent)
+        .clamp(0.0, _conversationScrollController.position.maxScrollExtent);
+    _conversationScrollController.animateTo(offset,
+        duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
   }
 
   void _dismissProcessingDialog(BuildContext context) {
@@ -483,6 +513,16 @@ class HomeTabBarState extends State<HomeTabBar> {
                 _tabIndex = index;
               });
               _pageController?.jumpToPage(index);
+            } else if (index == 0) {
+              // 双击消息 tab：滚动第一个未读会话到顶部（对齐微信）
+              final now = DateTime.now();
+              final lastTap = _lastChatTabTapTime;
+              _lastChatTabTapTime = now;
+              if (lastTap != null &&
+                  now.difference(lastTap) < const Duration(milliseconds: 300)) {
+                _lastChatTabTapTime = null;
+                _scrollToFirstUnreadConversation();
+              }
             }
           },
         ),
