@@ -43,6 +43,10 @@ class _FeedListPageState extends State<FeedListPage> {
   MomentProfiles? _profile;
   int _unreadCount = 0;
 
+  /// 顶部标题栏不透明度（0=全透明叠在封面上，1=不透明标题栏），
+  /// 随封面滚出视口而淡入（对齐微信）。
+  double _headerOpacity = 0;
+
   String get _selfUserId => Imclient.currentUserId;
 
   bool get _isHome => widget.userId == null;
@@ -50,6 +54,7 @@ class _FeedListPageState extends State<FeedListPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_updateHeaderOpacity);
     _restoreCache();
     _loadFeeds(refresh: true);
     if (_isHome) {
@@ -67,8 +72,21 @@ class _FeedListPageState extends State<FeedListPage> {
     });
   }
 
+  /// 封面高 300：滚到最后一个工具栏高度区间内时，标题栏从透明渐变为不透明。
+  void _updateHeaderOpacity() {
+    const fadeStart = 300.0 - kToolbarHeight * 2;
+    const fadeEnd = 300.0 - kToolbarHeight;
+    final opacity =
+        ((_scrollController.offset - fadeStart) / (fadeEnd - fadeStart))
+            .clamp(0.0, 1.0);
+    if (opacity != _headerOpacity) {
+      setState(() => _headerOpacity = opacity);
+    }
+  }
+
   @override
   void dispose() {
+    _scrollController.removeListener(_updateHeaderOpacity);
     _refreshSub?.cancel();
     _scrollController.dispose();
     super.dispose();
@@ -295,74 +313,132 @@ class _FeedListPageState extends State<FeedListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: _isHome,
-      appBar: AppBar(
-        title: _isHome
-            ? const Text('朋友圈')
-            : ListenableBuilder(
+      // 首页不用 AppBar：封面图顶到窗口上沿（对齐微信），
+      // 标题和发布按钮以浮层形式叠在封面上。
+      appBar: _isHome
+          ? null
+          : AppBar(
+              title: ListenableBuilder(
                 listenable: MomentUserCache.instance,
                 builder: (context, _) => Text(
                     MomentUserCache.instance.displayNameOf(widget.userId!)),
               ),
-        backgroundColor: _isHome ? Colors.transparent : null,
-        foregroundColor: _isHome ? Colors.white : null,
-        elevation: 0,
-        actions: [
-          if (_isHome)
-            IconButton(
-              icon: const Icon(Icons.photo_camera_outlined),
-              tooltip: '发表',
-              onPressed: _onPublish,
-              onLongPress: () async {
-                final published =
-                    await Navigator.of(context).push<bool>(MaterialPageRoute(
-                  builder: (_) => const PublishFeedPage(),
-                ));
-                if (published == true) _loadFeeds(refresh: true);
+              elevation: 0,
+            ),
+      body: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: () async {
+              _loadFeeds(refresh: true);
+              if (_isHome) _loadUnread();
+            },
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (n) {
+                if (n is ScrollEndNotification &&
+                    _scrollController.position.extentAfter < 200 &&
+                    _hasMore &&
+                    !_loading) {
+                  _loadFeeds();
+                }
+                return false;
               },
+              child: ListView.builder(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: (_isHome ? 1 : 0) + _feeds.length + 1,
+                itemBuilder: (context, index) {
+                  if (_isHome) {
+                    if (index == 0) return _buildHeader();
+                    index -= 1;
+                  }
+                  if (index == _feeds.length) return _buildFooter();
+                  final feed = _feeds[index];
+                  return FeedItemWidget(
+                    key: ValueKey(feed.feedId),
+                    feed: feed,
+                    selfUserId: _selfUserId,
+                    onTapMedia: _onTapMedia,
+                    onTapUser: _onTapUser,
+                    onToggleLike: _onToggleLike,
+                    onComment: _onComment,
+                    onDeleteComment: _onDeleteComment,
+                    onDeleteFeed: _onDeleteFeed,
+                  );
+                },
+              ),
+            ),
+          ),
+          if (_isHome)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Builder(
+                builder: (context) {
+                  final theme = Theme.of(context);
+                  final fgColor = Color.lerp(
+                      Colors.white, theme.colorScheme.onSurface, _headerOpacity);
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: theme.scaffoldBackgroundColor
+                          .withValues(alpha: _headerOpacity),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.1 * _headerOpacity),
+                          width: 0.5,
+                        ),
+                      ),
+                    ),
+                    child: SafeArea(
+                      bottom: false,
+                      child: SizedBox(
+                        height: kToolbarHeight,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Text(
+                              '朋友圈',
+                              style: TextStyle(
+                                color: fgColor,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                shadows: _headerOpacity < 0.5
+                                    ? const [
+                                        Shadow(
+                                            color: Colors.black26,
+                                            blurRadius: 4)
+                                      ]
+                                    : null,
+                              ),
+                            ),
+                            Positioned(
+                              right: 4,
+                              child: IconButton(
+                                icon: Icon(Icons.photo_camera_outlined,
+                                    color: fgColor),
+                                tooltip: '发表',
+                                onPressed: _onPublish,
+                                onLongPress: () async {
+                                  final published = await Navigator.of(context)
+                                      .push<bool>(MaterialPageRoute(
+                                    builder: (_) => const PublishFeedPage(),
+                                  ));
+                                  if (published == true) {
+                                    _loadFeeds(refresh: true);
+                                  }
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
         ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          _loadFeeds(refresh: true);
-          if (_isHome) _loadUnread();
-        },
-        child: NotificationListener<ScrollNotification>(
-          onNotification: (n) {
-            if (n is ScrollEndNotification &&
-                _scrollController.position.extentAfter < 200 &&
-                _hasMore &&
-                !_loading) {
-              _loadFeeds();
-            }
-            return false;
-          },
-          child: ListView.builder(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemCount: (_isHome ? 1 : 0) + _feeds.length + 1,
-            itemBuilder: (context, index) {
-              if (_isHome) {
-                if (index == 0) return _buildHeader();
-                index -= 1;
-              }
-              if (index == _feeds.length) return _buildFooter();
-              final feed = _feeds[index];
-              return FeedItemWidget(
-                key: ValueKey(feed.feedId),
-                feed: feed,
-                selfUserId: _selfUserId,
-                onTapMedia: _onTapMedia,
-                onTapUser: _onTapUser,
-                onToggleLike: _onToggleLike,
-                onComment: _onComment,
-                onDeleteComment: _onDeleteComment,
-                onDeleteFeed: _onDeleteFeed,
-              );
-            },
-          ),
-        ),
       ),
     );
   }
