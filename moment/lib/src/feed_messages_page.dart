@@ -6,6 +6,7 @@ import 'package:moment/client/momentclient.dart';
 
 import 'feed_detail_page.dart';
 import 'moment_time.dart';
+import 'widgets/moment_page_scaffold.dart';
 import 'widgets/moment_widgets.dart';
 
 /// 朋友圈消息列表页（收到的评论/点赞/提醒）。
@@ -55,7 +56,7 @@ class _FeedMessagesPageState extends State<FeedMessagesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MomentPageScaffold(
       appBar: AppBar(title: const Text('消息')),
       body: NotificationListener<ScrollNotification>(
         onNotification: (n) {

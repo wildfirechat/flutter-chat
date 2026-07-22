@@ -30,17 +30,18 @@ class DiscoveryTab extends StatelessWidget {
                 color: context.colors.surface,
                 child: Column(
                   children: [
-                    OptionItem(
-                      '朋友圈',
-                      leftIcon: Icons.dynamic_feed_rounded,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const FeedListPage()),
-                        );
-                      },
-                    ),
+                    if (Config.ENABLE_MOMENTS)
+                      OptionItem(
+                        '朋友圈',
+                        leftIcon: Icons.dynamic_feed_rounded,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const FeedListPage()),
+                          );
+                        },
+                      ),
                     OptionItem(
                       l10n.chatroom,
                       leftImage: Image.asset('assets/images/discover_chatroom.png', width: 20.0, height: 20.0),

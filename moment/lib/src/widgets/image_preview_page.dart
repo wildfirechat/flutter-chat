@@ -3,6 +3,7 @@ import 'package:moment/client/momentclient.dart';
 import 'package:video_player/video_player.dart';
 
 import '../moment_media_picker.dart';
+import 'moment_page_scaffold.dart';
 import 'moment_widgets.dart';
 
 /// 图片全屏预览（支持缩放）。
@@ -31,7 +32,7 @@ class ImagePreviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MomentPageScaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -100,7 +101,7 @@ class _VideoPlayPageState extends State<VideoPlayPage> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
-    return Scaffold(
+    return MomentPageScaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,

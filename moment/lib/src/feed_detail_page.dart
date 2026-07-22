@@ -6,6 +6,7 @@ import 'moment_user_cache.dart';
 import 'widgets/comment_input_sheet.dart';
 import 'widgets/feed_item_widget.dart';
 import 'widgets/image_preview_page.dart';
+import 'widgets/moment_page_scaffold.dart';
 import 'feed_list_page.dart';
 
 /// 单条朋友圈详情页。
@@ -126,7 +127,7 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
   @override
   Widget build(BuildContext context) {
     final feed = _feed;
-    return Scaffold(
+    return MomentPageScaffold(
       appBar: AppBar(title: const Text('详情')),
       body: feed == null
           ? Center(

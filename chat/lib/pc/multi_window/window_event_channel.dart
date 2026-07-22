@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/foundation.dart';
@@ -89,6 +90,11 @@ class WindowEventChannel {
   /// 避免把本来就是 String 的返回值（如会议请求 result）误解析成 Map。
   static dynamic _encode(dynamic value) {
     if (value == null) return null;
+    // 二进制类型(Uint8List 等)本身实现了 List<int>,必须先于 List 分支放行,
+    // 否则会被 map().toList() 降级为 List<dynamic>,跨引擎后丢失类型
+    // (曾导致朋友圈子窗口 uploadMedia 的 mediaData 到主窗口后不是 Uint8List,
+    // 上传被代理拒绝)。StandardMessageCodec 原生支持 TypedData 透传。
+    if (value is TypedData) return value;
     if (value is Map) {
       return value.map((k, v) => MapEntry(k.toString(), _encode(v)));
     }
@@ -100,6 +106,7 @@ class WindowEventChannel {
 
   static dynamic _decode(dynamic value) {
     if (value == null) return null;
+    if (value is TypedData) return value;
     if (value is Map) {
       return value.map((k, v) => MapEntry(k.toString(), _decode(v)));
     }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:moment/moment.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/im_constant.dart';
@@ -366,6 +367,15 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
             color: context.colors.surface,
             child: Column(
               children: [
+                if (Config.ENABLE_MOMENTS)
+                  OptionItem(l10n.momentWindowTitle, onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              FeedListPage(userId: widget.userId)),
+                    );
+                  }),
                 if (isMe)
                   OptionItem(l10n.modifyAlias, onTap: () {
                     _showSetDisplayNameDialog(context, userInfo);

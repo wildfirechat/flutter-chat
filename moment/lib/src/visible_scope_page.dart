@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'widgets/moment_page_scaffold.dart';
+
 /// 可见范围选择结果。
 class VisibleScopeResult {
   /// 0 公开 / 1 私密 / 2 部分可见 / 3 不给谁看。
@@ -54,7 +56,7 @@ class _VisibleScopePageState extends State<VisibleScopePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MomentPageScaffold(
       appBar: AppBar(
         title: const Text('谁可以看'),
         actions: [

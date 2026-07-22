@@ -286,6 +286,28 @@ class _FeedListPageState extends State<FeedListPage> {
     }
   }
 
+  /// 记录背景图按下位置，供「更新背景」菜单定位
+  Offset _backgroundTapPosition = Offset.zero;
+
+  /// 点击背景图：先弹出操作菜单（对齐微信），选择「更新背景」后才打开选图
+  Future<void> _showBackgroundMenu() async {
+    if (!_isHome) return;
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final action = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        _backgroundTapPosition & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: const [
+        PopupMenuItem(value: 'update', child: Text('更新背景')),
+      ],
+    );
+    if (action == 'update') {
+      _onTapBackground();
+    }
+  }
+
   Future<void> _onTapBackground() async {
     if (!_isHome) return;
     final medias = await MomentKit.mediaPicker(context, maxCount: 1);
@@ -453,7 +475,8 @@ class _FeedListPageState extends State<FeedListPage> {
     return Column(
       children: [
         GestureDetector(
-          onTap: _onTapBackground,
+          onTapDown: (details) => _backgroundTapPosition = details.globalPosition,
+          onTap: _showBackgroundMenu,
           child: Stack(
             clipBehavior: Clip.none,
             children: [

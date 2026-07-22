@@ -63,6 +63,9 @@ class Config {
   // 语音记录查看页面备选地址，双网环境下使用。不需要双网时保持为 null。
   static String? MINUTES_BACKUP_URL = null;
 
+  // 是否支持朋友圈。true: 发现页和用户详情页显示朋友圈入口；false: 隐藏所有朋友圈入口。
+  static const bool ENABLE_MOMENTS = true;
+
   // 文件传输助手用户ID，服务器有个默认文件助手的机器人，如果修改它的ID，需要客户端和服务器数据库同步修改
   static const String FILE_TRANSFER_ID = "wfc_file_transfer";
 

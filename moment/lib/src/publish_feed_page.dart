@@ -7,6 +7,7 @@ import 'moment_config.dart';
 import 'moment_media_picker.dart';
 import 'moment_upload.dart';
 import 'visible_scope_page.dart';
+import 'widgets/moment_page_scaffold.dart';
 
 /// 发布朋友圈页。
 class PublishFeedPage extends StatefulWidget {
@@ -145,7 +146,8 @@ class _PublishFeedPageState extends State<PublishFeedPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MomentPageScaffold(
+      centerContent: true,
       appBar: AppBar(
         title: Text(_medias.isEmpty ? '发表文字' : '发表'),
         actions: [
@@ -276,6 +278,25 @@ class _PublishFeedPageState extends State<PublishFeedPage> {
             )
           else
             Image.file(File(media.path), fit: BoxFit.cover),
+          // 右上角删除按钮（对齐微信），长按删除的对话仍保留
+          Positioned(
+            top: 4,
+            right: 4,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => setState(() => _medias.removeAt(index)),
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: const BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: const Icon(Icons.close, size: 14, color: Colors.white),
+              ),
+            ),
+          ),
         ],
       ),
     );

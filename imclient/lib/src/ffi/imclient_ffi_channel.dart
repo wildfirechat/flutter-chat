@@ -1142,15 +1142,15 @@ class ImclientFfiChannel implements ImclientChannel {
           final fileName = _ns(a, _str(args, 'fileName'));
           final mediaData = args['mediaData'];
           final bytes = mediaData is Uint8List ? mediaData : Uint8List(0);
-          final dataPtr = a<Uint8>(bytes.length + 1);
-          dataPtr.asTypedList(bytes.length + 1)
-            ..setAll(0, bytes)
-            ..[bytes.length] = 0;
+          // 底层 uploadMedia 要求 base64 编码的数据（与鸿蒙 NAPI 包装一致，
+          // 见 marswrapper har 的 addon.uploadMedia 调用），直接传原始字节
+          // 会导致服务端存下空/损坏文件（图片打开是空图）。
+          final b64 = _ns(a, base64Encode(bytes));
           _wf.uploadMedia(
               fileName.ptr,
               fileName.len,
-              dataPtr.cast<Char>(),
-              bytes.length,
+              b64.ptr,
+              b64.len,
               _int(args, 'mediaType'),
               _cbString,
               _cbError,
@@ -1175,15 +1175,13 @@ class ImclientFfiChannel implements ImclientChannel {
           final name = path.basename(filePath);
           return using((a) {
             final fileName = _ns(a, name);
-            final dataPtr = a<Uint8>(bytes.length + 1);
-            dataPtr.asTypedList(bytes.length + 1)
-              ..setAll(0, bytes)
-              ..[bytes.length] = 0;
+            // 同 uploadMedia：底层要求 base64 数据
+            final b64 = _ns(a, base64Encode(bytes));
             _wf.uploadMedia(
                 fileName.ptr,
                 fileName.len,
-                dataPtr.cast<Char>(),
-                bytes.length,
+                b64.ptr,
+                b64.len,
                 _int(args, 'mediaType'),
                 _cbString,
                 _cbError,
