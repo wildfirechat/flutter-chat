@@ -2154,14 +2154,24 @@ class ImclientPlatform extends PlatformInterface {
       args["contentTypes"] = contentTypes;
     }
 
-    Map<dynamic, dynamic>? datas =
-        await _channel.invokeMethod("getMessageCountByDay", args);
+    dynamic datas = await _channel.invokeMethod("getMessageCountByDay", args);
+    debugPrint(
+        '[Imclient] getMessageCountByDay args=$args rawResult=$datas');
     Map<String, int> result = {};
-    datas?.forEach((key, value) {
-      if (key is String && value is int) {
-        result[key] = value;
+    if (datas is Map) {
+      datas.forEach((key, value) {
+        if (key is String && value is int) {
+          result[key] = value;
+        }
+      });
+    } else if (datas is List) {
+      // 部分平台（如 ohos）直接透传 C 接口的 [{"key":..,"value":..}] 数组形式
+      for (final e in datas) {
+        if (e is Map && e['key'] is String && e['value'] is int) {
+          result[e['key'] as String] = e['value'] as int;
+        }
       }
-    });
+    }
     return result;
   }
 

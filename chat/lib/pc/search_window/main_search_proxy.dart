@@ -12,6 +12,7 @@ import '../multi_window/ipc_codec.dart';
 import '../multi_window/window_event_channel.dart';
 import '../pc_window_manager.dart';
 import 'search_window_ipc.dart';
+import 'search_window_manager.dart';
 
 /// 主窗口中的会话内搜索代理。
 ///
@@ -76,6 +77,8 @@ class MainSearchProxy {
     if (context != null && context.mounted) {
       openConversation(context, conversation, toFocusMessageId: messageId);
     }
+    // 对齐 PC 微信：定位后关闭搜索窗口
+    await SearchWindowManager.instance.close();
     return null;
   }
 

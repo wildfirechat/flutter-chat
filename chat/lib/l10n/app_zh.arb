@@ -106,6 +106,7 @@
   "clearAll": "清空",
   "tabAll": "全部",
   "chatRecords": "聊天记录",
+  "locateToChatPosition": "定位到聊天位置",
   "muteNotification": "消息免打扰",
   "stickTop": "置顶聊天",
   "saveToContact": "保存到通讯录",

@@ -359,6 +359,24 @@ class MMPreviewViewState extends State<MMPreviewView> {
                 ),
               ),
             ),
+          // 内嵌整页路由打开时(如搜索窗口/收藏预览)没有窗口关闭按钮，
+          // 补一个右上角关闭按钮；独立预览窗口(onClose != null)由窗口 chrome 负责
+          if (isDesktopShell && widget.onClose == null)
+            Positioned(
+              top: 16,
+              right: 16,
+              child: HoverBuilder(
+                builder: (context, isHovered) => Material(
+                  color: isHovered ? Colors.black.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.25),
+                  shape: const CircleBorder(),
+                  child: IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white, size: 24),
+                    onPressed: _requestClose,
+                    tooltip: AppLocalizations.of(context)!.close,
+                  ),
+                ),
+              ),
+            ),
           // Bottom toolbar on desktop
           if (isDesktopShell)
             Positioned(

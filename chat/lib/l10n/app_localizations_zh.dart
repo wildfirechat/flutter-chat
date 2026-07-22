@@ -335,6 +335,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatRecords => '聊天记录';
 
   @override
+  String get locateToChatPosition => '定位到聊天位置';
+
+  @override
   String get muteNotification => '消息免打扰';
 
   @override

@@ -340,6 +340,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatRecords => 'Chat History';
 
   @override
+  String get locateToChatPosition => 'Locate in Chat';
+
+  @override
   String get muteNotification => 'Mute Notifications';
 
   @override

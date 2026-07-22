@@ -83,6 +83,20 @@ class SearchWindowManager {
     await created.show();
   }
 
+  /// 关闭搜索窗口（如定位消息跳回主窗口后）。
+  Future<void> close() async {
+    final controller = _windowController;
+    _windowController = null;
+    _windowReady = false;
+    if (controller != null) {
+      try {
+        await controller.close();
+      } catch (e) {
+        debugPrint('$_tag close window failed: $e');
+      }
+    }
+  }
+
   void _installHandlers() {
     if (_handlersInstalled) return;
     _handlersInstalled = true;

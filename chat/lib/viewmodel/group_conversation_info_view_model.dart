@@ -25,8 +25,20 @@ class GroupConversationInfoViewModel extends ChangeNotifier {
   String? get groupAnnouncement => _groupAnnouncement;
 
   void setup(String groupId) async {
-    _isFavGroup = await Imclient.isFavGroup(groupId);
-    _groupMember = await Imclient.getGroupMember(groupId, Imclient.currentUserId);
+    try {
+      _isFavGroup = await Imclient.isFavGroup(groupId);
+      _groupMember = await Imclient.getGroupMember(groupId, Imclient.currentUserId);
+      debugPrint('[GroupConvInfo] group=$groupId currentUserId=${Imclient.currentUserId} localMember=${_groupMember == null ? "null" : "ok"}');
+      if (_groupMember == null) {
+        // 本地没有自己的群成员记录（群成员数据尚未同步）时页面会一直停在
+        // 加载中，从服务器刷新一次群成员再查。
+        await Imclient.getGroupMembers(groupId, refresh: true);
+        _groupMember = await Imclient.getGroupMember(groupId, Imclient.currentUserId);
+        debugPrint('[GroupConvInfo] group=$groupId memberAfterRefresh=${_groupMember == null ? "still null" : "ok"}');
+      }
+    } catch (e, s) {
+      debugPrint('[GroupConvInfo] setup error: $e\n$s');
+    }
     _loadGroupAnnouncement(groupId);
     _groupMembersUpdatedSubscription = Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
       if (event.groupId == groupId) {

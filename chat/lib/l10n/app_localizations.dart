@@ -734,6 +734,12 @@ abstract class AppLocalizations {
   /// **'聊天记录'**
   String get chatRecords;
 
+  /// No description provided for @locateToChatPosition.
+  ///
+  /// In zh, this message translates to:
+  /// **'定位到聊天位置'**
+  String get locateToChatPosition;
+
   /// No description provided for @muteNotification.
   ///
   /// In zh, this message translates to:

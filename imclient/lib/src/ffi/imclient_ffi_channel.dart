@@ -1067,7 +1067,7 @@ class ImclientFfiChannel implements ImclientChannel {
           final c = _conv(args);
           final target = _ns(a, c.target);
           final contentTypes = _intList(args, 'contentTypes');
-          final v = _json(_outString((lp) => _wf.getMessageCountByDay(
+          final raw = _outString((lp) => _wf.getMessageCountByDay(
               c.type,
               target.ptr,
               target.len,
@@ -1076,8 +1076,22 @@ class ImclientFfiChannel implements ImclientChannel {
               contentTypes.length,
               _int(args, 'startTime'),
               _int(args, 'endTime'),
-              lp)));
-          return v is Map ? v : <String, dynamic>{};
+              lp));
+          debugPrint(
+              '[ImclientFfi] getMessageCountByDay conv=${c.type}/${c.target}/${c.line} start=${_int(args, 'startTime')} end=${_int(args, 'endTime')} raw=$raw');
+          final v = _json(raw);
+          if (v is Map) return v;
+          // C 接口实际返回 [{"key":"2026-06-24","value":2}, ...] 数组形式，
+          // 转成 {日期: 数量} Map。
+          final map = <String, dynamic>{};
+          if (v is List) {
+            for (final e in v) {
+              if (e is Map && e['key'] is String) {
+                map[e['key'] as String] = e['value'];
+              }
+            }
+          }
+          return map;
         });
 
       // ---- 消息发送/操作 ----

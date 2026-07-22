@@ -40,8 +40,11 @@ class ConversationCalendarView extends StatefulWidget {
   /// 点击日期定位到会话消息。为 null 时默认 Navigator.push ConversationScreen(toFocusMessageId:)
   final void Function(Message message)? onLocateMessage;
 
+  /// 点击日期回调（优先于 onLocateMessage/默认跳转）。搜索面板用它内嵌展示当天消息。
+  final ValueChanged<DateTime>? onDaySelected;
+
   const ConversationCalendarView(this.conversation,
-      {super.key, this.onLocateMessage});
+      {super.key, this.onLocateMessage, this.onDaySelected});
 
   @override
   State<ConversationCalendarView> createState() =>
@@ -98,15 +101,30 @@ class _ConversationCalendarViewState extends State<ConversationCalendarView> {
       // 月末：下月 1 号前一秒
       final end = DateTime(month.year, month.month + 1, 1)
           .subtract(const Duration(seconds: 1));
+      final startSec = start.millisecondsSinceEpoch ~/ 1000;
+      final endSec = end.millisecondsSinceEpoch ~/ 1000;
+      debugPrint(
+          '[CalendarSearch] getMessageCountByDay month=${_monthKey(month)} start=$start($startSec) end=$end($endSec) conv=${widget.conversation.conversationType}/${widget.conversation.target}/${widget.conversation.line}');
       return Imclient.getMessageCountByDay(
         widget.conversation,
-        start.millisecondsSinceEpoch ~/ 1000,
-        end.millisecondsSinceEpoch ~/ 1000,
-      );
+        startSec,
+        endSec,
+      ).then((counts) {
+        debugPrint('[CalendarSearch] month=${_monthKey(month)} result=$counts');
+        return counts;
+      }).catchError((e) {
+        debugPrint('[CalendarSearch] month=${_monthKey(month)} error: $e');
+        return <String, int>{};
+      });
     });
   }
 
   Future<void> _onDayTap(DateTime day) async {
+    final onDaySelected = widget.onDaySelected;
+    if (onDaySelected != null) {
+      onDaySelected(day);
+      return;
+    }
     final messages = await Imclient.getMessagesByTimestamp(
       widget.conversation,
       DateTime(day.year, day.month, day.day, 23, 59, 59).millisecondsSinceEpoch,

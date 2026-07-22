@@ -3,6 +3,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/config.dart';
 import 'package:chat/conversation/conversation_files_screen.dart';
@@ -71,6 +72,11 @@ class _ConversationSearchPanelState extends State<ConversationSearchPanel> {
   int _searchToken = 0;
 
   List<String> _history = [];
+
+  /// 「日期」标签：选中的日期（null 显示日历，非 null 显示当天消息列表）
+  DateTime? _selectedDate;
+  List<Message>? _dayMessages;
+  bool _dayLoading = false;
 
   @override
   void initState() {
@@ -142,9 +148,11 @@ class _ConversationSearchPanelState extends State<ConversationSearchPanel> {
         setState(() {
           _browseLoading = false;
           if (messages.isNotEmpty) {
-            // getMessages 返回 [旧...新]；浏览列表新的在前，反转后追加到尾部
-            _browseMessages.addAll(messages.reversed);
-            _fromMessageId = messages.first.messageId;
+            // 各端 getMessages 返回顺序不一致（桌面端实测 [新...旧]），
+            // 统一按 messageId 降序，保证新的在前、分页锚点取最旧一条
+            messages.sort((a, b) => b.messageId.compareTo(a.messageId));
+            _browseMessages.addAll(messages);
+            _fromMessageId = messages.last.messageId;
           }
           if (messages.length < _pageSize) {
             _browseHasMore = false;
@@ -211,6 +219,42 @@ class _ConversationSearchPanelState extends State<ConversationSearchPanel> {
         }
       });
     });
+  }
+
+  // ---------- 「日期」标签：当天消息 ----------
+
+  /// 选中某天：加载当天全部消息（本地库逐页向前拉，封顶 500 条防异常），按时间升序展示
+  Future<void> _loadDayMessages(DateTime day) async {
+    setState(() {
+      _selectedDate = day;
+      _dayMessages = null;
+      _dayLoading = true;
+    });
+    final dayStartMs =
+        DateTime(day.year, day.month, day.day).millisecondsSinceEpoch;
+    var beforeTs = DateTime(day.year, day.month, day.day, 23, 59, 59, 999)
+        .millisecondsSinceEpoch;
+    final result = <Message>[];
+    try {
+      while (result.length < 500) {
+        final page = await Imclient.getMessagesByTimestamp(
+            widget.conversation, beforeTs, 50);
+        if (page.isEmpty) break;
+        page.sort((a, b) => a.serverTime.compareTo(b.serverTime));
+        final inDay =
+            page.where((m) => m.serverTime >= dayStartMs).toList();
+        result.insertAll(0, inDay);
+        // 本页有早于当天的消息，或已不足一页，说明当天消息拉完了
+        if (inDay.length < page.length || page.length < 50) break;
+        beforeTs = page.first.serverTime - 1;
+      }
+    } catch (_) {}
+    if (mounted && _selectedDate == day) {
+      setState(() {
+        _dayMessages = result;
+        _dayLoading = false;
+      });
+    }
   }
 
   // ---------- 消息定位 ----------
@@ -339,15 +383,66 @@ class _ConversationSearchPanelState extends State<ConversationSearchPanel> {
       case _SearchTab.link:
         return ConversationLinksView(widget.conversation);
       case _SearchTab.date:
-        return ConversationCalendarView(
-          widget.conversation,
-          onLocateMessage: widget.onLocateMessage,
-        );
+        return _buildDateContent();
       case _SearchTab.all:
         return _controller.text.trim().isEmpty
             ? _buildBrowseList()
             : _buildSearchResultList();
     }
+  }
+
+  /// 「日期」标签：未选日期显示日历；选中后内嵌展示当天消息列表（对齐 PC 微信）
+  Widget _buildDateContent() {
+    final l10n = AppLocalizations.of(context)!;
+    final selected = _selectedDate;
+    if (selected == null) {
+      return ConversationCalendarView(
+        widget.conversation,
+        onDaySelected: _loadDayMessages,
+      );
+    }
+    final locale = Localizations.localeOf(context).toString();
+    final dayMessages = _dayMessages;
+    return Column(
+      children: [
+        SizedBox(
+          height: 44,
+          child: Row(
+            children: [
+              IconButton(
+                icon: Icon(Icons.arrow_back,
+                    size: 20, color: context.colors.iconSecondary),
+                tooltip: l10n.searchByDate,
+                onPressed: () => setState(() => _selectedDate = null),
+              ),
+              Text(
+                DateFormat.yMMMd(locale).format(selected),
+                style: AppText.base.copyWith(
+                    color: context.colors.textPrimary,
+                    fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _dayLoading
+              ? const Center(child: CircularProgressIndicator())
+              : dayMessages == null || dayMessages.isEmpty
+                  ? Center(child: Text(l10n.noSearchResult))
+                  : ListView.separated(
+                      itemCount: dayMessages.length,
+                      separatorBuilder: (context, index) => Divider(
+                        indent: 16.0 +
+                            LayoutScale.watchScale(context, 48.0,
+                                cap: LayoutScale.iconCap) +
+                            16.0,
+                      ),
+                      itemBuilder: (context, index) =>
+                          _buildMessageTile(dayMessages[index]),
+                    ),
+        ),
+      ],
+    );
   }
 
   /// 「全部」标签 + 无关键字：搜索历史区 + 全量消息列表（新的在前，滚动到底向前翻页）
@@ -472,46 +567,73 @@ class _ConversationSearchPanelState extends State<ConversationSearchPanel> {
     );
   }
 
+  /// 记录最近一次按下的位置，供弹出菜单定位
+  Offset _tapPosition = Offset.zero;
+
+  /// 点击消息弹出操作菜单（对齐 PC 微信的「定位到聊天位置」）
+  Future<void> _showMessageMenu(Message message) async {
+    final l10n = AppLocalizations.of(context)!;
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final action = await showMenu<String>(
+      context: context,
+      position: RelativeRect.fromRect(
+        _tapPosition & const Size(1, 1),
+        Offset.zero & overlay.size,
+      ),
+      items: [
+        PopupMenuItem(
+          value: 'locate',
+          child: Text(l10n.locateToChatPosition),
+        ),
+      ],
+    );
+    if (action == 'locate') {
+      final keyword = _controller.text.trim();
+      if (keyword.isNotEmpty) {
+        _saveHistory(keyword);
+      }
+      _locateMessage(message);
+    }
+  }
+
   Widget _buildMessageTile(Message message) {
     final keyword = _controller.text.trim();
     return FutureBuilder<UserInfo?>(
       future: Imclient.getUserInfo(message.fromUser),
       builder: (context, snapshot) {
         var userInfo = snapshot.data;
-        return ListTile(
-          leading: Portrait(
-            userInfo?.portrait ?? '',
-            Config.defaultUserPortrait,
+        return GestureDetector(
+          onTapDown: (details) => _tapPosition = details.globalPosition,
+          child: ListTile(
+            leading: Portrait(
+              userInfo?.portrait ?? '',
+              Config.defaultUserPortrait,
+            ),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                AnimatedBuilder(
+                  animation: MeshCache.instance,
+                  builder: (context, child) {
+                    return userInfo != null
+                        ? MeshUserName(userInfo)
+                        : Text(message.fromUser);
+                  },
+                ),
+                Text(
+                  Utilities.formatTime(context, message.serverTime),
+                  style: AppText.xs.copyWith(color: Colors.grey),
+                ),
+              ],
+            ),
+            subtitle: FutureBuilder<String>(
+              future: message.content.digest(message),
+              builder: (context, snapshot) {
+                return _highlightedDigest(snapshot.data ?? '', keyword);
+              },
+            ),
+            onTap: () => _showMessageMenu(message),
           ),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              AnimatedBuilder(
-                animation: MeshCache.instance,
-                builder: (context, child) {
-                  return userInfo != null
-                      ? MeshUserName(userInfo)
-                      : Text(message.fromUser);
-                },
-              ),
-              Text(
-                Utilities.formatTime(context, message.serverTime),
-                style: AppText.xs.copyWith(color: Colors.grey),
-              ),
-            ],
-          ),
-          subtitle: FutureBuilder<String>(
-            future: message.content.digest(message),
-            builder: (context, snapshot) {
-              return _highlightedDigest(snapshot.data ?? '', keyword);
-            },
-          ),
-          onTap: () {
-            if (keyword.isNotEmpty) {
-              _saveHistory(keyword);
-            }
-            _locateMessage(message);
-          },
         );
       },
     );
