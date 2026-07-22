@@ -934,5 +934,6 @@
   "conferenceTimeInvalid": "End time cannot be earlier than start time",
   "conferenceSelectStartTime": "Select start time",
   "conferenceSelectEndTime": "Select end time",
-  "multiCallWindowTitle": "Group Call"
+  "multiCallWindowTitle": "Group Call",
+  "momentWindowTitle": "Moments"
 }

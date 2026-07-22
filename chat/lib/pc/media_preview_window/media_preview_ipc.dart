@@ -5,11 +5,9 @@ import 'package:imclient/message/video_message_content.dart';
 
 import '../multi_window/ipc_codec.dart';
 
-/// 子窗口创建参数中标识窗口种类的 key。未携带时默认为 Call 窗口。
-const String kWindowKindKey = '_windowKind';
-
-/// 媒体预览窗口的窗口种类值。
-const String kMediaPreviewWindowKind = 'media_preview';
+// 窗口种类常量已集中到 multi_window/window_kind.dart,此处再导出以兼容
+// 现有 import(moment/search 的 manager、main.dart 等均从本文件取这些常量)。
+export '../multi_window/window_kind.dart';
 
 /// 主窗口与媒体预览窗口之间的事件名。
 class MediaPreviewEvents {

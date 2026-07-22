@@ -1,5 +1,6 @@
-/// 朋友圈窗口的窗口种类值（子窗口创建参数 kWindowKindKey 的取值）。
-const String kMomentWindowKind = 'moment';
+// 窗口种类常量(含 kMomentWindowKind)已集中到 multi_window/window_kind.dart,
+// 此处再导出以兼容现有 import。
+export '../multi_window/window_kind.dart';
 
 /// 主窗口 → 朋友圈窗口 的事件名。
 class MomentWindowEvents {

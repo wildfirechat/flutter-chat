@@ -9,6 +9,7 @@ import 'package:window_manager/window_manager.dart';
 import '../../app_navigator.dart';
 import '../call_window/model_codec.dart';
 import '../multi_window/ipc_codec.dart';
+import '../multi_window/proxy_completer.dart';
 import '../multi_window/window_event_channel.dart';
 import '../pc_window_manager.dart';
 import 'search_window_ipc.dart';
@@ -139,62 +140,53 @@ class MainSearchProxy {
   }
 
   Future<dynamic> _handleGetConversationFiles(dynamic args) async {
-    final completer = Completer<dynamic>();
-    Imclient.getConversationFiles(
-      args['beforeMessageUid'] as int? ?? 0,
-      FileRecordOrder.values[args['order'] as int? ?? 0],
-      args['count'] as int? ?? 20,
-      (files) => completer.complete({
-        'errorCode': 0,
-        'files': files.map(_encodeFileRecord).toList(),
-      }),
-      (errorCode) => completer.complete({'errorCode': errorCode}),
-      conversation:
-          args['conversation'] != null ? _decodeConversation(args) : null,
-      fromUser: args['userId'] as String?,
+    return ProxyCompleter.filesResult(
+      (onSuccess, onFailure) => Imclient.getConversationFiles(
+        args['beforeMessageUid'] as int? ?? 0,
+        FileRecordOrder.values[args['order'] as int? ?? 0],
+        args['count'] as int? ?? 20,
+        onSuccess,
+        onFailure,
+        conversation:
+            args['conversation'] != null ? _decodeConversation(args) : null,
+        fromUser: args['userId'] as String?,
+      ),
+      _encodeFileRecord,
     );
-    return completer.future;
   }
 
   Future<dynamic> _handleSearchFiles(dynamic args) async {
-    final completer = Completer<dynamic>();
-    Imclient.searchFiles(
-      args['keyword'] as String? ?? '',
-      args['beforeMessageUid'] as int? ?? 0,
-      FileRecordOrder.values[args['order'] as int? ?? 0],
-      args['count'] as int? ?? 20,
-      (files) => completer.complete({
-        'errorCode': 0,
-        'files': files.map(_encodeFileRecord).toList(),
-      }),
-      (errorCode) => completer.complete({'errorCode': errorCode}),
-      conversation:
-          args['conversation'] != null ? _decodeConversation(args) : null,
-      fromUser: args['userId'] as String?,
+    return ProxyCompleter.filesResult(
+      (onSuccess, onFailure) => Imclient.searchFiles(
+        args['keyword'] as String? ?? '',
+        args['beforeMessageUid'] as int? ?? 0,
+        FileRecordOrder.values[args['order'] as int? ?? 0],
+        args['count'] as int? ?? 20,
+        onSuccess,
+        onFailure,
+        conversation:
+            args['conversation'] != null ? _decodeConversation(args) : null,
+        fromUser: args['userId'] as String?,
+      ),
+      _encodeFileRecord,
     );
-    return completer.future;
   }
 
   Future<dynamic> _handleGetAuthorizedMediaUrl(dynamic args) async {
-    final completer = Completer<dynamic>();
-    Imclient.getAuthorizedMediaUrl(
-      args['mediaPath'] as String? ?? '',
-      args['messageUid'] as int? ?? 0,
-      args['mediaType'] as int? ?? 0,
-      (url) => completer.complete({'errorCode': 0, 'result': url}),
-      (errorCode) => completer.complete({'errorCode': errorCode}),
-    );
-    return completer.future;
+    return ProxyCompleter.stringResult((onSuccess, onFailure) =>
+        Imclient.getAuthorizedMediaUrl(
+          args['mediaPath'] as String? ?? '',
+          args['messageUid'] as int? ?? 0,
+          args['mediaType'] as int? ?? 0,
+          onSuccess,
+          onFailure,
+        ));
   }
 
   Future<dynamic> _handleDeleteFileRecord(dynamic args) async {
-    final completer = Completer<dynamic>();
-    Imclient.deleteFileRecord(
-      args['messageUid'] as int? ?? 0,
-      () => completer.complete({'errorCode': 0}),
-      (errorCode) => completer.complete({'errorCode': errorCode}),
-    );
-    return completer.future;
+    return ProxyCompleter.voidResult((onSuccess, onFailure) =>
+        Imclient.deleteFileRecord(
+            args['messageUid'] as int? ?? 0, onSuccess, onFailure));
   }
 
   // ------------------------------------------------------------------ 编解码

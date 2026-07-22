@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/imclient_method_channel.dart';
@@ -25,16 +23,12 @@ import 'package:imclient/message/streaming_text_generating_message_content.dart'
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
-import '../../app_theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../search/conversation_search_panel.dart';
-import '../../viewmodel/font_size_view_model.dart';
-import '../../viewmodel/locale_view_model.dart';
-import '../../viewmodel/theme_view_model.dart';
 import '../multi_window/ipc_codec.dart';
+import '../multi_window/sub_window_app_base.dart';
 import '../multi_window/window_event_channel.dart';
 import 'search_window_imclient_channel.dart';
 import 'search_window_ipc.dart';
@@ -44,6 +38,7 @@ import 'search_window_ipc.dart';
 /// 运行在独立的 Flutter Engine / Dart isolate 中，不连接 IM；
 /// IM 调用经 [SearchWindowImclientChannel] 转发到主窗口执行，
 /// 与朋友圈窗口（MomentWindowApp）同构。
+/// 窗口初始化/标题/主题/关窗通知等样板见 [SubWindowAppBase]。
 class SearchWindowApp extends StatefulWidget {
   final int windowId;
   final Map<String, dynamic> arguments;
@@ -58,13 +53,8 @@ class SearchWindowApp extends StatefulWidget {
   State<SearchWindowApp> createState() => _SearchWindowAppState();
 }
 
-class _SearchWindowAppState extends State<SearchWindowApp> with WindowListener {
-  static const String _tag = 'SearchWindowApp';
-
-  late final FontSizeViewModel _fontSizeViewModel;
-  late final ThemeViewModel _themeViewModel;
-  late final LocaleViewModel _localeViewModel;
-
+class _SearchWindowAppState extends State<SearchWindowApp>
+    with WindowListener, SubWindowAppBase<SearchWindowApp> {
   late Conversation _conversation;
   String _conversationTitle = '';
   String _keyword = '';
@@ -72,68 +62,45 @@ class _SearchWindowAppState extends State<SearchWindowApp> with WindowListener {
   /// 切换会话时换 key 强制重建面板，清空旧的搜索状态。
   Key _panelKey = UniqueKey();
 
-  bool _isReady = false;
-
-  /// window_manager 是否已完成 ensureInitialized。子窗口里任何
-  /// windowManager 调用都必须排在其后，否则 macOS 原生侧
-  /// WindowManager.mainWindow 还是 nil，强解包直接崩溃（Swift fatal
-  /// error 无法被 Dart try/catch 捕获）。
-  bool _windowManagerInited = false;
+  // -------------------------------------------------------------- 基类钩子
 
   @override
-  void initState() {
-    super.initState();
-    _fontSizeViewModel = FontSizeViewModel(autoLoad: false);
-    _themeViewModel = ThemeViewModel();
-    _localeViewModel = LocaleViewModel(autoLoad: false);
-    _init();
-  }
+  int get windowId => widget.windowId;
 
-  Future<void> _init() async {
-    try {
-      debugPrint('$_tag _init start, windowId=${widget.windowId}');
+  @override
+  Map<String, dynamic> get windowArguments => widget.arguments;
 
-      _conversation = SearchWindowPayload.decodeConversation(widget.arguments);
-      _conversationTitle = SearchWindowPayload.decodeTitle(widget.arguments);
-      _keyword = SearchWindowPayload.decodeKeyword(widget.arguments);
-      _panelKey = _buildPanelKey(_conversation);
+  @override
+  String get windowKind => kSearchWindowKind;
 
-      // 搜索窗口 isolate 中 Imclient 没有自己连接 IM，先设置当前用户。
-      final selfUserId = widget.arguments['_selfUserId'] as String? ?? '';
-      ImclientPlatform.instance.userId = selfUserId;
+  @override
+  Size get minWindowSize => const Size(480, 600);
 
-      // 1. 替换 IM 通道为代理通道。
-      ImclientPlatform.instance.channel = SearchWindowImclientChannel();
+  /// 恢复标准标题栏,显示 `"会话名"聊天记录` 标题（对齐 PC 微信）。
+  @override
+  bool get useNormalTitleBar => true;
 
-      // 2. 注册常用消息内容类型（仅 Dart 层解码用，digest 依赖具体类型）。
-      _registerMessageContents();
+  @override
+  ImclientChannel get imclientChannel => SearchWindowImclientChannel();
 
-      // 3. 监听主窗口转发来的事件。
-      final channel = WindowEventChannel();
-      channel.register(
-          SearchWindowEvents.updateConversation, _handleUpdateConversation);
-      channel.listen();
+  @override
+  Map<String, Future<dynamic> Function(dynamic)> get eventHandlers => {
+        SearchWindowEvents.updateConversation: _handleUpdateConversation,
+      };
 
-      // 4. 通知主窗口已就绪。
-      await WindowEventChannel.invoke(0, SearchWindowEvents.ready, {
-        'windowId': widget.windowId,
-      });
+  @override
+  String windowTitle(AppLocalizations l10n) =>
+      '"$_conversationTitle"${l10n.chatRecords}';
 
-      setState(() => _isReady = true);
-
-      // 与朋友圈/Call 窗口一致：window_manager 延迟到首帧后初始化。
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _postFirstFrameInit();
-      });
-      Future.delayed(const Duration(seconds: 1), _postFirstFrameInit);
-    } catch (e, s) {
-      debugPrint('$_tag _init error: $e\n$s');
-    }
+  @override
+  Future<void> onWindowReady() async {
+    _parseArguments(windowArguments);
   }
 
   /// 与 Imclient.init 注册的常用类型对齐；未注册的类型解码成
   /// UnknownMessageContent，摘要只会显示"未知消息"。
-  void _registerMessageContents() {
+  @override
+  void registerMessageContents() {
     Imclient.registerMessageContent(textContentMeta);
     Imclient.registerMessageContent(imageContentMeta);
     Imclient.registerMessageContent(videoContentMeta);
@@ -156,79 +123,37 @@ class _SearchWindowAppState extends State<SearchWindowApp> with WindowListener {
     Imclient.registerMessageContent(streamingTextGeneratedContentMeta);
   }
 
-  bool _postFirstFrameInitDone = false;
-
-  void _postFirstFrameInit() {
-    if (_postFirstFrameInitDone) return;
-    _postFirstFrameInitDone = true;
-    _initWindowManager();
-    _loadPreferences();
-  }
-
-  Future<void> _loadPreferences() async {
-    try {
-      await _themeViewModel.load();
-      await _fontSizeViewModel.load();
-      await _localeViewModel.load();
-      // 语言设置加载完成后按最终语言刷新一次标题。
-      await _updateWindowTitle();
-    } catch (e) {
-      debugPrint('$_tag load preferences failed: $e');
-    }
-  }
-
-  Future<void> _initWindowManager() async {
-    try {
-      await Future.delayed(const Duration(milliseconds: 50));
-      await windowManager.ensureInitialized();
-      _windowManagerInited = true;
-      windowManager.addListener(this);
-      await windowManager.waitUntilReadyToShow();
-      // desktop_multi_window 创建的 macOS 子窗口默认隐藏标题栏
-      // (fullSizeContentView + titleVisibility=.hidden)，恢复为标准标题栏，
-      // 显示 `"会话名"聊天记录` 标题（对齐 PC 微信）。
-      await windowManager.setTitleBarStyle(TitleBarStyle.normal);
-      await _updateWindowTitle();
-      await windowManager.setMinimumSize(const Size(480, 600));
-      await windowManager.show();
-      await windowManager.focus();
-    } catch (e, s) {
-      debugPrint('$_tag windowManager init error: $e\n$s');
-    }
-  }
-
-  /// 窗口标题 `"<会话名>"<chatRecords>`；子窗口没有挂在 MaterialApp 下的
-  /// context 可用，按当前语言设置直接解析 l10n（同媒体预览窗口）。
-  Future<void> _updateWindowTitle() async {
-    // 与 _loadPreferences 存在并发：偏好加载可能先于 window_manager
-    // 初始化完成，此时不得触碰 windowManager（见 _windowManagerInited 注释）。
-    if (!_windowManagerInited) return;
-    final locale = basicLocaleListResolution(
-      [
-        _localeViewModel.locale ??
-            WidgetsBinding.instance.platformDispatcher.locale
-      ],
-      AppLocalizations.supportedLocales,
+  @override
+  Widget buildHome(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: ConversationSearchPanel(
+          _conversation,
+          key: _panelKey,
+          initialKeyword: _keyword,
+          showSearchHistory: false,
+          onLocateMessage: _locateMessage,
+        ),
+      ),
     );
-    final title =
-        '"$_conversationTitle"${lookupAppLocalizations(locale).chatRecords}';
-    try {
-      await windowManager.setTitle(title);
-    } catch (e) {
-      debugPrint('$_tag setTitle failed: $e');
-    }
+  }
+
+  // -------------------------------------------------------------- 业务
+
+  void _parseArguments(Map<dynamic, dynamic> args) {
+    _conversation = SearchWindowPayload.decodeConversation(args);
+    _conversationTitle = SearchWindowPayload.decodeTitle(args);
+    _keyword = SearchWindowPayload.decodeKeyword(args);
+    _panelKey = _buildPanelKey(_conversation);
   }
 
   /// 窗口复用时主窗口推来新的搜索目标：整体替换并重建面板状态。
   Future<dynamic> _handleUpdateConversation(dynamic args) async {
     if (args is! Map) return null;
     setState(() {
-      _conversation = SearchWindowPayload.decodeConversation(args);
-      _conversationTitle = SearchWindowPayload.decodeTitle(args);
-      _keyword = SearchWindowPayload.decodeKeyword(args);
-      _panelKey = _buildPanelKey(_conversation);
+      _parseArguments(args);
     });
-    _updateWindowTitle();
+    updateWindowTitle();
     return null;
   }
 
@@ -245,59 +170,5 @@ class _SearchWindowAppState extends State<SearchWindowApp> with WindowListener {
       'conversation': IpcCodec.encodeConversation(_conversation),
       'messageId': message.messageId,
     });
-  }
-
-  @override
-  void onWindowClose() async {
-    await WindowEventChannel.invoke(0, SearchWindowEvents.windowClosed, {
-      'windowId': widget.windowId,
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<FontSizeViewModel>.value(
-            value: _fontSizeViewModel),
-        ChangeNotifierProvider<ThemeViewModel>.value(value: _themeViewModel),
-        ChangeNotifierProvider<LocaleViewModel>.value(value: _localeViewModel),
-      ],
-      child: Consumer2<LocaleViewModel, FontSizeViewModel>(
-        builder: (context, localeViewModel, fontSizeViewModel, _) {
-          return MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: localeViewModel.locale,
-            theme: AppTheme.light(),
-            darkTheme: AppTheme.dark(),
-            themeMode: _themeViewModel.themeMode,
-            builder: (context, child) {
-              // 与主窗口一致：字号完全由 app 内的「字体大小」设置接管
-              return MediaQuery(
-                data: MediaQuery.of(context).copyWith(
-                  textScaler:
-                      TextScaler.linear(fontSizeViewModel.textScaleFactor),
-                ),
-                child: child!,
-              );
-            },
-            home: Scaffold(
-              body: SafeArea(
-                child: _isReady
-                    ? ConversationSearchPanel(
-                        _conversation,
-                        key: _panelKey,
-                        initialKeyword: _keyword,
-                        showSearchHistory: false,
-                        onLocateMessage: _locateMessage,
-                      )
-                    : const Center(child: CircularProgressIndicator()),
-              ),
-            ),
-          );
-        },
-      ),
-    );
   }
 }

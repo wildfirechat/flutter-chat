@@ -42,9 +42,6 @@ class MainWindowEvents {
   /// Imclient.getUserInfos。
   static const String getUserInfos = 'imclient.getUserInfos';
 
-  /// Imclient.getGroupMemberIds。
-  static const String getGroupMemberIds = 'imclient.getGroupMemberIds';
-
   /// Imclient.getGroupMembers。
   static const String getGroupMembers = 'imclient.getGroupMembers';
 

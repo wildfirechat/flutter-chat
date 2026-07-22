@@ -90,13 +90,19 @@ void main([List<String>? args]) async {
     SubWindowWidgetsBinding.ensureInitialized();
     final windowId = int.parse(effectiveArgs[1]);
     final arguments = effectiveArgs.length > 2 ? jsonDecode(effectiveArgs[2]) as Map<String, dynamic> : <String, dynamic>{};
-    if (arguments[kWindowKindKey] == kMediaPreviewWindowKind) {
+    final kind = arguments[kWindowKindKey];
+    if (kind == kMediaPreviewWindowKind) {
       runApp(MediaPreviewWindowApp(windowId: windowId, arguments: arguments));
-    } else if (arguments[kWindowKindKey] == kMomentWindowKind) {
+    } else if (kind == kMomentWindowKind) {
       runApp(MomentWindowApp(windowId: windowId, arguments: arguments));
-    } else if (arguments[kWindowKindKey] == kSearchWindowKind) {
+    } else if (kind == kSearchWindowKind) {
       runApp(SearchWindowApp(windowId: windowId, arguments: arguments));
     } else {
+      // 历史兼容:call_window_manager 早先创建窗口时不携带 kind,
+      // 未携带(kind == null)或显式 kCallWindowKind 都落到 Call 窗口。
+      if (kind != null && kind != kCallWindowKind) {
+        debugPrint('unknown sub window kind: $kind, fallback to CallWindowApp');
+      }
       runApp(CallWindowApp(windowId: windowId, arguments: arguments));
     }
     return;

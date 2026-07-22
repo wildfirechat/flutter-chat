@@ -932,6 +932,26 @@ class ImclientPlatform extends PlatformInterface {
     _removeOperationCallback(requestId);
   }
 
+  /// 供 PC 端子窗口代理通道使用:主窗口代执行字符串结果类回调接口
+  /// (sendMomentsRequest/uploadMedia/uploadMediaFile/getAuthorizedMediaUrl 等,
+  /// successCallback 均为 OperationSuccessStringCallback)后,按
+  /// onOperationStringSuccess / onOperationFailure 的既有语义触发回调
+  /// 并清理关联状态。
+  static void dispatchStringResult(int requestId, int errorCode, {String? result}) {
+    if (errorCode == 0) {
+      var callback = _operationSuccessCallbackMap[requestId];
+      if (callback != null) {
+        callback(result ?? '');
+      }
+    } else {
+      var callback = _errorCallbackMap[requestId];
+      if (callback != null) {
+        callback(errorCode);
+      }
+    }
+    _removeOperationCallback(requestId);
+  }
+
   /// 供 PC 端子窗口代理通道使用:主窗口代执行回调式接口(文件记录列表、
   /// 删除文件记录等)后,按 onFilesResult / onOperationVoidSuccess /
   /// onOperationFailure 的既有语义触发回调并清理关联状态。

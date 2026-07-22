@@ -2,16 +2,13 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../conversation/mm_preview_view.dart';
 import '../../l10n/app_localizations.dart';
 import '../../utils/show_toast.dart';
-import '../../viewmodel/font_size_view_model.dart';
-import '../../viewmodel/locale_view_model.dart';
-import '../../viewmodel/theme_view_model.dart';
 import '../multi_window/ipc_codec.dart';
+import '../multi_window/sub_window_app_base.dart';
 import '../multi_window/window_event_channel.dart';
 import 'media_preview_ipc.dart';
 
@@ -19,6 +16,7 @@ import 'media_preview_ipc.dart';
 ///
 /// 运行在独立的 Flutter Engine / Dart isolate 中,不连接 IM;
 /// 翻页加载更多媒体通过 [WindowEventChannel] 请求主窗口代查。
+/// 窗口初始化/标题/主题/关窗通知等样板见 [SubWindowAppBase]。
 class MediaPreviewWindowApp extends StatefulWidget {
   final int windowId;
   final Map<String, dynamic> arguments;
@@ -33,12 +31,9 @@ class MediaPreviewWindowApp extends StatefulWidget {
   State<MediaPreviewWindowApp> createState() => _MediaPreviewWindowAppState();
 }
 
-class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp> with WindowListener {
+class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
+    with WindowListener, SubWindowAppBase<MediaPreviewWindowApp> {
   static const String _tag = 'MediaPreviewWindowApp';
-
-  late final FontSizeViewModel _fontSizeViewModel;
-  late final ThemeViewModel _themeViewModel;
-  late final LocaleViewModel _localeViewModel;
 
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey();
   GlobalKey<MMPreviewViewState> _previewKey = GlobalKey();
@@ -46,32 +41,88 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp> with Wind
   int _defaultIndex = 0;
   Conversation? _conversation;
 
-  bool _postFirstFrameInitDone = false;
-
   @override
   void initState() {
     super.initState();
-    // 与 Call 窗口一致:子窗口不走主窗口的插件注册时机,先同步建 ViewModel
-    // 保证首帧可用,首帧后再加载持久化配置。
-    _fontSizeViewModel = FontSizeViewModel(autoLoad: false);
-    _themeViewModel = ThemeViewModel();
-    _localeViewModel = LocaleViewModel(autoLoad: false);
-
     // 桌面端 showToast 依附 Navigator 的 Overlay(另存为的结果提示)。
     setToastNavigatorKey(_navigatorKey);
-
-    _applyPayload(widget.arguments);
-
-    final channel = WindowEventChannel();
-    channel.register(MediaPreviewEvents.show, _handleShow);
-    channel.listen();
-    WindowEventChannel.invoke(0, MediaPreviewEvents.ready, {'windowId': widget.windowId});
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => _postFirstFrameInit());
-    // 兜底:帧调度异常时 postFrameCallback 可能迟迟不来(参见 SubWindowWidgetsBinding),
-    // 但 onWindowClose 监听、窗口标题都依赖 window_manager 完成初始化。
-    Future.delayed(const Duration(seconds: 1), _postFirstFrameInit);
   }
+
+  // -------------------------------------------------------------- 基类钩子
+
+  @override
+  int get windowId => widget.windowId;
+
+  @override
+  Map<String, dynamic> get windowArguments => widget.arguments;
+
+  /// 注意:事件前缀是 'mediaPreview.'(与现网事件名一致),
+  /// 不是 kMediaPreviewWindowKind 的下划线形式。
+  @override
+  String get windowKind => 'mediaPreview';
+
+  @override
+  Size get minWindowSize => const Size(640, 480);
+
+  /// 预览窗是黑色全屏查看器,强制暗色主题。
+  @override
+  ThemeData buildLightTheme() => ThemeData.dark();
+  @override
+  ThemeData buildDarkTheme() => ThemeData.dark();
+  @override
+  ThemeMode get themeMode => ThemeMode.dark;
+
+  @override
+  GlobalKey<NavigatorState> get navigatorKey => _navigatorKey;
+
+  @override
+  Map<String, Future<dynamic> Function(dynamic)> get eventHandlers => {
+        MediaPreviewEvents.show: _handleShow,
+      };
+
+  @override
+  String windowTitle(AppLocalizations l10n) => l10n.mediaPreviewTitle;
+
+  @override
+  Future<void> onWindowReady() async {
+    _applyPayload(windowArguments);
+  }
+
+  /// 就绪通知 fire-and-forget(主窗口收到后才推 show 事件,无需等待回执)。
+  @override
+  Future<void> notifyReady() {
+    WindowEventChannel.invoke(0, MediaPreviewEvents.ready, {
+      'windowId': windowId,
+    });
+    return Future.value();
+  }
+
+  @override
+  Widget buildHome(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: _mediaItems.isEmpty
+          ? const SizedBox.shrink()
+          : MMPreviewView(
+              _mediaItems,
+              key: _previewKey,
+              defaultIndex: _defaultIndex,
+              pageToEnd: _loadMore,
+              onClose: _close,
+            ),
+    );
+  }
+
+  /// 未 ready 只有一个微任务间隙,保持与空内容一致的黑屏。
+  @override
+  Widget buildLoading(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Colors.black,
+      body: SizedBox.shrink(),
+    );
+  }
+
+  // -------------------------------------------------------------- 业务
 
   void _applyPayload(Map<String, dynamic> args) {
     final items = MediaPreviewCodec.decodeMessages(args['items'] as List? ?? const []);
@@ -95,67 +146,18 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp> with Wind
     return null;
   }
 
-  void _postFirstFrameInit() {
-    if (_postFirstFrameInitDone) return;
-    _postFirstFrameInitDone = true;
-    _initWindowManager();
-    _loadPreferences();
-  }
-
-  Future<void> _loadPreferences() async {
-    try {
-      await _themeViewModel.load();
-      await _fontSizeViewModel.load();
-      await _localeViewModel.load();
-    } catch (e) {
-      print('$_tag load preferences failed: $e');
-    }
-  }
-
-  Future<void> _initWindowManager() async {
-    try {
-      // 多等一帧,确保 AppKit 已完成窗口/视图的挂载。
-      await Future.delayed(const Duration(milliseconds: 50));
-      await windowManager.ensureInitialized();
-      windowManager.addListener(this);
-      await windowManager.waitUntilReadyToShow();
-      await windowManager.setTitle(_windowTitle());
-      await windowManager.setMinimumSize(const Size(640, 480));
-      await windowManager.show();
-      await windowManager.focus();
-    } catch (e, s) {
-      print('$_tag windowManager init error: $e\n$s');
-    }
-  }
-
-  /// 子窗口没有挂在 MaterialApp 下的 context 可用,按当前语言设置直接解析 l10n。
-  String _windowTitle() {
-    final locale = basicLocaleListResolution(
-      [_localeViewModel.locale ?? WidgetsBinding.instance.platformDispatcher.locale],
-      AppLocalizations.supportedLocales,
-    );
-    return lookupAppLocalizations(locale).mediaPreviewTitle;
-  }
-
-  @override
-  void onWindowClose() {
-    WindowEventChannel.invoke(0, MediaPreviewEvents.windowClosed, {
-      'windowId': widget.windowId,
-    });
-  }
-
   /// ESC / 关闭按钮触发的主动关窗。
   Future<void> _close() async {
     await WindowEventChannel.invoke(0, MediaPreviewEvents.windowClosed, {
-      'windowId': widget.windowId,
+      'windowId': windowId,
     });
     // 不能走 windowManager.close():若 ensureInitialized 尚未执行,macOS 侧
     // close 会因 _mainWindow 为 nil 强解包直接崩溃进程。WindowController 走
     // desktop_multi_window 自己的通道,不依赖 window_manager 的初始化状态。
     try {
-      await WindowController.fromWindowId(widget.windowId).close();
+      await WindowController.fromWindowId(windowId).close();
     } catch (e) {
-      print('$_tag close window failed: $e');
+      debugPrint('$_tag close window failed: $e');
     }
   }
 
@@ -176,47 +178,5 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp> with Wind
     final more = MediaPreviewCodec.decodeMessages(result);
     if (more.isEmpty) return;
     _previewKey.currentState?.onLoadMore(more, !tail);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider<FontSizeViewModel>.value(value: _fontSizeViewModel),
-        ChangeNotifierProvider<ThemeViewModel>.value(value: _themeViewModel),
-        ChangeNotifierProvider<LocaleViewModel>.value(value: _localeViewModel),
-      ],
-      child: Consumer2<LocaleViewModel, FontSizeViewModel>(
-        builder: (context, localeViewModel, fontSizeViewModel, _) => MaterialApp(
-          navigatorKey: _navigatorKey,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: localeViewModel.locale,
-          theme: ThemeData.dark(),
-          darkTheme: ThemeData.dark(),
-          builder: (context, child) {
-            // 与主窗口一致:字号完全由 app 内的「字体大小」设置接管
-            return MediaQuery(
-              data: MediaQuery.of(context).copyWith(
-                textScaler: TextScaler.linear(fontSizeViewModel.textScaleFactor),
-              ),
-              child: child!,
-            );
-          },
-          home: Scaffold(
-            backgroundColor: Colors.black,
-            body: _mediaItems.isEmpty
-                ? const SizedBox.shrink()
-                : MMPreviewView(
-                    _mediaItems,
-                    key: _previewKey,
-                    defaultIndex: _defaultIndex,
-                    pageToEnd: _loadMore,
-                    onClose: _close,
-                  ),
-          ),
-        ),
-      ),
-    );
   }
 }

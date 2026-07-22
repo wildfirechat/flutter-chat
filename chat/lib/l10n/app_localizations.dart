@@ -5576,6 +5576,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'多人通话'**
   String get multiCallWindowTitle;
+
+  /// No description provided for @momentWindowTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'朋友圈'**
+  String get momentWindowTitle;
 }
 
 class _AppLocalizationsDelegate

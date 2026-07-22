@@ -2935,4 +2935,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get multiCallWindowTitle => '多人通话';
+
+  @override
+  String get momentWindowTitle => '朋友圈';
 }

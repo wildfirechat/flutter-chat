@@ -10,6 +10,7 @@ import 'package:momentclient/moment_feed_content.dart';
 
 import '../call_window/model_codec.dart';
 import '../multi_window/ipc_codec.dart';
+import '../multi_window/proxy_completer.dart';
 import '../multi_window/window_event_channel.dart';
 import 'moment_ipc.dart';
 import 'moment_window_manager.dart';
@@ -98,15 +99,8 @@ class MainMomentProxy {
   Future<dynamic> _handleSendMomentsRequest(dynamic args) async {
     final path = args['path'] as String;
     final data = args['data'] as String? ?? '';
-    final completer = Completer<dynamic>();
-    Imclient.sendMomentsRequest(
-      path,
-      data,
-      (result) => completer.complete({'errorCode': 0, 'result': result}),
-      (errorCode) =>
-          completer.complete({'errorCode': errorCode, 'result': null}),
-    );
-    return completer.future;
+    return ProxyCompleter.stringResult((onSuccess, onFailure) =>
+        Imclient.sendMomentsRequest(path, data, onSuccess, onFailure));
   }
 
   Future<dynamic> _handleGetUserInfo(dynamic args) async {
@@ -169,33 +163,16 @@ class MainMomentProxy {
     if (mediaData is! Uint8List) {
       return {'errorCode': -1, 'result': null};
     }
-    final completer = Completer<dynamic>();
-    Imclient.uploadMedia(
-      fileName,
-      mediaData,
-      mediaType,
-      (remoteUrl) =>
-          completer.complete({'errorCode': 0, 'result': remoteUrl}),
-      (current, total) {},
-      (errorCode) =>
-          completer.complete({'errorCode': errorCode, 'result': null}),
-    );
-    return completer.future;
+    return ProxyCompleter.stringResult((onSuccess, onFailure) =>
+        Imclient.uploadMedia(fileName, mediaData, mediaType, onSuccess,
+            (current, total) {}, onFailure));
   }
 
   Future<dynamic> _handleUploadMediaFile(dynamic args) async {
     final filePath = args['filePath'] as String;
     final mediaType = mc.MediaType.values[args['mediaType'] as int? ?? 0];
-    final completer = Completer<dynamic>();
-    Imclient.uploadMediaFile(
-      filePath,
-      mediaType,
-      (remoteUrl) =>
-          completer.complete({'errorCode': 0, 'result': remoteUrl}),
-      (current, total) {},
-      (errorCode) =>
-          completer.complete({'errorCode': errorCode, 'result': null}),
-    );
-    return completer.future;
+    return ProxyCompleter.stringResult((onSuccess, onFailure) =>
+        Imclient.uploadMediaFile(filePath, mediaType, onSuccess,
+            (current, total) {}, onFailure));
   }
 }

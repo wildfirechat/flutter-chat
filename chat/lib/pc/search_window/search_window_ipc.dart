@@ -2,8 +2,9 @@ import 'package:imclient/model/conversation.dart';
 
 import '../multi_window/ipc_codec.dart';
 
-/// 会话内搜索窗口的窗口种类值（子窗口创建参数 kWindowKindKey 的取值）。
-const String kSearchWindowKind = 'search';
+// 窗口种类常量(含 kSearchWindowKind)已集中到 multi_window/window_kind.dart,
+// 此处再导出以兼容现有 import。
+export '../multi_window/window_kind.dart';
 
 /// 搜索窗口 ↔ 主窗口 的事件名。
 class SearchWindowEvents {

@@ -3001,4 +3001,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get multiCallWindowTitle => 'Group Call';
+
+  @override
+  String get momentWindowTitle => 'Moments';
 }

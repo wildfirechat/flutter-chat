@@ -243,11 +243,11 @@ class MainFlutterWindow: NSWindow {
 
         FlutterMultiWindowPlugin.setOnWindowCreatedCallback { controller in
           print("Subwindow created, registering plugins")
-          // 在子窗口(通话/媒体预览)中注册所需插件。
+          // 在子窗口(通话/媒体预览/朋友圈/搜索)中注册所需插件。
           // flutter_webrtc 必须在 Call 窗口引擎中注册，否则 RTCVideoRenderer 无法初始化。
           FlutterWebRTCPlugin.register(with: controller.registrar(forPlugin: "FlutterWebRTCPlugin"))
           WindowManagerPlugin.register(with: controller.registrar(forPlugin: "WindowManagerPlugin"))
-          TrayManagerPlugin.register(with: controller.registrar(forPlugin: "TrayManagerPlugin"))
+          // 子窗口无托盘用途，不注册 TrayManagerPlugin（托盘归主窗口独占）。
           SharedPreferencesPlugin.register(with: controller.registrar(forPlugin: "SharedPreferencesPlugin"))
           PathProviderPlugin.register(with: controller.registrar(forPlugin: "PathProviderPlugin"))
           DeviceInfoPlusMacosPlugin.register(with: controller.registrar(forPlugin: "DeviceInfoPlusMacosPlugin"))

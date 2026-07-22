@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// 主窗口与各子窗口(通话、媒体预览等)之间的通信通道封装。
@@ -14,8 +15,11 @@ import 'package:flutter/services.dart';
 ///
 /// 注意:[listen] 底层是 [DesktopMultiWindow.setMethodHandler],**进程内全局唯一**。
 /// 因此本类是每个 isolate 的单例:所有功能(通话代理、媒体预览……)把各自的
-/// handler 注册到同一张表上,method 名用前缀区分(voip.* / imclient.* /
-/// mediaPreview.*),避免后注册者顶掉先注册者。
+/// handler 注册到同一张表上,method 名用前缀区分,避免后注册者顶掉先注册者。
+///
+/// method 命名约定:`<domain>[.imclient].<method>`。domain 为窗口/功能域
+/// (voip / mediaPreview / moment / search 等);转发 Imclient 调用的代理事件
+/// 在 domain 后再加 `.imclient` 一段,如 `moment.imclient.getUserInfo`。
 class WindowEventChannel {
   static const String _tag = 'WindowEventChannel';
 
@@ -27,8 +31,12 @@ class WindowEventChannel {
 
   final Map<String, Future<dynamic> Function(dynamic args)> _handlers = {};
 
-  /// 注册消息处理器。
+  /// 注册消息处理器。同一 method 重复注册会覆盖旧 handler,
+  /// 覆盖前打告警日志(多半意味着前缀冲突或重复 install),不抛异常。
   void register(String method, Future<dynamic> Function(dynamic args) handler) {
+    if (_handlers.containsKey(method)) {
+      debugPrint('$_tag register $method: overriding existing handler');
+    }
     _handlers[method] = handler;
   }
 

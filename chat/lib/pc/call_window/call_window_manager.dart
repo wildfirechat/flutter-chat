@@ -1,8 +1,8 @@
-import 'dart:convert';
-
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
-import 'package:imclient/imclient.dart';
+
+import '../multi_window/sub_window_manager_base.dart';
+import '../multi_window/window_event_channel.dart';
 
 /// Call 窗口类型。
 enum CallWindowType {
@@ -12,17 +12,53 @@ enum CallWindowType {
 }
 
 /// 管理 PC 端独立 Call 窗口的创建、显示、隐藏和销毁。
-class CallWindowManager {
-  static const String _tag = 'CallWindowManager';
+///
+/// 复用策略为"先关再开"(reusePolicy = recreate):全局最多一个通话窗口,
+/// 新通话先关旧窗再创建。就绪/关闭事件不经本类的 WindowEventChannel
+/// handler,由 MainAvEngineKitProxy 收到 voipStatusChanged/voip.windowClosed
+/// 后调 [onCallWindowReady]/[onCallWindowClosed]。创建序列等样板见
+/// [SubWindowManagerBase]。
+class CallWindowManager extends SubWindowManagerBase {
   static final CallWindowManager instance = CallWindowManager._internal();
 
   CallWindowManager._internal();
 
-  /// 当前已创建的 Call 窗口控制器。
-  WindowController? _windowController;
-
   /// 窗口创建参数。
   final Map<int, _CallWindowCreationContext> _creationContexts = {};
+
+  /// 下一次创建窗口用的参数(createCallWindow 暂存,createAndShow 取用)。
+  String _pendingType = 'conference';
+  Map<String, dynamic>? _pendingArguments;
+  VoidCallback? _pendingOnReady;
+  VoidCallback? _pendingOnClose;
+
+  @override
+  String get windowKind => 'call';
+
+  @override
+  SubWindowReusePolicy get reusePolicy => SubWindowReusePolicy.recreate;
+
+  /// 通话的就绪/关闭由 MainAvEngineKitProxy 路由,不注册本类 handler。
+  @override
+  void registerManagerHandlers(WindowEventChannel channel) {}
+
+  @override
+  Map<String, dynamic> createPayload() => {
+        ...?_pendingArguments,
+        '_windowType': _pendingType,
+      };
+
+  @override
+  Size initialWindowSize() => _windowSizeFor(parseWindowType(_pendingType));
+
+  @override
+  void onWindowCreated(WindowController controller) {
+    debugPrint('$windowKind window created id=${controller.windowId}');
+    _creationContexts[controller.windowId] = _CallWindowCreationContext(
+      onReady: _pendingOnReady!,
+      onClose: _pendingOnClose!,
+    );
+  }
 
   /// 创建 Call 窗口。
   ///
@@ -40,48 +76,26 @@ class CallWindowManager {
     required VoidCallback onClose,
     Map<String, dynamic>? arguments,
   }) async {
-    print('$_tag createCallWindow $type');
-    if (_windowController != null) {
-      print('$_tag close existing window');
+    debugPrint('$windowKind createCallWindow $type');
+    final existing = windowController;
+    if (existing != null) {
+      debugPrint('$windowKind close existing window');
       try {
-        await _windowController!.close();
+        await existing.close();
       } catch (e) {
-        print('$_tag close existing window failed: $e');
+        debugPrint('$windowKind close existing window failed: $e');
       }
-      _windowController = null;
+      clearWindowState();
       _creationContexts.clear();
     }
 
-    final windowType = parseWindowType(type);
-    final args = arguments ?? {};
-    args['_windowType'] = type;
-    args['_selfUserId'] = Imclient.currentUserId;
-    print('$_tag createWindow args=$args');
+    _pendingType = type;
+    _pendingArguments = arguments ?? {};
+    _pendingOnReady = onReady;
+    _pendingOnClose = onClose;
 
-    final WindowController controller;
-    try {
-      controller = await DesktopMultiWindow.createWindow(jsonEncode(args));
-    } catch (e) {
-      print('$_tag createWindow failed: $e');
-      rethrow;
-    }
-    _windowController = controller;
-    print('$_tag window created id=${controller.windowId}');
-
-    _creationContexts[controller.windowId] = _CallWindowCreationContext(
-      onReady: onReady,
-      onClose: onClose,
-    );
-
-    // 先显示窗口（否则子窗口 window_manager 初始化时无法获取 view.window）。
-    // 子窗口初始显示黑色加载页，等收到 startCall 事件后再渲染通话 UI。
-    // 必须先 center 再 show：插件创建的 NSWindow 初始位于屏幕原点（macOS 为左下角），
-    // 先 show 会在角落闪现一帧后才跳到屏幕中央。
-    await _applyWindowStyle(controller, windowType);
-    await controller.center();
-    await controller.show();
-    print('$_tag window centered and shown');
-
+    final controller = await createAndShow();
+    debugPrint('$windowKind window centered and shown');
     return controller.windowId;
   }
 
@@ -90,9 +104,9 @@ class CallWindowManager {
     final ctx = _creationContexts[windowId];
     if (ctx == null) return;
 
-    print('$_tag onCallWindowReady $windowId');
-    await _windowController?.center();
-    await _windowController?.show();
+    debugPrint('$windowKind onCallWindowReady $windowId');
+    await windowController?.center();
+    await windowController?.show();
     ctx.onReady();
   }
 
@@ -101,39 +115,31 @@ class CallWindowManager {
     final ctx = _creationContexts.remove(windowId);
     if (ctx == null) return;
 
-    _windowController = null;
+    clearWindowState();
     ctx.onClose();
   }
 
   /// 关闭当前 Call 窗口。
   Future<void> closeCallWindow() async {
-    if (_windowController == null) return;
-    await _windowController!.close();
-    _windowController = null;
+    final controller = windowController;
+    if (controller == null) return;
+    await controller.close();
+    clearWindowState();
   }
 
   /// 隐藏当前 Call 窗口（例如屏幕共享时缩为控制条）。
   Future<void> hideCallWindow() async {
-    await _windowController?.hide();
+    await windowController?.hide();
   }
 
   /// 显示当前 Call 窗口。
   Future<void> showCallWindow() async {
-    await _windowController?.show();
+    await windowController?.show();
   }
 
   /// 调整当前 Call 窗口尺寸。
   Future<void> setFrame(Rect frame) async {
-    await _windowController?.setFrame(frame);
-  }
-
-  Future<void> _applyWindowStyle(WindowController controller, CallWindowType type) async {
-    final size = _windowSizeFor(type);
-
-    // 标题、无边框等样式由子窗口在启动后按自身 locale 通过 window_manager 设置。
-    await controller.setFrame(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-    );
+    await windowController?.setFrame(frame);
   }
 
   Size _windowSizeFor(CallWindowType type) {
