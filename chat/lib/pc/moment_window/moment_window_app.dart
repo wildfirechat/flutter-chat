@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient_method_channel.dart';
-import 'package:momentclient/momentclient.dart';
-import 'package:momentkit/momentkit.dart';
+import 'package:moment/client/momentclient.dart';
+import 'package:moment/moment.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../l10n/app_localizations.dart';

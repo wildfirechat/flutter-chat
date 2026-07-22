@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:momentclient/momentclient.dart';
+import 'package:moment/client/momentclient.dart';
 
 import '../moment_time.dart';
 import 'comment_widget.dart';

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
-import 'package:momentclient/momentclient.dart';
+import 'package:moment/client/momentclient.dart';
 
 import 'feed_messages_page.dart';
 import 'moment_config.dart';

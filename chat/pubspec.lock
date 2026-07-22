@@ -791,17 +791,10 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "6.0.11"
-  momentclient:
+  moment:
     dependency: "direct main"
     description:
-      path: "../momentclient"
-      relative: true
-    source: path
-    version: "0.0.1"
-  momentkit:
-    dependency: "direct main"
-    description:
-      path: "../momentkit"
+      path: "../moment"
       relative: true
     source: path
     version: "0.0.1"

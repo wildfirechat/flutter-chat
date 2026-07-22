@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:momentkit/momentkit.dart';
+import 'package:moment/moment.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/call/conference/conference_home_screen.dart';
 import 'package:chat/channel/channel_list.dart';

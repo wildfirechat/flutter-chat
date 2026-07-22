@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message_content.dart';
-import 'package:momentclient/momentclient.dart';
+import 'package:moment/client/momentclient.dart';
 
 import 'moment_media_picker.dart';
 

@@ -32,8 +32,8 @@ import 'package:window_manager/window_manager.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 
-import 'package:momentclient/momentclient.dart';
-import 'package:momentkit/momentkit.dart';
+import 'package:moment/client/momentclient.dart';
+import 'package:moment/moment.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/splash.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';

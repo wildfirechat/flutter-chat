@@ -1,7 +1,7 @@
-name: momentclient
-description: 野火朋友圈SDK
+name: moment
+description: 野火朋友圈 SDK 与 UI 组件库（client + kit 合并），支持 Android、iOS、HarmonyOS、Windows、macOS 和 Linux
 version: 0.0.1
-homepage:
+publish_to: 'none'
 
 environment:
   sdk: '>=3.0.6 <4.0.0'
@@ -15,6 +15,9 @@ dependencies:
     path: ../imclient/
 
   shared_preferences: ^2.2.0
+  cached_network_image: ^3.2.3
+  file_picker: ^8.0.7
+  video_player: ^2.9.2
 
 dev_dependencies:
   flutter_test:

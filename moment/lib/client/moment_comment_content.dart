@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/message_payload.dart';
-import 'package:momentclient/momentclient.dart';
+import 'package:moment/client/momentclient.dart';
 
 
 

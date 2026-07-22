@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/message/message.dart';
-import 'package:momentclient/moment_comment_content.dart';
-import 'package:momentclient/moment_feed_content.dart';
-import 'package:momentclient/momentclient.dart';
+import 'package:moment/client/moment_comment_content.dart';
+import 'package:moment/client/moment_feed_content.dart';
+import 'package:moment/client/momentclient.dart';
 
 import 'feed_detail_page.dart';
 import 'moment_time.dart';

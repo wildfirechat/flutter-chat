@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
-import 'package:momentclient/momentclient.dart';
+import 'package:moment/client/momentclient.dart';
 
 import 'moment_user_cache.dart';
 import 'widgets/comment_input_sheet.dart';

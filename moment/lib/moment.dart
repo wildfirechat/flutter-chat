@@ -1,7 +1,8 @@
-/// 野火朋友圈 UI 组件库。
+/// 野火朋友圈组件库（SDK + UI，原 momentclient 与 momentkit 合并）。
 ///
-/// 纯 Dart 实现，依赖 [momentclient] 作为数据层、[imclient] 提供用户信息与
-/// 媒体上传能力，因此同时支持 Android/iOS/鸿蒙/Windows/macOS/Linux。
+/// 纯 Dart 实现，数据层在 `client/` 子目录（[MomentClient]），UI 在 `src/`。
+/// 依赖 [imclient] 提供用户信息与媒体上传能力，因此同时支持
+/// Android/iOS/鸿蒙/Windows/macOS/Linux。
 ///
 /// 用法：
 /// ```dart
@@ -12,7 +13,7 @@
 /// // 打开朋友圈首页：
 /// Navigator.push(context, MaterialPageRoute(builder: (_) => const FeedListPage()));
 /// ```
-library momentkit;
+library moment;
 
 export 'src/moment_config.dart';
 export 'src/moment_media_picker.dart';

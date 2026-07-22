@@ -5,8 +5,8 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart' as mc;
 import 'package:imclient/model/conversation.dart';
-import 'package:momentclient/moment_comment_content.dart';
-import 'package:momentclient/moment_feed_content.dart';
+import 'package:moment/client/moment_comment_content.dart';
+import 'package:moment/client/moment_feed_content.dart';
 
 import '../call_window/model_codec.dart';
 import '../multi_window/ipc_codec.dart';
