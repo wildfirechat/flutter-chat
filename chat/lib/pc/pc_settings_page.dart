@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
@@ -736,7 +737,7 @@ class PcAboutSettingsDetail extends StatelessWidget {
                   const SizedBox(width: 12),
                   Text("|", style: TextStyle(color: context.colors.textTertiary)),
                   const SizedBox(width: 12),
-                  _SettingsTextLink(label: l10n.issueFeedback, url: "https://github.com/wildfirechat/issues"),
+                  _SettingsTextLink(label: l10n.issueFeedback, url: "https://bbs.wildfirechat.cn"),
                 ],
               ),
               const SizedBox(height: 8),
@@ -1035,8 +1036,13 @@ class _SettingsTextLink extends StatelessWidget {
       cursor: SystemMouseCursors.click,
       builder: (context, hovered) {
         return GestureDetector(
-          onTap: () {
-            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.openLinkUrl(url));
+          onTap: () async {
+            final uri = Uri.parse(url);
+            if (await canLaunchUrl(uri)) {
+              await launchUrl(uri, mode: LaunchMode.externalApplication);
+            } else if (context.mounted) {
+              Fluttertoast.showToast(msg: AppLocalizations.of(context)!.cannotOpenLink);
+            }
           },
           child: Text(
             label,

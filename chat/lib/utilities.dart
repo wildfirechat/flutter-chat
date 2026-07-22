@@ -60,6 +60,10 @@ class Utilities {
       if (diff.inDays == 1) {
         var day = AppLocalizations.of(context)!.yesterday;
         time = '$day $time';
+      } else if (diff.inDays < 7) {
+        // 前天及之前一周内：星期几 小时:分钟（对齐微信）
+        var weekday = DateFormat.EEEE(Localizations.localeOf(context).toString()).format(date);
+        time = '$weekday $time';
       } else if (diff.inDays < 365) {
         var dayformat = DateFormat(AppLocalizations.of(context)!.monthDayFormat);
         var day = dayformat.format(date);
