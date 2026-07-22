@@ -28,6 +28,8 @@ import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/external_target_utils.dart';
 import 'package:chat/utils/online_state_cache.dart';
 import 'package:chat/utils/show_toast.dart';
+import 'package:chat/ui_model/ui_message.dart';
+import 'package:chat/utilities.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/mesh_user_display.dart';
@@ -67,6 +69,10 @@ class _ConversationPaneState extends State<ConversationPane> {
   int _joinRequestCount = 0;
   StreamSubscription<JoinGroupRequestUpdatedEvent>? _joinGroupRequestSubscription;
 
+  /// initState 中 setConversation 后的会话代际号，dispose 时据此判断
+  /// viewModel 是否已被更新的 pane 接管（包括同会话定位消息的场景）。
+  int _myConversationSession = 0;
+
   @override
   void initState() {
     super.initState();
@@ -76,6 +82,7 @@ class _ConversationPaneState extends State<ConversationPane> {
       showToast(msg: AppLocalizations.of(context)!.joinChatroomFail);
       Navigator.of(context).maybePop();
     });
+    _myConversationSession = _conversationViewModel.conversationSession;
 
     Imclient.clearConversationUnreadStatus(widget.conversation);
     _loadJoinRequestCount();
@@ -186,8 +193,11 @@ class _ConversationPaneState extends State<ConversationPane> {
     _scrollController.dispose();
     _joinGroupRequestSubscription?.cancel();
     // 桌面端右栏切换会话时,新会话页 initState 先于旧页 dispose 执行,
-    // 此时 viewModel 已指向新会话,不能清空;仅当自己仍是当前会话时才清。
-    if (_conversationViewModel.currentConversation == widget.conversation) {
+    // 此时 viewModel 已指向新会话,不能清空;仅当自己仍是当前会话的持有者
+    // (代际号未变)时才清。同一会话内"定位消息"会以新 key 重建 pane,
+    // 会话相等但代际号已递增,靠代际号区分,避免把进行中的定位加载打断。
+    if (_conversationViewModel.currentConversation == widget.conversation &&
+        _conversationViewModel.conversationSession == _myConversationSession) {
       _conversationViewModel.setConversation(null);
     }
     if (widget.conversation.conversationType == ConversationType.Chatroom) {
@@ -729,12 +739,34 @@ class _ConversationPaneState extends State<ConversationPane> {
     );
   }
 
+  /// 消息时间分隔（对齐微信）：会话第一条（最旧）必显示；与上一条（更旧的
+  /// 一条，反序列表中是 index+1）时间间隔小于 2 分钟则不显示。
+  bool _shouldShowTimeDivider(List<UIMessage> list, int index) {
+    if (index == list.length - 1) return true;
+    final current = list[index].message.serverTime;
+    final previous = list[index + 1].message.serverTime;
+    return current - previous >= 2 * 60 * 1000;
+  }
+
+  Widget _buildTimeDivider(BuildContext context, UIMessage msg) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Center(
+        child: Text(
+          Utilities.formatMessageTime(context, msg.message.serverTime),
+          style: AppText.xs.copyWith(color: context.colors.textTertiary),
+        ),
+      ),
+    );
+  }
+
   Widget _buildMessageItem(BuildContext context, int index, ConversationViewModel conversationViewModel) {
     var conversationMessageList = conversationViewModel.conversationMessageList;
     var msg = conversationMessageList[index];
     var cell = MessageCell(msg);
+    Widget content;
     if (conversationViewModel.isMultiSelectMode) {
-      return GestureDetector(
+      content = GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: () {
           conversationViewModel.toggleMessageSelection(msg.message.messageId);
@@ -757,7 +789,16 @@ class _ConversationPaneState extends State<ConversationPane> {
         ),
       );
     } else {
-      return cell;
+      content = cell;
     }
+    if (!_shouldShowTimeDivider(conversationMessageList, index)) {
+      return content;
+    }
+    return Column(
+      children: [
+        _buildTimeDivider(context, msg),
+        content,
+      ],
+    );
   }
 }

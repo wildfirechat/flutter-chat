@@ -238,9 +238,11 @@ class _SearchWindowAppState extends State<SearchWindowApp> with WindowListener {
   }
 
   /// 点击搜索结果：转发给主窗口，由主窗口打开会话并定位消息。
+  /// 注意用当前搜索目标会话而不是 message.conversation：桌面端 SDK 返回的
+  /// 消息可能不带会话信息，经 IPC 回传后主窗口会拿到空 target 无法定位。
   void _locateMessage(Message message) {
     WindowEventChannel.invoke(0, SearchWindowEvents.locateMessage, {
-      'conversation': IpcCodec.encodeConversation(message.conversation),
+      'conversation': IpcCodec.encodeConversation(_conversation),
       'messageId': message.messageId,
     });
   }

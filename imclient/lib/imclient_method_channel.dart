@@ -2109,7 +2109,14 @@ class ImclientPlatform extends PlatformInterface {
       "limit": limit,
       "offset": offset
     });
-    return _convertProtoMessages(datas);
+    List<Message> messages = _convertProtoMessages(datas);
+    // 桌面端 SDK 返回的消息可能缺少 conversation 信息，用请求参数补全。
+    for (var msg in messages) {
+      if (msg.conversation.target.isEmpty) {
+        msg.conversation = conversation;
+      }
+    }
+    return messages;
   }
 
   ///按时间戳获取会话的消息列表

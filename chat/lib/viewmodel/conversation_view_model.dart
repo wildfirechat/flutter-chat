@@ -276,7 +276,14 @@ class ConversationViewModel extends ChangeNotifier {
     });
   }
 
+  /// 会话代际号：每次 setConversation（包括置 null）递增。
+  /// 用于异步加载过程中的"是否已被新的 setConversation 取代"判断，
+  /// 以及 ConversationPane dispose 时识别自己是不是当前会话的持有者。
+  int _session = 0;
+  int get conversationSession => _session;
+
   void setConversation(Conversation? conversation, {int? toFocusMessageId, Function(int err)? joinChatroomErrorCallback}) async {
+    _session++;
     _noMoreRemoteHistoryMsg = false;
     _conversationMessageList = [];
     focusMessageIndex = 0;
@@ -333,10 +340,19 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   void _loadMessagesAround(int messageId) async {
+    // setConversation 是异步过程，期间可能被另一次 setConversation（含旧页面
+    // dispose 置 null）打断，会话引用和代际号都要先快照，恢复执行时校验。
+    final conversation = _currentConversation;
+    if (conversation == null) return;
+    final session = _session;
+    bool stale() => session != _session || _currentConversation != conversation;
+
     var targetMsg = await Imclient.getMessage(messageId);
+    if (stale()) return;
     if (targetMsg == null) {
       _noMoreNewerMsg = true;
-      Imclient.getMessages(_currentConversation!, 0, 20).then((messages) {
+      Imclient.getMessages(conversation, 0, 20).then((messages) {
+        if (stale()) return;
         _conversationMessageList = messages
             .where((message) => message.messageId != 0)
             .map((message) => UIMessage(message))
@@ -349,8 +365,9 @@ class ConversationViewModel extends ChangeNotifier {
       return;
     }
 
-    var olderMsgs = await Imclient.getMessages(_currentConversation!, messageId, 20);
-    var newerMsgs = await Imclient.getMessages(_currentConversation!, messageId, -20);
+    var olderMsgs = await Imclient.getMessages(conversation, messageId, 20);
+    var newerMsgs = await Imclient.getMessages(conversation, messageId, -20);
+    if (stale()) return;
 
     List<UIMessage> list = [];
     list.addAll(olderMsgs.reversed
@@ -391,8 +408,18 @@ class ConversationViewModel extends ChangeNotifier {
     _isLoading = true;
     int fromIndex = _conversationMessageList.isEmpty ? 0 : _conversationMessageList.first.message.messageId;
 
-    Imclient.getMessages(_currentConversation!, fromIndex, -20).then((messages) {
+    final loadingConv = _currentConversation;
+    if (loadingConv == null) {
       _isLoading = false;
+      completer.complete();
+      return completer.future;
+    }
+    Imclient.getMessages(loadingConv, fromIndex, -20).then((messages) {
+      _isLoading = false;
+      if (loadingConv != _currentConversation) {
+        completer.complete();
+        return;
+      }
       if (messages.isEmpty) {
         _noMoreNewerMsg = true;
         notifyListeners();
@@ -495,7 +522,12 @@ class ConversationViewModel extends ChangeNotifier {
     _isLoading = true;
     int? fromIndex = 0;
 
-    var loadingConv = _currentConversation!;
+    var loadingConv = _currentConversation;
+    if (loadingConv == null) {
+      _isLoading = false;
+      completer.complete();
+      return completer.future;
+    }
     if (_noMoreLocalHistoryMsg) {
       if (_noMoreRemoteHistoryMsg) {
         _isLoading = false;
