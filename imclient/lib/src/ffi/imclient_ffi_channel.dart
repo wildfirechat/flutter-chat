@@ -1032,6 +1032,53 @@ class ImclientFfiChannel implements ImclientChannel {
               wu.len,
               lp)));
         });
+      case 'getMessagesByTimestamp':
+        {
+          final c = _conv(args);
+          final contentTypes = _intList(args, 'contentTypes');
+          final timestamp = _int(args, 'timestamp');
+          final count = _int(args, 'count');
+          final withUser = _str(args, 'withUser');
+          // 参考 iOS：count > 0 表示向前（旧消息）。
+          final direction = count > 0;
+          return _awaitMessages((pObj) => using((a) {
+                final target = _ns(a, c.target);
+                final wu = _ns(a, withUser);
+                _wf.getMessagesByTimestampV2(
+                    c.type,
+                    target.ptr,
+                    target.len,
+                    c.line,
+                    _i32Array(a, contentTypes),
+                    contentTypes.length,
+                    timestamp,
+                    direction,
+                    count.abs(),
+                    wu.ptr,
+                    wu.len,
+                    _cbString,
+                    _cbError,
+                    pObj,
+                    0);
+              }));
+        }
+      case 'getMessageCountByDay':
+        return using((a) {
+          final c = _conv(args);
+          final target = _ns(a, c.target);
+          final contentTypes = _intList(args, 'contentTypes');
+          final v = _json(_outString((lp) => _wf.getMessageCountByDay(
+              c.type,
+              target.ptr,
+              target.len,
+              c.line,
+              _i32Array(a, contentTypes),
+              contentTypes.length,
+              _int(args, 'startTime'),
+              _int(args, 'endTime'),
+              lp)));
+          return v is Map ? v : <String, dynamic>{};
+        });
 
       // ---- 消息发送/操作 ----
       case 'sendMessage':

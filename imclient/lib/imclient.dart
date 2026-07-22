@@ -837,6 +837,22 @@ class Imclient {
     return ImclientPlatform.instance.searchConversationsMessages(types, lines, keyword, fromIndex, count, contentTypes: contentTypes);
   }
 
+  ///按时间戳获取会话的消息列表
+  /// timestamp 为毫秒时间戳；count > 0 表示获取该时间及之前更旧的消息，<0 表示更新的
+  static Future<List<Message>> getMessagesByTimestamp(
+      Conversation conversation, int timestamp, int count,
+      {List<int>? contentTypes, String? withUser}) async {
+    return ImclientPlatform.instance.getMessagesByTimestamp(conversation, timestamp, count, contentTypes: contentTypes, withUser: withUser);
+  }
+
+  ///获取会话按天统计的消息数，用于日历查找。startTime/endTime 为秒级时间戳
+  ///返回 {"2026-07-04": 3, ...}，只包含有消息的日期
+  static Future<Map<String, int>> getMessageCountByDay(
+      Conversation conversation, int startTime, int endTime,
+      {List<int>? contentTypes}) async {
+    return ImclientPlatform.instance.getMessageCountByDay(conversation, startTime, endTime, contentTypes: contentTypes);
+  }
+
   ///发送消息
   static Future<Message> sendMessage(
       Conversation conversation, MessageContent content,

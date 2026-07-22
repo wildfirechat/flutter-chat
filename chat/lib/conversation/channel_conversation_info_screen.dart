@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ import 'package:chat/widget/option_switch_item.dart';
 import 'package:chat/widget/section_divider.dart';
 
 import '../pc/pc_platform.dart';
+import '../pc/search_window/search_window_manager.dart';
 import '../search/search_conversation_result_view.dart';
 import '../utils/media_url_redirector.dart';
 import 'conversation_files_screen.dart';
@@ -85,13 +87,21 @@ class ChannelConversationInfoScreen extends StatelessWidget {
         child: Column(
           children: [
             OptionItem(l10n.searchChatContents, onTap: () {
-              pushPage(
-                context,
-                SearchConversationResultView(
+              // 原生桌面端在独立的"聊天记录"窗口中搜索(类 PC 微信),其它平台保持页内跳转
+              if (WfcPlatform.isNativeDesktop) {
+                SearchWindowManager.instance.show(
                   conversation: conversation,
-                  keyword: '',
-                ),
-              );
+                  conversationTitle: channelInfo?.name ?? conversation.target,
+                );
+              } else {
+                pushPage(
+                  context,
+                  SearchConversationResultView(
+                    conversation: conversation,
+                    keyword: '',
+                  ),
+                );
+              }
             }),
             OptionItem(l10n.chatFiles, showBottomDivider: false, onTap: () {
               pushPage(context, ConversationFilesScreen(conversation));

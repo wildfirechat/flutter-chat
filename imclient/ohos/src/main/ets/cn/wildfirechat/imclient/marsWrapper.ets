@@ -167,8 +167,14 @@ function createGroup(groupId: string, groupType: number, name: string, portrait:
 function deleteFileRecord(messageUid: string, successCB: SuccessCallback, failCB: FailCallback): void {
     clientModule.deleteFileRecord(messageUid, voidCallback(successCB), numberCallback(failCB));
 }
-function getMessagesV2(conversation: string, fromIndex: number, before: boolean, count: number, withUser: string, successCB: StringCallback, failCB: FailCallback): void {
-    clientModule.getMessagesV2(conversation, [], fromIndex, before, count, withUser, stringCallback(successCB), numberCallback(failCB));
+function getMessagesV2(conversation: string, contentTypes: number[], fromIndex: number, before: boolean, count: number, withUser: string, successCB: StringCallback, failCB: FailCallback): void {
+    clientModule.getMessagesV2(conversation, contentTypes, fromIndex, before, count, withUser, stringCallback(successCB), numberCallback(failCB));
+}
+function getMessagesByTimestampV2(conversation: string, contentTypes: number[], timestamp: number, before: boolean, count: number, withUser: string, successCB: StringCallback, failCB: FailCallback): void {
+    clientModule.getMessagesByTimestampV2(conversation, contentTypes, timestamp, before, count, withUser, stringCallback(successCB), numberCallback(failCB));
+}
+function getMessageCountByDay(conversation: string, contentTypes: number[], startTime: number, endTime: number): string {
+    return clientModule.getMessageCountByDay(conversation, contentTypes, startTime, endTime);
 }
 function getConversationRead(conversation: string): string {
     return clientModule.getConversationRead(conversation);
@@ -640,6 +646,8 @@ export { createChannel as createChannel };
 export { createGroup as createGroup };
 export { deleteFileRecord as deleteFileRecord };
 export { getMessagesV2 as getMessagesV2 };
+export { getMessagesByTimestampV2 as getMessagesByTimestampV2 };
+export { getMessageCountByDay as getMessageCountByDay };
 export { getConversationRead as getConversationRead };
 export { deleteFriend as deleteFriend };
 export { deleteMessage as deleteMessage };

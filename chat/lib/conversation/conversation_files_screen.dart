@@ -20,3 +20,18 @@ class ConversationFilesScreen extends StatelessWidget {
     );
   }
 }
+
+/// 会话文件列表内容（无 Scaffold/AppBar），供搜索面板等场景内嵌。
+class ConversationFilesView extends StatelessWidget {
+  final Conversation conversation;
+
+  const ConversationFilesView(this.conversation, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return FileListWidget(
+      type: FileListType.conversation,
+      conversation: conversation,
+    );
+  }
+}

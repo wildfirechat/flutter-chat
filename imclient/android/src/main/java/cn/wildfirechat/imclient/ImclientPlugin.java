@@ -697,6 +697,36 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         });
     }
 
+    private void getMessagesByTimestamp(@NonNull MethodCall call, @NonNull Result result) {
+        Conversation conversation = conversationFromArgument(call, false);
+        List<Integer> contentTypes = call.argument("contentTypes");
+        String withUser = call.argument("withUser");
+        long timestamp = getLongPara(call, "timestamp");
+        int count = call.argument("count");
+        List<Message> messageList = new ArrayList<>();
+        ChatManager.Instance().getMessagesByTimestamp(conversation, contentTypes, timestamp, count > 0, count > 0 ? count : -count, withUser, new GetMessageCallback() {
+            @Override
+            public void onSuccess(List<Message> list, boolean b) {
+                messageList.addAll(list);
+                result.success(convertMessageList(messageList, true));
+            }
+
+            @Override
+            public void onFail(int i) {
+                result.success(new ArrayList());
+            }
+        });
+    }
+
+    private void getMessageCountByDay(@NonNull MethodCall call, @NonNull Result result) {
+        Conversation conversation = conversationFromArgument(call, false);
+        List<Integer> contentTypes = call.argument("contentTypes");
+        long startTime = getLongPara(call, "startTime");
+        long endTime = getLongPara(call, "endTime");
+        Map<String, Integer> counts = ChatManager.Instance().getMessageCountByDay(conversation, contentTypes, startTime, endTime);
+        result.success(counts != null ? counts : new HashMap<String, Integer>());
+    }
+
     private MessageContent messageContentFromMaps(Map map) {
         MessagePayload protoData = new MessagePayload();
         if (map == null || map.isEmpty() || !map.containsKey("type")) {

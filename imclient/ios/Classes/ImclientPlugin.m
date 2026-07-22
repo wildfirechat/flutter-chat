@@ -448,6 +448,30 @@ ImclientPlugin *gIMClientInstance;
     result([self convertModelList:messages]);
 }
 
+- (void)getMessagesByTimestamp:(NSDictionary *)dict result:(FlutterResult)result {
+    NSDictionary *convDict = dict[@"conversation"];
+    NSArray<NSNumber *> *contentTypes = dict[@"contentTypes"];
+    unsigned long long timestamp = [dict[@"timestamp"] unsignedLongLongValue];
+    int count = [dict[@"count"] intValue];
+    NSString *withUser = dict[@"withUser"];
+
+    [[WFCCIMService sharedWFCIMService] getMessagesV2:[self conversationFromDict:convDict] contentTypes:contentTypes fromTime:timestamp count:count withUser:withUser success:^(NSArray<WFCCMessage *> *messages) {
+        result([self convertModelList:messages]);
+    } error:^(int error_code) {
+        result(@[]);
+    }];
+}
+
+- (void)getMessageCountByDay:(NSDictionary *)dict result:(FlutterResult)result {
+    NSDictionary *convDict = dict[@"conversation"];
+    NSArray<NSNumber *> *contentTypes = dict[@"contentTypes"];
+    int64_t startTime = [dict[@"startTime"] longLongValue];
+    int64_t endTime = [dict[@"endTime"] longLongValue];
+
+    NSDictionary<NSString *, NSNumber *> *counts = [[WFCCIMService sharedWFCIMService] getMessageCountByDay:[self conversationFromDict:convDict] contentTypes:contentTypes startTime:startTime endTime:endTime];
+    result(counts ?: @{});
+}
+
 - (void)sendMessage:(NSDictionary *)dict result:(FlutterResult)result {
     int requestId = [dict[@"requestId"] intValue];
     NSDictionary *convDict = dict[@"conversation"];

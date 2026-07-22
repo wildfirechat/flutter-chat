@@ -77,6 +77,8 @@ import {
     createGroup,
     deleteFileRecord,
     getMessagesV2,
+    getMessagesByTimestampV2,
+    getMessageCountByDay,
     getConversationRead,
     deleteFriend,
     deleteMessage,
@@ -493,19 +495,37 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     _getMessages = (call: MethodCall, result: MethodResult) => {
         let conv = this.__conversationFromArgument(call)
 
-        // TODO
-        // FIXME
-        // contentTypes
         let contentTypes = call.argument('contentTypes') as number[]
         let withUser = call.argument('withUser') as string
         let fromIndex = call.argument('fromIndex') as number
         let count = call.argument('count') as number
-        getMessagesV2(conv, fromIndex, count > 0, count > 0 ? count : -count, withUser, (msgsStr: string) => {
+        getMessagesV2(conv, contentTypes ? contentTypes : [], fromIndex, count > 0, count > 0 ? count : -count, withUser, (msgsStr: string) => {
             let msgs = json.parse(msgsStr) as Record<string, object>[]
             result.success(msgs.reverse())
         }, err => {
             result.success([])
         })
+    }
+    _getMessagesByTimestamp = (call: MethodCall, result: MethodResult) => {
+        let conv = this.__conversationFromArgument(call)
+        let contentTypes = call.argument('contentTypes') as number[]
+        let withUser = call.argument('withUser') as string
+        let timestamp = Number(this.__getLongPara(call, 'timestamp'))
+        let count = call.argument('count') as number
+        getMessagesByTimestampV2(conv, contentTypes ? contentTypes : [], timestamp, count > 0, count > 0 ? count : -count, withUser, (msgsStr: string) => {
+            let msgs = json.parse(msgsStr) as Record<string, object>[]
+            result.success(msgs.reverse())
+        }, err => {
+            result.success([])
+        })
+    }
+    _getMessageCountByDay = (call: MethodCall, result: MethodResult) => {
+        let conv = this.__conversationFromArgument(call)
+        let contentTypes = call.argument('contentTypes') as number[]
+        let startTime = Number(this.__getLongPara(call, 'startTime'))
+        let endTime = Number(this.__getLongPara(call, 'endTime'))
+        let str = getMessageCountByDay(conv, contentTypes ? contentTypes : [], startTime, endTime)
+        result.success(str ? json.parse(str) : {})
     }
     _getConversationInfo = (call: MethodCall, result: MethodResult) => {
         let conv = this.__conversationFromArgument(call, true)
@@ -1833,6 +1853,8 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         "getMyFriendList": this._getMyFriendList,
         "getUnreadFriendRequestStatus": this._getUnreadFriendRequestStatus,
         "getMessages": this._getMessages,
+        "getMessagesByTimestamp": this._getMessagesByTimestamp,
+        "getMessageCountByDay": this._getMessageCountByDay,
         "getConversationInfo": this._getConversationInfo,
         "getIncommingFriendRequest": this._getIncommingFriendRequest,
         "sendMessage": this._sendMessage,

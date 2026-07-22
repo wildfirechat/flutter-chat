@@ -698,6 +698,42 @@ abstract class AppLocalizations {
   /// **'会话文件'**
   String get chatFiles;
 
+  /// No description provided for @searchByDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'日期'**
+  String get searchByDate;
+
+  /// No description provided for @searchMedia.
+  ///
+  /// In zh, this message translates to:
+  /// **'图片与视频'**
+  String get searchMedia;
+
+  /// No description provided for @searchHistoryTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索历史'**
+  String get searchHistoryTitle;
+
+  /// No description provided for @clearAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'清空'**
+  String get clearAll;
+
+  /// No description provided for @tabAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部'**
+  String get tabAll;
+
+  /// No description provided for @chatRecords.
+  ///
+  /// In zh, this message translates to:
+  /// **'聊天记录'**
+  String get chatRecords;
+
   /// No description provided for @muteNotification.
   ///
   /// In zh, this message translates to:

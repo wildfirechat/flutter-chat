@@ -15,17 +15,34 @@ import 'package:chat/theme/app_typography.dart';
 /// 会话链接记录列表页
 ///
 /// 展示指定会话中的所有链接消息,点击进入链接。
-class ConversationLinksScreen extends StatefulWidget {
+class ConversationLinksScreen extends StatelessWidget {
   final Conversation conversation;
 
   const ConversationLinksScreen(this.conversation, {super.key});
 
   @override
-  State<ConversationLinksScreen> createState() => _ConversationLinksScreenState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context)!.chatLinks),
+      ),
+      body: ConversationLinksView(conversation),
+    );
+  }
 }
 
-class _ConversationLinksScreenState extends State<ConversationLinksScreen> {
-  List<Message> _links = [];
+/// 链接记录列表内容（无 Scaffold/AppBar），供搜索面板等场景内嵌。
+class ConversationLinksView extends StatefulWidget {
+  final Conversation conversation;
+
+  const ConversationLinksView(this.conversation, {super.key});
+
+  @override
+  State<ConversationLinksView> createState() => _ConversationLinksViewState();
+}
+
+class _ConversationLinksViewState extends State<ConversationLinksView> {
+  final List<Message> _links = [];
   bool _isLoading = false;
   bool _hasMore = true;
   int _fromMessageId = 0;
@@ -92,75 +109,78 @@ class _ConversationLinksScreenState extends State<ConversationLinksScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.chatLinks),
-      ),
-      body: RefreshIndicator(
-        onRefresh: _refresh,
-        child: _links.isEmpty && !_isLoading
-            ? Center(child: Text(l10n.noLinks))
-            : NotificationListener<ScrollNotification>(
-                onNotification: (ScrollNotification scrollInfo) {
-                  if (!_isLoading &&
-                      _hasMore &&
-                      scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
-                    _loadLinks();
-                  }
-                  return false;
-                },
-                child: ChangeNotifierProvider(
-                  create: (_) => UserViewModel(),
-                  child: Consumer<UserViewModel>(
-                    builder: (context, userViewModel, child) {
-                      return ListView.separated(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: _links.length + (_hasMore ? 1 : 0),
-                        separatorBuilder: (context, index) => const Divider(),
-                        itemBuilder: (context, index) {
-                          if (index == _links.length) {
-                            return const Center(child: CircularProgressIndicator());
-                          }
-                          final message = _links[index];
-                          final content = message.content as LinkMessageContent;
-                          final sender = _senderName(userViewModel, message);
-                          return ListTile(
-                            leading: content.thumbnailUrl != null && content.thumbnailUrl!.isNotEmpty
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: Image.network(
-                                      MediaUrlRedirector.redirect(content.thumbnailUrl!),
-                                      width: 48,
-                                      height: 48,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) => _defaultLinkIcon(),
-                                    ),
-                                  )
-                                : _defaultLinkIcon(),
-                            title: Text(
-                              content.title.isNotEmpty ? content.title : content.url,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            subtitle: Text(
-                              [
-                                if (sender.isNotEmpty) sender,
-                                if (content.contentDigest.isNotEmpty) content.contentDigest,
-                                Utilities.formatTime(context, message.serverTime),
-                              ].join('  '),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppText.xs,
-                            ),
-                            onTap: () => Utilities.openLink(context, content.url),
-                          );
-                        },
-                      );
-                    },
-                  ),
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: _links.isEmpty && !_isLoading
+          ? Center(child: Text(l10n.noLinks))
+          : NotificationListener<ScrollNotification>(
+              onNotification: (ScrollNotification scrollInfo) {
+                if (!_isLoading &&
+                    _hasMore &&
+                    scrollInfo.metrics.pixels ==
+                        scrollInfo.metrics.maxScrollExtent) {
+                  _loadLinks();
+                }
+                return false;
+              },
+              child: ChangeNotifierProvider(
+                create: (_) => UserViewModel(),
+                child: Consumer<UserViewModel>(
+                  builder: (context, userViewModel, child) {
+                    return ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: _links.length + (_hasMore ? 1 : 0),
+                      separatorBuilder: (context, index) => const Divider(),
+                      itemBuilder: (context, index) {
+                        if (index == _links.length) {
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                        final message = _links[index];
+                        final content = message.content as LinkMessageContent;
+                        final sender = _senderName(userViewModel, message);
+                        return ListTile(
+                          leading: content.thumbnailUrl != null &&
+                                  content.thumbnailUrl!.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: Image.network(
+                                    MediaUrlRedirector.redirect(
+                                        content.thumbnailUrl!),
+                                    width: 48,
+                                    height: 48,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        _defaultLinkIcon(),
+                                  ),
+                                )
+                              : _defaultLinkIcon(),
+                          title: Text(
+                            content.title.isNotEmpty
+                                ? content.title
+                                : content.url,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            [
+                              if (sender.isNotEmpty) sender,
+                              if (content.contentDigest.isNotEmpty)
+                                content.contentDigest,
+                              Utilities.formatTime(context, message.serverTime),
+                            ].join('  '),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.xs,
+                          ),
+                          onTap: () => Utilities.openLink(context, content.url),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
-      ),
+            ),
     );
   }
 

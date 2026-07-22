@@ -322,6 +322,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatFiles => 'Chat Files';
 
   @override
+  String get searchByDate => 'Date';
+
+  @override
+  String get searchMedia => 'Photos & Videos';
+
+  @override
+  String get searchHistoryTitle => 'Search History';
+
+  @override
+  String get clearAll => 'Clear';
+
+  @override
+  String get tabAll => 'All';
+
+  @override
+  String get chatRecords => 'Chat History';
+
+  @override
   String get muteNotification => 'Mute Notifications';
 
   @override

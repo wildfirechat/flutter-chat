@@ -77,6 +77,9 @@ import 'package:chat/pc/moment_window/main_moment_proxy.dart';
 import 'package:chat/pc/moment_window/moment_ipc.dart';
 import 'package:chat/pc/moment_window/moment_window_app.dart';
 import 'package:chat/pc/multi_window/sub_window_binding.dart';
+import 'package:chat/pc/search_window/main_search_proxy.dart';
+import 'package:chat/pc/search_window/search_window_app.dart';
+import 'package:chat/pc/search_window/search_window_ipc.dart';
 
 void main([List<String>? args]) async {
   final effectiveArgs = args ?? <String>[];
@@ -91,6 +94,8 @@ void main([List<String>? args]) async {
       runApp(MediaPreviewWindowApp(windowId: windowId, arguments: arguments));
     } else if (arguments[kWindowKindKey] == kMomentWindowKind) {
       runApp(MomentWindowApp(windowId: windowId, arguments: arguments));
+    } else if (arguments[kWindowKindKey] == kSearchWindowKind) {
+      runApp(SearchWindowApp(windowId: windowId, arguments: arguments));
     } else {
       runApp(CallWindowApp(windowId: windowId, arguments: arguments));
     }
@@ -440,6 +445,9 @@ class _MyAppState extends State<MyApp> {
     });
     if (isDesktopShell) {
       MainMomentProxy.instance.install();
+      // 会话内搜索子窗口代理（与朋友圈窗口同构：子窗口不连接 IM，
+      // 经主窗口代执行 IM 调用；定位消息由主窗口打开会话完成）。
+      MainSearchProxy.instance.install();
     }
   }
 

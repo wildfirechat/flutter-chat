@@ -317,6 +317,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chatFiles => '会话文件';
 
   @override
+  String get searchByDate => '日期';
+
+  @override
+  String get searchMedia => '图片与视频';
+
+  @override
+  String get searchHistoryTitle => '搜索历史';
+
+  @override
+  String get clearAll => '清空';
+
+  @override
+  String get tabAll => '全部';
+
+  @override
+  String get chatRecords => '聊天记录';
+
+  @override
   String get muteNotification => '消息免打扰';
 
   @override

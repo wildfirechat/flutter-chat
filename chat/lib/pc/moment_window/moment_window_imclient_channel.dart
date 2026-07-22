@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:imclient/imclient_method_channel.dart';
-import 'package:imclient/src/imclient_channel.dart';
 
 import '../multi_window/window_event_channel.dart';
 import 'moment_ipc.dart';

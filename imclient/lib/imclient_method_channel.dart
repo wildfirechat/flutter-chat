@@ -36,6 +36,10 @@ import 'model/user_info.dart';
 import 'src/ffi/imclient_ffi_channel.dart';
 import 'src/imclient_channel.dart';
 
+// 平台通道抽象对包外公开：PC 端多窗口的代理通道（朋友圈/通话/搜索子窗口）
+// 需要实现该接口替换 ImclientPlatform.instance.channel。
+export 'src/imclient_channel.dart' show ImclientChannel;
+
 /// An implementation of [ImclientPlatform] that uses method channels.
 class ImclientPlatform extends PlatformInterface {
   /// Constructs a ImclientPlatform.
@@ -918,6 +922,30 @@ class ImclientPlatform extends PlatformInterface {
       var callback = _operationSuccessCallbackMap[requestId];
       if (callback != null) {
         callback(result);
+      }
+    } else {
+      var callback = _errorCallbackMap[requestId];
+      if (callback != null) {
+        callback(errorCode);
+      }
+    }
+    _removeOperationCallback(requestId);
+  }
+
+  /// 供 PC 端子窗口代理通道使用:主窗口代执行回调式接口(文件记录列表、
+  /// 删除文件记录等)后,按 onFilesResult / onOperationVoidSuccess /
+  /// onOperationFailure 的既有语义触发回调并清理关联状态。
+  /// [files] 为 proto map 列表(getConversationFiles/searchFiles 的结果),
+  /// 为空表示无参成功回调(deleteFileRecord 等)。
+  static void dispatchOperationResult(int requestId, int errorCode, {List<dynamic>? files}) {
+    if (errorCode == 0) {
+      var callback = _operationSuccessCallbackMap[requestId];
+      if (callback != null) {
+        if (files != null) {
+          callback(_convertProtoFileRecords(files));
+        } else {
+          callback();
+        }
       }
     } else {
       var callback = _errorCallbackMap[requestId];
@@ -2082,6 +2110,59 @@ class ImclientPlatform extends PlatformInterface {
       "offset": offset
     });
     return _convertProtoMessages(datas);
+  }
+
+  ///按时间戳获取会话的消息列表
+  /// timestamp 为毫秒时间戳；count > 0 表示获取该时间及之前更旧的消息，<0 表示更新的
+  Future<List<Message>> getMessagesByTimestamp(
+      Conversation conversation, int timestamp, int count,
+      {List<int>? contentTypes, String? withUser}) async {
+    Map<String, dynamic> args = {
+      "conversation": _convertConversation(conversation),
+      "timestamp": timestamp,
+      "count": count
+    };
+    if (contentTypes != null) {
+      args["contentTypes"] = contentTypes;
+    }
+    if (withUser != null) {
+      args["withUser"] = withUser;
+    }
+
+    List<dynamic> datas =
+        await _channel.invokeMethod("getMessagesByTimestamp", args);
+    List<Message> messages = _convertProtoMessages(datas);
+    // 桌面端 SDK 返回的消息可能缺少 conversation 信息，用请求参数补全。
+    for (var msg in messages) {
+      if (msg.conversation.target.isEmpty) {
+        msg.conversation = conversation;
+      }
+    }
+    return messages;
+  }
+
+  ///获取会话按天统计的消息数。startTime/endTime 为秒级时间戳
+  Future<Map<String, int>> getMessageCountByDay(
+      Conversation conversation, int startTime, int endTime,
+      {List<int>? contentTypes}) async {
+    Map<String, dynamic> args = {
+      "conversation": _convertConversation(conversation),
+      "startTime": startTime,
+      "endTime": endTime
+    };
+    if (contentTypes != null) {
+      args["contentTypes"] = contentTypes;
+    }
+
+    Map<dynamic, dynamic>? datas =
+        await _channel.invokeMethod("getMessageCountByDay", args);
+    Map<String, int> result = {};
+    datas?.forEach((key, value) {
+      if (key is String && value is int) {
+        result[key] = value;
+      }
+    });
+    return result;
   }
 
   ///搜索某些类会话内消息

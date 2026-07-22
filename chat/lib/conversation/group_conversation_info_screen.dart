@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/group_member.dart';
@@ -21,6 +22,7 @@ import 'package:chat/widget/section_divider.dart';
 import '../contact/pick_user_screen.dart';
 import '../pc/pc_platform.dart';
 import '../pc/pc_user_card.dart';
+import '../pc/search_window/search_window_manager.dart';
 import '../search/search_conversation_result_view.dart';
 import '../user_info_widget.dart';
 import 'conversation_files_screen.dart';
@@ -158,13 +160,24 @@ class GroupConversationInfoScreen extends StatelessWidget {
         child: Column(
           children: [
             OptionItem(l10n.searchChatContents, onTap: () {
-              pushPage(
-                context,
-                SearchConversationResultView(
+              // 原生桌面端在独立的"聊天记录"窗口中搜索(类 PC 微信),其它平台保持页内跳转
+              if (WfcPlatform.isNativeDesktop) {
+                final groupName = groupInfo.name ?? '';
+                SearchWindowManager.instance.show(
                   conversation: conversation,
-                  keyword: '',
-                ),
-              );
+                  conversationTitle: groupName.isNotEmpty
+                      ? groupName
+                      : conversation.target,
+                );
+              } else {
+                pushPage(
+                  context,
+                  SearchConversationResultView(
+                    conversation: conversation,
+                    keyword: '',
+                  ),
+                );
+              }
             }),
             OptionItem(l10n.chatFiles, onTap: () {
               pushPage(context, ConversationFilesScreen(conversation));
