@@ -1079,6 +1079,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get videoCallAction => '视频通话';
 
   @override
+  String get callStatusDuration => '通话时长';
+
+  @override
+  String get callStatusCanceled => '已取消';
+
+  @override
+  String get callStatusRejected => '已拒绝';
+
+  @override
+  String get callStatusRejectedByOther => '对方已拒绝';
+
+  @override
+  String get callStatusCanceledByOther => '对方已取消';
+
+  @override
+  String get callStatusNoAnswer => '未接通';
+
+  @override
   String get pickGroupMember => '选择群成员';
 
   @override

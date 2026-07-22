@@ -1092,6 +1092,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get videoCallAction => 'Video Call';
 
   @override
+  String get callStatusDuration => 'Duration';
+
+  @override
+  String get callStatusCanceled => 'Canceled';
+
+  @override
+  String get callStatusRejected => 'Declined';
+
+  @override
+  String get callStatusRejectedByOther => 'Declined';
+
+  @override
+  String get callStatusCanceledByOther => 'Canceled';
+
+  @override
+  String get callStatusNoAnswer => 'No Answer';
+
+  @override
   String get pickGroupMember => 'Select Group Member';
 
   @override

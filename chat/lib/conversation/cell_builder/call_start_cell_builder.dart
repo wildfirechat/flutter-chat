@@ -3,11 +3,12 @@ import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
 import 'package:chat/call/av_call_launcher.dart';
-import 'package:chat/utilities.dart';
 
 import '../../ui_model/ui_message.dart';
-import 'package:chat/theme/app_typography.dart';
+import 'call_start_display.dart';
 
+/// 通话消息 Cell：状态文字 + 通话类型图标（对齐微信的「已取消 📹 /
+/// 通话时长 00:06 📞」样式），点击按原类型重拨。展示逻辑见 call_start_display.dart。
 class CallStartCellBuilder extends PortraitCellBuilder {
   late CallStartMessageContent callStartMessageContent;
 
@@ -17,46 +18,19 @@ class CallStartCellBuilder extends PortraitCellBuilder {
 
   @override
   Widget buildMessageContent(BuildContext context) {
-    String ext = "";
-    if (callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonHangup.index ||
-        callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonRemoteHangup.index ||
-        callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonAllLeft.index) {
-      if (callStartMessageContent.endTime != null &&
-          callStartMessageContent.endTime! > 0 &&
-          callStartMessageContent.connectTime != null &&
-          callStartMessageContent.connectTime! > 0) {
-        int duration = callStartMessageContent.endTime! - callStartMessageContent.connectTime!;
-        if (duration > 0) {
-          ext = Utilities.formatCallTime(duration ~/ 1000);
-        }
-      } else if (callStartMessageContent.connectTime == null) {
-        if (callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonHangup.index) {
-          if (model.message.direction == MessageDirection.MessageDirection_Send) {
-            ext = "已取消";
-          } else {
-            ext = "已拒绝";
-          }
-        } else if (callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonRemoteHangup.index ||
-            callStartMessageContent.status == CallStartEndStatus.kWFAVCallEndReasonAllLeft.index) {
-          if (model.message.direction == MessageDirection.MessageDirection_Send) {
-            ext = "对方已拒绝";
-          } else {
-            ext = "对方已取消";
-          }
-        }
-      }
-    } else if (callStartMessageContent.status != CallStartEndStatus.kWFAVCallEndReasonUnknown.index) {
-      ext = "未接通";
-    }
-
-    return GestureDetector(
-      onTap: () => startAvCall(context, model.message.conversation, audioOnly: callStartMessageContent.audioOnly),
-      child: Text(
-        callStartMessageContent.audioOnly ? '[语音通话] $ext' : '[视频通话] $ext',
-        overflow: TextOverflow.ellipsis,
-        maxLines: 10,
-        style: AppText.lg,
+    final content = callStartMessageContent;
+    return callStartMessageTile(
+      context,
+      text: callStartStatusText(
+        context,
+        status: content.status,
+        connectTime: content.connectTime,
+        endTime: content.endTime,
+        isSend: model.message.direction == MessageDirection.MessageDirection_Send,
+        audioOnly: content.audioOnly,
       ),
+      audioOnly: content.audioOnly,
+      onTap: () => startAvCall(context, model.message.conversation, audioOnly: content.audioOnly),
     );
   }
 }

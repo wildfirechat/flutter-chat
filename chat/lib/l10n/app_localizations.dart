@@ -2126,6 +2126,42 @@ abstract class AppLocalizations {
   /// **'视频通话'**
   String get videoCallAction;
 
+  /// No description provided for @callStatusDuration.
+  ///
+  /// In zh, this message translates to:
+  /// **'通话时长'**
+  String get callStatusDuration;
+
+  /// No description provided for @callStatusCanceled.
+  ///
+  /// In zh, this message translates to:
+  /// **'已取消'**
+  String get callStatusCanceled;
+
+  /// No description provided for @callStatusRejected.
+  ///
+  /// In zh, this message translates to:
+  /// **'已拒绝'**
+  String get callStatusRejected;
+
+  /// No description provided for @callStatusRejectedByOther.
+  ///
+  /// In zh, this message translates to:
+  /// **'对方已拒绝'**
+  String get callStatusRejectedByOther;
+
+  /// No description provided for @callStatusCanceledByOther.
+  ///
+  /// In zh, this message translates to:
+  /// **'对方已取消'**
+  String get callStatusCanceledByOther;
+
+  /// No description provided for @callStatusNoAnswer.
+  ///
+  /// In zh, this message translates to:
+  /// **'未接通'**
+  String get callStatusNoAnswer;
+
   /// No description provided for @pickGroupMember.
   ///
   /// In zh, this message translates to:
