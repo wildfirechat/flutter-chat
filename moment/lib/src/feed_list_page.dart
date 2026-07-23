@@ -364,22 +364,29 @@ class _FeedListPageState extends State<FeedListPage> {
                 }
                 return false;
               },
-              // 内容居中显示，最大宽度 640（对齐微信 PC 的居中栏）
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 640),
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: (_isHome ? 1 : 0) + _feeds.length + 1,
-                    itemBuilder: (context, index) {
-                      if (_isHome) {
-                        if (index == 0) return _buildHeader();
-                        index -= 1;
-                      }
-                      if (index == _feeds.length) return _buildFooter();
-                      final feed = _feeds[index];
-                      return FeedItemWidget(
+              // 背景封面顶到窗口全宽；只有下面的动态内容限宽 640 居中
+              child: ListView.builder(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: (_isHome ? 1 : 0) + _feeds.length + 1,
+                itemBuilder: (context, index) {
+                  if (_isHome) {
+                    if (index == 0) return _buildHeader();
+                    index -= 1;
+                  }
+                  if (index == _feeds.length) {
+                    return Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 640),
+                        child: _buildFooter(),
+                      ),
+                    );
+                  }
+                  final feed = _feeds[index];
+                  return Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 640),
+                      child: FeedItemWidget(
                         key: ValueKey(feed.feedId),
                         feed: feed,
                         selfUserId: _selfUserId,
@@ -389,10 +396,10 @@ class _FeedListPageState extends State<FeedListPage> {
                         onComment: _onComment,
                         onDeleteComment: _onDeleteComment,
                         onDeleteFeed: _onDeleteFeed,
-                      );
-                    },
-                  ),
-                ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ),
@@ -496,32 +503,43 @@ class _FeedListPageState extends State<FeedListPage> {
                         ),
                       ),
               ),
+              // 名字/头像对齐居中内容(640)的右边界，封面本身保持全宽
               Positioned(
-                right: 12,
+                left: 0,
+                right: 0,
                 bottom: -22,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 18, right: 8),
-                      child: Text(
-                        MomentUserCache.instance.displayNameOf(_selfUserId),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
-                          shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
-                        ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 640),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 18, right: 8),
+                            child: Text(
+                              MomentUserCache.instance.displayNameOf(_selfUserId),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
+                              ),
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.white, width: 2),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: MomentAvatar(_selfUserId, size: 64, borderRadius: 4),
+                          ),
+                        ],
                       ),
                     ),
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white, width: 2),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: MomentAvatar(_selfUserId, size: 64, borderRadius: 4),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
