@@ -2370,6 +2370,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get startupAndWindow => '启动与窗口';
 
   @override
+  String get launchAtLoginTitle => '开机自启动';
+
+  @override
+  String get launchAtLoginDesc => '登录后自动启动应用';
+
+  @override
+  String get setFailed => '设置失败';
+
+  @override
   String get closeToExitTitle => '点击窗口关闭按钮时退出应用程序';
 
   @override

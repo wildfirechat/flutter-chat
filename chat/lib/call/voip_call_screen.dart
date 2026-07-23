@@ -13,6 +13,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
+import 'package:chat/call/call_overlay_manager.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/utils/media_url_redirector.dart';
@@ -60,6 +61,10 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     _session.setCallback(this);
     _isMicMuted = _session.isAudioMuted;
     _isCameraOff = _session.isVideoMuted;
+    // 从最小化悬浮窗恢复时，交接悬浮窗期间的通话时长
+    if (CallOverlayManager.instance.isMinimized) {
+      _duration = CallOverlayManager.instance.currentDuration;
+    }
     _loadTargetInfo();
 
     _initRenderers().then((_) {
@@ -238,10 +243,26 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     _session.downgrade2Voice();
   }
 
+  /// 最小化为悬浮窗：只 pop 界面，不挂断通话。
+  /// 未接通时把状态文案传给悬浮窗（接通后悬浮窗自动转为走秒）。
+  void _onMinimize() {
+    CallOverlayManager.instance.minimize(
+      screenBuilder: () => VoipCallScreen(session: _session),
+      baseDuration: _duration,
+      audioOnly: _session.audioOnly,
+      statusText: _session.status == CallState.STATUS_CONNECTED
+          ? null
+          : _statusLabel(AppLocalizations.of(context)!),
+    );
+    Navigator.of(context).pop();
+  }
+
   // --- CallSessionCallback ---
 
   @override
   void didCallEndWithReason(CallEndReason reason) {
+    // 可能正处于最小化状态（界面已 pop 但 State 仍在），先清理悬浮窗
+    CallOverlayManager.instance.onCallEnded();
     if (mounted) {
       setState(() {
         _callEnded = true;
@@ -439,7 +460,19 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                   children: [
                     // 未接通或语音通话时显示头像与状态
                     if (!isVideoMode || !isConnected) ...[
-                      const SizedBox(height: 80),
+                      // 最小化按钮所有状态可用（仅移动端）
+                      if (!isDesktopShell)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          child: Row(
+                            children: [
+                              const Spacer(),
+                              _buildMinimizeButton(),
+                            ],
+                          ),
+                        )
+                      else
+                        const SizedBox(height: 80),
                       _buildUserInfo(),
 
                       const SizedBox(height: 24),
@@ -469,6 +502,9 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                                 ),
                               ),
                             ),
+                            const Spacer(),
+                            // 最小化为悬浮窗（仅移动端）
+                            if (!isDesktopShell) _buildMinimizeButton(),
                           ],
                         ),
                       ),
@@ -539,6 +575,24 @@ class _VoipCallScreenState extends State<VoipCallScreen>
             style: AppText.base.copyWith(color: Colors.white70),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 最小化按钮：收起为可拖动悬浮窗，不结束通话。
+  Widget _buildMinimizeButton() {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Material(
+          color: Colors.black.withValues(alpha: 0.38),
+          child: IconButton(
+            icon: const Icon(Icons.photo_size_select_small_rounded,
+                color: Colors.white, size: 22),
+            onPressed: _onMinimize,
+          ),
+        ),
       ),
     );
   }

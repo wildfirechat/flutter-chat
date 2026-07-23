@@ -1,5 +1,6 @@
 import Cocoa
 import FlutterMacOS
+import ServiceManagement
 import desktop_multi_window
 import flutter_webrtc
 import window_manager
@@ -240,6 +241,43 @@ class MainFlutterWindow: NSWindow {
 
         // window_manager 需要接管窗口，取消默认最小尺寸等限制
         RegisterGeneratedPlugins(registry: flutterViewController)
+
+        // 开机自启动（SMAppService，macOS 13+）：设置-通用-启动与窗口的开关。
+        let launchAtLoginChannel = FlutterMethodChannel(
+          name: "chat/launch_at_login",
+          binaryMessenger: flutterViewController.engine.binaryMessenger)
+        launchAtLoginChannel.setMethodCallHandler { call, result in
+          if #available(macOS 13.0, *) {
+            switch call.method {
+            case "isEnabled":
+              result(SMAppService.mainApp.status == .enabled)
+            case "enable":
+              do {
+                try SMAppService.mainApp.register()
+                result(true)
+              } catch {
+                print("SMAppService register failed: \(error)")
+                result(false)
+              }
+            case "disable":
+              SMAppService.mainApp.unregister { error in
+                if let error = error {
+                  print("SMAppService unregister failed: \(error)")
+                }
+                result(error == nil)
+              }
+            default:
+              result(FlutterMethodNotImplemented)
+            }
+          } else {
+            // macOS 13 以下不支持 SMAppService.mainApp，按未开启处理
+            if call.method == "isEnabled" {
+              result(false)
+            } else {
+              result(false)
+            }
+          }
+        }
 
         FlutterMultiWindowPlugin.setOnWindowCreatedCallback { controller in
           print("Subwindow created, registering plugins")

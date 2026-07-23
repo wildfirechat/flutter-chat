@@ -38,6 +38,8 @@ dependencies:
     # the parent directory to use the current plugin's version.
     path: ../avenginekit/
 
+  # 通话界面（含最小化悬浮窗）直接使用 RTCVideoRenderer/RTCVideoView
+  flutter_webrtc: ^1.5.2
 
   moment:
     path: ../moment/
@@ -157,6 +159,8 @@ dependencies:
   #        ref: br_v6.0.10_ohos
   qr_flutter: ^4.1.0
   pointycastle: ^4.0.0
+  win32: ^5.15.0
+  win32_registry: ^2.1.0
 dependency_overrides:
   uuid: ^4.4.2
   path_provider:

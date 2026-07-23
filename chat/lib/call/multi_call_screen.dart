@@ -13,6 +13,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
+import 'package:chat/call/call_overlay_manager.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/contact/pick_user_screen.dart';
@@ -59,6 +60,10 @@ class _MultiCallScreenState extends State<MultiCallScreen>
     _session.setCallback(this);
     _isMicMuted = _session.isAudioMuted;
     _isCameraOff = _session.isVideoMuted;
+    // 从最小化悬浮窗恢复时，交接悬浮窗期间的通话时长
+    if (CallOverlayManager.instance.isMinimized) {
+      _duration = CallOverlayManager.instance.currentDuration;
+    }
     _initSelf();
     _initRemoteParticipants();
   }
@@ -196,6 +201,20 @@ class _MultiCallScreenState extends State<MultiCallScreen>
     _session.downgrade2Voice();
   }
 
+  /// 最小化为悬浮窗：只 pop 界面，不挂断通话。
+  /// 未接通时把状态文案传给悬浮窗（接通后悬浮窗自动转为走秒）。
+  void _onMinimize() {
+    CallOverlayManager.instance.minimize(
+      screenBuilder: () => MultiCallScreen(session: _session),
+      baseDuration: _duration,
+      audioOnly: _session.audioOnly,
+      statusText: _session.status == CallState.STATUS_CONNECTED
+          ? null
+          : _statusLabel(AppLocalizations.of(context)!),
+    );
+    Navigator.of(context).pop();
+  }
+
   Future<void> _onInvite() async {
     if (_session.conversation == null) return;
     List<String> candidates = [];
@@ -251,6 +270,8 @@ class _MultiCallScreenState extends State<MultiCallScreen>
 
   @override
   void didCallEndWithReason(CallEndReason reason) {
+    // 可能正处于最小化状态（界面已 pop 但 State 仍在），先清理悬浮窗
+    CallOverlayManager.instance.onCallEnded();
     if (mounted) {
       setState(() {
         _callEnded = true;
@@ -497,6 +518,13 @@ class _MultiCallScreenState extends State<MultiCallScreen>
               ],
             ),
           ),
+          // 最小化为悬浮窗（仅移动端）
+          if (!isDesktopShell)
+            IconButton(
+              icon: const Icon(Icons.photo_size_select_small_rounded,
+                  color: Colors.white70),
+              onPressed: _onMinimize,
+            ),
         ],
       ),
     );

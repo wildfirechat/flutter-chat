@@ -260,18 +260,18 @@ packages:
     dependency: transitive
     description:
       name: device_info_plus
-      sha256: a7fd703482b391a87d60b6061d04dfdeab07826b96f9abd8f5ed98068acc0074
+      sha256: "98f28b42168cc509abc92f88518882fd58061ea372d7999aecc424345c7bff6a"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "10.1.2"
+    version: "11.5.0"
   device_info_plus_platform_interface:
     dependency: transitive
     description:
       name: device_info_plus_platform_interface
-      sha256: "0b04e02b30791224b31969eb1b50d723498f402971bff3630bca2ba839bd1ed2"
+      sha256: e1ea89119e34903dca74b883d0dd78eb762814f97fb6c76f35e9ff74d261a18f
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "7.0.2"
+    version: "7.0.3"
   dsbridge_flutter:
     dependency: "direct main"
     description:
@@ -316,10 +316,10 @@ packages:
     dependency: transitive
     description:
       name: ffi
-      sha256: "16ed7b077ef01ad6170a3d0c57caa4a112a38d7a2ed5602e0aca9ca6f3d98da6"
+      sha256: "6d7fd89431262d8f3125e81b50d3847a091d846eafcd4fdb88dd06f36d705a45"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "2.1.3"
+    version: "2.2.0"
   file:
     dependency: transitive
     description:
@@ -495,7 +495,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_webrtc:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: flutter_webrtc
       sha256: "0f89dee7f4c35dab5611f351c3897a3bfe9f7057720cc7da209b52455af4316e"
@@ -1608,21 +1608,21 @@ packages:
     source: hosted
     version: "1.0.7"
   win32:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: win32
-      sha256: daf97c9d80197ed7b619040e86c8ab9a9dad285e7671ee7390f9180cc828a51e
+      sha256: d7cb55e04cd34096cd3a79b3330245f54cb96a370a1c27adb3c84b917de8b08e
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "5.10.1"
+    version: "5.15.0"
   win32_registry:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: win32_registry
-      sha256: "21ec76dfc731550fd3e2ce7a33a9ea90b828fdf19a5c3bcf556fa992cfa99852"
+      sha256: "6f1b564492d0147b330dd794fee8f512cec4977957f310f9951b5f9d83618dae"
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "1.1.5"
+    version: "2.1.0"
   window_manager:
     dependency: "direct main"
     description:
@@ -1664,5 +1664,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.8.0-0 <4.0.0"
+  dart: ">=3.8.0 <4.0.0"
   flutter: ">=3.29.0"

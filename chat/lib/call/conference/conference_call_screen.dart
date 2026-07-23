@@ -11,6 +11,7 @@ import 'package:avenginekit/engine/video_type.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
+import 'package:chat/call/call_overlay_manager.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/l10n/app_localizations.dart';
@@ -106,6 +107,10 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
         }
       }
     };
+    // 从最小化悬浮窗恢复时，交接悬浮窗期间的通话时长
+    if (CallOverlayManager.instance.isMinimized) {
+      _duration = CallOverlayManager.instance.currentDuration;
+    }
     _initSelf();
     _initRemoteParticipants();
   }
@@ -354,6 +359,22 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     _conferenceManager.handUp(!_conferenceManager.isHandUp);
   }
 
+  /// 最小化为悬浮窗：只 pop 界面，不挂断会议。
+  /// 未接通时把状态文案传给悬浮窗（接通后悬浮窗自动转为走秒）。
+  void _onMinimize() {
+    CallOverlayManager.instance.minimize(
+      screenBuilder: () => ConferenceCallScreen(session: _session),
+      baseDuration: _duration,
+      audioOnly: _session.audioOnly,
+      statusText: _session.status == CallState.STATUS_CONNECTED
+          ? null
+          : _session.status == CallState.STATUS_INCOMING
+              ? '邀请您加入会议'
+              : '连接中...',
+    );
+    Navigator.of(context).pop();
+  }
+
   // --- Callbacks ---
 
   @override
@@ -361,6 +382,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
 
   @override
   void didCallEndWithReason(CallEndReason reason) {
+    // 可能正处于最小化状态（界面已 pop 但 State 仍在），先清理悬浮窗
+    CallOverlayManager.instance.onCallEnded();
     var durationMs = _duration.inMilliseconds;
     var info = Map<String, dynamic>.from(_conferenceManager.conferenceInfo);
     if (info.isNotEmpty) {
@@ -835,6 +858,13 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
               ],
             ),
           ),
+          // 最小化为悬浮窗（仅移动端）
+          if (!isDesktopShell)
+            IconButton(
+              icon: Icon(Icons.photo_size_select_small_rounded,
+                  color: context.colors.textSecondary),
+              onPressed: _onMinimize,
+            ),
           IconButton(
             icon: Icon(Icons.people_outline, color: context.colors.textSecondary),
             onPressed: _onToggleMemberList,

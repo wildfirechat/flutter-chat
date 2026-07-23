@@ -6,6 +6,7 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/constants.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
+import 'package:chat/pc/launch_at_login_service.dart';
 import 'package:chat/pc/widgets/pc_card.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/pc/widgets/pc_pane_content.dart';
@@ -134,6 +135,7 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
   bool _syncDraftEnabled = true;
   bool _closeToExit = false;
   bool _enableMinimize = true;
+  bool _launchAtLogin = false;
 
   @override
   void initState() {
@@ -154,10 +156,12 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
 
   Future<void> _loadLocalPreferences() async {
     final prefs = await SharedPreferences.getInstance();
+    final launchAtLogin = await LaunchAtLoginService.isEnabled();
     if (mounted) {
       setState(() {
         _closeToExit = prefs.getBool('pc_close_to_exit') ?? false;
         _enableMinimize = prefs.getBool('pc_enable_minimize') ?? true;
+        _launchAtLogin = launchAtLogin;
       });
     }
   }
@@ -225,6 +229,20 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                     setState(() => _enableMinimize = val);
                     _saveLocalPreference('pc_enable_minimize', val);
                     Fluttertoast.showToast(msg: l10n.setSuccess);
+                  },
+                ),
+                const Divider(),
+                _SettingsSwitchRow(
+                  title: l10n.launchAtLoginTitle,
+                  subtitle: l10n.launchAtLoginDesc,
+                  value: _launchAtLogin,
+                  onChanged: (val) async {
+                    final ok = await LaunchAtLoginService.setEnabled(val);
+                    if (ok) {
+                      setState(() => _launchAtLogin = val);
+                    }
+                    Fluttertoast.showToast(
+                        msg: ok ? l10n.setSuccess : l10n.setFailed);
                   },
                 ),
               ]),

@@ -4556,6 +4556,24 @@ abstract class AppLocalizations {
   /// **'启动与窗口'**
   String get startupAndWindow;
 
+  /// No description provided for @launchAtLoginTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'开机自启动'**
+  String get launchAtLoginTitle;
+
+  /// No description provided for @launchAtLoginDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'登录后自动启动应用'**
+  String get launchAtLoginDesc;
+
+  /// No description provided for @setFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置失败'**
+  String get setFailed;
+
   /// No description provided for @closeToExitTitle.
   ///
   /// In zh, this message translates to:

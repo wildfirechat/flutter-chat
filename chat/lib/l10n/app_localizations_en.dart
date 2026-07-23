@@ -2399,6 +2399,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get startupAndWindow => 'Startup & Window';
 
   @override
+  String get launchAtLoginTitle => 'Launch at Login';
+
+  @override
+  String get launchAtLoginDesc => 'Start the app automatically at login';
+
+  @override
+  String get setFailed => 'Failed to apply';
+
+  @override
   String get closeToExitTitle =>
       'Quit the app when the window close button is clicked';
 
