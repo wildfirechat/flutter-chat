@@ -311,15 +311,6 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.1.3+5"
-  permission_handler_ohos:
-    dependency: "direct main"
-    description:
-      path: permission_handler_ohos
-      ref: "br_permission_handler_v11.3.1_ohos"
-      resolved-ref: "9094b9494b311dae71fe0399d9acd546a773edef"
-      url: "https://gitcode.com/openharmony-sig/flutter_permission_handler.git"
-    source: git
-    version: "11.3.1"
   permission_handler_platform_interface:
     dependency: transitive
     description:

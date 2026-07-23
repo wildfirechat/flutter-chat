@@ -83,6 +83,19 @@ Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST�
    setx FLUTTER_STORAGE_BASE_URL "https://storage.flutter-io.cn"
    ```
 
+## 鸿蒙(OHOS)依赖切换
+
+项目内所有包的 `dependencies` 均使用 pub.dev 标准版；鸿蒙适配版（gitcode 上的 openharmony-sig / openharmony-tpc fork）统一集中在根工程 `chat/pubspec.yaml` 的 `dependency_overrides` 中，由 `[ohos-begin]` 和 `[ohos-end]` 注释标记围成一个区块。
+
+- **构建鸿蒙版本**：启用该区块（仓库默认状态即为启用），然后执行 `flutter pub get`。
+- **构建标准版本（Android/iOS/Windows/macOS/Linux）**：把 `[ohos-begin]` 到 `[ohos-end]` 之间的内容整体注释掉，然后执行 `flutter pub get`，所有依赖即回退到 pub.dev 标准版。
+
+注意事项：
+
+1. 切换后必须重新执行 `flutter pub get`，并建议提交代码前确认 `chat/pubspec.lock` 的变更符合预期。
+2. 区块内包含仅鸿蒙需要的 `permission_handler_ohos` 插件，注释区块时会一并移除，无需单独处理。
+3. `file_picker` 的鸿蒙 fork 依赖 `web ^0.5.1`，与 `flutter_localization` 鸿蒙版依赖的 `web ^1.1.1` 冲突，因此它和 `fluttertoast`、`flutter_local_notifications`、`mobile_scanner`、`flutter_webrtc` 的鸿蒙 fork 默认未启用（保持标准版），以注释形式附在 `[ohos-end]` 之后，确有需要时可单独启用。
+4. 切换时若遇到 gitcode 拉取失败（exit 128），重试 `flutter pub get` 即可。
 
 ## 运行
 > 由于本项目，同时支持 Android、iOS 和鸿蒙，故只能使用已适配鸿蒙的 Flutter 版本

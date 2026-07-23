@@ -21,24 +21,13 @@ dependencies:
 
   plugin_platform_interface: ^2.0.2
   permission_handler: ^11.3.1
-  permission_handler_ohos:
-      git:
-          url: https://gitcode.com/openharmony-sig/flutter_permission_handler.git
-          path: permission_handler_ohos
-          ref: br_permission_handler_v11.3.1_ohos
   fluttertoast: ^9.0.0
-# #for ohos
-#  fluttertoast:
-#      git:
-#          url: https://gitcode.com/openharmony-sig/flutter_fluttertoast.git
-#          ref: br_v9.0.0_ohos
   flutter_webrtc: ^1.5.2
-# ohos
-#  flutter_webrtc:
-#      git:
-#          url: https://gitcode.com/openharmony-sig/fluttertpc_flutter_webrtc
-#  flutter_webrtc:
-#      path: ../../fluttertpc_flutter_webrtc/
+
+  # 注意：构建鸿蒙(ohos)版本所需的 fluttertoast / flutter_webrtc /
+  # permission_handler_ohos 的 ohos 适配版本，统一由根工程
+  # chat/pubspec.yaml 的 dependency_overrides [ohos-begin]~[ohos-end]
+  # 区块切换，本文件只保留标准版依赖。
 
 dev_dependencies:
   flutter_test:
@@ -62,7 +51,7 @@ flutter:
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 
-  # To add custom fonts to your plugin package, add a fonts section here,
+  # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
@@ -79,5 +68,5 @@ flutter:
   #       - asset: fonts/TrajanPro_Bold.ttf
   #         weight: 700
   #
-  # For details regarding fonts in packages, see
-  # https://flutter.dev/custom-fonts/#from-packages
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/custom-fonts/#from-packages
