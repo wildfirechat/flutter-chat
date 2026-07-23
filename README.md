@@ -1,22 +1,12 @@
-## 最重要的事，说三遍!!!
+## 最重声明!!!
 
-> 以下说明，仅针对 Android 端，iOS 可以直接配置 IM_SERVER_HOST
-
-**因反诈合规要求，本项目协议栈默认仅支持连接野火官方服务，不能连接到自行部署的服务。如需获取不受限版本，请联系官方微信（wfchat 或 wildfirechat）免费申请。**
-
-**严禁将本项目用于非法用途。**
+Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST来设定服务地址。Android需要联系我们免费获取SDK。
 
 **因反诈合规要求，本项目协议栈默认仅支持连接野火官方服务，不能连接到自行部署的服务。如需获取不受限版本，请联系官方微信（wfchat 或 wildfirechat）免费申请。**
-
-**严禁将本项目用于非法用途。**
-
-**因反诈合规要求，本项目协议栈默认仅支持连接野火官方服务，不能连接到自行部署的服务。如需获取不受限版本，请联系官方微信（wfchat 或 wildfirechat）免费申请。**
-
-**严禁将本项目用于非法用途。**
-
-**给您带来不便，敬请谅解。**
 
 > 联系官方获取到不受限版本后，请替换`./imclient/android/android_client_aars/mars-core-release.aar`文件，并重新编译。
+
+其他平台，包括Windows/Mac/Linux/Harmony平台是付费的，需要联系我们申请试用或者购买，请联系官方微信（wfchat 或 wildfirechat）免费申请。
 
 ---------
 
@@ -54,9 +44,7 @@
 
 # flutter-chat
 
-野火Flutter版 demo， 支持 Android、iOS、原生鸿蒙和桌面端（Windows、macOS、Linux），包含即时通讯插件和实时音视频插件。
-
-> 桌面端支持的详细状态、已知问题及 Flutter 版本要求，请参考 [DESKTOP_STATUS.md](./DESKTOP_STATUS.md)。
+野火Flutter版 demo， 支持 Android、iOS、原生鸿蒙和桌面端（Windows、macOS、Linux），包含即时通讯插件和实时音视频插件。不支持龙芯和申威CPU（因为flutter不支持），其他国产操作系统和CPU都支持。
 
 ## 桌面端截图
 
@@ -73,9 +61,7 @@
 
 ## 关于鸿蒙的重要说明
 1. 鸿蒙版所依赖的 野火IM 鸿蒙SDK 是需要付费的
-2. 鸿蒙版，有一些功能异常，正在适配中
-3. 鸿蒙端，暂不支持音视频通话
-4. 配置镜像
+2配置镜像
     > 由于目标是能兼容原生鸿蒙，有的包只能从镜像下载，不配置镜像的话，可能下载不到
     ```
    # Linux、macOS
@@ -192,89 +178,6 @@
 
 1. 升级插件时，一定要记得同步升级`android_client_aars`和`android_avclient_aars`等`aars`目录
 
-## SDK的使用
-
-### 基础知识
-
-必须对野火IM有一定认识后才可以顺利使用，建议做到以下几点：
-
-1. 仔细阅读野火[基础知识](https://docs.wildfirechat.cn/base_knowledge/)，建议最好把[文档](https://docs.wildfirechat.cn)都看一遍，仔细阅读一遍绝对会物超所值的。
-2. 仔细查看插件的接口文件```Imclient.dart```文件，大概130+个接口，根据接口名称和简单的注释还有参数，了解到具体的功能，这样后面使用时也比较好找。
-3. 查看插件带的demo应用。demo应用十分不完善，但也基本能反应出使用的方法，如果您有时间可以给我们提PR来完善这个demo。
-4. 如果您有原生客户端开发经验，可以查看对于客户端的demo，原生客户端demo比较完善。
-
-### 初始化
-
-初始化在应用启动时唯一调用一次即可，参数是各种事件的回调。
-
-```
-Imclient.init(...);
-```
-
-### 连接
-
-连接需要```IM Token```，必须在应用服务进行获取```token```，获取```token```时必须使用从SDK内获取到的```clientId```，否则会连接不上。
-
-```
-var clientId = await Imclient.clientId;
-// 调用应用服务去IM服务获取token，需要使用从SDK内获取的clientId。得到token后调用connect函数。
-Imclient.connect(IM_Host, userId, token);
-```
-
-### 获取会话列表
-
-展示用户的所有会话的列表使用。
-
-```
-Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
-```
-
-### 获取消息
-
-从指定会话获取消息，可以指定消息其实id和获取条目数，实际使用时可以滚动加载。
-
-```
-Imclient.getMessages(conversation, 0, 10);
-```
-
-### 发送消息
-
-构造消息内容，把消息发送到指定会话去。
-
-```
-Imclient.sendMessage(conversation, txtMsgContent);
-```
-
-### 获取用户信息
-
-refresh参数表明是否强制从服务器刷新用户信息，函数会返回本地数据库存储用户信息，如果不存在将返回null。refresh为true或者用户信息不存在时会从服务器更新用户信息，如果信息有变化，会通过用户信息变更回调通知。注意仅当单聊会话和用户详情时强制刷新，避免反复refresh调用出现死循环。
-
-```
-Imclient.getUserInfo(userId, refresh:false);
-```
-
-### 获取群组信息
-
-获取群组信息，具有可选参数refresh，refresh的使用方法请参考获取用户信息。
-
-```
-Imclient.getGroupInfo(groupId, refresh:false);
-```
-
-### 发起单人音视频通话
-
-```
-SingleVideoCallView callView = SingleVideoCallView(userId:userId, audioOnly:false);
-Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
-```
-
-### 发起多人音视频通话
-
-```
-GroupVideoCallView callView = GroupVideoCallView(groupId: groupId, participants: members);
-Navigator.push(context, MaterialPageRoute(builder: (context) => callView),);
-```
-
 ## 推送
 
 ### 1 野火推送基础知识
@@ -302,12 +205,6 @@ Imclient.setDeviceToken(pushType, deviceToken);
 实际上可以选用任意一个或者多个推送服务商，这里给出一个使用个推的介绍。
 [对接个推](https://gitee.com/wfchat/flutter-chat/issues/I6P16V?from=project-issue)
 
-## 音视频的历史问题
-野火在flutter项目上的音视频的实现有2个方案：
-1. 方案1：使用原生UI，就是把android平台和ios平台的音视频SDK和UI代码全都集成到flutter项目中。这种方案的问题是引入的无关代码太多，且原生UI无法修改，跟flutter互通也很不方便，不利于二次开发。
-2. 方案2：是使用原生的音视频SDK，但UI层使用dart语言编写，UI和SDK使用flutter插件的方式沟通。这种方案引入的SDK比较小，且修改方便，有利于大家做自定义。
-
-我们在2023.11.29日起，正式采用方案2，同时方案1保留在```native-rtc-ui```分支。已经使用方案1的用户可以继续使用```native-rtc-ui```的分支，如果有需求可以切换到```master```分支去，以后我们的开发重点将会放到```master```分支上去。
 
 ## iOS 平台 CallKit / Share Extension
 
