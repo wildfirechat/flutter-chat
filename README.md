@@ -96,6 +96,12 @@ Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST�
 2. 区块内包含仅鸿蒙需要的 `permission_handler_ohos` 插件，注释区块时会一并移除，无需单独处理。
 3. `file_picker` 的鸿蒙 fork 依赖 `web ^0.5.1`，与 `flutter_localization` 鸿蒙版依赖的 `web ^1.1.1` 冲突，因此它和 `fluttertoast`、`flutter_local_notifications`、`mobile_scanner`、`flutter_webrtc` 的鸿蒙 fork 默认未启用（保持标准版），以注释形式附在 `[ohos-end]` 之后，确有需要时可单独启用。
 4. 切换时若遇到 gitcode 拉取失败（exit 128），重试 `flutter pub get` 即可。
+5. iOS 平台切换后需同步更新 pod 依赖，否则 `Podfile.lock` 中锁定的旧版本会与新解析的插件版本冲突（典型报错：`CocoaPods could not find compatible versions for pod "xxx"`）：
+   ```bash
+   cd chat/ios
+   pod install --repo-update   # 或者针对报错的 pod 单独执行：pod update <pod名>
+   ```
+   例如切换到标准版后 `flutter_sound` 从 9.28.0 变为 9.30.0，需执行 `pod update flutter_sound_core`。
 
 ## 运行
 > 由于本项目，同时支持 Android、iOS 和鸿蒙，故只能使用已适配鸿蒙的 Flutter 版本
