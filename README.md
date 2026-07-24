@@ -6,7 +6,7 @@ Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST�
 
 > 联系官方获取到不受限版本后，请替换`./imclient/android/android_client_aars/mars-core-release.aar`文件，并重新编译。
 
-其他平台，包括Windows/Mac/Linux/Harmony平台是付费的，需要联系我们申请试用或者购买，请联系官方微信（wfchat 或 wildfirechat）免费申请。
+其他平台，包括Windows/Mac/Linux/Harmony平台是付费的，需要联系我们申请试用或者购买，请联系官方微信（wfchat 或 wildfirechat）申请试用。
 
 ---------
 
@@ -102,6 +102,11 @@ Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST�
    pod install --repo-update   # 或者针对报错的 pod 单独执行：pod update <pod名>
    ```
    例如切换到标准版后 `flutter_sound` 从 9.28.0 变为 9.30.0，需执行 `pod update flutter_sound_core`。
+
+
+## Windows的依赖
+1. MSVC 2022
+2. 切换到非鸿蒙依赖
 
 ## 运行
 > 由于本项目，同时支持 Android、iOS 和鸿蒙，故只能使用已适配鸿蒙的 Flutter 版本

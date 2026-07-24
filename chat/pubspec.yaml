@@ -73,7 +73,8 @@ dependencies:
   cross_file: ^0.3.4+2
   crypto: ^3.0.3
   mime: ^1.0.5
-  flutter_sound: ^9.28.0
+  # Windows平台9.30.0有问题，这里固定为9.28.0
+  flutter_sound: 9.28.0
   path_provider: ^2.1.5
   permission_handler: ^11.3.1
   wechat_camera_picker: ^4.2.1
