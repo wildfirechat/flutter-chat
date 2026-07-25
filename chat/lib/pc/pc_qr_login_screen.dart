@@ -15,6 +15,7 @@ import 'package:chat/login/login_form_controller.dart';
 import 'package:chat/main.dart';
 import 'package:chat/pc/pc_home.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_window_caption.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/utils/media_url_redirector.dart';
@@ -224,9 +225,14 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
   /// 卡片与页面刻意取不同的面色 —— 暗色下投影看不见,只能靠明度差把卡片托起来。
   Widget _buildCard({required Widget child}) {
     final colors = context.colors;
-    return Scaffold(
-      backgroundColor: colors.chatBgDesktop,
-      body: Center(
+    return Column(
+      children: [
+        // Windows 自绘标题栏(系统标题栏已隐藏,见 PCWindowManager.setupWindow)
+        if (Platform.isWindows) const PcWindowCaption(),
+        Expanded(
+          child: Scaffold(
+            backgroundColor: colors.chatBgDesktop,
+            body: Center(
         child: Container(
           width: 400,
           constraints: BoxConstraints(
@@ -246,7 +252,10 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
           ),
           child: child,
         ),
-      ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

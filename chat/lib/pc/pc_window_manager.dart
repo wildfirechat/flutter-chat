@@ -48,6 +48,12 @@ class PCWindowManager {
       return;
     }
     await windowManager.ensureInitialized();
+    // Windows:尽早隐藏系统标题栏(在原生首帧 Show 之前),
+    // 改用 Flutter 自绘标题栏(pc/widgets/pc_window_caption.dart),
+    // 与 App 内主题保持一致。仅影响主窗口;子窗口不走本类。
+    if (Platform.isWindows) {
+      await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+    }
     _initialized = true;
   }
 

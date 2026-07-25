@@ -33,6 +33,7 @@ import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/pc/widgets/pc_resize_handle.dart';
+import 'package:chat/pc/widgets/pc_window_caption.dart';
 import 'package:chat/settings/file_records_screen.dart';
 import 'package:chat/pc/pc_settings_page.dart';
 import 'package:chat/pc/pc_user_card.dart';
@@ -598,7 +599,12 @@ class _PCHomeState extends State<PCHome> {
           children: [
             Scaffold(
               // 工作台整栏展示网页,中栏只是占位,故此 tab 下收起中栏,改为侧栏 + 右栏两栏。
-              body: Selector<PCShellViewModel, bool>(
+              body: Column(
+                children: [
+                  // Windows 自绘标题栏(系统标题栏已隐藏,见 PCWindowManager.setupWindow)
+                  if (Platform.isWindows) const PcWindowCaption(),
+                  Expanded(
+                    child: Selector<PCShellViewModel, bool>(
                 selector: (_, shell) =>
                     shell.selectedTab == PCShellViewModel.tabWork,
                 builder: (context, isWorkTab, _) => Row(
@@ -644,6 +650,9 @@ class _PCHomeState extends State<PCHome> {
                     ),
                   ],
                 ),
+              ),
+                  ),
+                ],
               ),
             ),
           ],

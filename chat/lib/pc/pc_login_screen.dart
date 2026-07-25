@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/app_theme.dart';
+import 'package:chat/pc/widgets/pc_window_caption.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -79,11 +82,16 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.loginConfirm),
-      ),
-      body: Center(
+    return Column(
+      children: [
+        // Windows 自绘标题栏(系统标题栏已隐藏,见 PCWindowManager.setupWindow)
+        if (Platform.isWindows) const PcWindowCaption(),
+        Expanded(
+          child: Scaffold(
+            appBar: AppBar(
+              title: Text(AppLocalizations.of(context)!.loginConfirm),
+            ),
+            body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -114,7 +122,10 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
               ),
           ],
         ),
-      ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
