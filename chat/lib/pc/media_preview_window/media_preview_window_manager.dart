@@ -73,7 +73,9 @@ class MediaPreviewWindowManager extends SubWindowManagerBase {
     };
     _nextInitialSize = _initialWindowSize(mediaItems, defaultIndex);
 
-    final controller = windowController;
+    // 窗口可能已被系统关闭按钮销毁(Linux 收不到 windowClosed 事件),
+    // 先校验存活,失效时 ensureWindowAlive 会清状态,下面直接走新建。
+    final controller = await ensureWindowAlive() ? windowController : null;
     if (controller != null) {
       if (windowReady) {
         await WindowEventChannel.invoke(controller.windowId, MediaPreviewEvents.show, payload);

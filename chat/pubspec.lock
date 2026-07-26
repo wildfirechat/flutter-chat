@@ -1457,10 +1457,9 @@ packages:
   window_manager:
     dependency: "direct main"
     description:
-      name: window_manager
-      sha256: "732896e1416297c63c9e3fb95aea72d0355f61390263982a47fd519169dc5059"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: "../vendor/window_manager"
+      relative: true
+    source: path
     version: "0.4.3"
   windows_single_instance:
     dependency: "direct main"

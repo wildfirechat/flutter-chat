@@ -3,7 +3,11 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <flutter_linux/flutter_linux.h>
-#ifdef GDK_WINDOWING_X11
+#if defined(GDK_WINDOWING_X11) && defined(HAVE_X11)
+#include <X11/Xlib.h>
+#include <gdk/gdkx.h>
+#define CHAT_X11_ERROR_HANDLER 1
+#elif defined(GDK_WINDOWING_X11)
 #include <gdk/gdkx.h>
 #endif
 #include <sys/file.h>  // flock() 与 LOCK_EX/LOCK_NB;不引入则 flock 会被解析成 <fcntl.h> 里的 struct flock
@@ -16,7 +20,6 @@
 #include <desktop_multi_window/desktop_multi_window_plugin.h>
 #include <flutter_webrtc/flutter_web_r_t_c_plugin.h>
 #include <window_manager/window_manager_plugin.h>
-#include <tray_manager/tray_manager_plugin.h>
 #include <screen_retriever_linux/screen_retriever_linux_plugin.h>
 #include <url_launcher_linux/url_launcher_plugin.h>
 
@@ -43,9 +46,82 @@ static int _tryAcquireSingleInstanceLock() {
 
 static int _singleInstanceLockFd = -1;
 
+#ifdef CHAT_X11_ERROR_HANDLER
+// GLX 协议里 glXMakeCurrent / glXMakeContextCurrent 的 minor opcode。
+static const int kGlxMakeCurrentOpcode = 5;
+static const int kGlxMakeContextCurrentOpcode = 26;
+
+static int (*_defaultXErrorHandler)(Display*, XErrorEvent*) = nullptr;
+static int _glxMajorOpcode = -1;
+
+// GDK 自带的 X 错误处理器(gdk_x_error)对任何未被 trap 的 X error 都会打印
+// "received an X Window System error" 然后 exit(1) —— 整个应用直接没了。
+//
+// 本项目用 desktop_multi_window 开子窗口,每个子窗口是一个独立的 Flutter 引擎,
+// 各自有一份 GL context。Flutter 的 Linux embedder 在正常出帧时会把 GL context
+// 在光栅线程和平台线程之间来回交接(fl_compositor_opengl.cc:present_layers_task_cb
+// 会先阻塞光栅线程再在平台线程 make_current);但窗口销毁走的 unrealize 路径
+// (fl_view.cc: unrealize_cb → fl_opengl_manager_make_current)没有这层同步,
+// 引擎还活着、光栅线程可能正持有同一个 context。GLX 规定:context 已在别的线程
+// current 时再 make current,服务端回 BadAccess:
+//
+//   error_code 10 request_code 150 (GLX) minor_code 26
+//
+// 子窗口关闭越频繁越容易撞上;LIBGL_ALWAYS_SOFTWARE=1 也一样,因为这是 GLX 协议
+// 层面的错误,不是驱动实现问题。
+//
+// 这一帧本来就是要丢弃的(窗口正在销毁),没有理由让整个进程退出。这里只吞掉
+// GLX make-current 这一类错误并打日志,其余 X 错误仍交回 GDK 原处理器,保持默认
+// 行为(也不影响 GDK 自己的 error trap,因为 trap 判定在原处理器里)。
+static int _onXError(Display* xdisplay, XErrorEvent* error) {
+  if (_glxMajorOpcode > 0 && error->request_code == _glxMajorOpcode &&
+      (error->minor_code == kGlxMakeContextCurrentOpcode ||
+       error->minor_code == kGlxMakeCurrentOpcode)) {
+    // 错误处理器可能在任意线程被调到;万一变成每帧都报,也不能让日志把应用拖死。
+    static volatile gint ignored_count = 0;
+    gint count = g_atomic_int_add(&ignored_count, 1) + 1;
+    if (count <= 5 || count % 100 == 0) {
+      g_warning(
+          "忽略 GLX make-current 错误(第 %d 次,error_code=%d minor_code=%d "
+          "serial=%lu):窗口销毁与光栅线程抢同一个 GL context,该帧作废,"
+          "进程继续运行。",
+          count, error->error_code, error->minor_code, error->serial);
+    }
+    return 0;
+  }
+  return _defaultXErrorHandler != nullptr
+             ? _defaultXErrorHandler(xdisplay, error)
+             : 0;
+}
+
+static void _installXErrorHandler() {
+  static gboolean installed = FALSE;
+  if (installed) {
+    return;
+  }
+  GdkDisplay* display = gdk_display_get_default();
+  if (display == nullptr || !GDK_IS_X11_DISPLAY(display)) {
+    return;  // Wayland 下没有这条路径
+  }
+  Display* xdisplay = GDK_DISPLAY_XDISPLAY(display);
+  int first_event = 0;
+  int first_error = 0;
+  if (!XQueryExtension(xdisplay, "GLX", &_glxMajorOpcode, &first_event,
+                       &first_error)) {
+    _glxMajorOpcode = -1;
+  }
+  _defaultXErrorHandler = XSetErrorHandler(_onXError);
+  installed = TRUE;
+}
+#endif  // CHAT_X11_ERROR_HANDLER
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
+#ifdef CHAT_X11_ERROR_HANDLER
+  // 必须在 GDK 打开 display(gtk_init)之后装,才能盖住 GDK 自己的处理器。
+  _installXErrorHandler();
+#endif
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
@@ -95,9 +171,10 @@ static void my_application_activate(GApplication* application) {
     g_autoptr(FlPluginRegistrar) window_manager_registrar =
         fl_plugin_registry_get_registrar_for_plugin(registry, "WindowManagerPlugin");
     window_manager_plugin_register_with_registrar(window_manager_registrar);
-    g_autoptr(FlPluginRegistrar) tray_manager_registrar =
-        fl_plugin_registry_get_registrar_for_plugin(registry, "TrayManagerPlugin");
-    tray_manager_plugin_register_with_registrar(tray_manager_registrar);
+    // 子窗口无托盘用途,不注册 TrayManagerPlugin(托盘归主窗口独占,与 macOS 一致)。
+    // tray_manager 的 Linux 实现用一个进程级全局 plugin_instance 记录最后一次注册的
+    // 插件对象,子窗口注册会把它顶掉;子窗口关闭时该对象随引擎释放,之后点击托盘菜单
+    // 就会用已释放的指针发 onTrayMenuItemClick,崩溃。
     g_autoptr(FlPluginRegistrar) screen_retriever_registrar =
         fl_plugin_registry_get_registrar_for_plugin(registry, "ScreenRetrieverLinuxPlugin");
     screen_retriever_linux_plugin_register_with_registrar(screen_retriever_registrar);

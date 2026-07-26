@@ -141,6 +141,38 @@ abstract class SubWindowManagerBase {
 
   // -------------------------------------------------------------- 复用
 
+  /// 校验记录中的子窗口是否还存在(以插件侧仍持有的窗口 id 为准)。
+  /// 已经不存在就地清状态、走 [onSubWindowClosed] 并返回 false。
+  ///
+  /// 为什么需要:子窗口的 `<kind>.windowClosed` 是子窗口 Dart 在
+  /// window_manager 的 onWindowClose 里回发的,依赖"窗口先收到关闭事件、
+  /// 之后才真正销毁"。Linux 上不成立——desktop_multi_window 在 GTK 的
+  /// delete-event 里直接 gtk_widget_destroy,而且它的 handler 连得比
+  /// window_manager 早、返回 TRUE 掐断信号,子窗口 Dart 根本收不到关闭事件,
+  /// 引擎就已经同步销毁了。于是主窗口这边留着一个失效的 controller,
+  /// 而对已销毁的 window id 调 show()/invoke() 在插件层是**静默成功**的
+  /// (`MultiWindowManager::Show` 查不到 id 就直接返回),表现为
+  /// "子窗口关掉之后再也打不开"。
+  @protected
+  Future<bool> ensureWindowAlive() async {
+    final controller = _windowController;
+    if (controller == null) return false;
+    final List<int> aliveIds;
+    try {
+      aliveIds = await DesktopMultiWindow.getAllSubWindowIds();
+    } catch (e) {
+      // 查不到就按存活处理,保持原有行为。
+      debugPrint('$windowKind getAllSubWindowIds failed: $e');
+      return true;
+    }
+    if (aliveIds.contains(controller.windowId)) return true;
+    debugPrint(
+        '$windowKind window ${controller.windowId} already destroyed, recreate');
+    clearWindowState();
+    onSubWindowClosed();
+    return false;
+  }
+
   /// 复用已存在窗口。返回 true 表示已处理完毕(不再创建新窗口);
   /// 返回 false 表示窗口不存在或已失效,调用方继续走创建流程。
   /// 默认实现按 [reusePolicy]:raiseOnly 仅置顶;updateContent 先
@@ -148,6 +180,7 @@ abstract class SubWindowManagerBase {
   /// 失效(show 抛异常)时清状态并返回 false,与原各 Manager 一致。
   @protected
   Future<bool> reuseExistingWindow() async {
+    if (!await ensureWindowAlive()) return false;
     final controller = _windowController;
     if (controller == null) return false;
     if (reusePolicy == SubWindowReusePolicy.recreate) {

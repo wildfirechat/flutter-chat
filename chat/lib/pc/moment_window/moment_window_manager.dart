@@ -40,6 +40,12 @@ class MomentWindowManager extends SubWindowManagerBase {
     WindowEventChannel.invoke(
         windowController!.windowId, MomentWindowEvents.refresh, {
       'feedId': feedId,
+    }).catchError((e) {
+      // 窗口可能已被系统关闭按钮销毁,而主窗口这边还没收到 windowClosed
+      // (Linux 上收不到,见 SubWindowManagerBase.ensureWindowAlive)。
+      // 这里是 fire-and-forget,不接住会变成未处理异常。
+      debugPrint('$windowKind notifyFeedChanged failed: $e');
+      return null;
     });
   }
 }

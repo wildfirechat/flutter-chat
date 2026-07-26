@@ -53,6 +53,10 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 # System-level dependencies.
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
+# 直接调用 XSetErrorHandler/XQueryExtension 需要显式链接 libX11
+# (gtk+-3.0.pc 不带 -lX11)。Wayland-only 环境找不到就跳过,
+# 对应代码由 HAVE_X11 宏开关。
+pkg_check_modules(X11 IMPORTED_TARGET x11)
 
 # Application build; see runner/CMakeLists.txt.
 add_subdirectory("runner")

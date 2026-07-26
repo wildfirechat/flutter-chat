@@ -82,7 +82,10 @@ dependencies:
   wechat_assets_picker: ^9.4.0
   video_player: ^2.10.0
   url_launcher: ^6.3.0
-  window_manager: ^0.4.3
+  # 本地补丁版(Linux 插件销毁时摘掉全局 emission hook 与窗口信号回调,
+  # 修子窗口关闭后点击主窗口崩溃),见 vendor/window_manager/PATCHES.md
+  window_manager:
+    path: ../vendor/window_manager
   desktop_multi_window: ^0.2.0
   tray_manager: ^0.2.4
   menu_base: ^0.1.1

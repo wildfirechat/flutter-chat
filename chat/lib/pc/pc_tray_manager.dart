@@ -144,22 +144,33 @@ class PCTrayManager {
     await PCWindowManager().closeWindow();
   }
 
-  /// 更新托盘未读数展示(macOS 在图标旁显示数字,全平台更新 tooltip)。
+  /// 更新托盘未读数展示(macOS 在图标旁显示数字,macOS/Windows 更新 tooltip)。
   /// 未读清零时同时停止闪烁(全部已读)。
   void updateUnreadCount(int count) async {
     _unreadCount = count;
     if (count == 0) {
       _stopFlashing();
     }
+    if (!_initialized) {
+      // 托盘图标还没建起来(Linux 的 AppIndicator 在 setIcon 时才创建),
+      // 这时调 setTitle/setToolTip 只会报错。
+      return;
+    }
     try {
+      final l10n = _l10n;
+      final String appTitle = l10n?.appTitle ?? '野火IM';
       if (Platform.isMacOS) {
         await tm.trayManager.setTitle(count > 0 ? '$count' : '');
       }
-      final l10n = _l10n;
-      final String appTitle = l10n?.appTitle ?? '野火IM';
-      await tm.trayManager.setToolTip(count > 0
-          ? (l10n?.trayUnreadTooltip(count) ?? '$appTitle $count')
-          : appTitle);
+      // Linux(AppIndicator)没有 tooltip,tray_manager 未实现 setToolTip,
+      // 调了只会不断抛 MissingPluginException;改用 label 展示未读数。
+      if (Platform.isLinux) {
+        await tm.trayManager.setTitle(count > 0 ? '$count' : '');
+      } else {
+        await tm.trayManager.setToolTip(count > 0
+            ? (l10n?.trayUnreadTooltip(count) ?? '$appTitle $count')
+            : appTitle);
+      }
     } catch (e) {
       debugPrint('PCTrayManager update title/tooltip failed: $e');
     }
