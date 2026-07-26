@@ -1,0 +1,4 @@
+# Windows/Linux 构建时由 third_party/CMakeLists.txt 下载解压的 libwebrtc 预编译包,
+# 不入库。
+third_party/downloads/
+third_party/libwebrtc/

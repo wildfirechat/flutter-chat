@@ -39,6 +39,7 @@ dependencies:
     path: ../avenginekit/
 
   # 通话界面（含最小化悬浮窗）直接使用 RTCVideoRenderer/RTCVideoView
+  # 实际解析到 vendor/flutter_webrtc 的本地补丁版，见下方 dependency_overrides
   flutter_webrtc: ^1.5.2
 
   moment:
@@ -112,6 +113,16 @@ dependency_overrides:
   # NSNull -> AuthenticationChallengeResponse 强制转换崩溃（flutter/flutter#162437）。
   # 鸿蒙适配仓库的 3.22.0 同样受影响，临时固定到 pub.dev 原版的 3.17.0。
   webview_flutter_wkwebview: 3.17.0
+
+  # 本地补丁版 1.5.2(修 Linux 子窗口拿不到 FlutterWebRTC.Method channel，
+  # PC 端通话跑在独立子窗口里，不打补丁发起通话必失败)，见
+  # vendor/flutter_webrtc/PATCHES.md。avenginekit 也依赖 flutter_webrtc，
+  # 所以这里用 overrides 而不是直接改上面的 path。
+  # 注意：构建 ohos 版本时要把本条注释掉，改用下方 [ohos-begin] 区块里的
+  # gitcode 适配版(鸿蒙不涉及桌面多窗口)，否则 dependency_overrides 里
+  # flutter_webrtc 出现两次，pub 会报重复 key。
+  flutter_webrtc:
+    path: ../vendor/flutter_webrtc
 
   # ================================================================
   # [ohos-begin] OHOS(鸿蒙)适配依赖
