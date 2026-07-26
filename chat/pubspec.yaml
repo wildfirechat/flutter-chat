@@ -119,81 +119,76 @@ dependency_overrides:
   # pub.dev 标准版（标准版本约束见上方 dependencies）。
   # ================================================================
   # 仅 ohos 需要的配套插件，标准平台不需要
-  permission_handler_ohos:
-    git:
-      url: https://gitcode.com/openharmony-sig/flutter_permission_handler.git
-      path: permission_handler_ohos
-      ref: br_permission_handler_v11.3.1_ohos
-  shared_preferences:
-    git:
-      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
-      path: "packages/shared_preferences/shared_preferences"
-  image_picker:
-    git:
-      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
-      path: "packages/image_picker/image_picker"
-      ref: br_image_picker-v1.1.2_ohos
-  flutter_sound:
-    git:
-      url: https://gitcode.com/openharmony-sig/flutter_sound.git
-      ref: br_v9.28.0_ohos
-  path_provider:
-    git:
-      url: "https://gitcode.com/openharmony-sig/flutter_packages.git"
-      path: packages/path_provider/path_provider
-      # ref: br_path_provider-v2.1.5_ohos
-  video_player:
-    git:
-      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
-      path: "packages/video_player/video_player"
-      ref: br_video_player-v2.10.0_ohos
-  url_launcher:
-    git:
-      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
-      path: "packages/url_launcher/url_launcher"
-      ref: br_url_launcher-v6.3.0_ohos
-  flutter_localization:
-    git:
-      url: "https://gitcode.com/openharmony-sig/flutter_localization"
-      ref: br_v0.3.3_ohos
-  webview_flutter:
-    git:
-      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
-      path: "packages/webview_flutter/webview_flutter"
-      ref: br_webview_flutter-v4.13.0_ohos
-      # ref: br_webview_flutter-v4.8.0_ohos
-  webview_flutter_platform_interface:
-    git:
-      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
-      path: "packages/webview_flutter/webview_flutter_platform_interface"
-      ref: br_webview_flutter-v4.13.0_ohos
+#  web: ^1.1.1
+#  permission_handler_ohos:
+#    git:
+#      url: https://gitcode.com/openharmony-sig/flutter_permission_handler.git
+#      path: permission_handler_ohos
+#      ref: br_permission_handler_v11.3.1_ohos
+#  shared_preferences:
+#    git:
+#      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+#      path: "packages/shared_preferences/shared_preferences"
+#  image_picker:
+#    git:
+#      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+#      path: "packages/image_picker/image_picker"
+#      ref: br_image_picker-v1.1.2_ohos
+#  flutter_sound:
+#    git:
+#      url: https://gitcode.com/openharmony-sig/flutter_sound.git
+#      ref: br_v9.28.0_ohos
+#  path_provider:
+#    git:
+#      url: "https://gitcode.com/openharmony-sig/flutter_packages.git"
+#      path: packages/path_provider/path_provider
+#      # ref: br_path_provider-v2.1.5_ohos
+#  video_player:
+#    git:
+#      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+#      path: "packages/video_player/video_player"
+#      ref: br_video_player-v2.10.0_ohos
+#  url_launcher:
+#    git:
+#      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+#      path: "packages/url_launcher/url_launcher"
+#      ref: br_url_launcher-v6.3.0_ohos
+#  flutter_localization:
+#    git:
+#      url: "https://gitcode.com/openharmony-sig/flutter_localization"
+#      ref: br_v0.3.3_ohos
+#  webview_flutter:
+#    git:
+#      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+#      path: "packages/webview_flutter/webview_flutter"
+#      ref: br_webview_flutter-v4.13.0_ohos
+#      # ref: br_webview_flutter-v4.8.0_ohos
+#  webview_flutter_platform_interface:
+#    git:
+#      url: "https://gitcode.com/openharmony-tpc/flutter_packages.git"
+#      path: "packages/webview_flutter/webview_flutter_platform_interface"
+#      ref: br_webview_flutter-v4.13.0_ohos
+#  flutter_webrtc:
+#      git:
+#        url: https://gitcode.com/openharmony-sig/fluttertpc_flutter_webrtc
+#  fluttertoast:
+#      git:
+#        url: https://gitcode.com/openharmony-sig/flutter_fluttertoast.git
+#        ref: br_v9.0.0_ohos
+#  flutter_local_notifications:
+#      git:
+#        url: https://gitcode.com/openharmony-sig/fluttertpc_flutter_local_notifications.git
+#        path: flutter_local_notifications
+#        ref: br_flutter_local_notifications-v17.2.4_ohos
+#  file_picker:
+#      git:
+#        url: https://gitcode.com/openharmony-sig/fluttertpc_file_picker.git
+#        ref: br_v8.0.7_ohos
+#  mobile_scanner:
+#      git:
+#        url: https://gitcode.com/openharmony-sig/fluttertpc_mobile_scanner
+#        ref: br_v6.0.10_ohos
   # [ohos-end]
-  # 以下 ohos fork 默认不启用（保持使用标准版）：
-  # - file_picker 的 ohos fork 依赖 web ^0.5.1，与 flutter_localization
-  #   ohos 版依赖的 web ^1.1.1 冲突，不能同时启用；
-  # - fluttertoast / flutter_local_notifications / mobile_scanner /
-  #   flutter_webrtc 的标准版此前在 ohos 构建中正常使用，未切换。
-  # 如确实需要，单独启用对应条目：
-  # fluttertoast:
-  #   git:
-  #     url: https://gitcode.com/openharmony-sig/flutter_fluttertoast.git
-  #     ref: br_v9.0.0_ohos
-  # flutter_local_notifications:
-  #   git:
-  #     url: https://gitcode.com/openharmony-sig/fluttertpc_flutter_local_notifications.git
-  #     path: flutter_local_notifications
-  #     ref: br_flutter_local_notifications-v17.2.4_ohos
-  # file_picker:
-  #   git:
-  #     url: https://gitcode.com/openharmony-sig/fluttertpc_file_picker.git
-  #     ref: br_v8.0.7_ohos
-  # mobile_scanner:
-  #   git:
-  #     url: https://gitcode.com/openharmony-sig/fluttertpc_mobile_scanner
-  #     ref: br_v6.0.10_ohos
-  # flutter_webrtc:
-  #   git:
-  #     url: https://gitcode.com/openharmony-sig/fluttertpc_flutter_webrtc
 
 dev_dependencies:
   flutter_test:
