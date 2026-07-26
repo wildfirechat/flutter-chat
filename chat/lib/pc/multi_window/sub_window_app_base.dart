@@ -11,6 +11,7 @@ import '../../l10n/app_localizations.dart';
 import '../../viewmodel/font_size_view_model.dart';
 import '../../viewmodel/locale_view_model.dart';
 import '../../viewmodel/theme_view_model.dart';
+import '../../widget/watermark_overlay.dart';
 import 'window_event_channel.dart';
 
 /// PC 子窗口 App 的公共基类(call/media_preview/moment/search 四个窗口
@@ -152,7 +153,8 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
       debugPrint('$_tag _init start, windowId=$windowId');
 
       // 子窗口 isolate 中 Imclient 没有自己连接 IM,先设置当前用户。
-      // 仅创建参数携带 _selfUserId 时设置(媒体预览窗不连 IM,不带此参数)。
+      // 创建参数携带 _selfUserId 时设置(四类子窗口均注入,媒体预览窗
+      // 虽不连 IM,也用它来显示全局水印)。
       final selfUserId = windowArguments['_selfUserId'] as String?;
       if (selfUserId != null) {
         ImclientPlatform.instance.userId = selfUserId;
@@ -283,7 +285,13 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
                   textScaler:
                       TextScaler.linear(fontSizeViewModel.textScaleFactor),
                 ),
-                child: child!,
+                // 子窗口同样覆盖全局水印(userId 走 Imclient.currentUserId 回退)
+                child: Stack(
+                  children: [
+                    child!,
+                    const Positioned.fill(child: WatermarkOverlay()),
+                  ],
+                ),
               );
             },
             home: _isReady ? buildHome(context) : buildLoading(context),

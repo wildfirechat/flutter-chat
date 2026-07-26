@@ -37,9 +37,8 @@ class MediaPreviewWindowManager extends SubWindowManagerBase {
   @override
   String get creationWindowKind => kMediaPreviewWindowKind;
 
-  /// 预览窗不连 IM,创建参数不带 _selfUserId。
-  @override
-  bool get injectSelfUserId => false;
+  /// 预览窗不连 IM,但创建参数仍注入 _selfUserId(基类默认 true),
+  /// 供全局水印显示用户 ID(见 WatermarkOverlay 的 Imclient.currentUserId 回退)。
 
   @override
   SubWindowReusePolicy get reusePolicy => SubWindowReusePolicy.updateContent;

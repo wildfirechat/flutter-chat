@@ -31,7 +31,8 @@ enum SubWindowReusePolicy {
 ///   事件前缀;
 /// - [creationWindowKind]:创建参数 kWindowKindKey 的值,默认同 windowKind
 ///   (媒体预览:事件前缀 'mediaPreview',创建参数值 'media_preview',两者不同);
-/// - [injectSelfUserId]:创建参数是否注入 _selfUserId(媒体预览不连 IM,关闭);
+/// - [injectSelfUserId]:创建参数是否注入 _selfUserId(四类子窗口均注入,
+///   连接 IM 的子窗口业务需要,媒体预览窗则用于全局水印显示);
 /// - [createPayload]/[initialWindowSize]:创建参数(业务部分)与首开尺寸;
 /// - [reusePolicy]:复用策略,驱动 [reuseExistingWindow] 默认实现;
 /// - [onReuseContent]:updateContent 策略下置顶前的内容更新;
