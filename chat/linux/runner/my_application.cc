@@ -6,6 +6,7 @@
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
 #endif
+#include <sys/file.h>  // flock() 与 LOCK_EX/LOCK_NB;不引入则 flock 会被解析成 <fcntl.h> 里的 struct flock
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
