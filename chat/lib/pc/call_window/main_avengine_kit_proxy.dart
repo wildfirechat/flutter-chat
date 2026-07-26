@@ -294,6 +294,10 @@ class MainAvEngineKitProxy {
     );
     _callWindowId = windowId;
     print('$_tag call window created id=$windowId');
+    // Windows 上子窗口初始化可能很快，ready 回调在 createCallWindow 返回前就已
+    // 触发；此时 _callWindowId 还未赋值，初始事件会被暂存到队列。这里再刷一次
+    // 队列，确保 startCall / 来电消息等能真正发给 Call 窗口。
+    _flushEventQueue();
   }
 
   String _resolveWindowType(Conversation? conversation, bool isConference) {

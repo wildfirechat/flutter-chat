@@ -683,8 +683,15 @@ class _PCHomeState extends State<PCHome> {
 
   Widget _buildMiddleColumn(BuildContext context) {
     return Container(
-      color: context.colors.middleBgDesktop,
-      child: Column(
+      // 圆角外露出部分与左侧导航栏同色，视觉上融为一体
+      color: context.colors.sidebarBgDesktop,
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(10),
+        ),
+        child: Container(
+          color: context.colors.middleBgDesktop,
+          child: Column(
         children: [
           Consumer<PCShellViewModel>(
             builder: (context, shell, _) {
@@ -706,6 +713,17 @@ class _PCHomeState extends State<PCHome> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     AppLocalizations.of(context)!.conferenceTitle,
+                    style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+                  ),
+                );
+              }
+              if (shell.selectedTab == PCShellViewModel.tabDiscovery) {
+                return Container(
+                  height: PcTheme.headerHeight,
+                  padding: const EdgeInsets.only(left: 16),
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    AppLocalizations.of(context)!.tabDiscovery,
                     style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                   ),
                 );
@@ -746,6 +764,7 @@ class _PCHomeState extends State<PCHome> {
                 onSearchTap: _openSearchModal,
                 onStartChat: _startChat,
                 onAddFriend: _onAddFriend,
+                backgroundColor: context.colors.middleBgDesktop,
               );
             },
           ),
@@ -786,6 +805,8 @@ class _PCHomeState extends State<PCHome> {
             ),
           ),
         ],
+      ),
+      ),
       ),
     );
   }
@@ -918,7 +939,7 @@ class _PlusMenuButton extends StatelessWidget {
           width: 20,
           height: 20,
           decoration: BoxDecoration(
-            color: hovered ? colors.inputBgHover : colors.cellTopDesktop,
+            color: hovered ? colors.inputBgHover : (backgroundColor ?? colors.cellTopDesktop),
             shape: BoxShape.circle,
             border: Border.all(color: colors.iconPrimary, width: 1),
           ),

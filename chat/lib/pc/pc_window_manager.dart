@@ -142,14 +142,39 @@ class PCWindowManager {
     _saveStateTimer?.cancel();
     _saveStateTimer = null;
     try {
-      final bounds = await windowManager.getBounds();
       final isMaximized = await windowManager.isMaximized();
+      final prefs = await SharedPreferences.getInstance();
+
+      if (isMaximized) {
+        // 最大化时 getBounds 返回的是全屏尺寸，直接保存会导致恢复时窗口
+        // 占据整个屏幕却不是最大化状态。保留之前保存的正常尺寸，只更新最大化标记。
+        final jsonStr = prefs.getString(_prefsKey);
+        if (jsonStr != null && jsonStr.isNotEmpty) {
+          final oldState = _WindowState.fromJson(jsonDecode(jsonStr));
+          final state = _WindowState(
+            size: oldState.size,
+            position: oldState.position,
+            isMaximized: true,
+          );
+          await prefs.setString(_prefsKey, jsonEncode(state.toJson()));
+        } else {
+          // 首次最大化且没有历史正常尺寸，用最小尺寸作为兜底
+          final state = _WindowState(
+            size: const Size(_minWidth, _minHeight),
+            position: null,
+            isMaximized: true,
+          );
+          await prefs.setString(_prefsKey, jsonEncode(state.toJson()));
+        }
+        return;
+      }
+
+      final bounds = await windowManager.getBounds();
       final state = _WindowState(
         size: bounds.size,
         position: bounds.topLeft,
-        isMaximized: isMaximized,
+        isMaximized: false,
       );
-      final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_prefsKey, jsonEncode(state.toJson()));
     } catch (e) {
       debugPrint('save window state failed: $e');

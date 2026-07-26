@@ -50,11 +50,21 @@ class _PcWindowCaptionState extends State<PcWindowCaption> with WindowListener {
     if (mounted) setState(() => _isMaximized = false);
   }
 
-  void _toggleMaximize() {
-    if (_isMaximized) {
-      windowManager.unmaximize();
+  void _toggleMaximize() async {
+    // 不依赖本地缓存的 _isMaximized，防止 maximize/unmaximize 事件漏达后
+    // 状态卡死（已最大化却走 maximize() 变成无操作）。
+    final isMaximized = await windowManager.isMaximized();
+    if (isMaximized) {
+      await windowManager.unmaximize();
     } else {
-      windowManager.maximize();
+      await windowManager.maximize();
+    }
+    // 兜底同步一次真实状态，保证按钮图标正确。
+    if (mounted) {
+      final current = await windowManager.isMaximized();
+      if (mounted && current != _isMaximized) {
+        setState(() => _isMaximized = current);
+      }
     }
   }
 
@@ -64,7 +74,8 @@ class _PcWindowCaptionState extends State<PcWindowCaption> with WindowListener {
     return Container(
       height: captionHeight,
       decoration: BoxDecoration(
-        color: colors.cellTopDesktop,
+        // 标题栏与左侧导航栏保持同色
+        color: colors.sidebarBgDesktop,
         border: Border(
           bottom: BorderSide(color: colors.hairline, width: 0.5),
         ),

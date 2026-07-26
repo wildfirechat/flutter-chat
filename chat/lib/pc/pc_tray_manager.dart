@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image/image.dart' as img;
 import 'package:menu_base/menu_base.dart' as mb;
+import 'package:path_provider/path_provider.dart';
 import 'package:tray_manager/tray_manager.dart' as tm;
 import 'package:window_manager/window_manager.dart';
 import 'package:chat/pc/pc_window_manager.dart';
@@ -24,6 +27,12 @@ class PCTrayManager {
   bool _flashIconVisible = true;
   tm.TrayListener? _listener;
 
+  /// Windows 下缓存的托盘图标真实文件路径（从 asset 提取的 .ico）。
+  String? _trayIconPath;
+
+  /// Windows 下缓存的透明图标真实文件路径（闪烁用）。
+  String? _transparentIconPath;
+
   int get unreadCount => _unreadCount;
 
   /// 初始化托盘。应在窗口显示后调用。
@@ -32,14 +41,14 @@ class PCTrayManager {
       return;
     }
 
-    final iconPath = _detectTrayIcon();
-    if (iconPath == null) {
+    await _prepareIconPaths();
+    if (_trayIconPath == null) {
       debugPrint('PCTrayManager: no suitable icon found');
       return;
     }
 
     try {
-      await tm.trayManager.setIcon(iconPath);
+      await tm.trayManager.setIcon(_trayIconPath!);
       await _setContextMenu();
       _listener = _TrayListener();
       tm.trayManager.addListener(_listener!);
@@ -57,12 +66,51 @@ class PCTrayManager {
     }
   }
 
-  String? _detectTrayIcon() {
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+  /// 准备托盘图标路径。
+  /// Windows 的 tray_manager 插件通过 LoadImage + LR_LOADFROMFILE 加载图标，
+  /// 不支持 Flutter asset 路径，也不支持 PNG；必须提取为真实 .ico 文件。
+  /// macOS / Linux 可直接使用 asset 路径。
+  Future<void> _prepareIconPaths() async {
+    if (Platform.isWindows) {
+      _trayIconPath = await _extractAssetToTempFile(
+          'assets/images/app_icon.ico', 'tray_app_icon.ico');
+      _transparentIconPath = await _generateTransparentIco();
+    } else if (Platform.isMacOS || Platform.isLinux) {
       // macOS 托盘图标建议为 16x16~22x22 的模板图,这里复用 app_icon
-      return 'assets/images/app_icon.png';
+      _trayIconPath = 'assets/images/app_icon.png';
+      _transparentIconPath = 'assets/images/transparent.png';
     }
-    return null;
+  }
+
+  /// 把 Flutter asset 提取到临时目录，返回真实文件路径。
+  Future<String?> _extractAssetToTempFile(
+      String assetPath, String fileName) async {
+    try {
+      final byteData = await rootBundle.load(assetPath);
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/$fileName');
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+      return file.path;
+    } catch (e) {
+      debugPrint('PCTrayManager extract asset $assetPath failed: $e');
+      return null;
+    }
+  }
+
+  /// 生成 1x1 透明 ICO 文件，供 Windows 托盘闪烁时使用。
+  Future<String?> _generateTransparentIco() async {
+    try {
+      final image = img.Image(width: 1, height: 1);
+      image.setPixelRgba(0, 0, 0, 0, 0, 0);
+      final icoBytes = img.encodeIco(image);
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/tray_transparent.ico');
+      await file.writeAsBytes(icoBytes);
+      return file.path;
+    } catch (e) {
+      debugPrint('PCTrayManager generate transparent ico failed: $e');
+      return null;
+    }
   }
 
   Future<void> _setContextMenu() async {
@@ -132,9 +180,12 @@ class PCTrayManager {
       _flashIconVisible = !_flashIconVisible;
       try {
         // 与透明占位图交替实现闪烁;title 数字由 updateUnreadCount 单独维护
-        await tm.trayManager.setIcon(_flashIconVisible
-            ? _detectTrayIcon()!
-            : 'assets/images/transparent.png');
+        final iconPath = _flashIconVisible
+            ? _trayIconPath
+            : _transparentIconPath ?? _trayIconPath;
+        if (iconPath != null) {
+          await tm.trayManager.setIcon(iconPath);
+        }
       } catch (e) {
         debugPrint('PCTrayManager flash failed: $e');
       }
@@ -148,9 +199,8 @@ class PCTrayManager {
     _flashTimer!.cancel();
     _flashTimer = null;
     _flashIconVisible = true;
-    final iconPath = _detectTrayIcon();
-    if (iconPath != null) {
-      tm.trayManager.setIcon(iconPath).catchError((e) {
+    if (_trayIconPath != null) {
+      tm.trayManager.setIcon(_trayIconPath!).catchError((e) {
         debugPrint('PCTrayManager restore icon failed: $e');
       });
     }
