@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:imclient/model/user_info.dart';
 
@@ -14,5 +15,13 @@ class ConferenceParticipantItem {
   bool isAudience = false;
   int volume = 0;
 
+  /// 说话状态(音量>0 且未静音),仅状态翻转时通知,
+  /// 供说话绿框/角标局部刷新,避免音量高频上报触发整页重建。
+  final ValueNotifier<bool> speakingNotifier = ValueNotifier(false);
+
   ConferenceParticipantItem({required this.userId, required this.renderer});
+
+  void dispose() {
+    speakingNotifier.dispose();
+  }
 }

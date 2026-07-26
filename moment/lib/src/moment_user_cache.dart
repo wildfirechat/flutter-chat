@@ -14,6 +14,21 @@ class MomentUserCache extends ChangeNotifier {
   final Map<String, UserInfo> _cache = {};
   final Set<String> _loading = {};
 
+  /// 按 userId 拆分的变更通知器：头像/昵称等高频 widget 只订阅自己关心的
+  /// 用户，避免任一用户加载完成时所有订阅者一起重建。
+  final Map<String, ValueNotifier<int>> _userNotifiers = {};
+
+  /// 某个用户的变更通知器（值仅作版本号，内容仍通过 [portraitOf]/[displayNameOf] 读取）。
+  ValueListenable<int> notifierOf(String userId) {
+    return _userNotifiers.putIfAbsent(userId, () => ValueNotifier(0));
+  }
+
+  void _notifyUser(String userId) {
+    final notifier = _userNotifiers[userId];
+    if (notifier != null) notifier.value++;
+    notifyListeners();
+  }
+
   /// 同步取缓存；未命中时触发异步加载并在完成后 [notifyListeners]。
   UserInfo? operator [](String userId) {
     if (userId.isEmpty) return null;
@@ -29,7 +44,7 @@ class MomentUserCache extends ChangeNotifier {
     Imclient.getUserInfo(userId).then((info) {
       if (info != null) {
         _cache[userId] = info;
-        notifyListeners();
+        _notifyUser(userId);
       }
     }).catchError((_) {}).whenComplete(() => _loading.remove(userId));
   }
@@ -39,7 +54,7 @@ class MomentUserCache extends ChangeNotifier {
     final info = await Imclient.getUserInfo(userId, refresh: true);
     if (info != null) {
       _cache[userId] = info;
-      notifyListeners();
+      _notifyUser(userId);
     }
   }
 

@@ -15,10 +15,16 @@ class ImageCellBuilder extends PortraitCellBuilder {
   late ImageMessageContent imageMessageContent;
   Uint8List? thumbnail;
 
+  // 本地文件存在性在构造时判断一次，避免每次 build 都在主 isolate 同步 stat
+  bool _localFileExists = false;
+
   ImageCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
     imageMessageContent = model.message.content as ImageMessageContent;
     if (imageMessageContent.thumbnail != null) {
       thumbnail = imageMessageContent.thumbnail!;
+    }
+    if (imageMessageContent.localPath != null && imageMessageContent.localPath!.isNotEmpty) {
+      _localFileExists = File(imageMessageContent.localPath!).existsSync();
     }
   }
 
@@ -38,24 +44,25 @@ class ImageCellBuilder extends PortraitCellBuilder {
 
     double dpr = MediaQuery.of(context).devicePixelRatio;
 
-    // 优先检查本地文件
-    if (imageMessageContent.localPath != null && imageMessageContent.localPath!.isNotEmpty) {
+    // 优先检查本地文件(存在性已在构造时缓存)
+    if (_localFileExists) {
       File localFile = File(imageMessageContent.localPath!);
-      if (localFile.existsSync()) {
-        return SizedBox(
-          width: width / dpr,
-          height: height / dpr,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.file(
-              localFile,
-              width: width,
-              height: height,
-              fit: BoxFit.cover,
-            ),
+      return SizedBox(
+        width: width / dpr,
+        height: height / dpr,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.file(
+            localFile,
+            width: width,
+            height: height,
+            // 按显示尺寸×dpr 解码，避免原图全尺寸解码占用大量内存
+            cacheWidth: (width * dpr).ceil(),
+            cacheHeight: (height * dpr).ceil(),
+            fit: BoxFit.cover,
           ),
-        );
-      }
+        ),
+      );
     }
 
     // 如果有原图 URL，使用 CachedNetworkImage 加载并缓存

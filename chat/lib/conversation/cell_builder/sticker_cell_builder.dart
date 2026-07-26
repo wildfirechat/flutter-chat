@@ -15,15 +15,26 @@ class StickerCellBuilder extends PortraitCellBuilder {
   @override
   Widget buildMessageContent(BuildContext context) {
     Widget imageWidget;
-    
+    // 显示区域最大 150×150,按显示尺寸×dpr 解码，避免原图全尺寸解码占用大量内存
+    double dpr = MediaQuery.of(context).devicePixelRatio;
+    int cacheSize = (150 * dpr).ceil();
+
     if (stickerContent.localPath != null && stickerContent.localPath!.isNotEmpty) {
       if (stickerContent.localPath!.startsWith('assets/')) {
         imageWidget = Image.asset(stickerContent.localPath!);
       } else {
-        imageWidget = Image.file(File(stickerContent.localPath!));
+        imageWidget = Image.file(
+          File(stickerContent.localPath!),
+          cacheWidth: cacheSize,
+          cacheHeight: cacheSize,
+        );
       }
     } else if (stickerContent.remoteUrl != null && stickerContent.remoteUrl!.isNotEmpty) {
-      imageWidget = Image.network(MediaUrlRedirector.redirect(stickerContent.remoteUrl!));
+      imageWidget = Image.network(
+        MediaUrlRedirector.redirect(stickerContent.remoteUrl!),
+        cacheWidth: cacheSize,
+        cacheHeight: cacheSize,
+      );
     } else {
       imageWidget = const Icon(Icons.broken_image, size: 64, color: Colors.grey);
     }

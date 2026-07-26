@@ -33,7 +33,7 @@ class DiscoveryTab extends StatelessWidget {
                     if (Config.ENABLE_MOMENTS)
                       OptionItem(
                         l10n.momentWindowTitle,
-                        leftIcon: Icons.dynamic_feed_rounded,
+                        leftImage: Image.asset('assets/images/discover_moments.png', width: 20.0, height: 20.0),
                         onTap: () {
                           Navigator.push(
                             context,

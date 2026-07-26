@@ -208,64 +208,68 @@ class _PcContactListState extends State<PcContactList> {
         ),
         builder: (context, record, _) {
           final hasOrg = record.rootOrgs.isNotEmpty || record.myOrgs.isNotEmpty;
-          return ListView(
-            children: [
+          // 先组装行列表再交给 ListView.builder 懒构建,
+          // 避免 ListView(children:) 一次性实例化全部联系人。
+          final children = <Widget>[
+            _SectionHeader(
+              iconAsset: 'assets/images/contact_new_friend.png',
+              title: l10n.newFriend,
+              expanded: _newFriendExpanded,
+              badgeCount: record.unreadFriendRequestCount,
+              onTap: _toggleNewFriend,
+            ),
+            if (_newFriendExpanded) ..._buildFriendRequestRows(context),
+            _SectionHeader(
+              iconAsset: 'assets/images/contact_fav_group.png',
+              title: l10n.favGroup,
+              expanded: _groupsExpanded,
+              onTap: _toggleGroups,
+            ),
+            if (_groupsExpanded) ..._buildFavGroupRows(context),
+            _SectionHeader(
+              iconAsset: 'assets/images/contact_subscribed_channel.png',
+              title: l10n.subscribedChannel,
+              expanded: _channelsExpanded,
+              onTap: _toggleChannels,
+            ),
+            if (_channelsExpanded) ..._buildChannelRows(context),
+            // 「外部单位/Mesh」可折叠分组
+            if (_meshEnabled) ...[
               _SectionHeader(
-                iconAsset: 'assets/images/contact_new_friend.png',
-                title: l10n.newFriend,
-                expanded: _newFriendExpanded,
-                badgeCount: record.unreadFriendRequestCount,
-                onTap: _toggleNewFriend,
+                icon: Icons.domain,
+                title: l10n.mesh,
+                expanded: _meshExpanded,
+                onTap: _toggleMesh,
               ),
-              if (_newFriendExpanded) ..._buildFriendRequestRows(context),
+              if (_meshExpanded) ..._buildMeshRows(context),
+            ],
+            // 「组织架构」可折叠分组
+            if (hasOrg) ...[
               _SectionHeader(
-                iconAsset: 'assets/images/contact_fav_group.png',
-                title: l10n.favGroup,
-                expanded: _groupsExpanded,
-                onTap: _toggleGroups,
+                icon: Icons.account_tree_outlined,
+                title: l10n.organization,
+                expanded: _orgExpanded,
+                onTap: () => setState(() => _orgExpanded = !_orgExpanded),
               ),
-              if (_groupsExpanded) ..._buildFavGroupRows(context),
-              _SectionHeader(
-                iconAsset: 'assets/images/contact_subscribed_channel.png',
-                title: l10n.subscribedChannel,
-                expanded: _channelsExpanded,
-                onTap: _toggleChannels,
-              ),
-              if (_channelsExpanded) ..._buildChannelRows(context),
-              // 「外部单位/Mesh」可折叠分组
-              if (_meshEnabled) ...[
-                _SectionHeader(
-                  icon: Icons.domain,
-                  title: l10n.mesh,
-                  expanded: _meshExpanded,
-                  onTap: _toggleMesh,
-                ),
-                if (_meshExpanded) ..._buildMeshRows(context),
-              ],
-              // 「组织架构」可折叠分组
-              if (hasOrg) ...[
-                _SectionHeader(
-                  icon: Icons.account_tree_outlined,
-                  title: l10n.organization,
-                  expanded: _orgExpanded,
-                  onTap: () => setState(() => _orgExpanded = !_orgExpanded),
-                ),
-                if (_orgExpanded) ...[
-                  for (var org in record.rootOrgs) _buildOrgRow(context, org, true),
-                  for (var org in record.myOrgs) _buildOrgRow(context, org, false),
-                ],
-              ],
-              // 「联系人」可折叠分组:星标联系人 / AI 机器人 / 普通联系人(字母序)全部收入其下
-              if (record.contactList.isNotEmpty) ...[
-                _SectionHeader(
-                  icon: Icons.contacts_outlined,
-                  title: l10n.contactCategory,
-                  expanded: _contactExpanded,
-                  onTap: () => setState(() => _contactExpanded = !_contactExpanded),
-                ),
-                if (_contactExpanded) ..._buildContactRows(context, record.contactList),
+              if (_orgExpanded) ...[
+                for (var org in record.rootOrgs) _buildOrgRow(context, org, true),
+                for (var org in record.myOrgs) _buildOrgRow(context, org, false),
               ],
             ],
+            // 「联系人」可折叠分组:星标联系人 / AI 机器人 / 普通联系人(字母序)全部收入其下
+            if (record.contactList.isNotEmpty) ...[
+              _SectionHeader(
+                icon: Icons.contacts_outlined,
+                title: l10n.contactCategory,
+                expanded: _contactExpanded,
+                onTap: () => setState(() => _contactExpanded = !_contactExpanded),
+              ),
+              if (_contactExpanded) ..._buildContactRows(context, record.contactList),
+            ],
+          ];
+          return ListView.builder(
+            itemCount: children.length,
+            itemBuilder: (context, index) => children[index],
           );
         },
       ),
@@ -580,33 +584,36 @@ class _ContactRow extends StatelessWidget {
     return AnimatedBuilder(
       animation: MeshCache.instance,
       builder: (context, child) {
-        final selectedId = Provider.of<PCShellViewModel>(context).selectedContactItemId;
-        final isSelected = selectedId == 'user-${userInfo.userId}';
+        // 订阅收窄为「本行是否被选中」的布尔值,避免选中项变化时全部联系人行重建。
+        return Selector<PCShellViewModel, bool>(
+          selector: (_, shell) => shell.selectedContactItemId == 'user-${userInfo.userId}',
+          builder: (context, isSelected, _) {
+            Color getBgColor(bool hovered) {
+              if (isSelected) return context.colors.cellSelectedDesktop;
+              if (hovered) return context.colors.cellHover;
+              return Colors.transparent;
+            }
 
-        Color getBgColor(bool hovered) {
-          if (isSelected) return context.colors.cellSelectedDesktop;
-          if (hovered) return context.colors.cellHover;
-          return Colors.transparent;
-        }
-
-        return HoverBuilder(
-          cursor: SystemMouseCursors.click,
-          builder: (context, hovered) => GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: onTap,
-            child: Container(
-              height: _childRowHeight(context),
-              padding: const EdgeInsets.only(left: _kContentInset, right: 14),
-              color: getBgColor(hovered),
-              child: Row(
-                children: [
-                  Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
-                  const SizedBox(width: _kIconGap),
-                  Expanded(child: _buildName(context, isSelected)),
-                ],
+            return HoverBuilder(
+              cursor: SystemMouseCursors.click,
+              builder: (context, hovered) => GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: onTap,
+                child: Container(
+                  height: _childRowHeight(context),
+                  padding: const EdgeInsets.only(left: _kContentInset, right: 14),
+                  color: getBgColor(hovered),
+                  child: Row(
+                    children: [
+                      Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
+                      const SizedBox(width: _kIconGap),
+                      Expanded(child: _buildName(context, isSelected)),
+                    ],
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );

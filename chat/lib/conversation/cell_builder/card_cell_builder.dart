@@ -18,6 +18,7 @@ class CardCellBuilder extends PortraitCellBuilder {
   @override
   Widget buildMessageContent(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+    double dpr = MediaQuery.of(context).devicePixelRatio;
 
     String imagePath = Config.defaultUserPortrait;
     String hint = "个人名片";
@@ -29,8 +30,16 @@ class CardCellBuilder extends PortraitCellBuilder {
       hint = "频道名片";
     }
 
-    Image image =
-        cardMessageContent.portrait != null ? Image.network(MediaUrlRedirector.redirect(cardMessageContent.portrait!), width: 48.0, height: 48.0) : Image.asset(imagePath, width: 48.0, height: 48.0);
+    Image image = cardMessageContent.portrait != null
+        ? Image.network(
+            MediaUrlRedirector.redirect(cardMessageContent.portrait!),
+            width: 48.0,
+            height: 48.0,
+            // 按显示尺寸×dpr 解码，避免原图全尺寸解码占用大量内存
+            cacheWidth: (48 * dpr).ceil(),
+            cacheHeight: (48 * dpr).ceil(),
+          )
+        : Image.asset(imagePath, width: 48.0, height: 48.0);
     Text displayNameText = Text(
       cardMessageContent.displayName!,
       maxLines: 2,

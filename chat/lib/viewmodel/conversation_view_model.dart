@@ -441,6 +441,7 @@ class ConversationViewModel extends ChangeNotifier {
     notifyListeners();
 
     Future.delayed(const Duration(seconds: 1), () {
+      if (stale()) return;
       uiTarget.highlighted = false;
       notifyListeners();
     });
@@ -698,6 +699,8 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   void _startTypingTimer() {
+    // 先取消旧 timer，避免每次收到 TypingMessageContent 都新建一个孤儿定时器
+    _typingTimer?.cancel();
     _typingTimer = Timer.periodic(const Duration(milliseconds: 300), (timer) {
       bool isUserTyping = _updateTypingStatus();
       if (!isUserTyping && _typingUserTime.isNotEmpty) {
@@ -761,5 +764,6 @@ class ConversationViewModel extends ChangeNotifier {
     _draftUpdatedSubscription.cancel();
     _sendMessageSuccessSubscription.cancel();
     _sendMessageFailureSubscription.cancel();
+    _stopTypingTimer();
   }
 }

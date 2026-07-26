@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
@@ -45,15 +47,23 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
   final TextEditingController _memberSearchController = TextEditingController();
   final ScrollController _memberScrollController = ScrollController();
   String _searchText = '';
+  Timer? _searchDebounce;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(() {
-      setState(() => _searchText = _searchController.text);
-      if (_searchText.isNotEmpty) {
-        _searchViewModel.search(_searchText, searchTypes: ForwardTargetList.searchTypes);
-      }
+      // 300ms 防抖:避免每敲一字就 setState 重建整个双栏弹窗并立即搜索
+      // (SearchViewModel 内部无防抖,只在这里做)
+      final text = _searchController.text;
+      _searchDebounce?.cancel();
+      _searchDebounce = Timer(const Duration(milliseconds: 300), () {
+        if (!mounted) return;
+        setState(() => _searchText = text);
+        if (_searchText.isNotEmpty) {
+          _searchViewModel.search(_searchText, searchTypes: ForwardTargetList.searchTypes);
+        }
+      });
     });
     _memberSearchController.addListener(() {
       _controller.pickUserViewModel?.search(_memberSearchController.text);
@@ -62,6 +72,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     _commentController.dispose();
     _memberSearchController.dispose();

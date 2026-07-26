@@ -277,7 +277,13 @@ class _PublishFeedPageState extends State<PublishFeedPage> {
               ),
             )
           else
-            Image.file(File(media.path), fit: BoxFit.cover),
+            // 按 cell 尺寸×DPR 限制解码大小，避免原图全尺寸解码（单张约 48MB）
+            Image.file(File(media.path),
+                fit: BoxFit.cover,
+                cacheWidth: (MediaQuery.sizeOf(context).width /
+                        3 *
+                        MediaQuery.devicePixelRatioOf(context))
+                    .round()),
           // 右上角删除按钮（对齐微信），长按删除的对话仍保留
           Positioned(
             top: 4,

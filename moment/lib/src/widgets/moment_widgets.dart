@@ -33,16 +33,22 @@ class MomentAvatar extends StatelessWidget {
         child: SizedBox(
           width: size,
           height: size,
-          child: ListenableBuilder(
-            listenable: MomentUserCache.instance,
-            builder: (context, _) {
+          // 只订阅当前用户的变更,其他用户加载完成不会触发本头像重建
+          child: ValueListenableBuilder<int>(
+            valueListenable: MomentUserCache.instance.notifierOf(userId),
+            builder: (context, _, __) {
               final url = MomentUserCache.instance.portraitOf(userId);
               if (url.isEmpty) return _placeholder();
+              // 按显示尺寸×DPR 限制解码大小，避免原图占满内存缓存
+              final cacheSize =
+                  (size * MediaQuery.devicePixelRatioOf(context)).round();
               return CachedNetworkImage(
                 imageUrl: url,
                 width: size,
                 height: size,
                 fit: BoxFit.cover,
+                memCacheWidth: cacheSize,
+                memCacheHeight: cacheSize,
                 placeholder: (context, _) => _placeholder(),
                 errorWidget: (context, _, __) => _placeholder(),
               );
@@ -84,9 +90,10 @@ class MomentUserName extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: ListenableBuilder(
-        listenable: MomentUserCache.instance,
-        builder: (context, _) {
+      // 只订阅当前用户的变更,其他用户加载完成不会触发本文本重建
+      child: ValueListenableBuilder<int>(
+        valueListenable: MomentUserCache.instance.notifierOf(userId),
+        builder: (context, _, __) {
           return Text(
             MomentUserCache.instance.displayNameOf(userId),
             maxLines: maxLines,
@@ -110,12 +117,16 @@ class MomentNetworkImage extends StatelessWidget {
   final double? height;
   final BoxFit fit;
 
+  /// 内存缓存解码宽度（px），不传则按原图解码；大图建议传入显示宽度×DPR。
+  final int? memCacheWidth;
+
   const MomentNetworkImage(
     this.url, {
     super.key,
     this.width,
     this.height,
     this.fit = BoxFit.cover,
+    this.memCacheWidth,
   });
 
   @override
@@ -134,6 +145,7 @@ class MomentNetworkImage extends StatelessWidget {
       width: width,
       height: height,
       fit: fit,
+      memCacheWidth: memCacheWidth,
       placeholder: (context, _) => ph(),
       errorWidget: (context, _, __) => ph(),
     );

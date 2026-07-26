@@ -45,6 +45,8 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
   String? _token;
   String? _error;
   bool _isPolling = false;
+  // 慢响应时上一次轮询可能还没返回,in-flight 守卫避免请求叠加
+  bool _pollInFlight = false;
   Timer? _pollTimer;
   bool _loginSuccess = false;
   bool _isScanned = false;
@@ -54,12 +56,20 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
   // ===== 视图模式 =====
   _PCLoginView _currentView = _PCLoginView.qr;
 
+  // 协议链接手势:build 中创建会泄漏,作为 State 字段统一在 dispose 释放
+  late final TapGestureRecognizer _userAgreementRecognizer;
+  late final TapGestureRecognizer _privacyPolicyRecognizer;
+
   // ===== 表单模式(共享控制器) =====
   final LoginFormController _form = LoginFormController();
 
   @override
   void initState() {
     super.initState();
+    _userAgreementRecognizer = TapGestureRecognizer()
+      ..onTap = () => Utilities.openLink(context, Config.USER_AGREEMENT_URL);
+    _privacyPolicyRecognizer = TapGestureRecognizer()
+      ..onTap = () => Utilities.openLink(context, Config.PRIVACY_AGREEMENT_URL);
     _createSession();
     _form.addListener(_onFormChanged);
   }
@@ -68,6 +78,8 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
   void dispose() {
     _pollTimer?.cancel();
     _pollTimer = null;
+    _userAgreementRecognizer.dispose();
+    _privacyPolicyRecognizer.dispose();
     _form.removeListener(_onFormChanged);
     _form.dispose();
     super.dispose();
@@ -117,41 +129,68 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
     }
     _isPolling = true;
 
-    void doPoll() {
-      AppServer.pollPcSessionLogin(
-        token,
-        (userId, imToken) async {
-          // 登录成功
-          _pollTimer?.cancel();
-          _pollTimer = null;
-          if (!mounted || _loginSuccess) {
-            return;
-          }
-          _loginSuccess = true;
-          await _saveAndConnect(userId, imToken);
-        },
-        (scannedUser) {
-          // 扫码但未确认: 服务端 LoginResponse 中 userName 实际是 displayName, portrait 是头像URL
-          if (mounted && !_loginSuccess) {
-            setState(() {
-              _isScanned = true;
-              _scannedUserPortrait = scannedUser['portrait'];
-              _scannedUserName = scannedUser['userName'];
-            });
-          }
-        },
-        (errorMsg) {
-          debugPrint('pollPcSessionLogin: $errorMsg');
-        },
-      );
-    }
+    _doPoll();
+    _startPollTimer();
+  }
 
-    doPoll();
+  void _startPollTimer() {
     _pollTimer = Timer.periodic(const Duration(seconds: 2), (_) {
       if (mounted && !_loginSuccess) {
-        doPoll();
+        _doPoll();
       }
     });
+  }
+
+  void _doPoll() {
+    final token = _token;
+    if (token == null || _pollInFlight || _loginSuccess) {
+      return;
+    }
+    _pollInFlight = true;
+    AppServer.pollPcSessionLogin(
+      token,
+      (userId, imToken) async {
+        _pollInFlight = false;
+        // 登录成功
+        _pollTimer?.cancel();
+        _pollTimer = null;
+        if (!mounted || _loginSuccess) {
+          return;
+        }
+        _loginSuccess = true;
+        await _saveAndConnect(userId, imToken);
+      },
+      (scannedUser) {
+        _pollInFlight = false;
+        // 扫码但未确认: 服务端 LoginResponse 中 userName 实际是 displayName, portrait 是头像URL
+        if (mounted && !_loginSuccess) {
+          setState(() {
+            _isScanned = true;
+            _scannedUserPortrait = scannedUser['portrait'];
+            _scannedUserName = scannedUser['userName'];
+          });
+        }
+      },
+      (errorMsg) {
+        _pollInFlight = false;
+        debugPrint('pollPcSessionLogin: $errorMsg');
+      },
+    );
+  }
+
+  /// 切换二维码/表单视图。切到表单时暂停轮询 Timer,切回二维码时恢复。
+  void _switchView(_PCLoginView view) {
+    if (_currentView == view) {
+      return;
+    }
+    setState(() => _currentView = view);
+    if (view == _PCLoginView.form) {
+      _pollTimer?.cancel();
+      _pollTimer = null;
+    } else if (_isPolling && _pollTimer == null && _token != null && !_loginSuccess) {
+      _doPoll();
+      _startPollTimer();
+    }
   }
 
   Future<void> _cancelScan() async {
@@ -312,7 +351,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
           else
             // 未扫码：显示验证码/密码登录按钮
             TextButton(
-              onPressed: () => setState(() => _currentView = _PCLoginView.form),
+              onPressed: () => _switchView(_PCLoginView.form),
               child: Text(l10n.loginWithCodeOrPassword),
             ),
         ],
@@ -386,7 +425,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => setState(() => _currentView = _PCLoginView.qr),
+                    onTap: () => _switchView(_PCLoginView.qr),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -470,19 +509,13 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
                         TextSpan(
                           text: l10n.userAgreement,
                           style: TextStyle(color: context.colors.link),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Utilities.openLink(context, Config.USER_AGREEMENT_URL);
-                            },
+                          recognizer: _userAgreementRecognizer,
                         ),
                         TextSpan(text: l10n.and),
                         TextSpan(
                           text: l10n.privacyPolicy,
                           style: TextStyle(color: context.colors.link),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Utilities.openLink(context, Config.PRIVACY_AGREEMENT_URL);
-                            },
+                          recognizer: _privacyPolicyRecognizer,
                         ),
                       ],
                     ),

@@ -1,5 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/call_start_message_content.dart';
@@ -46,8 +47,12 @@ class a extends AVEngineKit {
   Map<String, List<Map<String, dynamic>>> rc = {};
   String vc = '';
 
+  StreamSubscription? _msgSubscription;
+
   @override
   void init(AVEngineCallback ca) {
+    // 防重复 init:重复调用会重复注册消息内容并重复监听信令消息,直接返回
+    if (_msgSubscription != null) return;
     print('$g init');
     w = ca;
 
@@ -57,7 +62,8 @@ class a extends AVEngineKit {
     Imclient.registerMessageContent(muteVideoContentMeta);
     Imclient.registerMessageContent(signalContentMeta);
 
-    Imclient.IMEventBus.on<ReceiveMessagesEvent>().listen((za) {
+    // 保留订阅句柄,便于后续提供 dispose/reset 路径时取消
+    _msgSubscription = Imclient.IMEventBus.on<ReceiveMessagesEvent>().listen((za) {
       onReceiveMessages(za.messages, za.hasMore);
     });
   }
@@ -72,7 +78,7 @@ class a extends AVEngineKit {
 
     for (var rb in messages) {
       var content = rb.content;
-      print('$g receive voip message ${content.meta.type} $rb');
+      if (kDebugMode) print('$g receive voip message ${content.meta.type} $rb');
 
       if ((rb.conversation.conversationType == ConversationType.Single ||
            rb.conversation.conversationType == ConversationType.Group) &&
@@ -96,7 +102,7 @@ class a extends AVEngineKit {
           }
 
         } else if (content.meta.type == VOIP_CONTENT_TYPE_START) {
-          print('$g callstart $rb');
+          if (kDebugMode) print('$g callstart $rb');
           var aa = content as CallStartMessageContent;
           var targetIds = List<String>.from(aa.targetIds!);
 
@@ -392,15 +398,9 @@ class a extends AVEngineKit {
     });
   }
 
-  void yd(int messageUid, CallStartMessageContent content) {
-    
-    
-    
-    Imclient.getMessageByUid(messageUid).then((nb) {
-      if (nb != null) {
-        Imclient.updateMessage(nb.messageId, content);
-      }
-    });
+  // 调用方已通过 getMessageByUid 拿到 message,直接复用其 messageId,避免重复查询
+  void yd(Message nb, CallStartMessageContent content) {
+    Imclient.updateMessage(nb.messageId, content);
   }
 
   void xc(MessageContent sb, List<String> targetIds, bool keyMsg, Function(int, int?, int?)? ca) {

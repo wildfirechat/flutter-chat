@@ -89,6 +89,14 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
       _keyboardStableCount = 0;
     }
 
+    // 键盘高度稳定时保存（避免动画过程中的中间值）；IO 放在这里而不是 build 中
+    if (keyboardHeight > 0 && keyboardHeight == _lastKeyboardHeight) {
+      if ((_savedKeyboardHeight - keyboardHeight).abs() > 1) {
+        _savedKeyboardHeight = keyboardHeight;
+        _saveKeyboardHeight(keyboardHeight);
+      }
+    }
+
     // 键盘弹出到目标高度时，结束面板→键盘的过渡
     if (_keepBoardVisible && keyboardHeight > 0) {
       final targetHeight = _savedKeyboardHeight > 0 ? _savedKeyboardHeight : _minBoardHeight;
@@ -110,86 +118,90 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
 
   @override
   Widget build(BuildContext context) {
-    final controller = Provider.of<MessageInputBarController>(context);
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
-
-    final bool isInBoardMode = controller.status == ChatInputBarStatus.emojiStatus || controller.status == ChatInputBarStatus.pluginStatus;
-
-    // 键盘高度稳定时保存（避免动画过程中的中间值）
-    if (keyboardHeight > 0 && keyboardHeight == _lastKeyboardHeight) {
-      if ((_savedKeyboardHeight - keyboardHeight).abs() > 1) {
-        _savedKeyboardHeight = keyboardHeight;
-        _saveKeyboardHeight(keyboardHeight);
-      }
-    }
-    _lastKeyboardHeight = keyboardHeight;
-
-    final double targetBoardHeight = max(_savedKeyboardHeight, _minBoardHeight);
-
-    // 状态变化处理
-    if (isInBoardMode) {
-      _previousBoardStatus = controller.status;
-      _keepBoardVisible = false;
-    } else if (controller.status == ChatInputBarStatus.keyboardStatus &&
-        controller.focusNode.hasFocus &&
-        _previousBoardStatus != null &&
-        keyboardHeight < targetBoardHeight * 0.5) {
-      // 从面板切换到键盘，保持面板可见直到键盘弹出
-      _keepBoardVisible = true;
-    } else if (controller.status != ChatInputBarStatus.keyboardStatus || !controller.focusNode.hasFocus) {
-      // 非面板非键盘状态，或键盘失去焦点（收起全部），清除记录
-      _previousBoardStatus = null;
-      _keepBoardVisible = false;
-    }
-
-    final bool showBoard = isInBoardMode || _keepBoardVisible;
-
-    // 底部高度计算
-    // 当没有键盘和面板时，需要添加安全区高度（因为SafeArea bottom: false）
-    final double bottomHeight;
-    if (isInBoardMode) {
-      bottomHeight = targetBoardHeight;
-    } else if (_keepBoardVisible) {
-      bottomHeight = max(keyboardHeight, targetBoardHeight);
-    } else if (keyboardHeight > 0) {
-      bottomHeight = keyboardHeight;
-    } else {
-      // 无键盘无面板时，添加安全区高度
-      bottomHeight = bottomPadding;
-    }
-
-    // 判断是否使用动画：
-    // 只有"纯面板显示/隐藏"才用动画（即：当前无键盘、上一帧也无键盘、且不在过渡中）
-    // 所有涉及键盘的场景都不用动画
-    final bool useAnimation = keyboardHeight == 0 && _lastKeyboardHeight == 0 && !_keepBoardVisible;
-
-    // 记录当前显示的面板类型，用于收起动画
-    if (isInBoardMode) {
-      _animatingBoardStatus = controller.status;
-    }
-
-    return Container(
-      color: isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildInputBar(controller),
-          ClipRect(
-            child: useAnimation
-                ? AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOutCubic,
-                    height: bottomHeight,
-                    child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
-                  )
-                : Container(
-                    height: bottomHeight,
-                    child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
-                  ),
-          ),
-        ],
+    // 逐键输入会 notifyListeners:整体结构只订阅 面板状态/引用态/频道菜单 三类变化,
+    // 发送按钮的文本非空态在 _buildInputBar 内单独订阅,避免每个按键重建整个输入栏(含 emoji/插件面板栈)
+    return Selector<MessageInputBarController, (ChatInputBarStatus, bool, bool)>(
+      selector: (context, controller) => (
+        controller.status,
+        controller.hasQuote,
+        controller.channelInfo?.menus?.isNotEmpty ?? false,
       ),
+      builder: (context, _, __) {
+        final controller = Provider.of<MessageInputBarController>(context, listen: false);
+        final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+        final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
+
+        final bool isInBoardMode = controller.status == ChatInputBarStatus.emojiStatus || controller.status == ChatInputBarStatus.pluginStatus;
+
+        _lastKeyboardHeight = keyboardHeight;
+
+        final double targetBoardHeight = max(_savedKeyboardHeight, _minBoardHeight);
+
+        // 状态变化处理
+        if (isInBoardMode) {
+          _previousBoardStatus = controller.status;
+          _keepBoardVisible = false;
+        } else if (controller.status == ChatInputBarStatus.keyboardStatus &&
+            controller.focusNode.hasFocus &&
+            _previousBoardStatus != null &&
+            keyboardHeight < targetBoardHeight * 0.5) {
+          // 从面板切换到键盘，保持面板可见直到键盘弹出
+          _keepBoardVisible = true;
+        } else if (controller.status != ChatInputBarStatus.keyboardStatus || !controller.focusNode.hasFocus) {
+          // 非面板非键盘状态，或键盘失去焦点（收起全部），清除记录
+          _previousBoardStatus = null;
+          _keepBoardVisible = false;
+        }
+
+        final bool showBoard = isInBoardMode || _keepBoardVisible;
+
+        // 底部高度计算
+        // 当没有键盘和面板时，需要添加安全区高度（因为SafeArea bottom: false）
+        final double bottomHeight;
+        if (isInBoardMode) {
+          bottomHeight = targetBoardHeight;
+        } else if (_keepBoardVisible) {
+          bottomHeight = max(keyboardHeight, targetBoardHeight);
+        } else if (keyboardHeight > 0) {
+          bottomHeight = keyboardHeight;
+        } else {
+          // 无键盘无面板时，添加安全区高度
+          bottomHeight = bottomPadding;
+        }
+
+        // 判断是否使用动画：
+        // 只有"纯面板显示/隐藏"才用动画（即：当前无键盘、上一帧也无键盘、且不在过渡中）
+        // 所有涉及键盘的场景都不用动画
+        final bool useAnimation = keyboardHeight == 0 && _lastKeyboardHeight == 0 && !_keepBoardVisible;
+
+        // 记录当前显示的面板类型，用于收起动画
+        if (isInBoardMode) {
+          _animatingBoardStatus = controller.status;
+        }
+
+        return Container(
+          color: isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildInputBar(controller),
+              ClipRect(
+                child: useAnimation
+                    ? AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOutCubic,
+                        height: bottomHeight,
+                        child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
+                      )
+                    : Container(
+                        height: bottomHeight,
+                        child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
+                      ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -330,15 +342,22 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
                         icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
                     : IconButton(
                         icon: Image.asset('assets/images/input/chat_input_bar_emoji.png', width: iconSize, height: iconSize), onPressed: controller.onEmojiButton),
-                controller.textEditingController.text.isNotEmpty &&
-                        controller.status != ChatInputBarStatus.recordStatus &&
-                        controller.status != ChatInputBarStatus.pluginStatus
-                    ? FilledButton(
-                        onPressed: controller.onSendButton,
-                        style: FilledButton.styleFrom(minimumSize: const Size(44, 28)),
-                        child: Text(AppLocalizations.of(context)!.send))
-                    : IconButton(
-                        icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize), onPressed: controller.onPluginButton),
+                // 发送按钮只订阅"文本是否非空",逐键输入不会触发这里以外的重建
+                Selector<MessageInputBarController, bool>(
+                  selector: (context, controller) => controller.textEditingController.text.isNotEmpty,
+                  builder: (context, hasText, _) {
+                    final controller = Provider.of<MessageInputBarController>(context, listen: false);
+                    return hasText &&
+                            controller.status != ChatInputBarStatus.recordStatus &&
+                            controller.status != ChatInputBarStatus.pluginStatus
+                        ? FilledButton(
+                            onPressed: controller.onSendButton,
+                            style: FilledButton.styleFrom(minimumSize: const Size(44, 28)),
+                            child: Text(AppLocalizations.of(context)!.send))
+                        : IconButton(
+                            icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize), onPressed: controller.onPluginButton);
+                  },
+                ),
               ],
               SizedBox( width : 8.0, ),
             ],

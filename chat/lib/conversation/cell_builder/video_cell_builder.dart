@@ -18,12 +18,23 @@ class VideoCellBuilder extends PortraitCellBuilder {
   // double _width;
   // double _height;
 
+  // 缩略图宽高与本地文件存在性在构造时计算一次，避免每次 build 都在主 isolate 解码 JPEG / 同步 stat
+  int _thumbWidth = 200;
+  int _thumbHeight = 200;
+  bool _localFileExists = false;
+
   VideoCellBuilder(BuildContext cell, UIMessage model) : super(cell, model) {
     videoMessageContent = model.message.content as VideoMessageContent;
     if (videoMessageContent.thumbnail != null) {
-      if (videoMessageContent.thumbnail != null) {
-        thumbnail = videoMessageContent.thumbnail;
+      thumbnail = videoMessageContent.thumbnail;
+      image.Image? img = image.decodeJpg(thumbnail!);
+      if (img != null) {
+        _thumbWidth = img.width;
+        _thumbHeight = img.height;
       }
+    }
+    if (videoMessageContent.localPath != null && videoMessageContent.localPath!.isNotEmpty) {
+      _localFileExists = File(videoMessageContent.localPath!).existsSync();
     }
   }
 
@@ -37,30 +48,18 @@ class VideoCellBuilder extends PortraitCellBuilder {
   }
 
   Widget _buildThumbnail(BuildContext context) {
-    // 获取缩略图的实际宽高
-    int thumbWidth = 200;
-    int thumbHeight = 200;
-    if (thumbnail != null) {
-      image.Image? img = image.decodeJpg(thumbnail!);
-      if (img != null) {
-        thumbWidth = img.width;
-        thumbHeight = img.height;
-      }
-    }
-
+    // 缩略图宽高已在构造时解码并缓存，直接使用
     // 计算显示大小
-    Size displaySize = Tools.getImageSizeByOrgSizeToWeChat(thumbWidth, thumbHeight);
+    Size displaySize = Tools.getImageSizeByOrgSizeToWeChat(_thumbWidth, _thumbHeight);
     double width = displaySize.width > 0 ? displaySize.width : 200;
     double height = displaySize.height > 0 ? displaySize.height : 200;
 
     double dpr = MediaQuery.of(context).devicePixelRatio;
 
-    // 优先检查本地视频文件
-    if (videoMessageContent.localPath != null && videoMessageContent.localPath!.isNotEmpty) {
-      File localFile = File(videoMessageContent.localPath!);
-      if (localFile.existsSync()) {
-        // 如果有本地文件，直接使用缩略图显示
-        if (thumbnail != null) {
+    // 优先检查本地视频文件(存在性已在构造时缓存)
+    if (_localFileExists) {
+      // 如果有本地文件，直接使用缩略图显示
+      if (thumbnail != null) {
           return SizedBox(
             width: width / dpr,
             height: height / dpr,
@@ -91,7 +90,6 @@ class VideoCellBuilder extends PortraitCellBuilder {
               ),
             ),
           );
-        }
       }
     }
 

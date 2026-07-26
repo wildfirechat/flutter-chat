@@ -24,11 +24,17 @@ class GroupViewModel extends ChangeNotifier {
 
   void reset() {
     _fetchingGroupIds.clear();
+    _fetchedGroupMemberIds.clear();
     GroupRepo.clear();
     notifyListeners();
   }
 
   final Set<String> _fetchingGroupIds = {};
+
+  // 已发起过成员获取（获取中或已获取）的群：build 路径每次重建都会调
+  // getGroupMemberUserInfos，每个 groupId 只允许走一次 DB 查询，
+  // 后续变更由 GroupMembersUpdatedEvent 驱动刷新。
+  final Set<String> _fetchedGroupMemberIds = {};
 
   GroupInfo getGroupInfo(String groupId) {
     var groupInfo = GroupRepo.getGroupInfo(groupId);
@@ -49,11 +55,14 @@ class GroupViewModel extends ChangeNotifier {
 
   List<UserInfo>? getGroupMemberUserInfos(String groupId) {
     var memberUserInfos = UserRepo.getGroupMemberUserInfos(groupId);
-    Imclient.getGroupMembers(groupId).then((members) {
-      if (memberUserInfos == null || members.length != memberUserInfos.length) {
-        _loadAndNotifyGroupMemberUserInfos(groupId, members);
-      }
-    });
+    // 同一 groupId 只查一次，避免 build 重建反复发 DB 查询
+    if (_fetchedGroupMemberIds.add(groupId)) {
+      Imclient.getGroupMembers(groupId).then((members) {
+        if (memberUserInfos == null || members.length != memberUserInfos.length) {
+          _loadAndNotifyGroupMemberUserInfos(groupId, members);
+        }
+      });
+    }
     return memberUserInfos;
   }
 

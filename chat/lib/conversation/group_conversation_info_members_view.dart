@@ -32,6 +32,11 @@ class GroupConversationInfoMembersView extends StatefulWidget {
 class _GroupConversationInfoMembersViewState extends State<GroupConversationInfoMembersView> {
   bool _isExpanded = false;
 
+  // 展开状态下成员数超过该阈值时,GridView 改为固定高度内部滚动,
+  // 避免 shrinkWrap 一次性构建全部成员格子
+  static const int _expandedScrollThreshold = 50;
+  static const int _expandedScrollLines = 6;
+
   @override
   Widget build(BuildContext context) {
     GroupViewModel groupViewModel = Provider.of<GroupViewModel>(context);
@@ -90,50 +95,59 @@ class _GroupConversationInfoMembersViewState extends State<GroupConversationInfo
         double width = constraints.maxWidth - horizontalPadding * 2;
         double cellWidth = (width - (columnCount - 1) * crossAxisSpacing) / columnCount;
         double childAspectRatio = cellWidth / cellHeight;
+        bool scrollableExpanded = _isExpanded && memberCount > _expandedScrollThreshold;
+
+        Widget gridView = GridView.builder(
+          shrinkWrap: !scrollableExpanded,
+          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12.0),
+          itemCount: memberCount,
+          physics: scrollableExpanded ? const AlwaysScrollableScrollPhysics() : const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columnCount,
+            childAspectRatio: childAspectRatio,
+            crossAxisSpacing: crossAxisSpacing,
+            mainAxisSpacing: mainAxisSpacing,
+          ),
+          itemBuilder: (context, index) {
+            if (index < showGroupMemberUserInfos.length) {
+              final memberInfo = showGroupMemberUserInfos[index];
+              return Builder(
+                builder: (itemContext) => GestureDetector(
+                  onTap: () => widget.onGroupMemberTap(memberInfo, memberCellAnchor(itemContext)),
+                  child: ConversationInfoMemberItem(memberInfo),
+                ),
+              );
+            } else {
+              if (showRemoveAction && index == memberCount - 1) {
+                return GestureDetector(
+                  onTap: () {
+                    widget.onRemoveActionTap();
+                  },
+                  child: const ConversationInfoMemberActionItem(false),
+                );
+              } else if (showAddAction) {
+                return GestureDetector(
+                  onTap: () {
+                    widget.onAddActionTap();
+                  },
+                  child: const ConversationInfoMemberActionItem(true),
+                );
+              } else {
+                return Container();
+              }
+            }
+          },
+        );
 
         return Column(
           children: [
-            GridView.builder(
-              shrinkWrap: true,
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12.0),
-              itemCount: memberCount,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columnCount,
-                childAspectRatio: childAspectRatio,
-                crossAxisSpacing: crossAxisSpacing,
-                mainAxisSpacing: mainAxisSpacing,
-              ),
-              itemBuilder: (context, index) {
-                if (index < showGroupMemberUserInfos.length) {
-                  final memberInfo = showGroupMemberUserInfos[index];
-                  return Builder(
-                    builder: (itemContext) => GestureDetector(
-                      onTap: () => widget.onGroupMemberTap(memberInfo, memberCellAnchor(itemContext)),
-                      child: ConversationInfoMemberItem(memberInfo),
-                    ),
-                  );
-                } else {
-                  if (showRemoveAction && index == memberCount - 1) {
-                    return GestureDetector(
-                      onTap: () {
-                        widget.onRemoveActionTap();
-                      },
-                      child: const ConversationInfoMemberActionItem(false),
-                    );
-                  } else if (showAddAction) {
-                    return GestureDetector(
-                      onTap: () {
-                        widget.onAddActionTap();
-                      },
-                      child: const ConversationInfoMemberActionItem(true),
-                    );
-                  } else {
-                    return Container();
-                  }
-                }
-              },
-            ),
+            scrollableExpanded
+                ? SizedBox(
+                    // 高度固定为若干行,成员格子在内部按需构建并滚动
+                    height: _expandedScrollLines * cellHeight + (_expandedScrollLines - 1) * mainAxisSpacing + 24.0,
+                    child: gridView,
+                  )
+                : gridView,
             hasMore
                 ? Center(
                     child: TextButton(

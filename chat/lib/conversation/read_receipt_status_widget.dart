@@ -24,28 +24,57 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
   bool _isSingleConversationRead = false;
   StreamSubscription<MessageReadedEvent>? _readEventSubscription;
 
+  // 会话级缓存:群成员列表和已读状态按会话缓存一份,避免每条已发消息的 cell 各自重复查询。
+  // 收到群成员变更/已读回执事件时对应缓存失效(见 _ensureCacheEventSubscription)。
+  static final Map<String, Future<List<GroupMember>>> _groupMembersCache = {};
+  static final Map<Conversation, Future<Map<String, int>>> _conversationReadCache = {};
+  static bool _cacheEventSubscribed = false;
+
+  static void _ensureCacheEventSubscription() {
+    if (_cacheEventSubscribed) return;
+    _cacheEventSubscribed = true;
+    Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
+      _groupMembersCache.remove(event.groupId);
+    });
+    Imclient.IMEventBus.on<MessageReadedEvent>().listen((event) {
+      for (var report in event.readedReports) {
+        _conversationReadCache.remove(report.conversation);
+      }
+    });
+  }
+
+  static Future<List<GroupMember>> _getGroupMembers(String groupId) {
+    return _groupMembersCache.putIfAbsent(groupId, () => Imclient.getGroupMembers(groupId));
+  }
+
+  static Future<Map<String, int>> _getConversationRead(Conversation conversation) {
+    return _conversationReadCache.putIfAbsent(conversation, () => Imclient.getConversationRead(conversation));
+  }
+
   @override
   void initState() {
     super.initState();
+    _ensureCacheEventSubscription();
     _checkStatus();
-    if (_isEnabled) {
-      _readEventSubscription = Imclient.IMEventBus.on<MessageReadedEvent>().listen((event) {
-        bool needUpdate = false;
-        for (var report in event.readedReports) {
-          if (report.conversation == widget.message.conversation) {
-            needUpdate = true;
-            break;
-          }
+  }
+
+  void _subscribeReadEvent() {
+    _readEventSubscription ??= Imclient.IMEventBus.on<MessageReadedEvent>().listen((event) {
+      bool needUpdate = false;
+      for (var report in event.readedReports) {
+        if (report.conversation == widget.message.conversation) {
+          needUpdate = true;
+          break;
         }
-        if (needUpdate) {
-          if (widget.message.conversation.conversationType == ConversationType.Single) {
-            _updateSingleReadStatus();
-          } else if (widget.message.conversation.conversationType == ConversationType.Group) {
-            _updateGroupReadStatus();
-          }
+      }
+      if (needUpdate) {
+        if (widget.message.conversation.conversationType == ConversationType.Single) {
+          _updateSingleReadStatus();
+        } else if (widget.message.conversation.conversationType == ConversationType.Group) {
+          _updateGroupReadStatus();
         }
-      });
-    }
+      }
+    });
   }
 
   @override
@@ -70,10 +99,15 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
       }
       _isEnabled = groupReceiptEnabled;
     }
+    // 回执开关是异步查询结果,到这里才确定;开启后再注册已读事件订阅并刷新 UI
+    if (mounted && _isEnabled) {
+      _subscribeReadEvent();
+      setState(() {});
+    }
   }
 
   void _updateSingleReadStatus() async {
-    Map<String, int> readMap = await Imclient.getConversationRead(widget.message.conversation);
+    Map<String, int> readMap = await _getConversationRead(widget.message.conversation);
     int? readTime = readMap[widget.message.conversation.target];
     bool read = readTime != null && readTime >= widget.message.serverTime;
     if (mounted && _isSingleConversationRead != read) {
@@ -84,8 +118,7 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
   }
   void _updateGroupReadStatus() async {
     String groupId = widget.message.conversation.target;
-    List<GroupMember>? members = await Imclient.getGroupMembers(groupId);
-    if (members == null) return;
+    List<GroupMember> members = await _getGroupMembers(groupId);
 
     int messageTime = widget.message.serverTime;
     // Filter members who joined before the message was sent and exclude self
@@ -93,7 +126,7 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
 
     if (validMembers.isEmpty) return;
 
-    Map<String, int> readMap = await Imclient.getConversationRead(widget.message.conversation);
+    Map<String, int> readMap = await _getConversationRead(widget.message.conversation);
     int readCount = 0;
     for (var member in validMembers) {
       int? readTime = readMap[member.memberId];

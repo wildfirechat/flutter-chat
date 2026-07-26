@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
@@ -80,6 +81,8 @@ class b extends CallSession {
   bool cb = false;
   String be = 'user';
   Timer? ba;
+  // serverDeltaTime 为准静态值,缓存一次复用,避免每秒一次平台调用
+  int? _cachedServerDeltaTime;
   Map<String, Subscriber> mc = {};
   List<UserInfo> groupMemberUserInfos = [];
   bool ld = false;
@@ -244,7 +247,7 @@ class b extends CallSession {
            
            
            
-           a.ib.yd(pd, content);
+           a.ib.yd(rb, content);
          }
       });
 
@@ -261,7 +264,7 @@ class b extends CallSession {
             var content = rb.content as CallStartMessageContent;
             content.status = ua.index;
             content.endTime = DateTime.now().millisecondsSinceEpoch;
-            a.ib.yd(pd, content);
+            a.ib.yd(rb, content);
           }
         });
       }
@@ -308,7 +311,7 @@ class b extends CallSession {
        int joinTime = this.joinTime;
        if (joinTime == 0) return;
 
-       int ka = await Imclient.serverDeltaTime;
+       int ka = _cachedServerDeltaTime ??= await Imclient.serverDeltaTime;
 
        if (status == CallState.STATUS_INCOMING) {
          if (now - joinTime + ka > 60 * 1000) {
@@ -597,7 +600,7 @@ class b extends CallSession {
 
     try {
       await lc.setRemoteDescription(desc);
-      print('$g setRemoteDescription ${desc.type} ${desc.sdp}');
+      if (kDebugMode) print('$g setRemoteDescription ${desc.type} ${desc.sdp}');
       ea.hasReceivedSdp = true;
 
       if (ea.queuedCandidates.isNotEmpty) {
@@ -674,7 +677,7 @@ class b extends CallSession {
   }
 
   Future<void> dd(String userId, RTCIceCandidate candidate) async {
-    print('$g handle the candidate $candidate');
+    if (kDebugMode) print('$g handle the candidate $candidate');
     jc(userId, candidate);
   }
 
@@ -695,12 +698,12 @@ class b extends CallSession {
     var ea = mc[userId];
     if (ea == null) return;
 
-    print('$g on receive remote ice candidate ${ea.hasReceivedSdp}');
+    if (kDebugMode) print('$g on receive remote ice candidate ${ea.hasReceivedSdp}');
     if (!ea.hasReceivedSdp) {
-       print('$g pc rdp is null');
+       if (kDebugMode) print('$g pc rdp is null');
        ea.queuedCandidates.add(candidate);
     } else {
-       print('$g pc rdp is set');
+       if (kDebugMode) print('$g pc rdp is set');
        var lc = ea.peerConnection;
        if (lc != null) {
          await lc.addCandidate(candidate);
@@ -721,7 +724,7 @@ class b extends CallSession {
       print('$g onIceCandidate error $qa');
       va(userId, CallEndReason.REASON_MediaError);
     }
-    print('$g ICE candidate: ${candidate.candidate}');
+    if (kDebugMode) print('$g ICE candidate: ${candidate.candidate}');
   }
 
   void zb(String userId, RTCPeerConnection lc, RTCPeerConnectionState qd){
@@ -859,6 +862,13 @@ class b extends CallSession {
     }
 
     mc.forEach((key, ea) {
+       if (ea.stream != null) {
+         ea.stream!.getTracks().forEach((ud) {
+           ud.stop();
+         });
+         ea.stream!.dispose();
+         ea.stream = null;
+       }
        if (ea.peerConnection != null) {
          ea.peerConnection!.close();
        }
@@ -878,6 +888,13 @@ class b extends CallSession {
     participants.remove(userId);
 
     if (ea != null) {
+      if (ea.stream != null) {
+         ea.stream!.getTracks().forEach((ud) {
+           ud.stop();
+         });
+         ea.stream!.dispose();
+         ea.stream = null;
+      }
       if (ea.peerConnection != null) {
          ea.peerConnection!.close();
       }

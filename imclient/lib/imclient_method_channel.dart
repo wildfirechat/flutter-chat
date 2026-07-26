@@ -11,6 +11,7 @@ import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'imclient.dart';
 import 'imclient_platform.dart';
+import 'message/image_message_content.dart';
 import 'message/message.dart';
 import 'message/message_content.dart';
 import 'message/unknown_message_content.dart';
@@ -622,6 +623,7 @@ class ImclientPlatform extends PlatformInterface {
           if (callback != null) {
             callback(remoteUrl);
           }
+          _removeOperationCallback(requestId);
           break;
         case 'onUploadMediaProgress':
           Map<dynamic, dynamic> args = call.arguments;
@@ -2266,6 +2268,11 @@ class ImclientPlatform extends PlatformInterface {
     }
     if (uploadedCallback != null) {
       _sendMediaMessageUploadedCallbackMap[requestId] = uploadedCallback;
+    }
+
+    // 图片消息先在后台 isolate 解析宽高并生成缩略图，避免 encode 时阻塞主 isolate
+    if (content is ImageMessageContent) {
+      await content.prepareEncode();
     }
 
     Map<String, dynamic> convMap = _convertConversation(conversation);

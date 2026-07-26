@@ -395,9 +395,16 @@ class MomentClientImpl {
         [ConversationType.Single], [1]);
   }
 
+  /// 本地缓存上限：只保留最新 50 条，避免翻页后全量 JSON 重写越来越大。
+  static const int _maxCacheCount = 50;
+
   Future<void> storeCache(List<Feed> feeds, {String? userId}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String key = _cacheKey(userId);
+    // feed 按时间倒序，截断尾部即可保留最新条目
+    if (feeds.length > _maxCacheCount) {
+      feeds = feeds.sublist(0, _maxCacheCount);
+    }
     List<String> list = feeds.map((f) => jsonEncode(_feed2Map(f))).toList();
     await prefs.setStringList(key, list);
   }

@@ -946,5 +946,7 @@ class ConversationController extends ChangeNotifier {
     if (_soundPlayer.isPlaying) {
       _soundPlayer.stopPlayer();
     }
+    // stopPlayer 仅停止播放,closePlayer 才真正释放底层播放器资源
+    _soundPlayer.closePlayer();
   }
 }

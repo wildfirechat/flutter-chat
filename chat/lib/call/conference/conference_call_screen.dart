@@ -65,6 +65,10 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   String? _localFocusUserId;
   Duration _duration = Duration.zero;
   Timer? _timer;
+
+  /// 通话时长秒数,走秒 Timer 仅更新该 notifier,避免每秒重建整页。
+  final ValueNotifier<int> _durationSeconds = ValueNotifier(0);
+
   late ConferenceManager _conferenceManager;
 
   /// 移动端当前页码 / PC 宫格当前页码,驱动大小流订阅调度。
@@ -77,6 +81,9 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   /// 各参与者当前订阅的流类型,仅变化时才下发 setParticipantVideoType。
   final Map<String, int> _subscriptionState = {};
 
+  /// 正在讲话人名字,音量高频上报时仅内容变化才通知,供顶部栏局部刷新。
+  final ValueNotifier<String> _speakingUserNameNotifier = ValueNotifier('');
+
   @override
   void initState() {
     super.initState();
@@ -87,6 +94,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     _conferenceManager = ConferenceManager();
     _conferenceManager.setup(_session.callId, _session.pin, onStateChanged: () {
       if (mounted) setState(() {});
+      _updateSubscriptions();
     });
     _conferenceManager.onLocalMuteRequest = (audio, mute) {
       if (audio) {
@@ -96,6 +104,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
             _isMicMuted = mute;
             if (_selfItem != null) _selfItem!.audioMuted = mute;
           });
+          if (_selfItem != null) _updateSpeaking(_selfItem!);
         }
       } else {
         if (_isCameraOff != mute) {
@@ -110,6 +119,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     // 从最小化悬浮窗恢复时，交接悬浮窗期间的通话时长
     if (CallOverlayManager.instance.isMinimized) {
       _duration = CallOverlayManager.instance.currentDuration;
+      _durationSeconds.value = _duration.inSeconds;
     }
     _initSelf();
     _initRemoteParticipants();
@@ -126,6 +136,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     _selfItem!.isAudience = _session.audience;
     if (mounted) setState(() {});
     _updateSelfStream();
+    _updateSubscriptions();
   }
 
   Future<void> _initRemoteParticipants() async {
@@ -154,6 +165,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     item.isAudience = profile.audience;
     _participants[userId] = item;
     if (mounted) setState(() {});
+    _updateSubscriptions();
   }
 
   void _updateSelfStream() {
@@ -168,9 +180,13 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   @override
   void dispose() {
     _stopTimer();
+    _durationSeconds.dispose();
+    _speakingUserNameNotifier.dispose();
     _selfItem?.renderer.dispose();
+    _selfItem?.dispose();
     for (var item in _participants.values) {
       item.renderer.dispose();
+      item.dispose();
     }
     _conferenceManager.destroy();
     super.dispose();
@@ -180,9 +196,9 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
-        setState(() {
-          _duration += const Duration(seconds: 1);
-        });
+        // 仅更新时长 notifier,由 ValueListenableBuilder 局部刷新时长文本
+        _duration += const Duration(seconds: 1);
+        _durationSeconds.value = _duration.inSeconds;
       }
     });
   }
@@ -233,6 +249,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
         _selfItem!.audioMuted = mute;
       }
     });
+    if (_selfItem != null) _updateSpeaking(_selfItem!);
   }
 
   void _requestUnmute(bool audio) {
@@ -345,6 +362,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     setState(() {
       _currentLayout = layout;
     });
+    _updateSubscriptions();
   }
 
   void _onSwitchAudience() async {
@@ -353,6 +371,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
       _selfItem!.isAudience = _session.audience;
     }
     setState(() {});
+    _updateSubscriptions();
   }
 
   void _onToggleHandUp() {
@@ -432,8 +451,12 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
       {bool screenSharing = false}) {
     if (userId == Imclient.currentUserId) return;
     var item = _participants.remove(userId);
-    if (item != null) item.renderer.dispose();
+    if (item != null) {
+      item.renderer.dispose();
+      item.dispose();
+    }
     if (mounted) setState(() {});
+    _updateSubscriptions();
   }
 
   @override
@@ -446,6 +469,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     if (_selfItem != null) {
       _selfItem!.renderer.srcObject = stream;
       if (mounted) setState(() {});
+      _updateSubscriptions();
     }
   }
 
@@ -460,6 +484,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
       item.renderer.srcObject = stream;
       item.isScreenSharing = screenSharing;
       if (mounted) setState(() {});
+      _updateSubscriptions();
     }
   }
 
@@ -469,18 +494,35 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     if (item != null) {
       item.renderer.srcObject = null;
       if (mounted) setState(() {});
+      _updateSubscriptions();
     }
   }
 
   @override
   void didReportAudioVolume(String userId, int volume) {
+    // 音量上报频率高(每秒多次),不 setState 重建整页:
+    // 音量存到 item 普通字段,说话绿框与"正在讲话"由 ValueNotifier 局部刷新。
+    ConferenceParticipantItem? item;
     if (userId == Imclient.currentUserId) {
-      if (_selfItem != null) _selfItem!.volume = volume;
+      item = _selfItem;
     } else {
-      var item = _participants[userId];
-      if (item != null) item.volume = volume;
+      item = _participants[userId];
     }
-    if (mounted) setState(() {});
+    if (item == null) return;
+    item.volume = volume;
+    _updateSpeaking(item);
+    var speakingName = _speakingUserName;
+    if (_speakingUserNameNotifier.value != speakingName) {
+      _speakingUserNameNotifier.value = speakingName;
+    }
+  }
+
+  /// 说话状态(音量>0 且未静音)翻转时才通知,驱动说话绿框/角标局部刷新。
+  void _updateSpeaking(ConferenceParticipantItem item) {
+    var speaking = item.volume > 0 && !item.audioMuted;
+    if (item.speakingNotifier.value != speaking) {
+      item.speakingNotifier.value = speaking;
+    }
   }
 
   @override
@@ -492,6 +534,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
       if (item != null) item.videoMuted = muted;
     }
     if (mounted) setState(() {});
+    _updateSubscriptions();
   }
 
   @override
@@ -505,9 +548,11 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
       if (item != null) {
         item.audioMuted = profile.audioMuted;
         item.videoMuted = profile.videoMuted;
+        _updateSpeaking(item);
       }
     }
     if (mounted) setState(() {});
+    _updateSubscriptions();
   }
 
   @override
@@ -532,6 +577,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
       if (item != null) item.isAudience = audience;
     }
     if (mounted) setState(() {});
+    _updateSubscriptions();
   }
 
   @override
@@ -662,6 +708,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
       _localFocusUserId = other.userId;
       _conferenceManager.localFocusUser = other.userId;
     });
+    _updateSubscriptions();
   }
 
   /// 统一大小流订阅调度:按平台/布局/页码/焦点计算每个参与者的目标订阅,
@@ -718,6 +765,17 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     _subscriptionState.removeWhere((userId, _) => !desired.containsKey(userId));
   }
 
+  /// 按当前布局/页码/焦点计算并下发大小流订阅(内部有缓存,未变化时不发信令)。
+  /// 在参与者/流/焦点/页码等状态变更回调中调用,build 只负责纯 UI。
+  void _updateSubscriptions() {
+    if (!mounted) return;
+    var items = _visibleItems;
+    var sortedItems = _sortItems(items);
+    var focus = _resolveFocusItem(items);
+    var previewItem = isDesktopShell ? null : _resolvePreviewItem(items, focus);
+    _syncSubscriptions(sortedItems, focus, previewItem);
+  }
+
   String _participantName(UserInfo? info) {
     if (info == null) return '';
     return info.getReadableName();
@@ -747,10 +805,9 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     var sortedItems = _sortItems(items);
     var focus = _resolveFocusItem(items);
     var previewItem = isDesktopShell ? null : _resolvePreviewItem(items, focus);
-    var speakingName = _speakingUserName;
 
-    // 布局/页码/焦点变化统一反映到大小流订阅(内部有缓存,未变化时不发信令)
-    _syncSubscriptions(sortedItems, focus, previewItem);
+    // 注意:大小流订阅信令不在 build 中下发,
+    // 由状态变更回调统一调 _updateSubscriptions(内部有缓存,未变化时不发信令)。
 
     return Scaffold(
       backgroundColor: context.colors.primaryBackground,
@@ -759,7 +816,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
           SafeArea(
             child: Column(
               children: [
-                _buildHeader(l10n, speakingName),
+                _buildHeader(l10n),
                 Expanded(
                   child: Row(
                     children: [
@@ -775,8 +832,10 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
                                         audioOnly: _session.audioOnly,
                                         isFocusUser: _isFocusUser,
                                         onDoubleTapTile: _onDoubleTapVideo,
-                                        onPageChanged: (page) =>
-                                            setState(() => _pcGridPage = page),
+                                        onPageChanged: (page) {
+                                          setState(() => _pcGridPage = page);
+                                          _updateSubscriptions();
+                                        },
                                       )
                                     : ConferenceSpeakerLayout(
                                         focusItem: focus,
@@ -796,8 +855,10 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
                                     isFocusUser: _isFocusUser,
                                     onDoubleTapTile: _onDoubleTapVideo,
                                     onSwapPreview: _onSwapPreview,
-                                    onPageChanged: (page) =>
-                                        setState(() => _mobilePage = page),
+                                    onPageChanged: (page) {
+                                      setState(() => _mobilePage = page);
+                                      _updateSubscriptions();
+                                    },
                                   ),
                       ),
                       if (isDesktopShell && _showMemberList)
@@ -822,7 +883,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     );
   }
 
-  Widget _buildHeader(AppLocalizations l10n, String speakingName) {
+  Widget _buildHeader(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -838,23 +899,36 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  _session.status == CallState.STATUS_CONNECTED
-                      ? _formatDuration(_duration)
-                      : _session.status == CallState.STATUS_INCOMING
-                          ? '邀请您加入会议'
-                          : '连接中...',
-                  style: AppText.sm.copyWith(color: context.colors.textSecondary),
+                // 时长走秒,用 ValueNotifier 局部刷新,不重建整页
+                ValueListenableBuilder<int>(
+                  valueListenable: _durationSeconds,
+                  builder: (context, seconds, child) {
+                    return Text(
+                      _session.status == CallState.STATUS_CONNECTED
+                          ? _formatDuration(Duration(seconds: seconds))
+                          : _session.status == CallState.STATUS_INCOMING
+                              ? '邀请您加入会议'
+                              : '连接中...',
+                      style: AppText.sm.copyWith(color: context.colors.textSecondary),
+                    );
+                  },
                 ),
-                if (speakingName.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    '正在讲话: $speakingName',
-                    style: AppText.sm.copyWith(
-                        color: context.colors.success,
-                        fontWeight: FontWeight.w500),
-                  ),
-                ],
+                // "正在讲话"随音量上报高频变化,用 ValueNotifier 局部刷新,不重建整页
+                ValueListenableBuilder<String>(
+                  valueListenable: _speakingUserNameNotifier,
+                  builder: (context, speakingName, child) {
+                    if (speakingName.isEmpty) return const SizedBox.shrink();
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        '正在讲话: $speakingName',
+                        style: AppText.sm.copyWith(
+                            color: context.colors.success,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -903,6 +977,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
           _localFocusUserId = item.userId;
           _conferenceManager.localFocusUser = item.userId;
         });
+        _updateSubscriptions();
       }
     }
   }

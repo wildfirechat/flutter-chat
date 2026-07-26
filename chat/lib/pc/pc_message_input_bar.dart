@@ -556,22 +556,14 @@ class _QuoteChip extends StatelessWidget {
               const SizedBox(width: 6),
             ],
             Flexible(
-              child: quotedMessage != null
-                  ? FutureBuilder<String>(
-                      future: quotedMessage.content.digest(quotedMessage),
-                      builder: (context, snapshot) => Text(
-                        snapshot.data ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppText.xs.copyWith(color: colors.textSecondary),
-                      ),
-                    )
-                  : Text(
-                      digest,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.xs.copyWith(color: colors.textSecondary),
-                    ),
+              // 摘要统一使用 QuoteInfo.fromMessage 预算好的 messageDigest,
+              // 避免输入框 controller 每次键入重建时重复执行 digest。
+              child: Text(
+                digest,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.xs.copyWith(color: colors.textSecondary),
+              ),
             ),
             const SizedBox(width: 6),
             HoverBuilder(

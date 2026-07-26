@@ -36,6 +36,8 @@ class PCWindowManager {
 
   bool _initialized = false;
   bool _isQuitting = false;
+  // 窗口尺寸/位置变化逐帧触发,防抖后的挂起保存定时器。
+  Timer? _saveStateTimer;
 
   /// 是否正在通过托盘/退出流程主动退出应用。
   /// 用于区分"应用关闭导致的 disconnect"和"真正的登出"。
@@ -129,7 +131,16 @@ class PCWindowManager {
     }
   }
 
+  /// 窗口拖动/缩放期间逐帧回调,防抖 500ms,停止后才真正落盘,避免逐帧磁盘 IO。
+  void _scheduleSaveWindowState() {
+    _saveStateTimer?.cancel();
+    _saveStateTimer = Timer(const Duration(milliseconds: 500), _saveWindowState);
+  }
+
   Future<void> _saveWindowState() async {
+    // 显式保存(关闭窗口/退出流程)时取消挂起的防抖保存,避免重复写盘。
+    _saveStateTimer?.cancel();
+    _saveStateTimer = null;
     try {
       final bounds = await windowManager.getBounds();
       final isMaximized = await windowManager.isMaximized();
@@ -225,12 +236,12 @@ class _WindowListener extends WindowListener {
   }
 
   @override
-  void onWindowResized() async {
-    await PCWindowManager()._saveWindowState();
+  void onWindowResized() {
+    PCWindowManager()._scheduleSaveWindowState();
   }
 
   @override
-  void onWindowMoved() async {
-    await PCWindowManager()._saveWindowState();
+  void onWindowMoved() {
+    PCWindowManager()._scheduleSaveWindowState();
   }
 }

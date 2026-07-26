@@ -760,8 +760,9 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void _sendTyping(String text) {
-    if (DateTime.now().second - _sendTypingTime > 12 && text.isNotEmpty) {
-      _sendTypingTime = DateTime.now().microsecondsSinceEpoch;
+    // 12 秒节流;时间戳统一用毫秒(此前 second 与 microsecondsSinceEpoch 量纲不匹配,整个会话只会发一次)
+    if (DateTime.now().millisecondsSinceEpoch - _sendTypingTime > 12000 && text.isNotEmpty) {
+      _sendTypingTime = DateTime.now().millisecondsSinceEpoch;
       TypingMessageContent typingMessageContent = TypingMessageContent();
       typingMessageContent.type = TypingType.Typing_TEXT;
 

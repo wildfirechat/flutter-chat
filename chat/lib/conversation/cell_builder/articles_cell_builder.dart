@@ -18,10 +18,12 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
   @override
   Widget buildMessageContent(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final dpr = MediaQuery.of(context).devicePixelRatio;
+    final cardWidth = (screenWidth * 0.75).clamp(240.0, 320.0);
     final articles = articlesContent.articles;
 
     return Container(
-      width: (screenWidth * 0.75).clamp(240.0, 320.0),
+      width: cardWidth,
       decoration: BoxDecoration(
         color: isSendMessage && isDesktopShell
             ? context.colors.bubbleSentDesktop
@@ -42,6 +44,9 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
                   MediaUrlRedirector.redirect(articles[0].thumbnailUrl),
                   width: double.infinity,
                   height: 160,
+                  // 按显示尺寸×dpr 解码，避免原图全尺寸解码占用大量内存
+                  cacheWidth: (cardWidth * dpr).ceil(),
+                  cacheHeight: (160 * dpr).ceil(),
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     height: 100,
@@ -83,6 +88,9 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
                           MediaUrlRedirector.redirect(articles[i].thumbnailUrl),
                           width: 48,
                           height: 48,
+                          // 按显示尺寸×dpr 解码，避免原图全尺寸解码占用大量内存
+                          cacheWidth: (48 * dpr).ceil(),
+                          cacheHeight: (48 * dpr).ceil(),
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => const SizedBox(width: 48, height: 48),
                         ),

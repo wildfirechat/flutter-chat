@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
@@ -45,7 +46,8 @@ class _FeedListPageState extends State<FeedListPage> {
 
   /// 顶部标题栏不透明度（0=全透明叠在封面上，1=不透明标题栏），
   /// 随封面滚出视口而淡入（对齐微信）。
-  double _headerOpacity = 0;
+  /// 用 ValueNotifier 驱动浮层局部刷新，避免滚动时 setState 重建整页。
+  final ValueNotifier<double> _headerOpacity = ValueNotifier(0);
 
   String get _selfUserId => Imclient.currentUserId;
 
@@ -79,8 +81,8 @@ class _FeedListPageState extends State<FeedListPage> {
     final opacity =
         ((_scrollController.offset - fadeStart) / (fadeEnd - fadeStart))
             .clamp(0.0, 1.0);
-    if (opacity != _headerOpacity) {
-      setState(() => _headerOpacity = opacity);
+    if (opacity != _headerOpacity.value) {
+      _headerOpacity.value = opacity;
     }
   }
 
@@ -89,6 +91,7 @@ class _FeedListPageState extends State<FeedListPage> {
     _scrollController.removeListener(_updateHeaderOpacity);
     _refreshSub?.cancel();
     _scrollController.dispose();
+    _headerOpacity.dispose();
     super.dispose();
   }
 
@@ -364,8 +367,14 @@ class _FeedListPageState extends State<FeedListPage> {
                 }
                 return false;
               },
-              // 背景封面顶到窗口全宽；只有下面的动态内容限宽 640 居中
-              child: ListView.builder(
+              // 背景封面顶到窗口全宽；只有下面的动态内容限宽 640 居中。
+              // removeTop:ListView 默认会把 MediaQuery 顶部 padding(状态栏高度)
+              // 加到列表顶部,导致封面无法延伸到状态栏之下;移除顶部隐式 padding,
+              // 让封面顶到屏幕边缘(对齐微信),底部手势区 padding 保留。
+              child: MediaQuery.removePadding(
+                context: context,
+                removeTop: true,
+                child: ListView.builder(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
                 itemCount: (_isHome ? 1 : 0) + _feeds.length + 1,
@@ -400,6 +409,7 @@ class _FeedListPageState extends State<FeedListPage> {
                     ),
                   );
                 },
+                ),
               ),
             ),
           ),
@@ -408,19 +418,21 @@ class _FeedListPageState extends State<FeedListPage> {
               top: 0,
               left: 0,
               right: 0,
-              child: Builder(
-                builder: (context) {
+              // 只随透明度刷新浮层，列表主体不再随滚动重建
+              child: ValueListenableBuilder<double>(
+                valueListenable: _headerOpacity,
+                builder: (context, opacity, _) {
                   final theme = Theme.of(context);
                   final fgColor = Color.lerp(
-                      Colors.white, theme.colorScheme.onSurface, _headerOpacity);
+                      Colors.white, theme.colorScheme.onSurface, opacity);
                   return Container(
                     decoration: BoxDecoration(
                       color: theme.scaffoldBackgroundColor
-                          .withValues(alpha: _headerOpacity),
+                          .withValues(alpha: opacity),
                       border: Border(
                         bottom: BorderSide(
                           color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.1 * _headerOpacity),
+                              .withValues(alpha: 0.1 * opacity),
                           width: 0.5,
                         ),
                       ),
@@ -432,13 +444,25 @@ class _FeedListPageState extends State<FeedListPage> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
+                            // 移动端无 AppBar,返回键以浮层形式叠在封面上;
+                            // 桌面端是独立窗口,不需要返回键。
+                            if (Platform.isAndroid || Platform.isIOS)
+                              Positioned(
+                                left: 4,
+                                child: IconButton(
+                                  icon: Icon(Icons.arrow_back, color: fgColor),
+                                  tooltip: '返回',
+                                  onPressed: () =>
+                                      Navigator.of(context).maybePop(),
+                                ),
+                              ),
                             Text(
                               '朋友圈',
                               style: TextStyle(
                                 color: fgColor,
                                 fontSize: 17,
                                 fontWeight: FontWeight.w600,
-                                shadows: _headerOpacity < 0.5
+                                shadows: opacity < 0.5
                                     ? const [
                                         Shadow(
                                             color: Colors.black26,
@@ -491,8 +515,12 @@ class _FeedListPageState extends State<FeedListPage> {
                 height: 300,
                 width: double.infinity,
                 child: (_profile?.backgroundUrl ?? '').isNotEmpty
+                    // 封面 300pt 高全宽，按屏宽×DPR 限制解码大小
                     ? MomentNetworkImage(_profile!.backgroundUrl!,
-                        fit: BoxFit.cover)
+                        fit: BoxFit.cover,
+                        memCacheWidth: (MediaQuery.sizeOf(context).width *
+                                MediaQuery.devicePixelRatioOf(context))
+                            .round())
                     : Container(
                         decoration: const BoxDecoration(
                           gradient: LinearGradient(

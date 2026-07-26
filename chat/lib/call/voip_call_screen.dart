@@ -42,6 +42,9 @@ class _VoipCallScreenState extends State<VoipCallScreen>
   Duration _duration = Duration.zero;
   Timer? _timer;
 
+  /// 通话时长秒数,走秒 Timer 仅更新该 notifier,避免每秒重建整页。
+  final ValueNotifier<int> _durationSeconds = ValueNotifier(0);
+
   /// 小窗（画中画）位置和尺寸
   Offset _pipPosition = const Offset(20, 100);
   static const double _pipWidth = 120;
@@ -64,6 +67,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     // 从最小化悬浮窗恢复时，交接悬浮窗期间的通话时长
     if (CallOverlayManager.instance.isMinimized) {
       _duration = CallOverlayManager.instance.currentDuration;
+      _durationSeconds.value = _duration.inSeconds;
     }
     _loadTargetInfo();
 
@@ -126,6 +130,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
   @override
   void dispose() {
     _stopTimer();
+    _durationSeconds.dispose();
     _localRenderer.dispose();
     _remoteRenderer.dispose();
     // Do not end call here, the session might outlive the screen if minimized (not implemented yet)
@@ -175,9 +180,9 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
-        setState(() {
-          _duration += const Duration(seconds: 1);
-        });
+        // 仅更新时长 notifier,由 ValueListenableBuilder 局部刷新时长文本
+        _duration += const Duration(seconds: 1);
+        _durationSeconds.value = _duration.inSeconds;
       }
     });
   }
@@ -476,11 +481,17 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                       _buildUserInfo(),
 
                       const SizedBox(height: 24),
-                      Text(
-                        isConnected
-                            ? _formatDuration(_duration)
-                            : _statusLabel(AppLocalizations.of(context)!),
-                        style: AppText.lg.copyWith(color: Colors.white70, fontWeight: FontWeight.w400, letterSpacing: 0.5),
+                      // 时长走秒,用 ValueNotifier 局部刷新,不重建整页
+                      ValueListenableBuilder<int>(
+                        valueListenable: _durationSeconds,
+                        builder: (context, seconds, child) {
+                          return Text(
+                            isConnected
+                                ? _formatDuration(Duration(seconds: seconds))
+                                : _statusLabel(AppLocalizations.of(context)!),
+                            style: AppText.lg.copyWith(color: Colors.white70, fontWeight: FontWeight.w400, letterSpacing: 0.5),
+                          );
+                        },
                       ),
                     ] else ...[
                       // 视频通话已接通：左上角显示时长
@@ -495,9 +506,15 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                   color: Colors.black.withValues(alpha: 0.38),
-                                  child: Text(
-                                    _formatDuration(_duration),
-                                    style: AppText.base.copyWith(color: Colors.white, fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()]),
+                                  // 时长走秒,用 ValueNotifier 局部刷新,不重建整页
+                                  child: ValueListenableBuilder<int>(
+                                    valueListenable: _durationSeconds,
+                                    builder: (context, seconds, child) {
+                                      return Text(
+                                        _formatDuration(Duration(seconds: seconds)),
+                                        style: AppText.base.copyWith(color: Colors.white, fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()]),
+                                      );
+                                    },
                                   ),
                                 ),
                               ),

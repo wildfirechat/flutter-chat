@@ -67,6 +67,9 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
   bool _isLoading = false;
   int _nextId = 0;
 
+  // base64 缩略图解码缓存：_buildIcon 在 itemBuilder 链路,避免每次重建都 json.decode + base64Decode
+  final Map<int, Uint8List?> _thumbCache = {};
+
   @override
   void initState() {
     super.initState();
@@ -84,6 +87,7 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
   void _refresh() {
     setState(() {
       _items.clear();
+      _thumbCache.clear();
       _hasMore = true;
       _nextId = 0;
       _isLoading = false;
@@ -310,8 +314,9 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
             final client = HttpClient();
             final request = await client.getUrl(Uri.parse(MediaUrlRedirector.redirect(authorizedUrl)));
             final response = await request.close();
-            final bytes = await response.fold<List<int>>([], (prev, element) => prev..addAll(element));
-            await File(outputFile).writeAsBytes(bytes);
+            // 流式写盘,避免整文件 fold 进内存
+            final sink = File(outputFile).openWrite();
+            await response.pipe(sink);
             Fluttertoast.showToast(msg: l10n.saveSuccess);
           } catch (e) {
             Fluttertoast.showToast(msg: l10n.saveFail('$e'));
@@ -402,47 +407,61 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
     }
   }
 
+  /// 解析收藏 data 中的 base64 缩略图,结果在 [_thumbCache] 中按 favId 缓存。
+  Uint8List? _decodeThumbBytes(FavoriteItem item) {
+    return _thumbCache.putIfAbsent(item.favId, () {
+      try {
+        var map = json.decode(item.data);
+        var thumb = map['thumb'];
+        if (thumb != null && thumb is String && thumb.isNotEmpty) {
+          return base64Decode(thumb);
+        }
+      } catch (e) {
+        // ignore
+      }
+      return null;
+    });
+  }
+
   Widget _buildIcon(FavoriteItem item) {
     if (item.favType == MESSAGE_CONTENT_TYPE_IMAGE ||
         item.favType == MESSAGE_CONTENT_TYPE_VIDEO) {
       if (item.thumbUrl.isNotEmpty) {
+        // 50x50 缩略图按实际显示尺寸解码,避免原图占内存
+        final dpr = MediaQuery.devicePixelRatioOf(context);
         return Image.network(
           MediaUrlRedirector.redirect(item.thumbUrl),
           width: 50,
           height: 50,
           fit: BoxFit.cover,
+          cacheWidth: (50 * dpr).ceil(),
+          cacheHeight: (50 * dpr).ceil(),
         );
       } else if (item.data.isNotEmpty) {
-        try {
-          var map = json.decode(item.data);
-          var thumb = map['thumb'];
-          if (thumb != null && thumb is String && thumb.isNotEmpty) {
-            Uint8List bytes = base64Decode(thumb);
-            if (item.favType == MESSAGE_CONTENT_TYPE_VIDEO) {
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  Image(
-                    image: MemoryImage(bytes),
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                  ),
-                  const Icon(Icons.play_circle_outline,
-                      color: Colors.white, size: 20),
-                ],
-              );
-            } else {
-              return Image(
-                image: MemoryImage(bytes),
-                width: 50,
-                height: 50,
-                fit: BoxFit.cover,
-              );
-            }
+        final bytes = _decodeThumbBytes(item);
+        if (bytes != null) {
+          if (item.favType == MESSAGE_CONTENT_TYPE_VIDEO) {
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                Image(
+                  image: MemoryImage(bytes),
+                  width: 50,
+                  height: 50,
+                  fit: BoxFit.cover,
+                ),
+                const Icon(Icons.play_circle_outline,
+                    color: Colors.white, size: 20),
+              ],
+            );
+          } else {
+            return Image(
+              image: MemoryImage(bytes),
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+            );
           }
-        } catch (e) {
-          // ignore
         }
       }
       return Container(
@@ -467,11 +486,14 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
       );
     } else if (item.favType == MESSAGE_CONTENT_TYPE_LINK) {
       if (item.thumbUrl.isNotEmpty) {
+        final dpr = MediaQuery.devicePixelRatioOf(context);
         return Image.network(
           MediaUrlRedirector.redirect(item.thumbUrl),
           width: 50,
           height: 50,
           fit: BoxFit.cover,
+          cacheWidth: (50 * dpr).ceil(),
+          cacheHeight: (50 * dpr).ceil(),
         );
       }
       return Container(

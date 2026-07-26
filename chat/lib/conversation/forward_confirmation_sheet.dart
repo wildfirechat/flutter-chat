@@ -50,6 +50,17 @@ class _MessagePreviewData {
 class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
   final TextEditingController _commentController = TextEditingController();
 
+  /// 预览数据 Future 缓存:只创建一次,避免键盘弹起等重建时重复执行 _loadPreviewData
+  Future<_MessagePreviewData>? _previewDataFuture;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // _loadPreviewData 依赖 AppLocalizations(inherited widget),不能在 initState 中调用,故在这里创建
+    _previewDataFuture ??=
+        widget.messages != null && widget.messages!.isNotEmpty ? _loadPreviewData() : null;
+  }
+
   @override
   void dispose() {
     _commentController.dispose();
@@ -196,7 +207,7 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
       return const SizedBox.shrink();
     } else {
       return FutureBuilder<_MessagePreviewData>(
-        future: _loadPreviewData(),
+        future: _previewDataFuture,
         builder: (context, snap) {
           final preview = snap.data ?? _MessagePreviewData(text: AppLocalizations.of(context)!.messageTag);
           return Container(

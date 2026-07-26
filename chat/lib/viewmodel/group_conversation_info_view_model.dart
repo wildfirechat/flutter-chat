@@ -10,7 +10,8 @@ import 'package:chat/app_server.dart';
 import 'package:chat/group/fav_group_event.dart';
 
 class GroupConversationInfoViewModel extends ChangeNotifier {
-  late StreamSubscription<GroupMembersUpdatedEvent> _groupMembersUpdatedSubscription;
+  // setup 中多个 await 之后才赋值，setup 完成前 dispose 不能触发 LateInitializationError
+  StreamSubscription<GroupMembersUpdatedEvent>? _groupMembersUpdatedSubscription;
 
   bool _isFavGroup = false;
   GroupMember? _groupMember;
@@ -83,6 +84,6 @@ class GroupConversationInfoViewModel extends ChangeNotifier {
   @override
   void dispose() {
     super.dispose();
-    _groupMembersUpdatedSubscription.cancel();
+    _groupMembersUpdatedSubscription?.cancel();
   }
 }

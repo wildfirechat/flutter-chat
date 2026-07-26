@@ -23,6 +23,17 @@ extension EmptyStringToNull on String? {
 }
 
 class Utilities {
+  /// 固定格式 DateFormat 缓存:消息列表每 cell 都会调 formatMessageTime,避免重复构造
+  static final DateFormat _hourMinuteFormat = DateFormat('HH:mm');
+
+  /// 含 locale 或动态 pattern 的 DateFormat,按 "pattern@locale" 缓存
+  static final Map<String, DateFormat> _dateFormatCache = {};
+
+  static DateFormat _cachedDateFormat(String pattern, [String? locale]) {
+    final key = locale == null ? pattern : '$pattern@$locale';
+    return _dateFormatCache.putIfAbsent(key, () => DateFormat(pattern, locale));
+  }
+
   static String formatTime(BuildContext context, int timestamp) {
     var now = DateTime.now();
     var date = DateTime.fromMicrosecondsSinceEpoch(timestamp * 1000);
@@ -53,7 +64,7 @@ class Utilities {
     var diff = now.difference(date);
     var time = '';
 
-    var format = DateFormat('HH:mm');
+    var format = _hourMinuteFormat;
     time = format.format(date);
     if (diff.inSeconds <= 0 || diff.inSeconds > 0 && diff.inMinutes == 0 || diff.inMinutes > 0 && diff.inHours == 0 || diff.inHours > 0 && diff.inDays == 0) {
     } else {
@@ -62,14 +73,14 @@ class Utilities {
         time = '$day $time';
       } else if (diff.inDays < 7) {
         // 前天及之前一周内：星期几 小时:分钟（对齐微信）
-        var weekday = DateFormat.EEEE(Localizations.localeOf(context).toString()).format(date);
+        var weekday = _cachedDateFormat('EEEE', Localizations.localeOf(context).toString()).format(date);
         time = '$weekday $time';
       } else if (diff.inDays < 365) {
-        var dayformat = DateFormat(AppLocalizations.of(context)!.monthDayFormat);
+        var dayformat = _cachedDateFormat(AppLocalizations.of(context)!.monthDayFormat);
         var day = dayformat.format(date);
         time = '$day $time';
       } else {
-        var dayformat = DateFormat(AppLocalizations.of(context)!.yearMonthDayFormat);
+        var dayformat = _cachedDateFormat(AppLocalizations.of(context)!.yearMonthDayFormat);
         var day = dayformat.format(date);
         time = '$day $time';
       }

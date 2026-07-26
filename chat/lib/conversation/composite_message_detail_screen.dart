@@ -34,27 +34,45 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_typography.dart';
 
-class CompositeMessageDetailScreen extends StatelessWidget {
+class CompositeMessageDetailScreen extends StatefulWidget {
   final CompositeMessageContent content;
 
   const CompositeMessageDetailScreen(this.content, {Key? key}) : super(key: key);
+
+  @override
+  State<CompositeMessageDetailScreen> createState() => _CompositeMessageDetailScreenState();
+}
+
+class _CompositeMessageDetailScreenState extends State<CompositeMessageDetailScreen> {
+  // cell builder 按消息位置缓存，每条消息只创建一次；
+  // 否则 VoiceCellBuilder 等每次 build 都会重复注册 eventBus 订阅且无人释放
+  final Map<int, MessageCellBuilder> _cellBuilders = {};
+
+  @override
+  void dispose() {
+    for (var cellBuilder in _cellBuilders.values) {
+      cellBuilder.dispose();
+    }
+    _cellBuilders.clear();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: isDesktopShell
           ? PcPageHeader(
-              title: content.title,
+              title: widget.content.title,
               onBack: () => Navigator.of(context).maybePop(),
             )
-          : AppBar(title: Text(content.title)),
+          : AppBar(title: Text(widget.content.title)),
       body: ListView.builder(
-        itemCount: content.messages.length,
+        itemCount: widget.content.messages.length,
         itemBuilder: (context, index) {
-          Message message = content.messages[index];
+          Message message = widget.content.messages[index];
           bool showAvatar = true;
           if (index > 0) {
-            Message prev = content.messages[index - 1];
+            Message prev = widget.content.messages[index - 1];
             if (prev.fromUser == message.fromUser) {
               showAvatar = false;
             }
@@ -65,13 +83,13 @@ class CompositeMessageDetailScreen extends StatelessWidget {
           UIMessage uiMessage = UIMessage(message);
           uiMessage.showTimeLabel = true;
 
-          return _buildMessageRow(context, uiMessage, showAvatar);
+          return _buildMessageRow(context, uiMessage, showAvatar, index);
         },
       ),
     );
   }
 
-  Widget _buildMessageRow(BuildContext context, UIMessage uiMessage, bool showAvatar) {
+  Widget _buildMessageRow(BuildContext context, UIMessage uiMessage, bool showAvatar, int index) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: Row(
@@ -122,7 +140,7 @@ class CompositeMessageDetailScreen extends StatelessWidget {
                       bottomRight: Radius.circular(8),
                     ),
                   ),
-                  child: _buildContent(context, uiMessage),
+                  child: _buildContent(context, uiMessage, index),
                 ),
               ],
             ),
@@ -132,7 +150,17 @@ class CompositeMessageDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, UIMessage model) {
+  Widget _buildContent(BuildContext context, UIMessage model, int index) {
+    // 命中缓存直接复用，避免重复构建 cell builder
+    MessageCellBuilder? cellBuilder = _cellBuilders[index];
+    if (cellBuilder == null) {
+      cellBuilder = _createCellBuilder(context, model);
+      _cellBuilders[index] = cellBuilder;
+    }
+    return cellBuilder.buildMessageContent(context);
+  }
+
+  MessageCellBuilder _createCellBuilder(BuildContext context, UIMessage model) {
     MessageCellBuilder cellBuilder;
     if (model.message.content is NotificationMessageContent) {
       cellBuilder = NotificationCellBuilder(context, model);
@@ -157,6 +185,6 @@ class CompositeMessageDetailScreen extends StatelessWidget {
     } else {
       cellBuilder = UnknownCellBuilder(context, model);
     }
-    return cellBuilder.buildMessageContent(context);
+    return cellBuilder;
   }
 }

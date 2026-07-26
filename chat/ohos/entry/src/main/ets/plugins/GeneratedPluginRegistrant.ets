@@ -1,14 +1,6 @@
 import { FlutterEngine, Log } from '@ohos/flutter_ohos';
 import PhotoManagerPlugin from 'photo_manager';
-import VideoPlayerPlugin from 'video_player_ohos';
-import PathProviderPlugin from 'path_provider_ohos';
-import WebViewFlutterPlugin from 'webview_flutter_ohos';
-import UrlLauncherPlugin from 'url_launcher_ohos';
-import SharedPreferencesPlugin from 'shared_preferences_ohos';
 import ImclientPlugin from 'imclient';
-import ImagePickerPlugin from 'image_picker_ohos';
-import FlutterSoundPlugin from 'flutter_sound';
-import FlutterLocalizationPlugin from 'flutter_localization';
 
 /**
  * Generated file. Do not edit.
@@ -23,15 +15,7 @@ export class GeneratedPluginRegistrant {
   static registerWith(flutterEngine: FlutterEngine) {
     try {
       flutterEngine.getPlugins()?.add(new PhotoManagerPlugin());
-      flutterEngine.getPlugins()?.add(new VideoPlayerPlugin());
-      flutterEngine.getPlugins()?.add(new PathProviderPlugin());
-      flutterEngine.getPlugins()?.add(new WebViewFlutterPlugin());
-      flutterEngine.getPlugins()?.add(new UrlLauncherPlugin());
-      flutterEngine.getPlugins()?.add(new SharedPreferencesPlugin());
       flutterEngine.getPlugins()?.add(new ImclientPlugin());
-      flutterEngine.getPlugins()?.add(new ImagePickerPlugin());
-      flutterEngine.getPlugins()?.add(new FlutterSoundPlugin());
-      flutterEngine.getPlugins()?.add(new FlutterLocalizationPlugin());
     } catch (e) {
       Log.e(
         TAG,

@@ -1077,8 +1077,11 @@ class ImclientFfiChannel implements ImclientChannel {
               _int(args, 'startTime'),
               _int(args, 'endTime'),
               lp));
-          debugPrint(
-              '[ImclientFfi] getMessageCountByDay conv=${c.type}/${c.target}/${c.line} start=${_int(args, 'startTime')} end=${_int(args, 'endTime')} raw=$raw');
+          // 热路径日志,仅 debug 输出完整 raw JSON
+          if (kDebugMode) {
+            debugPrint(
+                '[ImclientFfi] getMessageCountByDay conv=${c.type}/${c.target}/${c.line} start=${_int(args, 'startTime')} end=${_int(args, 'endTime')} raw=$raw');
+          }
           final v = _json(raw);
           if (v is Map) return v;
           // C 接口实际返回 [{"key":"2026-06-24","value":2}, ...] 数组形式，
@@ -1138,45 +1141,53 @@ class ImclientFfiChannel implements ImclientChannel {
             _reqPtr(_int(args, 'requestId')), 0);
         return null;
       case 'uploadMedia':
-        return using((a) {
-          final fileName = _ns(a, _str(args, 'fileName'));
+        {
           final mediaData = args['mediaData'];
           final bytes = mediaData is Uint8List ? mediaData : Uint8List(0);
           // 底层 uploadMedia 要求 base64 编码的数据（与鸿蒙 NAPI 包装一致，
           // 见 marswrapper har 的 addon.uploadMedia 调用），直接传原始字节
           // 会导致服务端存下空/损坏文件（图片打开是空图）。
-          final b64 = _ns(a, base64Encode(bytes));
-          _wf.uploadMedia(
-              fileName.ptr,
-              fileName.len,
-              b64.ptr,
-              b64.len,
-              _int(args, 'mediaType'),
-              _cbString,
-              _cbError,
-              _bridge.fn('wfc_on_upload_media_progress'),
-              _reqPtr(_int(args, 'requestId')),
-              0);
-          return null;
-        });
+          // base64 编码放到后台 isolate 执行，避免大数据阻塞主 isolate。
+          final b64Str = await compute(base64Encode, bytes);
+          return using((a) {
+            final fileName = _ns(a, _str(args, 'fileName'));
+            final b64 = _ns(a, b64Str);
+            _wf.uploadMedia(
+                fileName.ptr,
+                fileName.len,
+                b64.ptr,
+                b64.len,
+                _int(args, 'mediaType'),
+                _cbString,
+                _cbError,
+                _bridge.fn('wfc_on_upload_media_progress'),
+                _reqPtr(_int(args, 'requestId')),
+                0);
+            return null;
+          });
+        }
       case 'uploadMediaFile':
         {
           final requestId = _int(args, 'requestId');
           final filePath = _str(args, 'filePath');
           final file = File(filePath);
-          if (!file.existsSync()) {
+          // 异步判断文件是否存在，避免主 isolate 同步 IO
+          if (!await file.exists()) {
             _emit('onOperationFailure', {
               'requestId': requestId,
               'errorCode': -1,
             });
             return null;
           }
-          final bytes = file.readAsBytesSync();
+          // 异步读取文件字节，避免大文件阻塞主 isolate
+          final bytes = await file.readAsBytes();
+          // 同 uploadMedia：底层要求 base64 数据。
+          // base64 编码放到后台 isolate 执行，避免大文件编码阻塞主 isolate。
+          final b64Str = await compute(base64Encode, bytes);
           final name = path.basename(filePath);
           return using((a) {
             final fileName = _ns(a, name);
-            // 同 uploadMedia：底层要求 base64 数据
-            final b64 = _ns(a, base64Encode(bytes));
+            final b64 = _ns(a, b64Str);
             _wf.uploadMedia(
                 fileName.ptr,
                 fileName.len,
@@ -1639,14 +1650,11 @@ class ImclientFfiChannel implements ImclientChannel {
         });
       case 'getGroupInfos':
         return using((a) {
-          final result = <dynamic>[];
-          for (final groupId in _strList(args, 'groupIds')) {
-            final ns = _ns(a, groupId);
-            final info = _json(_outString(
-                (lp) => _wf.getGroupInfo(ns.ptr, ns.len, false, lp)));
-            if (info != null) result.add(info);
-          }
-          return result;
+          // native 有批量接口,避免逐群串行 FFI 查询
+          final groupIds = _nsArray(a, _strList(args, 'groupIds'));
+          final v = _json(_outString((lp) => _wf.getGroupInfos(
+              groupIds.ptrs, groupIds.lens, groupIds.count, false, lp)));
+          return v is List ? v : [];
         });
       case 'getGroupInfoAsync':
         {

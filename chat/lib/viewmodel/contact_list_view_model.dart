@@ -13,6 +13,7 @@ class ContactListViewModel extends ChangeNotifier {
   List<FriendRequest> _newFriendRequestList = [];
   List<String> _favUserIds = [];
   int _unreadFriendRequestCount = 0;
+  Timer? _debounceTimer;
 
   late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
   late StreamSubscription<FriendUpdateEvent> _friendUpdatedSubscription;
@@ -33,8 +34,12 @@ class ContactListViewModel extends ChangeNotifier {
     });
     _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
       debugPrint('userInfo updated to load contactViewModel');
-      _loadContactList();
-      notifyListeners();
+      // UserInfoUpdatedEvent 常批量触发，防抖合并为一次全量加载（拼音+排序开销大）。
+      // _loadContactList 完成时会自行 notifyListeners，此处不再重复通知。
+      if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
+      _debounceTimer = Timer(const Duration(milliseconds: 100), () {
+        _loadContactList();
+      });
     });
     _clearFriendRequestSubscription = Imclient.IMEventBus.on<ClearFriendRequestUnreadEvent>().listen((event) {
       _loadFriendRequestListAndNotify();
@@ -231,6 +236,7 @@ class ContactListViewModel extends ChangeNotifier {
   @override
   void dispose() {
     super.dispose();
+    _debounceTimer?.cancel();
     _friendUpdatedSubscription.cancel();
     _friendRequestUpdatedSubscription.cancel();
     _userInfoUpdatedSubscription.cancel();

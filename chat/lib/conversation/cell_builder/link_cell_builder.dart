@@ -20,12 +20,14 @@ class LinkCellBuilder extends PortraitCellBuilder {
   @override
   Widget buildMessageContent(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final dpr = MediaQuery.of(context).devicePixelRatio;
+    final cardWidth = (screenWidth * 0.75).clamp(240.0, 320.0);
     final hasThumbnail = linkContent.thumbnailUrl != null && linkContent.thumbnailUrl!.isNotEmpty;
 
     return GestureDetector(
       onTap: () => Utilities.openLink(context, linkContent.url),
       child: Container(
-        width: (screenWidth * 0.75).clamp(240.0, 320.0),
+        width: cardWidth,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(8),
@@ -42,6 +44,9 @@ class LinkCellBuilder extends PortraitCellBuilder {
                   MediaUrlRedirector.redirect(linkContent.thumbnailUrl!),
                   width: double.infinity,
                   height: 120,
+                  // 按显示尺寸×dpr 解码，避免原图全尺寸解码占用大量内存
+                  cacheWidth: (cardWidth * dpr).ceil(),
+                  cacheHeight: (120 * dpr).ceil(),
                   fit: BoxFit.cover,
                   errorBuilder: (_, __, ___) => Container(
                     height: 80,

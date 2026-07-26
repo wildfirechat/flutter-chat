@@ -29,7 +29,15 @@ class _ParticipantItem {
   bool isScreenSharing = false;
   int volume = 0;
 
+  /// 说话状态(音量>0 且未静音),仅状态翻转时通知,
+  /// 供说话绿框/角标局部刷新,避免音量高频上报触发整页重建。
+  final ValueNotifier<bool> speakingNotifier = ValueNotifier(false);
+
   _ParticipantItem({required this.userId, required this.renderer});
+
+  void dispose() {
+    speakingNotifier.dispose();
+  }
 }
 
 class MultiCallScreen extends StatefulWidget {
@@ -53,6 +61,12 @@ class _MultiCallScreenState extends State<MultiCallScreen>
   Duration _duration = Duration.zero;
   Timer? _timer;
 
+  /// 通话时长秒数,走秒 Timer 仅更新该 notifier,避免每秒重建整页。
+  final ValueNotifier<int> _durationSeconds = ValueNotifier(0);
+
+  /// 正在讲话人名字,音量高频上报时仅内容变化才通知,供顶部栏局部刷新。
+  final ValueNotifier<String> _speakingUserNameNotifier = ValueNotifier('');
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +77,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
     // 从最小化悬浮窗恢复时，交接悬浮窗期间的通话时长
     if (CallOverlayManager.instance.isMinimized) {
       _duration = CallOverlayManager.instance.currentDuration;
+      _durationSeconds.value = _duration.inSeconds;
     }
     _initSelf();
     _initRemoteParticipants();
@@ -122,9 +137,13 @@ class _MultiCallScreenState extends State<MultiCallScreen>
   @override
   void dispose() {
     _stopTimer();
+    _durationSeconds.dispose();
+    _speakingUserNameNotifier.dispose();
     _selfItem?.renderer.dispose();
+    _selfItem?.dispose();
     for (var item in _participants.values) {
       item.renderer.dispose();
+      item.dispose();
     }
     super.dispose();
   }
@@ -133,9 +152,9 @@ class _MultiCallScreenState extends State<MultiCallScreen>
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (mounted) {
-        setState(() {
-          _duration += const Duration(seconds: 1);
-        });
+        // 仅更新时长 notifier,由 ValueListenableBuilder 局部刷新时长文本
+        _duration += const Duration(seconds: 1);
+        _durationSeconds.value = _duration.inSeconds;
       }
     });
   }
@@ -174,6 +193,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
         _selfItem!.audioMuted = _isMicMuted;
       }
     });
+    if (_selfItem != null) _updateSpeaking(_selfItem!);
   }
 
   void _onToggleCamera() {
@@ -316,6 +336,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
     var item = _participants.remove(userId);
     if (item != null) {
       item.renderer.dispose();
+      item.dispose();
     }
     if (mounted) setState(() {});
   }
@@ -362,17 +383,29 @@ class _MultiCallScreenState extends State<MultiCallScreen>
 
   @override
   void didReportAudioVolume(String userId, int volume) {
+    // 音量上报频率高(每秒多次),不 setState 重建整页:
+    // 音量存到 item 普通字段,说话绿框与"正在讲话"由 ValueNotifier 局部刷新。
+    _ParticipantItem? item;
     if (userId == Imclient.currentUserId) {
-      if (_selfItem != null) {
-        _selfItem!.volume = volume;
-      }
+      item = _selfItem;
     } else {
-      var item = _participants[userId];
-      if (item != null) {
-        item.volume = volume;
-      }
+      item = _participants[userId];
     }
-    if (mounted) setState(() {});
+    if (item == null) return;
+    item.volume = volume;
+    _updateSpeaking(item);
+    var speakingName = _speakingUserName;
+    if (_speakingUserNameNotifier.value != speakingName) {
+      _speakingUserNameNotifier.value = speakingName;
+    }
+  }
+
+  /// 说话状态(音量>0 且未静音)翻转时才通知,驱动说话绿框/角标局部刷新。
+  void _updateSpeaking(_ParticipantItem item) {
+    var speaking = item.volume > 0 && !item.audioMuted;
+    if (item.speakingNotifier.value != speaking) {
+      item.speakingNotifier.value = speaking;
+    }
   }
 
   @override
@@ -401,6 +434,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
       if (item != null) {
         item.audioMuted = profile.audioMuted;
         item.videoMuted = profile.videoMuted;
+        _updateSpeaking(item);
       }
     }
     if (mounted) setState(() {});
@@ -465,7 +499,6 @@ class _MultiCallScreenState extends State<MultiCallScreen>
     bool isVideoCall = !_session.audioOnly;
     var l10n = AppLocalizations.of(context)!;
     var items = _allItems;
-    var speakingName = _speakingUserName;
 
     return Scaffold(
       backgroundColor: const Color(0xFF0F121B),
@@ -476,7 +509,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
           SafeArea(
             child: Column(
               children: [
-                _buildHeader(l10n, speakingName, items.length),
+                _buildHeader(l10n, items.length),
                 Expanded(
                   child: items.isEmpty
                       ? const Center(
@@ -494,7 +527,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
   }
 
   /// 顶部信息栏：未接通时显示状态，接通后显示时长、当前人数、正在讲话人
-  Widget _buildHeader(AppLocalizations l10n, String speakingName, int participantCount) {
+  Widget _buildHeader(AppLocalizations l10n, int participantCount) {
     final bool isConnected = _session.status == CallState.STATUS_CONNECTED;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -504,16 +537,28 @@ class _MultiCallScreenState extends State<MultiCallScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  isConnected ? _formatDuration(_duration) : _statusLabel(l10n),
-                  style: AppText.base.copyWith(
-                      color: Colors.white, fontWeight: FontWeight.w600),
+                // 时长走秒,用 ValueNotifier 局部刷新,不重建整页
+                ValueListenableBuilder<int>(
+                  valueListenable: _durationSeconds,
+                  builder: (context, seconds, child) {
+                    return Text(
+                      isConnected ? _formatDuration(Duration(seconds: seconds)) : _statusLabel(l10n),
+                      style: AppText.base.copyWith(
+                          color: Colors.white, fontWeight: FontWeight.w600),
+                    );
+                  },
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  '$participantCount 人通话${speakingName.isNotEmpty ? ' · 正在讲话: $speakingName' : ''}',
-                  style: AppText.sm.copyWith(color: Colors.white70),
-                  overflow: TextOverflow.ellipsis,
+                // "正在讲话"随音量上报高频变化,用 ValueNotifier 局部刷新,不重建整页
+                ValueListenableBuilder<String>(
+                  valueListenable: _speakingUserNameNotifier,
+                  builder: (context, speakingName, child) {
+                    return Text(
+                      '$participantCount 人通话${speakingName.isNotEmpty ? ' · 正在讲话: $speakingName' : ''}',
+                      style: AppText.sm.copyWith(color: Colors.white70),
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
                 ),
               ],
             ),
@@ -586,109 +631,115 @@ class _MultiCallScreenState extends State<MultiCallScreen>
   Widget _buildParticipantCell(_ParticipantItem item, bool isVideoCall) {
     bool isSelf = item.userId == Imclient.currentUserId;
     bool showVideo = isVideoCall && !item.videoMuted && item.renderer.srcObject != null;
-    bool isSpeaking = item.volume > 0 && !item.audioMuted;
     String name = isSelf ? '我' : _participantName(item.userInfo);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E2638),
-        borderRadius: BorderRadius.circular(12),
-        border: isSpeaking
-            ? Border.all(color: const Color(0xFF07C160), width: 2)
-            : null,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (showVideo)
-              RTCVideoView(
-                item.renderer,
-                objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-                mirror: isSelf,
-              )
-            else
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF1E2638), Color(0xFF0F121B)],
-                  ),
-                ),
-                child: Center(
-                  child: Portrait(
-                    item.userInfo?.portrait ?? '',
-                    Config.defaultUserPortrait,
-                    width: 72,
-                    height: 72,
-                    borderRadius: 36,
-                  ),
-                ),
-              ),
-            // 摄像头关闭提示
-            if (isVideoCall && item.videoMuted)
-              const Center(
-                child: Icon(Icons.videocam_off,
-                    color: Colors.white54, size: 36),
-              ),
-            // 底部信息条：名字 + 静音状态
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.6),
-                    ],
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (item.audioMuted)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 4),
-                        child: Icon(Icons.mic_off,
-                            color: Colors.white70, size: 14),
-                      ),
-                    Flexible(
-                      child: Text(
-                        name,
-                        style: AppText.sm.copyWith(color: Colors.white),
-                        overflow: TextOverflow.ellipsis,
+    // 说话指示(绿框/角标)由 item.speakingNotifier 驱动局部刷新,
+    // 音量高频上报时不再随整页 setState 重建 RTCVideoView。
+    return ValueListenableBuilder<bool>(
+      valueListenable: item.speakingNotifier,
+      builder: (context, isSpeaking, child) {
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E2638),
+            borderRadius: BorderRadius.circular(12),
+            border: isSpeaking
+                ? Border.all(color: const Color(0xFF07C160), width: 2)
+                : null,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (showVideo)
+                  RTCVideoView(
+                    item.renderer,
+                    objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                    mirror: isSelf,
+                  )
+                else
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFF1E2638), Color(0xFF0F121B)],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
-            // 正在讲话角标
-            if (isSpeaking)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF07C160).withValues(alpha: 0.9),
-                    shape: BoxShape.circle,
+                    child: Center(
+                      child: Portrait(
+                        item.userInfo?.portrait ?? '',
+                        Config.defaultUserPortrait,
+                        width: 72,
+                        height: 72,
+                        borderRadius: 36,
+                      ),
+                    ),
                   ),
-                  child: const Icon(Icons.volume_up,
-                      color: Colors.white, size: 14),
+                // 摄像头关闭提示
+                if (isVideoCall && item.videoMuted)
+                  const Center(
+                    child: Icon(Icons.videocam_off,
+                        color: Colors.white54, size: 36),
+                  ),
+                // 底部信息条：名字 + 静音状态
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.6),
+                        ],
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (item.audioMuted)
+                          const Padding(
+                            padding: EdgeInsets.only(right: 4),
+                            child: Icon(Icons.mic_off,
+                                color: Colors.white70, size: 14),
+                          ),
+                        Flexible(
+                          child: Text(
+                            name,
+                            style: AppText.sm.copyWith(color: Colors.white),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-          ],
-        ),
-      ),
+                // 正在讲话角标
+                if (isSpeaking)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF07C160).withValues(alpha: 0.9),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.volume_up,
+                          color: Colors.white, size: 14),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
