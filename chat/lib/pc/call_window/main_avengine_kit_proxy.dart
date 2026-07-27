@@ -44,6 +44,10 @@ class MainAvEngineKitProxy {
   /// 待转发的事件队列（窗口未 ready 时缓存）。
   final List<_QueuedEvent> _eventQueue = [];
 
+  /// 服务器时间与本机时间的差值(serverTime - localTime)，准静态，缓存一次复用。
+  /// 见 [_serverDeltaTime]。
+  int? _cachedServerDeltaTime;
+
   /// 是否已经安装代理。
   bool _installed = false;
 
@@ -226,11 +230,22 @@ class MainAvEngineKitProxy {
       if (msg.direction == MessageDirection.MessageDirection_Send &&
           type != mc.VOIP_CONTENT_TYPE_ACCEPT &&
           type != mc.VOIP_CONTENT_TYPE_ACCEPT_T &&
-          type != mc.VOIP_CONTENT_TYPE_END) continue;
+          type != mc.VOIP_CONTENT_TYPE_END) {
+        print('$_tag drop self-sent voip message type=$type');
+        continue;
+      }
 
       // 忽略超过 1 分钟的旧 VOIP 消息，避免离线/历史消息误弹通话窗口。
-      final now = DateTime.now().millisecondsSinceEpoch;
-      if (msg.serverTime > 0 && now - msg.serverTime > 60 * 1000) continue;
+      // 必须用服务器校准时间比较:serverTime 是服务器时钟,本机时钟与服务器
+      // 偏差超过 1 分钟时,不校准就会把实时的来电/信令消息当历史消息全部丢掉
+      // (表现为来电不弹窗、去电接不通)。算法与 avenginekit 内部超时判断一致。
+      final delta = await _serverDeltaTime();
+      final age = DateTime.now().millisecondsSinceEpoch + delta - msg.serverTime;
+      if (msg.serverTime > 0 && age > 60 * 1000) {
+        print('$_tag drop stale voip message type=$type age=${age}ms delta=$delta');
+        continue;
+      }
+      print('$_tag voip message type=$type direction=${msg.direction} age=${age}ms');
 
       // 来电/邀请类消息需要先创建 Call 窗口。
       if (_callWindowId == null &&
@@ -241,6 +256,20 @@ class MainAvEngineKitProxy {
       }
 
       _emitToCallWindow(CallWindowEvents.message, IpcCodec.encodeMessage(msg));
+    }
+  }
+
+  /// 服务器时间与本机时间的差值(serverTime - localTime)。准静态值，缓存一次
+  /// 复用，避免每条 VOIP 消息都走一次平台调用。取不到时按 0 处理(退化为
+  /// 原来的本机时钟判断)。
+  Future<int> _serverDeltaTime() async {
+    final cached = _cachedServerDeltaTime;
+    if (cached != null) return cached;
+    try {
+      return _cachedServerDeltaTime = await Imclient.serverDeltaTime;
+    } catch (e) {
+      print('$_tag get serverDeltaTime failed: $e');
+      return 0;
     }
   }
 
@@ -311,6 +340,7 @@ class MainAvEngineKitProxy {
     if (_callWindowReady && _callWindowId != null) {
       WindowEventChannel.invoke(_callWindowId!, event, args);
     } else {
+      print('$_tag queue $event (windowId=$_callWindowId ready=$_callWindowReady)');
       _eventQueue.add(_QueuedEvent(event, args));
     }
   }
@@ -352,6 +382,7 @@ class MainAvEngineKitProxy {
   Future<dynamic> _handleVoipStatusChanged(dynamic args) async {
     final status = args['status'] as String?;
     final windowId = args['windowId'] as int?;
+    print('$_tag voip status changed status=$status windowId=$windowId');
     if (status == 'ready' && windowId != null) {
       await CallWindowManager.instance.onCallWindowReady(windowId);
     }

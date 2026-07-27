@@ -102,7 +102,11 @@ class CallWindowManager extends SubWindowManagerBase {
   /// 通知 Call 窗口已就绪，可以显示。
   Future<void> onCallWindowReady(int windowId) async {
     final ctx = _creationContexts[windowId];
-    if (ctx == null) return;
+    if (ctx == null) {
+      debugPrint('$windowKind drop ready of unknown window $windowId '
+          '(known: ${_creationContexts.keys.toList()})');
+      return;
+    }
 
     debugPrint('$windowKind onCallWindowReady $windowId');
     await windowController?.center();

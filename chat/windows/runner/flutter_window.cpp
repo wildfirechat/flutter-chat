@@ -7,7 +7,6 @@
 #include <desktop_multi_window/desktop_multi_window_plugin.h>
 #include <flutter_webrtc/flutter_web_r_t_c_plugin.h>
 #include <window_manager/window_manager_plugin.h>
-#include <tray_manager/tray_manager_plugin.h>
 #include <screen_retriever_windows/screen_retriever_windows_plugin_c_api.h>
 #include <permission_handler_windows/permission_handler_windows_plugin.h>
 #include <url_launcher_windows/url_launcher_windows.h>
@@ -41,8 +40,11 @@ bool FlutterWindow::OnCreate() {
         registry->GetRegistrarForPlugin("FlutterWebRTCPlugin"));
     WindowManagerPluginRegisterWithRegistrar(
         registry->GetRegistrarForPlugin("WindowManagerPlugin"));
-    TrayManagerPluginRegisterWithRegistrar(
-        registry->GetRegistrarForPlugin("TrayManagerPlugin"));
+    // 子窗口无托盘用途,不注册 TrayManagerPlugin(托盘归主窗口独占,
+    // 与 macOS / Linux 一致)。tray_manager 的 Windows 实现把 MethodChannel
+    // 存在进程级全局 `channel` 里,子窗口注册会把主窗口那份顶掉:开着子窗口
+    // 期间托盘点击/菜单事件全发到子窗口 isolate(那边没有 handler),子窗口
+    // 关闭时析构函数再把它置空,主窗口托盘从此彻底失效。
     ScreenRetrieverWindowsPluginCApiRegisterWithRegistrar(
         registry->GetRegistrarForPlugin("ScreenRetrieverWindowsPluginCApi"));
     PermissionHandlerWindowsPluginRegisterWithRegistrar(

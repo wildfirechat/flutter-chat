@@ -1,7 +1,8 @@
 # window_manager 0.4.3(本地补丁版)
 
 来源:pub.dev `window_manager: 0.4.3`(未包含上游的 `example/` 目录)。
-仅改动 `linux/window_manager_plugin.cc`,macOS / Windows / Dart 侧与上游一致。
+改动了 `linux/window_manager_plugin.cc`(补丁 1、2)与
+`windows/window_manager_plugin.cpp`(补丁 3),macOS / Dart 侧与上游一致。
 升级 window_manager 时需要把下面的补丁重新套用。
 
 ## 补丁:Linux 插件销毁时摘掉所有回调(修多窗口 use-after-free 崩溃)
@@ -78,3 +79,51 @@ Gtk-CRITICAL **: assertion 'GDK_IS_DEVICE (device)' failed
 
 补丁给这三处加了空指针判断(顺带判断 `get_window()` 是否已经为 NULL——视图销毁后
 它会返回 NULL),取不到设备就打一条 warning 并返回 false,不再往下走。
+
+## 补丁 3:Windows 的 MethodChannel 改成 plugin 实例成员(修多窗口下主窗口事件失效)
+
+### 问题
+
+`windows/window_manager_plugin.cpp` 上游把 channel 放在匿名 namespace 里:
+
+```cpp
+std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel = nullptr;
+
+void WindowManagerPlugin::RegisterWithRegistrar(...) {
+  channel = std::make_unique<...>(registrar->messenger(), "window_manager", ...);
+  ...
+}
+WindowManagerPlugin::~WindowManagerPlugin() { ...; channel = nullptr; }
+void WindowManagerPlugin::_EmitEvent(...) { channel->InvokeMethod("onEvent", ...); }
+```
+
+这是**进程级单例**,单窗口应用无所谓。本项目用 desktop_multi_window 开子窗口
+(通话 / 媒体预览 / 朋友圈 / 搜索),`windows/runner/flutter_window.cpp` 的
+window-created 回调会给每个子窗口引擎再注册一次 window_manager,于是:
+
+- 子窗口一开,全局 `channel` 被换成子窗口引擎那份。此后**主窗口**的
+  `_EmitEvent` 全都发到子窗口 isolate——主窗口的 `onWindowClose` /
+  `onWindowFocus` / `onWindowBlur` / `onWindowResize` 等事件在主窗口 Dart 侧
+  再也收不到(主窗口点 X 不走"最小化到托盘"、前后台判断失效);
+- 反过来,主窗口的 WM_CLOSE 会把 `onWindowClose` 投递到通话子窗口的 isolate,
+  触发那边的挂断 + `voip.windowClosed`;
+- 子窗口关闭时析构函数把全局 `channel` 置空,主窗口的窗口事件**永久失效**。
+
+方法调用方向没问题(handler 绑在各自 plugin 实例上,`native_window` 也是各自
+`ensureInitialized` 时从本引擎的 view 取的),坏掉的只有事件回传方向。
+
+### 改动
+
+`windows/window_manager_plugin.cpp`,以 `[PATCH]` 注释标出:
+
+- 删掉匿名 namespace 里的全局 `channel`,改为 `WindowManagerPlugin` 的私有成员;
+- `RegisterWithRegistrar` 先建 plugin 再建 channel(`plugin->channel = ...`),
+  handler 仍绑在同一个 plugin 实例上;
+- 析构与 `_EmitEvent` 里的 `channel` 自然解析为 `this->channel`,代码不变。
+
+macOS 侧 `WindowManagerPlugin` 本来就是每个 registrar 一个实例、channel 存实例
+属性,Linux 侧 channel 存在 `_WindowManagerPlugin` 结构体里,都没有这个问题。
+
+> 同类问题:`tray_manager` 的 Windows / Linux 实现也用进程级全局记录最后一次
+> 注册的 channel / plugin。托盘只有主窗口用得到,所以三个平台的
+> window-created 回调里都**不注册** TrayManagerPlugin,而不是给它打补丁。

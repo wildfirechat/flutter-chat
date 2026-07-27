@@ -31,11 +31,6 @@ bool IsWindows11OrGreater() {
   return dwBuild < 22000;
 }
 
-std::unique_ptr<
-    flutter::MethodChannel<flutter::EncodableValue>,
-    std::default_delete<flutter::MethodChannel<flutter::EncodableValue>>>
-    channel = nullptr;
-
 class WindowManagerPlugin : public flutter::Plugin {
  public:
   static void RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar);
@@ -45,6 +40,13 @@ class WindowManagerPlugin : public flutter::Plugin {
   virtual ~WindowManagerPlugin();
 
  private:
+  // [PATCH] 上游把 channel 放在匿名 namespace 里做进程级全局,多引擎(本项目用
+  // desktop_multi_window 开通话/媒体预览/朋友圈/搜索子窗口)下后注册的引擎会把
+  // 先注册的那份顶掉:主窗口的 onWindowClose/focus/blur/resize 等事件全发到子
+  // 窗口 isolate,子窗口关闭时析构再把它置空,主窗口的窗口事件从此彻底失效
+  // (表现为主窗口点 X 不再走"最小化到托盘",通话窗关闭事件送错 isolate)。
+  // 改为每个 plugin 实例各持一份,与 macOS/Linux 实现的语义一致。
+  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>> channel;
   WindowManager* window_manager;
   flutter::PluginRegistrarWindows* registrar;
 
@@ -95,13 +97,15 @@ class WindowManagerPlugin : public flutter::Plugin {
 // static
 void WindowManagerPlugin::RegisterWithRegistrar(
     flutter::PluginRegistrarWindows* registrar) {
-  channel = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
-      registrar->messenger(), "window_manager",
-      &flutter::StandardMethodCodec::GetInstance());
-
+  // [PATCH] channel 改为 plugin 实例成员，先建 plugin 再挂 handler。
   auto plugin = std::make_unique<WindowManagerPlugin>(registrar);
 
-  channel->SetMethodCallHandler(
+  plugin->channel =
+      std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
+          registrar->messenger(), "window_manager",
+          &flutter::StandardMethodCodec::GetInstance());
+
+  plugin->channel->SetMethodCallHandler(
       [plugin_pointer = plugin.get()](const auto& call, auto result) {
         plugin_pointer->HandleMethodCall(call, std::move(result));
       });
