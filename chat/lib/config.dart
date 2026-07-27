@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class Config {
   //IM服务地址，不能带HTTP头和端口
   static const String IM_Host = 'wildfirechat.net';
@@ -18,6 +20,12 @@ class Config {
   static String WORKSPACE_URL = "https://open.wildfirechat.cn/work.html";
   // 工作台备选地址，双网环境下使用。不需要双网时保持为 null。
   static String? WORKSPACE_BACKUP_URL = null;
+
+  /// 是否在工作台页签栏显示"打开开发者工具"入口（仅桌面端有效）。
+  ///
+  /// 工作台是远端 H5，出问题基本都要看它自己的 console。默认只在 debug 构建下
+  /// 开启；需要在装到目标机上的 release 包里排查网页问题时，把这里改成 true。
+  static bool ENABLE_WEBVIEW_DEVTOOLS = kDebugMode;
 
   // 语音转文字服务地址，如果没有部署语音转文字服务，或者不需要语音转文字的话，可置为 null
   static String ASR_SERVER = 'https://app.wildfirechat.net/asr/api/recognize';

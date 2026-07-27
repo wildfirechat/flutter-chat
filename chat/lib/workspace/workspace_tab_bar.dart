@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
+import 'package:chat/config.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
@@ -26,8 +26,8 @@ class WorkspaceTabBar extends StatelessWidget {
   final ValueChanged<String> onSelect;
   final ValueChanged<String> onClose;
 
-  /// 打开当前页签的开发者工具。仅 debug 构建下显示入口 —— 工作台是远端 H5,
-  /// 出问题基本都要看它自己的 console。
+  /// 打开当前页签的开发者工具。入口由 [Config.ENABLE_WEBVIEW_DEVTOOLS] 控制
+  /// —— 工作台是远端 H5,出问题基本都要看它自己的 console。
   final VoidCallback? onOpenDevTools;
 
   @override
@@ -61,7 +61,7 @@ class WorkspaceTabBar extends StatelessWidget {
               ),
             ),
           ),
-          if (kDebugMode && onOpenDevTools != null)
+          if (Config.ENABLE_WEBVIEW_DEVTOOLS && onOpenDevTools != null)
             Padding(
               padding: const EdgeInsets.only(right: 8, bottom: 6),
               child: HoverBuilder(

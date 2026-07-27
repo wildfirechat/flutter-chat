@@ -194,19 +194,6 @@ void _bindTabHost(
 
   unawaited(setTransparentBackground(controller));
 
-  // 【临时排查】把网页 console 导到 Dart 日志,定位完连同 _probeJsBridge 一起删。
-  if (kDebugMode) {
-    unawaited(() async {
-      try {
-        await controller.setOnConsoleMessage((JavaScriptConsoleMessage msg) {
-          debugPrint('JSCONSOLE [${msg.level.name}] ${msg.message}');
-        });
-      } catch (e) {
-        debugPrint('JSCONSOLE not supported: $e');
-      }
-    }());
-  }
-
   final host = WorkspaceWebViewHost(
     controller: controller,
     jsApi: JsApi(
@@ -238,7 +225,6 @@ void _bindTabHost(
           if (bound != null && bound.closable) {
             vm.updateTitle(bound.id, await controller.getTitle());
           }
-          await _probeJsBridge(controller);
         },
         // 应用页签沿用 WFWebViewScreen 的行为:页内跳走后 JsApi 的 _preCheck
         // 不再放行 chooseContacts。首页页签改造前就没有这一手,保持原样。
@@ -264,56 +250,6 @@ void _bindTabHost(
   unawaited(_loadTab(controller, tab, vm, brightness));
 }
 
-/// 【临时排查】JS 桥探针,只在 debug 下跑。定位完请连同 onPageFinished 里的调用一起删掉。
-///
-/// dsbridge 的 JS→Dart 是这么走的:dsbridge_flutter 注册一个名为 `_dswk` 的
-/// JavaScript channel(只为让 `window._dswk` 存在),页面里的 dsbridge.js 看到这个
-/// 标记就改用 `prompt("_dsbridge=<方法名>", <参数JSON>)` 发起调用,宿主在
-/// `setOnJavaScriptTextInputDialog` 里拦下来派发。
-///
-/// 三步分别对应链路的三段,哪一步的输出不对就知道断在哪:
-///   probe#1 marker  —— `_dswk` 在不在(channel 注入是否生效)
-///   probe#2 page    —— 页面自己有没有加载 dsbridge.js
-///   probe#3 prompt  —— prompt 能不能回到 Dart(会直接弹一个 toast)
-Future<void> _probeJsBridge(DWebViewController controller) async {
-  if (!kDebugMode) {
-    return;
-  }
-  try {
-    // 页面的 dsbridge 是这么选传输的(见 work.html 的 bundle):
-    //   window._dsbridge ? _dsbridge.call(m, o) : (window._dswk || UA含_dsbridge) && prompt(...)
-    // 只要 _dsbridge 存在(哪怕没有 call 方法),它就会走错分支并抛异常。
-    final marker = await controller.runJavaScriptReturningResult(
-      'JSON.stringify({'
-      'dsbridge: typeof window._dsbridge,'
-      'dswk: typeof window._dswk,'
-      'dsf: typeof window._dsf,'
-      'dscb: typeof window.dscb,'
-      'dsInit: typeof window._dsInit,'
-      'wfBridge: typeof window.__wf_bridge_,'
-      'handleMsg: typeof window._handleMessageFromNative'
-      '})',
-    );
-    debugPrint('JSBRIDGE probe#1 marker = $marker');
-
-    // 把页面里的未捕获异常导到 console,再由 setOnConsoleMessage 送回 Dart。
-    // 点应用没反应时,报错会打在这里。
-    await controller.runJavaScript('''
-      if (!window.__wf_probe_hooked__) {
-        window.__wf_probe_hooked__ = true;
-        window.addEventListener('error', function (e) {
-          console.error('[onerror] ' + (e && e.message) + ' @ ' + (e && e.filename) + ':' + (e && e.lineno));
-        });
-        window.addEventListener('unhandledrejection', function (e) {
-          console.error('[unhandledrejection] ' + (e && e.reason));
-        });
-      }
-    ''');
-    debugPrint('JSBRIDGE probe#2 error hook installed');
-  } catch (e) {
-    debugPrint('JSBRIDGE probe failed: $e');
-  }
-}
 
 Future<void> _loadTab(
   DWebViewController controller,
