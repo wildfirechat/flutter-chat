@@ -118,6 +118,15 @@ dependencies:
   # 而拖不动就再也触发不了重算 = 死锁)。故不销毁,改由工作台复用 WebView,
   # 见 WorkspaceTabsViewModel 的 host 池。
   webview_all_linux: ^1.2.1
+  # 同一套联邦实现的 Windows 版(WebView2)。与 Linux 那个不同,它是**纹理渲染**
+  # (Texture + textureId),网页画进 Flutter 场景里,没有原生浮层那套遮挡/输入区域
+  # 问题;它的 widget 卸载也不会销毁 controller,所以工作台"只挂当前页签"的做法
+  # 在这边同样成立。
+  #
+  # 构建机要能访问 dist.nuget.org 与 nuget.org(插件的 CMake 会拉 nuget.exe 以及
+  # Microsoft.Web.WebView2 / WIL 两个包);目标机要装 WebView2 Runtime
+  # (Win11 自带,Win10 1809+ 需单独安装,装机时要一并部署)。
+  webview_all_windows: ^1.2.1
 
   logger: any
   path: any

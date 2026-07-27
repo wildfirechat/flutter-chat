@@ -6,15 +6,21 @@ import 'package:chat/workspace/js_api.dart';
 
 /// 一个可复用的 WebView 宿主:controller + 它的 JS 桥。
 ///
-/// **为什么要复用而不是用完就销毁**:Linux 实现(webview_all_linux 1.2.1)的原生
-/// `dispose` 只做 `gtk_widget_hide`,WebView 一直留在插件的哈希表里,活到进程退出
-/// —— 每个 `WebKitWebView` 背后是一个常驻的 `WebKitWebProcess`(约 100~200MB)。
-/// 试过打补丁让它走真正的销毁流程,结果 `gtk_widget_destroy` 会让插件把
-/// FlView 的输入区域算成空的,整个顶层窗口对鼠标透明(点击穿透到后面的应用、
-/// 窗口也拖不动,而拖不动就再触发不了重算,等于死锁)。
+/// **为什么要复用而不是用完就销毁**:webview_flutter 的公开 API 里
+/// `WebViewController` 根本没有 dispose,桌面两端都够不着真正的释放:
+///
+/// - Linux(webview_all_linux 1.2.1):平台 controller 上倒是有 `dispose()`,但它的
+///   原生实现只做 `gtk_widget_hide`,WebView 一直留在插件的哈希表里活到进程退出
+///   —— 每个 `WebKitWebView` 背后是一个常驻的 `WebKitWebProcess`(约 100~200MB)。
+///   试过打补丁让它走真正的销毁流程,结果 `gtk_widget_destroy` 会让插件把 FlView
+///   的输入区域算成空的,整个顶层窗口对鼠标透明(点击穿透到后面的应用、窗口也
+///   拖不动,而拖不动就再触发不了重算,等于死锁)。
+/// - Windows(webview_all_windows 1.2.1):底层 `WebviewController.dispose()` 是真
+///   销毁,但它是私有的,平台 controller 没往外暴露。
 ///
 /// 所以关页签时不销毁,而是把宿主收回池子:先 load 空白页放掉页面内存,下次开
-/// 页签直接复用。进程数因此封顶在"同时打开过的最大页签数",不会随开关次数增长。
+/// 页签直接复用。WebView 数量因此封顶在"同时打开过的最大页签数",不会随开关
+/// 次数增长。
 class WorkspaceWebViewHost {
   WorkspaceWebViewHost({required this.controller, required this.jsApi});
 
