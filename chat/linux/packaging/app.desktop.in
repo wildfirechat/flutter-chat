@@ -1,0 +1,19 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=野火IM
+Name[en]=WildFire IM
+GenericName=即时通讯
+GenericName[en]=Instant Messaging
+Comment=野火IM 桌面客户端
+Comment[en]=WildFire IM desktop client
+Exec=@DESKTOP_ENTRY_EXEC@ %U
+Icon=@APPLICATION_ID@
+Terminal=false
+Categories=Network;InstantMessaging;
+Keywords=IM;Chat;WildFire;野火;聊天;即时通讯;
+StartupNotify=true
+# Wayland 与 GNOME Shell 靠 WM_CLASS / app_id 把运行中的窗口关联到这个 .desktop，
+# 从而取到 Icon= 里的图标。my_application.cc 里 g_set_prgname(APPLICATION_ID)
+# 决定了这个值，两边必须一致。
+StartupWMClass=@APPLICATION_ID@

@@ -122,8 +122,11 @@ cmake --build build --parallel
 在 `chat/windows/CMakeLists.txt` 和 `chat/linux/CMakeLists.txt` 中已加入：
 
 ```cmake
+# native_tools 在应用根目录（chat/native_tools），不在 chat/windows、chat/linux 下
+set(NATIVE_TOOLS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../native_tools")
+
 # 复制 flameshot 工具目录
-set(FLAMESHOT_TOOL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/windows/flameshot")
+set(FLAMESHOT_TOOL_DIR "${NATIVE_TOOLS_DIR}/windows/flameshot")
 if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot.exe")
   install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/"
     DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
@@ -131,8 +134,8 @@ if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot.exe")
 endif()
 
 # 复制许可证声明
-set(FLAMESHOT_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/LICENSE.flameshot")
-set(FLAMESHOT_NOTICE "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/NOTICE.md")
+set(FLAMESHOT_LICENSE "${NATIVE_TOOLS_DIR}/LICENSE.flameshot")
+set(FLAMESHOT_NOTICE "${NATIVE_TOOLS_DIR}/NOTICE.md")
 if(EXISTS "${FLAMESHOT_LICENSE}")
   install(FILES "${FLAMESHOT_LICENSE}" DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT Runtime)
 endif()
@@ -145,7 +148,7 @@ endif()
 
 ```text
 build/windows/x64/runner/Release/      # 或 build/linux/x64/release/bundle/
-├── chat.exe / chat
+├── wildfirechat.exe / wildfirechat
 ├── flameshot/
 │   ├── flameshot.exe / flameshot
 │   ├── Qt6Core.dll / libQt6Core.so.6
@@ -181,7 +184,7 @@ done
 执行 `flutter build macos` 后产物结构：
 
 ```text
-build/macos/Build/Products/Release/chat.app/Contents/Resources/
+build/macos/Build/Products/Release/WildFireChat.app/Contents/Resources/
 ├── flameshot.app/
 ├── LICENSE.flameshot
 └── NOTICE.md
@@ -338,8 +341,8 @@ GPL 分发二进制时的核心义务：
 ```bash
 cd chat
 flutter build macos
-ls build/macos/Build/Products/Release/chat.app/Contents/Resources/flameshot.app
-ls build/macos/Build/Products/Release/chat.app/Contents/Resources/LICENSE.flameshot
+ls build/macos/Build/Products/Release/WildFireChat.app/Contents/Resources/flameshot.app
+ls build/macos/Build/Products/Release/WildFireChat.app/Contents/Resources/LICENSE.flameshot
 ```
 
 运行后打开一个会话，点击工具栏“截屏”图标，应弹出 flameshot 选区，确认后图片作为消息发送。

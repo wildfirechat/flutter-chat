@@ -5,10 +5,13 @@
 // 'flutter create' template.
 
 // The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = chat
+// 只用 ASCII：它同时决定 .app 目录名与包内可执行文件名，签名、脚本、命令行都要用。
+// 界面上显示的中文名走 Info.plist 的 CFBundleDisplayName（与 iOS 的做法一致）。
+PRODUCT_NAME = WildFireChat
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.chatTest
+// 与 Android applicationId、Linux APPLICATION_ID 一致。
+PRODUCT_BUNDLE_IDENTIFIER = cn.wildfirechat.chat.flutter
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2026 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2026 WildFireChat. All rights reserved.

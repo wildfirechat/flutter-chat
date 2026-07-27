@@ -4,10 +4,11 @@ project(runner LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "chat")
+set(BINARY_NAME "wildfirechat")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
-set(APPLICATION_ID "com.example.chat")
+# 与 Android 的 applicationId 保持一致，桌面环境靠它把窗口关联到 .desktop 文件。
+set(APPLICATION_ID "cn.wildfirechat.chat.flutter")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
@@ -144,27 +145,57 @@ else()
   message(WARNING "flameshot: unknown target architecture '${CMAKE_SYSTEM_PROCESSOR}', falling back to literal directory name")
 endif()
 
-set(FLAMESHOT_TOOL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/linux/flameshot/${FLAMESHOT_ARCH}")
+# native_tools 在应用根目录（chat/native_tools），不在 chat/linux 下。
+set(NATIVE_TOOLS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../native_tools")
+
+set(FLAMESHOT_TOOL_DIR "${NATIVE_TOOLS_DIR}/linux/flameshot/${FLAMESHOT_ARCH}")
+set(FLAMESHOT_TOOL_DIR_LEGACY "${NATIVE_TOOLS_DIR}/linux/flameshot")
 if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot")
   install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/"
     DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot/${FLAMESHOT_ARCH}"
     COMPONENT Runtime)
-else()
+elseif(EXISTS "${FLAMESHOT_TOOL_DIR_LEGACY}/flameshot")
   # 兼容旧的无架构子目录布局
-  set(FLAMESHOT_TOOL_DIR_LEGACY "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/linux/flameshot")
-  if(EXISTS "${FLAMESHOT_TOOL_DIR_LEGACY}/flameshot")
-    install(DIRECTORY "${FLAMESHOT_TOOL_DIR_LEGACY}/"
-      DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
-      COMPONENT Runtime)
-  endif()
+  install(DIRECTORY "${FLAMESHOT_TOOL_DIR_LEGACY}/"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
+    COMPONENT Runtime)
+else()
+  message(WARNING "flameshot: 未找到 ${FLAMESHOT_TOOL_DIR}/flameshot，"
+    "截图功能在打出来的包里不可用（见 SCREENSHOT.md 准备二进制）。")
 endif()
 
 # === Bundle flameshot license notices ===
-set(FLAMESHOT_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/LICENSE.flameshot")
-set(FLAMESHOT_NOTICE "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/NOTICE.md")
+set(FLAMESHOT_LICENSE "${NATIVE_TOOLS_DIR}/LICENSE.flameshot")
+set(FLAMESHOT_NOTICE "${NATIVE_TOOLS_DIR}/NOTICE.md")
 if(EXISTS "${FLAMESHOT_LICENSE}")
   install(FILES "${FLAMESHOT_LICENSE}" DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT Runtime)
 endif()
 if(EXISTS "${FLAMESHOT_NOTICE}")
   install(FILES "${FLAMESHOT_NOTICE}" DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT Runtime)
 endif()
+
+# === 桌面集成：应用图标与 .desktop 入口 ===
+# 图标与 .desktop 一并装进 bundle 的 share/ 目录，两处消费：
+#   1. 运行时 my_application.cc 从 <exe 目录>/share/icons 直接读 PNG 设窗口图标
+#      （X11 下的窗口/任务栏图标，不依赖系统是否装了 hicolor-icon-theme）；
+#   2. 打 deb/rpm 时把整个 share/ 铺到 /usr/share，应用菜单、Wayland 窗口图标
+#      靠 .desktop + hicolor 图标树来认这个应用。
+set(INSTALL_BUNDLE_SHARE_DIR "${CMAKE_INSTALL_PREFIX}/share")
+
+# .desktop 里 Exec= 写的路径。bundle 内默认只写可执行文件名（PATH 里找得到才行），
+# 打包时用 -DDESKTOP_ENTRY_EXEC=/opt/wildfirechat/wildfirechat 覆盖成安装后的绝对路径。
+set(DESKTOP_ENTRY_EXEC "${BINARY_NAME}" CACHE STRING
+  "写入 .desktop Exec= 字段的可执行文件路径")
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/packaging/app.desktop.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/${APPLICATION_ID}.desktop"
+  @ONLY)
+
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${APPLICATION_ID}.desktop"
+  DESTINATION "${INSTALL_BUNDLE_SHARE_DIR}/applications"
+  COMPONENT Runtime)
+
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/packaging/icons/"
+  DESTINATION "${INSTALL_BUNDLE_SHARE_DIR}/icons"
+  COMPONENT Runtime)

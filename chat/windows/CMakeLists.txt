@@ -1,10 +1,10 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.14)
-project(chat LANGUAGES CXX)
+project(wildfirechat LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "chat")
+set(BINARY_NAME "wildfirechat")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
@@ -116,16 +116,22 @@ install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
   COMPONENT Runtime)
 
 # === Bundle flameshot screenshot tool ===
-set(FLAMESHOT_TOOL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/windows/flameshot")
+# native_tools 在应用根目录（chat/native_tools），不在 chat/windows 下。
+set(NATIVE_TOOLS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../native_tools")
+
+set(FLAMESHOT_TOOL_DIR "${NATIVE_TOOLS_DIR}/windows/flameshot")
 if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot.exe")
   install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/"
     DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
     COMPONENT Runtime)
+else()
+  message(WARNING "flameshot: 未找到 ${FLAMESHOT_TOOL_DIR}/flameshot.exe，"
+    "截图功能在打出来的包里不可用（见 SCREENSHOT.md 准备二进制）。")
 endif()
 
 # === Bundle flameshot license notices ===
-set(FLAMESHOT_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/LICENSE.flameshot")
-set(FLAMESHOT_NOTICE "${CMAKE_CURRENT_SOURCE_DIR}/native_tools/NOTICE.md")
+set(FLAMESHOT_LICENSE "${NATIVE_TOOLS_DIR}/LICENSE.flameshot")
+set(FLAMESHOT_NOTICE "${NATIVE_TOOLS_DIR}/NOTICE.md")
 if(EXISTS "${FLAMESHOT_LICENSE}")
   install(FILES "${FLAMESHOT_LICENSE}" DESTINATION "${CMAKE_INSTALL_PREFIX}" COMPONENT Runtime)
 endif()

@@ -115,6 +115,65 @@ static void _installXErrorHandler() {
 }
 #endif  // CHAT_X11_ERROR_HANDLER
 
+// 应用图标。
+//
+// Flutter 的 Linux 模板不设窗口图标，窗口和任务栏只会显示系统默认的占位图标。
+// 图标由 CMake 装在 bundle 的 share/icons 下（标准 hicolor 目录树，文件名就是
+// APPLICATION_ID），这里做两件事：
+//   1. 把 share/icons 加进 GtkIconTheme 搜索路径，让按 icon-name 取图的地方
+//      （菜单项、托盘等）也能找到本应用图标；
+//   2. 直接从文件读出各尺寸 PNG 设为默认窗口图标。不走 icon theme 查找，是因为
+//      GtkIconTheme 认 hicolor 依赖系统装了 hicolor-icon-theme 的 index.theme，
+//      精简发行版上不一定有；直接读文件则一定成立。
+//
+// 默认图标是进程级的，desktop_multi_window 开的子窗口会自动继承。
+// Wayland 下窗口图标不走 _NET_WM_ICON，而是靠 app_id 匹配 .desktop 文件里的
+// Icon=，那条路径由 g_set_prgname(APPLICATION_ID) + share/applications 里的
+// .desktop 保证。
+static void _installApplicationIcon() {
+  // activate 可能被再次触发（例如第二个实例向已注册的 GApplication 发激活），
+  // 重复 append 搜索路径会在 GtkIconTheme 里堆重复项，这里只做一次。
+  static gboolean installed = FALSE;
+  if (installed) {
+    return;
+  }
+  installed = TRUE;
+
+  g_autofree gchar* exe_path = g_file_read_link("/proc/self/exe", nullptr);
+  if (exe_path == nullptr) {
+    return;
+  }
+  g_autofree gchar* exe_dir = g_path_get_dirname(exe_path);
+  g_autofree gchar* icon_root =
+      g_build_filename(exe_dir, "share", "icons", nullptr);
+
+  gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), icon_root);
+
+  // 由大到小加载；g_list_prepend 会把最小的排到表头，符合 WM 从小到大挑选的习惯。
+  static const int kIconSizes[] = {512, 256, 128, 64, 48, 32, 24, 16};
+  g_autofree gchar* icon_file_name =
+      g_strdup_printf("%s.png", APPLICATION_ID);
+  GList* icons = nullptr;
+  for (gsize i = 0; i < G_N_ELEMENTS(kIconSizes); i++) {
+    g_autofree gchar* size_dir =
+        g_strdup_printf("%dx%d", kIconSizes[i], kIconSizes[i]);
+    g_autofree gchar* icon_path = g_build_filename(
+        icon_root, "hicolor", size_dir, "apps", icon_file_name, nullptr);
+    GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file(icon_path, nullptr);
+    if (pixbuf != nullptr) {
+      icons = g_list_prepend(icons, pixbuf);
+    }
+  }
+
+  if (icons == nullptr) {
+    g_warning("未找到应用图标(%s/hicolor/*/apps/%s)，窗口将使用系统默认图标。",
+              icon_root, icon_file_name);
+    return;
+  }
+  gtk_window_set_default_icon_list(icons);
+  g_list_free_full(icons, g_object_unref);
+}
+
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
@@ -122,6 +181,9 @@ static void my_application_activate(GApplication* application) {
   // 必须在 GDK 打开 display(gtk_init)之后装,才能盖住 GDK 自己的处理器。
   _installXErrorHandler();
 #endif
+  // 必须在建窗口之前设，窗口 realize 时才会带上图标。
+  _installApplicationIcon();
+
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 

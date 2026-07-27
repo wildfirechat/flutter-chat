@@ -12,8 +12,13 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<!-- 菜单栏、Dock、关于窗口显示的名字。MainMenu.xib 里的 APP_NAME 占位符由
+	     AppKit 用 CFBundleName 替换，所以这里必须写中文名，不能写 $(PRODUCT_NAME)
+	     —— PRODUCT_NAME 只用来决定磁盘上的 .app 目录名和可执行文件名。 -->
 	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
+	<string>野火IM</string>
+	<key>CFBundleDisplayName</key>
+	<string>野火IM</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

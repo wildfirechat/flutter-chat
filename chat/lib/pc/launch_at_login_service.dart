@@ -10,12 +10,19 @@ import 'package:win32_registry/win32_registry.dart';
 /// - macOS：MethodChannel `chat/launch_at_login`，原生侧用 SMAppService.mainApp
 ///   （macOS 13+，见 MainFlutterWindow.swift）；
 /// - Windows：注册表 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`；
-/// - Linux：`~/.config/autostart/chat.desktop` 文件。
+/// - Linux：`~/.config/autostart/cn.wildfirechat.chat.flutter.desktop` 文件。
 class LaunchAtLoginService {
   LaunchAtLoginService._();
 
   static const MethodChannel _channel = MethodChannel('chat/launch_at_login');
-  static const String _desktopFileName = 'chat.desktop';
+
+  /// 与 linux/CMakeLists.txt 的 APPLICATION_ID、Android applicationId 一致。
+  static const String _linuxAppId = 'cn.wildfirechat.chat.flutter';
+  static const String _desktopFileName = '$_linuxAppId.desktop';
+
+  /// 0.1.1 之前用的文件名。改名后旧文件不会被覆盖，会残留成一条指向已不存在的
+  /// 可执行文件（旧名 `chat`）的自启动项，两个入口都要清掉。
+  static const String _legacyDesktopFileName = 'chat.desktop';
   static const String _registryValueName = 'chat';
   static const String _runKeyPath =
       r'SOFTWARE\Microsoft\Windows\CurrentVersion\Run';
@@ -38,7 +45,7 @@ class LaunchAtLoginService {
           key.close();
         }
       }
-      return _desktopFile().existsSync();
+      return _desktopFile().existsSync() || _legacyDesktopFile().existsSync();
     } catch (e) {
       debugPrint('LaunchAtLoginService.isEnabled failed: $e');
       return false;
@@ -70,12 +77,18 @@ class LaunchAtLoginService {
         }
       }
       final file = _desktopFile();
+      final legacyFile = _legacyDesktopFile();
+      if (legacyFile.existsSync()) {
+        await legacyFile.delete();
+      }
       if (enabled) {
         await file.parent.create(recursive: true);
         await file.writeAsString('[Desktop Entry]\n'
             'Type=Application\n'
-            'Name=chat\n'
+            'Name=野火IM\n'
+            'Icon=$_linuxAppId\n'
             'Exec=${Platform.resolvedExecutable}\n'
+            'Terminal=false\n'
             'X-GNOME-Autostart-enabled=true\n');
       } else if (file.existsSync()) {
         await file.delete();
@@ -87,8 +100,12 @@ class LaunchAtLoginService {
     }
   }
 
-  static File _desktopFile() {
+  static File _desktopFile() => _autostartFile(_desktopFileName);
+
+  static File _legacyDesktopFile() => _autostartFile(_legacyDesktopFileName);
+
+  static File _autostartFile(String fileName) {
     final home = Platform.environment['HOME'] ?? '';
-    return File('$home/.config/autostart/$_desktopFileName');
+    return File('$home/.config/autostart/$fileName');
   }
 }

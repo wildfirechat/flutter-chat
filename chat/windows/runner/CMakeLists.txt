@@ -30,6 +30,14 @@ target_compile_definitions(${BINARY_NAME} PRIVATE "FLUTTER_VERSION_BUILD=${FLUTT
 # Disable Windows macros that collide with C++ standard library functions.
 target_compile_definitions(${BINARY_NAME} PRIVATE "NOMINMAX")
 
+# main.cpp 里的窗口标题是中文宽字符串字面量。源码是无 BOM 的 UTF-8，而 MSVC 默认
+# 按系统 ANSI 代码页解释源文件（中文 Windows 上是 936），L"野火IM" 会被解成乱码。
+# 只加在 runner 上，不进 apply_standard_settings，避免连带改变各插件窄字符串的
+# 执行字符集。
+if(MSVC)
+  target_compile_options(${BINARY_NAME} PRIVATE "/utf-8")
+endif()
+
 # Add dependency libraries and include directories. Add any application-specific
 # dependencies here.
 target_link_libraries(${BINARY_NAME} PRIVATE flutter flutter_wrapper_app)
