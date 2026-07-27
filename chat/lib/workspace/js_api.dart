@@ -60,13 +60,23 @@ class JsApi extends JavaScriptNamespaceInterface {
 
   void openUrl(dynamic url) {
     debugPrint('openUrl $url');
+    // 参数有两种形态:工作台 H5 在 `window.__wf_bridge_` 存在时传的是
+    // `{url, name}`,否则传 URL 字符串(见 work.html 里 openUrl 的实现)。
+    // 早先只做 `'$url'`,拿到对象时会把整个 Map 当地址用。
+    final String? resolved = url is String
+        ? url
+        : (url is Map ? url['url']?.toString() : url?.toString());
+    if (resolved == null || resolved.isEmpty) {
+      debugPrint('openUrl ignored: 参数里没有地址 -> $url');
+      return;
+    }
     if (onOpenUrl != null) {
-      onOpenUrl!('$url');
+      onOpenUrl!(resolved);
       return;
     }
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => WFWebViewScreen(url)),
+      MaterialPageRoute(builder: (context) => WFWebViewScreen(resolved)),
     );
   }
 

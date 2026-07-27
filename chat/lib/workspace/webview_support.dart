@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+// 桌面两端的实现包。这里直接依赖它们是为了拿到平台 controller 上的
+// openDevTools(见 [openWebViewDevTools]);其余平台上那两个 is 判断恒为 false。
+import 'package:webview_all_linux/webview_all_linux.dart';
+import 'package:webview_all_windows/webview_all_windows.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'package:chat/l10n/app_localizations.dart';
@@ -72,6 +76,32 @@ class WebViewUnsupportedView extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// 打开这个 WebView 的开发者工具(仅桌面)。
+///
+/// 桌面两端的平台 controller 都提供了,但 webview_flutter 的公共 API 没有,只能
+/// 按平台强转:
+/// - Windows(WebView2):DevTools 是一个**独立的真实窗口**,有自己的键盘焦点,所以
+///   即使网页本体收不到键盘(WebView2 被挂在 HWND_MESSAGE 下),DevTools 里照样能
+///   打字、能在 Console 里执行 JS。
+/// - Linux(WebKitGTK):inspector 要先打开 developer extras 才能用。
+///
+/// 网页里右键"检查"用不了 —— 插件启动时就把 WebView2 的默认右键菜单关掉了。
+Future<void> openWebViewDevTools(WebViewController controller) async {
+  final platform = controller.platform;
+  try {
+    if (platform is WindowsWebViewController) {
+      await platform.openDevTools();
+    } else if (platform is LinuxWebViewController) {
+      await platform.setDeveloperExtrasEnabled(true);
+      await platform.openDevTools();
+    } else {
+      debugPrint('openDevTools: 当前平台不支持');
+    }
+  } catch (e) {
+    debugPrint('openDevTools failed: $e');
   }
 }
 

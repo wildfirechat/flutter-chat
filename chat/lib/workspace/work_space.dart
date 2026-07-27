@@ -84,6 +84,12 @@ class _WorkSpaceState extends State<WorkSpace> {
                     activeTabId: vm.activeTabId,
                     onSelect: vm.selectTab,
                     onClose: vm.closeTab,
+                    onOpenDevTools: () {
+                      final controller = vm.activeTab.controller;
+                      if (controller != null) {
+                        openWebViewDevTools(controller);
+                      }
+                    },
                   )
                 else
                   Container(
@@ -188,6 +194,19 @@ void _bindTabHost(
 
   unawaited(setTransparentBackground(controller));
 
+  // 【临时排查】把网页 console 导到 Dart 日志,定位完连同 _probeJsBridge 一起删。
+  if (kDebugMode) {
+    unawaited(() async {
+      try {
+        await controller.setOnConsoleMessage((JavaScriptConsoleMessage msg) {
+          debugPrint('JSCONSOLE [${msg.level.name}] ${msg.message}');
+        });
+      } catch (e) {
+        debugPrint('JSCONSOLE not supported: $e');
+      }
+    }());
+  }
+
   final host = WorkspaceWebViewHost(
     controller: controller,
     jsApi: JsApi(
@@ -261,21 +280,36 @@ Future<void> _probeJsBridge(DWebViewController controller) async {
     return;
   }
   try {
+    // 页面的 dsbridge 是这么选传输的(见 work.html 的 bundle):
+    //   window._dsbridge ? _dsbridge.call(m, o) : (window._dswk || UA含_dsbridge) && prompt(...)
+    // 只要 _dsbridge 存在(哪怕没有 call 方法),它就会走错分支并抛异常。
     final marker = await controller.runJavaScriptReturningResult(
-      "JSON.stringify({dswk: typeof window._dswk, prompt: typeof window.prompt})",
+      'JSON.stringify({'
+      'dsbridge: typeof window._dsbridge,'
+      'dswk: typeof window._dswk,'
+      'dsf: typeof window._dsf,'
+      'dscb: typeof window.dscb,'
+      'dsInit: typeof window._dsInit,'
+      'wfBridge: typeof window.__wf_bridge_,'
+      'handleMsg: typeof window._handleMessageFromNative'
+      '})',
     );
     debugPrint('JSBRIDGE probe#1 marker = $marker');
 
-    final page = await controller.runJavaScriptReturningResult(
-      "JSON.stringify({dsBridge: typeof window.dsBridge, bridge: typeof window.bridge})",
-    );
-    debugPrint('JSBRIDGE probe#2 page = $page');
-
-    // 直接冒充一次 dsbridge 调用:通了会弹 "js bridge ok" 的 toast。
-    await controller.runJavaScript(
-      "window.prompt('_dsbridge=toast', JSON.stringify({data: 'js bridge ok'}))",
-    );
-    debugPrint('JSBRIDGE probe#3 prompt sent');
+    // 把页面里的未捕获异常导到 console,再由 setOnConsoleMessage 送回 Dart。
+    // 点应用没反应时,报错会打在这里。
+    await controller.runJavaScript('''
+      if (!window.__wf_probe_hooked__) {
+        window.__wf_probe_hooked__ = true;
+        window.addEventListener('error', function (e) {
+          console.error('[onerror] ' + (e && e.message) + ' @ ' + (e && e.filename) + ':' + (e && e.lineno));
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+          console.error('[unhandledrejection] ' + (e && e.reason));
+        });
+      }
+    ''');
+    debugPrint('JSBRIDGE probe#2 error hook installed');
   } catch (e) {
     debugPrint('JSBRIDGE probe failed: $e');
   }

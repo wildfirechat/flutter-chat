@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chat/l10n/app_localizations.dart';
@@ -17,12 +18,17 @@ class WorkspaceTabBar extends StatelessWidget {
     required this.activeTabId,
     required this.onSelect,
     required this.onClose,
+    this.onOpenDevTools,
   });
 
   final List<WorkspaceTab> tabs;
   final String activeTabId;
   final ValueChanged<String> onSelect;
   final ValueChanged<String> onClose;
+
+  /// 打开当前页签的开发者工具。仅 debug 构建下显示入口 —— 工作台是远端 H5,
+  /// 出问题基本都要看它自己的 console。
+  final VoidCallback? onOpenDevTools;
 
   @override
   Widget build(BuildContext context) {
@@ -33,23 +39,52 @@ class WorkspaceTabBar extends StatelessWidget {
         color: colors.sectionGap,
         border: Border(bottom: BorderSide(width: 0.5, color: colors.hairline)),
       ),
-      alignment: Alignment.bottomLeft,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            for (final tab in tabs)
-              _WorkspaceTabItem(
-                key: ValueKey(tab.id),
-                tab: tab,
-                selected: tab.id == activeTabId,
-                onSelect: () => onSelect(tab.id),
-                onClose: () => onClose(tab.id),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  for (final tab in tabs)
+                    _WorkspaceTabItem(
+                      key: ValueKey(tab.id),
+                      tab: tab,
+                      selected: tab.id == activeTabId,
+                      onSelect: () => onSelect(tab.id),
+                      onClose: () => onClose(tab.id),
+                    ),
+                ],
               ),
-          ],
-        ),
+            ),
+          ),
+          if (kDebugMode && onOpenDevTools != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 8, bottom: 6),
+              child: HoverBuilder(
+                cursor: SystemMouseCursors.click,
+                builder: (context, hovered) => GestureDetector(
+                  onTap: onOpenDevTools,
+                  child: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: hovered ? colors.hoverOverlay : Colors.transparent,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Icon(
+                      Icons.bug_report_outlined,
+                      size: 16,
+                      color: colors.iconSecondary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
