@@ -74,7 +74,14 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
 
     unawaited(setTransparentBackground(controller));
 
-    controller.loadRequest(Uri.parse(MediaUrlRedirector.redirect(widget.url)));
+    unawaited(() async {
+      // 同工作台:UA 上的标记决定页面选不选 dsbridge 传输,必须赶在加载之前。
+      if (isDesktopShell) {
+        await tagDsBridgeUserAgent(controller);
+      }
+      await controller
+          .loadRequest(Uri.parse(MediaUrlRedirector.redirect(widget.url)));
+    }());
 
     _controller = controller;
   }

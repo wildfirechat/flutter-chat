@@ -182,7 +182,7 @@ void _bindTabHost(
     // 换个页签用,JS 桥要改绑地址:getAuthCode 取的 host 和 chooseContacts 的
     // 前置检查都看它。导航回调不用重设 —— 闭包读的是 host.tab,不是具体页签。
     pooled.jsApi.rebind(tab.url);
-    _loadTab(pooled.controller, tab, vm, brightness);
+    unawaited(_loadTab(pooled.controller, tab, vm, brightness));
     return;
   }
 
@@ -261,7 +261,7 @@ void _bindTabHost(
     )
     ..addJavaScriptObject(host.jsApi);
 
-  _loadTab(controller, tab, vm, brightness);
+  unawaited(_loadTab(controller, tab, vm, brightness));
 }
 
 /// 【临时排查】JS 桥探针,只在 debug 下跑。定位完请连同 onPageFinished 里的调用一起删掉。
@@ -315,12 +315,18 @@ Future<void> _probeJsBridge(DWebViewController controller) async {
   }
 }
 
-void _loadTab(
+Future<void> _loadTab(
   DWebViewController controller,
   WorkspaceTab tab,
   WorkspaceTabsViewModel vm,
   Brightness brightness,
-) {
+) async {
+  // 必须赶在 loadRequest 之前:页面靠 UA 里的标记选 dsbridge 传输。
+  // 只在桌面打 —— 移动端现在选中的分支是通的,不去动它。
+  if (isDesktopShell) {
+    await tagDsBridgeUserAgent(controller);
+  }
+
   final bool isHome = !tab.closable;
   // 首页地址在加载时才取 Config,与改造前一致 —— selectServer 将来接上双网判断后,
   // 不至于因为 ViewModel 在启动时缓存过一次而用上旧地址。

@@ -79,6 +79,35 @@ class WebViewUnsupportedView extends StatelessWidget {
   }
 }
 
+/// 工作台 H5 用来识别"宿主带 dsbridge 原生桥"的 UA 标记。
+///
+/// work.html 选择 JS 桥的顺序是:electron → **UA 含 WF-DSBridge** → uni-app →
+/// `navigator.userAgentData` 判定。最后那条是个坑:`userAgentData` 只有 Chromium
+/// 系浏览器才有,而 Windows 的 WebView2 正是 Chromium,于是被判成"桌面浏览器"
+/// 拿到一个没有原生通道的 web 桥,`openUrl` 之类的调用发不出来(表现为工作台首页
+/// 能开,点里面的应用没反应)。Linux 的 WebKitGTK 没有这个 API,反而落到后面的
+/// 默认分支上,所以只有 Windows 坏。
+///
+/// 打上这个标记就在所有平台判定之前短路,直接选中 dsbridge 传输 —— 也正是
+/// dsbridge_flutter 在每个平台上实现的那一套(prompt + `window._dswk`)。
+const String kDsBridgeUserAgentTag = 'WF-DSBridge';
+
+/// 给带 dsbridge 桥的 WebView 的 UA 追加 [kDsBridgeUserAgentTag]。
+///
+/// **必须在 loadRequest 之前调**:页面是在脚本执行时读 `navigator.userAgent` 的。
+/// 采用追加而不是整体替换,免得丢掉平台原本的 UA(服务端与页面里其它 UA 判断还要用)。
+Future<void> tagDsBridgeUserAgent(WebViewController controller) async {
+  try {
+    final ua = await controller.getUserAgent();
+    if (ua == null || ua.isEmpty || ua.contains(kDsBridgeUserAgentTag)) {
+      return;
+    }
+    await controller.setUserAgent('$ua $kDsBridgeUserAgentTag');
+  } catch (e) {
+    debugPrint('tagDsBridgeUserAgent failed: $e');
+  }
+}
+
 /// 打开这个 WebView 的开发者工具(仅桌面)。
 ///
 /// 桌面两端的平台 controller 都提供了,但 webview_flutter 的公共 API 没有,只能
