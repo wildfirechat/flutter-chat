@@ -598,6 +598,12 @@ class _MyAppState extends State<MyApp> {
     } else {
       home = isDesktopShell ? const PCHome() : const HomeTabBar();
     }
+    // 启动页/登录页还没有用户身份,不显示水印。此时 _currentUserId 为 null,
+    // WatermarkOverlay 会回退到尚未初始化的 Imclient.currentUserId 而抛
+    // LateInitializationError。
+    if (isLogined != true) {
+      return home;
+    }
     return Stack(
       children: [
         home,
