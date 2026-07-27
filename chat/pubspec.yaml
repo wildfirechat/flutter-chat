@@ -110,11 +110,14 @@ dependencies:
   # 构建机需要 libwebkit2gtk-4.1-dev,目标机需要 libwebkit2gtk-4.1-0
   # (打 deb 时记得写进 Depends,缺库时是整个 App 起不来,不是工作台不可用)。
   #
-  # 本地补丁版 1.2.1(上游的原生 dispose 只 hide 不销毁,WebView 与它的
-  # WebKitWebProcess 活到进程退出,工作台反复开关页签会无限堆积),
-  # 见 vendor/webview_all_linux/PATCHES.md
-  webview_all_linux:
-    path: ../vendor/webview_all_linux
+  # ⚠️ 这个包的原生 dispose 只 gtk_widget_hide,不销毁 WebView —— 每个
+  # WebKitWebView 背后一个常驻 WebKitWebProcess(约 100~200MB),创建了就活到
+  # 进程退出。试过打补丁在 dispose 里 g_hash_table_remove 走它的 destroy 流程,
+  # 结果 gtk_widget_destroy 会把 update_flutter_view_input_region 算出一个空的
+  # 输入区域,整个顶层窗口对鼠标透明(点击穿透到后面的应用、窗口都拖不动,
+  # 而拖不动就再也触发不了重算 = 死锁)。故不销毁,改由工作台复用 WebView,
+  # 见 WorkspaceTabsViewModel 的 host 池。
+  webview_all_linux: ^1.2.1
 
   logger: any
   path: any

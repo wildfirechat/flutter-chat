@@ -12,7 +12,12 @@ import '../contact/pick_user_screen.dart';
 
 class JsApi extends JavaScriptNamespaceInterface {
   final BuildContext context;
-  final String appUrl;
+
+  /// 本次绑定的应用地址。非 final:工作台会把关掉的 WebView 收回池子复用
+  /// (原生 WebView 销毁不了,见 pubspec 里的说明),复用时要换成新页签的地址
+  /// —— `getAuthCode` 取的 host 和 [_preCheck] 都依赖它。见 [rebind]。
+  String appUrl;
+
   late String currentUr;
   final DWebViewController webViewController;
 
@@ -34,6 +39,12 @@ class JsApi extends JavaScriptNamespaceInterface {
   }
 
   setCurrentUrl(String url) {
+    currentUr = url;
+  }
+
+  /// WebView 被复用到另一个页签时改绑地址。
+  void rebind(String url) {
+    appUrl = url;
     currentUr = url;
   }
 

@@ -1384,9 +1384,10 @@ packages:
   webview_all_linux:
     dependency: "direct main"
     description:
-      path: "../vendor/webview_all_linux"
-      relative: true
-    source: path
+      name: webview_all_linux
+      sha256: "8303b57455ed4ac646102cbdb46a5f69c23cca0d1bd6e27adb76b5afc4dec679"
+      url: "https://pub.flutter-io.cn"
+    source: hosted
     version: "1.2.1"
   webview_flutter:
     dependency: "direct main"

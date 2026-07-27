@@ -2,9 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-// Linux 实现包。这里直接依赖它是为了拿到平台 controller 上的 dispose
-// (见 [disposeWebViewController]);其余平台上这个 is 判断恒为 false。
-import 'package:webview_all_linux/webview_all_linux.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'package:chat/l10n/app_localizations.dart';
@@ -75,21 +72,6 @@ class WebViewUnsupportedView extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-/// 释放一个 WebViewController 背后的原生 WebView。
-///
-/// webview_flutter 的 [WebViewController] 没有 dispose(该库的已知缺口:移动端
-/// 靠 GC/平台生命周期回收),只有 Linux 实现在平台 controller 上给了。关闭工作台
-/// 页签时不调这一下,就会漏一个常驻的 WebKit web 进程(约 100~200MB)。
-void disposeWebViewController(WebViewController controller) {
-  final platform = controller.platform;
-  if (platform is LinuxWebViewController) {
-    // 释放是尽力而为:此时页面可能正在拆,再抛出去也没人处理。
-    unawaited(platform.dispose().catchError(
-          (Object err) => debugPrint('dispose webview failed: $err'),
-        ));
   }
 }
 

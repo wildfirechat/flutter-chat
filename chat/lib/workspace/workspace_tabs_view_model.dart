@@ -1,14 +1,37 @@
 import 'package:dsbridge_flutter/dsbridge_flutter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/scheduler.dart';
 
 import 'package:chat/config.dart';
-import 'package:chat/workspace/webview_support.dart';
+import 'package:chat/workspace/js_api.dart';
+
+/// 一个可复用的 WebView 宿主:controller + 它的 JS 桥。
+///
+/// **为什么要复用而不是用完就销毁**:Linux 实现(webview_all_linux 1.2.1)的原生
+/// `dispose` 只做 `gtk_widget_hide`,WebView 一直留在插件的哈希表里,活到进程退出
+/// —— 每个 `WebKitWebView` 背后是一个常驻的 `WebKitWebProcess`(约 100~200MB)。
+/// 试过打补丁让它走真正的销毁流程,结果 `gtk_widget_destroy` 会让插件把
+/// FlView 的输入区域算成空的,整个顶层窗口对鼠标透明(点击穿透到后面的应用、
+/// 窗口也拖不动,而拖不动就再触发不了重算,等于死锁)。
+///
+/// 所以关页签时不销毁,而是把宿主收回池子:先 load 空白页放掉页面内存,下次开
+/// 页签直接复用。进程数因此封顶在"同时打开过的最大页签数",不会随开关次数增长。
+class WorkspaceWebViewHost {
+  WorkspaceWebViewHost({required this.controller, required this.jsApi});
+
+  final DWebViewController controller;
+  final JsApi jsApi;
+
+  /// 当前绑定的页签。回收进池子时置空。
+  ///
+  /// controller 的导航回调是在创建时一次性注册的,闭包里只能引用这个可变字段,
+  /// 不能捕获具体的 [WorkspaceTab] —— 否则复用后标题会回填到已关闭的页签上。
+  WorkspaceTab? tab;
+}
 
 /// 工作台里的一个页签。
 ///
-/// [controller] 由 UI 侧在该页签第一次挂载时创建(见 work_space.dart 的
-/// `_createTabController`),ViewModel 只负责持有与释放 —— 创建 controller 需要
+/// [host] 由 UI 侧在该页签第一次挂载时创建或从池子里取(见 work_space.dart 的
+/// `_bindTabHost`),ViewModel 只负责持有与回收 —— 创建 controller 需要
 /// BuildContext(JsApi 要用它做 Navigator 跳转),不该让 ViewModel 碰。
 class WorkspaceTab {
   WorkspaceTab({
@@ -29,7 +52,9 @@ class WorkspaceTab {
   /// 网页 title,加载完成后由 onPageFinished 回填。
   String? title;
 
-  DWebViewController? controller;
+  WorkspaceWebViewHost? host;
+
+  DWebViewController? get controller => host?.controller;
 }
 
 /// 工作台的多页签状态。
@@ -58,11 +83,16 @@ class WorkspaceTabsViewModel extends ChangeNotifier {
 
   static const String homeTabId = 'workspace-home';
 
-  /// 同时存活的页签上限。每个 WebKitWebView 在 Linux 上是一个独立的 web 进程
-  /// (约 100~200MB),国产 ARM 机器上开太多会吃光内存,故开新页签时挤掉最旧的。
+  /// 同时存活的页签上限。每个 WebView 在 Linux 上是一个独立的 web 进程,
+  /// 且**销毁不掉只能复用**(见 [WorkspaceWebViewHost]),所以这个上限同时也是
+  /// 整个进程里 WebView 数量的上限。开新页签时挤掉最旧的。
   static const int maxTabCount = 6;
 
   final List<WorkspaceTab> _tabs = [];
+
+  /// 关掉页签后回收下来的空闲宿主,开新页签时优先复用。
+  final List<WorkspaceWebViewHost> _idleHosts = [];
+
   String _activeTabId = homeTabId;
   int _seq = 0;
 
@@ -95,7 +125,7 @@ class WorkspaceTabsViewModel extends ChangeNotifier {
       final victim = _tabs.firstWhere((tab) => tab.closable, orElse: () => homeTab);
       if (victim.closable) {
         _tabs.remove(victim);
-        _releaseController(victim);
+        _recycleHost(victim);
       }
     }
 
@@ -124,7 +154,7 @@ class WorkspaceTabsViewModel extends ChangeNotifier {
       return;
     }
     final tab = _tabs.removeAt(index);
-    _releaseController(tab);
+    _recycleHost(tab);
     if (_activeTabId == tab.id) {
       // 关掉当前页签后落到它左边那个,与浏览器一致。
       _activeTabId = _tabs[index - 1 < 0 ? 0 : index - 1].id;
@@ -135,15 +165,15 @@ class WorkspaceTabsViewModel extends ChangeNotifier {
   /// 关闭当前页签(JS 侧调 `close` 时走这里)。首页不可关,直接忽略。
   void closeActiveTab() => closeTab(_activeTabId);
 
-  /// controller 创建后登记进来。**不 notifyListeners**:调用点在页签 widget 的
+  /// 取一个空闲宿主复用,没有则返回 null(调用方新建)。
+  WorkspaceWebViewHost? takeIdleHost() =>
+      _idleHosts.isEmpty ? null : _idleHosts.removeLast();
+
+  /// 宿主与页签互相绑定。**不 notifyListeners**:调用点在页签 widget 的
   /// initState 里,此时重建整棵树既无必要也会触发 setState during build。
-  void attachController(String id, DWebViewController controller) {
-    for (final tab in _tabs) {
-      if (tab.id == id) {
-        tab.controller = controller;
-        return;
-      }
-    }
+  void attachHost(WorkspaceTab tab, WorkspaceWebViewHost host) {
+    tab.host = host;
+    host.tab = tab;
   }
 
   void updateTitle(String id, String? title) {
@@ -156,32 +186,18 @@ class WorkspaceTabsViewModel extends ChangeNotifier {
     }
   }
 
-  @override
-  void dispose() {
-    for (final tab in _tabs) {
-      _releaseController(tab, immediate: true);
-    }
-    _tabs.clear();
-    super.dispose();
-  }
-
-  void _releaseController(WorkspaceTab tab, {bool immediate = false}) {
-    final controller = tab.controller;
-    tab.controller = null;
-    if (controller == null) {
+  /// 把页签的 WebView 解绑并收回池子。
+  ///
+  /// 不销毁 —— 原因见 [WorkspaceWebViewHost]。先 load 空白页,把网页占的内存还给
+  /// 系统(web 进程本身还在,但只剩空白页的开销)。
+  void _recycleHost(WorkspaceTab tab) {
+    final host = tab.host;
+    tab.host = null;
+    if (host == null) {
       return;
     }
-    if (immediate) {
-      // 整个 ViewModel 在销毁,后面不一定还有帧,只能就地释放。
-      disposeWebViewController(controller);
-      return;
-    }
-    // 关页签要等这一帧结束再释放:紧接着的 notifyListeners 会重建工作台,把这个
-    // 页签的 WebViewWidget 卸载,而插件在卸载时还要往 controller 推一次
-    // setFrame(Rect.zero) 去藏掉原生窗口。先 dispose 的话那一下会抛
-    // StateError(controller already disposed),变成一条没人接的 Future 错误。
-    SchedulerBinding.instance.addPostFrameCallback((_) {
-      disposeWebViewController(controller);
-    });
+    host.tab = null;
+    host.controller.loadRequest(Uri.parse('about:blank'));
+    _idleHosts.add(host);
   }
 }

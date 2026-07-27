@@ -137,8 +137,8 @@ class _WorkspaceTabViewState extends State<_WorkspaceTabView> {
   @override
   void initState() {
     super.initState();
-    if (widget.tab.controller == null) {
-      _createTabController(
+    if (widget.tab.host == null) {
+      _bindTabHost(
         widget.hostContext,
         widget.tab,
         widget.hostContext.read<WorkspaceTabsViewModel>(),
@@ -160,16 +160,26 @@ class _WorkspaceTabViewState extends State<_WorkspaceTabView> {
   }
 }
 
-/// 建好一个页签的 controller 并开始加载。
+/// 给页签配上 WebView 宿主并开始加载:优先复用池子里的,没有才新建。
 ///
 /// 放在 UI 侧而不是 ViewModel 里:JsApi 需要 BuildContext 做联系人选择等跳转,
 /// 不该把 context 塞进 ViewModel。
-void _createTabController(
+void _bindTabHost(
   BuildContext hostContext,
   WorkspaceTab tab,
   WorkspaceTabsViewModel vm,
   Brightness brightness,
 ) {
+  final WorkspaceWebViewHost? pooled = vm.takeIdleHost();
+  if (pooled != null) {
+    vm.attachHost(tab, pooled);
+    // 换个页签用,JS 桥要改绑地址:getAuthCode 取的 host 和 chooseContacts 的
+    // 前置检查都看它。导航回调不用重设 —— 闭包读的是 host.tab,不是具体页签。
+    pooled.jsApi.rebind(tab.url);
+    _loadTab(pooled.controller, tab, vm, brightness);
+    return;
+  }
+
   final bool isHome = !tab.closable;
   final DWebViewController controller = DWebViewController();
   if (isHome) {
@@ -178,14 +188,18 @@ void _createTabController(
 
   unawaited(setTransparentBackground(controller));
 
-  final jsApi = JsApi(
-    hostContext,
-    tab.url,
-    controller,
-    // 桌面端页内跳转开新页签;移动端保持整页 push 的老形态。
-    onOpenUrl: isDesktopShell ? (String url) => vm.openTab(url) : null,
-    onClose: isDesktopShell ? vm.closeActiveTab : null,
+  final host = WorkspaceWebViewHost(
+    controller: controller,
+    jsApi: JsApi(
+      hostContext,
+      tab.url,
+      controller,
+      // 桌面端页内跳转开新页签;移动端保持整页 push 的老形态。
+      onOpenUrl: isDesktopShell ? (String url) => vm.openTab(url) : null,
+      onClose: isDesktopShell ? vm.closeActiveTab : null,
+    ),
   );
+  vm.attachHost(tab, host);
 
   controller
     ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -200,20 +214,21 @@ void _createTabController(
         onPageFinished: (String url) async {
           debugPrint('Page finished loading: $url');
           // 页签标题跟随网页 title;首页页签固定显示"工作台",不必取。
-          if (tab.closable) {
-            vm.updateTitle(tab.id, await controller.getTitle());
+          // 读 host.tab 而不是捕获 tab:宿主可能已经被复用到别的页签上了。
+          final bound = host.tab;
+          if (bound != null && bound.closable) {
+            vm.updateTitle(bound.id, await controller.getTitle());
           }
         },
         // 应用页签沿用 WFWebViewScreen 的行为:页内跳走后 JsApi 的 _preCheck
         // 不再放行 chooseContacts。首页页签改造前就没有这一手,保持原样。
-        onUrlChange: tab.closable
-            ? (UrlChange urlChange) {
-                final url = urlChange.url;
-                if (url != null) {
-                  jsApi.setCurrentUrl(url);
-                }
-              }
-            : null,
+        onUrlChange: (UrlChange urlChange) {
+          final url = urlChange.url;
+          final bound = host.tab;
+          if (url != null && bound != null && bound.closable) {
+            host.jsApi.setCurrentUrl(url);
+          }
+        },
         onNavigationRequest: (NavigationRequest request) {
           if (request.url.startsWith('https://www.youtube.com/')) {
             debugPrint('blocking navigation to ${request.url}');
@@ -224,10 +239,18 @@ void _createTabController(
         },
       ),
     )
-    ..addJavaScriptObject(jsApi);
+    ..addJavaScriptObject(host.jsApi);
 
-  vm.attachController(tab.id, controller);
+  _loadTab(controller, tab, vm, brightness);
+}
 
+void _loadTab(
+  DWebViewController controller,
+  WorkspaceTab tab,
+  WorkspaceTabsViewModel vm,
+  Brightness brightness,
+) {
+  final bool isHome = !tab.closable;
   // 首页地址在加载时才取 Config,与改造前一致 —— selectServer 将来接上双网判断后,
   // 不至于因为 ViewModel 在启动时缓存过一次而用上旧地址。
   final String rawUrl = isHome ? (Config.workspaceUrl ?? '') : tab.url;
