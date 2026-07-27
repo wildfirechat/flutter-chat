@@ -424,8 +424,8 @@ class _MyAppState extends State<MyApp> {
     _currentUserId = prefs.getString("userId");
     final hasCredentials = _currentUserId != null && prefs.getString("token") != null;
     if (isDesktopShell) {
-      // 桌面端先判断登录状态，已登录才恢复上次窗口位置，避免未登录时窗口先闪到旧位置
-      await PCWindowManager().setupWindow(restoreSavedState: hasCredentials);
+      // 桌面端先判断登录状态：未登录直接以登录页小窗显示，已登录才恢复上次窗口尺寸/位置
+      await PCWindowManager().setupWindow(isLogined: hasCredentials);
     }
     if (hasCredentials) {
       Imclient.connect(Config.IM_Host, _currentUserId!, prefs.getString("token")!);
@@ -587,6 +587,11 @@ class _MyAppState extends State<MyApp> {
       _currentUserId = userId;
       isLogined = true;
     });
+    if (isDesktopShell) {
+      // 登录页是固定小窗,进主界面要放大回上次记住的尺寸/位置。
+      // 二维码登录与验证码/密码登录都经由本方法,这里是唯一的还原点。
+      PCWindowManager().applyMainWindow();
+    }
   }
 
   Widget _buildHome() {

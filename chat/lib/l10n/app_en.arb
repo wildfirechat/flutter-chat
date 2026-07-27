@@ -79,6 +79,7 @@
   "login": "Login",
   "cancelLogin": "Cancel Login",
   "loginWithCodeOrPassword": "Code/Password Login",
+  "loginWithQrCode": "Scan to Login",
   "loginCodeTitle": "Verification Code",
   "scanned": "Scanned, please confirm on your phone",
   "scannedUser": "Scanned by: {user}",

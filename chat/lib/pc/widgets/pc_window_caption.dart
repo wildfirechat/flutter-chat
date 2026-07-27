@@ -12,7 +12,11 @@ import 'hover_builder.dart';
 ///
 /// 仅 Windows 使用;macOS 是原生沉浸式标题栏,Linux 保持系统/GTK 标题栏。
 class PcWindowCaption extends StatefulWidget {
-  const PcWindowCaption({super.key});
+  /// 是否提供最大化能力(最大化按钮 + 双击标题栏)。
+  /// 登录页是固定尺寸小窗,窗口本身已不可缩放,这里也要把入口一并去掉。
+  final bool canMaximize;
+
+  const PcWindowCaption({super.key, this.canMaximize = true});
 
   @override
   State<PcWindowCaption> createState() => _PcWindowCaptionState();
@@ -87,18 +91,19 @@ class _PcWindowCaptionState extends State<PcWindowCaption> with WindowListener {
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
               onPanStart: (_) => windowManager.startDragging(),
-              onDoubleTap: _toggleMaximize,
+              onDoubleTap: widget.canMaximize ? _toggleMaximize : null,
             ),
           ),
           _CaptionButton(
             icon: Icons.remove,
             onPressed: () => windowManager.minimize(),
           ),
-          _CaptionButton(
-            icon: _isMaximized ? Icons.filter_none : Icons.crop_square,
-            iconSize: 14,
-            onPressed: _toggleMaximize,
-          ),
+          if (widget.canMaximize)
+            _CaptionButton(
+              icon: _isMaximized ? Icons.filter_none : Icons.crop_square,
+              iconSize: 14,
+              onPressed: _toggleMaximize,
+            ),
           _CaptionButton(
             icon: Icons.close,
             hoverColor: const Color(0xFFE81123),

@@ -15,6 +15,7 @@ import 'package:chat/login/login_form_controller.dart';
 import 'package:chat/main.dart';
 import 'package:chat/pc/pc_home.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/pc_window_manager.dart';
 import 'package:chat/pc/widgets/pc_window_caption.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -66,6 +67,10 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
   @override
   void initState() {
     super.initState();
+    // 登录页一律用固定小窗。启动时未登录由 PCWindowManager.setupWindow 直接设好
+    // (要赶在窗口第一次 show 之前,免得闪一下主界面尺寸);登出、被踢下线、token
+    // 失效等回到登录页的路径都收在这里,不再逐个调用点去改窗口。重复调用无副作用。
+    PCWindowManager().applyLoginWindow();
     _userAgreementRecognizer = TapGestureRecognizer()
       ..onTap = () => Utilities.openLink(context, Config.USER_AGREEMENT_URL);
     _privacyPolicyRecognizer = TapGestureRecognizer()
@@ -260,37 +265,22 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
     return _buildQrView();
   }
 
-  /// 登录卡片外壳:圆角、投影,QR 与表单视图共用。
-  /// 卡片与页面刻意取不同的面色 —— 暗色下投影看不见,只能靠明度差把卡片托起来。
-  Widget _buildCard({required Widget child}) {
-    final colors = context.colors;
+  /// 登录窗外壳,QR 与表单视图共用。
+  /// 登录窗本身就是一张固定小窗(见 PCWindowManager 的登录形态),所以内容直接
+  /// 铺满整窗、用一种面色到底,不再做"浮在背景上的卡片"——小窗里再套卡片只会
+  /// 剩下一圈无意义的留白。
+  Widget _buildShell({required Widget child}) {
     return Column(
       children: [
-        // Windows 自绘标题栏(系统标题栏已隐藏,见 PCWindowManager.setupWindow)
-        if (Platform.isWindows) const PcWindowCaption(),
+        // Windows 自绘标题栏(系统标题栏已隐藏,见 PCWindowManager.setupWindow)。
+        // 登录窗是固定尺寸,不给最大化入口。
+        if (Platform.isWindows) const PcWindowCaption(canMaximize: false),
         Expanded(
           child: Scaffold(
-            backgroundColor: colors.chatBgDesktop,
-            body: Center(
-        child: Container(
-          width: 400,
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.9,
-          ),
-          padding: const EdgeInsets.all(32),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(
-                color: colors.shadow,
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: child,
-        ),
+            backgroundColor: context.colors.surface,
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              child: Center(child: child),
             ),
           ),
         ),
@@ -303,58 +293,62 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
     final l10n = AppLocalizations.of(context)!;
     final qrData = _token != null ? '${WfcScheme.qrCodePrefixPcSession}$_token' : '';
 
-    return _buildCard(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            l10n.appTitle,
-            style: AppText.xxl.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _isScanned ? l10n.scanned : l10n.pcLoginQrHint,
-            style: AppText.base.copyWith(color: context.colors.textSecondary),
-          ),
-          const SizedBox(height: 32),
-          Container(
-            width: 220,
-            height: 220,
-            decoration: BoxDecoration(
-              // 二维码必须白底黑码才扫得出来,暗色下也钉死白色,做成卡片上的一块白板
-              color: Colors.white,
-              border: Border.all(color: context.colors.hairline),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: _buildQrContent(qrData),
-          ),
-          const SizedBox(height: 24),
-          if (_error != null) ...[
+    // 登录窗是固定小窗,最大字号档 + 出错重试文案时卡片会顶到高度上限,
+    // 这里跟表单视图一样套一层滚动,避免溢出。
+    return _buildShell(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
             Text(
-              _error!,
-              style: AppText.sm.copyWith(color: context.colors.danger),
-              textAlign: TextAlign.center,
+              l10n.appTitle,
+              style: AppText.xxl.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
-            TextButton(
-              onPressed: _refresh,
-              child: Text(l10n.retry),
+            Text(
+              _isScanned ? l10n.scanned : l10n.pcLoginQrHint,
+              style: AppText.base.copyWith(color: context.colors.textSecondary),
             ),
+            const SizedBox(height: 32),
+            Container(
+              width: 220,
+              height: 220,
+              decoration: BoxDecoration(
+                // 二维码必须白底黑码才扫得出来,暗色下也钉死白色,做成卡片上的一块白板
+                color: Colors.white,
+                border: Border.all(color: context.colors.hairline),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: _buildQrContent(qrData),
+            ),
+            const SizedBox(height: 24),
+            if (_error != null) ...[
+              Text(
+                _error!,
+                style: AppText.sm.copyWith(color: context.colors.danger),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: _refresh,
+                child: Text(l10n.retry),
+              ),
+            ],
+            const SizedBox(height: 16),
+            if (_isScanned)
+              // 已扫码：显示取消按钮
+              TextButton(
+                onPressed: _cancelScan,
+                child: Text(l10n.cancel, style: TextStyle(color: context.colors.danger)),
+              )
+            else
+              // 未扫码：显示验证码/密码登录按钮
+              TextButton(
+                onPressed: () => _switchView(_PCLoginView.form),
+                child: Text(l10n.loginWithCodeOrPassword),
+              ),
           ],
-          const SizedBox(height: 16),
-          if (_isScanned)
-            // 已扫码：显示取消按钮
-            TextButton(
-              onPressed: _cancelScan,
-              child: Text(l10n.cancel, style: TextStyle(color: context.colors.danger)),
-            )
-          else
-            // 未扫码：显示验证码/密码登录按钮
-            TextButton(
-              onPressed: () => _switchView(_PCLoginView.form),
-              child: Text(l10n.loginWithCodeOrPassword),
-            ),
-        ],
+        ),
       ),
     );
   }
@@ -413,35 +407,14 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
   Widget _buildFormView() {
     final l10n = AppLocalizations.of(context)!;
 
-    return _buildCard(
+    return _buildShell(
       child: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 返回按钮 (放低以避开 macOS 窗口按钮,约 40px 区域)
-            SizedBox(
-              height: Platform.isMacOS ? 52 : 12,
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => _switchView(_PCLoginView.qr),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.arrow_back_ios, size: 16, color: context.colors.link),
-                        const SizedBox(width: 4),
-                        Text(
-                          l10n.loginCodeTitle,
-                          style: AppText.base.copyWith(color: context.colors.link),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
+            // 顶部留白,避开 macOS 沉浸式标题栏区域的交通灯按钮。
+            SizedBox(height: Platform.isMacOS ? 52 : 12),
             Center(
               child: Text(
                 _form.isPasswordLogin ? l10n.loginWithPassword : l10n.loginCodeTitle,
@@ -536,11 +509,19 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            // 切换登录方式
+            // 切换验证码/密码登录
             Center(
               child: TextButton(
                 onPressed: _form.toggleLoginMode,
                 child: Text(_form.isPasswordLogin ? l10n.loginWithPhoneCode : l10n.loginWithPassword),
+              ),
+            ),
+            // 回二维码登录。原先是页面左上角的返回箭头,不如和上面的登录方式切换
+            // 放在一起更好找,也不用为它单独留一行返回栏的高度。
+            Center(
+              child: TextButton(
+                onPressed: () => _switchView(_PCLoginView.qr),
+                child: Text(l10n.loginWithQrCode),
               ),
             ),
           ],

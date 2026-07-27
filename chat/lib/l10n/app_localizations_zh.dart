@@ -443,6 +443,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loginWithCodeOrPassword => '验证码/密码登录';
 
   @override
+  String get loginWithQrCode => '扫码登录';
+
+  @override
   String get loginCodeTitle => '验证码登录';
 
   @override

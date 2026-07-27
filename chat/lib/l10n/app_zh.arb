@@ -147,6 +147,7 @@
   "login": "登录",
   "cancelLogin": "取消登录",
   "loginWithCodeOrPassword": "验证码/密码登录",
+  "loginWithQrCode": "扫码登录",
   "loginCodeTitle": "验证码登录",
   "scanned": "已扫码，请在手机上确认登录",
   "scannedUser": "扫描用户：{user}",

@@ -449,6 +449,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginWithCodeOrPassword => 'Code/Password Login';
 
   @override
+  String get loginWithQrCode => 'Scan to Login';
+
+  @override
   String get loginCodeTitle => 'Verification Code';
 
   @override

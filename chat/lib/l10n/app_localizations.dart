@@ -938,6 +938,12 @@ abstract class AppLocalizations {
   /// **'验证码/密码登录'**
   String get loginWithCodeOrPassword;
 
+  /// No description provided for @loginWithQrCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'扫码登录'**
+  String get loginWithQrCode;
+
   /// No description provided for @loginCodeTitle.
   ///
   /// In zh, this message translates to:
