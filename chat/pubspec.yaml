@@ -126,7 +126,13 @@ dependencies:
   # 构建机要能访问 dist.nuget.org 与 nuget.org(插件的 CMake 会拉 nuget.exe 以及
   # Microsoft.Web.WebView2 / WIL 两个包);目标机要装 WebView2 Runtime
   # (Win11 自带,Win10 1809+ 需单独安装,装机时要一并部署)。
-  webview_all_windows: ^1.2.1
+  #
+  # 本地补丁版 1.2.1(上游漏设 AreDefaultScriptDialogsEnabled,WebView2 的
+  # ScriptDialogOpening 事件永远不触发,dsbridge 靠拦 prompt() 的 JS→Dart 通道
+  # 整条是死的:工作台首页能打开,点里面任何东西都没反应),
+  # 见 vendor/webview_all_windows/PATCHES.md
+  webview_all_windows:
+    path: ../vendor/webview_all_windows
 
   logger: any
   path: any

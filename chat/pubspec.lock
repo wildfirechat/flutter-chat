@@ -1392,10 +1392,9 @@ packages:
   webview_all_windows:
     dependency: "direct main"
     description:
-      name: webview_all_windows
-      sha256: "95e7b0abdd893d4c2b186b21a2fb8a383a909044a10190e9d94b199cb0a6a46c"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: "../vendor/webview_all_windows"
+      relative: true
+    source: path
     version: "1.2.1"
   webview_flutter:
     dependency: "direct main"
