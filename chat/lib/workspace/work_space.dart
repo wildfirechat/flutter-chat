@@ -219,6 +219,7 @@ void _bindTabHost(
           if (bound != null && bound.closable) {
             vm.updateTitle(bound.id, await controller.getTitle());
           }
+          await _probeJsBridge(controller);
         },
         // 应用页签沿用 WFWebViewScreen 的行为:页内跳走后 JsApi 的 _preCheck
         // 不再放行 chooseContacts。首页页签改造前就没有这一手,保持原样。
@@ -242,6 +243,42 @@ void _bindTabHost(
     ..addJavaScriptObject(host.jsApi);
 
   _loadTab(controller, tab, vm, brightness);
+}
+
+/// 【临时排查】JS 桥探针,只在 debug 下跑。定位完请连同 onPageFinished 里的调用一起删掉。
+///
+/// dsbridge 的 JS→Dart 是这么走的:dsbridge_flutter 注册一个名为 `_dswk` 的
+/// JavaScript channel(只为让 `window._dswk` 存在),页面里的 dsbridge.js 看到这个
+/// 标记就改用 `prompt("_dsbridge=<方法名>", <参数JSON>)` 发起调用,宿主在
+/// `setOnJavaScriptTextInputDialog` 里拦下来派发。
+///
+/// 三步分别对应链路的三段,哪一步的输出不对就知道断在哪:
+///   probe#1 marker  —— `_dswk` 在不在(channel 注入是否生效)
+///   probe#2 page    —— 页面自己有没有加载 dsbridge.js
+///   probe#3 prompt  —— prompt 能不能回到 Dart(会直接弹一个 toast)
+Future<void> _probeJsBridge(DWebViewController controller) async {
+  if (!kDebugMode) {
+    return;
+  }
+  try {
+    final marker = await controller.runJavaScriptReturningResult(
+      "JSON.stringify({dswk: typeof window._dswk, prompt: typeof window.prompt})",
+    );
+    debugPrint('JSBRIDGE probe#1 marker = $marker');
+
+    final page = await controller.runJavaScriptReturningResult(
+      "JSON.stringify({dsBridge: typeof window.dsBridge, bridge: typeof window.bridge})",
+    );
+    debugPrint('JSBRIDGE probe#2 page = $page');
+
+    // 直接冒充一次 dsbridge 调用:通了会弹 "js bridge ok" 的 toast。
+    await controller.runJavaScript(
+      "window.prompt('_dsbridge=toast', JSON.stringify({data: 'js bridge ok'}))",
+    );
+    debugPrint('JSBRIDGE probe#3 prompt sent');
+  } catch (e) {
+    debugPrint('JSBRIDGE probe failed: $e');
+  }
 }
 
 void _loadTab(
