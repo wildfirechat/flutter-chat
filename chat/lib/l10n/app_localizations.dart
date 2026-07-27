@@ -5636,6 +5636,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'朋友圈'**
   String get momentWindowTitle;
+
+  /// No description provided for @webViewNotSupport.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前系统暂不支持内置网页浏览'**
+  String get webViewNotSupport;
+
+  /// No description provided for @openInSystemBrowser.
+  ///
+  /// In zh, this message translates to:
+  /// **'在系统浏览器中打开'**
+  String get openInSystemBrowser;
 }
 
 class _AppLocalizationsDelegate

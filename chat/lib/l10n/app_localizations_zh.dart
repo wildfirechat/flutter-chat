@@ -2965,4 +2965,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get momentWindowTitle => '朋友圈';
+
+  @override
+  String get webViewNotSupport => '当前系统暂不支持内置网页浏览';
+
+  @override
+  String get openInSystemBrowser => '在系统浏览器中打开';
 }

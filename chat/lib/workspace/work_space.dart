@@ -11,6 +11,7 @@ import 'package:chat/config.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/workspace/js_api.dart';
 import 'package:chat/workspace/webview_background.dart';
+import 'package:chat/workspace/webview_support.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 
 // TODO: Potentially add imports for contact picking and navigation if needed for chooseContacts and openUrl
@@ -23,7 +24,8 @@ class WorkSpace extends StatefulWidget {
 }
 
 class _WorkSpaceState extends State<WorkSpace> {
-  late final DWebViewController _controller;
+  /// 平台没有 WebView 实现时保持为 null,页面退化成"用系统浏览器打开"。
+  DWebViewController? _controller;
 
   /// 工作台是远端 H5,明暗只能由宿主用 URL 上的 `?theme=` 告诉它(与 vue-pc-chat 一致)。
   /// 记住上次加载用的明暗,主题变了才重新 load,避免每次 didChangeDependencies 都刷页面。
@@ -32,6 +34,10 @@ class _WorkSpaceState extends State<WorkSpace> {
   @override
   void initState() {
     super.initState();
+
+    if (!isInlineWebViewSupported) {
+      return;
+    }
 
     final DWebViewController controller = DWebViewController();
     _clearInvalidWebViewCookies(controller);
@@ -70,6 +76,9 @@ class _WorkSpaceState extends State<WorkSpace> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    if (_controller == null) {
+      return;
+    }
     // Theme.of 注册依赖,应用切明暗时会再次走到这里
     final brightness = Theme.of(context).brightness;
     if (brightness != _loadedBrightness) {
@@ -85,29 +94,32 @@ class _WorkSpaceState extends State<WorkSpace> {
       // controller.loadHtmlString(_kExamplePage);
       return;
     }
-    _controller.loadRequest(workspaceUriWithTheme(MediaUrlRedirector.redirect(workspaceUrl), brightness));
+    _controller!.loadRequest(workspaceUriWithTheme(MediaUrlRedirector.redirect(workspaceUrl), brightness));
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
     return Scaffold(
       backgroundColor: context.colors.surface,
       body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              height: 18,
-              width: double.infinity, // Use double.infinity for full width
-              color: context.colors.sectionGap,
-            ),
-            Expanded(
-              child: WebViewWidget(
-                controller: _controller,
-                gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+        child: controller == null
+            ? WebViewUnsupportedView(url: Config.workspaceUrl ?? '')
+            : Column(
+                children: [
+                  Container(
+                    height: 18,
+                    width: double.infinity, // Use double.infinity for full width
+                    color: context.colors.sectionGap,
+                  ),
+                  Expanded(
+                    child: WebViewWidget(
+                      controller: controller,
+                      gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

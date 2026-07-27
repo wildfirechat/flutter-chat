@@ -944,5 +944,7 @@
   "conferenceSelectStartTime": "Select start time",
   "conferenceSelectEndTime": "Select end time",
   "multiCallWindowTitle": "Group Call",
-  "momentWindowTitle": "Moments"
+  "momentWindowTitle": "Moments",
+  "webViewNotSupport": "Built-in web browsing is not supported on this platform",
+  "openInSystemBrowser": "Open in system browser"
 }

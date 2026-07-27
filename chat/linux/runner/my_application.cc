@@ -158,9 +158,22 @@ static void my_application_activate(GApplication* application) {
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(project, self->dart_entrypoint_arguments);
 
+  // FlView 外面套一层 GtkOverlay:webview_all_linux 把 WebKitGTK 的原生控件
+  // 挂在 FlView 的 GtkOverlay 父节点上(见该插件 linux/src/platform/flutter_view.cc
+  // 的 ensure_overlay)。这里先建好,插件就直接复用;否则它会在运行时把 FlView
+  // 摘出来重挂进新建的 overlay,过程中要 hide/show 顶层窗口,会闪一下,也和本文件
+  // 的 header bar / X11 错误处理器初始化顺序耦合。
+  GtkOverlay* overlay = GTK_OVERLAY(gtk_overlay_new());
+  gtk_widget_set_hexpand(GTK_WIDGET(overlay), TRUE);
+  gtk_widget_set_vexpand(GTK_WIDGET(overlay), TRUE);
+  gtk_widget_show(GTK_WIDGET(overlay));
+  gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(overlay));
+
   FlView* view = fl_view_new(project);
+  gtk_widget_set_hexpand(GTK_WIDGET(view), TRUE);
+  gtk_widget_set_vexpand(GTK_WIDGET(view), TRUE);
   gtk_widget_show(GTK_WIDGET(view));
-  gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
+  gtk_container_add(GTK_CONTAINER(overlay), GTK_WIDGET(view));
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 

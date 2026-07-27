@@ -3031,4 +3031,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get momentWindowTitle => 'Moments';
+
+  @override
+  String get webViewNotSupport =>
+      'Built-in web browsing is not supported on this platform';
+
+  @override
+  String get openInSystemBrowser => 'Open in system browser';
 }

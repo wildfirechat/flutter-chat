@@ -944,5 +944,7 @@
   "pcBackupMobileDataHint": "请在手机端进入“备份与恢复”，选择“备份到 PC”，电脑端将收到请求并弹出确认框。",
   "pcRestoreToMobileHint": "请在手机端进入“备份与恢复”，选择“从 PC 恢复”，电脑端将收到请求并弹出确认框。",
   "multiCallWindowTitle": "多人通话",
-  "momentWindowTitle": "朋友圈"
+  "momentWindowTitle": "朋友圈",
+  "webViewNotSupport": "当前系统暂不支持内置网页浏览",
+  "openInSystemBrowser": "在系统浏览器中打开"
 }

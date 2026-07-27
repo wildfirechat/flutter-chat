@@ -95,6 +95,21 @@ dependencies:
   provider: ^6.1.4
   webview_flutter: ^4.13.0
   dsbridge_flutter: 1.2.0
+  # webview_flutter 官方只有 Android/iOS/macOS 三个联邦实现,Linux 上
+  # WebViewPlatform.instance 为 null,构造 controller 直接抛断言(工作台整页变红)。
+  # 这个包实现的是同一个 webview_flutter_platform_interface,注册后
+  # webview_flutter 与 dsbridge 的 API 在 Linux 上照常可用,Dart 侧无需改动。
+  #
+  # 它的 pubspec 写的是 `implements: webview_all`,不是 webview_flutter,所以属于
+  # 非官方用法:Flutter 工具链对某平台只有唯一候选实现时无条件注册它
+  # (flutter_tools/lib/src/flutter_plugins.dart 的 _resolveImplementationOfPlugin),
+  # 不检查 app-facing 包在不在依赖图里。升级 Flutter 后若工作台在 Linux 上又变红,
+  # 先回来看这条。不要改成依赖 webview_all:那个包自带一份同名 WebViewController,
+  # 与 dsbridge 的 DWebViewController 不是同一个类型,编译不过。
+  #
+  # 构建机需要 libwebkit2gtk-4.1-dev,目标机需要 libwebkit2gtk-4.1-0
+  # (打 deb 时记得写进 Depends,缺库时是整个 App 起不来,不是工作台不可用)。
+  webview_all_linux: ^1.2.1
 
   logger: any
   path: any

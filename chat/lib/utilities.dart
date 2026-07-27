@@ -1,6 +1,5 @@
 
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/group_info.dart';
@@ -9,8 +8,10 @@ import 'package:intl/intl.dart';
 import 'package:path/path.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
+import 'package:chat/workspace/webview_support.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 extension EmptyStringToNull on String? {
@@ -187,7 +188,8 @@ class Utilities {
       resolvedUrl = 'https://$resolvedUrl';
     }
     final uri = Uri.parse(MediaUrlRedirector.redirect(resolvedUrl));
-    if (uri.scheme == 'http' || uri.scheme == 'https') {
+    // 没有内嵌 WebView 的平台(Windows/Linux)不走内置浏览页,直接交给系统浏览器。
+    if ((uri.scheme == 'http' || uri.scheme == 'https') && isInlineWebViewSupported) {
       if (!context.mounted) {
         return;
       }
@@ -198,10 +200,11 @@ class Utilities {
       return;
     }
 
+    final failMessage = AppLocalizations.of(context)!.cannotOpenLink;
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.cannotOpenLink);
+      showToast(msg: failMessage);
     }
   }
 

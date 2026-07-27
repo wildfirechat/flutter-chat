@@ -13,6 +13,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   super_native_extensions
   tray_manager
   url_launcher_linux
+  webview_all_linux
   window_manager
 )
 
