@@ -109,7 +109,12 @@ dependencies:
   #
   # 构建机需要 libwebkit2gtk-4.1-dev,目标机需要 libwebkit2gtk-4.1-0
   # (打 deb 时记得写进 Depends,缺库时是整个 App 起不来,不是工作台不可用)。
-  webview_all_linux: ^1.2.1
+  #
+  # 本地补丁版 1.2.1(上游的原生 dispose 只 hide 不销毁,WebView 与它的
+  # WebKitWebProcess 活到进程退出,工作台反复开关页签会无限堆积),
+  # 见 vendor/webview_all_linux/PATCHES.md
+  webview_all_linux:
+    path: ../vendor/webview_all_linux
 
   logger: any
   path: any
