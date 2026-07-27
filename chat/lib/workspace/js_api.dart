@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
 
 import '../contact/pick_user_screen.dart';
@@ -15,7 +16,20 @@ class JsApi extends JavaScriptNamespaceInterface {
   late String currentUr;
   final DWebViewController webViewController;
 
-  JsApi(this.context, this.appUrl, this.webViewController) {
+  /// 页内 `openUrl` 的去向。工作台(PC)传入"开新页签",不传则整页 push
+  /// [WFWebViewScreen] —— 移动端与独立网页页面走后者。
+  final void Function(String url)? onOpenUrl;
+
+  /// 页内 `close` 的去向。工作台(PC)传入"关掉当前页签",不传则 Navigator.pop。
+  final VoidCallback? onClose;
+
+  JsApi(
+    this.context,
+    this.appUrl,
+    this.webViewController, {
+    this.onOpenUrl,
+    this.onClose,
+  }) {
     currentUr = appUrl;
   }
 
@@ -35,6 +49,10 @@ class JsApi extends JavaScriptNamespaceInterface {
 
   void openUrl(dynamic url) {
     debugPrint('openUrl $url');
+    if (onOpenUrl != null) {
+      onOpenUrl!('$url');
+      return;
+    }
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => WFWebViewScreen(url)),
@@ -42,6 +60,10 @@ class JsApi extends JavaScriptNamespaceInterface {
   }
 
   void close(dynamic obj, CompletionHandler handler) {
+    if (onClose != null) {
+      onClose!();
+      return;
+    }
     Navigator.pop(context);
   }
 
@@ -76,7 +98,8 @@ class JsApi extends JavaScriptNamespaceInterface {
 
   void toast(dynamic text) {
     debugPrint('toast $text');
-    Fluttertoast.showToast(msg: text);
+    // 走项目自己的 toast:fluttertoast 在桌面端不显示,而工作台是桌面重点场景。
+    showToast(msg: '$text');
   }
 
   void chooseContacts(Object obj, CompletionHandler handler) {

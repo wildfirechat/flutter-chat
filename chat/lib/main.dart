@@ -44,6 +44,7 @@ import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/viewmodel/locale_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
+import 'package:chat/workspace/workspace_tabs_view_model.dart';
 import 'package:chat/viewmodel/theme_view_model.dart';
 import 'package:chat/wfc_notification_manager.dart';
 
@@ -159,6 +160,9 @@ void main([List<String>? args]) async {
       ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
       ChangeNotifierProvider<LocaleViewModel>(create: (_) => LocaleViewModel()),
       ChangeNotifierProvider<FontSizeViewModel>(create: (_) => FontSizeViewModel()),
+      // 工作台页签与其 WebView controller。必须是应用级:右栏每次切 tab 都重建
+      // 工作台那条路由,状态放在页面里会整页重新加载。
+      ChangeNotifierProvider<WorkspaceTabsViewModel>(create: (_) => WorkspaceTabsViewModel()),
       // 已在 main 中 load 完毕,用 .value 交给 Provider(应用级生命周期,不随登出销毁)
       ChangeNotifierProvider<ThemeViewModel>.value(value: themeViewModel),
       // 桌面 Shell 的导航状态。仅桌面注册:共享代码经 app_navigator.dart 查找,
