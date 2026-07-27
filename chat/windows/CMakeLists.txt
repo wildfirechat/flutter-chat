@@ -37,9 +37,17 @@ add_definitions(-DUNICODE -D_UNICODE)
 # Be cautious about adding new options here, as plugins use this function by
 # default. In most cases, you should add new options to specific targets instead
 # of modifying this function.
+# 注意：这里必须保持 cxx_std_17（Flutter 模板默认值），不要升到 cxx_std_20。
+# MSVC 的 /std:c++20 会隐式启用 /permissive-，而 /permissive- 会把 C4596
+# （类体内用类名限定成员声明）从警告提升为**错误**，无法用 /wd 屏蔽。
+# screen_retriever_windows(截至 0.2.2，最新版) 和 tray_manager 都是这种写法，
+# 一旦开 C++20 这两个插件必然编译失败。若确有代码需要 C++20，请只对具体
+# target 单独设置，不要改这个共享函数。
 function(APPLY_STANDARD_SETTINGS TARGET)
-  target_compile_features(${TARGET} PUBLIC cxx_std_20)
-  target_compile_options(${TARGET} PRIVATE /W4 /wd"4100")
+  target_compile_features(${TARGET} PUBLIC cxx_std_17)
+  # 4596: 第三方插件（screen_retriever_windows / tray_manager）在类体内使用了
+  # 类名限定的成员声明，C++17 下是 /W4 警告，这里静音以免刷屏。
+  target_compile_options(${TARGET} PRIVATE /W4 /wd"4100" /wd"4596")
   target_compile_options(${TARGET} PRIVATE /EHsc)
   target_compile_definitions(${TARGET} PRIVATE "_HAS_EXCEPTIONS=0")
   target_compile_definitions(${TARGET} PRIVATE "$<$<CONFIG:Debug>:_DEBUG>")
