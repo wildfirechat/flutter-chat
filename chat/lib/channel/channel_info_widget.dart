@@ -157,7 +157,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
         isListened = !isListened;
       });
     }, (errorCode) {
-      Fluttertoast.showToast(msg: "网络错误！");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.networkError);
     });
   }
 
@@ -173,7 +173,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     } else if(index == 1) {
       return Column(children: [
         Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-          Text("名称:  ", style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
+          Text(AppLocalizations.of(context)!.channelNameLabel, style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
           Text(info.name ?? '', style: AppText.lg,),
         ],),),
         const Divider(indent: 12, endIndent: 12),
@@ -181,7 +181,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     } else if(index == 2) {
       return Column(children: [
         Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-          Text("拥有者:  ", style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
+          Text(AppLocalizations.of(context)!.channelOwnerLabel, style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
           Text(info.owner ?? '', style: AppText.lg,),
         ],),),
         const Divider(indent: 12, endIndent: 12),
@@ -189,7 +189,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     } else if(index == 3) {
       return Column(children: [
         Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-          Text("描述:  ", style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
+          Text(AppLocalizations.of(context)!.channelDescLabel, style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
           Expanded(child: Text(info.desc ?? '', style: AppText.lg,)),
         ],),),
         const Divider(indent: 12, endIndent: 12),
@@ -199,18 +199,19 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
         child: Column(children: [
           SizedBox(
             height: 48,
-            child: Center(child: Text("清空历史消息", style: AppText.lg.copyWith(color: Colors.red),)),
+            child: Center(child: Text(AppLocalizations.of(context)!.clearHistoryMessages, style: AppText.lg.copyWith(color: Colors.red),)),
           ),
           const Divider(indent: 12, endIndent: 12),
         ],),
         onTap: () {},
       );
     } else if(index == 5) {
+      final l10n = AppLocalizations.of(context)!;
       return GestureDetector(
         child: Column(children: [
           SizedBox(
             height: 48,
-            child: Center(child: Text(isListened?"取消订阅":"订阅频道", style: AppText.lg.copyWith(color: Colors.red),)),
+            child: Center(child: Text(isListened ? l10n.unsubscribeChannel : l10n.subscribeChannel, style: AppText.lg.copyWith(color: Colors.red),)),
           ),
           const Divider(indent: 12, endIndent: 12),
         ],),
@@ -220,7 +221,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
                 isListened = !isListened;
               });
             }, (errorCode) {
-              Fluttertoast.showToast(msg: "网络错误！");
+              Fluttertoast.showToast(msg: l10n.networkError);
             });
         },
       );
@@ -230,7 +231,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
         child: Column(children: [
           SizedBox(
             height: 48,
-            child: Center(child: Text("进入会话", style: AppText.lg.copyWith(color: Colors.blue),)),
+            child: Center(child: Text(AppLocalizations.of(context)!.enterConversation, style: AppText.lg.copyWith(color: Colors.blue),)),
           ),
           const Divider(indent: 12, endIndent: 12),
         ],),

@@ -1,3 +1,5 @@
+import 'package:chat/l10n/app_localizations.dart';
+
 /// 投票选项
 class PollOption {
   /// 选项ID
@@ -279,22 +281,22 @@ class Poll {
   bool get isActive => status == 0 && !isExpired;
 
   /// 获取剩余时间文本
-  String? getRemainingTimeText() {
-    if (status == 1) return '已结束';
+  String? getRemainingTimeText(AppLocalizations l10n) {
+    if (status == 1) return l10n.pollStatusEnded;
     if (endTime <= 0) return null;
 
     int now = DateTime.now().millisecondsSinceEpoch;
     int remaining = endTime - now;
 
-    if (remaining <= 0) return '已过期';
+    if (remaining <= 0) return l10n.expired;
 
     int minutes = remaining ~/ 60000;
     int hours = minutes ~/ 60;
     int days = hours ~/ 24;
 
-    if (days > 0) return '还剩$days天';
-    if (hours > 0) return '还剩$hours小时';
-    return '还剩$minutes分钟';
+    if (days > 0) return l10n.pollDaysLeft(days);
+    if (hours > 0) return l10n.pollHoursLeft(hours);
+    return l10n.pollMinutesLeft(minutes);
   }
 
   /// 是否单选

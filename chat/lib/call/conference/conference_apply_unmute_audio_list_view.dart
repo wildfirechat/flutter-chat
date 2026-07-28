@@ -5,6 +5,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import 'conference_manager.dart';
 
@@ -61,6 +62,7 @@ class _ConferenceApplyUnmuteAudioListViewState
   @override
   Widget build(BuildContext context) {
     var members = widget.conferenceManager.applyingUnmuteAudioMembers;
+    var l10n = AppLocalizations.of(context)!;
 
     return Container(
       color: context.colors.surface,
@@ -71,7 +73,7 @@ class _ConferenceApplyUnmuteAudioListViewState
             child: Row(
               children: [
                 Text(
-                  '申请开麦 (${members.length})',
+                  l10n.conferenceApplyAudioCount(members.length),
                   style: AppText.base.copyWith(
                       color: context.colors.textPrimary, fontWeight: FontWeight.w600),
                 ),
@@ -81,7 +83,7 @@ class _ConferenceApplyUnmuteAudioListViewState
           Expanded(
             child: members.isEmpty
                 ? Center(
-                    child: Text('暂无申请',
+                    child: Text(l10n.conferenceNoApplications,
                         style: TextStyle(color: context.colors.textSecondary)),
                   )
                 : ListView.builder(
@@ -109,14 +111,14 @@ class _ConferenceApplyUnmuteAudioListViewState
                                 widget.conferenceManager.approveUnmute(
                                     userId, true, false);
                               },
-                              child: const Text('拒绝'),
+                              child: Text(l10n.conferenceReject),
                             ),
                             ElevatedButton(
                               onPressed: () {
                                 widget.conferenceManager.approveUnmute(
                                     userId, true, true);
                               },
-                              child: const Text('同意'),
+                              child: Text(l10n.conferenceApprove),
                             ),
                           ],
                         ),
@@ -134,7 +136,7 @@ class _ConferenceApplyUnmuteAudioListViewState
                       onPressed: () {
                         widget.conferenceManager.approveAllUnmute(true, false);
                       },
-                      child: const Text('全部拒绝'),
+                      child: Text(l10n.conferenceRejectAll),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -143,7 +145,7 @@ class _ConferenceApplyUnmuteAudioListViewState
                       onPressed: () {
                         widget.conferenceManager.approveAllUnmute(true, true);
                       },
-                      child: const Text('全部同意'),
+                      child: Text(l10n.conferenceApproveAll),
                     ),
                   ),
                 ],

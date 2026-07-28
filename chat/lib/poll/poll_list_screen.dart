@@ -172,7 +172,7 @@ class _PollListScreenState extends State<PollListScreen> {
       onTap: () => _openDetail(poll),
       onDelete: poll.isCreator ? () => _deletePoll(poll) : null,
       statusChip: _buildStatusChip(poll),
-      remainingText: poll.getRemainingTimeText(),
+      remainingText: poll.getRemainingTimeText(AppLocalizations.of(context)!),
     );
 
     // 桌面端的删除入口在卡片内(hover 显形),不再包一层左滑

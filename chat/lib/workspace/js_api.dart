@@ -8,6 +8,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import '../contact/pick_user_screen.dart';
 
@@ -138,9 +139,9 @@ class JsApi extends JavaScriptNamespaceInterface {
       _callbackJs(handler, -2);
       return;
     }
-    unawaited(pushOverlay((context) => PickUserScreen(title: '选择联系人', (_, members) async {
+    unawaited(pushOverlay((context) => PickUserScreen(title: AppLocalizations.of(context)!.selectContacts, (_, members) async {
           if (members.isEmpty) {
-            Fluttertoast.showToast(msg: "请选择一位或者多位好友提交日报");
+            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.pickFriendsToSubmitReport);
           } else {
             //callbackJs(handler, 0, userInfos);
 

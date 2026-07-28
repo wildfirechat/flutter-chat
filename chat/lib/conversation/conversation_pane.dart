@@ -514,8 +514,9 @@ class _ConversationPaneState extends State<ConversationPane> {
     if (files.isEmpty) {
       return;
     }
+    final l10n = AppLocalizations.of(context)!;
     final fileNames = files.map((f) => f.name).toList();
-    final nameStr = fileNames.length == 1 ? fileNames.first : '${fileNames.length} 个文件';
+    final nameStr = fileNames.length == 1 ? fileNames.first : l10n.filesCountLabel(fileNames.length);
     showPcDialog<bool>(
       context: context,
       width: 360,
@@ -527,13 +528,13 @@ class _ConversationPaneState extends State<ConversationPane> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              '发送文件',
+              l10n.sendFile,
               style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
-              '确定要发送 $nameStr 吗？',
+              l10n.confirmSendFiles(nameStr),
               style: AppText.sm.copyWith(color: context.colors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 20),
@@ -543,12 +544,12 @@ class _ConversationPaneState extends State<ConversationPane> {
                 TextButton(
                   onPressed: () => Navigator.of(ctx).pop(false),
                   style: AppTheme.mutedTextButtonStyle(context.colors),
-                  child: const Text('取消'),
+                  child: Text(l10n.cancel),
                 ),
                 const SizedBox(width: 8),
                 FilledButton(
                   onPressed: () => Navigator.of(ctx).pop(true),
-                  child: const Text('发送'),
+                  child: Text(l10n.send),
                 ),
               ],
             ),

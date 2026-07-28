@@ -5,6 +5,7 @@ import 'package:chat/app_server.dart';
 import 'package:chat/widget/app_switch.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:imclient/imclient.dart';
 
 /// 预定会议页面
@@ -75,21 +76,22 @@ class _OrderConferenceViewState extends State<OrderConferenceView> {
   }
 
   void _orderConference() {
+    var l10n = AppLocalizations.of(context)!;
     if (_titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入会议标题')),
+        SnackBar(content: Text(l10n.conferenceInputTitle)),
       );
       return;
     }
     if (_startTime == null || _endTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请选择开始和结束时间')),
+        SnackBar(content: Text(l10n.conferenceSelectStartAndEndTime)),
       );
       return;
     }
     if (_endTime!.isBefore(_startTime!)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('结束时间不能早于开始时间')),
+        SnackBar(content: Text(l10n.conferenceTimeInvalid)),
       );
       return;
     }
@@ -116,7 +118,7 @@ class _OrderConferenceViewState extends State<OrderConferenceView> {
       if (mounted) {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('预定成功')),
+          SnackBar(content: Text(l10n.conferenceOrdered)),
         );
         Navigator.of(context).pop();
       }
@@ -124,23 +126,24 @@ class _OrderConferenceViewState extends State<OrderConferenceView> {
       if (mounted) {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('预定失败: $error')),
+          SnackBar(content: Text(l10n.conferenceOrderFailedWithError(error))),
         );
       }
     });
   }
 
-  String _formatTime(DateTime? time) {
-    if (time == null) return '请选择';
+  String _formatTime(BuildContext context, DateTime? time) {
+    if (time == null) return AppLocalizations.of(context)!.pleaseSelect;
     return '${time.month}/${time.day} ${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
+    var l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: context.colors.primaryBackground,
       appBar: AppBar(
-        title: const Text('预定会议'),
+        title: Text(l10n.conferenceOrder),
         backgroundColor: context.colors.surface,
       ),
       body: Padding(
@@ -150,57 +153,57 @@ class _OrderConferenceViewState extends State<OrderConferenceView> {
             TextField(
               controller: _titleController,
               style: TextStyle(color: context.colors.textPrimary),
-              decoration: const InputDecoration(labelText: '会议标题'),
+              decoration: InputDecoration(labelText: l10n.conferenceTitleLabel),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _descController,
               style: TextStyle(color: context.colors.textPrimary),
-              decoration: const InputDecoration(labelText: '会议描述'),
+              decoration: InputDecoration(labelText: l10n.conferenceDescLabel),
             ),
             const SizedBox(height: 12),
             ListTile(
-              title: Text('开始时间', style: TextStyle(color: context.colors.textPrimary)),
-              trailing: Text(_formatTime(_startTime),
+              title: Text(l10n.conferenceStartTime, style: TextStyle(color: context.colors.textPrimary)),
+              trailing: Text(_formatTime(context, _startTime),
                   style: AppText.base.copyWith(color: context.colors.success)),
               onTap: _pickStartTime,
             ),
             ListTile(
-              title: Text('结束时间', style: TextStyle(color: context.colors.textPrimary)),
-              trailing: Text(_formatTime(_endTime),
+              title: Text(l10n.conferenceEndTime, style: TextStyle(color: context.colors.textPrimary)),
+              trailing: Text(_formatTime(context, _endTime),
                   style: AppText.base.copyWith(color: context.colors.success)),
               onTap: _pickEndTime,
             ),
             ListTile(
-              title: Text('仅音频', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAudioOnly, style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _audioOnly,
                 onChanged: (v) => setState(() => _audioOnly = v),
               ),
             ),
             ListTile(
-              title: Text('默认观众', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceDefaultAudience, style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _audience,
                 onChanged: (v) => setState(() => _audience = v),
               ),
             ),
             ListTile(
-              title: Text('高级版', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAdvanced, style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _advance,
                 onChanged: (v) => setState(() => _advance = v),
               ),
             ),
             ListTile(
-              title: Text('允许成员自助开麦', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAllowTurnOnMic, style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _allowTurnOnMic,
                 onChanged: (v) => setState(() => _allowTurnOnMic = v),
               ),
             ),
             ListTile(
-              title: Text('启用密码', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceEnablePassword, style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _enablePassword,
                 onChanged: (v) => setState(() => _enablePassword = v),
@@ -210,7 +213,7 @@ class _OrderConferenceViewState extends State<OrderConferenceView> {
               TextField(
                 controller: _passwordController,
                 style: TextStyle(color: context.colors.textPrimary),
-                decoration: const InputDecoration(labelText: '会议密码'),
+                decoration: InputDecoration(labelText: l10n.conferencePassword),
               ),
             const SizedBox(height: 24),
             SizedBox(
@@ -222,7 +225,7 @@ class _OrderConferenceViewState extends State<OrderConferenceView> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('预定'),
+                    : Text(l10n.conferenceOrderAction),
               ),
             ),
           ],

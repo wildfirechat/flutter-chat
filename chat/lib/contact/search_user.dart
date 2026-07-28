@@ -12,7 +12,7 @@ import '../utils/mesh_user_name.dart';
 class SearchUserDelegate extends SearchDelegate<String> {
   final String? domainId;
 
-  SearchUserDelegate({this.domainId}) : super(searchFieldLabel: "请输入电话号码或者账户");
+  SearchUserDelegate({this.domainId, required String searchFieldHint}) : super(searchFieldLabel: searchFieldHint);
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -122,7 +122,7 @@ class SearchUserDelegate extends SearchDelegate<String> {
     } else {
       return Container(
         margin: const EdgeInsets.all(16),
-        child: const Text("搜索用户添加好友！"),
+        child: Text(l10n.searchUserAddFriendHint),
       );
     }
   }

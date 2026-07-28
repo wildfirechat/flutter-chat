@@ -86,7 +86,7 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
       backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
       appBar: isDesktopShell
           ? PcPageHeader(
-              title: '群管理',
+              title: l10n.groupManagement,
               onBack: () => Navigator.of(context).maybePop(),
             )
           : AppBar(

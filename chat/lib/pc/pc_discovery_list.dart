@@ -42,7 +42,7 @@ class PcDiscoveryList extends StatelessWidget {
         if (avEngineKit.isSupportConference())
           _DiscoveryRow(
             iconAsset: 'assets/images/discover_channel.png',
-            title: '会议',
+            title: l10n.conferenceTitle,
             onTap: () => openPage(context, const ConferenceHomeScreen()),
           ),
         _DiscoveryRow(
@@ -53,7 +53,7 @@ class PcDiscoveryList extends StatelessWidget {
         if (Config.panServerAddress != null && Config.panServerAddress!.isNotEmpty)
           _DiscoveryRow(
             iconAsset: 'assets/images/net_disk.png',
-            title: '云盘',
+            title: l10n.cloudDrive,
             onTap: () => openPage(context, const PanHomeScreen()),
           ),
       ],

@@ -16,6 +16,7 @@ import 'package:chat/widgets/animated_emoji.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import '../../ui_model/ui_message.dart';
 import '../mm_preview_view.dart';
@@ -87,7 +88,9 @@ class TextCellBuilder extends PortraitCellBuilder {
                   Fluttertoast.showToast(msg: digest);
                 }
               } else {
-                Fluttertoast.showToast(msg: "消息不存在");
+                if (context.mounted) {
+                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.messageNotExist);
+                }
               }
             },
             child: Container(

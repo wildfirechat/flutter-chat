@@ -701,7 +701,7 @@ class _PCHomeState extends State<PCHome> {
                   padding: const EdgeInsets.only(left: 16),
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    "设置",
+                    AppLocalizations.of(context)!.settings,
                     style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
                   ),
                 );
@@ -1052,7 +1052,7 @@ class _PcSideBar extends StatelessWidget {
           const SizedBox(height: PcTheme.sidebarTabGap),
           _SideBarIconButton(
             icon: Icons.dynamic_feed_rounded,
-            tooltip: '朋友圈',
+            tooltip: l10n.momentWindowTitle,
             onTap: () {
               MomentWindowManager.instance.show();
             },

@@ -10,6 +10,7 @@ import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class FavGroupsPage extends StatefulWidget {
   const FavGroupsPage({Key? key}) : super(key: key);
@@ -37,7 +38,7 @@ class FavGroupsPageState extends State<FavGroupsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('收藏群组'),
+        title: Text(AppLocalizations.of(context)!.favGroup),
       ),
       body: ListView.separated(
         itemCount: favGroupIds.length,

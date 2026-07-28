@@ -633,7 +633,7 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
                 Icon(Icons.play_circle_outline, color: Colors.white.withValues(alpha: 0.8), size: 64),
                 const SizedBox(height: 12),
                 Text(
-                  '点击用系统播放器打开',
+                  AppLocalizations.of(context)!.openWithSystemPlayer,
                   style: AppText.base.copyWith(color: Colors.white.withValues(alpha: 0.8)),
                 ),
               ],

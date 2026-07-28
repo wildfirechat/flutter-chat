@@ -8,6 +8,7 @@ import 'package:chat/viewmodel/conversation_list_view_model.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class PickConversationScreen extends StatefulWidget {
   final Function(BuildContext context, Conversation conversation)? onConversationSelected;
@@ -22,14 +23,15 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
   @override
   Widget build(BuildContext context) {
     var conversationListViewModel = Provider.of<ConversationListViewModel>(context);
+    final title = AppLocalizations.of(context)!.selectConversations;
     return Scaffold(
       appBar: isDesktopShell
           ? PcPageHeader(
-              title: '选择会话',
+              title: title,
               onBack: widget.onBack,
             )
           : AppBar(
-              title: const Text('选择会话'),
+              title: Text(title),
             ),
       body: SafeArea(
         child: ListView.builder(

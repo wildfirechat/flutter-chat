@@ -7,6 +7,7 @@ import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
 import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class CardCellBuilder extends PortraitCellBuilder {
   late CardMessageContent cardMessageContent;
@@ -20,14 +21,15 @@ class CardCellBuilder extends PortraitCellBuilder {
     double screenWidth = MediaQuery.of(context).size.width;
     double dpr = MediaQuery.of(context).devicePixelRatio;
 
+    final l10n = AppLocalizations.of(context)!;
     String imagePath = Config.defaultUserPortrait;
-    String hint = "个人名片";
+    String hint = l10n.personalCardHint;
     if (cardMessageContent.type == CardType.CardType_Group) {
       imagePath = Config.defaultGroupPortrait;
-      hint = "群组名片";
+      hint = l10n.groupCardHint;
     } else if (cardMessageContent.type == CardType.CardType_Channel) {
       imagePath = Config.defaultChannelPortrait;
-      hint = "频道名片";
+      hint = l10n.channelCardHint;
     }
 
     Image image = cardMessageContent.portrait != null

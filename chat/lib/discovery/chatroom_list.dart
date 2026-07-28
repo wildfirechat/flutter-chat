@@ -4,6 +4,7 @@ import 'package:imclient/model/chatroom_info.dart';
 import 'package:imclient/model/conversation.dart';
 
 import '../conversation/conversation_screen.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -15,10 +16,11 @@ class ChatroomList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final title = AppLocalizations.of(context)!.messageSettings;
     return Scaffold(
       appBar: isDesktopShell
-          ? const PcPageHeader(title: "消息设置")
-          : AppBar(title: const Text("消息设置")),
+          ? PcPageHeader(title: title)
+          : AppBar(title: Text(title)),
       body: SafeArea(
         child: ListView.builder(
           itemCount: modelList.length,
@@ -67,7 +69,7 @@ class ChatroomItemState extends State<ChatroomItem> {
       child: Padding(padding: const EdgeInsets.all(8), child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [Expanded(child: Container(child: Text((chatroomInfo == null || chatroomInfo!.title == null)?"聊天室":chatroomInfo!.title!, style: AppText.lg,),))],),
+          Row(children: [Expanded(child: Container(child: Text((chatroomInfo == null || chatroomInfo!.title == null)?AppLocalizations.of(context)!.chatroom:chatroomInfo!.title!, style: AppText.lg,),))],),
           // height 9 保留原 4+1+4 的行间留白。
           const Divider(height: 9, indent: 12, endIndent: 12),
         ],),),

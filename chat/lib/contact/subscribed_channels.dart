@@ -10,6 +10,7 @@ import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class SubscribedChannelsPage extends StatefulWidget {
   const SubscribedChannelsPage({Key? key}) : super(key: key);
@@ -39,7 +40,7 @@ class SubscribedChannelsPageState extends State<SubscribedChannelsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('频道'),
+        title: Text(AppLocalizations.of(context)!.subscribedChannel),
       ),
       body: ListView.separated(
         itemCount: channelIds.length,

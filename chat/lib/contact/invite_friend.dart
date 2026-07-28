@@ -6,6 +6,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/app_bar_actions.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class InviteFriendPage extends StatefulWidget {
   const InviteFriendPage(this.userId, {super.key});
@@ -26,10 +27,11 @@ class InviteFriendPageState extends State<InviteFriendPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final canSend = fieldController.text.trim().isNotEmpty;
     final actions = [
       AppBarTextAction(
-        label: "发送",
+        label: l10n.send,
         onPressed: canSend ? () => _sendInvite(context) : null,
       ),
     ];
@@ -37,22 +39,22 @@ class InviteFriendPageState extends State<InviteFriendPage> {
     return Scaffold(
       appBar: isDesktopShell
           ? PcPageHeader(
-              title: '添加好友',
+              title: l10n.addFriend,
               onBack: () => Navigator.of(context).maybePop(),
               actions: actions,
             )
           : AppBar(
               actions: actions,
-              title: const Text('添加好友'),
+              title: Text(l10n.addFriend),
             ),
       backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(padding: EdgeInsets.fromLTRB(16, 16, 16, 8), child: Text("请填入申请理由，等待对方同意"),),
+            Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 8), child: Text(l10n.inviteReasonHint),),
             Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), child: CupertinoTextField(
-              placeholder: '请输入理由',
+              placeholder: l10n.inputReason,
               controller: fieldController,
               clearButtonMode: OverlayVisibilityMode.editing,
               autocorrect: false,
@@ -69,11 +71,12 @@ class InviteFriendPageState extends State<InviteFriendPage> {
 
   void _sendInvite(BuildContext context) {
     if(fieldController.value.text.isNotEmpty) {
+      final l10n = AppLocalizations.of(context)!;
       Imclient.sendFriendRequest(widget.userId, fieldController.value.text, () {
-        Fluttertoast.showToast(msg: '请求已发出！');
+        Fluttertoast.showToast(msg: l10n.requestSent);
         Navigator.pop(context);
       }, (errorCode) {
-        Fluttertoast.showToast(msg: '网络错误：$errorCode');
+        Fluttertoast.showToast(msg: l10n.networkErrorWithCode(errorCode));
       });
     }
   }

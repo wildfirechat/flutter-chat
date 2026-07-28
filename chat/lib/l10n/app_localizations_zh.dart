@@ -15,6 +15,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get appTitle => '野火IM';
 
   @override
+  String get appTagline => '沟通如此简单!';
+
+  @override
+  String departmentFallback(Object id) {
+    return '部门 $id';
+  }
+
+  @override
   String get tabChat => '信息';
 
   @override
@@ -90,6 +98,14 @@ class AppLocalizationsZh extends AppLocalizations {
   String get conferenceHandUpDone => '已举手';
 
   @override
+  String conferenceHandUpMembersCount(Object count) {
+    return '举手成员 ($count)';
+  }
+
+  @override
+  String get conferenceNoHandUpMembers => '暂无举手成员';
+
+  @override
   String get conferencePutDown => '放下';
 
   @override
@@ -100,6 +116,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get conferenceApplyVideo => '申请开摄像头';
+
+  @override
+  String conferenceApplyAudioCount(Object count) {
+    return '申请开麦 ($count)';
+  }
+
+  @override
+  String conferenceApplyVideoCount(Object count) {
+    return '申请开摄像头 ($count)';
+  }
+
+  @override
+  String get conferenceNoApplications => '暂无申请';
 
   @override
   String get conferenceApprove => '同意';
@@ -141,7 +170,69 @@ class AppLocalizationsZh extends AppLocalizations {
   String get conferenceKick => '踢出会议';
 
   @override
+  String get conferenceHandUpMembersTitle => '举手成员';
+
+  @override
+  String get conferenceUnmuteSelf => '取消静音';
+
+  @override
+  String get conferenceSwitchToStage => '上麦';
+
+  @override
+  String get conferenceSwitchToAudience => '下麦';
+
+  @override
+  String get conferenceAllowUnmuteAudio => '允许开麦';
+
+  @override
+  String get conferenceAllowUnmuteVideo => '允许开视频';
+
+  @override
+  String get conferenceCloseVideo => '关闭视频';
+
+  @override
+  String conferenceHandUpTip(Object count) {
+    return '$count 人正在举手，点击查看';
+  }
+
+  @override
+  String conferenceApplyAudioTip(Object count) {
+    return '$count 人申请开麦，点击查看';
+  }
+
+  @override
+  String conferenceApplyVideoTip(Object count) {
+    return '$count 人申请开摄像头，点击查看';
+  }
+
+  @override
   String get conferenceScreenShare => '共享';
+
+  @override
+  String get conferenceSharingScreen => '正在共享屏幕';
+
+  @override
+  String get conferenceStopSharing => '停止共享';
+
+  @override
+  String get conferenceScreenShareNotImplemented => '屏幕分享功能待实现';
+
+  @override
+  String get conferenceInviteJoin => '邀请您加入会议';
+
+  @override
+  String get conferenceHostInviteAudience => '主持人邀请您成为观众';
+
+  @override
+  String get conferenceHostInviteStage => '主持人邀请您上麦';
+
+  @override
+  String get conferenceIgnore => '忽略';
+
+  @override
+  String conferenceSpeakingLabel(Object name) {
+    return '正在讲话: $name';
+  }
 
   @override
   String get conferenceGridView => '网格视图';
@@ -163,6 +254,45 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get conferenceMeetingEnded => '会议已结束';
+
+  @override
+  String get conferenceStatusNotStarted => '未开始';
+
+  @override
+  String get conferenceStatusOngoing => '进行中';
+
+  @override
+  String get conferenceStatusEnded => '已结束';
+
+  @override
+  String get conferenceVideoConferenceTitle => '视频会议';
+
+  @override
+  String get conferenceJoinHint => '输入会议 ID 加入';
+
+  @override
+  String get conferenceCreateTitle => '发起会议';
+
+  @override
+  String get conferenceCreateHint => '立即开始音视频会议';
+
+  @override
+  String get conferenceOrderHint => '安排未来会议';
+
+  @override
+  String conferenceDurationHours(Object h, Object m) {
+    return '$h小时$m分';
+  }
+
+  @override
+  String conferenceDurationMinutes(Object m, Object s) {
+    return '$m分$s秒';
+  }
+
+  @override
+  String conferenceDurationSeconds(Object s) {
+    return '$s秒';
+  }
 
   @override
   String get conferenceFavorites => '即将开始';
@@ -201,6 +331,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get conferenceCopied => '会议号已复制';
 
   @override
+  String get conferenceUntitled => '无标题会议';
+
+  @override
+  String conferenceOwnerLabel(Object name) {
+    return '发起人：$name';
+  }
+
+  @override
+  String get conferenceIdLabel => '会议号';
+
+  @override
+  String get conferenceDestroyAction => '销毁';
+
+  @override
+  String conferenceDestroyFailed(Object error) {
+    return '销毁失败: $error';
+  }
+
+  @override
   String get conferenceRequestUnmuteAudio => '申请解除静音';
 
   @override
@@ -222,13 +371,40 @@ class AppLocalizationsZh extends AppLocalizations {
   String get conferenceCreateFailed => '创建会议失败';
 
   @override
+  String conferenceCreateFailedWithError(Object error) {
+    return '创建会议失败: $error';
+  }
+
+  @override
   String get conferenceJoinFailed => '加入会议失败';
+
+  @override
+  String conferenceJoinFailedWithError(Object error) {
+    return '进入会议失败: $error';
+  }
+
+  @override
+  String get conferenceTitleLabel => '会议标题';
+
+  @override
+  String get conferenceDescLabel => '会议描述';
 
   @override
   String get conferenceOrdered => '预定成功';
 
   @override
   String get conferenceOrderFailed => '预定失败';
+
+  @override
+  String conferenceOrderFailedWithError(Object error) {
+    return '预定失败: $error';
+  }
+
+  @override
+  String get conferenceOrderAction => '预定';
+
+  @override
+  String get conferenceSelectStartAndEndTime => '请选择开始和结束时间';
 
   @override
   String get conferenceInputTitle => '请输入会议标题';
@@ -259,6 +435,17 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get conferencePassword => '会议密码';
+
+  @override
+  String get conferenceIdInputLabel => '会议ID';
+
+  @override
+  String get conferenceQuery => '查询会议';
+
+  @override
+  String conferenceQueryFailedWithError(Object error) {
+    return '查询会议失败: $error';
+  }
 
   @override
   String get conferenceEndTimeInvalid => '结束时间不能早于当前时间';
@@ -299,7 +486,43 @@ class AppLocalizationsZh extends AppLocalizations {
   String get groupQrCode => '群二维码';
 
   @override
+  String get scanQrCodeToJoinGroup => '扫一扫上面的二维码，加入群聊';
+
+  @override
   String get groupNotice => '群公告';
+
+  @override
+  String moreArticlesCount(Object count) {
+    return '还有 $count 篇文章';
+  }
+
+  @override
+  String get articlesPlaceholder => '[图文]';
+
+  @override
+  String get openWithSystemPlayer => '点击用系统播放器打开';
+
+  @override
+  String get edit => '编辑';
+
+  @override
+  String getGroupAnnouncementFailed(Object msg) {
+    return '获取群公告失败: $msg';
+  }
+
+  @override
+  String get groupAnnouncementEmpty => '群公告不能为空';
+
+  @override
+  String get updateGroupAnnouncementSuccess => '更新群公告成功';
+
+  @override
+  String updateGroupAnnouncementFailed(Object msg) {
+    return '更新群公告失败: $msg';
+  }
+
+  @override
+  String get noGroupAnnouncementHint => '暂无群公告';
 
   @override
   String get clickToCheck => '点击查看';
@@ -371,6 +594,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get quitGroup => '退出群组';
+
+  @override
+  String groupActionSuccess(Object action) {
+    return '$action成功';
+  }
+
+  @override
+  String groupActionFailedWithCode(Object action, Object code) {
+    return '$action失败: $code';
+  }
 
   @override
   String get clearLocalHistory => '清空本地消息';
@@ -572,6 +805,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get domainAddress => '地址';
+
+  @override
+  String get searchUserFieldHint => '请输入电话号码或者账户';
+
+  @override
+  String get searchUserAddFriendHint => '搜索用户添加好友！';
 
   @override
   String get searchUserNotFound => '没有找到呀，是不是输入的电话号码或者账户不对？';
@@ -793,10 +1032,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String get businessCard => '名片';
 
   @override
+  String get personalCardHint => '个人名片';
+
+  @override
+  String get groupCardHint => '群组名片';
+
+  @override
+  String get channelCardHint => '频道名片';
+
+  @override
   String get screenshotTool => '截屏';
 
   @override
   String get screenshotToolNotAvailable => '截屏工具不可用';
+
+  @override
+  String screenshotFailed(Object err) {
+    return '截图失败：$err';
+  }
+
+  @override
+  String screenshotToolLaunchFailed(Object err) {
+    return '无法启动截图工具：$err';
+  }
+
+  @override
+  String screenshotException(Object err) {
+    return '截图异常：$err';
+  }
 
   @override
   String get notSupportedOnCurrentPlatform => '当前平台暂不支持';
@@ -844,6 +1107,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get groupManagement => '群管理';
+
+  @override
+  String get collapseGroupMembers => '收起群成员 <';
+
+  @override
+  String get viewMoreGroupMembers => '查看更多群成员 >';
 
   @override
   String get favoriteGroup => '保存到通讯录';
@@ -895,6 +1164,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get subscribeChannel => '订阅频道';
+
+  @override
+  String get subscribedChannelsTitle => '订阅的频道';
+
+  @override
+  String get searchChannelHint => '请输入频道名称';
+
+  @override
+  String get searchChannelNotFound => '没有找到呀，是不是输入的频道名称不对？';
+
+  @override
+  String get searchChannelPrompt => '搜索频道！';
+
+  @override
+  String get clearHistoryMessages => '清空历史消息';
+
+  @override
+  String get channelNameLabel => '名称:  ';
+
+  @override
+  String get channelOwnerLabel => '拥有者:  ';
+
+  @override
+  String get channelDescLabel => '描述:  ';
 
   @override
   String get groupIdLabel => '群号';
@@ -1425,6 +1718,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searchHint => '输入开始搜索';
 
   @override
+  String containsMatchedMembers(Object names) {
+    return '包含成员: $names';
+  }
+
+  @override
+  String get pleaseInput => '请输入';
+
+  @override
+  String get searchKeywordHint => '输入关键字进行搜索';
+
+  @override
   String get searchPrompt => '输入内容进行搜索';
 
   @override
@@ -1489,6 +1793,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get maxUserLimit => '超过最大人数限制';
+
+  @override
+  String get selectUser => '选择用户';
 
   @override
   String get selectFromOrganization => '从组织架构选择';
@@ -1876,7 +2183,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pickFriendsToStartChat => '请选择一位或者多位好友发起聊天';
 
   @override
+  String get pickFriendsToSubmitReport => '请选择一位或者多位好友提交日报';
+
+  @override
   String get creatingGroup => '群组创建中...';
+
+  @override
+  String groupNameTruncatedSuffix(Object name) {
+    return '$name等';
+  }
 
   @override
   String get createGroupChat => '创建群聊';
@@ -1923,6 +2238,16 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String confirmSendFile(Object fileName) {
     return '确定要发送 \"$fileName\" 吗？';
+  }
+
+  @override
+  String filesCountLabel(Object count) {
+    return '$count 个文件';
+  }
+
+  @override
+  String confirmSendFiles(Object name) {
+    return '确定要发送 $name 吗？';
   }
 
   @override
@@ -2017,6 +2342,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get callSpeaker => '免提';
+
+  @override
+  String get callInvite => '邀请';
+
+  @override
+  String get callInviteMembers => '邀请成员';
+
+  @override
+  String get callInviteNoCandidates => '暂无可邀请成员';
+
+  @override
+  String get meLabel => '我';
+
+  @override
+  String callParticipantCount(Object count) {
+    return '$count 人通话';
+  }
+
+  @override
+  String callSpeakingSuffix(Object name) {
+    return ' · 正在讲话: $name';
+  }
 
   @override
   String get callCameraOn => '开启摄像头';
@@ -2492,6 +2839,34 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get securityAndData => '安全与数据';
+
+  @override
+  String get peerTyping => '对方正在输入';
+
+  @override
+  String groupMembersTyping(Object count) {
+    return '$count人正在输入';
+  }
+
+  @override
+  String namedUserTyping(Object name) {
+    return '$name 正在输入';
+  }
+
+  @override
+  String get expandAll => '全部展开';
+
+  @override
+  String get securityVerification => '安全验证';
+
+  @override
+  String get slideToVerifyHint => '向右滑动完成验证';
+
+  @override
+  String get verifySuccess => '验证成功';
+
+  @override
+  String get verifyFailedRetry => '验证失败，请重试';
 
   @override
   String get securitySection => '安全';

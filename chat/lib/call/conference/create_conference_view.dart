@@ -9,6 +9,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/app_switch.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 创建会议页面
 class CreateConferenceView extends StatefulWidget {
@@ -78,15 +79,16 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
   }
 
   void _createConference({required bool join}) async {
+    var l10n = AppLocalizations.of(context)!;
     if (_titleController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入会议标题')),
+        SnackBar(content: Text(l10n.conferenceInputTitle)),
       );
       return;
     }
     if (_endTime.isBefore(DateTime.now())) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('结束时间不能早于当前时间')),
+        SnackBar(content: Text(l10n.conferenceEndTimeInvalid)),
       );
       return;
     }
@@ -100,7 +102,7 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
         if (mounted) {
           setState(() => _loading = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('会议创建成功')),
+            SnackBar(content: Text(l10n.conferenceCreated)),
           );
           Navigator.of(context).pop();
         }
@@ -142,7 +144,7 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('进入会议失败: $e')),
+            SnackBar(content: Text(l10n.conferenceJoinFailedWithError(e))),
           );
         }
       } finally {
@@ -152,7 +154,7 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
       if (mounted) {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建会议失败: $error')),
+          SnackBar(content: Text(l10n.conferenceCreateFailedWithError(error))),
         );
       }
     });
@@ -164,10 +166,11 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
 
   @override
   Widget build(BuildContext context) {
+    var l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: context.colors.primaryBackground,
       appBar: AppBar(
-        title: const Text('创建会议'),
+        title: Text(l10n.conferenceCreate),
         backgroundColor: context.colors.surface,
       ),
       body: Padding(
@@ -177,58 +180,58 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
             TextField(
               controller: _titleController,
               style: TextStyle(color: context.colors.textPrimary),
-              decoration: const InputDecoration(labelText: '会议标题'),
+              decoration: InputDecoration(labelText: l10n.conferenceTitleLabel),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _descController,
               style: TextStyle(color: context.colors.textPrimary),
-              decoration: const InputDecoration(labelText: '会议描述'),
+              decoration: InputDecoration(labelText: l10n.conferenceDescLabel),
             ),
             const SizedBox(height: 12),
             ListTile(
-              title: Text('结束时间', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceEndTime, style: TextStyle(color: context.colors.textPrimary)),
               trailing: Text(_formatTime(_endTime),
                   style: AppText.base.copyWith(color: context.colors.success)),
               onTap: _pickEndTime,
             ),
             ListTile(
-              title: Text('仅音频', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAudioOnly, style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _audioOnly,
                 onChanged: (v) => setState(() => _audioOnly = v),
               ),
             ),
             ListTile(
-              title: Text('默认观众', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceDefaultAudience, style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _audience,
                 onChanged: (v) => setState(() => _audience = v),
               ),
             ),
             ListTile(
-              title: Text('高级版', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAdvanced, style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _advance,
                 onChanged: (v) => setState(() => _advance = v),
               ),
             ),
             ListTile(
-              title: Text('录制', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceRecord, style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _record,
                 onChanged: (v) => setState(() => _record = v),
               ),
             ),
             ListTile(
-              title: Text('允许成员自助开麦', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAllowTurnOnMic, style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _allowTurnOnMic,
                 onChanged: (v) => setState(() => _allowTurnOnMic = v),
               ),
             ),
             ListTile(
-              title: Text('启用密码', style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceEnablePassword, style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _enablePassword,
                 onChanged: (v) => setState(() => _enablePassword = v),
@@ -238,7 +241,7 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
               TextField(
                 controller: _passwordController,
                 style: TextStyle(color: context.colors.textPrimary),
-                decoration: const InputDecoration(labelText: '会议密码'),
+                decoration: InputDecoration(labelText: l10n.conferencePassword),
               ),
             const SizedBox(height: 24),
             SizedBox(
@@ -250,7 +253,7 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('创建并加入'),
+                    : Text(l10n.conferenceCreateAndJoin),
               ),
             ),
             const SizedBox(height: 12),
@@ -258,7 +261,7 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: _loading ? null : () => _createConference(join: false),
-                child: const Text('仅创建'),
+                child: Text(l10n.conferenceOnlyCreate),
               ),
             ),
           ],

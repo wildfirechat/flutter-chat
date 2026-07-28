@@ -7,6 +7,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import 'conference_manager.dart';
 import 'conference_hand_up_list_view.dart';
@@ -66,6 +67,7 @@ class _ConferenceParticipantListViewState
     final isSelf = profile.userId == Imclient.currentUserId;
     final isOwner = widget.conferenceManager.isOwner;
     final focusUserId = widget.conferenceManager.currentFocusUser;
+    final l10n = AppLocalizations.of(context)!;
 
     showModalBottomSheet(
       context: context,
@@ -89,7 +91,7 @@ class _ConferenceParticipantListViewState
             if (isSelf) ...[
               ListTile(
                 leading: Icon(Icons.mic, color: context.colors.iconSecondary),
-                title: Text(profile.audioMuted ? '取消静音' : '静音',
+                title: Text(profile.audioMuted ? l10n.conferenceUnmuteSelf : l10n.callMute,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -98,7 +100,7 @@ class _ConferenceParticipantListViewState
               ),
               ListTile(
                 leading: Icon(Icons.videocam, color: context.colors.iconSecondary),
-                title: Text(profile.videoMuted ? '开启摄像头' : '关闭摄像头',
+                title: Text(profile.videoMuted ? l10n.callCameraOn : l10n.callCameraOff,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -107,7 +109,7 @@ class _ConferenceParticipantListViewState
               ),
               ListTile(
                 leading: Icon(Icons.swap_horiz, color: context.colors.iconSecondary),
-                title: Text(profile.audience ? '上麦' : '下麦',
+                title: Text(profile.audience ? l10n.conferenceSwitchToStage : l10n.conferenceSwitchToAudience,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -118,7 +120,7 @@ class _ConferenceParticipantListViewState
             if (isOwner && !isSelf) ...[
               ListTile(
                 leading: Icon(Icons.record_voice_over, color: context.colors.iconSecondary),
-                title: Text(profile.audioMuted ? '允许开麦' : '静音',
+                title: Text(profile.audioMuted ? l10n.conferenceAllowUnmuteAudio : l10n.callMute,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -131,7 +133,7 @@ class _ConferenceParticipantListViewState
               ),
               ListTile(
                 leading: Icon(Icons.videocam, color: context.colors.iconSecondary),
-                title: Text(profile.videoMuted ? '允许开视频' : '关闭视频',
+                title: Text(profile.videoMuted ? l10n.conferenceAllowUnmuteVideo : l10n.conferenceCloseVideo,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -144,7 +146,7 @@ class _ConferenceParticipantListViewState
               ),
               ListTile(
                 leading: Icon(Icons.person_outline, color: context.colors.iconSecondary),
-                title: Text(profile.audience ? '邀请上麦' : '设为观众',
+                title: Text(profile.audience ? l10n.conferenceInviteStage : l10n.conferenceSetAudience,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -153,7 +155,7 @@ class _ConferenceParticipantListViewState
               ),
               ListTile(
                 leading: Icon(Icons.highlight, color: context.colors.iconSecondary),
-                title: Text(focusUserId == profile.userId ? '取消焦点用户' : '设为焦点',
+                title: Text(focusUserId == profile.userId ? l10n.conferenceCancelFocus : l10n.conferenceSetFocus,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -166,7 +168,7 @@ class _ConferenceParticipantListViewState
               ),
               ListTile(
                 leading: Icon(Icons.logout, color: context.colors.danger),
-                title: Text('踢出会议', style: TextStyle(color: context.colors.danger)),
+                title: Text(l10n.conferenceKick, style: TextStyle(color: context.colors.danger)),
                 onTap: () {
                   Navigator.of(context).pop();
                   widget.session.kickoffParticipant(profile.userId);
@@ -201,6 +203,7 @@ class _ConferenceParticipantListViewState
   }
 
   Widget _buildMembersPanel() {
+    var l10n = AppLocalizations.of(context)!;
     var selfProfile = widget.session.getSelfProfile() ??
         ParticipantProfile(Imclient.currentUserId);
     var profiles = [selfProfile, ...widget.session.getParticipantProfiles()];
@@ -214,18 +217,18 @@ class _ConferenceParticipantListViewState
       children: [
         if (isOwner && handUpCount > 0)
           _buildTip(
-            '$handUpCount 人正在举手，点击查看',
+            l10n.conferenceHandUpTip(handUpCount),
             () => setState(() => _currentPanel = _PanelType.handUp),
             color: context.colors.successSoft,
           ),
         if (isOwner && applyAudioCount > 0)
           _buildTip(
-            '$applyAudioCount 人申请开麦，点击查看',
+            l10n.conferenceApplyAudioTip(applyAudioCount),
             () => setState(() => _currentPanel = _PanelType.applyAudio),
           ),
         if (isOwner && applyVideoCount > 0)
           _buildTip(
-            '$applyVideoCount 人申请开摄像头，点击查看',
+            l10n.conferenceApplyVideoTip(applyVideoCount),
             () => setState(() => _currentPanel = _PanelType.applyVideo),
           ),
         if (isOwner)
@@ -240,8 +243,8 @@ class _ConferenceParticipantListViewState
                           true, !widget.conferenceManager.allowUnmuteAudio);
                     },
                     child: Text(widget.conferenceManager.isMuteAll
-                        ? '取消全体静音'
-                        : '全体静音'),
+                        ? l10n.conferenceUnmuteAll
+                        : l10n.conferenceMuteAll),
                   ),
                 ),
               ],
@@ -265,7 +268,7 @@ class _ConferenceParticipantListViewState
                   borderRadius: 20,
                 ),
                 title: Text(
-                  isSelf ? '我' : _name(info),
+                  isSelf ? l10n.meLabel : _name(info),
                   style: AppText.sm.copyWith(color: context.colors.textPrimary),
                 ),
                 subtitle: Row(
@@ -282,7 +285,7 @@ class _ConferenceParticipantListViewState
                     if (profile.audience)
                       Padding(
                         padding: EdgeInsets.only(left: 6),
-                        child: Text('观众', style: TextStyle(color: context.colors.textSecondary, fontSize: 12)),
+                        child: Text(l10n.conferenceAudience, style: TextStyle(color: context.colors.textSecondary, fontSize: 12)),
                       ),
                   ],
                 ),
@@ -313,21 +316,22 @@ class _ConferenceParticipantListViewState
 
   @override
   Widget build(BuildContext context) {
-    var title = '参会成员';
+    var l10n = AppLocalizations.of(context)!;
+    var title = l10n.conferenceMemberList;
     Widget body;
     switch (_currentPanel) {
       case _PanelType.handUp:
-        title = '举手成员';
+        title = l10n.conferenceHandUpMembersTitle;
         body = ConferenceHandUpListView(
             conferenceManager: widget.conferenceManager);
         break;
       case _PanelType.applyAudio:
-        title = '申请开麦';
+        title = l10n.conferenceApplyAudio;
         body = ConferenceApplyUnmuteAudioListView(
             conferenceManager: widget.conferenceManager);
         break;
       case _PanelType.applyVideo:
-        title = '申请开摄像头';
+        title = l10n.conferenceApplyVideo;
         body = ConferenceApplyUnmuteVideoListView(
             conferenceManager: widget.conferenceManager);
         break;

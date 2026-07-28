@@ -256,7 +256,7 @@ class PluginBoard extends StatelessWidget {
             showToast(msg: l10n.screenshotToolNotAvailable);
             return;
           }
-          final result = await ScreenshotService.captureToFile();
+          final result = await ScreenshotService.captureToFile(l10n);
           if (result.success) {
             conversationController.onPickImage(conversation, result.path!);
           } else if (result.error != null) {

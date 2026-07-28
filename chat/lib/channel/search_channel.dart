@@ -3,11 +3,12 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
 
 import '../config.dart';
+import '../l10n/app_localizations.dart';
 import '../utils/media_url_redirector.dart';
 import '../channel/channel_info_widget.dart';
 
 class SearchChannelDelegate extends SearchDelegate<String> {
-  SearchChannelDelegate() : super(searchFieldLabel: "请输入频道名称");
+  SearchChannelDelegate({required String searchFieldHint}) : super(searchFieldLabel: searchFieldHint);
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -90,7 +91,7 @@ class SearchChannelDelegate extends SearchDelegate<String> {
         builder: (context, snapshot) {
           if(snapshot.connectionState == ConnectionState.done) {
             if(snapshot.data!.isEmpty) {
-              return const Center(child: Text("没有找到呀，是不是输入的频道名称不对？"),);
+              return Center(child: Text(AppLocalizations.of(context)!.searchChannelNotFound),);
             } else {
               searchedChannels = snapshot.data!;
               return ListView.builder(
@@ -111,7 +112,7 @@ class SearchChannelDelegate extends SearchDelegate<String> {
     } else {
       return Container(
         margin: const EdgeInsets.all(16),
-        child: const Text("搜索频道！"),
+        child: Text(AppLocalizations.of(context)!.searchChannelPrompt),
       );
     }
   }

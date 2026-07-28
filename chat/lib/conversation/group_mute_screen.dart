@@ -85,7 +85,7 @@ class _GroupMuteScreenState extends State<GroupMuteScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: isDesktopShell
-          ? const PcPageHeader(title: '禁言设置')
+          ? PcPageHeader(title: l10n.muteSetting)
           : AppBar(
               title: Text(l10n.muteSetting),
             ),

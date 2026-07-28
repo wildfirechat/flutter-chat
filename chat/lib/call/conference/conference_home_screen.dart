@@ -11,6 +11,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 
@@ -132,21 +133,23 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
   }
 
   String _favDesc(Map<String, dynamic> info) {
+    var l10n = AppLocalizations.of(context)!;
     var now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
     var startTime = info['startTime'] ?? 0;
     var endTime = info['endTime'] ?? 0;
     if (now < startTime) {
       var diff = startTime - now;
-      if (diff < 3600) return '即将开始';
-      return '未开始';
+      if (diff < 3600) return l10n.conferenceFavorites;
+      return l10n.conferenceStatusNotStarted;
     }
     if (endTime == 0 || now < endTime) {
-      return '进行中';
+      return l10n.conferenceStatusOngoing;
     }
-    return '已结束';
+    return l10n.conferenceStatusEnded;
   }
 
   String _historyDesc(Map<String, dynamic> info) {
+    var l10n = AppLocalizations.of(context)!;
     var startTime = info['startTime'] ?? 0;
     var endTime = info['endTime'] ?? 0;
     var start = DateTime.fromMillisecondsSinceEpoch(startTime * 1000);
@@ -159,11 +162,11 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
       var m = (seconds % 3600) ~/ 60;
       var s = seconds % 60;
       if (h > 0) {
-        duration = '${h}小时${m.toString().padLeft(2, '0')}分';
+        duration = l10n.conferenceDurationHours(h, m.toString().padLeft(2, '0'));
       } else if (m > 0) {
-        duration = '${m}分${s.toString().padLeft(2, '0')}秒';
+        duration = l10n.conferenceDurationMinutes(m, s.toString().padLeft(2, '0'));
       } else {
-        duration = '${s}秒';
+        duration = l10n.conferenceDurationSeconds(s);
       }
     }
     return '${start.month}/${start.day} ${start.hour.toString().padLeft(2, '0')}:${start.minute.toString().padLeft(2, '0')} · $ownerName · $duration';
@@ -208,7 +211,7 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
         borderRadius: 22,
       ),
       title: Text(
-        title.isNotEmpty ? title : '无标题会议',
+        title.isNotEmpty ? title : AppLocalizations.of(context)!.conferenceUntitled,
         style: AppText.sm.copyWith(color: context.colors.textPrimary),
         overflow: TextOverflow.ellipsis,
       ),
@@ -226,10 +229,11 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
     if (widget.isEmbedded) {
       return _buildBodyContent(context);
     }
+    var l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: context.colors.primaryBackground,
       appBar: AppBar(
-        title: const Text('会议'),
+        title: Text(l10n.conferenceTitle),
         backgroundColor: context.colors.surface,
       ),
       body: Row(
@@ -241,29 +245,29 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('视频会议',
+                Text(l10n.conferenceVideoConferenceTitle,
                     style: AppText.lg.copyWith(
                         color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 20),
                 _buildActionCard(
                   icon: Icons.login,
                   color: Colors.blue,
-                  title: '加入会议',
-                  subtitle: '输入会议 ID 加入',
+                  title: l10n.conferenceJoinMeeting,
+                  subtitle: l10n.conferenceJoinHint,
                   onTap: () => _openJoin(context),
                 ),
                 _buildActionCard(
                   icon: Icons.video_call,
                   color: Colors.green,
-                  title: '发起会议',
-                  subtitle: '立即开始音视频会议',
+                  title: l10n.conferenceCreateTitle,
+                  subtitle: l10n.conferenceCreateHint,
                   onTap: () => _openCreate(context),
                 ),
                 _buildActionCard(
                   icon: Icons.calendar_today,
                   color: Colors.orange,
-                  title: '预定会议',
-                  subtitle: '安排未来会议',
+                  title: l10n.conferenceOrder,
+                  subtitle: l10n.conferenceOrderHint,
                   onTap: () => _openOrder(context),
                 ),
               ],
@@ -277,6 +281,7 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
   }
 
   Widget _buildBodyContent(BuildContext context) {
+    var l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -286,27 +291,27 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
             _buildActionCard(
               icon: Icons.login,
               color: Colors.blue,
-              title: '加入会议',
-              subtitle: '输入会议 ID 加入',
+              title: l10n.conferenceJoinMeeting,
+              subtitle: l10n.conferenceJoinHint,
               onTap: () => _openJoin(context),
             ),
             _buildActionCard(
               icon: Icons.video_call,
               color: Colors.green,
-              title: '发起会议',
-              subtitle: '立即开始音视频会议',
+              title: l10n.conferenceCreateTitle,
+              subtitle: l10n.conferenceCreateHint,
               onTap: () => _openCreate(context),
             ),
             _buildActionCard(
               icon: Icons.calendar_today,
               color: Colors.orange,
-              title: '预定会议',
-              subtitle: '安排未来会议',
+              title: l10n.conferenceOrder,
+              subtitle: l10n.conferenceOrderHint,
               onTap: () => _openOrder(context),
             ),
             const SizedBox(height: 24),
           ],
-          Text('即将开始',
+          Text(l10n.conferenceFavorites,
               style: AppText.base.copyWith(
                   color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
@@ -314,16 +319,16 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
             Center(
                 child: CircularProgressIndicator(color: context.colors.iconSecondary)),
           if (!_loadingFav && _favConferences.isEmpty)
-            Text('暂无收藏会议',
+            Text(l10n.conferenceNoFavorites,
                 style: TextStyle(color: context.colors.textSecondary)),
           ..._favConferences.map((e) => _buildConferenceTile(e)),
           const SizedBox(height: 24),
-          Text('历史记录',
+          Text(l10n.conferenceHistory,
               style: AppText.base.copyWith(
                   color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           if (_historyConferences.isEmpty)
-            Text('暂无历史记录',
+            Text(l10n.conferenceNoHistory,
                 style: TextStyle(color: context.colors.textSecondary)),
           ..._historyConferences
               .map((e) => _buildConferenceTile(e, isHistory: true)),

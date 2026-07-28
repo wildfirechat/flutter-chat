@@ -6,9 +6,10 @@ import 'package:chat/search/search_portal_result_view.dart';
 import 'package:chat/user_info_widget.dart';
 
 import '../config.dart';
+import '../l10n/app_localizations.dart';
 
 class SearchPortalDelegate extends SearchDelegate<String> {
-  SearchPortalDelegate() : super(searchFieldLabel: "请输入");
+  SearchPortalDelegate({required String searchFieldHint}) : super(searchFieldLabel: searchFieldHint);
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -70,8 +71,8 @@ class SearchPortalDelegate extends SearchDelegate<String> {
     if (query.isNotEmpty) {
       return SearchPortalResultView(query);
     } else {
-      return const Center(
-        child: Text("输入关键字进行搜索"),
+      return Center(
+        child: Text(AppLocalizations.of(context)!.searchKeywordHint),
       );
     }
   }

@@ -243,6 +243,7 @@ class _PickUserScreenState extends State<PickUserScreen> {
       child: Consumer<PickUserViewModel>(
         builder: (context, viewModel, child) {
           List<String> indexList = viewModel.isSearching ? [] : _getIndexList(viewModel.userList);
+          final title = widget.title.isEmpty ? AppLocalizations.of(context)!.selectUser : widget.title;
           final actions = [
             if (widget.maxSelected > 1)
               AppBarTextAction(
@@ -258,12 +259,12 @@ class _PickUserScreenState extends State<PickUserScreen> {
             backgroundColor: context.colors.chatBg,
             appBar: isDesktopShell
                 ? PcPageHeader(
-                    title: widget.title,
+                    title: title,
                     onBack: widget.onBack,
                     actions: actions,
                   )
                 : AppBar(
-                    title: Text(widget.title),
+                    title: Text(title),
                     actions: actions,
                   ),
             body: SafeArea(
@@ -280,7 +281,7 @@ class _PickUserScreenState extends State<PickUserScreen> {
                           color: Theme.of(context).colorScheme.secondary,
                           size: LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap),
                         ),
-                        title: const Text('从组织架构选择'),
+                        title: Text(AppLocalizations.of(context)!.selectFromOrganization),
                         trailing: Icon(
                           Icons.chevron_right,
                           size: LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap),

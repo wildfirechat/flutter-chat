@@ -110,6 +110,18 @@ abstract class AppLocalizations {
   /// **'野火IM'**
   String get appTitle;
 
+  /// No description provided for @appTagline.
+  ///
+  /// In zh, this message translates to:
+  /// **'沟通如此简单!'**
+  String get appTagline;
+
+  /// No description provided for @departmentFallback.
+  ///
+  /// In zh, this message translates to:
+  /// **'部门 {id}'**
+  String departmentFallback(Object id);
+
   /// No description provided for @tabChat.
   ///
   /// In zh, this message translates to:
@@ -248,6 +260,18 @@ abstract class AppLocalizations {
   /// **'已举手'**
   String get conferenceHandUpDone;
 
+  /// No description provided for @conferenceHandUpMembersCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'举手成员 ({count})'**
+  String conferenceHandUpMembersCount(Object count);
+
+  /// No description provided for @conferenceNoHandUpMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无举手成员'**
+  String get conferenceNoHandUpMembers;
+
   /// No description provided for @conferencePutDown.
   ///
   /// In zh, this message translates to:
@@ -271,6 +295,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'申请开摄像头'**
   String get conferenceApplyVideo;
+
+  /// No description provided for @conferenceApplyAudioCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请开麦 ({count})'**
+  String conferenceApplyAudioCount(Object count);
+
+  /// No description provided for @conferenceApplyVideoCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'申请开摄像头 ({count})'**
+  String conferenceApplyVideoCount(Object count);
+
+  /// No description provided for @conferenceNoApplications.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无申请'**
+  String get conferenceNoApplications;
 
   /// No description provided for @conferenceApprove.
   ///
@@ -350,11 +392,119 @@ abstract class AppLocalizations {
   /// **'踢出会议'**
   String get conferenceKick;
 
+  /// No description provided for @conferenceHandUpMembersTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'举手成员'**
+  String get conferenceHandUpMembersTitle;
+
+  /// No description provided for @conferenceUnmuteSelf.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消静音'**
+  String get conferenceUnmuteSelf;
+
+  /// No description provided for @conferenceSwitchToStage.
+  ///
+  /// In zh, this message translates to:
+  /// **'上麦'**
+  String get conferenceSwitchToStage;
+
+  /// No description provided for @conferenceSwitchToAudience.
+  ///
+  /// In zh, this message translates to:
+  /// **'下麦'**
+  String get conferenceSwitchToAudience;
+
+  /// No description provided for @conferenceAllowUnmuteAudio.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许开麦'**
+  String get conferenceAllowUnmuteAudio;
+
+  /// No description provided for @conferenceAllowUnmuteVideo.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许开视频'**
+  String get conferenceAllowUnmuteVideo;
+
+  /// No description provided for @conferenceCloseVideo.
+  ///
+  /// In zh, this message translates to:
+  /// **'关闭视频'**
+  String get conferenceCloseVideo;
+
+  /// No description provided for @conferenceHandUpTip.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 人正在举手，点击查看'**
+  String conferenceHandUpTip(Object count);
+
+  /// No description provided for @conferenceApplyAudioTip.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 人申请开麦，点击查看'**
+  String conferenceApplyAudioTip(Object count);
+
+  /// No description provided for @conferenceApplyVideoTip.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 人申请开摄像头，点击查看'**
+  String conferenceApplyVideoTip(Object count);
+
   /// No description provided for @conferenceScreenShare.
   ///
   /// In zh, this message translates to:
   /// **'共享'**
   String get conferenceScreenShare;
+
+  /// No description provided for @conferenceSharingScreen.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在共享屏幕'**
+  String get conferenceSharingScreen;
+
+  /// No description provided for @conferenceStopSharing.
+  ///
+  /// In zh, this message translates to:
+  /// **'停止共享'**
+  String get conferenceStopSharing;
+
+  /// No description provided for @conferenceScreenShareNotImplemented.
+  ///
+  /// In zh, this message translates to:
+  /// **'屏幕分享功能待实现'**
+  String get conferenceScreenShareNotImplemented;
+
+  /// No description provided for @conferenceInviteJoin.
+  ///
+  /// In zh, this message translates to:
+  /// **'邀请您加入会议'**
+  String get conferenceInviteJoin;
+
+  /// No description provided for @conferenceHostInviteAudience.
+  ///
+  /// In zh, this message translates to:
+  /// **'主持人邀请您成为观众'**
+  String get conferenceHostInviteAudience;
+
+  /// No description provided for @conferenceHostInviteStage.
+  ///
+  /// In zh, this message translates to:
+  /// **'主持人邀请您上麦'**
+  String get conferenceHostInviteStage;
+
+  /// No description provided for @conferenceIgnore.
+  ///
+  /// In zh, this message translates to:
+  /// **'忽略'**
+  String get conferenceIgnore;
+
+  /// No description provided for @conferenceSpeakingLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'正在讲话: {name}'**
+  String conferenceSpeakingLabel(Object name);
 
   /// No description provided for @conferenceGridView.
   ///
@@ -397,6 +547,72 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'会议已结束'**
   String get conferenceMeetingEnded;
+
+  /// No description provided for @conferenceStatusNotStarted.
+  ///
+  /// In zh, this message translates to:
+  /// **'未开始'**
+  String get conferenceStatusNotStarted;
+
+  /// No description provided for @conferenceStatusOngoing.
+  ///
+  /// In zh, this message translates to:
+  /// **'进行中'**
+  String get conferenceStatusOngoing;
+
+  /// No description provided for @conferenceStatusEnded.
+  ///
+  /// In zh, this message translates to:
+  /// **'已结束'**
+  String get conferenceStatusEnded;
+
+  /// No description provided for @conferenceVideoConferenceTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'视频会议'**
+  String get conferenceVideoConferenceTitle;
+
+  /// No description provided for @conferenceJoinHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入会议 ID 加入'**
+  String get conferenceJoinHint;
+
+  /// No description provided for @conferenceCreateTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'发起会议'**
+  String get conferenceCreateTitle;
+
+  /// No description provided for @conferenceCreateHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'立即开始音视频会议'**
+  String get conferenceCreateHint;
+
+  /// No description provided for @conferenceOrderHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'安排未来会议'**
+  String get conferenceOrderHint;
+
+  /// No description provided for @conferenceDurationHours.
+  ///
+  /// In zh, this message translates to:
+  /// **'{h}小时{m}分'**
+  String conferenceDurationHours(Object h, Object m);
+
+  /// No description provided for @conferenceDurationMinutes.
+  ///
+  /// In zh, this message translates to:
+  /// **'{m}分{s}秒'**
+  String conferenceDurationMinutes(Object m, Object s);
+
+  /// No description provided for @conferenceDurationSeconds.
+  ///
+  /// In zh, this message translates to:
+  /// **'{s}秒'**
+  String conferenceDurationSeconds(Object s);
 
   /// No description provided for @conferenceFavorites.
   ///
@@ -470,6 +686,36 @@ abstract class AppLocalizations {
   /// **'会议号已复制'**
   String get conferenceCopied;
 
+  /// No description provided for @conferenceUntitled.
+  ///
+  /// In zh, this message translates to:
+  /// **'无标题会议'**
+  String get conferenceUntitled;
+
+  /// No description provided for @conferenceOwnerLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'发起人：{name}'**
+  String conferenceOwnerLabel(Object name);
+
+  /// No description provided for @conferenceIdLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'会议号'**
+  String get conferenceIdLabel;
+
+  /// No description provided for @conferenceDestroyAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'销毁'**
+  String get conferenceDestroyAction;
+
+  /// No description provided for @conferenceDestroyFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'销毁失败: {error}'**
+  String conferenceDestroyFailed(Object error);
+
   /// No description provided for @conferenceRequestUnmuteAudio.
   ///
   /// In zh, this message translates to:
@@ -512,11 +758,35 @@ abstract class AppLocalizations {
   /// **'创建会议失败'**
   String get conferenceCreateFailed;
 
+  /// No description provided for @conferenceCreateFailedWithError.
+  ///
+  /// In zh, this message translates to:
+  /// **'创建会议失败: {error}'**
+  String conferenceCreateFailedWithError(Object error);
+
   /// No description provided for @conferenceJoinFailed.
   ///
   /// In zh, this message translates to:
   /// **'加入会议失败'**
   String get conferenceJoinFailed;
+
+  /// No description provided for @conferenceJoinFailedWithError.
+  ///
+  /// In zh, this message translates to:
+  /// **'进入会议失败: {error}'**
+  String conferenceJoinFailedWithError(Object error);
+
+  /// No description provided for @conferenceTitleLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'会议标题'**
+  String get conferenceTitleLabel;
+
+  /// No description provided for @conferenceDescLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'会议描述'**
+  String get conferenceDescLabel;
 
   /// No description provided for @conferenceOrdered.
   ///
@@ -529,6 +799,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'预定失败'**
   String get conferenceOrderFailed;
+
+  /// No description provided for @conferenceOrderFailedWithError.
+  ///
+  /// In zh, this message translates to:
+  /// **'预定失败: {error}'**
+  String conferenceOrderFailedWithError(Object error);
+
+  /// No description provided for @conferenceOrderAction.
+  ///
+  /// In zh, this message translates to:
+  /// **'预定'**
+  String get conferenceOrderAction;
+
+  /// No description provided for @conferenceSelectStartAndEndTime.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择开始和结束时间'**
+  String get conferenceSelectStartAndEndTime;
 
   /// No description provided for @conferenceInputTitle.
   ///
@@ -589,6 +877,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'会议密码'**
   String get conferencePassword;
+
+  /// No description provided for @conferenceIdInputLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'会议ID'**
+  String get conferenceIdInputLabel;
+
+  /// No description provided for @conferenceQuery.
+  ///
+  /// In zh, this message translates to:
+  /// **'查询会议'**
+  String get conferenceQuery;
+
+  /// No description provided for @conferenceQueryFailedWithError.
+  ///
+  /// In zh, this message translates to:
+  /// **'查询会议失败: {error}'**
+  String conferenceQueryFailedWithError(Object error);
 
   /// No description provided for @conferenceEndTimeInvalid.
   ///
@@ -662,11 +968,71 @@ abstract class AppLocalizations {
   /// **'群二维码'**
   String get groupQrCode;
 
+  /// No description provided for @scanQrCodeToJoinGroup.
+  ///
+  /// In zh, this message translates to:
+  /// **'扫一扫上面的二维码，加入群聊'**
+  String get scanQrCodeToJoinGroup;
+
   /// No description provided for @groupNotice.
   ///
   /// In zh, this message translates to:
   /// **'群公告'**
   String get groupNotice;
+
+  /// No description provided for @moreArticlesCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'还有 {count} 篇文章'**
+  String moreArticlesCount(Object count);
+
+  /// No description provided for @articlesPlaceholder.
+  ///
+  /// In zh, this message translates to:
+  /// **'[图文]'**
+  String get articlesPlaceholder;
+
+  /// No description provided for @openWithSystemPlayer.
+  ///
+  /// In zh, this message translates to:
+  /// **'点击用系统播放器打开'**
+  String get openWithSystemPlayer;
+
+  /// No description provided for @edit.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑'**
+  String get edit;
+
+  /// No description provided for @getGroupAnnouncementFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取群公告失败: {msg}'**
+  String getGroupAnnouncementFailed(Object msg);
+
+  /// No description provided for @groupAnnouncementEmpty.
+  ///
+  /// In zh, this message translates to:
+  /// **'群公告不能为空'**
+  String get groupAnnouncementEmpty;
+
+  /// No description provided for @updateGroupAnnouncementSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新群公告成功'**
+  String get updateGroupAnnouncementSuccess;
+
+  /// No description provided for @updateGroupAnnouncementFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'更新群公告失败: {msg}'**
+  String updateGroupAnnouncementFailed(Object msg);
+
+  /// No description provided for @noGroupAnnouncementHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无群公告'**
+  String get noGroupAnnouncementHint;
 
   /// No description provided for @clickToCheck.
   ///
@@ -805,6 +1171,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'退出群组'**
   String get quitGroup;
+
+  /// No description provided for @groupActionSuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'{action}成功'**
+  String groupActionSuccess(Object action);
+
+  /// No description provided for @groupActionFailedWithCode.
+  ///
+  /// In zh, this message translates to:
+  /// **'{action}失败: {code}'**
+  String groupActionFailedWithCode(Object action, Object code);
 
   /// No description provided for @clearLocalHistory.
   ///
@@ -1183,6 +1561,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'地址'**
   String get domainAddress;
+
+  /// No description provided for @searchUserFieldHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入电话号码或者账户'**
+  String get searchUserFieldHint;
+
+  /// No description provided for @searchUserAddFriendHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索用户添加好友！'**
+  String get searchUserAddFriendHint;
 
   /// No description provided for @searchUserNotFound.
   ///
@@ -1592,6 +1982,24 @@ abstract class AppLocalizations {
   /// **'名片'**
   String get businessCard;
 
+  /// No description provided for @personalCardHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'个人名片'**
+  String get personalCardHint;
+
+  /// No description provided for @groupCardHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'群组名片'**
+  String get groupCardHint;
+
+  /// No description provided for @channelCardHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'频道名片'**
+  String get channelCardHint;
+
   /// No description provided for @screenshotTool.
   ///
   /// In zh, this message translates to:
@@ -1603,6 +2011,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'截屏工具不可用'**
   String get screenshotToolNotAvailable;
+
+  /// No description provided for @screenshotFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'截图失败：{err}'**
+  String screenshotFailed(Object err);
+
+  /// No description provided for @screenshotToolLaunchFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'无法启动截图工具：{err}'**
+  String screenshotToolLaunchFailed(Object err);
+
+  /// No description provided for @screenshotException.
+  ///
+  /// In zh, this message translates to:
+  /// **'截图异常：{err}'**
+  String screenshotException(Object err);
 
   /// No description provided for @notSupportedOnCurrentPlatform.
   ///
@@ -1693,6 +2119,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'群管理'**
   String get groupManagement;
+
+  /// No description provided for @collapseGroupMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'收起群成员 <'**
+  String get collapseGroupMembers;
+
+  /// No description provided for @viewMoreGroupMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'查看更多群成员 >'**
+  String get viewMoreGroupMembers;
 
   /// No description provided for @favoriteGroup.
   ///
@@ -1795,6 +2233,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'订阅频道'**
   String get subscribeChannel;
+
+  /// No description provided for @subscribedChannelsTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'订阅的频道'**
+  String get subscribedChannelsTitle;
+
+  /// No description provided for @searchChannelHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入频道名称'**
+  String get searchChannelHint;
+
+  /// No description provided for @searchChannelNotFound.
+  ///
+  /// In zh, this message translates to:
+  /// **'没有找到呀，是不是输入的频道名称不对？'**
+  String get searchChannelNotFound;
+
+  /// No description provided for @searchChannelPrompt.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索频道！'**
+  String get searchChannelPrompt;
+
+  /// No description provided for @clearHistoryMessages.
+  ///
+  /// In zh, this message translates to:
+  /// **'清空历史消息'**
+  String get clearHistoryMessages;
+
+  /// No description provided for @channelNameLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'名称:  '**
+  String get channelNameLabel;
+
+  /// No description provided for @channelOwnerLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'拥有者:  '**
+  String get channelOwnerLabel;
+
+  /// No description provided for @channelDescLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'描述:  '**
+  String get channelDescLabel;
 
   /// No description provided for @groupIdLabel.
   ///
@@ -2768,6 +3254,24 @@ abstract class AppLocalizations {
   /// **'输入开始搜索'**
   String get searchHint;
 
+  /// No description provided for @containsMatchedMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'包含成员: {names}'**
+  String containsMatchedMembers(Object names);
+
+  /// No description provided for @pleaseInput.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入'**
+  String get pleaseInput;
+
+  /// No description provided for @searchKeywordHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入关键字进行搜索'**
+  String get searchKeywordHint;
+
   /// No description provided for @searchPrompt.
   ///
   /// In zh, this message translates to:
@@ -2887,6 +3391,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'超过最大人数限制'**
   String get maxUserLimit;
+
+  /// No description provided for @selectUser.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择用户'**
+  String get selectUser;
 
   /// No description provided for @selectFromOrganization.
   ///
@@ -3614,11 +4124,23 @@ abstract class AppLocalizations {
   /// **'请选择一位或者多位好友发起聊天'**
   String get pickFriendsToStartChat;
 
+  /// No description provided for @pickFriendsToSubmitReport.
+  ///
+  /// In zh, this message translates to:
+  /// **'请选择一位或者多位好友提交日报'**
+  String get pickFriendsToSubmitReport;
+
   /// No description provided for @creatingGroup.
   ///
   /// In zh, this message translates to:
   /// **'群组创建中...'**
   String get creatingGroup;
+
+  /// No description provided for @groupNameTruncatedSuffix.
+  ///
+  /// In zh, this message translates to:
+  /// **'{name}等'**
+  String groupNameTruncatedSuffix(Object name);
 
   /// No description provided for @createGroupChat.
   ///
@@ -3697,6 +4219,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'确定要发送 \"{fileName}\" 吗？'**
   String confirmSendFile(Object fileName);
+
+  /// No description provided for @filesCountLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 个文件'**
+  String filesCountLabel(Object count);
+
+  /// No description provided for @confirmSendFiles.
+  ///
+  /// In zh, this message translates to:
+  /// **'确定要发送 {name} 吗？'**
+  String confirmSendFiles(Object name);
 
   /// No description provided for @desktopOnly.
   ///
@@ -3871,6 +4405,42 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'免提'**
   String get callSpeaker;
+
+  /// No description provided for @callInvite.
+  ///
+  /// In zh, this message translates to:
+  /// **'邀请'**
+  String get callInvite;
+
+  /// No description provided for @callInviteMembers.
+  ///
+  /// In zh, this message translates to:
+  /// **'邀请成员'**
+  String get callInviteMembers;
+
+  /// No description provided for @callInviteNoCandidates.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无可邀请成员'**
+  String get callInviteNoCandidates;
+
+  /// No description provided for @meLabel.
+  ///
+  /// In zh, this message translates to:
+  /// **'我'**
+  String get meLabel;
+
+  /// No description provided for @callParticipantCount.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count} 人通话'**
+  String callParticipantCount(Object count);
+
+  /// No description provided for @callSpeakingSuffix.
+  ///
+  /// In zh, this message translates to:
+  /// **' · 正在讲话: {name}'**
+  String callSpeakingSuffix(Object name);
 
   /// No description provided for @callCameraOn.
   ///
@@ -4789,6 +5359,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'安全与数据'**
   String get securityAndData;
+
+  /// No description provided for @peerTyping.
+  ///
+  /// In zh, this message translates to:
+  /// **'对方正在输入'**
+  String get peerTyping;
+
+  /// No description provided for @groupMembersTyping.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}人正在输入'**
+  String groupMembersTyping(Object count);
+
+  /// No description provided for @namedUserTyping.
+  ///
+  /// In zh, this message translates to:
+  /// **'{name} 正在输入'**
+  String namedUserTyping(Object name);
+
+  /// No description provided for @expandAll.
+  ///
+  /// In zh, this message translates to:
+  /// **'全部展开'**
+  String get expandAll;
+
+  /// No description provided for @securityVerification.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全验证'**
+  String get securityVerification;
+
+  /// No description provided for @slideToVerifyHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'向右滑动完成验证'**
+  String get slideToVerifyHint;
+
+  /// No description provided for @verifySuccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证成功'**
+  String get verifySuccess;
+
+  /// No description provided for @verifyFailedRetry.
+  ///
+  /// In zh, this message translates to:
+  /// **'验证失败，请重试'**
+  String get verifyFailedRetry;
 
   /// No description provided for @securitySection.
   ///

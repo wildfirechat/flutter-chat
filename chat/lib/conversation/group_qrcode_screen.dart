@@ -8,6 +8,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class GroupQrCodeScreen extends StatefulWidget {
   final GroupInfo groupInfo;
@@ -34,16 +35,17 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     String qrCodeValue = WfcScheme.buildGroupScheme(widget.groupInfo.target, Imclient.currentUserId);
 
     return Scaffold(
       appBar: isDesktopShell
           ? PcPageHeader(
-              title: "群二维码",
+              title: l10n.groupQrCode,
               onBack: () => Navigator.of(context).maybePop(),
             )
           : AppBar(
-              title: const Text("群二维码"),
+              title: Text(l10n.groupQrCode),
             ),
       backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : context.colors.primaryBackground,
       body: Center(
@@ -104,7 +106,7 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                "扫一扫上面的二维码，加入群聊",
+                l10n.scanQrCodeToJoinGroup,
                 style: AppText.base.copyWith(color: context.colors.textSecondary),
               ),
             ],

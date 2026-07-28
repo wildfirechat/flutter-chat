@@ -5,6 +5,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import 'conference_manager.dart';
 
@@ -58,6 +59,7 @@ class _ConferenceHandUpListViewState extends State<ConferenceHandUpListView> {
   @override
   Widget build(BuildContext context) {
     var members = widget.conferenceManager.handUpMembers;
+    var l10n = AppLocalizations.of(context)!;
 
     return Container(
       color: context.colors.surface,
@@ -68,7 +70,7 @@ class _ConferenceHandUpListViewState extends State<ConferenceHandUpListView> {
             child: Row(
               children: [
                 Text(
-                  '举手成员 (${members.length})',
+                  l10n.conferenceHandUpMembersCount(members.length),
                   style: AppText.base.copyWith(
                       color: context.colors.textPrimary, fontWeight: FontWeight.w600),
                 ),
@@ -78,7 +80,7 @@ class _ConferenceHandUpListViewState extends State<ConferenceHandUpListView> {
           Expanded(
             child: members.isEmpty
                 ? Center(
-                    child: Text('暂无举手成员',
+                    child: Text(l10n.conferenceNoHandUpMembers,
                         style: TextStyle(color: context.colors.textSecondary)),
                   )
                 : ListView.builder(
@@ -102,7 +104,7 @@ class _ConferenceHandUpListViewState extends State<ConferenceHandUpListView> {
                           onPressed: () {
                             widget.conferenceManager.putMemberHandDown(userId);
                           },
-                          child: const Text('放下'),
+                          child: Text(l10n.conferencePutDown),
                         ),
                       );
                     },
@@ -117,7 +119,7 @@ class _ConferenceHandUpListViewState extends State<ConferenceHandUpListView> {
                   onPressed: () {
                     widget.conferenceManager.putAllHandDown();
                   },
-                  child: const Text('全部放下'),
+                  child: Text(l10n.conferencePutDownAll),
                 ),
               ),
             ),

@@ -237,7 +237,7 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
       ),
       subtitle: (info.marchType & 2 != 0 && info.marchedMemberNames != null && info.marchedMemberNames!.isNotEmpty)
           ? Text(
-              "包含成员: ${info.marchedMemberNames!.join(" ")}",
+              AppLocalizations.of(context)!.containsMatchedMembers(info.marchedMemberNames!.join(" ")),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppText.xs.copyWith(color: context.colors.textSecondary),

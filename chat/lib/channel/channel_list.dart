@@ -13,6 +13,7 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 import '../conversation/conversation_screen.dart';
 
@@ -27,6 +28,7 @@ class ChannelListState extends State<ChannelList> {
   List<String>? channelIds;
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final actions = [
       IconButton(
         icon: const Icon(Icons.add_circle_outline_rounded),
@@ -38,11 +40,11 @@ class ChannelListState extends State<ChannelList> {
     return Scaffold(
       appBar: isDesktopShell
           ? PcPageHeader(
-              title: "订阅的频道",
+              title: l10n.subscribedChannelsTitle,
               actions: actions,
             )
           : AppBar(
-              title: const Text("订阅的频道"),
+              title: Text(l10n.subscribedChannelsTitle),
               actions: actions,
             ),
       body: SafeArea(child:
@@ -58,7 +60,7 @@ class ChannelListState extends State<ChannelList> {
   }
 
   void _searchChannel() {
-    showSearch(context: context, delegate: SearchChannelDelegate());
+    showSearch(context: context, delegate: SearchChannelDelegate(searchFieldHint: AppLocalizations.of(context)!.searchChannelHint));
   }
 
   Widget _buildRow(BuildContext context, int index) {
@@ -81,7 +83,7 @@ class ChannelListState extends State<ChannelList> {
         channelIds = strValues;
       });
     }, (errorCode) {
-      Fluttertoast.showToast(msg: "网络错误");
+      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.networkError);
       Navigator.pop(context);
     });
   }
@@ -137,7 +139,7 @@ class ChannelItemState extends State<ChannelItem> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                channelInfo?.name ?? '频道<${widget.channelId}>',
+                channelInfo?.name ?? AppLocalizations.of(context)!.channelWithTarget(widget.channelId),
                 style: AppText.lg,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

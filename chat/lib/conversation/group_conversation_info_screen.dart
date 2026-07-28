@@ -545,12 +545,12 @@ class GroupConversationInfoScreen extends StatelessWidget {
     final navigator = Navigator.of(context);
     
     Imclient.dismissGroup(conversation.target, () {
-      Fluttertoast.showToast(msg: '${l10n.dismissGroup}成功');
+      Fluttertoast.showToast(msg: l10n.groupActionSuccess(l10n.dismissGroup));
       Future.delayed(const Duration(milliseconds: 200), () {
         navigator.popUntil((r) => r.isFirst);
       });
     }, (errorCode) {
-      Fluttertoast.showToast(msg: '${l10n.dismissGroup}失败: $errorCode');
+      Fluttertoast.showToast(msg: l10n.groupActionFailedWithCode(l10n.dismissGroup, errorCode));
     });
   }
 
@@ -559,13 +559,13 @@ class GroupConversationInfoScreen extends StatelessWidget {
     final navigator = Navigator.of(context);
     
     Imclient.quitGroup(conversation.target, () {
-      Fluttertoast.showToast(msg: '${l10n.quitGroupChat}成功');
+      Fluttertoast.showToast(msg: l10n.groupActionSuccess(l10n.quitGroupChat));
       // 延迟后返回到会话列表
       Future.delayed(const Duration(milliseconds: 200), () {
         navigator.popUntil((r) => r.isFirst);
       });
     }, (errorCode) {
-      Fluttertoast.showToast(msg: '${l10n.quitGroupChat}失败: $errorCode');
+      Fluttertoast.showToast(msg: l10n.groupActionFailedWithCode(l10n.quitGroupChat, errorCode));
     });
   }
 }

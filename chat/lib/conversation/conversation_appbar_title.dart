@@ -26,22 +26,34 @@ class ConversationAppbarTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget child = Selector4<ConversationViewModel, UserViewModel, GroupViewModel, ChannelViewModel,
-        (String? typingStatus, UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? targetChannelInfo)>(
+        (int typingKind, int typingCount, String? typingUserName, String typingDots, UserInfo? targetUserInfo,
+            GroupInfo? targetGroupInfo, ChannelInfo? targetChannelInfo)>(
       builder: (context, rec, __) {
-        final typingStatus = rec.$1;
-        var baseTitle = typingStatus ?? Utilities.conversationTitle(context, conversation, rec.$2, rec.$3, rec.$4);
+        String? typingStatus;
+        if (rec.$1 != 0) {
+          final l10n = AppLocalizations.of(context)!;
+          final dots = rec.$4;
+          if (rec.$1 == 1) {
+            typingStatus = '${l10n.peerTyping}$dots';
+          } else if (rec.$1 == 2) {
+            typingStatus = '${l10n.groupMembersTyping(rec.$2)}$dots';
+          } else {
+            typingStatus = '${l10n.namedUserTyping(rec.$3 ?? '')}$dots';
+          }
+        }
+        var baseTitle = typingStatus ?? Utilities.conversationTitle(context, conversation, rec.$5, rec.$6, rec.$7);
         // 群组标题后追加当前群人数，对齐 iOS："群名称(人数)"
-        if (conversation.conversationType == ConversationType.Group && rec.$3 != null) {
-          baseTitle = '$baseTitle(${rec.$3!.memberCount})';
+        if (conversation.conversationType == ConversationType.Group && rec.$6 != null) {
+          baseTitle = '$baseTitle(${rec.$6!.memberCount})';
         }
         final isExternal = conversation.conversationType == ConversationType.Single &&
             ExternalTargetUtils.isExternalTarget(conversation.target);
 
         // 外部域用户的标题需要使用带黄色、小字号域后缀的富文本样式。
-        if (typingStatus == null && isExternal && rec.$2 != null) {
+        if (typingStatus == null && isExternal && rec.$5 != null) {
           return Text.rich(
             MeshUserDisplay.getReadableNameSpan(
-              rec.$2!,
+              rec.$5!,
               style: DefaultTextStyle.of(context).style,
             ),
             maxLines: 1,
@@ -80,7 +92,10 @@ class ConversationAppbarTitle extends StatelessWidget {
         );
       },
       selector: (context, conversationViewModel, userViewModel, groupViewModel, channelViewModel) => (
-        conversationViewModel.conversationTypingStatus,
+        conversationViewModel.typingKind,
+        conversationViewModel.typingCount,
+        conversationViewModel.typingUserName,
+        conversationViewModel.typingDots,
         conversation.conversationType == ConversationType.Single ? userViewModel.getUserInfo(conversation.target) : null,
         conversation.conversationType == ConversationType.Group ? groupViewModel.getGroupInfo(conversation.target) : null,
         conversation.conversationType == ConversationType.Channel ? channelViewModel.getChannelInfo(conversation.target) : null

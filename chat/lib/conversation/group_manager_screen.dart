@@ -87,7 +87,7 @@ class _GroupManagerScreenState extends State<GroupManagerScreen> {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: isDesktopShell
-          ? const PcPageHeader(title: '管理员')
+          ? PcPageHeader(title: l10n.managerSetting)
           : AppBar(
               title: Text(l10n.managerSetting),
             ),

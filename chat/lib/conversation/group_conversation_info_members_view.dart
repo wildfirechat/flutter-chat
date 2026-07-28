@@ -13,6 +13,7 @@ import 'conversation_info_member_action_item.dart';
 import 'conversation_info_member_item.dart';
 import 'member_cell_anchor.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class GroupConversationInfoMembersView extends StatefulWidget {
   final Conversation conversation;
@@ -158,7 +159,7 @@ class _GroupConversationInfoMembersViewState extends State<GroupConversationInfo
                         widget.onShowMoreGroupMemberTap?.call();
                       },
                       child: Text(
-                        _isExpanded ? "收起群成员 <" : "查看更多群成员 >",
+                        _isExpanded ? AppLocalizations.of(context)!.collapseGroupMembers : AppLocalizations.of(context)!.viewMoreGroupMembers,
                         style: AppText.base.copyWith(color: context.colors.accent, fontWeight: FontWeight.w500),
                       ),
                     ),

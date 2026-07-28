@@ -159,7 +159,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   }
 
   void _onTapSearchButton(BuildContext context) {
-    showSearch(context: context, delegate: SearchPortalDelegate());
+    showSearch(context: context, delegate: SearchPortalDelegate(searchFieldHint: AppLocalizations.of(context)!.pleaseInput));
   }
 
   /// 双击消息 tab：把第一个有未读的会话滚动到列表顶部
@@ -214,7 +214,7 @@ class HomeTabBarState extends State<HomeTabBar> {
               PickUserScreen(title: AppLocalizations.of(context)!.startChat,
                   (context, members) async {
                 if (members.isEmpty) {
-                  showToast(msg: "请选择一位或者多位好友发起聊天");
+                  showToast(msg: AppLocalizations.of(context)!.pickFriendsToStartChat);
                 } else if (members.length == 1) {
                   Conversation conversation = Conversation(
                       conversationType: ConversationType.Single,
@@ -225,7 +225,7 @@ class HomeTabBarState extends State<HomeTabBar> {
                         builder: (context) => ConversationScreen(conversation)),
                   );
                 } else {
-                  _showProcessingDialog(context, "群组创建中...");
+                  _showProcessingDialog(context, AppLocalizations.of(context)!.creatingGroup);
 
                   List<UserInfo> userInfos =
                       await Imclient.getUserInfos(members);
@@ -235,7 +235,7 @@ class HomeTabBarState extends State<HomeTabBar> {
                   for (var user in userInfos) {
                     if (user.displayName != null) {
                       if ('$groupName,${user.displayName}'.length > 24) {
-                        groupName = '$groupName等';
+                        groupName = AppLocalizations.of(context)!.groupNameTruncatedSuffix(groupName);
                         break;
                       } else {
                         groupName = '$groupName,${user.displayName}';
@@ -257,7 +257,7 @@ class HomeTabBarState extends State<HomeTabBar> {
                     );
                   }, (errorCode) {
                     _dismissProcessingDialog(context);
-                    showToast(msg: '创建失败：$errorCode');
+                    showToast(msg: AppLocalizations.of(context)!.createGroupFail(errorCode));
                   });
                 }
               })),
@@ -265,7 +265,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   }
 
   void _addFriend() {
-    showSearch(context: context, delegate: SearchUserDelegate());
+    showSearch(context: context, delegate: SearchUserDelegate(searchFieldHint: AppLocalizations.of(context)!.searchUserFieldHint));
   }
 
   void _showPlusMenu(BuildContext context) {

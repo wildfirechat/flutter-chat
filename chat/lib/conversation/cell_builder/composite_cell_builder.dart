@@ -11,6 +11,7 @@ import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class CompositeCellBuilder extends PortraitCellBuilder {
   late CompositeMessageContent compositeMessageContent;
@@ -59,9 +60,9 @@ class CompositeCellBuilder extends PortraitCellBuilder {
                     if (msg.content is TextMessageContent) {
                       preview = (msg.content as TextMessageContent).text;
                     } else if (msg.content is ImageMessageContent) {
-                      preview = "[图片]";
+                      preview = AppLocalizations.of(context)!.imageTag;
                     } else {
-                      preview = "[消息]";
+                      preview = AppLocalizations.of(context)!.messageTag;
                     }
 
                     UserInfo? userInfo;

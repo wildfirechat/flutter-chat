@@ -98,7 +98,7 @@ class DiscoveryTab extends StatelessWidget {
                     ),
                     if (Config.panServerAddress != null && Config.panServerAddress!.isNotEmpty)
                       OptionItem(
-                        '云盘',
+                        l10n.cloudDrive,
                         leftImage: Image.asset('assets/images/net_disk.png', width: 20.0, height: 20.0),
                         showBottomDivider: false,
                         onTap: () {

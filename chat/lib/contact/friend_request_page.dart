@@ -67,12 +67,12 @@ class FriendRequestPageState extends State<FriendRequestPage> {
     return Scaffold(
       appBar: isDesktopShell
           ? PcPageHeader(
-              title: "好友请求",
+              title: AppLocalizations.of(context)!.friendRequest,
               actions: actions,
             )
           : AppBar(
               actions: actions,
-              title: const Text("好友请求"),
+              title: Text(AppLocalizations.of(context)!.friendRequest),
             ),
       backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
       body: SafeArea(
@@ -131,7 +131,7 @@ class FriendRequestPageState extends State<FriendRequestPage> {
                 if (request.status == FriendRequestStatus.WaitingAccept)
                   // 行内主行动,中档实底(微信「新的朋友」同款形态)。
                   FilledButton(
-                    onPressed: () => _acceptRequest(request.target),
+                    onPressed: () => _acceptRequest(context, request.target),
                     child: Text(AppLocalizations.of(context)!.friendRequestAccept),
                   )
                 else
@@ -149,15 +149,16 @@ class FriendRequestPageState extends State<FriendRequestPage> {
     );
   }
 
-  void _acceptRequest(String userId) {
+  void _acceptRequest(BuildContext context, String userId) {
+    final l10n = AppLocalizations.of(context)!;
     Imclient.handleFriendRequest(userId, true, "", () {
-      Fluttertoast.showToast(msg: "已通过");
+      Fluttertoast.showToast(msg: l10n.friendRequestAccepted);
       _loadFriendRequestAndUserInfos();
     }, (errorCode) {
       if(errorCode == 19) {
-        Fluttertoast.showToast(msg: "已过期");
+        Fluttertoast.showToast(msg: l10n.expired);
       } else {
-        Fluttertoast.showToast(msg: '网络错误：$errorCode');
+        Fluttertoast.showToast(msg: l10n.networkErrorWithCode(errorCode));
       }
     });
   }

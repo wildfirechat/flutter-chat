@@ -323,7 +323,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   Future<void> _onScreenShare() async {
     // TODO: Implement screen share
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('屏幕分享功能待实现')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.conferenceScreenShareNotImplemented)),
     );
   }
 
@@ -388,8 +388,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
       statusText: _session.status == CallState.STATUS_CONNECTED
           ? null
           : _session.status == CallState.STATUS_INCOMING
-              ? '邀请您加入会议'
-              : '连接中...',
+              ? AppLocalizations.of(context)!.conferenceInviteJoin
+              : AppLocalizations.of(context)!.callStatusConnecting,
     );
     Navigator.of(context).pop();
   }
@@ -585,22 +585,25 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     // Host requested audience/interactive switch
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(audience ? '主持人邀请您成为观众' : '主持人邀请您上麦'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('忽略'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _session.switchAudience(audience);
-            },
-            child: const Text('同意'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        var l10n = AppLocalizations.of(context)!;
+        return AlertDialog(
+          title: Text(audience ? l10n.conferenceHostInviteAudience : l10n.conferenceHostInviteStage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.conferenceIgnore),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _session.switchAudience(audience);
+              },
+              child: Text(l10n.conferenceApprove),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -792,7 +795,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     }
     if (maxVolume <= 0 || speaking == null) return '';
     return speaking.userId == Imclient.currentUserId
-        ? '我'
+        ? AppLocalizations.of(context)!.meLabel
         : _participantName(speaking.userInfo);
   }
 
@@ -907,8 +910,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
                       _session.status == CallState.STATUS_CONNECTED
                           ? _formatDuration(Duration(seconds: seconds))
                           : _session.status == CallState.STATUS_INCOMING
-                              ? '邀请您加入会议'
-                              : '连接中...',
+                              ? l10n.conferenceInviteJoin
+                              : l10n.callStatusConnecting,
                       style: AppText.sm.copyWith(color: context.colors.textSecondary),
                     );
                   },
@@ -921,7 +924,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
                     return Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
-                        '正在讲话: $speakingName',
+                        l10n.conferenceSpeakingLabel(speakingName),
                         style: AppText.sm.copyWith(
                             color: context.colors.success,
                             fontWeight: FontWeight.w500),
@@ -1059,7 +1062,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
               icon: _session.audience ? Icons.person_outline : Icons.record_voice_over,
               backgroundColor: Colors.white.withValues(alpha: 0.1),
               onPressed: _onSwitchAudience,
-              label: _session.audience ? '上麦' : '下麦',
+              label: _session.audience ? l10n.conferenceSwitchToStage : l10n.conferenceSwitchToAudience,
             ),
             if (!_conferenceManager.isOwner)
               _CallActionButton(

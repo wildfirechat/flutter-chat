@@ -451,7 +451,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
         final index = entry.key;
         final rel = entry.value;
         final org = _bottomOrganizations[rel.organizationId];
-        final title = org?.name ?? '部门 ${rel.organizationId}';
+        final title = org?.name ?? AppLocalizations.of(context)!.departmentFallback(rel.organizationId);
         return OptionItem(
           title,
           showBottomDivider: index < _bottomRelationships.length - 1,

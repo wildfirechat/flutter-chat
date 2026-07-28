@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../app_server.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 滑动验证对话框回调
 abstract class SlideVerifyListener {
@@ -128,7 +129,7 @@ class _SlideVerifyDialogState extends State<SlideVerifyDialog>
           _verifyData = data;
           _isLoading = false;
           _sliderPosition = 0;
-          _hintText = '向右滑动完成验证';
+          _hintText = AppLocalizations.of(context)!.slideToVerifyHint;
           _hintColor = const Color(0xFF999999);
           _sliderButtonColor = Colors.white;
         });
@@ -185,7 +186,7 @@ class _SlideVerifyDialogState extends State<SlideVerifyDialog>
 
     setState(() {
       _sliderButtonColor = const Color(0xFF4CAF50);
-      _hintText = '验证成功';
+      _hintText = AppLocalizations.of(context)!.verifySuccess;
       _hintColor = const Color(0xFF4CAF50);
       _isVerifying = false;
     });
@@ -205,7 +206,7 @@ class _SlideVerifyDialogState extends State<SlideVerifyDialog>
 
     setState(() {
       _isVerifying = false;
-      _hintText = '验证失败，请重试';
+      _hintText = AppLocalizations.of(context)!.verifyFailedRetry;
       _hintColor = const Color(0xFFF44336);
     });
 
@@ -216,7 +217,7 @@ class _SlideVerifyDialogState extends State<SlideVerifyDialog>
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
         setState(() {
-          _hintText = '向右滑动完成验证';
+          _hintText = AppLocalizations.of(context)!.slideToVerifyHint;
           _hintColor = const Color(0xFF999999);
         });
         _loadVerifyCode();
@@ -287,7 +288,7 @@ class _SlideVerifyDialogState extends State<SlideVerifyDialog>
           children: [
             // 标题
             Text(
-              '安全验证',
+              AppLocalizations.of(context)!.securityVerification,
               style: AppText.lg.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),

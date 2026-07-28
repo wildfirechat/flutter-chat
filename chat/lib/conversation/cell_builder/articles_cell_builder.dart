@@ -7,6 +7,7 @@ import '../../ui_model/ui_message.dart';
 import 'portrait_cell_builder.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class ArticlesCellBuilder extends PortraitCellBuilder {
   late ArticlesMessageContent articlesContent;
@@ -105,7 +106,7 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(
-                  '还有 ${articles.length - 3} 篇文章',
+                  AppLocalizations.of(context)!.moreArticlesCount(articles.length - 3),
                   style: AppText.xs.copyWith(color: context.colors.textSecondary),
                 ),
               ),
@@ -118,7 +119,7 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      articlesContent.title.isNotEmpty ? articlesContent.title : '[图文]',
+                      articlesContent.title.isNotEmpty ? articlesContent.title : AppLocalizations.of(context)!.articlesPlaceholder,
                       style: AppText.lg.copyWith(color: context.colors.textPrimary),
                     ),
                   ),

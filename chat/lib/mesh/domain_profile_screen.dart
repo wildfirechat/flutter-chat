@@ -55,7 +55,7 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
   }
 
   void _searchUsersInDomain() {
-    final delegate = SearchUserDelegate(domainId: widget.domainId);
+    final delegate = SearchUserDelegate(domainId: widget.domainId, searchFieldHint: AppLocalizations.of(context)!.searchUserFieldHint);
     showSearch(context: context, delegate: delegate);
   }
 

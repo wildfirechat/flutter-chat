@@ -110,7 +110,7 @@ class ConferenceParticipantTile extends StatelessWidget {
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
-                            isSelf ? '我' : (item.userInfo?.getReadableName() ?? ''),
+                            isSelf ? AppLocalizations.of(context)!.meLabel : (item.userInfo?.getReadableName() ?? ''),
                             style: AppText.sm.copyWith(color: context.colors.textPrimary),
                             overflow: TextOverflow.ellipsis,
                           ),

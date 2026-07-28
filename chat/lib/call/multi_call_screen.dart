@@ -246,7 +246,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
 
     if (candidates.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('暂无可邀请成员')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.callInviteNoCandidates)),
       );
       return;
     }
@@ -260,7 +260,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
         }
         Navigator.of(dialogContext).pop();
       },
-      title: '邀请成员',
+      title: AppLocalizations.of(context)!.callInviteMembers,
       maxSelected: 9,
       candidates: candidates,
       showOrganizationEntry: false,
@@ -490,7 +490,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
     }
     if (maxVolume <= 0 || speaking == null) return '';
     return speaking.userId == Imclient.currentUserId
-        ? '我'
+        ? AppLocalizations.of(context)!.meLabel
         : _participantName(speaking.userInfo);
   }
 
@@ -554,7 +554,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
                   valueListenable: _speakingUserNameNotifier,
                   builder: (context, speakingName, child) {
                     return Text(
-                      '$participantCount 人通话${speakingName.isNotEmpty ? ' · 正在讲话: $speakingName' : ''}',
+                      '${l10n.callParticipantCount(participantCount)}${speakingName.isNotEmpty ? l10n.callSpeakingSuffix(speakingName) : ''}',
                       style: AppText.sm.copyWith(color: Colors.white70),
                       overflow: TextOverflow.ellipsis,
                     );
@@ -631,7 +631,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
   Widget _buildParticipantCell(_ParticipantItem item, bool isVideoCall) {
     bool isSelf = item.userId == Imclient.currentUserId;
     bool showVideo = isVideoCall && !item.videoMuted && item.renderer.srcObject != null;
-    String name = isSelf ? '我' : _participantName(item.userInfo);
+    String name = isSelf ? AppLocalizations.of(context)!.meLabel : _participantName(item.userInfo);
 
     // 说话指示(绿框/角标)由 item.speakingNotifier 驱动局部刷新,
     // 音量高频上报时不再随整页 setState 重建 RTCVideoView。
@@ -813,7 +813,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
                   icon: Icons.person_add,
                   backgroundColor: Colors.white.withValues(alpha: 0.1),
                   onPressed: _onInvite,
-                  label: '邀请',
+                  label: l10n.callInvite,
                 ),
             ],
           ),

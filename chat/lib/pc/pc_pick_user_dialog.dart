@@ -416,7 +416,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
             _buildOrgBreadcrumb(context, orgVm),
             _buildSearchField(
               controller: _orgSearchController,
-              hint: '搜索成员',
+              hint: AppLocalizations.of(context)!.searchOrgMembers,
               onChanged: orgVm.search,
             ),
             const Divider(),
@@ -495,18 +495,18 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     final subOrgs = details?.subOrganizations ?? [];
     final employees = details?.employees ?? [];
     if (subOrgs.isEmpty && employees.isEmpty) {
-      return _buildOrgMessage('该部门暂无子部门或成员');
+      return _buildOrgMessage(AppLocalizations.of(context)!.orgNoSubOrgOrMembers);
     }
 
     return ListView(
       controller: _orgListController,
       children: [
         if (subOrgs.isNotEmpty) ...[
-          _buildSectionHeader('子部门'),
+          _buildSectionHeader(AppLocalizations.of(context)!.subDepartments),
           ...subOrgs.map((o) => _buildSubOrgTile(context, orgVm, o)),
         ],
         if (employees.isNotEmpty) ...[
-          _buildSectionHeader('成员'),
+          _buildSectionHeader(AppLocalizations.of(context)!.members),
           ...employees.map((e) => _buildOrgEmployeeTile(context, pickViewModel, e)),
         ],
       ],
@@ -521,7 +521,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       return _buildOrgMessage(orgVm.searchError!);
     }
     if (orgVm.searchResults.isEmpty) {
-      return _buildOrgMessage('未找到匹配的成员');
+      return _buildOrgMessage(AppLocalizations.of(context)!.noMatchedMembers);
     }
     return ListView(
       controller: _orgListController,

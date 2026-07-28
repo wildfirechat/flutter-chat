@@ -36,7 +36,12 @@ class ConversationViewModel extends ChangeNotifier {
   bool _noMoreRemoteHistoryMsg = false;
   bool _noMoreNewerMsg = false;
   int focusMessageIndex = 0;
-  String? _conversationTypingStatus;
+
+  /// 0 = 无人输入；1 = 单聊对方；2 = 群内多人；3 = 群内单个具名用户
+  int _typingKind = 0;
+  int _typingCount = 0;
+  String? _typingUserName;
+  String _typingDots = '';
 
   /// 定位到历史消息后（还没加载回最新）期间新收到的消息数，
   /// 用于「回到最新」按钮上的角标；回到最新或重新进入会话时清零。
@@ -59,7 +64,7 @@ class ConversationViewModel extends ChangeNotifier {
     _noMoreRemoteHistoryMsg = false;
     _noMoreNewerMsg = false;
     focusMessageIndex = 0;
-    _conversationTypingStatus = null;
+    _typingKind = 0;
     _typingUserTime.clear();
     _isMultiSelectMode = false;
     _selectedMessageIds.clear();
@@ -77,9 +82,10 @@ class ConversationViewModel extends ChangeNotifier {
     return 0;
   }
 
-  String? get conversationTypingStatus {
-    return _conversationTypingStatus;
-  }
+  int get typingKind => _typingKind;
+  int get typingCount => _typingCount;
+  String? get typingUserName => _typingUserName;
+  String get typingDots => _typingDots;
 
   bool get isHiddenConversationMemberName {
     return _isHiddenConversationMemberName;
@@ -310,7 +316,7 @@ class ConversationViewModel extends ChangeNotifier {
     _conversationMessageList = [];
     _pendingNewMessageCount = 0;
     focusMessageIndex = 0;
-    _conversationTypingStatus = null;
+    _typingKind = 0;
     _currentConversation = conversation;
     _isMultiSelectMode = false;
     _stopTypingTimer();
@@ -668,7 +674,10 @@ class ConversationViewModel extends ChangeNotifier {
     if (_currentConversation!.conversationType == ConversationType.Single) {
       int? time = _typingUserTime[_currentConversation!.target];
       if (time != null && now - time < 6000) {
-        _conversationTypingStatus = '对方正在输入${_getTypingDot(now)}';
+        _typingKind = 1;
+        _typingCount = 0;
+        _typingUserName = null;
+        _typingDots = _getTypingDot(now);
         return true;
       }
     } else {
@@ -682,19 +691,24 @@ class ConversationViewModel extends ChangeNotifier {
         }
       }
       if (typingUserCount > 1) {
-        _conversationTypingStatus = '$typingUserCount人正在输入${_getTypingDot(now)}';
+        _typingKind = 2;
+        _typingCount = typingUserCount;
+        _typingUserName = null;
+        _typingDots = _getTypingDot(now);
         return true;
       } else if (typingUserCount == 1) {
         Imclient.getUserInfo(lastTypingUser!, groupId: _currentConversation!.target).then((value) {
           if (value != null) {
-            _conversationTypingStatus = '${value.displayName!} 正在输入${_getTypingDot(now)}';
+            _typingKind = 3;
+            _typingUserName = value.displayName;
+            _typingDots = _getTypingDot(now);
           }
         });
         return true;
       }
     }
 
-    _conversationTypingStatus = null;
+    _typingKind = 0;
     return false;
   }
 

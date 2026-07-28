@@ -15,6 +15,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'WildFire Chat';
 
   @override
+  String get appTagline => 'Communication made simple!';
+
+  @override
+  String departmentFallback(Object id) {
+    return 'Department $id';
+  }
+
+  @override
   String get tabChat => 'Chats';
 
   @override
@@ -90,6 +98,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conferenceHandUpDone => 'Hand Raised';
 
   @override
+  String conferenceHandUpMembersCount(Object count) {
+    return 'Raised Hands ($count)';
+  }
+
+  @override
+  String get conferenceNoHandUpMembers => 'No one has raised their hand';
+
+  @override
   String get conferencePutDown => 'Lower Hand';
 
   @override
@@ -100,6 +116,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get conferenceApplyVideo => 'Camera Requests';
+
+  @override
+  String conferenceApplyAudioCount(Object count) {
+    return 'Unmute Requests ($count)';
+  }
+
+  @override
+  String conferenceApplyVideoCount(Object count) {
+    return 'Camera Requests ($count)';
+  }
+
+  @override
+  String get conferenceNoApplications => 'No requests';
 
   @override
   String get conferenceApprove => 'Approve';
@@ -141,7 +170,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conferenceKick => 'Remove from Meeting';
 
   @override
+  String get conferenceHandUpMembersTitle => 'Raised Hands';
+
+  @override
+  String get conferenceUnmuteSelf => 'Unmute';
+
+  @override
+  String get conferenceSwitchToStage => 'Join Stage';
+
+  @override
+  String get conferenceSwitchToAudience => 'Leave Stage';
+
+  @override
+  String get conferenceAllowUnmuteAudio => 'Allow Unmute';
+
+  @override
+  String get conferenceAllowUnmuteVideo => 'Allow Video';
+
+  @override
+  String get conferenceCloseVideo => 'Turn Off Video';
+
+  @override
+  String conferenceHandUpTip(Object count) {
+    return '$count raised their hand, tap to view';
+  }
+
+  @override
+  String conferenceApplyAudioTip(Object count) {
+    return '$count requested to unmute, tap to view';
+  }
+
+  @override
+  String conferenceApplyVideoTip(Object count) {
+    return '$count requested camera access, tap to view';
+  }
+
+  @override
   String get conferenceScreenShare => 'Share';
+
+  @override
+  String get conferenceSharingScreen => 'Sharing screen';
+
+  @override
+  String get conferenceStopSharing => 'Stop Sharing';
+
+  @override
+  String get conferenceScreenShareNotImplemented =>
+      'Screen sharing is not implemented yet';
+
+  @override
+  String get conferenceInviteJoin => 'Invites you to join the meeting';
+
+  @override
+  String get conferenceHostInviteAudience =>
+      'The host invites you to become an audience member';
+
+  @override
+  String get conferenceHostInviteStage =>
+      'The host invites you to join the stage';
+
+  @override
+  String get conferenceIgnore => 'Ignore';
+
+  @override
+  String conferenceSpeakingLabel(Object name) {
+    return 'Speaking: $name';
+  }
 
   @override
   String get conferenceGridView => 'Grid View';
@@ -163,6 +257,45 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get conferenceMeetingEnded => 'Meeting Ended';
+
+  @override
+  String get conferenceStatusNotStarted => 'Not Started';
+
+  @override
+  String get conferenceStatusOngoing => 'In Progress';
+
+  @override
+  String get conferenceStatusEnded => 'Ended';
+
+  @override
+  String get conferenceVideoConferenceTitle => 'Video Conference';
+
+  @override
+  String get conferenceJoinHint => 'Enter a meeting ID to join';
+
+  @override
+  String get conferenceCreateTitle => 'Start a Meeting';
+
+  @override
+  String get conferenceCreateHint => 'Start an audio/video meeting instantly';
+
+  @override
+  String get conferenceOrderHint => 'Schedule a future meeting';
+
+  @override
+  String conferenceDurationHours(Object h, Object m) {
+    return '${h}h ${m}m';
+  }
+
+  @override
+  String conferenceDurationMinutes(Object m, Object s) {
+    return '${m}m ${s}s';
+  }
+
+  @override
+  String conferenceDurationSeconds(Object s) {
+    return '${s}s';
+  }
 
   @override
   String get conferenceFavorites => 'Upcoming';
@@ -202,6 +335,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conferenceCopied => 'Meeting ID copied';
 
   @override
+  String get conferenceUntitled => 'Untitled Meeting';
+
+  @override
+  String conferenceOwnerLabel(Object name) {
+    return 'Host: $name';
+  }
+
+  @override
+  String get conferenceIdLabel => 'Meeting ID';
+
+  @override
+  String get conferenceDestroyAction => 'Destroy';
+
+  @override
+  String conferenceDestroyFailed(Object error) {
+    return 'Failed to destroy meeting: $error';
+  }
+
+  @override
   String get conferenceRequestUnmuteAudio => 'Request to Unmute';
 
   @override
@@ -225,13 +377,41 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conferenceCreateFailed => 'Failed to create meeting';
 
   @override
+  String conferenceCreateFailedWithError(Object error) {
+    return 'Failed to create meeting: $error';
+  }
+
+  @override
   String get conferenceJoinFailed => 'Failed to join meeting';
+
+  @override
+  String conferenceJoinFailedWithError(Object error) {
+    return 'Failed to join meeting: $error';
+  }
+
+  @override
+  String get conferenceTitleLabel => 'Meeting Title';
+
+  @override
+  String get conferenceDescLabel => 'Meeting Description';
 
   @override
   String get conferenceOrdered => 'Meeting scheduled';
 
   @override
   String get conferenceOrderFailed => 'Failed to schedule meeting';
+
+  @override
+  String conferenceOrderFailedWithError(Object error) {
+    return 'Failed to schedule meeting: $error';
+  }
+
+  @override
+  String get conferenceOrderAction => 'Schedule';
+
+  @override
+  String get conferenceSelectStartAndEndTime =>
+      'Please select a start and end time';
 
   @override
   String get conferenceInputTitle => 'Enter meeting title';
@@ -262,6 +442,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get conferencePassword => 'Meeting Password';
+
+  @override
+  String get conferenceIdInputLabel => 'Meeting ID';
+
+  @override
+  String get conferenceQuery => 'Find Meeting';
+
+  @override
+  String conferenceQueryFailedWithError(Object error) {
+    return 'Failed to find meeting: $error';
+  }
 
   @override
   String get conferenceEndTimeInvalid => 'End time cannot be earlier than now';
@@ -304,7 +495,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupQrCode => 'Group QR Code';
 
   @override
+  String get scanQrCodeToJoinGroup =>
+      'Scan the QR code above to join the group';
+
+  @override
   String get groupNotice => 'Group Notice';
+
+  @override
+  String moreArticlesCount(Object count) {
+    return '$count more articles';
+  }
+
+  @override
+  String get articlesPlaceholder => '[Articles]';
+
+  @override
+  String get openWithSystemPlayer => 'Tap to open with the system player';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String getGroupAnnouncementFailed(Object msg) {
+    return 'Failed to get group announcement: $msg';
+  }
+
+  @override
+  String get groupAnnouncementEmpty => 'Group announcement cannot be empty';
+
+  @override
+  String get updateGroupAnnouncementSuccess => 'Group announcement updated';
+
+  @override
+  String updateGroupAnnouncementFailed(Object msg) {
+    return 'Failed to update group announcement: $msg';
+  }
+
+  @override
+  String get noGroupAnnouncementHint => 'No group announcement';
 
   @override
   String get clickToCheck => 'Click to check';
@@ -376,6 +604,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quitGroup => 'Quit Group';
+
+  @override
+  String groupActionSuccess(Object action) {
+    return '$action succeeded';
+  }
+
+  @override
+  String groupActionFailedWithCode(Object action, Object code) {
+    return '$action failed: $code';
+  }
 
   @override
   String get clearLocalHistory => 'Clear Local History';
@@ -579,6 +817,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get domainAddress => 'Address';
+
+  @override
+  String get searchUserFieldHint => 'Enter phone number or account';
+
+  @override
+  String get searchUserAddFriendHint => 'Search for a user to add as a friend!';
 
   @override
   String get searchUserNotFound =>
@@ -802,10 +1046,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get businessCard => 'Card';
 
   @override
+  String get personalCardHint => 'Contact Card';
+
+  @override
+  String get groupCardHint => 'Group Card';
+
+  @override
+  String get channelCardHint => 'Channel Card';
+
+  @override
   String get screenshotTool => 'Screenshot';
 
   @override
   String get screenshotToolNotAvailable => 'Screenshot tool unavailable';
+
+  @override
+  String screenshotFailed(Object err) {
+    return 'Screenshot failed: $err';
+  }
+
+  @override
+  String screenshotToolLaunchFailed(Object err) {
+    return 'Failed to launch the screenshot tool: $err';
+  }
+
+  @override
+  String screenshotException(Object err) {
+    return 'Screenshot error: $err';
+  }
 
   @override
   String get notSupportedOnCurrentPlatform =>
@@ -857,6 +1125,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupManagement => 'Group Management';
 
   @override
+  String get collapseGroupMembers => 'Collapse Members <';
+
+  @override
+  String get viewMoreGroupMembers => 'View More Members >';
+
+  @override
   String get favoriteGroup => 'Save to Contacts';
 
   @override
@@ -906,6 +1180,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get subscribeChannel => 'Subscribe';
+
+  @override
+  String get subscribedChannelsTitle => 'Subscribed Channels';
+
+  @override
+  String get searchChannelHint => 'Enter channel name';
+
+  @override
+  String get searchChannelNotFound =>
+      'No channel found. Please check the channel name.';
+
+  @override
+  String get searchChannelPrompt => 'Search for a channel!';
+
+  @override
+  String get clearHistoryMessages => 'Clear Chat History';
+
+  @override
+  String get channelNameLabel => 'Name:  ';
+
+  @override
+  String get channelOwnerLabel => 'Owner:  ';
+
+  @override
+  String get channelDescLabel => 'Description:  ';
 
   @override
   String get groupIdLabel => 'Group ID';
@@ -1439,6 +1738,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchHint => 'Type to search';
 
   @override
+  String containsMatchedMembers(Object names) {
+    return 'Includes members: $names';
+  }
+
+  @override
+  String get pleaseInput => 'Please enter';
+
+  @override
+  String get searchKeywordHint => 'Enter a keyword to search';
+
+  @override
   String get searchPrompt => 'Enter content to search';
 
   @override
@@ -1504,6 +1814,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get maxUserLimit => 'Max user limit reached';
+
+  @override
+  String get selectUser => 'Select User';
 
   @override
   String get selectFromOrganization => 'Select from Organization';
@@ -1894,7 +2207,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Select one or more friends to start a chat';
 
   @override
+  String get pickFriendsToSubmitReport =>
+      'Select one or more friends to submit the report';
+
+  @override
   String get creatingGroup => 'Creating group...';
+
+  @override
+  String groupNameTruncatedSuffix(Object name) {
+    return '$name and others';
+  }
 
   @override
   String get createGroupChat => 'Create Group Chat';
@@ -1941,6 +2263,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String confirmSendFile(Object fileName) {
     return 'Send \"$fileName\"?';
+  }
+
+  @override
+  String filesCountLabel(Object count) {
+    return '$count files';
+  }
+
+  @override
+  String confirmSendFiles(Object name) {
+    return 'Send $name?';
   }
 
   @override
@@ -2036,6 +2368,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get callSpeaker => 'Speaker';
+
+  @override
+  String get callInvite => 'Invite';
+
+  @override
+  String get callInviteMembers => 'Invite Members';
+
+  @override
+  String get callInviteNoCandidates => 'No members available to invite';
+
+  @override
+  String get meLabel => 'Me';
+
+  @override
+  String callParticipantCount(Object count) {
+    return '$count in call';
+  }
+
+  @override
+  String callSpeakingSuffix(Object name) {
+    return ' · Speaking: $name';
+  }
 
   @override
   String get callCameraOn => 'Camera On';
@@ -2535,6 +2889,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get securityAndData => 'Security & Data';
+
+  @override
+  String get peerTyping => 'typing';
+
+  @override
+  String groupMembersTyping(Object count) {
+    return '$count typing';
+  }
+
+  @override
+  String namedUserTyping(Object name) {
+    return '$name typing';
+  }
+
+  @override
+  String get expandAll => 'Expand All';
+
+  @override
+  String get securityVerification => 'Security Verification';
+
+  @override
+  String get slideToVerifyHint => 'Slide right to verify';
+
+  @override
+  String get verifySuccess => 'Verification succeeded';
+
+  @override
+  String get verifyFailedRetry => 'Verification failed, please try again';
 
   @override
   String get securitySection => 'Security';

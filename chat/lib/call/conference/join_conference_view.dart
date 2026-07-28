@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/call/conference/conference_info_view.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 /// 加入会议页面
 class JoinConferenceView extends StatefulWidget {
@@ -35,7 +36,7 @@ class _JoinConferenceViewState extends State<JoinConferenceView> {
     }, (error) {
       setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('查询会议失败: $error')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.conferenceQueryFailedWithError(error))),
       );
     });
   }
@@ -60,10 +61,11 @@ class _JoinConferenceViewState extends State<JoinConferenceView> {
 
   @override
   Widget build(BuildContext context) {
+    var l10n = AppLocalizations.of(context)!;
     return Scaffold(
       backgroundColor: context.colors.primaryBackground,
       appBar: AppBar(
-        title: const Text('加入会议'),
+        title: Text(l10n.conferenceJoinMeeting),
         backgroundColor: context.colors.surface,
       ),
       body: Padding(
@@ -73,13 +75,13 @@ class _JoinConferenceViewState extends State<JoinConferenceView> {
             TextField(
               controller: _idController,
               style: TextStyle(color: context.colors.textPrimary),
-              decoration: const InputDecoration(labelText: '会议ID'),
+              decoration: InputDecoration(labelText: l10n.conferenceIdInputLabel),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _pinController,
               style: TextStyle(color: context.colors.textPrimary),
-              decoration: const InputDecoration(labelText: '会议密码'),
+              decoration: InputDecoration(labelText: l10n.conferencePassword),
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -91,7 +93,7 @@ class _JoinConferenceViewState extends State<JoinConferenceView> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : const Text('查询会议'),
+                    : Text(l10n.conferenceQuery),
               ),
             ),
           ],

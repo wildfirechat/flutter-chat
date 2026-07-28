@@ -5,6 +5,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/app_bar_actions.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class GroupAnnouncementScreen extends StatefulWidget {
   final String groupId;
@@ -44,34 +45,36 @@ class _GroupAnnouncementScreenState extends State<GroupAnnouncementScreen> {
         setState(() {
           _isLoading = false;
         });
-        Fluttertoast.showToast(msg: "获取群公告失败: $msg");
+        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.getGroupAnnouncementFailed(msg));
       }
     });
   }
 
   void _saveAnnouncement() {
+    final l10n = AppLocalizations.of(context)!;
     if (_controller.text.isEmpty) {
-      Fluttertoast.showToast(msg: "群公告不能为空");
+      Fluttertoast.showToast(msg: l10n.groupAnnouncementEmpty);
       return;
     }
     AppServer.updateGroupAnnouncement(widget.groupId, _controller.text, () {
-      Fluttertoast.showToast(msg: "更新群公告成功");
+      Fluttertoast.showToast(msg: l10n.updateGroupAnnouncementSuccess);
       if (mounted) {
         setState(() {
           _isEditing = false;
         });
       }
     }, (msg) {
-      Fluttertoast.showToast(msg: "更新群公告失败: $msg");
+      Fluttertoast.showToast(msg: l10n.updateGroupAnnouncementFailed(msg));
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final actions = [
       if (widget.canEdit && !_isLoading)
         AppBarTextAction(
-          label: _isEditing ? '完成' : '编辑',
+          label: _isEditing ? l10n.done : l10n.edit,
           onPressed: () {
             if (_isEditing) {
               _saveAnnouncement();
@@ -87,12 +90,12 @@ class _GroupAnnouncementScreenState extends State<GroupAnnouncementScreen> {
     return Scaffold(
       appBar: isDesktopShell
           ? PcPageHeader(
-              title: '群公告',
+              title: l10n.groupAnnouncement,
               onBack: () => Navigator.of(context).maybePop(),
               actions: actions,
             )
           : AppBar(
-              title: const Text('群公告'),
+              title: Text(l10n.groupAnnouncement),
               actions: actions,
             ),
       body: _isLoading
@@ -103,9 +106,9 @@ class _GroupAnnouncementScreenState extends State<GroupAnnouncementScreen> {
                 controller: _controller,
                 enabled: _isEditing,
                 maxLines: null,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   border: InputBorder.none,
-                  hintText: '暂无群公告',
+                  hintText: l10n.noGroupAnnouncementHint,
                 ),
               ),
             ),

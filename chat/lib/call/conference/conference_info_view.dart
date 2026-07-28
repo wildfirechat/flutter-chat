@@ -8,6 +8,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/l10n/app_localizations.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 
@@ -80,22 +81,23 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
     var conferenceId = info['conferenceId'] as String? ?? '';
     Clipboard.setData(ClipboardData(text: conferenceId));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('会议号已复制')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.conferenceCopied)),
     );
   }
 
   void _destroyConference() {
     var conferenceId = info['conferenceId'] as String?;
     if (conferenceId == null || conferenceId.isEmpty) return;
+    var l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('销毁会议'),
-        content: const Text('销毁后其他成员将无法加入，确认销毁？'),
+        title: Text(l10n.conferenceDestroy),
+        content: Text(l10n.conferenceDestroyConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -108,11 +110,11 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
                 }
               }, (error) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('销毁失败: $error')),
+                  SnackBar(content: Text(l10n.conferenceDestroyFailed(error))),
                 );
               });
             },
-            child: Text('销毁', style: TextStyle(color: context.colors.danger)),
+            child: Text(l10n.conferenceDestroyAction, style: TextStyle(color: context.colors.danger)),
           ),
         ],
       ),
@@ -189,7 +191,8 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
 
   @override
   Widget build(BuildContext context) {
-    var title = info['conferenceTitle'] ?? info['title'] ?? '无标题会议';
+    var l10n = AppLocalizations.of(context)!;
+    var title = info['conferenceTitle'] ?? info['title'] ?? l10n.conferenceUntitled;
     var conferenceId = info['conferenceId'] as String? ?? '';
     var startTime = info['startTime'] ?? 0;
     var endTime = info['endTime'] ?? 0;
@@ -234,7 +237,7 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
                             color: context.colors.textPrimary, fontWeight: FontWeight.w600),
                       ),
                       Text(
-                        '发起人：${_ownerInfo?.getReadableName() ?? info['owner'] ?? ''}',
+                        l10n.conferenceOwnerLabel(_ownerInfo?.getReadableName() ?? info['owner'] ?? ''),
                         style: AppText.sm.copyWith(color: context.colors.textSecondary),
                       ),
                     ],
@@ -245,7 +248,7 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
             const SizedBox(height: 20),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text('会议号', style: AppText.sm.copyWith(color: context.colors.textSecondary)),
+              title: Text(l10n.conferenceIdLabel, style: AppText.sm.copyWith(color: context.colors.textSecondary)),
               subtitle: Text(conferenceId,
                   style: AppText.base.copyWith(color: context.colors.textPrimary)),
               trailing: IconButton(
@@ -257,7 +260,7 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
               Divider(color: context.colors.hairlineSoft),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text('开始时间', style: AppText.sm.copyWith(color: context.colors.textSecondary)),
+                title: Text(l10n.conferenceStartTime, style: AppText.sm.copyWith(color: context.colors.textSecondary)),
                 subtitle: Text(_formatTime(startTime),
                     style: AppText.base.copyWith(color: context.colors.textPrimary)),
               ),
@@ -266,7 +269,7 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
               Divider(color: context.colors.hairlineSoft),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text('结束时间', style: AppText.sm.copyWith(color: context.colors.textSecondary)),
+                title: Text(l10n.conferenceEndTime, style: AppText.sm.copyWith(color: context.colors.textSecondary)),
                 subtitle: Text(_formatTime(endTime),
                     style: AppText.base.copyWith(color: context.colors.textPrimary)),
               ),
@@ -275,14 +278,14 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
             if (_canJoin) ...[
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text('开启麦克风', style: AppText.sm.copyWith(color: context.colors.textPrimary)),
+                title: Text(l10n.conferenceEnableMic, style: AppText.sm.copyWith(color: context.colors.textPrimary)),
                 value: _enableAudio,
                 activeColor: context.colors.success,
                 onChanged: (v) => setState(() => _enableAudio = v),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text('开启摄像头', style: AppText.sm.copyWith(color: context.colors.textPrimary)),
+                title: Text(l10n.conferenceEnableCamera, style: AppText.sm.copyWith(color: context.colors.textPrimary)),
                 value: _enableVideo,
                 activeColor: context.colors.success,
                 onChanged: (v) => setState(() => _enableVideo = v),
@@ -298,7 +301,7 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text(_canJoin ? '加入会议' : '会议已结束'),
+                    : Text(_canJoin ? l10n.conferenceJoinMeeting : l10n.conferenceMeetingEnded),
               ),
             ),
             const SizedBox(height: 12),
@@ -307,7 +310,7 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: _toggleFav,
-                  child: const Text('收藏会议'),
+                  child: Text(l10n.conferenceFav),
                 ),
               ),
             if (_enableDestroy) ...[
@@ -319,7 +322,7 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
                     foregroundColor: context.colors.danger,
                   ),
                   onPressed: _destroyConference,
-                  child: const Text('销毁会议'),
+                  child: Text(l10n.conferenceDestroy),
                 ),
               ),
             ],

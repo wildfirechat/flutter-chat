@@ -5,6 +5,8 @@ import 'dart:typed_data';
 import 'package:path/path.dart' as p;
 import 'package:window_manager/window_manager.dart';
 
+import 'package:chat/l10n/app_localizations.dart';
+
 /// 截图结果
 class ScreenshotResult {
   /// 截图保存路径；成功时非空
@@ -45,7 +47,7 @@ class ScreenshotService {
 
   /// 调用 flameshot GUI，返回 [ScreenshotResult]。
   /// 用户取消会返回 path 为 null、error 为 null 的结果。
-  static Future<ScreenshotResult> captureToFile() async {
+  static Future<ScreenshotResult> captureToFile(AppLocalizations l10n) async {
     final tmpDir = Directory.systemTemp;
     final out = p.join(
       tmpDir.path,
@@ -67,7 +69,7 @@ class ScreenshotService {
 
       if (result.exitCode != 0) {
         final err = _extractError(result);
-        return ScreenshotResult.failure('截图失败：$err');
+        return ScreenshotResult.failure(l10n.screenshotFailed(err));
       }
 
       final file = File(out);
@@ -77,17 +79,17 @@ class ScreenshotService {
 
       return ScreenshotResult._();
     } on ProcessException catch (e) {
-      return ScreenshotResult.failure('无法启动截图工具：$e');
+      return ScreenshotResult.failure(l10n.screenshotToolLaunchFailed(e));
     } catch (e) {
-      return ScreenshotResult.failure('截图异常：$e');
+      return ScreenshotResult.failure(l10n.screenshotException(e));
     } finally {
       await _showWindow();
     }
   }
 
   /// 直接读回 PNG 字节，避免落盘。注意大图片会占用内存。
-  static Future<Uint8List?> captureToBytes() async {
-    final result = await captureToFile();
+  static Future<Uint8List?> captureToBytes(AppLocalizations l10n) async {
+    final result = await captureToFile(l10n);
     if (result.path == null) return null;
     try {
       return await File(result.path!).readAsBytes();

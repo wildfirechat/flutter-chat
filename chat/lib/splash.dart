@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/l10n/app_localizations.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -21,6 +22,7 @@ class SplashScreen extends StatelessWidget {
 //     }
 
     final colors = context.colors;
+    final l10n = AppLocalizations.of(context)!;
     // 背景色必须包在 SafeArea 外层:splash 作为 home 直接展示、没有 Scaffold,
     // SafeArea 让出的状态栏/导航条区域若未绘制会渲染成黑边。
     return Container(
@@ -33,9 +35,9 @@ class SplashScreen extends StatelessWidget {
               const Padding(padding: EdgeInsets.only(top: 112)),
               Center(child: Image.asset('assets/images/app_icon.png', width: 180.0, height: 180.0)),
               const Padding(padding: EdgeInsets.only(top: 28)),
-              Center(child: Text("野火IM", style: AppText.xxl.copyWith(color: colors.textPrimary, decoration: TextDecoration.none))),
+              Center(child: Text(l10n.appTitle, style: AppText.xxl.copyWith(color: colors.textPrimary, decoration: TextDecoration.none))),
               Expanded(child: Container()),
-              Center(child: Text("沟通如此简单!", style: AppText.lg.copyWith(color: colors.textSecondary, decoration: TextDecoration.none))),
+              Center(child: Text(l10n.appTagline, style: AppText.lg.copyWith(color: colors.textSecondary, decoration: TextDecoration.none))),
               const Padding(padding: EdgeInsets.only(bottom: 53))
             ],
           ),
