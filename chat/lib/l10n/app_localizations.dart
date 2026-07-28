@@ -1460,6 +1460,42 @@ abstract class AppLocalizations {
   /// **'账号将退出'**
   String get logoutConfirm;
 
+  /// No description provided for @reportTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'举报'**
+  String get reportTitle;
+
+  /// No description provided for @reportDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'举报违规内容'**
+  String get reportDesc;
+
+  /// No description provided for @reportMessage.
+  ///
+  /// In zh, this message translates to:
+  /// **'如果您发现有违反法律和道德的内容，或者您的合法权益受到侵犯，请截图之后发送给我们。我们会在24小时之内处理。处理办法包括不限于删除内容，对作者进行警告，冻结账号，甚至报警处理。'**
+  String get reportMessage;
+
+  /// No description provided for @destroyAccount.
+  ///
+  /// In zh, this message translates to:
+  /// **'注销账号'**
+  String get destroyAccount;
+
+  /// No description provided for @destroyAccountTitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'亲，真的要狠心离开我们吗😭😭😭！'**
+  String get destroyAccountTitle;
+
+  /// No description provided for @destroyAccountFail.
+  ///
+  /// In zh, this message translates to:
+  /// **'注销失败: {error}'**
+  String destroyAccountFail(Object error);
+
   /// No description provided for @albumPicker.
   ///
   /// In zh, this message translates to:
@@ -4753,6 +4789,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'安全与数据'**
   String get securityAndData;
+
+  /// No description provided for @securitySection.
+  ///
+  /// In zh, this message translates to:
+  /// **'安全'**
+  String get securitySection;
+
+  /// No description provided for @dataSection.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据'**
+  String get dataSection;
 
   /// No description provided for @changePassword.
   ///

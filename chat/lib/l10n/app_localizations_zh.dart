@@ -724,6 +724,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get logoutConfirm => '账号将退出';
 
   @override
+  String get reportTitle => '举报';
+
+  @override
+  String get reportDesc => '举报违规内容';
+
+  @override
+  String get reportMessage =>
+      '如果您发现有违反法律和道德的内容，或者您的合法权益受到侵犯，请截图之后发送给我们。我们会在24小时之内处理。处理办法包括不限于删除内容，对作者进行警告，冻结账号，甚至报警处理。';
+
+  @override
+  String get destroyAccount => '注销账号';
+
+  @override
+  String get destroyAccountTitle => '亲，真的要狠心离开我们吗😭😭😭！';
+
+  @override
+  String destroyAccountFail(Object error) {
+    return '注销失败: $error';
+  }
+
+  @override
   String get albumPicker => '相册';
 
   @override
@@ -2471,6 +2492,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get securityAndData => '安全与数据';
+
+  @override
+  String get securitySection => '安全';
+
+  @override
+  String get dataSection => '数据';
 
   @override
   String get changePassword => '修改密码';

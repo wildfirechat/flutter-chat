@@ -12,7 +12,9 @@ import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/pc/widgets/pc_pane_content.dart';
 import 'package:chat/settings/account_safety_screen.dart';
 import 'package:chat/settings/blacklist_screen.dart';
+import 'package:chat/settings/destroy_account_screen.dart';
 import 'package:chat/settings/notification_settings.dart';
+import 'package:imclient/model/conversation.dart';
 import 'package:chat/backup/pc_backup_restore_page.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/viewmodel/locale_view_model.dart';
@@ -564,10 +566,80 @@ class PcSecuritySettingsDetail extends StatefulWidget {
 }
 
 class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
+  /// 退出入口:对齐原生 iOS 的退出 action sheet,提供「退出」与「注销账号」两项。
   void _handleLogout() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.logout),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text(l10n.logout),
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  _logout();
+                },
+              ),
+              ListTile(
+                title: Text(
+                  l10n.destroyAccount,
+                  style: TextStyle(color: dialogContext.colors.danger),
+                ),
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  openPage(context, const DestroyAccountScreen());
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _logout() {
     Fluttertoast.showToast(msg: AppLocalizations.of(context)!.logoutConfirm);
     navigateToLogin(Navigator.of(context, rootNavigator: true));
     Imclient.disconnect();
+  }
+
+  /// 举报(UGC 审核指南 1.2 要求):确认弹窗后打开与官方账号 cgc8c8VV 的单聊,
+  /// 用户把举报内容(截图等)发送给官方处理。与移动端设置页行为一致。
+  void _showReportDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.reportTitle),
+          content: Text(l10n.reportMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                openConversation(
+                    context,
+                    Conversation(
+                        conversationType: ConversationType.Single,
+                        target: 'cgc8c8VV'));
+              },
+              child: Text(
+                l10n.reportTitle,
+                style: TextStyle(color: dialogContext.colors.danger),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -637,7 +709,7 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _SettingsSectionTitle(l10n.securityAndData),
+                  _SettingsSectionTitle(l10n.securitySection),
                   PcCard(children: [
                     _SettingsClickableRow(
                       title: l10n.changePassword,
@@ -661,6 +733,15 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                       },
                     ),
                     const Divider(),
+                    _SettingsClickableRow(
+                      title: l10n.reportTitle,
+                      subtitle: l10n.reportDesc,
+                      onTap: _showReportDialog,
+                    ),
+                  ]),
+                  const SizedBox(height: 20),
+                  _SettingsSectionTitle(l10n.dataSection),
+                  PcCard(children: [
                     _SettingsClickableRow(
                       title: l10n.backup_and_restore,
                       subtitle: l10n.backupAndRestoreDesc,

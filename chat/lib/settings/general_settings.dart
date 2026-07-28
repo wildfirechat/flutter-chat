@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
+import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import '../app_navigator.dart';
@@ -8,6 +9,7 @@ import '../pc/pc_platform.dart';
 import '../pc/widgets/pc_page_header.dart';
 import '../viewmodel/locale_view_model.dart';
 import '../viewmodel/theme_view_model.dart';
+import 'destroy_account_screen.dart';
 import 'font_size_settings_screen.dart';
 import '../widget/option_item.dart';
 import 'package:chat/theme/app_colors.dart';
@@ -91,10 +93,10 @@ class GeneralSettings extends StatelessWidget {
                       },
                     ),
                     OptionItem(
-                      AppLocalizations.of(context)!.complaints,
+                      AppLocalizations.of(context)!.reportTitle,
                       showBottomDivider: false,
                       onTap: () {
-                        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                        _showReportDialog(context);
                       },
                     ),
                   ],
@@ -218,7 +220,77 @@ class GeneralSettings extends StatelessWidget {
     );
   }
 
+  /// 举报(UGC 审核指南 1.2 要求):确认弹窗后打开与官方账号 cgc8c8VV 的单聊,
+  /// 用户把举报内容(截图等)发送给官方处理。交互对齐原生 iOS 设置页的举报入口。
+  void _showReportDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.reportTitle),
+          content: Text(l10n.reportMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                openConversation(
+                    context,
+                    Conversation(
+                        conversationType: ConversationType.Single,
+                        target: 'cgc8c8VV'));
+              },
+              child: Text(
+                l10n.reportTitle,
+                style: TextStyle(color: context.colors.danger),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// 退出入口:对齐原生 iOS 的退出 action sheet,提供「退出」与「注销账号」两项。
   void _handleLogout(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.logout),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text(l10n.logout),
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  _logout(context);
+                },
+              ),
+              ListTile(
+                title: Text(
+                  l10n.destroyAccount,
+                  style: TextStyle(color: dialogContext.colors.danger),
+                ),
+                onTap: () {
+                  Navigator.pop(dialogContext);
+                  openPage(context, const DestroyAccountScreen());
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _logout(BuildContext context) {
     Fluttertoast.showToast(msg: AppLocalizations.of(context)!.logoutConfirm);
     navigateToLogin(Navigator.of(context, rootNavigator: true));
     Imclient.disconnect();

@@ -59,6 +59,36 @@ class AppServer {
     }, errorCallback);
   }
 
+  /// 发送注销账号验证码。与原生 iOS 一致:开启滑块验证时携带 slideVerifyToken。
+  static void sendDestroyAccountCode(Function successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) {
+    Map<String, dynamic> body = {};
+    if (slideVerifyToken != null && slideVerifyToken.isNotEmpty) {
+      body['slideVerifyToken'] = slideVerifyToken;
+    }
+    String jsonStr = json.encode(body);
+    postJson('/send_destroy_code', jsonStr, (response) {
+      Map<dynamic, dynamic> map = json.decode(response);
+      if(map['code'] == 0) {
+        successCallback();
+      } else {
+        errorCallback(map['message'] ?? '网络错误');
+      }
+    }, errorCallback);
+  }
+
+  /// 注销账号,参数为短信验证码。
+  static void destroyAccount(String code, Function successCallback, AppServerErrorCallback errorCallback) {
+    String jsonStr = json.encode({'code': code});
+    postJson('/destroy', jsonStr, (response) {
+      Map<dynamic, dynamic> map = json.decode(response);
+      if(map['code'] == 0) {
+        successCallback();
+      } else {
+        errorCallback(map['message'] ?? '网络错误');
+      }
+    }, errorCallback);
+  }
+
   static void login(String phoneNum, String smsCode, AppServerLoginSuccessCallback successCallback, AppServerErrorCallback errorCallback, {String? slideVerifyToken}) async {
     Map<String, dynamic> body = {'mobile': phoneNum, 'code': smsCode, 'clientId': await Imclient.clientId, 'platform': _detectClientPlatform()};
     if (slideVerifyToken != null && slideVerifyToken.isNotEmpty) {

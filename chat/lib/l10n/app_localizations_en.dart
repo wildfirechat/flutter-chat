@@ -732,6 +732,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logoutConfirm => 'Account will logout';
 
   @override
+  String get reportTitle => 'Report';
+
+  @override
+  String get reportDesc => 'Report inappropriate content';
+
+  @override
+  String get reportMessage =>
+      'If you find any content that violates laws and morality, or your legitimate rights and interests have been infringed, please take a screenshot and send it to us. We will handle it within 24 hours. Actions include but are not limited to deleting content, warning the author, freezing the account, and even calling the police.';
+
+  @override
+  String get destroyAccount => 'Delete Account';
+
+  @override
+  String get destroyAccountTitle => 'Do you really want to leave us😭😭😭!';
+
+  @override
+  String destroyAccountFail(Object error) {
+    return 'Failed to delete account: $error';
+  }
+
+  @override
   String get albumPicker => 'Album';
 
   @override
@@ -2514,6 +2535,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get securityAndData => 'Security & Data';
+
+  @override
+  String get securitySection => 'Security';
+
+  @override
+  String get dataSection => 'Data';
 
   @override
   String get changePassword => 'Change Password';

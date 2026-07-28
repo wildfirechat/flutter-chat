@@ -22,6 +22,8 @@ import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:chat/app_navigator.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:avenginekit/engine/call_state.dart';
 import 'package:avenginekit/internal/avenginekit_impl.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -615,6 +617,11 @@ class ConversationController extends ChangeNotifier {
         'value': 'favorite',
         'icon': Icons.favorite
       },
+      {
+        'label': AppLocalizations.of(context)!.reportTitle,
+        'value': 'report',
+        'icon': Icons.report_outlined
+      },
     ]);
 
     // 部分选中时菜单只保留"复制"(只复制选中部分):其余操作都针对整条消息,此场景下无意义
@@ -741,6 +748,9 @@ class ConversationController extends ChangeNotifier {
               msg: AppLocalizations.of(context)!.favoriteFail(msg));
         });
         break;
+      case "report":
+        _showReportDialog(context);
+        break;
     }
   }
 
@@ -781,6 +791,42 @@ class ConversationController extends ChangeNotifier {
     final messageInputBarController =
         Provider.of<MessageInputBarController>(context, listen: false);
     messageInputBarController.setDraft(text);
+  }
+
+  /// 长按消息的「举报」:弹确认框(取消/举报),确认后打开与官方账号
+  /// cgc8c8VV 的单聊,用户把举报内容(截图等)发送给官方处理。
+  /// 与设置页举报入口行为一致。
+  void _showReportDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(l10n.reportTitle),
+          content: Text(l10n.reportMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                openConversation(
+                    context,
+                    Conversation(
+                        conversationType: ConversationType.Single,
+                        target: 'cgc8c8VV'));
+              },
+              child: Text(
+                l10n.reportTitle,
+                style: TextStyle(color: dialogContext.colors.danger),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showDeleteOptions(BuildContext context, UIMessage model) {

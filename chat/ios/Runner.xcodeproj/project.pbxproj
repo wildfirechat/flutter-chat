@@ -17,6 +17,7 @@
 		25535009011D4CB1ED015EBF /* libPods-Runner.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 12BCBF121A7E228EE7EFF771 /* libPods-Runner.a */; };
 		2C6CF41B312801593AE3EBBD /* ShareUtility.m in Sources */ = {isa = PBXBuildFile; fileRef = C2D31D2D78FAAD1F93F81D27 /* ShareUtility.m */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		A1B2C3D4E5F60718293A4B01 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B02 /* PrivacyInfo.xcprivacy */; };
 		50570B919BEF53EAF3B1F70E /* WFCCallKitManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 99E285BB8667334D218CAB06 /* WFCCallKitManager.h */; };
 		5637C2A9C7DFD3169833709D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 387178D10717B9BB561A73C6 /* CoreGraphics.framework */; };
 		5E68C076DC872B35A6E97C42 /* ConversationCell.m in Sources */ = {isa = PBXBuildFile; fileRef = AD23C99BD32E7BFFC2AB9362 /* ConversationCell.m */; };
@@ -111,6 +112,7 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B02 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		99E285BB8667334D218CAB06 /* WFCCallKitManager.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = WFCCallKitManager.h; sourceTree = "<group>"; };
 		9AD97076A40D7B75757DACD0 /* MBProgressHUD.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = MBProgressHUD.m; path = ShareExtension/MBProgressHUD.m; sourceTree = "<group>"; };
 		9DF20DE9AD772D43A34E31FD /* ShareNavigationController.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ShareNavigationController.h; path = ShareExtension/ShareNavigationController.h; sourceTree = "<group>"; };
@@ -235,6 +237,7 @@
 				97C146FD1CF9000F007C117D /* Assets.xcassets */,
 				97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */,
 				97C147021CF9000F007C117D /* Info.plist */,
+				A1B2C3D4E5F60718293A4B02 /* PrivacyInfo.xcprivacy */,
 				97C146F11CF9000F007C117D /* Supporting Files */,
 				1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */,
 				1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */,
@@ -393,6 +396,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
+				A1B2C3D4E5F60718293A4B01 /* PrivacyInfo.xcprivacy in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
