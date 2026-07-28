@@ -12,6 +12,7 @@ import sqflite_darwin
 import file_picker
 import url_launcher_macos
 import video_player_avfoundation
+import fvp
 
 /// 自定义交通灯按钮类型。
 private enum TrafficLightSymbol {
@@ -293,8 +294,12 @@ class MainFlutterWindow: NSWindow {
           // 媒体预览窗口:另存为对话框 + 视频降级用系统播放器打开。
           FilePickerPlugin.register(with: controller.registrar(forPlugin: "FilePickerPlugin"))
           UrlLauncherPlugin.register(with: controller.registrar(forPlugin: "UrlLauncherPlugin"))
-          // 朋友圈窗口:视频动态播放。
+          // 朋友圈窗口:视频动态播放(官方 avfoundation 实现)。
           FVPVideoPlayerPlugin.register(with: controller.registrar(forPlugin: "FVPVideoPlayerPlugin"))
+          // 媒体预览窗口:视频消息预览，用的是第三方 fvp 包(补 Windows/Linux 桌面后端)，
+          // 类名恰好也叫 FvpPlugin，跟上面 Google 官方的 FVPVideoPlayerPlugin 是两个东西，
+          // 不要合并/搞混。这个不注册的话子窗口里播视频会报 MissingPluginException(CreateRT)。
+          FvpPlugin.register(with: controller.registrar(forPlugin: "FvpPlugin"))
           print("Subwindow plugins registered")
         }
 

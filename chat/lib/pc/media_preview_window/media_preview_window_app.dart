@@ -97,6 +97,16 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
     return Future.value();
   }
 
+  /// 系统标题栏关闭键触发的关窗(跟 [_close] 是两条不同的路径:那个是
+  /// ESC/应用内关闭键，主动调 WindowController.close；这个是用户直接点了
+  /// 原生标题栏的关闭按钮，走 window_manager 的原生关闭事件)。同样要先暂停
+  /// 视频，不然从系统标题栏关闭窗口时视频声音不会停。
+  @override
+  void onWindowClose() async {
+    await _previewKey.currentState?.pauseAllVideos();
+    super.onWindowClose();
+  }
+
   @override
   Widget buildHome(BuildContext context) {
     return Scaffold(

@@ -76,12 +76,18 @@ dependencies:
   mime: ^1.0.5
   # Windows平台9.30.0有问题，这里固定为9.28.0
   flutter_sound: 9.28.0
+  # flutter_sound 桌面端(Windows/macOS/Linux)无实现，语音消息播放在桌面端改走这个
+  audioplayers: ^6.7.1
   path_provider: ^2.1.5
   permission_handler: ^11.3.1
   wechat_camera_picker: ^4.2.1
   # 微信式应用内相册多选(Android/iOS;ohos 无 photo_manager 实现,走系统选择器)
   wechat_assets_picker: ^9.4.0
   video_player: ^2.10.0
+  # video_player 官方在桌面端只有 macOS(avfoundation) 实现，Windows/Linux 缺失；
+  # 注册后为 video_player_platform_interface 补上 Windows/Linux 后端(基于 libmdk)，
+  # 桌面端视频消息才能走应用内 VideoPlayerController 预览，见 main.dart 里的注册调用
+  fvp: ^0.37.3
   url_launcher: ^6.3.0
   # 本地补丁版(Linux 插件销毁时摘掉全局 emission hook 与窗口信号回调,
   # 修子窗口关闭后点击主窗口崩溃),见 vendor/window_manager/PATCHES.md

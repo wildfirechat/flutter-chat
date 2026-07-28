@@ -22,6 +22,7 @@
 #include <window_manager/window_manager_plugin.h>
 #include <screen_retriever_linux/screen_retriever_linux_plugin.h>
 #include <url_launcher_linux/url_launcher_plugin.h>
+#include <fvp/fvp_plugin.h>
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -253,12 +254,18 @@ static void my_application_activate(GApplication* application) {
     g_autoptr(FlPluginRegistrar) screen_retriever_registrar =
         fl_plugin_registry_get_registrar_for_plugin(registry, "ScreenRetrieverLinuxPlugin");
     screen_retriever_linux_plugin_register_with_registrar(screen_retriever_registrar);
-    // 媒体预览窗口:视频降级用系统播放器打开。
+    // 媒体预览窗口:视频降级用系统播放器打开(找不到本地/远程文件等兜底场景)。
     g_autoptr(FlPluginRegistrar) url_launcher_registrar =
         fl_plugin_registry_get_registrar_for_plugin(registry, "UrlLauncherPlugin");
     url_launcher_plugin_register_with_registrar(url_launcher_registrar);
+    // 媒体预览窗口:视频消息应用内预览，用第三方 fvp 包补的 video_player Linux
+    // 后端(官方 video_player 在 Linux 上没有实现)。不注册的话子窗口里播视频
+    // 会报 MissingPluginException(CreateRT)。
+    g_autoptr(FlPluginRegistrar) fvp_registrar =
+        fl_plugin_registry_get_registrar_for_plugin(registry, "FvpPlugin");
+    fvp_plugin_register_with_registrar(fvp_registrar);
     // 统一清单中其余插件(shared_preferences / path_provider /
-    // device_info_plus / file_picker / sqflite / 视频播放)在本项目的
+    // device_info_plus / file_picker / sqflite)在本项目的
     // Linux 依赖集中没有原生实现(见 linux/flutter/
     // generated_plugin_registrant.cc,符号不可链接),保留现状不注册。
   });

@@ -5,6 +5,7 @@ import 'package:avenginekit/engine/call_state.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fvp/fvp.dart' as fvp;
 // import 'package:flutter_dynamic_icon/flutter_dynamic_icon.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/imclient_platform.dart';
@@ -82,6 +83,18 @@ import 'package:chat/pc/search_window/main_search_proxy.dart';
 import 'package:chat/pc/search_window/search_window_app.dart';
 import 'package:chat/pc/search_window/search_window_ipc.dart';
 
+/// video_player 官方桌面实现只覆盖 macOS(avfoundation)，Windows/Linux 缺失，
+/// 桌面端视频消息只能退化为系统播放器打开(见 mm_preview_view.dart)。
+/// fvp 默认只在缺官方实现的平台(Windows/Linux)注册，不影响已工作的
+/// macOS/Android/iOS 后端。鸿蒙电脑(isOhosPc)不在覆盖范围内，维持原有降级行为。
+/// 需在创建任何 VideoPlayerController 之前调用，主窗口/子窗口(多窗口独立 isolate)
+/// 各自的 main() 入口都要调一次。
+void _registerDesktopVideoBackend() {
+  if (WfcPlatform.isNativeDesktop) {
+    fvp.registerWith();
+  }
+}
+
 void main([List<String>? args]) async {
   final effectiveArgs = args ?? <String>[];
 
@@ -89,6 +102,7 @@ void main([List<String>? args]) async {
   // macOS 子引擎会收到错误的 hidden 生命周期状态导致帧调度被关闭。
   if (effectiveArgs.isNotEmpty && effectiveArgs[0] == 'multi_window') {
     SubWindowWidgetsBinding.ensureInitialized();
+    _registerDesktopVideoBackend();
     final windowId = int.parse(effectiveArgs[1]);
     final arguments = effectiveArgs.length > 2 ? jsonDecode(effectiveArgs[2]) as Map<String, dynamic> : <String, dynamic>{};
     final kind = arguments[kWindowKindKey];
@@ -110,6 +124,7 @@ void main([List<String>? args]) async {
   }
 
   WidgetsFlutterBinding.ensureInitialized();
+  _registerDesktopVideoBackend();
 
   // 鸿蒙上查询设备形态(手机/平板/电脑)并缓存,后续 isDesktopShell 等平台判断依赖此结果
   await WfcPlatform.init();

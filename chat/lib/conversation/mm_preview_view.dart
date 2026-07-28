@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/video_message_content.dart';
@@ -57,6 +58,10 @@ class MMPreviewViewState extends State<MMPreviewView> {
   final Map<int, PhotoViewScaleStateController> _scaleStateControllers = {};
   // 每张图一个缩放控制器,桌面端滚轮/工具栏缩放需要读写 scale
   final Map<int, PhotoViewController> _photoControllers = {};
+  // 当前挂载着的视频播放器控制器(按 messageId 存)。关闭预览前要主动暂停：
+  // 桌面独立预览窗关闭时原生引擎可能被直接销毁，不一定会经过 MMVideoPlayer
+  // 正常的 State.dispose() 流程，不主动 pause 的话窗口关掉后视频的声音还在放。
+  final Map<int, VideoPlayerController> _videoControllers = {};
 
   @override
   void initState() {
@@ -88,12 +93,28 @@ class MMPreviewViewState extends State<MMPreviewView> {
 
   int get _currentMessageId => widget.mediaItems[currentIndex].messageId;
 
-  // 桌面端关闭:独立预览窗口里关窗,内嵌(对话框/整页路由)里出栈
-  void _requestClose() {
+  // 桌面端关闭:独立预览窗口里关窗,内嵌(对话框/整页路由)里出栈。
+  // 关之前先暂停所有还挂着的视频，见 _videoControllers 的注释。
+  void _requestClose() async {
+    await pauseAllVideos();
     if (widget.onClose != null) {
       widget.onClose!();
-    } else {
+    } else if (mounted) {
       Navigator.pop(context);
+    }
+  }
+
+  /// 暂停所有还挂着的视频。独立预览窗口(媒体预览子窗口)有系统标题栏关闭键，
+  /// 走的是 window_manager 的原生关闭事件而不是本类的 [_requestClose]，
+  /// 所以还要供 MediaPreviewWindowApp 在 onWindowClose 里主动调一次，
+  /// 否则从系统标题栏关闭窗口时视频声音不会停。
+  Future<void> pauseAllVideos() async {
+    for (final controller in _videoControllers.values) {
+      try {
+        await controller.pause();
+      } catch (_) {
+        // 播放器可能已经在销毁中，忽略
+      }
     }
   }
 
@@ -257,6 +278,10 @@ class MMPreviewViewState extends State<MMPreviewView> {
                       onTap: () {
                         // Toggle controls or whatever if needed, or handle in player
                       },
+                      onControllerReady: (controller) =>
+                          _videoControllers[message.messageId] = controller,
+                      onControllerDisposed: () =>
+                          _videoControllers.remove(message.messageId),
                     ),
                     childSize: MediaQuery.of(context).size,
                     initialScale: PhotoViewComputedScale.contained,
@@ -564,8 +589,13 @@ class MMPreviewViewState extends State<MMPreviewView> {
 class MMVideoPlayer extends StatefulWidget {
   final VideoMessageContent content;
   final VoidCallback? onTap;
+  // 播放器初始化成功/销毁时上报给父级(按 messageId 记录当前挂载的控制器),
+  // 关闭预览前父级要用它主动 pause，见 MMPreviewViewState._videoControllers。
+  final ValueChanged<VideoPlayerController>? onControllerReady;
+  final VoidCallback? onControllerDisposed;
 
-  const MMVideoPlayer(this.content, {super.key, this.onTap});
+  const MMVideoPlayer(this.content,
+      {super.key, this.onTap, this.onControllerReady, this.onControllerDisposed});
 
   @override
   State<MMVideoPlayer> createState() => _MMVideoPlayerState();
@@ -578,8 +608,10 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    // 桌面端 video_player 官方无 Windows/Linux 实现，直接降级为系统播放器打开
-    if (!isDesktopShell) {
+    // Windows/macOS/Linux 由 fvp 补上了 video_player 桌面后端(见 main.dart 的
+    // 注册调用)，可以直接用 VideoPlayerController；鸿蒙电脑没有覆盖，
+    // 仍降级为系统播放器打开
+    if (!WfcPlatform.isOhosPc) {
       _initializeController();
     }
   }
@@ -594,12 +626,36 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
        _controller = VideoPlayerController.networkUrl(Uri.parse(""));
     }
 
+    // 播放/暂停按钮、加载态都要跟着控制器的真实状态走(而不是只在手动调用的
+    // 地方 setState),否则视频自然播完、缓冲等控制器自己触发的变化不会反映到
+    // UI 上，按钮状态就会跟实际播放状态对不上。
+    _controller.addListener(_onControllerValueChanged);
     _controller.initialize().then((_) {
       if (mounted) {
-        setState(() {});
         _controller.play();
+        widget.onControllerReady?.call(_controller);
       }
     });
+  }
+
+  void _onControllerValueChanged() {
+    if (mounted) setState(() {});
+  }
+
+  Widget _buildCoverPlaceholder() {
+    final thumbnail = widget.content.thumbnail;
+    if (thumbnail == null) {
+      return const ColoredBox(color: Colors.black);
+    }
+    return ColoredBox(
+      color: Colors.black,
+      child: Image.memory(
+        thumbnail,
+        fit: BoxFit.contain,
+        width: double.infinity,
+        height: double.infinity,
+      ),
+    );
   }
 
   Future<void> _openWithSystemPlayer() async {
@@ -613,7 +669,9 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
 
   @override
   void dispose() {
-    if (!isDesktopShell) {
+    if (!WfcPlatform.isOhosPc) {
+      _controller.removeListener(_onControllerValueChanged);
+      widget.onControllerDisposed?.call();
       _controller.dispose();
     }
     super.dispose();
@@ -621,7 +679,7 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    if (isDesktopShell) {
+    if (WfcPlatform.isOhosPc) {
       return GestureDetector(
         onTap: _openWithSystemPlayer,
         child: Container(
@@ -653,6 +711,10 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
       child: Stack(
         alignment: Alignment.center,
         children: [
+          // 加载完成前用视频封面(消息自带的缩略图)占位,不然初始化好之前
+          // 只有一个黑底转圈,体验很差
+          if (!_controller.value.isInitialized)
+            Positioned.fill(child: _buildCoverPlaceholder()),
           Center(
             child: _controller.value.isInitialized
                 ? AspectRatio(
@@ -665,13 +727,11 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
             Center(
               child: GestureDetector(
                 onTap: () {
-                  setState(() {
-                    if (_controller.value.isPlaying) {
-                      _controller.pause();
-                    } else {
-                      _controller.play();
-                    }
-                  });
+                  if (_controller.value.isPlaying) {
+                    _controller.pause();
+                  } else {
+                    _controller.play();
+                  }
                 },
                 child: Container(
                   padding: const EdgeInsets.all(12),

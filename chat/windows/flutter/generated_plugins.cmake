@@ -3,11 +3,13 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  audioplayers_windows
   desktop_drop
   desktop_multi_window
   file_selector_windows
   flutter_localization
   flutter_webrtc
+  fvp
   irondash_engine_context
   permission_handler_windows
   screen_retriever_windows

@@ -1,4 +1,7 @@
 PODS:
+  - audioplayers_darwin (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - desktop_drop (0.0.1):
     - FlutterMacOS
   - desktop_multi_window (0.0.1):
@@ -17,10 +20,15 @@ PODS:
     - FlutterMacOS
     - WebRTC-SDK (= 144.7559.09)
   - FlutterMacOS (1.0.0)
+  - fvp (0.36.1):
+    - Flutter
+    - FlutterMacOS
+    - mdk (~> 0.36.0)
   - imclient (0.0.1):
     - FlutterMacOS
   - irondash_engine_context (0.0.1):
     - FlutterMacOS
+  - mdk (0.36.0)
   - mobile_scanner (6.0.2):
     - FlutterMacOS
   - path_provider_foundation (0.0.1):
@@ -54,6 +62,7 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - audioplayers_darwin (from `Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/darwin`)
   - desktop_drop (from `Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos`)
   - desktop_multi_window (from `Flutter/ephemeral/.symlinks/plugins/desktop_multi_window/macos`)
   - device_info_plus (from `Flutter/ephemeral/.symlinks/plugins/device_info_plus/macos`)
@@ -63,6 +72,7 @@ DEPENDENCIES:
   - flutter_localization (from `Flutter/ephemeral/.symlinks/plugins/flutter_localization/macos`)
   - flutter_webrtc (from `Flutter/ephemeral/.symlinks/plugins/flutter_webrtc/macos`)
   - FlutterMacOS (from `Flutter/ephemeral`)
+  - fvp (from `Flutter/ephemeral/.symlinks/plugins/fvp/darwin`)
   - imclient (from `Flutter/ephemeral/.symlinks/plugins/imclient/macos`)
   - irondash_engine_context (from `Flutter/ephemeral/.symlinks/plugins/irondash_engine_context/macos`)
   - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos`)
@@ -80,9 +90,12 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - mdk
     - WebRTC-SDK
 
 EXTERNAL SOURCES:
+  audioplayers_darwin:
+    :path: Flutter/ephemeral/.symlinks/plugins/audioplayers_darwin/darwin
   desktop_drop:
     :path: Flutter/ephemeral/.symlinks/plugins/desktop_drop/macos
   desktop_multi_window:
@@ -101,6 +114,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/flutter_webrtc/macos
   FlutterMacOS:
     :path: Flutter/ephemeral
+  fvp:
+    :path: Flutter/ephemeral/.symlinks/plugins/fvp/darwin
   imclient:
     :path: Flutter/ephemeral/.symlinks/plugins/imclient/macos
   irondash_engine_context:
@@ -131,6 +146,7 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/window_manager/macos
 
 SPEC CHECKSUMS:
+  audioplayers_darwin: 835ced6edd4c9fc8ebb0a7cc9e294a91d99917d5
   desktop_drop: e0b672a7d84c0a6cbc378595e82cdb15f2970a43
   desktop_multi_window: 93667594ccc4b88d91a97972fd3b1b89667fa80a
   device_info_plus: 4fb280989f669696856f8b129e4a5e3cd6c48f76
@@ -140,8 +156,10 @@ SPEC CHECKSUMS:
   flutter_localization: 3cda759884c7dab4466fe963d97fba723a492666
   flutter_webrtc: fec3dc9284a1f6d21ec2caa91c90bb4c1824eb04
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
+  fvp: f8b3b61cf8c696ecaa5608ae0d282ba710e65ae9
   imclient: 7f16737688e0ae74172004a6f53a7ed68bf06ab3
   irondash_engine_context: 893c7d96d20ce361d7e996f39d360c4c2f9869ba
+  mdk: 3bfb53e0bcc9643180eaa864360051f281e4c17b
   mobile_scanner: 0e365ed56cad24f28c0fd858ca04edefb40dfac3
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   photo_manager: fe4cbb0808b96f8be4af7ce6ae18dcd9c9b983c6

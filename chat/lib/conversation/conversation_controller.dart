@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:audioplayers/audioplayers.dart' show AudioPlayer, UrlSource;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:imclient/imclient_platform.dart';
 import 'package:imclient/message/call_start_message_content.dart';
 import 'package:logger/logger.dart' show Level;
 import 'package:flutter_sound/flutter_sound.dart';
@@ -71,6 +74,9 @@ class ConversationController extends ChangeNotifier {
   int _playingMessageId = 0;
   final FlutterSoundPlayer _soundPlayer =
       FlutterSoundPlayer(logLevel: Level.error);
+  // flutter_sound 桌面端(Windows/macOS/Linux)没有实现，语音消息播放在桌面端改走这个
+  AudioPlayer? _desktopSoundPlayer;
+  StreamSubscription<void>? _desktopSoundCompleteSubscription;
 
   void onPickImage(Conversation conversation, String imagePath) {
     ImageMessageContent imgCont = ImageMessageContent();
@@ -241,8 +247,9 @@ class ConversationController extends ChangeNotifier {
     var conversation = model.message.conversation;
     if (model.message.content is ImageMessageContent ||
         model.message.content is VideoMessageContent) {
-      // 桌面端 video_player 官方无 Windows/Linux 实现，视频消息降级为系统播放器打开
-      if (isDesktopShell && model.message.content is VideoMessageContent) {
+      // Windows/macOS/Linux 由 fvp 补上了应用内视频播放(见 main.dart 的注册调用)，
+      // 走下面与图片一致的预览流程；鸿蒙电脑(isOhosPc)未覆盖，维持系统播放器降级
+      if (WfcPlatform.isOhosPc && model.message.content is VideoMessageContent) {
         final videoContent = model.message.content as VideoMessageContent;
         final videoUrl = videoContent.localPath != null && videoContent.localPath!.isNotEmpty && File(videoContent.localPath!).existsSync()
             ? Uri.file(videoContent.localPath!)
@@ -372,11 +379,19 @@ class ConversationController extends ChangeNotifier {
   }
 
   void stopPlayVoiceMessage(UIMessage model) {
-    if (_soundPlayer.isPlaying) {
-      _soundPlayer.stopPlayer();
-    }
+    _stopCurrentVoicePlayback();
     eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, false));
     _playingMessageId = 0;
+  }
+
+  Future<void> _stopCurrentVoicePlayback() async {
+    _desktopSoundCompleteSubscription?.cancel();
+    _desktopSoundCompleteSubscription = null;
+    if (WfcPlatform.isNativeDesktop) {
+      await _desktopSoundPlayer?.stop();
+    } else if (_soundPlayer.isPlaying) {
+      await _soundPlayer.stopPlayer();
+    }
   }
 
   void startPlayVoiceMessage(UIMessage model) async {
@@ -387,12 +402,30 @@ class ConversationController extends ChangeNotifier {
           model.message.messageId, MessageStatus.Message_Status_Played);
       model.message.status = MessageStatus.Message_Status_Played;
     }
-    await _soundPlayer.openPlayer();
-    await _soundPlayer.startPlayer(
-        fromURI: soundContent.remoteUrl!,
-        whenFinished: () {
-          stopPlayVoiceMessage(model);
-        });
+    // 已有另一条语音在播放:必须先停掉，flutter_sound/audioplayers 在同一个
+    // player 实例仍在播放时再 startPlayer/play 大概率静默失败，表现为"切不到
+    // 下一条"；同时把上一条气泡的播放动画复位，否则它会一直卡在播放态。
+    if (_playingMessageId != 0 && _playingMessageId != model.message.messageId) {
+      final previousMessageId = _playingMessageId;
+      await _stopCurrentVoicePlayback();
+      eventBus.fire(VoicePlayStatusChangedEvent(previousMessageId, false));
+      _playingMessageId = 0;
+    }
+    if (WfcPlatform.isNativeDesktop) {
+      // flutter_sound 桌面端(Windows/macOS/Linux)没有实现，改走 audioplayers
+      final player = _desktopSoundPlayer ??= AudioPlayer();
+      _desktopSoundCompleteSubscription = player.onPlayerComplete.listen((_) {
+        stopPlayVoiceMessage(model);
+      });
+      await player.play(UrlSource(MediaUrlRedirector.redirect(soundContent.remoteUrl!)));
+    } else {
+      await _soundPlayer.openPlayer();
+      await _soundPlayer.startPlayer(
+          fromURI: soundContent.remoteUrl!,
+          whenFinished: () {
+            stopPlayVoiceMessage(model);
+          });
+    }
     eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, true));
     _playingMessageId = model.message.messageId;
   }
@@ -994,5 +1027,7 @@ class ConversationController extends ChangeNotifier {
     }
     // stopPlayer 仅停止播放,closePlayer 才真正释放底层播放器资源
     _soundPlayer.closePlayer();
+    _desktopSoundCompleteSubscription?.cancel();
+    _desktopSoundPlayer?.dispose();
   }
 }

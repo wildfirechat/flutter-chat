@@ -10,6 +10,7 @@
 #include <screen_retriever_windows/screen_retriever_windows_plugin_c_api.h>
 #include <permission_handler_windows/permission_handler_windows_plugin.h>
 #include <url_launcher_windows/url_launcher_windows.h>
+#include <fvp/fvp_plugin_c_api.h>
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -49,11 +50,16 @@ bool FlutterWindow::OnCreate() {
         registry->GetRegistrarForPlugin("ScreenRetrieverWindowsPluginCApi"));
     PermissionHandlerWindowsPluginRegisterWithRegistrar(
         registry->GetRegistrarForPlugin("PermissionHandlerWindowsPlugin"));
-    // 媒体预览窗口:视频降级用系统播放器打开。
+    // 媒体预览窗口:视频降级用系统播放器打开(找不到本地/远程文件等兜底场景)。
     UrlLauncherWindowsRegisterWithRegistrar(
         registry->GetRegistrarForPlugin("UrlLauncherWindows"));
+    // 媒体预览窗口:视频消息应用内预览，用第三方 fvp 包补的 video_player
+    // Windows 后端(官方 video_player 在 Windows 上没有实现)。不注册的话
+    // 子窗口里播视频会报 MissingPluginException(CreateRT)。
+    FvpPluginCApiRegisterWithRegistrar(
+        registry->GetRegistrarForPlugin("FvpPluginCApi"));
     // 统一清单中其余插件(shared_preferences / path_provider /
-    // device_info_plus / file_picker / sqflite / 视频播放)在本项目的
+    // device_info_plus / file_picker / sqflite)在本项目的
     // Windows 依赖集中没有原生实现(见 windows/flutter/
     // generated_plugin_registrant.cc,头文件不可链接),保留现状不注册。
   });

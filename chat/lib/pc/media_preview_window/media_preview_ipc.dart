@@ -25,13 +25,16 @@ class MediaPreviewEvents {
 }
 
 /// 媒体预览 IPC 的消息编解码:线格式统一走 [IpcCodec],本类只负责按
-/// contentType 实例化图片/视频消息内容类,并裁掉预览用不到的缩略图,
+/// contentType 实例化图片/视频消息内容类,并裁掉图片预览用不到的缩略图,
 /// 避免跨窗口传输大块 base64。
 class MediaPreviewCodec {
   static Map<String, dynamic> encodeMessage(Message message) {
     final map = IpcCodec.encodeMessage(message);
-    // 预览加载原图/原视频,缩略图不参与渲染,置空以缩小载荷
-    (map['content'] as Map<String, dynamic>)['binaryContent'] = null;
+    // 预览加载原图,图片缩略图不参与渲染,置空以缩小载荷；
+    // 视频的缩略图要留着给 MMVideoPlayer 在原视频加载完成前当封面占位用。
+    if (message.content is! VideoMessageContent) {
+      (map['content'] as Map<String, dynamic>)['binaryContent'] = null;
+    }
     return map;
   }
 

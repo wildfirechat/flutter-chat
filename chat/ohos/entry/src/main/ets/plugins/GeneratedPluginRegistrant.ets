@@ -1,6 +1,7 @@
 import { FlutterEngine, Log } from '@ohos/flutter_ohos';
 import PhotoManagerPlugin from 'photo_manager';
 import ImclientPlugin from 'imclient';
+import FvpPlugin from 'fvp';
 
 /**
  * Generated file. Do not edit.
@@ -16,6 +17,7 @@ export class GeneratedPluginRegistrant {
     try {
       flutterEngine.getPlugins()?.add(new PhotoManagerPlugin());
       flutterEngine.getPlugins()?.add(new ImclientPlugin());
+      flutterEngine.getPlugins()?.add(new FvpPlugin());
     } catch (e) {
       Log.e(
         TAG,

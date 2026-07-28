@@ -3,11 +3,13 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  audioplayers_linux
   desktop_drop
   desktop_multi_window
   file_selector_linux
   flutter_localization
   flutter_webrtc
+  fvp
   irondash_engine_context
   screen_retriever_linux
   super_native_extensions
