@@ -1,15 +1,13 @@
 # imclient
 
-A new Flutter project.
+野火 IM 协议栈的 Dart 封装，对上层（chat 应用与 avenginekit）提供连接管理、消息收发、
+会话/用户/群组等 IM 能力的统一接口，入口为 `lib/imclient.dart` 中的 `Imclient` 类。
 
-## Getting Started
+## 各平台实现
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+- **Android / iOS**:原生插件，通过 MethodChannel 调用野火原生 IM SDK。
+- **桌面端（Windows / Linux / macOS）**:基于 `dart:ffi` 直连野火 IM SDK 动态库，
+  方法分发在 Dart 侧实现（`lib/src/ffi/`），原生侧仅有共享垫片与打包。
+- **鸿蒙（ohos）**:以 HAR 形式集成的原生插件。
 
-For help getting started with Flutter development, view the
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
+事件（连接状态变更、收到消息、资料更新等）通过 `event_bus` 分发。

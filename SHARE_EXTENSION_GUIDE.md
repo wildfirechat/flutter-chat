@@ -196,7 +196,7 @@ group.cn.wildfirechat.messangerEx
 
 打开 `ShareExtension` 下的文件，把 App Group ID、Bundle ID 前缀替换为目标项目：
 
-- `ShareViewController.m`、`ConversationListViewController.m`、`ShareAppService.m` 中的：
+- `ConversationListViewController.m`、`ShareAppService.m` 中的：
 
 ```objc
 static NSString * const kShareAppGroupId = @"group.your.bundle.id";
@@ -349,6 +349,6 @@ ShareService.instance.syncSharedDataOnBackground();
 ## 已知限制与后续 TODO
 
 1. 图片上传未做压缩选项；大图片会直接上传原图（`fullImage=YES` 时）。
-2. 链接分享未抓取网页标题/缩略图，当前以 URL 本身作为标题。
+2. 链接分享的标题取自分享面板提供的 `attributedContentText`（未主动抓取网页标题），缩略图仅尝试抓取站点 favicon（失败时无缩略图）。
 3. 群组头像九宫格合成未实现；当前只使用 `portraitUrl`。
 4. 多图分享只取第一张，未支持批量发送。

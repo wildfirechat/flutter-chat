@@ -1,4 +1,4 @@
-# PC 端音视频通话独立窗口 IPC 方案设计文档
+# PC 端独立子窗口（通话/媒体预览/朋友圈/搜索）IPC 方案设计文档
 
 ## 1. 背景与目标
 
@@ -166,6 +166,7 @@ hidden/paused/detached 一律降级为 inactive，保证帧调度常开。`main.
 | `windowTitle(l10n)` | 抽象 | 窗口标题；l10n 由基类按当前语言解析 |
 | `minWindowSize` | 抽象 | 窗口最小尺寸 |
 | `buildHome(context)` | 抽象 | ready 后的主内容；未 ready 统一显示加载页 |
+| `windowId` / `windowArguments` | 抽象 | 子窗口 Widget 持有的窗口 id 与创建参数（`_selfUserId`、`_windowType` 等从这里取） |
 | `imclientChannel` | `null` | 子窗口的 IM 代理通道（媒体预览不连 IM 为 null） |
 | `registerMessageContents()` | 空 | 注册消息内容类型（仅 Dart 层解码用） |
 | `eventHandlers` | `{}` | 主窗口转发事件的 handler 表 |
@@ -177,6 +178,18 @@ hidden/paused/detached 一律降级为 inactive，保证帧调度常开。`main.
 | `navigatorKey` | `null` | MaterialApp navigatorKey（媒体预览的 toast Overlay） |
 | `buildLightTheme/buildDarkTheme/themeMode` | AppTheme + 跟随设置 | 通话/媒体预览覆写为强制暗色 |
 | `buildLoading(context)` | 居中 spinner | 未 ready 加载页 |
+
+**全局水印**：基类的 `MaterialApp.builder` 在内容之上叠了一层
+`WatermarkOverlay`（`chat/lib/widget/watermark_overlay.dart`），四类子窗口与主窗口
+一样覆盖全局安全水印（用户 ID + 分钟精度时间，`Config.ENABLE_WATER_MARKER` 开关）。
+userId 优先取构造函数传入值（主窗口用法）；子窗口未传，回退
+`Imclient.currentUserId`——基类 `_init` 第一步已用创建参数 `_selfUserId` 把它设好
+（四类子窗口创建时都注入，见 §4.4）。
+
+> 标题栏相关的另一处差异在**主窗口**：Windows 主窗口在
+> `PCWindowManager.ensureInitialized()` 中 `setTitleBarStyle(hidden)`，改由
+> `chat/lib/pc/widgets/pc_window_caption.dart` 自绘标题栏（整条可拖动、双击切换
+> 最大化，右侧最小化/最大化/关闭按钮）。子窗口不经过 `PCWindowManager`，不受影响。
 
 ### 4.4 主窗口侧 Manager 模板：`SubWindowManagerBase`
 
@@ -190,8 +203,12 @@ create→setFrame→center→show 创建序列（先 center 再 show，防角落
 | reusePolicy | 行为 | 使用者 |
 |-------------|------|--------|
 | `raiseOnly` | 已开窗仅置顶，失效则重建 | 朋友圈 |
-| `updateContent` | 置顶前先发内容更新事件 | 搜索（发 `search.updateConversation`）；媒体预览语义相同但 pending 逻辑特殊，自行实现 |
+| `updateContent` | 置顶前先发内容更新事件 | 搜索（发 `search.updateConversation`）；媒体预览声明同策略，但 pending 补发逻辑特殊，复用由 `show()` 自行实现 |
 | `recreate` | 不复用，先关再开 | 通话 |
+
+创建参数由基类统一注入 `kWindowKindKey` 与 `_selfUserId`（`injectSelfUserId`
+默认 true，**四类子窗口均注入**：连接 IM 的子窗口业务需要；媒体预览窗虽不连 IM，
+也靠它在子窗口侧设置 `Imclient.currentUserId`，供全局水印显示用户 ID，见 §4.3）。
 
 ### 4.5 子窗口 IM 代理通道：`ProxyImclientChannel`
 
@@ -418,13 +435,14 @@ class CallWindowImclientChannel extends ProxyImclientChannel {
     forwardWithRequestId('sendConferenceRequest', _dispatch, makeRequest: ...);
     forward('updateMessage', event: MainWindowEvents.updateMessageContent, ...);
     forwardSimple('currentUserId');
-    // ... 共 15 个方法
+    // ... 共 14 个方法
   }
 }
 ```
 
 朋友圈（前缀 `'moment.imclient'`，9 个方法）与搜索（前缀 `'search.imclient'`，
-9 个方法）同构；媒体预览窗不连 IM，没有代理通道。
+9 个方法）同构；媒体预览窗不连 IM，没有代理通道（但创建参数仍注入
+`_selfUserId`，供全局水印显示用户 ID，见 §4.3/§4.4）。
 
 这样，子窗口里的 `Imclient.sendMessage(...)`、`Imclient.getUserInfo(...)` 等调用，实际上都通过 IPC 发到了主窗口。
 
@@ -588,14 +606,16 @@ FlutterMultiWindowPlugin.setOnWindowCreatedCallback { controller in
 
 ### 9.2 Windows：`flutter_window.cpp`
 
-当前注册 6 个插件（含 url_launcher，供媒体预览"系统播放器打开"）：
+当前注册 5 个插件（含 url_launcher，供媒体预览"系统播放器打开"）。子窗口无托盘用途，
+**不注册** `TrayManagerPlugin`（托盘归主窗口独占）：tray_manager 的 Windows 实现把
+MethodChannel 存在进程级全局变量里，子窗口注册会顶掉主窗口那份——开着子窗口期间托盘
+事件全发到子窗口 isolate，子窗口关闭后析构再把它置空，主窗口托盘彻底失效：
 
 ```cpp
 DesktopMultiWindowSetWindowCreatedCallback([](void* controller) {
   auto* registry = reinterpret_cast<flutter::FlutterViewController*>(controller)->engine();
   FlutterWebRTCPluginRegisterWithRegistrar(registry->GetRegistrarForPlugin("FlutterWebRTCPlugin"));
   WindowManagerPluginRegisterWithRegistrar(registry->GetRegistrarForPlugin("WindowManagerPlugin"));
-  TrayManagerPluginRegisterWithRegistrar(registry->GetRegistrarForPlugin("TrayManagerPlugin"));
   ScreenRetrieverWindowsPluginCApiRegisterWithRegistrar(registry->GetRegistrarForPlugin("ScreenRetrieverWindowsPluginCApi"));
   PermissionHandlerWindowsPluginRegisterWithRegistrar(registry->GetRegistrarForPlugin("PermissionHandlerWindowsPlugin"));
   UrlLauncherWindowsRegisterWithRegistrar(registry->GetRegistrarForPlugin("UrlLauncherWindows"));
@@ -606,17 +626,22 @@ DesktopMultiWindowSetWindowCreatedCallback([](void* controller) {
 
 ### 9.3 Linux：`my_application.cc`
 
-当前注册 5 个插件（含 url_launcher）：
+当前注册 4 个插件（含 url_launcher）。`TrayManagerPlugin` 同样不注册：其 Linux 实现
+用进程级全局 `plugin_instance` 记录最后注册的插件对象，子窗口注册会把它顶掉，子窗口
+关闭后点击托盘菜单会用已释放的指针发事件，直接崩溃：
 
 ```cpp
 desktop_multi_window_plugin_set_window_created_callback([](FlPluginRegistry* registry){
-  // flutter_webrtc / window_manager / tray_manager / screen_retriever ...
+  // flutter_webrtc / window_manager / screen_retriever / url_launcher(不注册 tray_manager)
   g_autoptr(FlPluginRegistrar) url_launcher_registrar =
       fl_plugin_registry_get_registrar_for_plugin(registry, "UrlLauncherPlugin");
   url_launcher_plugin_register_with_registrar(url_launcher_registrar);
   // 统一清单中其余插件在本项目的 Linux 依赖集中没有原生实现,保留现状。
 });
 ```
+
+另外，本文件还负责 Linux 主窗口标题：「野火IM」（GNOME HeaderBar 与传统标题栏
+两处均设置，不再是模板硬编码的 "chat"）。
 
 ### 9.4 注册原则
 
@@ -797,7 +822,7 @@ if (isDesktopShell) {
 | `call_window_manager.dart` | 创建/管理通话窗（基于 SubWindowManagerBase，recreate 策略，类型尺寸表） |
 | `call_window_events.dart` | 通话窗事件名常量（`CallWindowEvents` voip.* / `MainWindowEvents` imclient.*） |
 | `main_avengine_kit_proxy.dart` | 主窗口代理：监听 IM、转发事件、代发消息、回传发送结果、路由 ready/closed |
-| `call_window_imclient_proxy.dart` | 子窗口 IM 代理（基于 ProxyImclientChannel，15 个方法） |
+| `call_window_imclient_proxy.dart` | 子窗口 IM 代理（基于 ProxyImclientChannel，14 个方法） |
 | `voip_message_codec.dart` | 子窗口按 contentType 实例化 avenginekit 消息内容类 |
 | `raw_voip_message_content.dart` | 主窗口占位 VOIP 消息内容类 |
 | `model_codec.dart` | 用户/群成员信息编码(proto 形态,子窗口用 SDK 转换器解码) |
@@ -836,7 +861,9 @@ if (isDesktopShell) {
 |------|------|
 | `chat/lib/main.dart` | 子窗口入口 `args[0] == 'multi_window'`，按 `kWindowKindKey` 分发四类 WindowApp；主窗口安装 `MainAvEngineKitProxy` / `MainMomentProxy` / `MainSearchProxy` |
 | `chat/lib/call/av_call_launcher.dart` | 发起音视频通话的唯一入口(桌面/移动分流 + 通话中判断) |
+| `chat/lib/widget/watermark_overlay.dart` | 全局安全水印（主窗口与四类子窗口统一覆盖，用户 ID + 分钟精度时间，`Config.ENABLE_WATER_MARKER` 开关） |
+| `chat/lib/pc/widgets/pc_window_caption.dart` | Windows 主窗口自绘标题栏（配合 `PCWindowManager.ensureInitialized()` 的 `setTitleBarStyle(hidden)`；子窗口不使用） |
 | `imclient/lib/imclient_method_channel.dart` | `dispatchSendMessageResult` / `dispatchConferenceRequestResult` / `dispatchStringResult` / `dispatchOperationResult`（子窗口代理回调分发） |
 | `chat/macos/Runner/MainFlutterWindow.swift` | macOS 主窗口 + 子窗口插件注册（9 个，无 tray_manager） |
-| `chat/windows/runner/flutter_window.cpp` | Windows 主窗口 + 子窗口插件注册（6 个，含 url_launcher） |
-| `chat/linux/runner/my_application.cc` | Linux 主窗口 + 子窗口插件注册（5 个，含 url_launcher） |
+| `chat/windows/runner/flutter_window.cpp` | Windows 主窗口 + 子窗口插件注册（5 个，含 url_launcher，不含 tray_manager） |
+| `chat/linux/runner/my_application.cc` | Linux 主窗口（标题「野火IM」）+ 子窗口插件注册（4 个，含 url_launcher，不含 tray_manager） |

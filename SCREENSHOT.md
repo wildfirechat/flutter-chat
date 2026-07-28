@@ -10,12 +10,12 @@
 
 在桌面端会话界面增加“截屏”按钮，点击后：
 
-1. 隐藏 Flutter 窗口；
+1. 隐藏 Flutter 窗口（仅 Windows/Linux；macOS 保持窗口可见）；
 2. 调起 flameshot 的 GUI 选区截图；
 3. 用户确认后 flameshot 生成 PNG；
 4. Dart 读取截图文件路径；
 5. 通过现有图片发送逻辑（`ConversationController.onPickImage`）作为图片消息发送；
-6. 重新显示并聚焦 Flutter 窗口。
+6. 重新显示并聚焦 Flutter 窗口（仅 Windows/Linux）。
 
 ---
 
@@ -49,7 +49,7 @@ chat/
 │   ├── NOTICE.md                            # 第三方开源声明
 │   ├── LICENSE.flameshot                    # flameshot GPL-3.0 完整许可证
 │   ├── windows/flameshot/                   # Windows 二进制 + Qt6 DLL
-│   ├── linux/flameshot/                     # Linux 二进制 + Qt6 so
+│   ├── linux/flameshot/<arch>/              # Linux 二进制 + Qt6 so（按架构分目录：x86_64、aarch64 等）
 │   └── macos/flameshot.app/                 # macOS 完整 app bundle
 ├── windows/CMakeLists.txt                   # Windows 打包集成
 ├── linux/CMakeLists.txt                     # Linux 打包集成
@@ -110,7 +110,8 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 
 # 用 linuxdeployqt / linuxdeploy 整理 Qt 依赖
-# 然后把 flameshot 二进制和依赖库放到 chat/native_tools/linux/flameshot/
+# 然后按目标架构把 flameshot 二进制和依赖库放到 chat/native_tools/linux/flameshot/<arch>/
+# 例如 x86_64、aarch64（也兼容无架构子目录的旧布局 linux/flameshot/）
 ```
 
 ---
@@ -119,7 +120,9 @@ cmake --build build --parallel
 
 ### 5.1 Windows / Linux（CMake）
 
-在 `chat/windows/CMakeLists.txt` 和 `chat/linux/CMakeLists.txt` 中已加入：
+在 `chat/windows/CMakeLists.txt` 和 `chat/linux/CMakeLists.txt` 中已加入打包逻辑（以下为主要片段，略去警告分支）。
+
+Windows：
 
 ```cmake
 # native_tools 在应用根目录（chat/native_tools），不在 chat/windows、chat/linux 下
@@ -132,8 +135,36 @@ if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot.exe")
     DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
     COMPONENT Runtime)
 endif()
+```
 
-# 复制许可证声明
+Linux 会按 `CMAKE_SYSTEM_PROCESSOR` 选择架构子目录，并兼容旧的无架构布局：
+
+```cmake
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
+  set(FLAMESHOT_ARCH "x86_64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+  set(FLAMESHOT_ARCH "aarch64")
+# ...其余架构映射略
+endif()
+
+set(NATIVE_TOOLS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../native_tools")
+set(FLAMESHOT_TOOL_DIR "${NATIVE_TOOLS_DIR}/linux/flameshot/${FLAMESHOT_ARCH}")
+set(FLAMESHOT_TOOL_DIR_LEGACY "${NATIVE_TOOLS_DIR}/linux/flameshot")
+if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot")
+  install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot/${FLAMESHOT_ARCH}"
+    COMPONENT Runtime)
+elseif(EXISTS "${FLAMESHOT_TOOL_DIR_LEGACY}/flameshot")
+  # 兼容旧的无架构子目录布局
+  install(DIRECTORY "${FLAMESHOT_TOOL_DIR_LEGACY}/"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
+    COMPONENT Runtime)
+endif()
+```
+
+两个平台都会复制许可证声明：
+
+```cmake
 set(FLAMESHOT_LICENSE "${NATIVE_TOOLS_DIR}/LICENSE.flameshot")
 set(FLAMESHOT_NOTICE "${NATIVE_TOOLS_DIR}/NOTICE.md")
 if(EXISTS "${FLAMESHOT_LICENSE}")
@@ -150,9 +181,9 @@ endif()
 build/windows/x64/runner/Release/      # 或 build/linux/x64/release/bundle/
 ├── wildfirechat.exe / wildfirechat
 ├── flameshot/
-│   ├── flameshot.exe / flameshot
+│   ├── flameshot.exe                  # Windows
 │   ├── Qt6Core.dll / libQt6Core.so.6
-│   └── ...
+│   └── x86_64/flameshot               # Linux：按架构子目录安装（旧布局则直接 flameshot/flameshot）
 ├── LICENSE.flameshot
 └── NOTICE.md
 ```
@@ -181,6 +212,8 @@ for FILE in LICENSE.flameshot NOTICE.md; do
 done
 ```
 
+（实际脚本另有几行 `echo "[flameshot] ..."` 日志输出，此处略去。）
+
 执行 `flutter build macos` 后产物结构：
 
 ```text
@@ -204,10 +237,11 @@ build/macos/Build/Products/Release/WildFireChat.app/Contents/Resources/
 // 是否已找到 flameshot 二进制
 static Future<bool> get isAvailable;
 
-// 调用 flameshot gui，返回截图文件路径；取消或失败返回 null
-static Future<String?> captureToFile();
+// 调用 flameshot gui，返回 ScreenshotResult（path/error）；
+// 用户取消时 path 与 error 均为 null
+static Future<ScreenshotResult> captureToFile();
 
-// 直接读回 PNG 字节（不走临时文件）
+// 直接读回 PNG 字节（内部仍走临时文件）
 static Future<Uint8List?> captureToBytes();
 ```
 
@@ -215,11 +249,11 @@ static Future<Uint8List?> captureToBytes();
 
 - 根据 `Platform.resolvedExecutable` 定位各平台二进制：
   - Windows：`flameshot/flameshot.exe`
-  - Linux：`flameshot/flameshot`
+  - Linux：`flameshot/<arch>/flameshot`（`<arch>` 由 `Abi.current()` 映射为 `x86_64`、`aarch64` 等；无架构子目录时回退到 `flameshot/flameshot`）
   - macOS：`../Resources/flameshot.app/Contents/MacOS/flameshot`
 - 设置 `workingDirectory` 为 flameshot 目录，保证 Windows 能找到同目录 DLL。
-- Linux 设置 `LD_LIBRARY_PATH`，Windows 设置 `PATH`。
-- 调用前 `windowManager.hide()`，调用后 `windowManager.show()` + `focus()`。
+- Linux 设置 `LD_LIBRARY_PATH`，Windows 设置 `PATH`；macOS 不注入额外环境变量。
+- 调用前 `windowManager.hide()`，调用后 `windowManager.show()` + `focus()`——仅 Windows/Linux；macOS 保持窗口可见（隐藏主窗口可能导致子进程无法获得屏幕录制权限或窗口焦点）。
 
 ### 6.2 UI 入口
 
@@ -250,9 +284,11 @@ Future<void> _captureScreenshot(
     }
     return;
   }
-  final path = await ScreenshotService.captureToFile();
-  if (path != null) {
-    conversationController.onPickImage(controller.conversation, path);
+  final result = await ScreenshotService.captureToFile();
+  if (result.success) {
+    conversationController.onPickImage(controller.conversation, result.path!);
+  } else if (result.error != null && mounted) {
+    showToast(msg: result.error!);
   }
 }
 ```
@@ -261,7 +297,7 @@ Future<void> _captureScreenshot(
 
 文件：`chat/lib/conversation/input_bar/plugin_board.dart`
 
-桌面端条件下增加 `screenshot` 项（`isDesktopShell` 控制），点击后同样走 `ScreenshotService.captureToFile()`。
+桌面端条件下增加 `screenshot` 项（`WfcPlatform.isNativeDesktop` 控制），点击后同样走 `ScreenshotService.captureToFile()`。
 
 ### 6.3 发送图片消息
 
@@ -361,9 +397,11 @@ ls build/windows/x64/runner/Release/LICENSE.flameshot
 ```bash
 cd chat
 flutter build linux
-ls build/linux/x64/release/bundle/flameshot/flameshot
+ls build/linux/x64/release/bundle/flameshot/x86_64/flameshot
 ls build/linux/x64/release/bundle/LICENSE.flameshot
 ```
+
+（若使用的是无架构子目录的旧布局，则路径为 `flameshot/flameshot`。）
 
 ---
 
@@ -375,7 +413,7 @@ ls build/linux/x64/release/bundle/LICENSE.flameshot
 
 - macOS：`native_tools/macos/flameshot.app/Contents/MacOS/flameshot`
 - Windows：`native_tools/windows/flameshot/flameshot.exe`
-- Linux：`native_tools/linux/flameshot/flameshot`
+- Linux：`native_tools/linux/flameshot/<arch>/flameshot`（`<arch>` 如 `x86_64`、`aarch64`；也兼容旧布局 `native_tools/linux/flameshot/flameshot`）
 
 ### Q2：macOS 上 flameshot 弹不出来
 

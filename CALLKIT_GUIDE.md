@@ -139,7 +139,7 @@ Dart → 原生：
 
 ### App Group（与 Share Extension 共享）
 
-如果项目同时启用 Share Extension，主应用需要开启 App Groups。CallKit 本身不强制要求 App Group，但当前项目里 CallKit 与 Share Extension 共用同一套原生代码，建议保持 App Group 配置一致。
+如果项目同时启用 Share Extension，主应用需要开启 App Groups。当前项目已在 `chat/ios/Runner/Runner.entitlements` 中配置了 App Group（`group.cn.wildfirechat.messangerEx`），供 Share Extension 共享数据使用；CallKit 本身不强制要求 App Group，无需为其额外配置。
 
 ---
 
@@ -278,6 +278,6 @@ CallKitService.instance.reportCallEnded(session.callId);
 
 ## 已知限制与后续 TODO
 
-1. 当前未处理 CallKit 静音事件反向同步到 Dart（已预留 `didChangeCallMute`，可根据需要接入）。
+1. 静音事件已双向打通：原生 `performSetMutedCallAction` 会发送 `didChangeCallMute` 到 Dart，Dart 侧调用 `session.muteAudio(muted)` 同步到通话。
 2. 多设备同时收到来电时的去重逻辑依赖服务器侧 VoIP Push 策略。
 3. 当前 Channel 通话未接入 CallKit，仅 Single/Group 通话通过 `avenginekit` 处理。
