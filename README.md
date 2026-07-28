@@ -134,6 +134,7 @@ Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST�
    - Linux：`flutter run -d linux` 或 `flutter build linux`
      > Linux 环境配置说明，请参考 [Setup Linux development](https://docs.flutter.dev/platform-integration/linux/setup)
 4. 桌面端已支持音视频通话（在独立窗口进行）、图片/视频预览、朋友圈、会话内搜索（"聊天记录"窗口）等功能；拍照等移动端特有的功能在桌面端不显示。
+5. macOS 版对外分发（Developer ID 签名 + 公证 + 打包 DMG）的完整流程，请参考 [MACOS_DISTRIBUTION.md](./MACOS_DISTRIBUTION.md)。
 
 ### Android Studio运行
 1. 配置 `Flutter SDK Path` 和 `Dart SDK Path` 为鸿蒙适配版的对应路径
