@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:chat/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:imclient/imclient.dart';
 import 'package:desktop_drop/desktop_drop.dart';
 import 'package:cross_file/cross_file.dart';
@@ -497,6 +498,20 @@ class _ConversationPaneState extends State<ConversationPane> {
                 ),
             ],
           );
+
+          if (conversationViewModel.isMultiSelectMode) {
+            content = Focus(
+              autofocus: true,
+              onKeyEvent: (node, event) {
+                if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+                  conversationViewModel.toggleMultiSelectMode();
+                  return KeyEventResult.handled;
+                }
+                return KeyEventResult.ignored;
+              },
+              child: content,
+            );
+          }
 
           if (isDesktopShell) {
             return DropTarget(

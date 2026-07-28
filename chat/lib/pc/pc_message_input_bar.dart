@@ -283,7 +283,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     }
   }
 
-  Future<void> _captureScreenshot(ConversationController conversationController, MessageInputBarController controller) async {
+  Future<void> _captureScreenshot(MessageInputBarController controller) async {
     final l10n = AppLocalizations.of(context)!;
     final available = await ScreenshotService.isAvailable;
     if (!available) {
@@ -294,7 +294,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     }
     final result = await ScreenshotService.captureToFile(l10n);
     if (result.success) {
-      conversationController.onPickImage(controller.conversation, result.path!);
+      controller.insertInlineImage(result.path!);
     } else if (result.error != null && mounted) {
       showToast(msg: result.error!);
     }
@@ -359,7 +359,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                             _ToolbarButton(
                               icon: Icons.cut,
                               tooltip: l10n.screenshotTool,
-                              onTap: () => _captureScreenshot(conversationController, controller),
+                              onTap: () => _captureScreenshot(controller),
                             ),
                             _ToolbarButton(
                               icon: Icons.folder_outlined,
