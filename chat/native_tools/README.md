@@ -24,7 +24,8 @@ https://github.com/heavyrain2012/flameshot
 
 ## 如何准备
 
- flameshot 源码在 `../flameshot`（项目根目录的兄弟目录）。
+> fork 项目，然后才能使用 github action 打包
+> 已通过 git lfs 提交了 `native_tools.zip`，可直接删除`native_tools`目录，并有解压缩`native_tools.zip`使用预编译版本
 
 ### macOS（已有编译包）
 
@@ -38,7 +39,7 @@ cp -R ../flameshot/build/src/flameshot.app chat/native_tools/macos/flameshot.app
 
  通过github action 打包，并将 portable 包，按上面的目录结构放置
 
-### Linux（支持多架构）
+### Linux（支持多架构，目前支持 x86_64 和 arm64）
 
 1. 通过 github action 打包，得到 AppImage 包
 2. `./flameshot.AppImage --appimage-extract`解包，并按上面的目录结构放置
