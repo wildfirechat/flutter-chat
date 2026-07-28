@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:dsbridge_flutter/dsbridge_flutter.dart';
 import 'package:flutter/cupertino.dart';
@@ -28,10 +29,22 @@ class JsApi extends JavaScriptNamespaceInterface {
   /// 页内 `close` 的去向。工作台(PC)传入"关掉当前页签",不传则 Navigator.pop。
   final VoidCallback? onClose;
 
+  /// 推入一个盖住当前 WebView 的全屏页面(联系人选择、内嵌网页跳转等)。
+  ///
+  /// 不能自己简单 `Navigator.push`:Linux 上原生 WebView 是叠在 Flutter 画面上的
+  /// 独立 GTK 窗口,位置只在 [WebViewWidget] 对应 RenderObject `paint()` 时才会
+  /// 同步给原生侧;仅仅被上层不透明路由盖住,Navigator 会跳过它的 `paint()`,
+  /// 原生窗口收不到通知,会继续悬浮在最上层挡住新页面、吞掉点击。宿主实现这个
+  /// 回调时要先把自己的 [WebViewWidget] 从树上真正摘掉(让插件自身正确的
+  /// dispose 流程去隐藏原生窗口),等 [builder] 对应的路由弹出后再挂回来
+  /// (重新挂载时第一帧 paint 会自动把原生窗口位置复位)。
+  final Future<void> Function(WidgetBuilder builder) pushOverlay;
+
   JsApi(
     this.context,
     this.appUrl,
     this.webViewController, {
+    required this.pushOverlay,
     this.onOpenUrl,
     this.onClose,
   }) {
@@ -74,10 +87,7 @@ class JsApi extends JavaScriptNamespaceInterface {
       onOpenUrl!(resolved);
       return;
     }
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => WFWebViewScreen(resolved)),
-    );
+    unawaited(pushOverlay((context) => WFWebViewScreen(resolved)));
   }
 
   void close(dynamic obj, CompletionHandler handler) {
@@ -128,34 +138,38 @@ class JsApi extends JavaScriptNamespaceInterface {
       _callbackJs(handler, -2);
       return;
     }
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => PickUserScreen(title: '选择联系人', (_, members) async {
-                if (members.isEmpty) {
-                  Fluttertoast.showToast(msg: "请选择一位或者多位好友提交日报");
-                } else {
-                  //callbackJs(handler, 0, userInfos);
+    unawaited(pushOverlay((context) => PickUserScreen(title: '选择联系人', (_, members) async {
+          if (members.isEmpty) {
+            Fluttertoast.showToast(msg: "请选择一位或者多位好友提交日报");
+          } else {
+            //callbackJs(handler, 0, userInfos);
 
-                  List<UserInfo> userInfos = await Imclient.getUserInfos(members);
-                  List<Map<String, dynamic>> userInfoList = [];
-                  for (var userInfo in userInfos) {
-                    userInfoList.add({
-                      'uid': userInfo.userId,
-                      'name': userInfo.name,
-                      'displayName': userInfo.displayName,
-                      'portrait': userInfo.portrait,
-                    });
-                  }
-                  _callbackJs2(handler, 0, json.encode(userInfoList));
-                  Navigator.pop(context);
-                }
-              })),
-    );
+            List<UserInfo> userInfos = await Imclient.getUserInfos(members);
+            List<Map<String, dynamic>> userInfoList = [];
+            for (var userInfo in userInfos) {
+              userInfoList.add({
+                'uid': userInfo.userId,
+                'name': userInfo.name,
+                'displayName': userInfo.displayName,
+                'portrait': userInfo.portrait,
+              });
+            }
+            _callbackJs2(handler, 0, json.encode(userInfoList));
+            Navigator.pop(context);
+          }
+        })));
   }
 
   _preCheck() {
-    return appUrl == currentUr;
+    final ok = appUrl == currentUr;
+    if (!ok) {
+      // chooseContacts "第一次生效、后面不一定生效"排查用:如果这里打出的
+      // appUrl/currentUr 不一致,说明页面发生过 _preCheck 判定意义上的"跳走"
+      // (含 SPA pushState/hash 变化触发的 onUrlChange),之后的 chooseContacts
+      // 全部会在这里被拦掉、静默返回 -2,和 WebView 挂载/隐藏逻辑无关。
+      debugPrint('JsApi._preCheck failed: appUrl=$appUrl currentUr=$currentUr');
+    }
+    return ok;
   }
 
   _callbackJs(CompletionHandler handler, int code) {

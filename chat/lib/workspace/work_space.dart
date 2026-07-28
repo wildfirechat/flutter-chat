@@ -156,7 +156,7 @@ class _WorkspaceTabViewState extends State<_WorkspaceTabView> {
   @override
   Widget build(BuildContext context) {
     final controller = widget.tab.controller;
-    if (controller == null) {
+    if (controller == null || (widget.tab.host?.hideForOverlay ?? false)) {
       return const SizedBox.shrink();
     }
     return WebViewWidget(
@@ -164,6 +164,20 @@ class _WorkspaceTabViewState extends State<_WorkspaceTabView> {
       gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
     );
   }
+}
+
+/// [JsApi.pushOverlay] 在工作台页签里的实现:先摘掉这个页签的 [WebViewWidget]
+/// (真正卸载,而不是被上层路由盖住 —— 见 [JsApi.pushOverlay] 的说明),
+/// push 对应路由,弹出后再挂回来。
+Future<void> _pushTabOverlay(
+  WorkspaceWebViewHost host,
+  WorkspaceTabsViewModel vm,
+  BuildContext hostContext,
+  WidgetBuilder builder,
+) async {
+  vm.setHostOverlayHidden(host, true);
+  await Navigator.push(hostContext, MaterialPageRoute(builder: builder));
+  vm.setHostOverlayHidden(host, false);
 }
 
 /// 给页签配上 WebView 宿主并开始加载:优先复用池子里的,没有才新建。
@@ -194,12 +208,16 @@ void _bindTabHost(
 
   unawaited(setTransparentBackground(controller));
 
-  final host = WorkspaceWebViewHost(
+  // host 在自己的 jsApi.pushOverlay 闭包里被引用:闭包只在真正调用时才读取
+  // `host`,那时 late 变量早已完成赋值,这个自引用是安全的。
+  late final WorkspaceWebViewHost host;
+  host = WorkspaceWebViewHost(
     controller: controller,
     jsApi: JsApi(
       hostContext,
       tab.url,
       controller,
+      pushOverlay: (builder) => _pushTabOverlay(host, vm, hostContext, builder),
       // 桌面端页内跳转开新页签;移动端保持整页 push 的老形态。
       onOpenUrl: isDesktopShell ? (String url) => vm.openTab(url) : null,
       onClose: isDesktopShell ? vm.closeActiveTab : null,

@@ -28,6 +28,10 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
   DWebViewController? _controller;
   late String _pageTitle;
 
+  /// 有全屏内容(联系人选择、内嵌网页跳转等)盖住本页时置 true,build() 据此
+  /// 摘掉 [WebViewWidget]。见 [JsApi.pushOverlay] 的用法说明。
+  bool _hideForOverlay = false;
+
   @override
   void initState() {
     super.initState();
@@ -38,7 +42,7 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
     }
 
     final DWebViewController controller = DWebViewController();
-    final jsApi = JsApi(context, widget.url, controller);
+    final jsApi = JsApi(context, widget.url, controller, pushOverlay: _pushOverlay);
 
     controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -86,6 +90,17 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
     _controller = controller;
   }
 
+  Future<void> _pushOverlay(WidgetBuilder builder) async {
+    if (!mounted) {
+      return;
+    }
+    setState(() => _hideForOverlay = true);
+    await Navigator.push(context, MaterialPageRoute(builder: builder));
+    if (mounted) {
+      setState(() => _hideForOverlay = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
@@ -108,10 +123,12 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
                     color: const Color(0xffebebeb),
                   ),
                   Expanded(
-                    child: WebViewWidget(
-                      controller: controller,
-                      gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
-                    ),
+                    child: _hideForOverlay
+                        ? const SizedBox.shrink()
+                        : WebViewWidget(
+                            controller: controller,
+                            gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+                          ),
                   ),
                 ],
               ),

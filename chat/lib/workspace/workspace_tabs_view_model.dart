@@ -32,6 +32,13 @@ class WorkspaceWebViewHost {
   /// controller 的导航回调是在创建时一次性注册的,闭包里只能引用这个可变字段,
   /// 不能捕获具体的 [WorkspaceTab] —— 否则复用后标题会回填到已关闭的页签上。
   WorkspaceTab? tab;
+
+  /// 有全屏内容(联系人选择、内嵌网页跳转等)盖住这个页签时置 true。
+  ///
+  /// 挂在 host 而不是 [WorkspaceTab] 上:[JsApi.pushOverlay] 的回调在 host 首次
+  /// 创建时就绑死了(见 work_space.dart 的 `_bindTabHost`),页签回收复用时不会
+  /// 重新构造 JsApi,回调里只能安全引用不随页签变化的对象。
+  bool hideForOverlay = false;
 }
 
 /// 工作台里的一个页签。
@@ -143,6 +150,19 @@ class WorkspaceTabsViewModel extends ChangeNotifier {
     );
     _tabs.add(tab);
     _activeTabId = tab.id;
+    notifyListeners();
+  }
+
+  /// 给 [host] 标一下是否被全屏内容盖住,驱动 UI 挂/卸它的 [WebViewWidget]。
+  ///
+  /// 必须传具体的 host 而不是查"当前页签"——后台页签的 JS 定时器可能在页签切走
+  /// 之后仍然回调进来触发 [JsApi.pushOverlay],这时 host 早已不是 activeTab 的了。
+  /// 见 [JsApi.pushOverlay]。
+  void setHostOverlayHidden(WorkspaceWebViewHost host, bool hidden) {
+    if (host.hideForOverlay == hidden) {
+      return;
+    }
+    host.hideForOverlay = hidden;
     notifyListeners();
   }
 
