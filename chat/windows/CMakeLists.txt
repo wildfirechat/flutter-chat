@@ -120,12 +120,14 @@ install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
 set(NATIVE_TOOLS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../native_tools")
 
 set(FLAMESHOT_TOOL_DIR "${NATIVE_TOOLS_DIR}/windows/flameshot")
-if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot.exe")
-  install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/"
+# 布局是 bin/include/lib 安装树（官方 portable 包 / cmake --install 产物）；
+# 运行时只需要 bin/ 下的可执行文件和 Qt DLL，include/lib 是链接用的开发产物不分发。
+if(EXISTS "${FLAMESHOT_TOOL_DIR}/bin/flameshot.exe")
+  install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/bin/"
     DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
     COMPONENT Runtime)
 else()
-  message(WARNING "flameshot: 未找到 ${FLAMESHOT_TOOL_DIR}/flameshot.exe，"
+  message(WARNING "flameshot: 未找到 ${FLAMESHOT_TOOL_DIR}/bin/flameshot.exe，"
     "截图功能在打出来的包里不可用（见 SCREENSHOT.md 准备二进制）。")
 endif()
 

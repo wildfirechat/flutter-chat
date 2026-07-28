@@ -137,7 +137,7 @@ endif()
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
   set(FLAMESHOT_ARCH "x86_64")
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
-  set(FLAMESHOT_ARCH "aarch64")
+  set(FLAMESHOT_ARCH "arm64")
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
   set(FLAMESHOT_ARCH "arm")
 else()
@@ -148,19 +148,21 @@ endif()
 # native_tools 在应用根目录（chat/native_tools），不在 chat/linux 下。
 set(NATIVE_TOOLS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../native_tools")
 
-set(FLAMESHOT_TOOL_DIR "${NATIVE_TOOLS_DIR}/linux/flameshot/${FLAMESHOT_ARCH}")
-set(FLAMESHOT_TOOL_DIR_LEGACY "${NATIVE_TOOLS_DIR}/linux/flameshot")
-if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot")
+# 布局是 `flameshot.AppImage --appimage-extract` 的原始产物
+# （native_tools/linux/flameshot/<arch>/squashfs-root/usr/{bin,lib,plugins,share}）：
+# bin/flameshot + bin/qt.conf（Prefix=../, Plugins=plugins）+ lib/*.so* + plugins/。
+# qt.conf 靠 bin/ 和 plugins/ 的兄弟关系找 Qt 平台插件，因此按 usr/ 整体搬运，
+# 不能拍平成单层目录，否则 Qt 找不到 platforms 插件起不来。
+set(FLAMESHOT_TOOL_DIR "${NATIVE_TOOLS_DIR}/linux/flameshot/${FLAMESHOT_ARCH}/squashfs-root/usr")
+if(EXISTS "${FLAMESHOT_TOOL_DIR}/bin/flameshot")
+  # install(DIRECTORY) 默认不保留源文件权限，会把 flameshot 可执行文件的
+  # 执行位拍成普通 644，导致运行时 Permission denied，必须显式保留源权限。
   install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/"
     DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot/${FLAMESHOT_ARCH}"
-    COMPONENT Runtime)
-elseif(EXISTS "${FLAMESHOT_TOOL_DIR_LEGACY}/flameshot")
-  # 兼容旧的无架构子目录布局
-  install(DIRECTORY "${FLAMESHOT_TOOL_DIR_LEGACY}/"
-    DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
+    USE_SOURCE_PERMISSIONS
     COMPONENT Runtime)
 else()
-  message(WARNING "flameshot: 未找到 ${FLAMESHOT_TOOL_DIR}/flameshot，"
+  message(WARNING "flameshot: 未找到 ${FLAMESHOT_TOOL_DIR}/bin/flameshot，"
     "截图功能在打出来的包里不可用（见 SCREENSHOT.md 准备二进制）。")
 endif()
 

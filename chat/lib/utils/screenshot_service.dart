@@ -25,9 +25,12 @@ class ScreenshotResult {
 /// 桌面端通过调用独立的 flameshot 进程完成截图。
 ///
 /// 需要把对应平台的 flameshot 二进制放到 native_tools 目录：
-/// - Windows: native_tools/windows/flameshot/flameshot.exe
-/// - Linux:   native_tools/linux/flameshot/<arch>/flameshot
-///            支持的 <arch>: x86_64, aarch64 等，由 CMake 按目标架构选择。
+/// - Windows: native_tools/windows/flameshot/bin/flameshot.exe
+///            （cmake --install / 官方 portable 包的 bin/include/lib 安装树，只取 bin/）
+/// - Linux:   native_tools/linux/flameshot/<arch>/squashfs-root/usr/bin/flameshot
+///            （`flameshot.AppImage --appimage-extract` 的原始产物；
+///            bin/ 下的 qt.conf 靠与 plugins/ 的兄弟关系定位 Qt 平台插件）
+///            支持的 <arch>: x86_64, arm64，由 CMake 按目标架构选择。
 /// - macOS:   native_tools/macos/flameshot.app
 ///
 /// 这些目录由各平台构建脚本（CMake / Xcode）复制到最终 app bundle。
@@ -123,12 +126,11 @@ class ScreenshotService {
 
     if (Platform.isLinux) {
       final arch = _linuxArch();
-      final archDir = arch != null ? p.join(exeDir, 'flameshot', arch) : null;
-      if (archDir != null && File(p.join(archDir, 'flameshot')).existsSync()) {
-        _toolDir = archDir;
-      } else {
-        _toolDir = p.join(exeDir, 'flameshot');
-      }
+      if (arch == null) return null;
+      // 打包产物是 `flameshot.AppImage --appimage-extract` 的原始树，
+      // bin/ 下的 qt.conf 靠与 plugins/ 的兄弟关系定位 Qt 平台插件，
+      // _toolDir 必须指到 bin/，不能拍平。
+      _toolDir = p.join(exeDir, 'flameshot', arch, 'bin');
       return p.join(_toolDir!, 'flameshot');
     }
 
@@ -148,7 +150,7 @@ class ScreenshotService {
       case Abi.linuxX64:
         return 'x86_64';
       case Abi.linuxArm64:
-        return 'aarch64';
+        return 'arm64';
       case Abi.linuxArm:
         return 'arm';
       case Abi.linuxIA32:
@@ -163,8 +165,10 @@ class ScreenshotService {
   static Map<String, String> get _toolEnv {
     final env = Map<String, String>.from(Platform.environment);
     if (Platform.isLinux && _toolDir != null) {
+      // _toolDir 是 bin/，.so 依赖在其兄弟目录 lib/ 下。
+      final libDir = p.join(p.dirname(_toolDir!), 'lib');
       final old = env['LD_LIBRARY_PATH'] ?? '';
-      env['LD_LIBRARY_PATH'] = old.isEmpty ? _toolDir! : '${_toolDir!}:$old';
+      env['LD_LIBRARY_PATH'] = old.isEmpty ? libDir : '$libDir:$old';
     }
     if (Platform.isWindows && _toolDir != null) {
       final old = env['PATH'] ?? '';

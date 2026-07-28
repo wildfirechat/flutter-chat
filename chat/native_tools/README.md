@@ -6,13 +6,21 @@
 
 ```text
 native_tools/
-├── windows/flameshot/            # Windows: flameshot.exe + Qt6 DLL
+├── windows/flameshot/             # bin/include/lib 安装树（官方 portable 包）
+│   └── bin/                      # flameshot.exe + Qt6 DLL；打包时只取这里，include/lib 不分发
+│   └── include/                  # include
+│   └── lib/                      # lib
 ├── linux/flameshot/
-│   ├── x86_64/                   # Linux x86_64
-│   ├── aarch64/                  # Linux ARM64
-│   └── ...                       # 其他架构
+│   ├── x86_64/squashfs-root/usr/ # AppImage --appimage-extract 原始产物
+│   │   ├── bin/flameshot, bin/qt.conf
+│   │   ├── lib/*.so*
+│   │   └── plugins/platforms/、imageformats/ 等
+│   └── arm64/squashfs-root/usr/  # 结构同上，目录名用 arm64（不是 aarch64）
 └── macos/flameshot.app           # macOS: 完整的 flameshot.app 包
 ```
+
+## 源码
+https://github.com/heavyrain2012/flameshot
 
 ## 如何准备
 
@@ -28,32 +36,12 @@ cp -R ../flameshot/build/src/flameshot.app chat/native_tools/macos/flameshot.app
 
 ### Windows
 
-在 flameshot 源码目录构建并收集依赖：
-
-```powershell
-cd ..\flameshot
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release --parallel
-cd build\src
-windeployqt --release flameshot.exe
-xcopy /E /I /Y . ..\..\..\flutter-chat\chat\native_tools\windows\flameshot
-```
+ 通过github action 打包，并将 portable 包，按上面的目录结构放置
 
 ### Linux（支持多架构）
 
-需要根据目标架构分别存放。例如 x86_64：
-
-```bash
-cd ../flameshot
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel
-
-# 用 linuxdeployqt 或手动整理 Qt 依赖
-# 最终放到 chat/native_tools/linux/flameshot/x86_64/
-```
-
-CMake 会根据 `CMAKE_SYSTEM_PROCESSOR` 自动选择 `x86_64`、`aarch64` 等子目录；
-Dart 层也会根据 `Abi.current()` 在运行时定位对应架构的二进制。
+1. 通过 github action 打包，得到 AppImage 包
+2. `./flameshot.AppImage --appimage-extract`解包，并按上面的目录结构放置
 
 ## 注意
 

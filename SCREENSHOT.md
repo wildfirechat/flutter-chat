@@ -48,8 +48,8 @@ chat/
 │   ├── README.md                            # 构建/放置说明
 │   ├── NOTICE.md                            # 第三方开源声明
 │   ├── LICENSE.flameshot                    # flameshot GPL-3.0 完整许可证
-│   ├── windows/flameshot/                   # Windows 二进制 + Qt6 DLL
-│   ├── linux/flameshot/<arch>/              # Linux 二进制 + Qt6 so（按架构分目录：x86_64、aarch64 等）
+│   ├── windows/flameshot/bin/                # Windows 二进制 + Qt6 DLL（bin/include/lib 安装树）
+│   ├── linux/flameshot/<arch>/squashfs-root/usr/  # AppImage 解包产物（按架构分目录：x86_64、arm64）
 │   └── macos/flameshot.app/                 # macOS 完整 app bundle
 ├── windows/CMakeLists.txt                   # Windows 打包集成
 ├── linux/CMakeLists.txt                     # Linux 打包集成
@@ -91,28 +91,46 @@ cp -R ../flameshot/build/src/flameshot.app \
 
 ### 4.3 Windows
 
+布局固定为 `bin/include/lib` 安装树（官方 portable 包 / `cmake --install` 产物），
+`flameshot.exe` 在 `bin/` 下：
+
 ```powershell
 cd ..\flameshot
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release --parallel
-cd build\src
+cmake --install build --prefix install
+cd install\bin
 windeployqt --release flameshot.exe
 
-# 把整个可运行目录复制到项目
-xcopy /E /I /Y . ..\..\..\flutter-chat\chat\native_tools\windows\flameshot
+# 把整个安装树复制到项目（bin/include/lib 一起放进去即可，
+# 打包时只会取用 bin/ 下的内容）
+xcopy /E /I /Y ..\.. ..\..\..\..\flutter-chat\chat\native_tools\windows\flameshot
 ```
 
+最终应有 `native_tools/windows/flameshot/bin/flameshot.exe`。
+
 ### 4.4 Linux
+
+用 `linuxdeploy` + `linuxdeploy-plugin-qt` 打出 AppImage（会自动生成 `qt.conf`
+和 `plugins/` 目录），再原样解包，不需要自己拼目录：
 
 ```bash
 cd ../flameshot
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 
-# 用 linuxdeployqt / linuxdeploy 整理 Qt 依赖
-# 然后按目标架构把 flameshot 二进制和依赖库放到 chat/native_tools/linux/flameshot/<arch>/
-# 例如 x86_64、aarch64（也兼容无架构子目录的旧布局 linux/flameshot/）
+# 用 linuxdeploy + linuxdeploy-plugin-qt 打出 flameshot-<arch>.AppImage
+# 然后原地解包：
+chmod +x flameshot-x86_64.AppImage
+./flameshot-x86_64.AppImage --appimage-extract
+# 产物在 squashfs-root/，整个目录搬到（不同架构分别构建、分别放）：
+# chat/native_tools/linux/flameshot/x86_64/squashfs-root/
+# chat/native_tools/linux/flameshot/arm64/squashfs-root/
 ```
+
+CMake 会根据 `CMAKE_SYSTEM_PROCESSOR` 自动选择 `x86_64`、`arm64` 子目录（注意目录名用的是
+`arm64`，不是 `uname -m` 的 `aarch64`）；Dart 层也按同样的名字在运行时定位对应架构的二进制。
+项目本身不支持交叉编译，arm64 版本需要在 arm64 机器上本地构建。
 
 ---
 
@@ -130,34 +148,32 @@ set(NATIVE_TOOLS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../native_tools")
 
 # 复制 flameshot 工具目录
 set(FLAMESHOT_TOOL_DIR "${NATIVE_TOOLS_DIR}/windows/flameshot")
-if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot.exe")
-  install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/"
+# 布局是 bin/include/lib 安装树（cmake --install / 官方 portable 包）；
+# 只取 bin/ 下的运行时文件，include/lib 是链接用的开发产物不分发。
+if(EXISTS "${FLAMESHOT_TOOL_DIR}/bin/flameshot.exe")
+  install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/bin/"
     DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
     COMPONENT Runtime)
 endif()
 ```
 
-Linux 会按 `CMAKE_SYSTEM_PROCESSOR` 选择架构子目录，并兼容旧的无架构布局：
+Linux 会按 `CMAKE_SYSTEM_PROCESSOR` 选择架构子目录（目录名用 `arm64`，不是 `uname -m`
+的 `aarch64`），并整体搬运 AppImage 解包产物里的 `squashfs-root/usr/`（保留
+`bin/`、`lib/`、`plugins/` 的相对关系，`qt.conf` 靠这个关系找 Qt 平台插件）：
 
 ```cmake
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
   set(FLAMESHOT_ARCH "x86_64")
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
-  set(FLAMESHOT_ARCH "aarch64")
+  set(FLAMESHOT_ARCH "arm64")
 # ...其余架构映射略
 endif()
 
 set(NATIVE_TOOLS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../native_tools")
-set(FLAMESHOT_TOOL_DIR "${NATIVE_TOOLS_DIR}/linux/flameshot/${FLAMESHOT_ARCH}")
-set(FLAMESHOT_TOOL_DIR_LEGACY "${NATIVE_TOOLS_DIR}/linux/flameshot")
-if(EXISTS "${FLAMESHOT_TOOL_DIR}/flameshot")
+set(FLAMESHOT_TOOL_DIR "${NATIVE_TOOLS_DIR}/linux/flameshot/${FLAMESHOT_ARCH}/squashfs-root/usr")
+if(EXISTS "${FLAMESHOT_TOOL_DIR}/bin/flameshot")
   install(DIRECTORY "${FLAMESHOT_TOOL_DIR}/"
     DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot/${FLAMESHOT_ARCH}"
-    COMPONENT Runtime)
-elseif(EXISTS "${FLAMESHOT_TOOL_DIR_LEGACY}/flameshot")
-  # 兼容旧的无架构子目录布局
-  install(DIRECTORY "${FLAMESHOT_TOOL_DIR_LEGACY}/"
-    DESTINATION "${CMAKE_INSTALL_PREFIX}/flameshot"
     COMPONENT Runtime)
 endif()
 ```
@@ -181,9 +197,11 @@ endif()
 build/windows/x64/runner/Release/      # 或 build/linux/x64/release/bundle/
 ├── wildfirechat.exe / wildfirechat
 ├── flameshot/
-│   ├── flameshot.exe                  # Windows
-│   ├── Qt6Core.dll / libQt6Core.so.6
-│   └── x86_64/flameshot               # Linux：按架构子目录安装（旧布局则直接 flameshot/flameshot）
+│   ├── flameshot.exe, Qt6Core.dll, …   # Windows：拍平后的 bin/ 内容
+│   └── x86_64/ 或 arm64/               # Linux：按架构子目录安装
+│       ├── bin/flameshot, bin/qt.conf
+│       ├── lib/libQt6Core.so.6, …
+│       └── plugins/platforms/…
 ├── LICENSE.flameshot
 └── NOTICE.md
 ```
@@ -248,11 +266,16 @@ static Future<Uint8List?> captureToBytes();
 关键实现逻辑：
 
 - 根据 `Platform.resolvedExecutable` 定位各平台二进制：
-  - Windows：`flameshot/flameshot.exe`
-  - Linux：`flameshot/<arch>/flameshot`（`<arch>` 由 `Abi.current()` 映射为 `x86_64`、`aarch64` 等；无架构子目录时回退到 `flameshot/flameshot`）
+  - Windows：`flameshot/flameshot.exe`（打包阶段由 CMake 从
+    `native_tools/windows/flameshot/bin/`铺平安装，Dart 侧看到的始终是扁平布局，
+    无需关心 native_tools 里 bin/include/lib 的原始目录形态）
+  - Linux：`flameshot/<arch>/bin/flameshot`（`<arch>` 由 `Abi.current()` 映射为
+    `x86_64`、`arm64`；bin/ 下的 `qt.conf` 靠与兄弟目录 `plugins/` 的相对关系定位
+    Qt 平台插件，因此不能拍平，`_toolDir` 固定指到 `bin/`）
   - macOS：`../Resources/flameshot.app/Contents/MacOS/flameshot`
 - 设置 `workingDirectory` 为 flameshot 目录，保证 Windows 能找到同目录 DLL。
-- Linux 设置 `LD_LIBRARY_PATH`，Windows 设置 `PATH`；macOS 不注入额外环境变量。
+- Linux 设置 `LD_LIBRARY_PATH` 指向 `bin/` 的兄弟目录 `lib/`，Windows 设置 `PATH`；
+  macOS 不注入额外环境变量。
 - 调用前 `windowManager.hide()`，调用后 `windowManager.show()` + `focus()`——仅 Windows/Linux；macOS 保持窗口可见（隐藏主窗口可能导致子进程无法获得屏幕录制权限或窗口焦点）。
 
 ### 6.2 UI 入口
@@ -397,11 +420,10 @@ ls build/windows/x64/runner/Release/LICENSE.flameshot
 ```bash
 cd chat
 flutter build linux
-ls build/linux/x64/release/bundle/flameshot/x86_64/flameshot
+ls build/linux/x64/release/bundle/flameshot/x86_64/bin/flameshot
+ls build/linux/x64/release/bundle/flameshot/x86_64/plugins/platforms/
 ls build/linux/x64/release/bundle/LICENSE.flameshot
 ```
-
-（若使用的是无架构子目录的旧布局，则路径为 `flameshot/flameshot`。）
 
 ---
 
@@ -412,8 +434,8 @@ ls build/linux/x64/release/bundle/LICENSE.flameshot
 检查对应平台的 flameshot 二进制是否已正确放入 `chat/native_tools/<platform>/`：
 
 - macOS：`native_tools/macos/flameshot.app/Contents/MacOS/flameshot`
-- Windows：`native_tools/windows/flameshot/flameshot.exe`
-- Linux：`native_tools/linux/flameshot/<arch>/flameshot`（`<arch>` 如 `x86_64`、`aarch64`；也兼容旧布局 `native_tools/linux/flameshot/flameshot`）
+- Windows：`native_tools/windows/flameshot/bin/flameshot.exe`
+- Linux：`native_tools/linux/flameshot/<arch>/squashfs-root/usr/bin/flameshot`（`<arch>` 如 `x86_64`、`arm64`）
 
 ### Q2：macOS 上 flameshot 弹不出来
 
@@ -422,7 +444,7 @@ ls build/linux/x64/release/bundle/LICENSE.flameshot
 
 ### Q3：Windows 上提示找不到 Qt DLL
 
-确认 `windeployqt` 已正确运行，且所有 DLL 与 `flameshot.exe` 在同一目录 `native_tools/windows/flameshot/`。
+确认 `windeployqt` 已正确运行，且所有 DLL 与 `flameshot.exe` 在同一目录 `native_tools/windows/flameshot/bin/`。
 
 ### Q4：Linux Wayland 下无法截图
 
