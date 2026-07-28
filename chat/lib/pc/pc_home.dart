@@ -765,6 +765,7 @@ class _PCHomeState extends State<PCHome> {
                 onStartChat: _startChat,
                 onAddFriend: _onAddFriend,
                 backgroundColor: context.colors.middleBgDesktop,
+                showAddButton: false,
               );
             },
           ),
@@ -818,12 +819,14 @@ class _MiddleColumnHeader extends StatelessWidget {
   final VoidCallback onStartChat;
   final VoidCallback onAddFriend;
   final Color? backgroundColor;
+  final bool showAddButton;
 
   const _MiddleColumnHeader({
     required this.onSearchTap,
       required this.onStartChat,
     required this.onAddFriend,
     this.backgroundColor,
+    this.showAddButton = true,
   });
 
   @override
@@ -863,12 +866,14 @@ class _MiddleColumnHeader extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          _PlusMenuButton(
-            onStartChat: onStartChat,
-            onAddFriend: onAddFriend,
-            backgroundColor: resolvedBgColor,
-          ),
+          if (showAddButton) ...[
+            const SizedBox(width: 8),
+            _PlusMenuButton(
+              onStartChat: onStartChat,
+              onAddFriend: onAddFriend,
+              backgroundColor: resolvedBgColor,
+            ),
+          ],
         ],
       ),
     );

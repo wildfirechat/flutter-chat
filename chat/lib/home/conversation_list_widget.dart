@@ -422,7 +422,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                       Expanded(
                           child: Container(
                               height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
-                              alignment: Alignment.centerLeft,
+                              alignment: widget.showSubtitle ? Alignment.topLeft : Alignment.centerLeft,
                               margin: EdgeInsets.only(left: isDesktopShell ? 11 : 15),
                               child: widget.showSubtitle
                                   ? Column(
@@ -467,27 +467,32 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                     )
                                   : _buildConversationTitle(value.$1, value.$2, value.$3))),
                       widget.trailing ??
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 15.0),
-                                child: Text(
-                                  Utilities.formatTime(context, conversationInfo.timestamp),
-                                  style: AppText.xxs.copyWith(color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary),
-                                ),
-                              ),
-                              if (conversationInfo.isSilent)
+                          Container(
+                            // 与左侧标题所在的 48 高盒子同高、顶部对齐，使时间与会话标题水平对齐
+                            height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
+                            alignment: Alignment.topRight,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
                                 Padding(
-                                  padding: const EdgeInsets.only(right: 15.0, top: 4.0),
-                                  child: Image.asset(
-                                    'assets/images/conversation_mute.png',
-                                    width: 10,
-                                    height: 10,
+                                  padding: const EdgeInsets.only(right: 15.0),
+                                  child: Text(
+                                    Utilities.formatTime(context, conversationInfo.timestamp),
+                                    style: AppText.xxs.copyWith(color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary),
                                   ),
                                 ),
-                            ],
+                                if (conversationInfo.isSilent)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 15.0, top: 4.0),
+                                    child: Image.asset(
+                                      'assets/images/conversation_mute.png',
+                                      width: 10,
+                                      height: 10,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
                     ],
                   )),

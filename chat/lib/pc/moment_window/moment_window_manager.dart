@@ -25,7 +25,8 @@ class MomentWindowManager extends SubWindowManagerBase {
   Map<String, dynamic> createPayload() => {};
 
   @override
-  Size initialWindowSize() => const Size(960, 720);
+  // 动态内容居中限宽 640(见 FeedListPage)
+  Size initialWindowSize() => const Size(640, 960);
 
   /// 打开（或置顶）朋友圈窗口。
   Future<void> show() async {

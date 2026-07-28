@@ -37,25 +37,21 @@ class _DesktopPopupMenuItemState<T> extends State<DesktopPopupMenuItem<T>> {
       padding: EdgeInsets.zero,
       child: HoverBuilder(
         builder: (context, hovered) {
-          final Color textColor = widget.isDanger
-              ? (hovered ? Colors.white : colors.danger)
-              : colors.textPrimary;
+          final Color textColor = hovered ? Colors.white : (widget.isDanger ? colors.danger : colors.textPrimary);
 
-          final Color iconColor = widget.isDanger
-              ? (hovered ? Colors.white : colors.danger)
-              : colors.textSecondary;
+          final Color iconColor = hovered ? Colors.white : (widget.isDanger ? colors.danger : colors.textPrimary);
 
-          final Color bgColor = hovered
-              ? (widget.isDanger ? colors.danger : colors.cellHoverDesktop)
-              : Colors.transparent;
+          final Color bgColor = hovered ? (widget.isDanger ? colors.danger : colors.accent) : Colors.transparent;
 
           return Container(
             width: double.infinity,
             height: widget.height,
+            margin: const EdgeInsets.symmetric(horizontal: 6),
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: bgColor,
+              borderRadius: BorderRadius.circular(6),
             ),
             child: DefaultTextStyle(
               style: AppText.sm.copyWith(color: textColor, fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily),
