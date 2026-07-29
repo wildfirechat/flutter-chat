@@ -51,12 +51,30 @@ class _PcBackupListenerState extends State<PcBackupListener> {
       final content = msg.content;
       if (content is BackupRequestNotificationContent) {
         if (!_isFromCurrentUser(msg)) continue;
-        _handleBackupRequest(msg, content);
+        _handleIfFresh(msg, () => _handleBackupRequest(msg, content));
       } else if (content is RestoreRequestNotificationContent) {
         if (!_isFromCurrentUser(msg)) continue;
-        _handleRestoreRequest(msg, content);
+        _handleIfFresh(msg, () => _handleRestoreRequest(msg, content));
       }
     }
+  }
+
+  /// 备份/恢复请求的有效期为 10 秒,超过直接忽略(如离线同步到的旧请求,
+  /// 不应再弹窗打扰用户)。本地时钟可能不准,用 SDK 的 serverDeltaTime
+  /// 把本地时间粗略校正为服务器时间再判断。
+  Future<void> _handleIfFresh(Message msg, void Function() handle) async {
+    try {
+      final delta = await Imclient.serverDeltaTime;
+      final serverNow = DateTime.now().millisecondsSinceEpoch + delta;
+      if (serverNow - msg.serverTime > 10 * 1000) return;
+    } catch (_) {
+      // serverDeltaTime 获取失败时退化为本地时间判断
+      if (DateTime.now().millisecondsSinceEpoch - msg.serverTime > 10 * 1000) {
+        return;
+      }
+    }
+    if (!mounted) return;
+    handle();
   }
 
   bool _isFromCurrentUser(Message msg) {
