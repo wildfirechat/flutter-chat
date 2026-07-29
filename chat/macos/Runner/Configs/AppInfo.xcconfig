@@ -11,7 +11,7 @@ PRODUCT_NAME = WildFireChat
 
 // The application's bundle identifier
 // 与 Android applicationId、Linux APPLICATION_ID 一致。
-PRODUCT_BUNDLE_IDENTIFIER = cn.wildfirechat.chat.flutter
+PRODUCT_BUNDLE_IDENTIFIER = cn.wildfirechat.messanger
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 WildFireChat. All rights reserved.

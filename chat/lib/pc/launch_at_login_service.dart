@@ -10,14 +10,14 @@ import 'package:win32_registry/win32_registry.dart';
 /// - macOS：MethodChannel `chat/launch_at_login`，原生侧用 SMAppService.mainApp
 ///   （macOS 13+，见 MainFlutterWindow.swift）；
 /// - Windows：注册表 `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`；
-/// - Linux：`~/.config/autostart/cn.wildfirechat.chat.flutter.desktop` 文件。
+/// - Linux：`~/.config/autostart/cn.wildfirechat.chat.desktop` 文件。
 class LaunchAtLoginService {
   LaunchAtLoginService._();
 
   static const MethodChannel _channel = MethodChannel('chat/launch_at_login');
 
   /// 与 linux/CMakeLists.txt 的 APPLICATION_ID、Android applicationId 一致。
-  static const String _linuxAppId = 'cn.wildfirechat.chat.flutter';
+  static const String _linuxAppId = 'cn.wildfirechat.chat';
   static const String _desktopFileName = '$_linuxAppId.desktop';
 
   /// 0.1.1 之前用的文件名。改名后旧文件不会被覆盖，会残留成一条指向已不存在的

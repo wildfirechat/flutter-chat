@@ -37,10 +37,6 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSBonjourServices</key>
-	<array/>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>应用需要使用本地网络进行通信</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -48,8 +44,12 @@
 	</dict>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>应用在音视频电话来电时需要播放铃声或用户播放语音消息</string>
+	<key>NSBonjourServices</key>
+	<array/>
 	<key>NSCameraUsageDescription</key>
 	<string>应用在拍摄图片发送，修改头像或扫描二维码时需要使用相机</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>应用需要使用本地网络进行通信</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>应用在发送位置消息时需要访问位置信息</string>
 	<key>NSMicrophoneUsageDescription</key>

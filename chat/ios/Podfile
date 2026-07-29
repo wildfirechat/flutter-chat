@@ -40,14 +40,14 @@ post_install do |installer|
     # Fix for super_native_extensions: the ObjC static library target and
     # the Rust build script both produce libsuper_native_extensions.a at the
     # same path, causing "Multiple commands produce".
-    # Additionally, cargokit_phony (symlinked to build.db) can cause this
-    # script to execute more than once per build; on re-runs we must not
-    # move away the ObjC static library that lipo has already produced.
+    # Additionally, Xcode's new build system pre-creates
+    # libsuper_native_extensions.a as a SYMLINK into UninstalledProducts —
+    # cargo would write through it and mv would rename the link away, leaving
+    # -lsuper_native_extensions with nothing to find.
     # Workaround:
-    #   1. Save any existing libsuper_native_extensions.a (the ObjC archive)
-    #   2. Build the Rust library (produces libsuper_native_extensions.a)
-    #   3. Move Rust output to a unique file (librust_super_native_extensions.a)
-    #   4. Restore the saved ObjC archive so linking can find it
+    #   1. Remove the product symlink (if any) so cargo writes a real file
+    #   2. Build the Rust library, rename it to librust_super_native_extensions.a
+    #   3. Recreate the product symlink so the Runner link finds the ObjC archive
     if target.name == 'super_native_extensions'
       target.shell_script_build_phases.each do |phase|
         if phase.name&.include?('Build SuperNativeExtensions')
@@ -57,40 +57,34 @@ post_install do |installer|
 
           phase.shell_script = %q{
 objc_lib="${CONFIGURATION_BUILD_DIR}/libsuper_native_extensions.a"
-objc_stash="${CONFIGURATION_BUILD_DIR}/libsuper_native_extensions_objc.a"
 rust_lib="${CONFIGURATION_BUILD_DIR}/librust_super_native_extensions.a"
 
-# If a previous run was interrupted and left a stale stash, restore it first.
-if [ -f "$objc_stash" ]; then
-  mv "$objc_stash" "$objc_lib"
-  echo "Restored stale ObjC static library stash"
-fi
-
-# If the ObjC static library already exists (e.g. from a previous lipo step
-# or a cached build), stash it so the Rust build below doesn't overwrite it
-# and the mv below doesn't move it away.
-if [ -f "$objc_lib" ]; then
-  mv "$objc_lib" "$objc_stash"
-  echo "Saved existing ObjC static library"
+# Xcode 新构建系统会预先把 libsuper_native_extensions.a 建成指向
+# UninstalledProducts 的符号链接(见构建日志的 SymLink 步骤)。
+# cargo 直接写会"穿透"符号链接,而 mv 又会把这个链接挪走,导致
+# Runner 链接时 -lsuper_native_extensions 找不到。先删掉它,
+# 让 cargo 产出真实文件。
+if [ -L "$objc_lib" ]; then
+  rm "$objc_lib"
+  echo "Removed product symlink before Rust build"
 fi
 
 # Build the Rust library; by default it writes libsuper_native_extensions.a
 sh "$PODS_TARGET_SRCROOT/../cargokit/build_pod.sh" ../rust super_native_extensions
 
 # Move Rust output to a unique name so it doesn't collide with the ObjC
-# static library that lipo will create later.
-if [ -f "$objc_lib" ]; then
+# static library that libtool will create later.
+if [ -f "$objc_lib" ] && [ ! -L "$objc_lib" ]; then
   mv "$objc_lib" "$rust_lib"
   echo "Rust library renamed to librust_super_native_extensions.a"
 else
   echo "WARNING: Rust library not found at expected path"
 fi
 
-# Restore the ObjC static library if we stashed one earlier.
-if [ -f "$objc_stash" ]; then
-  mv "$objc_stash" "$objc_lib"
-  echo "Restored ObjC static library"
-fi
+# 恢复构建系统期望的产品符号链接,指向稍后 Libtool 产出的 ObjC 静态库,
+# 保证 Runner 的 -lsuper_native_extensions 在链接时能找到。
+ln -sfh ../../../IntermediateBuildFilesPath/UninstalledProducts/iphoneos/libsuper_native_extensions.a "$objc_lib"
+echo "Recreated product symlink for ObjC static library"
 }
         end
       end

@@ -8,7 +8,7 @@ set(BINARY_NAME "wildfirechat")
 # The unique GTK application identifier for this application. See:
 # https://wiki.gnome.org/HowDoI/ChooseApplicationID
 # 与 Android 的 applicationId 保持一致，桌面环境靠它把窗口关联到 .desktop 文件。
-set(APPLICATION_ID "cn.wildfirechat.chat.flutter")
+set(APPLICATION_ID "cn.wildfirechat.chat")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
