@@ -165,10 +165,13 @@ dependency_overrides:
   # ================================================================
   # [ohos-begin] OHOS(鸿蒙)适配依赖
   #
-  # 构建鸿蒙版本：启用本区块（当前已启用）。
-  # 构建标准版本(Android/iOS/桌面)：把 [ohos-begin] 到 [ohos-end]
-  # 之间的内容整体注释掉，然后执行 flutter pub get，即全部回退到
-  # pub.dev 标准版（标准版本约束见上方 dependencies）。
+  # 构建鸿蒙版本：
+  #   1. 把 [ohos-begin] 到 [ohos-end]之间的内容都打开。把上面的 flutter_webrtc:path: ../vendor/flutter_webrtc 给注释掉。
+  #   2. Flutter切换到鸿蒙适配版。
+  # 构建标准版本(Android/iOS/桌面)：
+  #   1. 把 [ohos-begin] 到 [ohos-end] 之间的内容整体注释掉。
+  #   2. Flutter切换到官方版。
+  # 切换然后执行 flutter pub get，如果是ios/macos，还需要执行 pod install --repo-update
   # ================================================================
   # 仅 ohos 需要的配套插件，标准平台不需要
 #  web: ^1.1.1

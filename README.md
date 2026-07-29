@@ -1,4 +1,4 @@
-## 最重声明!!!
+## 重要声明!!!
 
 Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST来设定服务地址。Android需要联系我们免费获取SDK。
 
@@ -44,7 +44,7 @@ Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST�
 
 # flutter-chat
 
-野火Flutter版 demo， 支持 Android、iOS、原生鸿蒙和桌面端（Windows、macOS、Linux），包含即时通讯插件和实时音视频插件。不支持龙芯和申威CPU（因为flutter不支持），其他国产操作系统和CPU都支持。
+野火Flutter版 客户端， 支持 Android、iOS、原生鸿蒙和桌面端（Windows、macOS、Linux），包含即时通讯插件和实时音视频插件。不支持龙芯和申威CPU（因为flutter不支持），其他国产操作系统和CPU都支持。
 
 ## 项目特点
 
@@ -62,28 +62,42 @@ Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST�
 
 > **macOS 沙盒注意**：macOS 的 App Sandbox 会限制 flameshot 访问屏幕录制/窗口服务，导致截图功能无法正常初始化。因此 macOS 版本需要**关闭 App Sandbox**（已移除 `com.apple.security.app-sandbox`）才能使用截图。这也意味着当前配置**无法直接上架 Mac App Store**；如必须走 App Store，需改用原生 `ScreenCaptureKit` 方案。
 
-## 关于 Flutter 、Android Studio、Gradle 版本的重要说明
+## 关于 Android Studio、Gradle 版本的重要说明
 
-1. 为了能够兼容原生鸿蒙，Flutter 版本会跟随原生鸿蒙已适配的Flutter 版本进行升级，目前开发使用的鸿蒙适配版 Flutter 是`3.35.8-ohos`
-2. Android Studio 会跟随官方更新，一直使用最新版本
-3. 由于 gradle 版本和 flutter 版本有依赖关系，会使用对应的 gradle 版本，目前是 `8.7`
-4. 如果不需要支持鸿蒙，可使用`flutter-standard`分支
+1. Android Studio 会跟随官方更新，一直使用最新版本
+2. 由于 gradle 版本和 flutter 版本有依赖关系，会使用对应的 gradle 版本，目前是 `8.7`
+3. Flutter 版本：鸿蒙开发必须使用鸿蒙适配版 Flutter，其他平台使用官方版本，详见下方「鸿蒙(OHOS)开发指南」
 
-## 关于鸿蒙的重要说明
-1. 鸿蒙版所依赖的 野火IM 鸿蒙SDK 是需要付费的
-2配置镜像
-    > 由于目标是能兼容原生鸿蒙，有的包只能从镜像下载，不配置镜像的话，可能下载不到
-    ```
-   # Linux、macOS
-   export PUB_HOSTED_URL=https://pub.flutter-io.cn
-   export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
-   
-   # windows 
-   setx PUB_HOSTED_URL "https://pub.flutter-io.cn"
-   setx FLUTTER_STORAGE_BASE_URL "https://storage.flutter-io.cn"
-   ```
 
-## 鸿蒙(OHOS)依赖切换
+## 鸿蒙(OHOS)开发指南
+
+鸿蒙相关的注意事项集中在本节：SDK 费用、Flutter 版本、镜像配置、依赖切换与常见问题。
+
+### 1. SDK 与费用
+
+鸿蒙版所依赖的野火IM鸿蒙 SDK 是付费的，可申请试用（联系方式见顶部「重要声明」）。
+
+### 2. Flutter 版本与 IDE 配置
+
+1. 开发鸿蒙必须使用鸿蒙适配版 Flutter，当前开发版本为 `3.35.8-ohos`（Dart 3.9.x）；其他平台使用官方 Flutter。
+2. 请参考 [这儿](https://gitcode.com/openharmony-tpc/flutter_flutter) 安装和配置 Flutter，使用该仓库 3.35.x 系列的鸿蒙适配分支。安装和配置很简单，下载下来解压，然后配置一下环境变量就好了。
+3. IDE 开发运行时，需要确保使用的是鸿蒙适配版。
+
+### 3. 配置 pub 镜像
+
+由于目标是能兼容原生鸿蒙，有的包只能从镜像下载，不配置镜像的话，可能下载不到：
+
+```
+# Linux、macOS
+export PUB_HOSTED_URL=https://pub.flutter-io.cn
+export FLUTTER_STORAGE_BASE_URL=https://storage.flutter-io.cn
+
+# windows 
+setx PUB_HOSTED_URL "https://pub.flutter-io.cn"
+setx FLUTTER_STORAGE_BASE_URL "https://storage.flutter-io.cn"
+```
+
+### 4. 依赖切换（标准版 ↔ 鸿蒙版）
 
 项目内所有包的 `dependencies` 均使用 pub.dev 标准版；鸿蒙适配版（gitcode 上的 openharmony-sig / openharmony-tpc fork）统一集中在根工程 `chat/pubspec.yaml` 的 `dependency_overrides` 中，由 `[ohos-begin]` 和 `[ohos-end]` 注释标记围成一个区块。
 
@@ -96,32 +110,28 @@ Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST�
 2. 区块内包含仅鸿蒙需要的 `permission_handler_ohos` 插件，注释区块时会一并移除，无需单独处理。
 3. `file_picker` 的鸿蒙 fork 依赖 `web ^0.5.1`，与 `flutter_localization` 鸿蒙版依赖的 `web ^1.1.1` 冲突，因此它和 `fluttertoast`、`flutter_local_notifications`、`mobile_scanner`、`flutter_webrtc` 的鸿蒙 fork 默认未启用（保持标准版），在区块内以注释形式保留，确有需要时可单独启用。
 4. 切换时若遇到 gitcode 拉取失败（exit 128），重试 `flutter pub get` 即可。
-5. iOS 平台切换后需同步更新 pod 依赖，否则 `Podfile.lock` 中锁定的旧版本会与新解析的插件版本冲突（典型报错：`CocoaPods could not find compatible versions for pod "xxx"`）：
+5. iOS/mac 平台切换后需同步更新 pod 依赖，否则 `Podfile.lock` 中锁定的旧版本会与新解析的插件版本冲突（典型报错：`CocoaPods could not find compatible versions for pod "xxx"`）：
    ```bash
-   cd chat/ios
+   cd chat/ios 或 cd chat/macos
    pod install --repo-update   # 或者针对报错的 pod 单独执行：pod update <pod名>
    ```
    例如 `flutter_sound` 当前在标准版固定为 9.28.0，若 `Podfile.lock` 中锁定的是其他版本，需执行 `pod update flutter_sound_core`。
 
+### 5. 常见问题
+
+1. 鸿蒙上提示包找不到，请从 [flutter_packages](https://gitcode.com/openharmony-tpc/flutter_packages) 查询已适配鸿蒙平台的版本，并固定为该版本。
 
 ## Windows的依赖
-1. MSVC 2022
-2. 切换到非鸿蒙依赖
+1. MSVC 2022(其他版本测试都有问题，有些依赖编译不过去)
 
 ## 运行
-> 由于本项目，同时支持 Android、iOS 和鸿蒙，故只能使用已适配鸿蒙的 Flutter 版本
-> 
-> 构建 Windows、macOS、Linux 桌面端时，请切换到对应平台的官方 Flutter SDK。使用`flutter-standard`分支，不需要配置鸿蒙适配版 Flutter
-> 
-> 请参考 [这儿](https://gitcode.com/openharmony-tpc/flutter_flutter) 安装和配置 Flutter，请使用该仓库 3.35.x 系列的鸿蒙适配分支（当前开发版本为 `3.35.8-ohos`）
->
-> 配置成功后，`flutter --version` 输出的 Flutter 版本应为 `3.35.8-ohos`，Dart 版本为 3.9.x。
 
 ### 终端运行
 进入到项目工程目录下，依次执行下述命令：
 
 1. ``` cd chat && flutter packages get && cd .. ```
 2. ``` cd chat/ios/ && pod install && cd ..``` (仅iOS平台需要)
+3. ``` cd chat/macos/ && pod install && cd ..``` (仅Mac平台需要)
 3. ``` cd chat && flutter run --debug -d ${设备 id}```
 
 ### 桌面端运行（Windows / macOS / Linux）
@@ -135,10 +145,6 @@ Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST�
      > Linux 环境配置说明，请参考 [Setup Linux development](https://docs.flutter.dev/platform-integration/linux/setup)
 4. 桌面端已支持音视频通话（在独立窗口进行）、图片/视频预览、朋友圈、会话内搜索（"聊天记录"窗口）等功能；拍照等移动端特有的功能在桌面端不显示。
 5. macOS 版对外分发（Developer ID 签名 + 公证 + 打包 DMG）的完整流程，请参考 [MACOS_DISTRIBUTION.md](./MACOS_DISTRIBUTION.md)。
-
-### Android Studio运行
-1. 配置 `Flutter SDK Path` 和 `Dart SDK Path` 为鸿蒙适配版的对应路径
-2. 运行
 
 ## 集成到flutter应用
 
@@ -278,7 +284,7 @@ Imclient.setDeviceToken(pushType, deviceToken);
 1. `Execution failed for task ':video_player_android:compileDebugJavaWithJavac'.`
     1. 查看 `chat/.flutter-plugins` 找到 `video_player_android` 的位置，macos 时，位置如下: `video_player_android=/Users/your-user-name/.pub-cache/hosted/pub.flutter-io.cn/video_player_android-2.8.4/`
     2. 参考[Remove -Werror from Android build](https://github.com/flutter/packages/pull/7776/files) 修改`android/build.gradle`
-2. 鸿蒙上提示包找不到，请从 [flutter_packages](https://gitcode.com/openharmony-tpc/flutter_packages) 查询已适配鸿蒙平台的版本，并固定为该版本
+2. 鸿蒙相关的常见问题（包找不到、gitcode 拉取失败、切换后 pod 冲突等），见上方「鸿蒙(OHOS)开发指南」。
 
 
 
