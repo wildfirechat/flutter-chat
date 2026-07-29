@@ -70,6 +70,7 @@ import cn.wildfirechat.remote.ChatManager;
 import cn.wildfirechat.remote.GeneralCallback;
 import cn.wildfirechat.remote.GeneralCallback2;
 import cn.wildfirechat.remote.GeneralCallback3;
+import cn.wildfirechat.remote.GeneralCallbackBytes;
 import cn.wildfirechat.remote.GetAuthorizedMediaUrlCallback;
 import cn.wildfirechat.remote.GetChatRoomInfoCallback;
 import cn.wildfirechat.remote.GetChatRoomMembersInfoCallback;
