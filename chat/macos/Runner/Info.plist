@@ -35,6 +35,8 @@
 	<string>视频通话需要使用摄像头</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>音视频通话需要使用麦克风</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>用于从相册选择图片和视频发送给联系人</string>
 	<key>NSScreenCaptureUsageDescription</key>
 	<string>截屏功能需要录制屏幕内容</string>
 	<key>NSMainNibFile</key>
