@@ -58,6 +58,8 @@
 	<string>应用需要此权限保存图片消息中的图片</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>应用在发送图片消息时需要访问相册</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>

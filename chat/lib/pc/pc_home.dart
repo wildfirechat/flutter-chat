@@ -964,7 +964,8 @@ class _PcSideBar extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: topInset),
-            const SizedBox(height: 48),
+            // 头像区域上移 20pt(原 48)
+            const SizedBox(height: 28),
             _buildAvatar(context, shell),
             const SizedBox(height: PcTheme.sidebarAvatarGap),
           Selector<ConversationListViewModel, int>(
@@ -1080,8 +1081,8 @@ class _PcSideBar extends StatelessWidget {
               child: Portrait(
                 userInfo.portrait ?? Config.defaultUserPortrait,
                 Config.defaultUserPortrait,
-                width: 34,
-                height: 34,
+                width: 40,
+                height: 40,
                 borderRadius: 4,
               ),
             ),

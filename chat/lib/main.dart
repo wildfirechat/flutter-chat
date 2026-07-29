@@ -363,7 +363,7 @@ class _MyAppState extends State<MyApp> {
       }
     }, (List<Message> messages, bool hasMore) {
       if (kDebugMode) {
-        print(messages);
+        // print(messages);
       }
     }, (messageUid) {
       if (kDebugMode) {

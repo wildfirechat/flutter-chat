@@ -39,6 +39,8 @@
 	<string>用于从相册选择图片和视频发送给联系人</string>
 	<key>NSScreenCaptureUsageDescription</key>
 	<string>截屏功能需要录制屏幕内容</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>

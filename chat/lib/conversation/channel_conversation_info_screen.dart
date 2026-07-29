@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
@@ -12,7 +11,9 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
+import 'package:chat/config.dart';
 import 'package:chat/widget/option_button_item.dart';
+import 'package:chat/widget/portrait.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/option_switch_item.dart';
 import 'package:chat/widget/section_divider.dart';
@@ -20,7 +21,6 @@ import 'package:chat/widget/section_divider.dart';
 import '../pc/pc_platform.dart';
 import '../pc/search_window/search_window_manager.dart';
 import '../search/search_conversation_result_view.dart';
-import '../utils/media_url_redirector.dart';
 import 'conversation_files_screen.dart';
 import 'package:chat/theme/app_colors.dart';
 
@@ -79,12 +79,12 @@ class _ChannelConversationInfoScreenState
               width: double.infinity,
               child: Column(
                 children: [
-                  CachedNetworkImage(
-                    imageUrl: MediaUrlRedirector.redirect(channelInfo.portrait!),
+                  // 频道无头像时使用默认头像(与订阅频道列表等处的处理一致)
+                  Portrait(
+                    channelInfo.portrait ?? Config.defaultChannelPortrait,
+                    Config.defaultChannelPortrait,
                     width: 80,
                     height: 80,
-                    memCacheWidth: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
-                    memCacheHeight: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
                   ),
                   Container(margin: const EdgeInsets.only(top: 10.0, bottom: 10), child: Text(channelInfo.name!))
                 ],
