@@ -247,6 +247,8 @@ class ConversationController extends ChangeNotifier {
   }
 
   void onTapedCell(BuildContext context, UIMessage model) {
+    // 点消息先收起别处气泡里的选区和跟随它的菜单
+    clearTextSelection();
     var conversation = model.message.conversation;
     if (model.message.content is ImageMessageContent ||
         model.message.content is VideoMessageContent) {
@@ -469,6 +471,12 @@ class ConversationController extends ChangeNotifier {
     }
   }
 
+  /// 收起气泡里的选区(移动端会连同跟随选区的菜单一起消失):
+  /// 点到别的地方、滑动消息列表时调用
+  void clearTextSelection() {
+    _clearTextSelectionHighlight?.call();
+  }
+
   /// 正文 cell 销毁(滚出列表被回收)或选区标识变化时解除登记
   void detachTextSelection(String selectionKey) {
     if (_textSelectionKey == selectionKey) {
@@ -605,15 +613,19 @@ class ConversationController extends ChangeNotifier {
     }
   }
 
-  void _showPopupMenu(BuildContext context, UIMessage model, Rect? bubbleRect) {
-    final messageInputBarController =
-        Provider.of<MessageInputBarController>(context, listen: false);
-    // 先快照本条消息的选区给"复制"用;若弹的是另一条消息的菜单,顺手清掉残留高亮
-    final String selectionKey = selectionKeyOf(model.message);
-    final String? selectedText = _textSelectionKey == selectionKey ? _textSelectionText : null;
-    if (_textSelectionKey != null && _textSelectionKey != selectionKey) {
-      _clearTextSelectionHighlight?.call();
+  /// 消息菜单项。partialSelection 为 true(用户在气泡里只选了一部分正文)时只保留
+  /// "复制":其余操作都针对整条消息,此场景下无意义。
+  List<Map<String, dynamic>> buildMessageMenuItems(BuildContext context, UIMessage model, {bool partialSelection = false}) {
+    if (partialSelection) {
+      return [
+        {
+          'label': AppLocalizations.of(context)!.copy,
+          'value': 'copy',
+          'icon': Icons.copy
+        },
+      ];
     }
+
     List<Map<String, dynamic>> menuItems = [
       {
         'label': AppLocalizations.of(context)!.delete,
@@ -698,10 +710,27 @@ class ConversationController extends ChangeNotifier {
       },
     ]);
 
-    // 部分选中时菜单只保留"复制"(只复制选中部分):其余操作都针对整条消息,此场景下无意义
-    if (selectedText != null && selectedText.isNotEmpty) {
-      menuItems.retainWhere((item) => item['value'] == 'copy');
+    return menuItems;
+  }
+
+  /// 供气泡内的选区菜单调用;selectedText 非空表示只针对选中的那部分正文
+  void handleMessageMenuAction(BuildContext context, String value, UIMessage model, {String? selectedText}) {
+    final messageInputBarController =
+        Provider.of<MessageInputBarController>(context, listen: false);
+    _handleMenuItemTap(context, value, model, messageInputBarController, selectedText: selectedText);
+  }
+
+  void _showPopupMenu(BuildContext context, UIMessage model, Rect? bubbleRect) {
+    final messageInputBarController =
+        Provider.of<MessageInputBarController>(context, listen: false);
+    // 先快照本条消息的选区给"复制"用;若弹的是另一条消息的菜单,顺手清掉残留高亮
+    final String selectionKey = selectionKeyOf(model.message);
+    final String? selectedText = _textSelectionKey == selectionKey ? _textSelectionText : null;
+    if (_textSelectionKey != null && _textSelectionKey != selectionKey) {
+      _clearTextSelectionHighlight?.call();
     }
+    final bool partialSelection = selectedText != null && selectedText.isNotEmpty;
+    final menuItems = buildMessageMenuItems(context, model, partialSelection: partialSelection);
 
     // 桌面端:标准垂直上下文菜单,锚定鼠标/气泡位置,showMenu 自动避让窗口边缘
     if (isDesktopShell) {

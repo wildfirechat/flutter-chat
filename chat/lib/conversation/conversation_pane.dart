@@ -281,6 +281,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
       if (notification.dragDetails != null) {
         _isDragging = true;
         _inputBarController.resetStatus();
+        // 划动列表时收起气泡里的选区和跟随选区的菜单
+        _conversationController?.clearTextSelection();
       }
     } else if (notification is ScrollUpdateNotification) {
       if (notification.metrics.pixels > notification.metrics.maxScrollExtent) {
@@ -483,6 +485,7 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
                       ),
                       onTap: () {
                         _inputBarController.resetStatus();
+                        _conversationController?.clearTextSelection();
                       },
                         ),
                         // 定位到历史消息后显示「回到最新」悬浮按钮（对齐微信），

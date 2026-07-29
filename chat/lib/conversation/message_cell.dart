@@ -40,7 +40,23 @@ import '../ui_model/ui_message.dart';
 class MessageCell extends StatefulWidget {
   final UIMessage model;
 
-  MessageCell(this.model) : super(key: ObjectKey(model));
+  MessageCell(this.model) : super(key: cellKeyOf(model));
+
+  /// cell 的身份要按消息本身算,不能用 UIMessage 实例:消息一有更新(送达/已读回执、
+  /// 撤回、流式续写)view model 就把列表里那条换成新的 UIMessage 对象。若按实例做 key,
+  /// 整棵 cell 会被销毁重建——气泡里正选着的文本选区也跟着没了,表现为"选中保持不住"。
+  static Key cellKeyOf(UIMessage model) {
+    final content = model.message.content;
+    // 流式消息生成期间还没落库,messageId 恒为 0,用 streamId 区分
+    if (content is StreamingTextGeneratingMessageContent && content.streamId.isNotEmpty) {
+      return ValueKey('stream-${content.streamId}');
+    }
+    if (model.message.messageId != 0) {
+      return ValueKey('msg-${model.message.messageId}');
+    }
+    // 没有稳定标识时退回实例身份,至少不会和别的 cell 撞 key
+    return ObjectKey(model);
+  }
 
   @override
   State<MessageCell> createState() => _MessageCellState();
@@ -53,6 +69,17 @@ class _MessageCellState extends State<MessageCell> with AutomaticKeepAliveClient
   void initState() {
     super.initState();
     _initCellBuilder();
+  }
+
+  @override
+  void didUpdateWidget(covariant MessageCell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 同一条消息换了 UIMessage 实例:只把 cell builder 换掉(它在构造时抓了 model
+    // 和 content 的快照),子树保持原样,选区、播放状态这些 State 才不会被清掉
+    if (!identical(oldWidget.model, widget.model)) {
+      _cellBuilder.dispose();
+      _initCellBuilder();
+    }
   }
 
   void _initCellBuilder() {

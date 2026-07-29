@@ -106,17 +106,24 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return renderBox.localToGlobal(Offset.zero) & renderBox.size;
   }
 
-  /// 让正文支持部分选择:桌面端鼠标拖选,移动端双击选词/双击拖动扩选。
-  /// 选区实时上报给 controller,长按/右键菜单里的"复制"据此只复制选中部分。
-  /// 文本消息和流式消息共用,包装内的长按/右键仍弹本条消息的菜单。
+  /// 让正文支持部分选择:桌面端鼠标拖选,移动端长按全选后拖手柄调整范围。
+  /// 选区实时上报给 controller,菜单里的"复制"据此只复制选中部分。
+  /// 文本消息和流式消息共用,包装内的长按/右键仍是本条消息的菜单。
   @protected
   Widget selectableText(BuildContext context, Widget textChild) {
+    final controller = conversationController;
     return SelectableMessageText(
       selectionKey: ConversationController.selectionKeyOf(model.message),
-      controller: conversationController,
-      onLongPressStart: (details) => conversationController?.onLongPressedCell(context, model, bubbleRect),
+      controller: controller,
+      onLongPressStart: (details) => controller?.onLongPressedCell(context, model, bubbleRect),
       onSecondaryTapUp: (details) =>
-          conversationController?.onLongPressedCell(context, model, Rect.fromCenter(center: details.globalPosition, width: 4, height: 4)),
+          controller?.onLongPressedCell(context, model, Rect.fromCenter(center: details.globalPosition, width: 4, height: 4)),
+      menuItemsBuilder: controller == null
+          ? null
+          : (partialSelection) => controller.buildMessageMenuItems(context, model, partialSelection: partialSelection),
+      onMenuItemTap: controller == null
+          ? null
+          : (value, selectedText) => controller.handleMessageMenuAction(context, value, model, selectedText: selectedText),
       child: textChild,
     );
   }
@@ -145,6 +152,22 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
               Flexible(
                 fit: FlexFit.loose,
                 child: GestureDetector(
+                  onTap: () => conversationController?.onTapedCell(context, model),
+                  // 不注册 onDoubleTap(原实现是空操作):注册了会参与手势竞技场,
+                  // 干扰文本消息 SelectionArea 的双击选词,还会给单击引入等待延迟。
+                  // 桌面端同样不注册长按:鼠标按住不动超过 500ms 再拖时长按会抢赢竞技场,
+                  // 连带把 SelectableRegion 的鼠标识别器判负(其 onCancel 会清空选区),
+                  // 正文就选不中了。PC 端菜单走右键(下面的 onSecondaryTapUp)。
+                  onLongPressStart: isDesktopShell
+                      ? null
+                      : (details) {
+                          conversationController?.onLongPressedCell(context, model, bubbleRect);
+                        },
+                  // 桌面端右键在鼠标位置弹出同一套消息菜单
+                  onSecondaryTapUp: (details) {
+                    conversationController?.onLongPressedCell(
+                        context, model, Rect.fromCenter(center: details.globalPosition, width: 4, height: 4));
+                  },
                   child: Container(
                     key: _bubbleKey,
                     constraints: const BoxConstraints(minHeight: 44.0),
@@ -181,17 +204,6 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                       ),
                     ),
                   ),
-                  onTap: () => conversationController?.onTapedCell(context, model),
-                  // 不注册 onDoubleTap(原实现是空操作):注册了会参与手势竞技场,
-                  // 干扰文本消息 SelectionArea 的双击选词,还会给单击引入等待延迟。
-                  onLongPressStart: (details) {
-                    conversationController?.onLongPressedCell(context, model, bubbleRect);
-                  },
-                  // 桌面端右键在鼠标位置弹出同一套消息菜单
-                  onSecondaryTapUp: (details) {
-                    conversationController?.onLongPressedCell(
-                        context, model, Rect.fromCenter(center: details.globalPosition, width: 4, height: 4));
-                  },
                 ),
               ),
               _playStatus(context),
