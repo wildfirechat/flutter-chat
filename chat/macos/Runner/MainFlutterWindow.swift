@@ -13,6 +13,7 @@ import file_picker
 import url_launcher_macos
 import video_player_avfoundation
 import fvp
+import webview_flutter_wkwebview
 
 /// 自定义交通灯按钮类型。
 private enum TrafficLightSymbol {
@@ -299,6 +300,8 @@ class MainFlutterWindow: NSWindow {
           UrlLauncherPlugin.register(with: controller.registrar(forPlugin: "UrlLauncherPlugin"))
           // 朋友圈窗口:视频动态播放(官方 avfoundation 实现)。
           FVPVideoPlayerPlugin.register(with: controller.registrar(forPlugin: "FVPVideoPlayerPlugin"))
+          // 子窗口也需要显式注册 WebView 插件，否则 WKWebView 的原生桥在独立引擎里无法建立。
+          FLTWebViewFlutterPlugin.register(with: controller.registrar(forPlugin: "FLTWebViewFlutterPlugin"))
           // 媒体预览窗口:视频消息预览，用的是第三方 fvp 包(补 Windows/Linux 桌面后端)，
           // 类名恰好也叫 FvpPlugin，跟上面 Google 官方的 FVPVideoPlayerPlugin 是两个东西，
           // 不要合并/搞混。这个不注册的话子窗口里播视频会报 MissingPluginException(CreateRT)。

@@ -11,6 +11,7 @@
 #include <permission_handler_windows/permission_handler_windows_plugin.h>
 #include <url_launcher_windows/url_launcher_windows.h>
 #include <fvp/fvp_plugin_c_api.h>
+#include <webview_all_windows/webview_windows_plugin.h>
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -53,6 +54,10 @@ bool FlutterWindow::OnCreate() {
     // 媒体预览窗口:视频降级用系统播放器打开(找不到本地/远程文件等兜底场景)。
     UrlLauncherWindowsRegisterWithRegistrar(
         registry->GetRegistrarForPlugin("UrlLauncherWindows"));
+    // 子窗口也要显式注册 WebView 插件，否则独立引擎里的 WKWebView/EdgeWebView
+    // 原生桥无法建立。
+    WebviewWindowsPluginRegisterWithRegistrar(
+        registry->GetRegistrarForPlugin("WebviewWindowsPlugin"));
     // 媒体预览窗口:视频消息应用内预览，用第三方 fvp 包补的 video_player
     // Windows 后端(官方 video_player 在 Windows 上没有实现)。不注册的话
     // 子窗口里播视频会报 MissingPluginException(CreateRT)。

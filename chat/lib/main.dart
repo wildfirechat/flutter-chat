@@ -73,15 +73,15 @@ import 'package:chat/organization/organization_service.dart';
 import 'package:chat/conversation/input_bar/wf_asset_picker_delegate.dart';
 import 'package:chat/pc/call_window/call_window_app.dart';
 import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
-import 'package:chat/pc/media_preview_window/media_preview_ipc.dart';
 import 'package:chat/pc/media_preview_window/media_preview_window_app.dart';
 import 'package:chat/pc/moment_window/main_moment_proxy.dart';
-import 'package:chat/pc/moment_window/moment_ipc.dart';
 import 'package:chat/pc/moment_window/moment_window_app.dart';
 import 'package:chat/pc/multi_window/sub_window_binding.dart';
 import 'package:chat/pc/search_window/main_search_proxy.dart';
 import 'package:chat/pc/search_window/search_window_app.dart';
-import 'package:chat/pc/search_window/search_window_ipc.dart';
+import 'package:chat/pc/wf_webview_window/main_wf_webview_proxy.dart';
+import 'package:chat/pc/wf_webview_window/wf_webview_window_app.dart';
+import 'package:chat/pc/wf_webview_window/wf_webview_window_ipc.dart';
 
 /// video_player 官方桌面实现只覆盖 macOS(avfoundation)，Windows/Linux 缺失，
 /// 桌面端视频消息只能退化为系统播放器打开(见 mm_preview_view.dart)。
@@ -112,6 +112,8 @@ void main([List<String>? args]) async {
       runApp(MomentWindowApp(windowId: windowId, arguments: arguments));
     } else if (kind == kSearchWindowKind) {
       runApp(SearchWindowApp(windowId: windowId, arguments: arguments));
+    } else if (kind == kWFWebViewWindowKind) {
+      runApp(WFWebViewWindowApp(windowId: windowId, arguments: arguments));
     } else {
       // 历史兼容:call_window_manager 早先创建窗口时不携带 kind,
       // 未携带(kind == null)或显式 kCallWindowKind 都落到 Call 窗口。
@@ -473,6 +475,9 @@ class _MyAppState extends State<MyApp> {
       // 会话内搜索子窗口代理（与朋友圈窗口同构：子窗口不连接 IM，
       // 经主窗口代执行 IM 调用；定位消息由主窗口打开会话完成）。
       MainSearchProxy.instance.install();
+      // WebView 子窗口代理（子窗口不连接 IM，页面 JS API 依赖的 IM 调用
+      // 通过主窗口代执行）。
+      MainWFWebViewProxy.instance.install();
     }
   }
 

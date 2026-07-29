@@ -24,6 +24,7 @@
 #include <screen_retriever_linux/screen_retriever_linux_plugin.h>
 #include <url_launcher_linux/url_launcher_plugin.h>
 #include <fvp/fvp_plugin.h>
+#include <webview_all_linux/webview_all_linux_plugin.h>
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -269,6 +270,9 @@ static void my_application_activate(GApplication* application) {
     g_autoptr(FlPluginRegistrar) window_manager_registrar =
         fl_plugin_registry_get_registrar_for_plugin(registry, "WindowManagerPlugin");
     window_manager_plugin_register_with_registrar(window_manager_registrar);
+    g_autoptr(FlPluginRegistrar) webview_all_linux_registrar =
+        fl_plugin_registry_get_registrar_for_plugin(registry, "WebviewAllLinuxPlugin");
+    webview_all_linux_plugin_register_with_registrar(webview_all_linux_registrar);
     // 子窗口无托盘用途,不注册 TrayManagerPlugin(托盘归主窗口独占,与 macOS 一致)。
     // tray_manager 的 Linux 实现用一个进程级全局 plugin_instance 记录最后一次注册的
     // 插件对象,子窗口注册会把它顶掉;子窗口关闭时该对象随引擎释放,之后点击托盘菜单

@@ -4,6 +4,9 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/wf_webview_window/wf_webview_window_manager.dart';
+import 'package:chat/workspace/wf_webview_screen.dart';
 
 import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
@@ -11,7 +14,7 @@ import 'message_cell_builder.dart';
 /// 富通知消息(参考 vue-pc-chat 的 RichNotificationMessageContentView.vue):
 /// 居中的卡片,展示标题、描述、键值数据列表和附加身份信息,不区分收发方向。
 ///
-/// 点击暂不实现工作台跳转(exUrl),先提示"暂不支持",避免用户以为点了没反应。
+/// 点击富通知时：移动端直接打开网页；桌面端用独立子窗口承载网页。
 class RichNotificationCellBuilder extends MessageCellBuilder {
   late RichNotificationMessageContent richNotificationContent;
 
@@ -34,7 +37,25 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
   }
 
   void _onTap(BuildContext context) {
-    showToast(msg: AppLocalizations.of(context)!.notSupported);
+    final url = richNotificationContent.exUrl?.trim();
+    if (url == null || url.isEmpty) {
+      showToast(msg: AppLocalizations.of(context)!.notSupported);
+      return;
+    }
+
+    if (isDesktopShell) {
+      WFWebViewWindowManager.instance
+          .show(url: url, title: richNotificationContent.title);
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            WFWebViewScreen(url, title: richNotificationContent.title),
+      ),
+    );
   }
 
   @override

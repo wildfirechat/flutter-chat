@@ -122,8 +122,10 @@ class JsApi extends JavaScriptNamespaceInterface {
     String nonce = obj["nonceStr"];
     String signature = obj["signature"];
     Imclient.configApplication(appId, type, timestamp, nonce, signature, () {
+    debugPrint('config success');
       webViewController.callHandler('ready', args: null);
     }, (err) {
+      debugPrint('config err $err');
       webViewController.callHandler('error', args: ['$err']);
     });
   }
