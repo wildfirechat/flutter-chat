@@ -21,6 +21,8 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/notification/recall_notificiation_content.dart';
 import 'package:imclient/message/sound_message_content.dart';
+import 'package:imclient/message/streaming_text_generated_message_content.dart';
+import 'package:imclient/message/streaming_text_generating_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
@@ -431,36 +433,46 @@ class ConversationController extends ChangeNotifier {
     _playingMessageId = model.message.messageId;
   }
 
-  // 文本消息当前的部分选区。cell 的 SelectionArea 不参与焦点(为了弹菜单时保持高亮),
+  /// 选区归属的标识。不能直接用 messageId:流式消息生成期间还没落库,messageId 恒为 0,
+  /// 多路并发生成时会互相覆盖,用 streamId 才能区分;生成结束落库后再切回 messageId。
+  static String selectionKeyOf(Message message) {
+    final content = message.content;
+    if (content is StreamingTextGeneratingMessageContent) {
+      return 'stream-${content.streamId}';
+    }
+    return 'msg-${message.messageId}';
+  }
+
+  // 正文当前的部分选区。cell 的 SelectionArea 不参与焦点(为了弹菜单时保持高亮),
   // 不会再因失焦自行清空,所以"同一时刻只有一条消息有高亮"由这里协调:
   // 新消息上报选区时,回调上一条消息登记的 clearHighlight 清掉残留高亮。
-  int _textSelectionMessageId = 0;
+  String? _textSelectionKey;
   String? _textSelectionText;
   VoidCallback? _clearTextSelectionHighlight;
 
-  /// 文本消息 cell 的 SelectionArea 选区变化时上报;选区收起/清空时传 null
-  void setTextSelection(int messageId, String? selectedText, {VoidCallback? clearHighlight}) {
+  /// 正文 cell 的 SelectionArea 选区变化时上报;选区收起/清空时传 null
+  void setTextSelection(String selectionKey, String? selectedText, {VoidCallback? clearHighlight}) {
     if (selectedText == null || selectedText.isEmpty) {
-      if (_textSelectionMessageId == messageId) {
-        _textSelectionMessageId = 0;
+      if (_textSelectionKey == selectionKey) {
+        _textSelectionKey = null;
         _textSelectionText = null;
         _clearTextSelectionHighlight = null;
       }
     } else {
-      if (_textSelectionMessageId != 0 && _textSelectionMessageId != messageId) {
-        // 会同步触发上一条消息的 onSelectionChanged(null),其登记在下面被覆盖前已按 messageId 清掉
+      if (_textSelectionKey != null && _textSelectionKey != selectionKey) {
+        // 会同步触发上一条消息的 onSelectionChanged(null),其登记在下面被覆盖前已按 selectionKey 清掉
         _clearTextSelectionHighlight?.call();
       }
-      _textSelectionMessageId = messageId;
+      _textSelectionKey = selectionKey;
       _textSelectionText = selectedText;
       _clearTextSelectionHighlight = clearHighlight;
     }
   }
 
-  /// 文本消息 cell 销毁(滚出列表被回收)时解除登记
-  void detachTextSelection(int messageId) {
-    if (_textSelectionMessageId == messageId) {
-      _textSelectionMessageId = 0;
+  /// 正文 cell 销毁(滚出列表被回收)或选区标识变化时解除登记
+  void detachTextSelection(String selectionKey) {
+    if (_textSelectionKey == selectionKey) {
+      _textSelectionKey = null;
       _textSelectionText = null;
       _clearTextSelectionHighlight = null;
     }
@@ -472,12 +484,26 @@ class ConversationController extends ChangeNotifier {
   /// 时才会到这里)按未处理继续冒泡。
   bool copySelectedTextIfAny(BuildContext context) {
     final selectedText = _textSelectionText;
-    if (_textSelectionMessageId == 0 || selectedText == null || selectedText.isEmpty) {
+    if (_textSelectionKey == null || selectedText == null || selectedText.isEmpty) {
       return false;
     }
     Clipboard.setData(ClipboardData(text: selectedText));
     showToast(msg: AppLocalizations.of(context)!.copy);
     return true;
+  }
+
+  /// 可整条复制的正文;返回 null 表示该消息类型不支持复制(菜单里不出现"复制")
+  String? _copyableTextOf(MessageContent content) {
+    if (content is TextMessageContent) {
+      return content.text;
+    }
+    if (content is StreamingTextGeneratingMessageContent) {
+      return content.text;
+    }
+    if (content is StreamingTextGeneratedMessageContent) {
+      return content.text;
+    }
+    return null;
   }
 
   void onLongPressedCell(
@@ -583,9 +609,9 @@ class ConversationController extends ChangeNotifier {
     final messageInputBarController =
         Provider.of<MessageInputBarController>(context, listen: false);
     // 先快照本条消息的选区给"复制"用;若弹的是另一条消息的菜单,顺手清掉残留高亮
-    final String? selectedText =
-        _textSelectionMessageId == model.message.messageId ? _textSelectionText : null;
-    if (_textSelectionMessageId != 0 && _textSelectionMessageId != model.message.messageId) {
+    final String selectionKey = selectionKeyOf(model.message);
+    final String? selectedText = _textSelectionKey == selectionKey ? _textSelectionText : null;
+    if (_textSelectionKey != null && _textSelectionKey != selectionKey) {
       _clearTextSelectionHighlight?.call();
     }
     List<Map<String, dynamic>> menuItems = [
@@ -596,7 +622,7 @@ class ConversationController extends ChangeNotifier {
       },
     ];
 
-    if (model.message.content is TextMessageContent) {
+    if (_copyableTextOf(model.message.content) != null) {
       menuItems.add({
         'label': AppLocalizations.of(context)!.copy,
         'value': 'copy',
@@ -751,12 +777,14 @@ class ConversationController extends ChangeNotifier {
         _showDeleteOptions(context, model);
         break;
       case "copy":
-        if (model.message.content is TextMessageContent) {
-          final content = model.message.content as TextMessageContent;
+        {
           // 正文有部分选区时只复制选中的部分,否则复制整条消息
-          final textToCopy = (selectedText != null && selectedText.isNotEmpty) ? selectedText : content.text;
-          await Clipboard.setData(ClipboardData(text: textToCopy));
-          showToast(msg: AppLocalizations.of(context)!.copy);
+          final fullText = _copyableTextOf(model.message.content);
+          final textToCopy = (selectedText != null && selectedText.isNotEmpty) ? selectedText : fullText;
+          if (textToCopy != null) {
+            await Clipboard.setData(ClipboardData(text: textToCopy));
+            showToast(msg: AppLocalizations.of(context)!.copy);
+          }
         }
         break;
       case "speech_to_text":

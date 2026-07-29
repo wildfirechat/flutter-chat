@@ -13,6 +13,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_user_card.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
+import 'package:chat/widgets/selectable_message_text.dart';
 
 import '../../config.dart';
 import '../../ui_model/ui_message.dart';
@@ -102,6 +103,21 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       return null;
     }
     return renderBox.localToGlobal(Offset.zero) & renderBox.size;
+  }
+
+  /// 让正文支持部分选择:桌面端鼠标拖选,移动端双击选词/双击拖动扩选。
+  /// 选区实时上报给 controller,长按/右键菜单里的"复制"据此只复制选中部分。
+  /// 文本消息和流式消息共用,包装内的长按/右键仍弹本条消息的菜单。
+  @protected
+  Widget selectableText(BuildContext context, Widget textChild) {
+    return SelectableMessageText(
+      selectionKey: ConversationController.selectionKeyOf(model.message),
+      controller: conversationController,
+      onLongPressStart: (details) => conversationController?.onLongPressedCell(context, model, bubbleRect),
+      onSecondaryTapUp: (details) =>
+          conversationController?.onLongPressedCell(context, model, Rect.fromCenter(center: details.globalPosition, width: 4, height: 4)),
+      child: textChild,
+    );
   }
 
   Widget _messageContentContainer(BuildContext context, UserInfo? senderUserInfo, bool isHiddenGroupMemberName) {

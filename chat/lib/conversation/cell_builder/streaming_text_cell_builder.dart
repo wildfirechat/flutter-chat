@@ -35,21 +35,23 @@ class StreamingTextCellBuilder extends PortraitCellBuilder {
           children: [
             // 流式生成期间每个 token 到达都会触发 rebuild,此时用普通 Text 展示,
             // 避免 Linkify 反复全文正则解析;生成结束后才启用 Linkify 识别链接
-            if (isGenerating)
-              Text(
-                text,
-                style: AppText.lg,
-              )
-            else
-              Linkify(
-                onOpen: (link) => Utilities.openLink(context, link.url),
-                text: text,
-                style: AppText.lg,
-                linkStyle: AppText.lg.copyWith(color: Colors.blue, decoration: TextDecoration.underline),
-                options: const LinkifyOptions(
-                  humanize: false,
-                ),
-              ),
+            selectableText(
+              context,
+              isGenerating
+                  ? Text(
+                      text,
+                      style: AppText.lg,
+                    )
+                  : Linkify(
+                      onOpen: (link) => Utilities.openLink(context, link.url),
+                      text: text,
+                      style: AppText.lg,
+                      linkStyle: AppText.lg.copyWith(color: Colors.blue, decoration: TextDecoration.underline),
+                      options: const LinkifyOptions(
+                        humanize: false,
+                      ),
+                    ),
+            ),
             if (isGenerating)
               const Padding(
                 padding: EdgeInsets.only(left: 4),

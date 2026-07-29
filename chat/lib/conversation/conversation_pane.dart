@@ -61,6 +61,8 @@ class ConversationPane extends StatefulWidget {
 class _ConversationPaneState extends State<ConversationPane> {
   late ConversationViewModel _conversationViewModel;
   late MessageInputBarController _inputBarController;
+  ConversationController? _conversationController;
+  ModalRoute<dynamic>? _route;
   final ScrollController _scrollController = ScrollController();
   double _pullDistance = 0.0;
   bool _isDragging = false;
@@ -98,6 +100,43 @@ class _ConversationPaneState extends State<ConversationPane> {
       _scrollController.addListener(_autoLoadHistoryIfNeeded);
       WidgetsBinding.instance.addPostFrameCallback((_) => _autoLoadHistoryIfNeeded());
     }
+
+    // 会话页级快捷键(Esc 退出多选、Cmd/Ctrl+C 复制气泡选区)注册为"迟到处理器":
+    // 焦点链上没人处理这个按键时才轮到我们。不能挂在 Focus 节点上——点一下或滚一下
+    // 消息列表就会走 resetStatus() → 输入框 unfocus(),主焦点交还给上层 FocusScope,
+    // 而会话页的 Focus 是那个 scope 的后代,按键从此绕过它,直到切会话重新 autofocus。
+    FocusManager.instance.addLateKeyEventHandler(_handleLateKeyEvent);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 在 build 阶段取好路由,_handleLateKeyEvent 里只读 isCurrent(普通 getter),
+    // 避免在按键回调里做 InheritedWidget 查找
+    _route = ModalRoute.of(context);
+  }
+
+  /// 焦点链未消费的按键兜底。输入框自己有选区时它会先消费 Cmd/Ctrl+C(复制输入框内容),
+  /// 走不到这里,所以不会抢输入框的复制。
+  KeyEventResult _handleLateKeyEvent(KeyEvent event) {
+    if (event is! KeyDownEvent || !mounted) {
+      return KeyEventResult.ignored;
+    }
+    // 会话页被别的页面/弹窗盖住时(如打开用户详情)不响应
+    if (_route?.isCurrent == false) {
+      return KeyEventResult.ignored;
+    }
+    if (_conversationViewModel.isMultiSelectMode && event.logicalKey == LogicalKeyboardKey.escape) {
+      _conversationViewModel.toggleMultiSelectMode();
+      return KeyEventResult.handled;
+    }
+    final isControl = HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed;
+    if (isControl && event.logicalKey == LogicalKeyboardKey.keyC) {
+      if (_conversationController?.copySelectedTextIfAny(context) ?? false) {
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
   }
 
   Future<void> _watchOnlineState(Conversation conversation) async {
@@ -191,6 +230,7 @@ class _ConversationPaneState extends State<ConversationPane> {
 
   @override
   void dispose() {
+    FocusManager.instance.removeLateKeyEventHandler(_handleLateKeyEvent);
     _scrollController.dispose();
     _joinGroupRequestSubscription?.cancel();
     // 桌面端右栏切换会话时,新会话页 initState 先于旧页 dispose 执行,
@@ -363,7 +403,15 @@ class _ConversationPaneState extends State<ConversationPane> {
 
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<ConversationController>(create: (_) => ConversationController(conversationViewModel)),
+        // 实例存一份到 State,给 _handleLateKeyEvent 用(它在焦点链之外,拿不到 Provider 的 context);
+        // lazy:false 保证空会话(没有 cell 去读它)时实例也存在
+        ChangeNotifierProvider<ConversationController>(
+          lazy: false,
+          create: (_) {
+            _conversationController = ConversationController(conversationViewModel);
+            return _conversationController!;
+          },
+        ),
         ChangeNotifierProvider<MessageInputBarController>(create: (_) {
           _inputBarController = MessageInputBarController(conversation: widget.conversation, conversationViewModel: conversationViewModel);
           if (!isDesktopShell) {
@@ -499,32 +547,8 @@ class _ConversationPaneState extends State<ConversationPane> {
             ],
           );
 
-          // 常驻焦点节点(不只在多选模式才挂):
-          // - Esc 退出多选,仅多选模式下生效;
-          // - Cmd/Ctrl+C 复制气泡里的文本选区。事件走 Focus 冒泡,
-          //   若输入框等更内层的焦点节点自己处理了按键,不会冒泡到这里,
-          //   所以不会抢输入框自身的复制。
-          final conversationController = Provider.of<ConversationController>(innerContext, listen: false);
-          content = Focus(
-            autofocus: true,
-            onKeyEvent: (node, event) {
-              if (event is! KeyDownEvent) {
-                return KeyEventResult.ignored;
-              }
-              if (conversationViewModel.isMultiSelectMode && event.logicalKey == LogicalKeyboardKey.escape) {
-                conversationViewModel.toggleMultiSelectMode();
-                return KeyEventResult.handled;
-              }
-              final isControl = HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed;
-              if (isControl && event.logicalKey == LogicalKeyboardKey.keyC) {
-                if (conversationController.copySelectedTextIfAny(innerContext)) {
-                  return KeyEventResult.handled;
-                }
-              }
-              return KeyEventResult.ignored;
-            },
-            child: content,
-          );
+          // 会话页快捷键(Esc 退出多选、Cmd/Ctrl+C 复制气泡选区)见 _handleLateKeyEvent,
+          // 挂在 FocusManager 上而不是这里的 Focus 节点,不受焦点归属影响。
 
           if (isDesktopShell) {
             return DropTarget(
