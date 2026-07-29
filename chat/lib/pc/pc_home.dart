@@ -173,6 +173,10 @@ class _PCHomeState extends State<PCHome> with AmbientShortcutsMixin {
     if (_shellViewModel.selectedConversation == conversation &&
         toFocusMessageId == null &&
         _paneShowsConversation) {
+      // 再次点击已在右栏展示的会话:取消选中,右栏回到占位欢迎页。
+      _shellViewModel.selectConversation(null);
+      _selectedSeenInList = false;
+      _clearRightPane();
       return;
     }
     _shellViewModel.selectTab(PCShellViewModel.tabChat);
