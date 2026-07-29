@@ -233,10 +233,12 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
     }
 
     if (mounted) {
+      // 只走 MyApp.onLoginSuccess 切换 home 到 PCHome。
+      // 不要再 pushReplacement(PCHome):那样会同时存在 home 切换出的 PCHome
+      // 和路由压入的 PCHome 两个实例,后者先注册 pageOpener 又被前者覆盖,
+      // 用户看到的是路由实例,pageOpener 却指向隐藏实例,导致右栏导航失效
+      // (设置页点不同项不切换,重启后单实例恢复正常)。
       showToast(msg: AppLocalizations.of(context)!.loginSuccess);
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const PCHome()),
-      );
     }
   }
 
