@@ -1,8 +1,8 @@
-# 桌面端截图功能（flameshot）文档
+# 桌面端截图功能文档
 
 > 适用平台：Windows / macOS / Linux  
-> 技术方案：将 flameshot 作为独立可执行程序打包进 Flutter 应用，Dart 通过 `Process.run` 调用。  
-> 源码位置：`../flameshot`（相对于本项目根目录的兄弟目录）。
+> 技术方案：**macOS 使用苹果原生 ScreenCaptureKit**（自研覆盖窗 + 标注编辑器，见 `chat/macos/Runner/Screenshot/`）；Windows / Linux 将 flameshot 作为独立可执行程序打包，Dart 通过 `Process.run` 调用。  
+> flameshot 源码位置：`../flameshot`（相对于本项目根目录的兄弟目录）。
 
 ---
 
@@ -10,18 +10,28 @@
 
 在桌面端会话界面增加“截屏”按钮，按钮旁有下拉箭头，提供两种模式：
 
-- **截屏（默认）**：保持窗口可见（窗口会出现在截图画面里），直接调起 flameshot GUI 选区截图；
-- **隐藏窗口截图**：全平台 `windowManager.hide()` 隐藏主窗口（瞬间完成，无系统最小化动画——genie 动画只能系统级关闭，应用无法控制，故不用 minimize），截图完成（或取消/异常）后 `show()` + `focus()` 恢复。
+在桌面端会话界面增加“截屏”按钮，按钮旁有紧贴的下拉箭头（对齐微信 PC），菜单提供两种模式：
 
-之后流程一致：
+- **截屏（默认）**：本 App 窗口出现在截图画面里——macOS 不排除本 App 窗口；Windows/Linux 不隐藏窗口；
+- **隐藏窗口截图**：macOS 用 ScreenCaptureKit 的 `excludingWindows` 直接排除本 App 全部窗口（无需真的隐藏，无动画）；Windows/Linux 用 `windowManager.hide()` 隐藏主窗口（orderOut，瞬时无动画），截图完成（或取消/异常）后 `show()` + `focus()` 恢复。
 
-1. 调起 flameshot 的 GUI 选区截图；
+**macOS（ScreenCaptureKit）流程**：
+
+1. Dart 经 `chat/screenshot` MethodChannel 调起原生截图（参数 `excludeSelf` 对应上述模式）；
+2. 原生侧用 ScreenCaptureKit 逐屏截图；
+3. 每个显示器弹出一个全屏覆盖窗：拖拽框选、标注（矩形/箭头/画笔/文字/马赛克）、撤销重做、复制、保存、取消（Esc）；
+4. 确认后选区裁剪 + 标注拍平为 PNG 写入临时目录，路径回传 Dart；
+5. 通过现有图片发送逻辑（`ConversationController.onPickImage`）作为图片消息发送。
+
+**Windows / Linux（flameshot）流程**：
+
+1. 调起 flameshot 的 GUI 选区截图（隐藏窗口模式先 hide 主窗口）；
 2. 用户确认后 flameshot 生成 PNG；
 3. Dart 读取截图文件路径；
 4. 通过现有图片发送逻辑（`ConversationController.onPickImage`）作为图片消息发送；
 5. 若为隐藏窗口截图，恢复并聚焦 Flutter 窗口。
 
-> 注：隐藏窗口模式统一用 `windowManager.hide()` 而不是最小化——hide 瞬间完成没有动画；macOS 的 genie 最小化动画只能系统级关闭，应用无法控制。flameshot 是独立进程、自己持有屏幕录制权限，主窗口隐藏不影响它。
+> 注：Windows/Linux 的隐藏窗口模式统一用 `windowManager.hide()` 而不是最小化——hide（orderOut）瞬间完成没有动画；macOS 的 genie 最小化动画只能系统级关闭，应用无法控制。flameshot 是独立进程、自己持有屏幕录制权限，主窗口隐藏不影响它。
 
 ---
 
@@ -55,15 +65,22 @@ chat/
 │   ├── NOTICE.md                            # 第三方开源声明
 │   ├── LICENSE.flameshot                    # flameshot GPL-3.0 完整许可证
 │   ├── windows/flameshot/bin/                # Windows 二进制 + Qt6 DLL（bin/include/lib 安装树）
-│   ├── linux/flameshot/<arch>/squashfs-root/usr/  # AppImage 解包产物（按架构分目录：x86_64、arm64）
-│   └── macos/flameshot.app/                 # macOS 完整 app bundle
+│   └── linux/flameshot/<arch>/squashfs-root/usr/  # AppImage 解包产物（按架构分目录：x86_64、arm64）
 ├── windows/CMakeLists.txt                   # Windows 打包集成
 ├── linux/CMakeLists.txt                     # Linux 打包集成
 └── macos/
-    ├── Runner.xcodeproj/project.pbxproj     # macOS 打包集成（Copy flameshot.app）
+    ├── Runner/Screenshot/                   # macOS ScreenCaptureKit 截图(自研)
+    │   ├── ScreenCaptureManager.swift       #   权限/逐屏截图/拍平/chat/screenshot 通道
+    │   ├── CaptureOverlayWindow.swift       #   全屏覆盖窗(每显示器一个)
+    │   ├── CaptureOverlayView.swift         #   框选/标注/工具条交互
+    │   └── Annotations.swift                #   标注模型与绘制
+    ├── Runner.xcodeproj/project.pbxproj     # macOS 工程(Screenshot 源文件已加入 Runner target)
     ├── Runner/Info.plist                    # NSScreenCaptureUsageDescription
-    └── Runner/Release.entitlements          # macOS entitlement（已关闭 App Sandbox）
+    └── Runner/Release.entitlements          # macOS entitlement(已开启 App Sandbox,见 §7.1)
 ```
+
+> 注：macOS 的 `Copy flameshot.app` 构建阶段与 `native_tools/macos/flameshot.app`
+> 已随 ScreenCaptureKit 改造一并移除；Windows/Linux 的 flameshot 不受影响。
 
 ---
 
@@ -79,21 +96,9 @@ cmake --build build --parallel
 
 ### 4.2 macOS
 
-产物路径通常为 `../flameshot/build/src/flameshot.app`（小写开头）。用 `macdeployqt` 收集 Qt 依赖：
-
-```bash
-cd ../flameshot
-macdeployqt build/src/flameshot.app
-```
-
-复制到项目：
-
-```bash
-cp -R ../flameshot/build/src/flameshot.app \
-       chat/native_tools/macos/flameshot.app
-```
-
-> 注意：macOS 应用名是小写 `flameshot.app`，Dart 和 Xcode 脚本都按此路径查找。
+macOS 已改用系统原生 **ScreenCaptureKit**，不再需要 flameshot，无构建准备步骤。
+旧的 flameshot.app 打包流程（`macdeployqt` + 复制到 `native_tools/macos/`）仅作为
+历史参考保留在 Git 记录中。
 
 ### 4.3 Windows
 
@@ -212,40 +217,16 @@ build/windows/x64/runner/Release/      # 或 build/linux/x64/release/bundle/
 └── NOTICE.md
 ```
 
-### 5.2 macOS（Xcode）
+### 5.2 macOS（ScreenCaptureKit）
 
-在 `chat/macos/Runner.xcodeproj/project.pbxproj` 中新增了一个 `Copy flameshot.app` 的 Shell Script Build Phase：
+macOS 无第三方打包集成。截图实现位于 `chat/macos/Runner/Screenshot/`：
 
-```sh
-set -e
-SRC="${PROJECT_DIR}/../native_tools/macos/flameshot.app"
-DST="${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/Contents/Resources/flameshot.app"
-if [ -d "$SRC" ]; then
-  rm -rf "$DST"
-  cp -R "$SRC" "$DST"
-else
-  echo "warning: flameshot.app not found at $SRC"
-fi
+- `ScreenCaptureManager.swift`：注册 `chat/screenshot` MethodChannel（在 `MainFlutterWindow.swift` 的 `awakeFromNib` 中注册）；检查屏幕录制权限（`CGPreflightScreenCaptureAccess` / `CGRequestScreenCaptureAccess`）；用 `SCShareableContent` + `SCContentFilter(display:excludingWindows:)` 逐屏截图（排除本 App 全部窗口）；确认后把选区裁剪 + 标注拍平为 PNG 写入 `NSTemporaryDirectory()` 并回传路径；复制走 `NSPasteboard`。
+- `CaptureOverlayWindow.swift`：无边框、`.screenSaver` 层级、`canJoinAllSpaces` 的全屏覆盖窗，每个显示器一个。
+- `CaptureOverlayView.swift`：框选（创建/移动/8 手柄调整）、标注编辑（矩形/箭头/画笔/文字/马赛克）、撤销重做、悬浮工具条（SF Symbols 图标 + 6 色色板）、Esc 取消、Enter/双击确认。
+- `Annotations.swift`：标注数据模型与绘制；马赛克用 `CIPixellate` 离线渲染。
 
-RESOURCES_DIR="${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/Contents/Resources"
-for FILE in LICENSE.flameshot NOTICE.md; do
-  SRC_FILE="${PROJECT_DIR}/../native_tools/$FILE"
-  if [ -f "$SRC_FILE" ]; then
-    cp "$SRC_FILE" "$RESOURCES_DIR/$FILE"
-  fi
-done
-```
-
-（实际脚本另有几行 `echo "[flameshot] ..."` 日志输出，此处略去。）
-
-执行 `flutter build macos` 后产物结构：
-
-```text
-build/macos/Build/Products/Release/WildFireChat.app/Contents/Resources/
-├── flameshot.app/
-├── LICENSE.flameshot
-└── NOTICE.md
-```
+Dart 侧 `ScreenshotService.captureToFile` 在 macOS 上直接调 `chat/screenshot` 通道，不再经过 flameshot 进程。
 
 ---
 
@@ -355,9 +336,8 @@ Imclient.sendMediaMessage(conversation, imageContent, ...);
   <string>截屏功能需要录制屏幕内容</string>
   ```
 
-- **App Sandbox 已关闭**：macOS 的 App Sandbox 会阻止 flameshot（子进程）访问屏幕录制/窗口服务，导致 flameshot 初始化失败并立即退出。因此 `chat/macos/Runner/Release.entitlements` 和 `DebugProfile.entitlements` 中已移除 `com.apple.security.app-sandbox`。
-- 首次调用 flameshot 截图时，系统会弹出“屏幕录制”权限提示，用户授权后才能正常截图。
-- **重要**：关闭沙盒后**无法直接上架 Mac App Store**。如必须走 App Store，需要改用原生 `ScreenCaptureKit` 方案，而不是 flameshot。
+- 截图改用 ScreenCaptureKit 后，截图功能在 App Sandbox 下正常工作（ScreenCaptureKit 是苹果官方受沙盒支持的截图方式，权限经系统弹窗授予）。首次截图时系统弹出“屏幕录制”权限提示，用户授权后即可使用；拒绝时 Dart 侧 toast 引导到 系统设置 → 隐私与安全性 → 屏幕录制 开启。
+- `Release.entitlements` 已开启 `com.apple.security.app-sandbox`（发布版），网络/麦克风/摄像头/用户选择文件等所需 entitlement 均已配置；`DebugProfile.entitlements` 未开启，便于开发调试。
 
 ### 7.2 Windows
 
@@ -406,11 +386,12 @@ GPL 分发二进制时的核心义务：
 ```bash
 cd chat
 flutter build macos
-ls build/macos/Build/Products/Release/WildFireChat.app/Contents/Resources/flameshot.app
-ls build/macos/Build/Products/Release/WildFireChat.app/Contents/Resources/LICENSE.flameshot
+open build/macos/Build/Products/Release/WildFireChat.app
 ```
 
-运行后打开一个会话，点击工具栏“截屏”图标，应弹出 flameshot 选区，确认后图片作为消息发送。
+运行后打开一个会话，点击工具栏“截屏”图标：首次使用会弹“屏幕录制”权限，授权后
+每个显示器出现全屏覆盖窗；拖拽框选 → （可选）标注 → 点“保存”或 Enter/双击，
+图片作为消息发送；Esc 取消不发送。
 
 ### 9.2 Windows
 
@@ -437,16 +418,15 @@ ls build/linux/x64/release/bundle/LICENSE.flameshot
 
 ### Q1：点击截屏提示“截屏工具不可用”
 
-检查对应平台的 flameshot 二进制是否已正确放入 `chat/native_tools/<platform>/`：
-
-- macOS：`native_tools/macos/flameshot.app/Contents/MacOS/flameshot`
+- macOS：截图是系统原生能力（ScreenCaptureKit），不涉及二进制检查；提示不可用多为原生通道未注册，请用完整 `flutter build macos` 产物运行。
 - Windows：`native_tools/windows/flameshot/bin/flameshot.exe`
 - Linux：`native_tools/linux/flameshot/<arch>/squashfs-root/usr/bin/flameshot`（`<arch>` 如 `x86_64`、`arm64`）
 
-### Q2：macOS 上 flameshot 弹不出来
+### Q2：macOS 上截图没有反应或提示无权限
 
-- 检查系统是否已授权“屏幕录制”权限（系统设置 → 隐私与安全性 → 屏幕录制）。
+- 检查系统是否已授权“屏幕录制”权限（系统设置 → 隐私与安全性 → 屏幕录制），授权后重启 App。
 - 确认 `Info.plist` 中已添加 `NSScreenCaptureUsageDescription`。
+- 覆盖窗弹不出时，检查是否有其他 App 占用了屏保层级窗口或处于特殊全屏 Space。
 
 ### Q3：Windows 上提示找不到 Qt DLL
 
@@ -466,7 +446,8 @@ sudo apt install xdg-desktop-portal grim
 
 ## 11. 参考资料
 
-- [flameshot GitHub](https://github.com/flameshot-org/flameshot)
+- [ScreenCaptureKit（Apple Developer）](https://developer.apple.com/documentation/screencapturekit)
+- [flameshot GitHub](https://github.com/flameshot-org/flameshot)（Windows/Linux 方案）
 - [Flameshot Command Line Options](https://flameshot.org/docs/advanced/commandline-options/)
 - [Flameshot License Overview](https://flameshot.org/docs/overview/overview/)
 - [GNU GPL v3](https://www.gnu.org/licenses/gpl-3.0.html)

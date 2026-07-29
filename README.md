@@ -58,9 +58,9 @@ Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST�
 
 ## 桌面端截图
 
-本项目桌面端（Windows/macOS/Linux）使用 [flameshot](https://flameshot.org/) 作为独立截图工具，通过 `Process.run` 调起。详细的构建、打包、权限与许可证说明请参考 [SCREENSHOT.md](./SCREENSHOT.md)。
+本项目桌面端截图：macOS 使用苹果原生 **ScreenCaptureKit**（自研覆盖窗 + 标注编辑器，见 `chat/macos/Runner/Screenshot/`）；Windows/Linux 使用 [flameshot](https://flameshot.org/) 作为独立截图工具，通过 `Process.run` 调起。详细的构建、打包、权限与许可证说明请参考 [SCREENSHOT.md](./SCREENSHOT.md)。
 
-> **macOS 沙盒注意**：macOS 的 App Sandbox 会限制 flameshot 访问屏幕录制/窗口服务，导致截图功能无法正常初始化。因此 macOS 版本需要**关闭 App Sandbox**（已移除 `com.apple.security.app-sandbox`）才能使用截图。这也意味着当前配置**无法直接上架 Mac App Store**；如必须走 App Store，需改用原生 `ScreenCaptureKit` 方案。
+> **macOS 沙盒**：截图使用 ScreenCaptureKit，沙盒兼容（首次使用需在 系统设置 → 隐私与安全性 → 屏幕录制 授权）。`Release.entitlements` 已开启 `com.apple.security.app-sandbox`，对外分发（Developer ID + 公证）或上架 Mac App Store 均可，流程见 [MACOS_DISTRIBUTION.md](./MACOS_DISTRIBUTION.md)。
 
 ## 关于 Android Studio、Gradle 版本的重要说明
 

@@ -280,8 +280,11 @@ class MainFlutterWindow: NSWindow {
           }
         }
 
-        FlutterMultiWindowPlugin.setOnWindowCreatedCallback { controller in
-          print("Subwindow created, registering plugins")
+        // 截图(ScreenCaptureKit):chat/screenshot 通道,替代 flameshot 子进程。
+        ScreenCaptureManager.shared.register(
+          messenger: flutterViewController.engine.binaryMessenger)
+
+        FlutterMultiWindowPlugin.setOnWindowCreatedCallback { controller in          print("Subwindow created, registering plugins")
           // 在子窗口(通话/媒体预览/朋友圈/搜索)中注册所需插件。
           // flutter_webrtc 必须在 Call 窗口引擎中注册，否则 RTCVideoRenderer 无法初始化。
           FlutterWebRTCPlugin.register(with: controller.registrar(forPlugin: "FlutterWebRTCPlugin"))

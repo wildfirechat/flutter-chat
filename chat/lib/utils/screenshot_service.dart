@@ -1,7 +1,7 @@
 import 'dart:ffi' show Abi;
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:window_manager/window_manager.dart';
 
@@ -24,34 +24,73 @@ class ScreenshotResult {
   factory ScreenshotResult.failure(String error) => ScreenshotResult._(error: error);
 }
 
-/// 桌面端通过调用独立的 flameshot 进程完成截图。
+/// 桌面端截图。macOS 走原生 ScreenCaptureKit(见 Runner/Screenshot/),
+/// Windows / Linux 调用独立的 flameshot 进程。
 ///
-/// 需要把对应平台的 flameshot 二进制放到 native_tools 目录：
+/// Windows/Linux 需要把对应平台的 flameshot 二进制放到 native_tools 目录：
 /// - Windows: native_tools/windows/flameshot/bin/flameshot.exe
 ///            （cmake --install / 官方 portable 包的 bin/include/lib 安装树，只取 bin/）
 /// - Linux:   native_tools/linux/flameshot/<arch>/squashfs-root/usr/bin/flameshot
 ///            （`flameshot.AppImage --appimage-extract` 的原始产物；
 ///            bin/ 下的 qt.conf 靠与 plugins/ 的兄弟关系定位 Qt 平台插件）
 ///            支持的 <arch>: x86_64, arm64，由 CMake 按目标架构选择。
-/// - macOS:   native_tools/macos/flameshot.app
 ///
 /// 这些目录由各平台构建脚本（CMake / Xcode）复制到最终 app bundle。
 class ScreenshotService {
+  static const MethodChannel _channel = MethodChannel('chat/screenshot');
+
   static String? _toolDir;
 
-  /// 当前平台是否具备截图工具。
+  /// 当前平台是否具备截图能力。
   static Future<bool> get isAvailable async {
+    // macOS 的 ScreenCaptureKit 是系统能力(部署目标 15.0+),始终可用;
+    // 屏幕录制权限在 capture 时引导处理。
+    if (Platform.isMacOS) return true;
     final bin = await _resolveBinaryPath();
     return bin != null && File(bin).existsSync();
   }
 
-  /// 调用 flameshot GUI，返回 [ScreenshotResult]。
-  /// 用户取消会返回 path 为 null、error 为 null 的结果。
+  /// 截图，返回 [ScreenshotResult]。用户取消时 path 与 error 均为 null。
   ///
-  /// [hideWindow] 为 true（“隐藏窗口截图”）时：Windows/Linux 隐藏主窗口、
-  /// macOS 最小化主窗口，截图完成（或取消/异常）后恢复；
-  /// 为 false 时保持窗口可见，窗口会出现在截图画面里。
+  /// [hideWindow] 为 true（“隐藏窗口截图”）时：
+  /// - macOS：ScreenCaptureKit 截图时排除本 App 全部窗口（无需真的隐藏窗口）；
+  /// - Windows/Linux：隐藏主窗口（orderOut,无动画），完成后恢复。
+  /// 为 false 时本 App 窗口会出现在截图画面里。
   static Future<ScreenshotResult> captureToFile(AppLocalizations l10n,
+      {bool hideWindow = false}) async {
+    if (Platform.isMacOS) {
+      return _captureMacOS(l10n, excludeSelf: hideWindow);
+    }
+    return _captureViaFlameshot(l10n, hideWindow: hideWindow);
+  }
+
+  /// macOS：经 chat/screenshot 通道调用原生 ScreenCaptureKit 截图。
+  /// [excludeSelf] 为 true 时原生侧排除本 App 全部窗口。
+  static Future<ScreenshotResult> _captureMacOS(AppLocalizations l10n,
+      {bool excludeSelf = false}) async {
+    try {
+      final result = await _channel
+          .invokeMethod<Map>('capture', {'excludeSelf': excludeSelf});
+      if (result == null) return ScreenshotResult._();
+      if (result['path'] is String) {
+        return ScreenshotResult.success(result['path'] as String);
+      }
+      if (result['error'] is String) {
+        return ScreenshotResult.failure(result['error'] as String);
+      }
+      // cancelled
+      return ScreenshotResult._();
+    } on PlatformException catch (e) {
+      return ScreenshotResult.failure(l10n.screenshotException(e.message ?? '$e'));
+    } on MissingPluginException {
+      // 原生通道未注册(异常情况),回退 flameshot
+      return _captureViaFlameshot(l10n, hideWindow: excludeSelf);
+    }
+  }
+
+  /// Windows / Linux:调用 flameshot GUI，返回 [ScreenshotResult]。
+  /// 用户取消会返回 path 为 null、error 为 null 的结果。
+  static Future<ScreenshotResult> _captureViaFlameshot(AppLocalizations l10n,
       {bool hideWindow = false}) async {
     final tmpDir = Directory.systemTemp;
     final out = p.join(

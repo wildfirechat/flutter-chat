@@ -1,6 +1,7 @@
 # 原生截图工具（flameshot）
 
-本目录用于存放 Flutter 桌面端截图功能依赖的 `flameshot` 二进制。
+本目录用于存放 Flutter 桌面端截图功能依赖的 `flameshot` 二进制(仅 Windows/Linux;
+macOS 已改用系统原生 ScreenCaptureKit,不再需要 flameshot,见根目录 SCREENSHOT.md)。
 
 ## 目录结构
 
@@ -16,8 +17,8 @@ native_tools/
 │   │   ├── lib/*.so*
 │   │   └── plugins/platforms/、imageformats/ 等
 │   └── arm64/squashfs-root/usr/  # 结构同上，目录名用 arm64（不是 aarch64）
-└── macos/flameshot.app           # macOS: 完整的 flameshot.app 包
 ```
+> macOS 不再需要本目录:截图已改用 ScreenCaptureKit,`macos/flameshot.app` 已删除。
 
 ## 源码
 https://github.com/heavyrain2012/flameshot
@@ -26,14 +27,6 @@ https://github.com/heavyrain2012/flameshot
 
 > fork 项目，然后才能使用 github action 打包
 > 已通过 git lfs 提交了 `native_tools.zip`，可直接删除`native_tools`目录，并有解压缩`native_tools.zip`使用预编译版本
-
-### macOS（已有编译包）
-
-把编译好的 `flameshot.app` 直接复制到本目录：
-
-```bash
-cp -R ../flameshot/build/src/flameshot.app chat/native_tools/macos/flameshot.app
-```
 
 ### Windows
 

@@ -4,7 +4,7 @@
 
 ## 1. 背景:为什么不走 Mac App Store
 
-Mac App Store 强制要求所有可执行文件开启 App Sandbox。本项目的截图功能依赖打包的 `flameshot.app`,沙盒会限制其访问屏幕录制/窗口服务导致无法初始化(详细论证见 [SCREENSHOT.md](./SCREENSHOT.md)),因此本项目选择**开发者 ID 直接分发**,不开启沙盒。
+本项目 macOS 版通过 **Developer ID 签名 + 苹果公证(Notarization)** 分发。截图已改用苹果原生 ScreenCaptureKit(见 [SCREENSHOT.md](./SCREENSHOT.md)),`Release.entitlements` 已开启 `com.apple.security.app-sandbox`,历史遗留的 `Copy flameshot.app` 构建阶段与 `native_tools/macos/flameshot.app` 已移除——直接分发与 Mac App Store 上架在沙盒层面均已无障碍(上架其余事项见 §8 Q&A)。
 
 直接分发的硬性要求:
 
@@ -41,7 +41,7 @@ flutter build macos --release
 
 ### 4.1 签名顺序:先内后外
 
-必须从最内层开始签(嵌套组件 → flameshot.app → 主 App)。**不要**依赖 `codesign --deep`(苹果官方不推荐,--deep 会用主 App 的 entitlements 错误地签嵌套组件)。
+必须从最内层开始签(嵌套组件 → 主 App)。**不要**依赖 `codesign --deep`(苹果官方不推荐,--deep 会用主 App 的 entitlements 错误地签嵌套组件)。
 
 以下命令在 `chat` 目录执行,替换两个变量:
 
@@ -59,16 +59,7 @@ find "$APP/Contents/Frameworks" -name "*.framework" -exec \
   codesign --sign "$IDENTITY" --options runtime --timestamp --force {} \;
 ```
 
-**第二步:签 flameshot.app(截图工具)**
-
-```bash
-codesign --sign "$IDENTITY" --options runtime --timestamp --deep --force \
-  "$APP/Contents/Resources/flameshot.app"
-```
-
-(flameshot.app 是独立 App 包,内部结构简单,这里用 --deep 可接受。)
-
-**第三步:带 entitlements 签主 App**
+**第二步:带 entitlements 签主 App**
 
 ```bash
 codesign --sign "$IDENTITY" --options runtime --timestamp --force \
@@ -76,13 +67,13 @@ codesign --sign "$IDENTITY" --options runtime --timestamp --force \
   "$APP"
 ```
 
-注意:`macos/Runner/Release.entitlements` **不含** `app-sandbox`(本项目刻意如此),包含 network/audio-input/camera/user-selected files,直接分发下这些键按需生效。
+注意:`macos/Runner/Release.entitlements` 已开启 `app-sandbox`,并包含 network/audio-input/camera/user-selected files;数据目录在沙盒容器内(应用尚未发布,无需处理老数据迁移)。
 
 ### 4.2 验证签名
 
 ```bash
 codesign --verify --deep --strict --verbose=2 "$APP"
-codesign -d --entitlements - "$APP"   # 确认无 app-sandbox,有 network.client 等
+codesign -d --entitlements - "$APP"   # 确认 app-sandbox=true,有 network.client 等
 spctl --assess --type execute -vv "$APP"
 # 公证前 spctl 会显示 "rejected"(尚未公证),这是正常的
 ```
@@ -181,11 +172,11 @@ DMG 本身也建议签名(非必须):`codesign --sign "$IDENTITY" --timestamp Wi
 **Q:用户仍提示"已损坏,无法打开"?**
 A:多半是没 staple 或用户离线。检查 `xcrun stapler validate "$APP"`;让用户执行 `xattr -dr com.apple.quarantine WildFireChat.app` 可临时绕过(不推荐作为正式方案)。
 
-**Q:公证通过但 flameshot 截图没反应?**
+**Q:公证通过但截图没反应?**
 A:与公证无关,是屏幕录制权限未授予。引导用户到 系统设置 → 隐私与安全性 → 屏幕录制 勾选野火IM(见 SCREENSHOT.md §7)。
 
 **Q:可以自动化吗?**
 A:可以。把 §3~§6 写成脚本或 GitHub Actions workflow,凭据用 API Key 方式(§5.1 B)存入 CI secrets。注意不要对 Debug 构建做公证,只有发版构建需要。
 
 **Q:以后想回 Mac App Store 怎么办?**
-A:需要:① 开启沙盒(主 App 与 flameshot.app 都加 `app-sandbox`,但 flameshot 在沙盒内不可用,需改用 ScreenCaptureKit 重写截图);② 已有 `LSApplicationCategoryType`(Info.plist 已加);③ iOS 侧合规项按 CALLKIT_GUIDE.md 与隐私清单处理。
+A:沙盒已开启、ScreenCaptureKit 截图沙盒兼容、`LSApplicationCategoryType` 已加、flameshot 打包已移除,macOS 侧障碍已清。提交前还需:① 全功能回归(重点:沙盒容器内数据目录、文件收发、多窗口、通话);② 改用 App Store 分发证书与描述文件签名(不用公证);③ iOS 侧合规项按 CALLKIT_GUIDE.md 与隐私清单处理。

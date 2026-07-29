@@ -28,6 +28,10 @@
 		33CC10F32044A3C60003C045 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F22044A3C60003C045 /* Assets.xcassets */; };
 		33CC10F62044A3C60003C045 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 33CC10F42044A3C60003C045 /* MainMenu.xib */; };
 		33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC11122044BFA00003C045 /* MainFlutterWindow.swift */; };
+		B7A1E9001C4A4D01A55CE021 /* Annotations.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7A1E9001C4A4D01A55CE011 /* Annotations.swift */; };
+		B7A1E9001C4A4D01A55CE022 /* CaptureOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7A1E9001C4A4D01A55CE012 /* CaptureOverlayView.swift */; };
+		B7A1E9001C4A4D01A55CE023 /* CaptureOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7A1E9001C4A4D01A55CE013 /* CaptureOverlayWindow.swift */; };
+		B7A1E9001C4A4D01A55CE024 /* ScreenCaptureManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7A1E9001C4A4D01A55CE014 /* ScreenCaptureManager.swift */; };
 		CAFA611E4722EF9F6B1CDF43 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 84F0943599A8D94955242679 /* Pods_Runner.framework */; };
 /* End PBXBuildFile section */
 
@@ -75,6 +79,10 @@
 		33CC10F52044A3C60003C045 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		33CC10F72044A3C60003C045 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = Runner/Info.plist; sourceTree = "<group>"; };
 		33CC11122044BFA00003C045 /* MainFlutterWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainFlutterWindow.swift; sourceTree = "<group>"; };
+		B7A1E9001C4A4D01A55CE011 /* Annotations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Annotations.swift; sourceTree = "<group>"; };
+		B7A1E9001C4A4D01A55CE012 /* CaptureOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureOverlayView.swift; sourceTree = "<group>"; };
+		B7A1E9001C4A4D01A55CE013 /* CaptureOverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureOverlayWindow.swift; sourceTree = "<group>"; };
+		B7A1E9001C4A4D01A55CE014 /* ScreenCaptureManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCaptureManager.swift; sourceTree = "<group>"; };
 		33CEB47222A05771004F2AC0 /* Flutter-Debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Flutter-Debug.xcconfig"; sourceTree = "<group>"; };
 		33CEB47422A05771004F2AC0 /* Flutter-Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Flutter-Release.xcconfig"; sourceTree = "<group>"; };
 		33CEB47722A0578A004F2AC0 /* Flutter-Generated.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = "Flutter-Generated.xcconfig"; path = "ephemeral/Flutter-Generated.xcconfig"; sourceTree = "<group>"; };
@@ -177,12 +185,24 @@
 			children = (
 				33CC10F02044A3C60003C045 /* AppDelegate.swift */,
 				33CC11122044BFA00003C045 /* MainFlutterWindow.swift */,
+				B7A1E9001C4A4D01A55CE010 /* Screenshot */,
 				33E51913231747F40026EE4D /* DebugProfile.entitlements */,
 				33E51914231749380026EE4D /* Release.entitlements */,
 				33CC11242044D66E0003C045 /* Resources */,
 				33BA886A226E78AF003329D5 /* Configs */,
 			);
 			path = Runner;
+			sourceTree = "<group>";
+		};
+		B7A1E9001C4A4D01A55CE010 /* Screenshot */ = {
+			isa = PBXGroup;
+			children = (
+				B7A1E9001C4A4D01A55CE011 /* Annotations.swift */,
+				B7A1E9001C4A4D01A55CE012 /* CaptureOverlayView.swift */,
+				B7A1E9001C4A4D01A55CE013 /* CaptureOverlayWindow.swift */,
+				B7A1E9001C4A4D01A55CE014 /* ScreenCaptureManager.swift */,
+			);
+			path = Screenshot;
 			sourceTree = "<group>";
 		};
 		B93E9AE41E2F1DEE71641619 /* Pods */ = {
@@ -239,7 +259,6 @@
 				33CC10EA2044A3C60003C045 /* Frameworks */,
 				33CC10EB2044A3C60003C045 /* Resources */,
 				33CC110E2044A8840003C045 /* Bundle Framework */,
-				ECDAA949-4636-410E-90F9-5C62012658A7 /* Copy flameshot.app */,
 				3399D490228B24CF009A79C7 /* ShellScript */,
 				60EEB9845B6FB63E868F2B86 /* [CP] Embed Pods Frameworks */,
 			);
@@ -423,25 +442,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		ECDAA949-4636-410E-90F9-5C62012658A7 /* Copy flameshot.app */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Copy flameshot.app";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "set -e\necho \"[flameshot] Copying $SRC to $DST\"\nSRC=\"${PROJECT_DIR}/../native_tools/macos/flameshot.app\"\nDST=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/Contents/Resources/flameshot.app\"\nif [ -d \"$SRC\" ]; then\n  rm -rf \"$DST\"\n  cp -R \"$SRC\" \"$DST\"\n  echo \"[flameshot] Copied $(find \"$DST\" -type f | wc -l) files\"\nelse\n  echo \"warning: flameshot.app not found at $SRC\"\nfi\n\nRESOURCES_DIR=\"${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}.app/Contents/Resources\"\nfor FILE in LICENSE.flameshot NOTICE.md; do\n  SRC_FILE=\"${PROJECT_DIR}/../native_tools/$FILE\"\n  if [ -f \"$SRC_FILE\" ]; then\n    cp \"$SRC_FILE\" \"$RESOURCES_DIR/$FILE\"\n    echo \"[flameshot] Copied $FILE\"\n  fi\ndone\n";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -458,6 +458,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				33CC11132044BFA00003C045 /* MainFlutterWindow.swift in Sources */,
+				B7A1E9001C4A4D01A55CE021 /* Annotations.swift in Sources */,
+				B7A1E9001C4A4D01A55CE022 /* CaptureOverlayView.swift in Sources */,
+				B7A1E9001C4A4D01A55CE023 /* CaptureOverlayWindow.swift in Sources */,
+				B7A1E9001C4A4D01A55CE024 /* ScreenCaptureManager.swift in Sources */,
 				33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */,
 				335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */,
 			);
