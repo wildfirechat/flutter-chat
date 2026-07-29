@@ -2,6 +2,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include <flutter_linux/flutter_linux.h>
 #if defined(GDK_WINDOWING_X11) && defined(HAVE_X11)
 #include <X11/Xlib.h>
@@ -46,6 +47,10 @@ static int _tryAcquireSingleInstanceLock() {
 }
 
 static int _singleInstanceLockFd = -1;
+
+// 主窗口句柄:第二次启动时 GApplication 会把激活经 DBus 转发到
+// 主实例的 activate,此时只需 present 已有窗口,不再新建。
+static GtkWindow* _mainWindow = NULL;
 
 #ifdef CHAT_X11_ERROR_HANDLER
 // GLX 协议里 glXMakeCurrent / glXMakeContextCurrent 的 minor opcode。
@@ -178,6 +183,22 @@ static void _installApplicationIcon() {
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
+
+  // 第二次启动:GApplication(去掉了 G_APPLICATION_NON_UNIQUE)会把激活
+  // 经 DBus 转发到主实例的 activate,已有主窗口时提到前台即可,不再新建。
+  if (_mainWindow != NULL) {
+    gtk_window_present(_mainWindow);
+    return;
+  }
+
+  // 首次启动:先拿单实例文件锁(DBus application-id 去重之外的兜底,
+  // 防止不同 session / 直接执行二进制导致的多开)
+  _singleInstanceLockFd = _tryAcquireSingleInstanceLock();
+  if (_singleInstanceLockFd < 0) {
+    g_warning("Another instance is already running.");
+    exit(0);
+  }
+
 #ifdef CHAT_X11_ERROR_HANDLER
   // 必须在 GDK 打开 display(gtk_init)之后装,才能盖住 GDK 自己的处理器。
   _installXErrorHandler();
@@ -187,6 +208,7 @@ static void my_application_activate(GApplication* application) {
 
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
+  _mainWindow = window;
 
   // Use a header bar when running in GNOME as this is the common style used
   // by applications and is the setup most users will be using (e.g. Ubuntu
@@ -279,14 +301,8 @@ static gboolean my_application_local_command_line(GApplication* application, gch
   // Strip out the first argument as it is the binary name.
   self->dart_entrypoint_arguments = g_strdupv(*arguments + 1);
 
-  // 单实例检查
-  _singleInstanceLockFd = _tryAcquireSingleInstanceLock();
-  if (_singleInstanceLockFd < 0) {
-    g_warning("Another instance is already running.");
-    *exit_status = 0;
-    return TRUE;
-  }
-
+  // 单实例检查移到了 activate 里:这里必须先 register,
+  // 第二次启动时 GApplication 才能把激活经 DBus 转发给主实例。
   g_autoptr(GError) error = nullptr;
   if (!g_application_register(application, nullptr, &error)) {
      g_warning("Failed to register: %s", error->message);
