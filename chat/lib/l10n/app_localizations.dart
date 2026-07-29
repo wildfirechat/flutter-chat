@@ -4304,6 +4304,24 @@ abstract class AppLocalizations {
   /// **'图片查看'**
   String get mediaPreviewTitle;
 
+  /// No description provided for @playbackSpeed.
+  ///
+  /// In zh, this message translates to:
+  /// **'倍速'**
+  String get playbackSpeed;
+
+  /// No description provided for @mute.
+  ///
+  /// In zh, this message translates to:
+  /// **'静音'**
+  String get mute;
+
+  /// No description provided for @unmute.
+  ///
+  /// In zh, this message translates to:
+  /// **'取消静音'**
+  String get unmute;
+
   /// No description provided for @saveAs.
   ///
   /// In zh, this message translates to:

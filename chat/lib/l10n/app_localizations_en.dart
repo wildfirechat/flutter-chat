@@ -2316,6 +2316,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mediaPreviewTitle => 'Media Viewer';
 
   @override
+  String get playbackSpeed => 'Speed';
+
+  @override
+  String get mute => 'Mute';
+
+  @override
+  String get unmute => 'Unmute';
+
+  @override
   String get saveAs => 'Save as...';
 
   @override

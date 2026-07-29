@@ -221,7 +221,10 @@ class PluginBoard extends StatelessWidget {
                   if (thumbData != null) {
                     thumb = img.decodeJpg((await entity.thumbnailData)!);
                   }
-                  conversationController.cameraCaptureVideo(conversation, file.path, thumb, entity.duration);
+                  // AssetEntity.duration 视频是「秒」,而消息协议里 duration 是「毫秒」,
+                  // 直接透传会让对端把 15 秒的视频显示成 00:00
+                  conversationController.cameraCaptureVideo(
+                      conversation, file.path, thumb, entity.duration * 1000);
                 }
               });
             }

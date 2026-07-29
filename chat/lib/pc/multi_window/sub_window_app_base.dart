@@ -324,8 +324,17 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
     );
   }
 
-  /// 包一层不抢初始焦点语义的按键节点:未被内层(如媒体预览窗自己的
-  /// Esc/Space)消费的 Ctrl/Cmd+W 冒泡到这里时关闭窗口。
+  /// 包一层按键节点:未被内层消费的 Ctrl/Cmd+W 冒泡到这里时关闭窗口。
+  ///
+  /// 这里的 `autofocus: true` 是兜底 —— 内容区没有任何可聚焦控件时,若本节点
+  /// 不持有焦点,primaryFocus 会停在路由的 FocusScope(本节点的祖先),按键只
+  /// 沿祖先链向上冒泡,永远到不了本节点,Ctrl/Cmd+W 会失效。
+  ///
+  /// 代价是它会和内容区的 autofocus 抢焦点:同一 FocusScope 内多个 autofocus
+  /// 只有最先注册的生效,而祖先先 build 先注册,所以本节点会赢。**内容区若要
+  /// 自己处理按键(如媒体预览窗的方向键/Esc/空格),不能只写 autofocus,必须在
+  /// 首帧后显式 requestFocus 抢回来**(参见 MMPreviewViewState 的
+  /// _keyboardFocusNode);抢回来后本节点仍是其祖先,Ctrl/Cmd+W 照常冒泡上来。
   Widget _wrapWithCloseShortcut(Widget child) {
     if (!closableByShortcut) {
       return child;

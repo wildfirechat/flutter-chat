@@ -15,6 +15,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
+import 'package:chat/utils/duration_formatter.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/utils/non_cached_image.dart';
 import 'package:chat/widget/drag_to_dismiss.dart';
@@ -63,15 +64,48 @@ class MMPreviewViewState extends State<MMPreviewView> {
   // 正常的 State.dispose() 流程，不主动 pause 的话窗口关掉后视频的声音还在放。
   final Map<int, VideoPlayerController> _videoControllers = {};
 
+  // 桌面端键盘快捷键(方向键/Esc/空格)的焦点宿主。
+  //
+  // 用 FocusScope 而不是 Focus,有两个原因:
+  //
+  // 1) 必须在首帧后**显式** requestFocus,只写 autofocus 是不够的:子窗口基类
+  //    SubWindowAppBase._wrapWithCloseShortcut 在更外层也挂了一个 autofocus 的
+  //    Focus(用于 Ctrl/Cmd+W 关窗)。同一 FocusScope 内多个 autofocus 只有最先
+  //    注册的那个生效(祖先先 build 先注册),而按键事件只从 primaryFocus 沿祖先
+  //    链向「上」冒泡、不会下发给后代 —— 焦点被外层占住的话快捷键整体失灵。
+  //
+  // 2) 焦点一旦丢失,普通 Focus 会回落到「最近的祖先 scope」,也就是路由那个
+  //    scope —— 它是本节点的祖先,于是按键再也到不了这里,快捷键就永久失效了
+  //    (视频播完后出现的正是这种现象)。换成 FocusScope 后,最近的 scope 就是
+  //    自己,任何后代放弃焦点都回落到本节点,按键链路不会断。
+  //
+  // 抢焦点不影响外层:本节点是它的后代,未消费的按键(Ctrl/Cmd+W)照样继续向上
+  // 冒泡到基类节点。
+  final FocusScopeNode _keyboardFocusNode =
+      FocusScopeNode(debugLabel: 'MMPreviewKeyboard');
+
+  // 焦点被外部抢走后重新夺回。仅在本路由仍在最前时执行,避免把焦点从弹出的
+  // 倍速菜单/另存为对话框(它们是压在上面的独立路由)手里抢回来。
+  void _ensureKeyboardFocus() {
+    if (!mounted || !isDesktopShell) return;
+    if (_keyboardFocusNode.hasFocus) return;
+    if (ModalRoute.of(context)?.isCurrent == false) return;
+    _keyboardFocusNode.requestFocus();
+  }
+
   @override
   void initState() {
     super.initState();
     currentIndex = widget.defaultIndex;
     _pageController = PageController(initialPage: widget.defaultIndex);
+    if (isDesktopShell) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _ensureKeyboardFocus());
+    }
   }
 
   @override
   void dispose() {
+    _keyboardFocusNode.dispose();
     _pageController.dispose();
     for (final controller in _scaleStateControllers.values) {
       controller.dispose();
@@ -102,6 +136,44 @@ class MMPreviewViewState extends State<MMPreviewView> {
     } else if (mounted) {
       Navigator.pop(context);
     }
+  }
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+      _goToRelative(-1);
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+      _goToRelative(1);
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.escape) {
+      _requestClose();
+      return KeyEventResult.handled;
+    }
+    if (event.logicalKey == LogicalKeyboardKey.space) {
+      _handleSpaceKey();
+      return KeyEventResult.handled;
+    }
+    return KeyEventResult.ignored;
+  }
+
+  // 空格键:图片页关闭预览(与 Esc 一致);视频页则切换播放/暂停,不关闭预览。
+  void _handleSpaceKey() {
+    final message = widget.mediaItems[currentIndex];
+    if (message.content is VideoMessageContent) {
+      final controller = _videoControllers[message.messageId];
+      if (controller != null && controller.value.isInitialized) {
+        if (controller.value.isPlaying) {
+          controller.pause();
+        } else {
+          controller.play();
+        }
+      }
+      return;
+    }
+    _requestClose();
   }
 
   /// 暂停所有还挂着的视频。独立预览窗口(媒体预览子窗口)有系统标题栏关闭键，
@@ -282,6 +354,9 @@ class MMPreviewViewState extends State<MMPreviewView> {
                           _videoControllers[message.messageId] = controller,
                       onControllerDisposed: () =>
                           _videoControllers.remove(message.messageId),
+                      // 图片的"另存为"在底部工具栏,视频没有那条工具栏,
+                      // 改放到自己控制条的最右侧
+                      onSave: _saveCurrentMedia,
                     ),
                     childSize: MediaQuery.of(context).size,
                     initialScale: PhotoViewComputedScale.contained,
@@ -334,6 +409,9 @@ class MMPreviewViewState extends State<MMPreviewView> {
             _zoomBy(math.exp(-event.scrollDelta.dy * 0.002));
           }
         },
+        // 兜底:在预览里点一下就把键盘焦点收回来(符合直觉,也保证万一焦点被
+        // 什么东西抢走,用户点一下画面即可恢复快捷键)
+        onPointerDown: (_) => _ensureKeyboardFocus(),
         child: gallery,
       );
     }
@@ -402,8 +480,9 @@ class MMPreviewViewState extends State<MMPreviewView> {
                 ),
               ),
             ),
-          // Bottom toolbar on desktop
-          if (isDesktopShell)
+          // Bottom toolbar on desktop:缩放/旋转对视频没有意义,存储已挪到右键菜单,
+          // 只在图片页显示;视频页由 MMVideoPlayer 自己的底部控制条负责。
+          if (isDesktopShell && widget.mediaItems[currentIndex].content is ImageMessageContent)
             Positioned(
               bottom: 30,
               left: 0,
@@ -473,21 +552,25 @@ class MMPreviewViewState extends State<MMPreviewView> {
 
     if (isDesktopShell) {
       // 桌面端：黑色背景、键盘翻页、禁用拖拽关闭
-      return CallbackShortcuts(
-        bindings: {
-          const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _goToRelative(-1),
-          const SingleActivator(LogicalKeyboardKey.arrowRight): () => _goToRelative(1),
-          const SingleActivator(LogicalKeyboardKey.escape): _requestClose,
-          const SingleActivator(LogicalKeyboardKey.space): _requestClose,
+      // 用 onKeyEvent 而不是 CallbackShortcuts:空格要按当前页是图片还是视频
+      // 分别做关窗/播放暂停,SingleActivator 表达不了这种条件分支。
+      // 用 FocusScope 且显式抢焦点,原因见 _keyboardFocusNode 的注释。
+      return FocusScope(
+        node: _keyboardFocusNode,
+        autofocus: true,
+        onKeyEvent: _handleKeyEvent,
+        onFocusChange: (hasFocus) {
+          // 焦点被抢走时(且没有别的路由压在上面)下一帧夺回来
+          if (!hasFocus) {
+            WidgetsBinding.instance
+                .addPostFrameCallback((_) => _ensureKeyboardFocus());
+          }
         },
-        child: Focus(
-          autofocus: true,
-          // 内部按钮(翻页/工具栏)点击后不许夺焦,否则空格会重触发该按钮而非关窗
-          child: ExcludeFocus(
-            child: Container(
-              color: Colors.black,
-              child: content,
-            ),
+        // 内部按钮(翻页/工具栏)点击后不许夺焦,否则空格会重触发该按钮而非关窗
+        child: ExcludeFocus(
+          child: Container(
+            color: Colors.black,
+            child: content,
           ),
         ),
       );
@@ -593,17 +676,33 @@ class MMVideoPlayer extends StatefulWidget {
   // 关闭预览前父级要用它主动 pause，见 MMPreviewViewState._videoControllers。
   final ValueChanged<VideoPlayerController>? onControllerReady;
   final VoidCallback? onControllerDisposed;
+  // 控制条上的"另存为";为空则不显示该按钮
+  final VoidCallback? onSave;
 
   const MMVideoPlayer(this.content,
-      {super.key, this.onTap, this.onControllerReady, this.onControllerDisposed});
+      {super.key,
+      this.onTap,
+      this.onControllerReady,
+      this.onControllerDisposed,
+      this.onSave});
 
   @override
   State<MMVideoPlayer> createState() => _MMVideoPlayerState();
 }
 
 class _MMVideoPlayerState extends State<MMVideoPlayer> {
+  static const List<double> _speedOptions = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+
   late VideoPlayerController _controller;
+  // 触屏端靠点击切换控制条显隐;桌面端改由 _hovering 驱动(见 _controlsVisible)
   bool _showControls = false;
+  bool _hovering = false;
+  double _playbackSpeed = 1.0;
+  double _volumeBeforeMute = 1.0;
+  bool _isMuted = false;
+  // 拖动进度条时先本地记着目标位置,松手才真正 seek,避免拖动过程中
+  // 控制器的 position 更新和手指位置打架导致进度条抖动。
+  double? _dragPositionMs;
 
   @override
   void initState() {
@@ -640,6 +739,150 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
 
   void _onControllerValueChanged() {
     if (mounted) setState(() {});
+  }
+
+  void _togglePlayPause() {
+    if (_controller.value.isPlaying) {
+      _controller.pause();
+    } else {
+      _controller.play();
+    }
+  }
+
+  void _toggleMute() {
+    setState(() {
+      if (_isMuted) {
+        _controller.setVolume(_volumeBeforeMute > 0 ? _volumeBeforeMute : 1.0);
+        _isMuted = false;
+      } else {
+        _volumeBeforeMute = _controller.value.volume > 0 ? _controller.value.volume : 1.0;
+        _controller.setVolume(0);
+        _isMuted = true;
+      }
+    });
+  }
+
+  // 控制条显隐:桌面端跟随鼠标悬停,触屏端跟随点击;暂停时常驻。
+  // 拖进度条时也常驻 —— 拖动中指针很容易划出视频区域触发 onExit,
+  // 控制条中途消失会把这一次拖拽也一起打断。
+  bool get _controlsVisible =>
+      (isDesktopShell ? _hovering : _showControls) ||
+      !_controller.value.isPlaying ||
+      _dragPositionMs != null;
+
+  // 底部视频控制条:播放/暂停、进度条(可拖拽 seek)、倍速、静音。
+  // 拖动进度条时用 _dragPositionMs 顶替真实 position 显示,松手才真正 seek,
+  // 否则拖动中控制器自己上报的 position 会和手指位置打架导致进度条抖动。
+  Widget _buildControlBar() {
+    final VideoPlayerValue value = _controller.value;
+    final Duration total = value.duration;
+    final double totalMs = total.inMilliseconds.toDouble();
+    final double currentMs = (_dragPositionMs ?? value.position.inMilliseconds.toDouble())
+        .clamp(0.0, totalMs > 0 ? totalMs : 1.0);
+    final bool muted = _isMuted || value.volume <= 0;
+    final l10n = AppLocalizations.of(context)!;
+
+    return Positioned(
+      left: 24,
+      right: 24,
+      bottom: isDesktopShell ? 30 : (24 + MediaQuery.of(context).padding.bottom),
+      child: Container(
+        height: 40,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: _togglePlayPause,
+              child: Icon(
+                value.isPlaying ? Icons.pause : Icons.play_arrow,
+                color: Colors.white,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(formatMediaDuration(currentMs.round()),
+                style: const TextStyle(color: Colors.white, fontSize: 12)),
+            Expanded(
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 2,
+                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                  activeTrackColor: Colors.white,
+                  inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
+                  thumbColor: Colors.white,
+                ),
+                child: Slider(
+                  value: currentMs,
+                  min: 0,
+                  max: totalMs > 0 ? totalMs : 1.0,
+                  onChangeStart: totalMs > 0 ? (v) => setState(() => _dragPositionMs = v) : null,
+                  onChanged: totalMs > 0 ? (v) => setState(() => _dragPositionMs = v) : null,
+                  onChangeEnd: totalMs > 0
+                      ? (v) async {
+                          await _controller.seekTo(Duration(milliseconds: v.round()));
+                          if (mounted) setState(() => _dragPositionMs = null);
+                        }
+                      : null,
+                ),
+              ),
+            ),
+            Text(formatMediaDuration(total.inMilliseconds),
+                style: const TextStyle(color: Colors.white, fontSize: 12)),
+            const SizedBox(width: 10),
+            PopupMenuButton<double>(
+              tooltip: l10n.playbackSpeed,
+              color: Colors.black87,
+              position: PopupMenuPosition.over,
+              onSelected: (speed) {
+                setState(() => _playbackSpeed = speed);
+                _controller.setPlaybackSpeed(speed);
+              },
+              itemBuilder: (context) => _speedOptions
+                  .map((speed) => PopupMenuItem<double>(
+                        value: speed,
+                        child: Text(
+                          '${speed}x',
+                          style: TextStyle(
+                            color: speed == _playbackSpeed
+                                ? Theme.of(context).colorScheme.primary
+                                : Colors.white,
+                          ),
+                        ),
+                      ))
+                  .toList(),
+              child: Text(l10n.playbackSpeed, style: const TextStyle(color: Colors.white, fontSize: 12)),
+            ),
+            const SizedBox(width: 10),
+            Tooltip(
+              message: muted ? l10n.unmute : l10n.mute,
+              child: GestureDetector(
+                onTap: _toggleMute,
+                child: Icon(
+                  muted ? Icons.volume_off : Icons.volume_up,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+            if (widget.onSave != null) ...[
+              const SizedBox(width: 10),
+              Tooltip(
+                message: l10n.saveAs,
+                child: GestureDetector(
+                  onTap: widget.onSave,
+                  child: const Icon(Icons.download_rounded, color: Colors.white, size: 20),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildCoverPlaceholder() {
@@ -701,10 +944,16 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
       );
     }
 
-    return GestureDetector(
+    Widget player = GestureDetector(
       onTap: () {
         setState(() {
-          _showControls = !_showControls;
+          // 桌面端控制条常驻于悬停,点击画面直接播放/暂停(与空格键一致);
+          // 触屏端没有悬停,仍沿用点击切换控制条显隐
+          if (isDesktopShell) {
+            _togglePlayPause();
+          } else {
+            _showControls = !_showControls;
+          }
         });
         widget.onTap?.call();
       },
@@ -723,32 +972,24 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
                   )
                 : const CircularProgressIndicator(color: Colors.white),
           ),
-          if (_showControls || !_controller.value.isPlaying)
-            Center(
-              child: GestureDetector(
-                onTap: () {
-                  if (_controller.value.isPlaying) {
-                    _controller.pause();
-                  } else {
-                    _controller.play();
-                  }
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    _controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-                    color: Colors.white,
-                    size: 40,
-                  ),
-                ),
-              ),
-            ),
+          // 播放/暂停已经交给底部控制条和空格键,不再需要居中的大按钮
+          if (_controller.value.isInitialized && _controlsVisible) _buildControlBar(),
         ],
       ),
     );
+
+    if (isDesktopShell) {
+      // 鼠标移到视频上就显示控制条(移开即隐),不用点一下才出来
+      player = MouseRegion(
+        onEnter: (_) {
+          if (!_hovering) setState(() => _hovering = true);
+        },
+        onExit: (_) {
+          if (_hovering) setState(() => _hovering = false);
+        },
+        child: player,
+      );
+    }
+    return player;
   }
 }

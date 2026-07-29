@@ -6,6 +6,7 @@ import 'package:image/image.dart' as image;
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
 import 'package:chat/conversation/media_cell_anchor.dart';
+import 'package:chat/utils/duration_formatter.dart';
 import 'package:imclient/tools.dart';
 
 import '../../ui_model/ui_message.dart';
@@ -83,7 +84,7 @@ class VideoCellBuilder extends PortraitCellBuilder {
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(3),
                       ),
-                      child: Text('${videoMessageContent.duration}s', style: AppText.xs.copyWith(color: Colors.white),),
+                      child: Text(formatMediaDuration(videoMessageContent.duration), style: AppText.xs.copyWith(color: Colors.white),),
                     ),
                   )
                 ],
@@ -124,7 +125,7 @@ class VideoCellBuilder extends PortraitCellBuilder {
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: Text(
-                    '${videoMessageContent.duration}s',
+                    formatMediaDuration(videoMessageContent.duration),
                     style: AppText.xs.copyWith(color: Colors.white),
                   ),
                 ),
@@ -157,7 +158,7 @@ class VideoCellBuilder extends PortraitCellBuilder {
                     borderRadius: BorderRadius.circular(3),
                   ),
                   child: Text(
-                    '${videoMessageContent.duration}s',
+                    formatMediaDuration(videoMessageContent.duration),
                     style: AppText.xs.copyWith(color: Colors.white),
                   ),
                 ),

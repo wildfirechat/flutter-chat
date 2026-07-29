@@ -2291,6 +2291,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get mediaPreviewTitle => '图片查看';
 
   @override
+  String get playbackSpeed => '倍速';
+
+  @override
+  String get mute => '静音';
+
+  @override
+  String get unmute => '取消静音';
+
+  @override
   String get saveAs => '另存为...';
 
   @override

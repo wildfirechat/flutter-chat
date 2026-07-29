@@ -213,6 +213,7 @@ class ConversationController extends ChangeNotifier {
     _sendMessage(conversation, imgContent);
   }
 
+  /// [duration] 单位为毫秒(消息协议约定),调用方需自行换算。
   void cameraCaptureVideo(Conversation conversation, String videoPath,
       img.Image? thumbnail, int duration) {
     VideoMessageContent videoContent = VideoMessageContent();
