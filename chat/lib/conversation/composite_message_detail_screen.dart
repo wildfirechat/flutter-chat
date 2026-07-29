@@ -6,6 +6,7 @@ import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/notification/notification_message_content.dart';
+import 'package:imclient/message/rich_notification_message_content.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/streaming_text_generated_message_content.dart';
 import 'package:imclient/message/streaming_text_generating_message_content.dart';
@@ -22,6 +23,7 @@ import 'package:chat/conversation/cell_builder/file_cell_builder.dart';
 import 'package:chat/conversation/cell_builder/image_cell_builder.dart';
 import 'package:chat/conversation/cell_builder/message_cell_builder.dart';
 import 'package:chat/conversation/cell_builder/notification_cell_builder.dart';
+import 'package:chat/conversation/cell_builder/rich_notification_cell_builder.dart';
 import 'package:chat/conversation/cell_builder/streaming_text_cell_builder.dart';
 import 'package:chat/conversation/cell_builder/text_cell_builder.dart';
 import 'package:chat/conversation/cell_builder/unknown_cell_builder.dart';
@@ -162,7 +164,11 @@ class _CompositeMessageDetailScreenState extends State<CompositeMessageDetailScr
 
   MessageCellBuilder _createCellBuilder(BuildContext context, UIMessage model) {
     MessageCellBuilder cellBuilder;
-    if (model.message.content is NotificationMessageContent) {
+    // RichNotificationMessageContent 也是 NotificationMessageContent 的子类,
+    // 走自己的卡片样式,必须排在通用通知分支前面
+    if (model.message.content is RichNotificationMessageContent) {
+      cellBuilder = RichNotificationCellBuilder(context, model);
+    } else if (model.message.content is NotificationMessageContent) {
       cellBuilder = NotificationCellBuilder(context, model);
     } else if (model.message.content is TextMessageContent) {
       cellBuilder = TextCellBuilder(context, model);

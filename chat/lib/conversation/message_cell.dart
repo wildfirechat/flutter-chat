@@ -4,6 +4,7 @@ import 'package:imclient/message/card_message_content.dart';
 import 'package:imclient/message/file_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/notification/notification_message_content.dart';
+import 'package:imclient/message/rich_notification_message_content.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/streaming_text_generated_message_content.dart';
 import 'package:imclient/message/streaming_text_generating_message_content.dart';
@@ -25,6 +26,7 @@ import 'cell_builder/image_cell_builder.dart';
 import 'cell_builder/link_cell_builder.dart';
 import 'cell_builder/message_cell_builder.dart';
 import 'cell_builder/notification_cell_builder.dart';
+import 'cell_builder/rich_notification_cell_builder.dart';
 import 'cell_builder/streaming_text_cell_builder.dart';
 import 'cell_builder/text_cell_builder.dart';
 import 'cell_builder/unknown_cell_builder.dart';
@@ -83,7 +85,11 @@ class _MessageCellState extends State<MessageCell> with AutomaticKeepAliveClient
   }
 
   void _initCellBuilder() {
-    if (widget.model.message.content is NotificationMessageContent) {
+    // RichNotificationMessageContent 也是 NotificationMessageContent 的子类,
+    // 走自己的卡片样式,必须排在通用通知分支前面
+    if (widget.model.message.content is RichNotificationMessageContent) {
+      _cellBuilder = RichNotificationCellBuilder(context, widget.model);
+    } else if (widget.model.message.content is NotificationMessageContent) {
       _cellBuilder = NotificationCellBuilder(context, widget.model);
     } else if (widget.model.message.content is LinkMessageContent) {
       _cellBuilder = LinkCellBuilder(context, widget.model);
