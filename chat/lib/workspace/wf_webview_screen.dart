@@ -6,8 +6,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:chat/workspace/dsbridge_webview.dart';
 import 'package:chat/workspace/js_api.dart';
-import 'package:chat/workspace/webview_background.dart';
 import 'package:chat/workspace/webview_support.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/pc/pc_platform.dart';
@@ -44,45 +44,24 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
     final DWebViewController controller = DWebViewController();
     final jsApi = JsApi(context, widget.url, controller, pushOverlay: _pushOverlay);
 
-    controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onProgress: (int progress) {
-            debugPrint('WebView is loading (progress : $progress%)');
-          },
-          onPageStarted: (String url) {
-            debugPrint('Page started loading: $url');
-          },
-          onPageFinished: (String url) async {
-            debugPrint('Page finished loading: $url');
-            String? title = await controller.getTitle();
-            setState(() {
-              _pageTitle = title ?? '';
-            });
-          },
-          onUrlChange: (UrlChange urlChange) {
-            jsApi.setCurrentUrl(urlChange.url!);
-          },
-          onNavigationRequest: (NavigationRequest request) {
-            if (request.url.startsWith('https://www.youtube.com/')) {
-              debugPrint('blocking navigation to ${request.url}');
-              return NavigationDecision.prevent;
-            }
-            debugPrint('allowing navigation to ${request.url}');
-            return NavigationDecision.navigate;
-          },
-        ),
-      )
-      ..addJavaScriptObject(jsApi);
-
-    unawaited(setTransparentBackground(controller));
+    configureDsBridgeWebView(
+      controller: controller,
+      jsApi: jsApi,
+      onPageFinished: (_) async {
+        final String? title = await controller.getTitle();
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          _pageTitle = title ?? '';
+        });
+      },
+      onUrlChange: jsApi.setCurrentUrl,
+    );
 
     unawaited(() async {
       // 同工作台:UA 上的标记决定页面选不选 dsbridge 传输,必须赶在加载之前。
-      if (isDesktopShell) {
-        await tagDsBridgeUserAgent(controller);
-      }
+      await ensureDesktopDsBridgeUserAgent(controller);
       await controller
           .loadRequest(Uri.parse(MediaUrlRedirector.redirect(widget.url)));
     }());

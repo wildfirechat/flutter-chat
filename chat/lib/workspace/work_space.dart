@@ -11,8 +11,8 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:chat/config.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/workspace/dsbridge_webview.dart';
 import 'package:chat/workspace/js_api.dart';
-import 'package:chat/workspace/webview_background.dart';
 import 'package:chat/workspace/webview_support.dart';
 import 'package:chat/workspace/workspace_tab_bar.dart';
 import 'package:chat/workspace/workspace_tabs_view_model.dart';
@@ -206,8 +206,6 @@ void _bindTabHost(
     _clearInvalidWebViewCookies(controller);
   }
 
-  unawaited(setTransparentBackground(controller));
-
   // host 在自己的 jsApi.pushOverlay 闭包里被引用:闭包只在真正调用时才读取
   // `host`,那时 late 变量早已完成赋值,这个自引用是安全的。
   late final WorkspaceWebViewHost host;
@@ -225,45 +223,26 @@ void _bindTabHost(
   );
   vm.attachHost(tab, host);
 
-  controller
-    ..setJavaScriptMode(JavaScriptMode.unrestricted)
-    ..setNavigationDelegate(
-      NavigationDelegate(
-        onProgress: (int progress) {
-          debugPrint('WebView is loading (progress : $progress%)');
-        },
-        onPageStarted: (String url) {
-          debugPrint('Page started loading: $url');
-        },
-        onPageFinished: (String url) async {
-          debugPrint('Page finished loading: $url');
-          // 页签标题跟随网页 title;首页页签固定显示"工作台",不必取。
-          // 读 host.tab 而不是捕获 tab:宿主可能已经被复用到别的页签上了。
-          final bound = host.tab;
-          if (bound != null && bound.closable) {
-            vm.updateTitle(bound.id, await controller.getTitle());
-          }
-        },
-        // 应用页签沿用 WFWebViewScreen 的行为:页内跳走后 JsApi 的 _preCheck
-        // 不再放行 chooseContacts。首页页签改造前就没有这一手,保持原样。
-        onUrlChange: (UrlChange urlChange) {
-          final url = urlChange.url;
-          final bound = host.tab;
-          if (url != null && bound != null && bound.closable) {
-            host.jsApi.setCurrentUrl(url);
-          }
-        },
-        onNavigationRequest: (NavigationRequest request) {
-          if (request.url.startsWith('https://www.youtube.com/')) {
-            debugPrint('blocking navigation to ${request.url}');
-            return NavigationDecision.prevent;
-          }
-          debugPrint('allowing navigation to ${request.url}');
-          return NavigationDecision.navigate;
-        },
-      ),
-    )
-    ..addJavaScriptObject(host.jsApi);
+  configureDsBridgeWebView(
+    controller: controller,
+    jsApi: host.jsApi,
+    onPageFinished: (_) async {
+      // 页签标题跟随网页 title;首页页签固定显示"工作台",不必取。
+      // 读 host.tab 而不是捕获 tab:宿主可能已经被复用到别的页签上了。
+      final bound = host.tab;
+      if (bound != null && bound.closable) {
+        vm.updateTitle(bound.id, await controller.getTitle());
+      }
+    },
+    // 应用页签沿用 WFWebViewScreen 的行为:页内跳走后 JsApi 的 _preCheck
+    // 不再放行 chooseContacts。首页页签改造前就没有这一手,保持原样。
+    onUrlChange: (url) {
+      final bound = host.tab;
+      if (bound != null && bound.closable) {
+        host.jsApi.setCurrentUrl(url);
+      }
+    },
+  );
 
   unawaited(_loadTab(controller, tab, vm, brightness));
 }
@@ -277,9 +256,7 @@ Future<void> _loadTab(
 ) async {
   // 必须赶在 loadRequest 之前:页面靠 UA 里的标记选 dsbridge 传输。
   // 只在桌面打 —— 移动端现在选中的分支是通的,不去动它。
-  if (isDesktopShell) {
-    await tagDsBridgeUserAgent(controller);
-  }
+  await ensureDesktopDsBridgeUserAgent(controller);
 
   final bool isHome = !tab.closable;
   // 首页地址在加载时才取 Config,与改造前一致 —— selectServer 将来接上双网判断后,
