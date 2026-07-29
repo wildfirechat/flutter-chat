@@ -8,14 +8,20 @@
 
 ## 1. 功能概述
 
-在桌面端会话界面增加“截屏”按钮，点击后：
+在桌面端会话界面增加“截屏”按钮，按钮旁有下拉箭头，提供两种模式：
 
-1. 隐藏 Flutter 窗口（仅 Windows/Linux；macOS 保持窗口可见）；
-2. 调起 flameshot 的 GUI 选区截图；
-3. 用户确认后 flameshot 生成 PNG；
-4. Dart 读取截图文件路径；
-5. 通过现有图片发送逻辑（`ConversationController.onPickImage`）作为图片消息发送；
-6. 重新显示并聚焦 Flutter 窗口（仅 Windows/Linux）。
+- **截屏（默认）**：保持窗口可见（窗口会出现在截图画面里），直接调起 flameshot GUI 选区截图；
+- **隐藏窗口截图**：全平台 `windowManager.hide()` 隐藏主窗口（瞬间完成，无系统最小化动画——genie 动画只能系统级关闭，应用无法控制，故不用 minimize），截图完成（或取消/异常）后 `show()` + `focus()` 恢复。
+
+之后流程一致：
+
+1. 调起 flameshot 的 GUI 选区截图；
+2. 用户确认后 flameshot 生成 PNG；
+3. Dart 读取截图文件路径；
+4. 通过现有图片发送逻辑（`ConversationController.onPickImage`）作为图片消息发送；
+5. 若为隐藏窗口截图，恢复并聚焦 Flutter 窗口。
+
+> 注：隐藏窗口模式统一用 `windowManager.hide()` 而不是最小化——hide 瞬间完成没有动画；macOS 的 genie 最小化动画只能系统级关闭，应用无法控制。flameshot 是独立进程、自己持有屏幕录制权限，主窗口隐藏不影响它。
 
 ---
 

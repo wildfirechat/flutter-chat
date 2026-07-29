@@ -283,7 +283,8 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     }
   }
 
-  Future<void> _captureScreenshot(MessageInputBarController controller) async {
+  Future<void> _captureScreenshot(MessageInputBarController controller,
+      {bool hideWindow = false}) async {
     final l10n = AppLocalizations.of(context)!;
     final available = await ScreenshotService.isAvailable;
     if (!available) {
@@ -292,7 +293,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
       }
       return;
     }
-    final result = await ScreenshotService.captureToFile(l10n);
+    final result = await ScreenshotService.captureToFile(l10n, hideWindow: hideWindow);
     if (result.success) {
       controller.insertInlineImage(result.path!);
     } else if (result.error != null && mounted) {
@@ -356,10 +357,21 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                               tooltip: l10n.image,
                               onTap: () => _pickImage(conversationController, controller),
                             ),
-                            _ToolbarButton(
-                              icon: Icons.cut,
-                              tooltip: l10n.screenshotTool,
-                              onTap: () => _captureScreenshot(controller),
+                            // 截图按钮 + 紧贴的下拉箭头(对齐微信 PC):主按钮普通截图
+                            // (窗口入镜),箭头菜单里另有「隐藏窗口截图」。
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _ToolbarButton(
+                                  icon: Icons.cut,
+                                  tooltip: l10n.screenshotTool,
+                                  onTap: () => _captureScreenshot(controller),
+                                ),
+                                _ScreenshotMenuArrow(
+                                  onSelected: (hideWindow) => _captureScreenshot(
+                                      controller, hideWindow: hideWindow),
+                                ),
+                              ],
                             ),
                             _ToolbarButton(
                               icon: Icons.folder_outlined,
@@ -502,6 +514,65 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
             ),
             child: widget.iconWidget ?? Icon(widget.icon!, size: 21, color: context.colors.iconSecondary),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 截图按钮的紧贴下拉箭头(对齐微信 PC:剪刀图标右侧的小箭头)。
+/// 宽度只有 16,比工具栏按钮(30)窄,视觉上属于截图按钮的一部分。
+class _ScreenshotMenuArrow extends StatefulWidget {
+  /// true = 隐藏窗口截图;false = 普通截图。
+  final ValueChanged<bool> onSelected;
+
+  const _ScreenshotMenuArrow({required this.onSelected});
+
+  @override
+  State<_ScreenshotMenuArrow> createState() => _ScreenshotMenuArrowState();
+}
+
+class _ScreenshotMenuArrowState extends State<_ScreenshotMenuArrow> {
+  bool _hovered = false;
+
+  void _showMenu(BuildContext context, Offset globalPosition) {
+    final l10n = AppLocalizations.of(context)!;
+    final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final localPosition = overlayBox.globalToLocal(globalPosition);
+    showMenu<bool>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+          localPosition.dx, localPosition.dy, localPosition.dx, localPosition.dy),
+      items: [
+        PopupMenuItem(value: false, height: 34, child: Text(l10n.screenshotTool)),
+        PopupMenuItem(value: true, height: 34, child: Text(l10n.screenshotHideWindow)),
+      ],
+    ).then((value) {
+      if (value != null) {
+        widget.onSelected(value);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (details) => _showMenu(context, details.globalPosition),
+        child: Container(
+          width: 16,
+          height: 30,
+          margin: const EdgeInsets.only(right: 2),
+          decoration: BoxDecoration(
+            color: _hovered ? context.colors.hoverOverlay : Colors.transparent,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Icon(Icons.arrow_drop_down,
+              size: 14, color: context.colors.iconSecondary),
         ),
       ),
     );

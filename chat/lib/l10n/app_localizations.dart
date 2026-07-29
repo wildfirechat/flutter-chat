@@ -2006,6 +2006,12 @@ abstract class AppLocalizations {
   /// **'截屏'**
   String get screenshotTool;
 
+  /// No description provided for @screenshotHideWindow.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏窗口截图'**
+  String get screenshotHideWindow;
+
   /// No description provided for @screenshotToolNotAvailable.
   ///
   /// In zh, this message translates to:

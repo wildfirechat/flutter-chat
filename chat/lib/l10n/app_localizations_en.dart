@@ -1058,6 +1058,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get screenshotTool => 'Screenshot';
 
   @override
+  String get screenshotHideWindow => 'Screenshot (hide window)';
+
+  @override
   String get screenshotToolNotAvailable => 'Screenshot tool unavailable';
 
   @override

@@ -208,6 +208,7 @@
   "groupCardHint": "Group Card",
   "channelCardHint": "Channel Card",
   "screenshotTool": "Screenshot",
+  "screenshotHideWindow": "Screenshot (hide window)",
   "screenshotToolNotAvailable": "Screenshot tool unavailable",
   "screenshotFailed": "Screenshot failed: {err}",
   "screenshotToolLaunchFailed": "Failed to launch the screenshot tool: {err}",

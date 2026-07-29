@@ -1044,6 +1044,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get screenshotTool => '截屏';
 
   @override
+  String get screenshotHideWindow => '隐藏窗口截图';
+
+  @override
   String get screenshotToolNotAvailable => '截屏工具不可用';
 
   @override

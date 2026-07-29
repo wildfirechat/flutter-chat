@@ -47,14 +47,21 @@ class ScreenshotService {
 
   /// 调用 flameshot GUI，返回 [ScreenshotResult]。
   /// 用户取消会返回 path 为 null、error 为 null 的结果。
-  static Future<ScreenshotResult> captureToFile(AppLocalizations l10n) async {
+  ///
+  /// [hideWindow] 为 true（“隐藏窗口截图”）时：Windows/Linux 隐藏主窗口、
+  /// macOS 最小化主窗口，截图完成（或取消/异常）后恢复；
+  /// 为 false 时保持窗口可见，窗口会出现在截图画面里。
+  static Future<ScreenshotResult> captureToFile(AppLocalizations l10n,
+      {bool hideWindow = false}) async {
     final tmpDir = Directory.systemTemp;
     final out = p.join(
       tmpDir.path,
       'chat_shot_${DateTime.now().millisecondsSinceEpoch}.png',
     );
 
-    await _hideWindow();
+    if (hideWindow) {
+      await _hideWindow();
+    }
     try {
       final result = await _runFlameshot(
         subcommand: 'gui',
@@ -83,7 +90,9 @@ class ScreenshotService {
     } catch (e) {
       return ScreenshotResult.failure(l10n.screenshotException(e));
     } finally {
-      await _showWindow();
+      if (hideWindow) {
+        await _restoreWindow();
+      }
     }
   }
 
@@ -180,25 +189,24 @@ class ScreenshotService {
   }
 
   static Future<void> _hideWindow() async {
-    // macOS 上隐藏主窗口可能导致子进程无法获得屏幕录制权限或窗口焦点，
-    // 因此仅对 Windows/Linux 做隐藏处理；macOS 上保持窗口可见。
-    if (Platform.isWindows || Platform.isLinux) {
-      try {
-        await windowManager.hide();
-      } catch (e) {
-        // window_manager 未初始化时忽略
-      }
+    try {
+      // 全平台都用 hide:窗口瞬间消失,没有系统最小化动画(genie 效果
+      // 只能系统级关闭,应用无法控制)。flameshot 是独立进程,自己持有
+      // 屏幕录制权限,主窗口隐藏不影响它。
+      await windowManager.hide();
+      // 等窗口服务器真正完成隐藏再启动 flameshot
+      await Future.delayed(const Duration(milliseconds: 200));
+    } catch (e) {
+      // window_manager 未初始化时忽略
     }
   }
 
-  static Future<void> _showWindow() async {
-    if (Platform.isWindows || Platform.isLinux) {
-      try {
-        await windowManager.show();
-        await windowManager.focus();
-      } catch (e) {
-        // ignore
-      }
+  static Future<void> _restoreWindow() async {
+    try {
+      await windowManager.show();
+      await windowManager.focus();
+    } catch (e) {
+      // ignore
     }
   }
 

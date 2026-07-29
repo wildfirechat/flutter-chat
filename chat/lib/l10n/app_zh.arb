@@ -325,6 +325,7 @@
   "groupCardHint": "群组名片",
   "channelCardHint": "频道名片",
   "screenshotTool": "截屏",
+  "screenshotHideWindow": "隐藏窗口截图",
   "screenshotToolNotAvailable": "截屏工具不可用",
   "screenshotFailed": "截图失败：{err}",
   "screenshotToolLaunchFailed": "无法启动截图工具：{err}",
