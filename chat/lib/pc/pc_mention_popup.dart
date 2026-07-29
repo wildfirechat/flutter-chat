@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
@@ -15,7 +16,8 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/theme/app_typography.dart';
 
-/// 微信 PC 风格的 @ 提醒浮层:键入 '@' 后浮层出现在输入栏上方,随后续键入
+/// 微信 PC 风格的 @ 提醒浮层:键入 '@' 后浮层贴着 '@' 出现在其正上方,底部有一个
+/// 指向 '@' 的小箭头,浮层随 '@' 在输入框里的位置横竖两个方向浮动;随后续键入
 /// 就地过滤候选人(匹配显示名/拼音全拼/拼音首字母);上下键移动高亮并循环,
 /// Enter/Tab 选中,Esc 关闭,鼠标悬停同步高亮、点击选中。无匹配时浮层自动隐藏。
 ///
@@ -25,18 +27,35 @@ import 'package:chat/theme/app_typography.dart';
 /// @ 会话状态(开启/查询串/结束)由 [MessageInputBarController] 维护,
 /// 本类只负责候选加载、过滤与浮层展示,通过 [handleKeyEvent] 消费导航按键。
 class PcMentionOverlay {
-  PcMentionOverlay({required this.inputBarController, required this.layerLink});
+  PcMentionOverlay({required this.inputBarController, required this.textFieldKey});
 
   final MessageInputBarController inputBarController;
-  final LayerLink layerLink;
+
+  /// 输入框的 key,用来找到 [RenderEditable] 反查 '@' 的光标矩形。
+  final GlobalKey textFieldKey;
 
   static const double _rowHeight = 36;
-  static const double _panelWidth = 280;
+  static const double _panelWidth = 200;
   static const int _maxVisibleRows = 6;
+
+  /// 底部指向 '@' 的小箭头。
+  static const double _arrowWidth = 14;
+  static const double _arrowHeight = 7;
+
+  /// 箭头尖与 '@' 所在行行顶之间的空隙。
+  static const double _anchorGap = 4;
+
+  /// 浮层与窗口边缘的最小留白(贴边时把浮层推回窗口内)。
+  static const double _windowMargin = 8;
 
   OverlayState? _overlayState;
   OverlayEntry? _entry;
   final ScrollController _scrollController = ScrollController();
+
+  /// '@' 光标矩形左上角在 overlay 坐标系里的位置,即箭头尖要指向的点;
+  /// null 表示还没拿到(渲染树未就绪),退回输入框左上角。
+  Offset? _anchor;
+  Size _overlaySize = Size.zero;
 
   List<_MentionCandidate> _candidates = [];
   List<_MentionCandidate> _filtered = [];
@@ -214,6 +233,7 @@ class PcMentionOverlay {
   }
 
   void _show() {
+    _updateAnchor();
     if (_entry == null) {
       _entry = OverlayEntry(builder: _buildPanel);
       _overlayState?.insert(_entry!);
@@ -222,51 +242,130 @@ class PcMentionOverlay {
     }
   }
 
+  /// 反查 '@' 在屏幕上的位置。必须在 build 之外调用(这里是控制器回调里),
+  /// 读到的是上一帧的排版:'@' 之后的键入只改查询串、不移动 '@',所以够用。
+  void _updateAnchor() {
+    final RenderObject? overlayObject = _overlayState?.context.findRenderObject();
+    final RenderObject? fieldObject = textFieldKey.currentContext?.findRenderObject();
+    if (overlayObject is! RenderBox || fieldObject is! RenderBox || !fieldObject.hasSize) {
+      return;
+    }
+    _overlaySize = overlayObject.size;
+
+    final RenderEditable? editable = _findRenderEditable(fieldObject);
+    final int index = inputBarController.mentionAtIndex;
+    if (editable == null || !editable.hasSize || index < 0) {
+      // 退回输入框左上角:位置不精确但浮层仍在输入框附近,不会飞到窗口角上
+      _anchor = overlayObject.globalToLocal(fieldObject.localToGlobal(Offset.zero));
+      return;
+    }
+    // getLocalRectForCaret 已含输入框自身的滚动位移,localToGlobal 即得屏幕位置
+    final Rect caret = editable.getLocalRectForCaret(TextPosition(offset: index));
+    _anchor = overlayObject.globalToLocal(editable.localToGlobal(caret.topLeft));
+  }
+
+  static RenderEditable? _findRenderEditable(RenderObject root) {
+    if (root is RenderEditable) {
+      return root;
+    }
+    RenderEditable? found;
+    root.visitChildren((RenderObject child) {
+      found ??= _findRenderEditable(child);
+    });
+    return found;
+  }
+
   void _hide() {
     _entry?.remove();
     _entry = null;
   }
 
   Widget _buildPanel(BuildContext context) {
+    final Offset? anchor = _anchor;
+    if (anchor == null) {
+      // 拿不到锚点(渲染树未就绪)就先不画,免得浮层跑到窗口角上
+      return const SizedBox.shrink();
+    }
     final double listHeight = math.min(_filtered.length, _maxVisibleRows) * _rowHeight + 8;
+
+    // 水平居中对齐 '@',贴窗口边时整体推回窗口内(箭头仍留在 '@' 上方)
+    final double maxLeft = math.max(_windowMargin, _overlaySize.width - _panelWidth - _windowMargin);
+    final double left = (anchor.dx - _panelWidth / 2).clamp(_windowMargin, maxLeft).toDouble();
+    // 箭头尖顶在 '@' 行上方,浮层整体再往上叠;顶部超出窗口时下压(极窄窗口才会发生)
+    final double top = math.max(_windowMargin, anchor.dy - _anchorGap - _arrowHeight - listHeight);
+    // 浮层被推回窗口内后箭头相对面板的位置随之改变,但不能顶到面板圆角上
+    final double arrowCenter =
+        (anchor.dx - left).clamp(_arrowWidth / 2 + 6, _panelWidth - _arrowWidth / 2 - 6).toDouble();
+
     return Positioned(
+      left: left,
+      top: top,
       width: _panelWidth,
-      child: CompositedTransformFollower(
-        link: layerLink,
-        showWhenUnlinked: false,
-        targetAnchor: Alignment.topLeft,
-        followerAnchor: Alignment.bottomLeft,
-        offset: const Offset(12, -4),
-        child: Material(
-          color: context.colors.popupBg,
-          elevation: 6,
-          shadowColor: context.colors.shadow,
-          borderRadius: BorderRadius.circular(6),
-          clipBehavior: Clip.antiAlias,
-          child: SizedBox(
-            height: listHeight,
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              itemExtent: _rowHeight,
-              itemCount: _filtered.length,
-              itemBuilder: (context, index) => _MentionRow(
-                candidate: _filtered[index],
-                highlighted: index == _highlight,
-                onHover: () {
-                  if (_highlight != index) {
-                    _highlight = index;
-                    _entry?.markNeedsBuild();
-                  }
-                },
-                onTap: () => _select(_filtered[index]),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Material(
+            color: context.colors.popupBg,
+            elevation: 6,
+            shadowColor: context.colors.shadow,
+            borderRadius: BorderRadius.circular(6),
+            clipBehavior: Clip.antiAlias,
+            child: SizedBox(
+              // Column 的交叉轴约束是松的,面板宽度要自己定死
+              width: _panelWidth,
+              height: listHeight,
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                itemExtent: _rowHeight,
+                itemCount: _filtered.length,
+                itemBuilder: (context, index) => _MentionRow(
+                  candidate: _filtered[index],
+                  highlighted: index == _highlight,
+                  onHover: () {
+                    if (_highlight != index) {
+                      _highlight = index;
+                      _entry?.markNeedsBuild();
+                    }
+                  },
+                  onTap: () => _select(_filtered[index]),
+                ),
               ),
             ),
           ),
-        ),
+          // 画在面板之后,盖住面板投影在这一小块上的暗色,箭头与面板连成一体
+          Padding(
+            padding: EdgeInsets.only(left: arrowCenter - _arrowWidth / 2),
+            child: CustomPaint(
+              size: const Size(_arrowWidth, _arrowHeight),
+              painter: _MentionArrowPainter(context.colors.popupBg),
+            ),
+          ),
+        ],
       ),
     );
   }
+}
+
+/// 浮层底部指向 '@' 的小三角。
+class _MentionArrowPainter extends CustomPainter {
+  const _MentionArrowPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Path path = Path()
+      ..moveTo(0, 0)
+      ..lineTo(size.width / 2, size.height)
+      ..lineTo(size.width, 0)
+      ..close();
+    canvas.drawPath(path, Paint()..color = color);
+  }
+
+  @override
+  bool shouldRepaint(_MentionArrowPainter oldDelegate) => oldDelegate.color != color;
 }
 
 /// @ 候选项:预计算显示名的拼音检索串,避免每次键入重复转换。
@@ -304,8 +403,13 @@ class _MentionRow extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          color: highlighted ? context.colors.accent : Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          // 形态对齐消息右键菜单项(左右留白 + 圆角),但选中态用浅灰而非强调色
+          margin: const EdgeInsets.symmetric(horizontal: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            color: highlighted ? context.colors.cellHoverDesktop : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
           child: Row(
             children: [
               if (candidate.isAllMembers)
@@ -313,13 +417,10 @@ class _MentionRow extends StatelessWidget {
                   width: 26,
                   height: 26,
                   decoration: BoxDecoration(
-                    color: highlighted
-                        ? context.colors.onAccent.withValues(alpha: 0.25)
-                        : context.colors.accent.withValues(alpha: 0.12),
+                    color: context.colors.accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Icon(Icons.campaign_outlined,
-                      size: 16, color: highlighted ? context.colors.onAccent : context.colors.accent),
+                  child: Icon(Icons.campaign_outlined, size: 16, color: context.colors.accent),
                 )
               else
                 Portrait(
@@ -335,7 +436,7 @@ class _MentionRow extends StatelessWidget {
                   candidate.display,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppText.sm.copyWith(color: highlighted ? context.colors.onAccent : context.colors.textPrimary),
+                  style: AppText.sm.copyWith(color: context.colors.textPrimary),
                 ),
               ),
             ],

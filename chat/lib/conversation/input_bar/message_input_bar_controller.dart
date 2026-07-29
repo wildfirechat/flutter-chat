@@ -158,6 +158,10 @@ class MessageInputBarController extends ChangeNotifier {
 
   bool get hasMentionSession => _mentionAtIndex >= 0;
 
+  /// 进行中的 @ 会话里 '@' 在文本中的下标(无会话为 -1)。
+  /// 桌面端浮层用它定位 '@' 的光标矩形,把浮层贴到 '@' 上方。
+  int get mentionAtIndex => _mentionAtIndex;
+
   String get mentionQuery => _mentionQuery;
 
   double get keyboardHeight => _keyboardHeight;

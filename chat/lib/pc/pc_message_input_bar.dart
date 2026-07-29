@@ -50,7 +50,9 @@ class PcMessageInputBar extends StatefulWidget {
 
 class _PcMessageInputBarState extends State<PcMessageInputBar> {
   final GlobalKey _emojiButtonKey = GlobalKey();
-  final LayerLink _inputBarLink = LayerLink();
+
+  /// @ 浮层靠它反查 '@' 的光标位置,把浮层贴到 '@' 上方
+  final GlobalKey _textFieldKey = GlobalKey();
   bool _isPickingFile = false;
 
   /// 拖拽起点的高度与累计位移。用累计量而非逐帧增量,
@@ -69,7 +71,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     if (!identical(controller, _boundController)) {
       _mentionOverlay?.dispose();
       _boundController = controller;
-      _mentionOverlay = PcMentionOverlay(inputBarController: controller, layerLink: _inputBarLink)..attach(context);
+      _mentionOverlay = PcMentionOverlay(inputBarController: controller, textFieldKey: _textFieldKey)..attach(context);
     }
   }
 
@@ -310,163 +312,161 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
 
     // 高度单独用 Selector 订阅:拖拽期间只重建外层 Container,
     // 输入框/工具条整棵子树作为 child 复用,不逐帧重建。
-    return CompositedTransformTarget(
-      link: _inputBarLink,
-      child: Selector<PcLayoutViewModel, double>(
-        selector: (_, model) => model.inputBarHeight,
-        builder: (context, height, child) => Container(
-          height: _effectiveHeight(height),
-          color: context.colors.chatBgDesktop,
-          child: child,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 顶部发丝线即分隔条本身,上下拖动调整输入栏高度
-            PcResizeHandle(
-              axis: PcResizeAxis.vertical,
-              lineAlignment: Alignment.topCenter,
-              onDragStart: () => _onResizeStart(layout),
-              onDragDelta: (delta) => _onResizeDelta(layout, delta),
-              onDragEnd: layout.persist,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: context.colors.surface,
-                    border: Border.all(color: context.colors.hairline),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
-                        child: Row(
-                          children: [
-                            _ToolbarButton(
-                              key: _emojiButtonKey,
-                              icon: Icons.sentiment_satisfied_outlined,
-                              tooltip: l10n.emoji,
-                              onTap: () => _showEmojiPopover(controller),
-                            ),
-                            _ToolbarButton(
-                              icon: Icons.image_outlined,
-                              tooltip: l10n.image,
-                              onTap: () => _pickImage(conversationController, controller),
-                            ),
-                            // 截图按钮 + 紧贴的下拉箭头(对齐微信 PC):主按钮普通截图
-                            // (窗口入镜),箭头菜单里另有「隐藏窗口截图」。
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _ToolbarButton(
-                                  icon: Icons.cut,
-                                  tooltip: l10n.screenshotTool,
-                                  onTap: () => _captureScreenshot(controller),
-                                ),
-                                _ScreenshotMenuArrow(
-                                  onSelected: (hideWindow) => _captureScreenshot(
-                                      controller, hideWindow: hideWindow),
-                                ),
-                              ],
-                            ),
-                            _ToolbarButton(
-                              icon: Icons.folder_outlined,
-                              tooltip: l10n.filePicker,
-                              onTap: () => _pickFile(conversationController, controller),
-                            ),
-                            if (controller.conversation.conversationType == ConversationType.Group &&
-                                Config.collectionServerAddress != null &&
-                                Config.collectionServerAddress!.isNotEmpty)
+    return Selector<PcLayoutViewModel, double>(
+      selector: (_, model) => model.inputBarHeight,
+      builder: (context, height, child) => Container(
+        height: _effectiveHeight(height),
+        color: context.colors.chatBgDesktop,
+        child: child,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 顶部发丝线即分隔条本身,上下拖动调整输入栏高度
+          PcResizeHandle(
+            axis: PcResizeAxis.vertical,
+            lineAlignment: Alignment.topCenter,
+            onDragStart: () => _onResizeStart(layout),
+            onDragDelta: (delta) => _onResizeDelta(layout, delta),
+            onDragEnd: layout.persist,
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.colors.surface,
+                  border: Border.all(color: context.colors.hairline),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+                      child: Row(
+                        children: [
+                          _ToolbarButton(
+                            key: _emojiButtonKey,
+                            icon: Icons.sentiment_satisfied_outlined,
+                            tooltip: l10n.emoji,
+                            onTap: () => _showEmojiPopover(controller),
+                          ),
+                          _ToolbarButton(
+                            icon: Icons.image_outlined,
+                            tooltip: l10n.image,
+                            onTap: () => _pickImage(conversationController, controller),
+                          ),
+                          // 截图按钮 + 紧贴的下拉箭头(对齐微信 PC):主按钮普通截图
+                          // (窗口入镜),箭头菜单里另有「隐藏窗口截图」。
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
                               _ToolbarButton(
-                                iconWidget: CollectionIcon(size: 21, color: context.colors.iconSecondary),
-                                tooltip: l10n.collection,
-                                onTap: () => CreateCollectionScreen.show(context, controller.conversation),
+                                icon: Icons.cut,
+                                tooltip: l10n.screenshotTool,
+                                onTap: () => _captureScreenshot(controller),
                               ),
-                            if (controller.conversation.conversationType == ConversationType.Group &&
-                                Config.pollServerAddress != null &&
-                                Config.pollServerAddress!.isNotEmpty)
-                              _ToolbarButton(
-                                iconWidget: Icon(Icons.poll, size: 21, color: context.colors.iconSecondary),
-                                tooltip: l10n.poll,
-                                onTap: () => PollHomeScreen.show(context, controller.conversation.target),
-                              ),
-                            const Spacer(),
-                            // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
-                            // 单聊直接发起,群聊先弹选人对话框再发起(见 startAvCall)
-                            if (controller.conversation.conversationType == ConversationType.Single || controller.conversation.conversationType == ConversationType.Group) ...[
-                              _ToolbarButton(
-                                icon: Icons.call_outlined,
-                                tooltip: l10n.audioCallAction,
-                                onTap: () => startAvCall(context, controller.conversation, audioOnly: true),
-                              ),
-                              _ToolbarButton(
-                                icon: Icons.videocam_outlined,
-                                tooltip: l10n.videoCallAction,
-                                onTap: () => startAvCall(context, controller.conversation, audioOnly: false),
+                              _ScreenshotMenuArrow(
+                                onSelected: (hideWindow) => _captureScreenshot(
+                                    controller, hideWindow: hideWindow),
                               ),
                             ],
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          // 内联图片行可能超出输入区视口(如粘贴后拖矮输入栏),
-                          // 裁掉溢出绘制,防止盖住上方工具条
-                          child: ClipRect(
-                            child: LayoutBuilder(
-                              // 微信交互:粘贴的图片按原始尺寸内联显示,最大不超过可见输入区,
-                              // 粘贴后不出现滚动条。拖拽输入栏改变视口约束时 LayoutBuilder
-                              // 重跑,TextField 随之重建 span,图片高度上限实时跟随。
-                              builder: (context, constraints) {
-                                // 48 = 图片行超出图片本身的部分(WidgetSpan 内边距 + 基线下
-                                // 行距,随字体约 15~20)+ 视觉余量,保证整行落在视口内
-                                controller.textEditingController.inlineImageMaxHeight =
-                                    (constraints.maxHeight - 48).clamp(40.0, 456.0).toDouble();
-                                return Focus(
-                                  onKeyEvent: (node, event) => _handleKeyEvent(node, event, controller),
-                                  child: TextField(
-                                    controller: controller.textEditingController,
-                                    focusNode: controller.focusNode,
-                                    onChanged: controller.onTextChanged,
-                                    maxLines: null,
-                                    expands: true,
-                                    // 本引擎的默认 strut 会强制行高:内联图片/大字号都撑不开
-                                    // 行框,超高部分溢出绘制盖住其他行,必须禁用。
-                                    // 回归用例见 test/inline_image_input_test.dart
-                                    strutStyle: StrutStyle.disabled,
-                                    textAlignVertical: TextAlignVertical.top,
-                                    keyboardType: TextInputType.multiline,
-                                    style: AppText.base.copyWith(height: 1.5, color: context.colors.textPrimary),
-                                    decoration: InputDecoration(
-                                      isCollapsed: true,
-                                      border: InputBorder.none,
-                                      hintText: l10n.enterToSendHint,
-                                      hintStyle: AppText.base.copyWith(color: context.colors.textTertiary),
-                                    ),
-                                  ),
-                                );
-                              },
+                          ),
+                          _ToolbarButton(
+                            icon: Icons.folder_outlined,
+                            tooltip: l10n.filePicker,
+                            onTap: () => _pickFile(conversationController, controller),
+                          ),
+                          if (controller.conversation.conversationType == ConversationType.Group &&
+                              Config.collectionServerAddress != null &&
+                              Config.collectionServerAddress!.isNotEmpty)
+                            _ToolbarButton(
+                              iconWidget: CollectionIcon(size: 21, color: context.colors.iconSecondary),
+                              tooltip: l10n.collection,
+                              onTap: () => CreateCollectionScreen.show(context, controller.conversation),
                             ),
+                          if (controller.conversation.conversationType == ConversationType.Group &&
+                              Config.pollServerAddress != null &&
+                              Config.pollServerAddress!.isNotEmpty)
+                            _ToolbarButton(
+                              iconWidget: Icon(Icons.poll, size: 21, color: context.colors.iconSecondary),
+                              tooltip: l10n.poll,
+                              onTap: () => PollHomeScreen.show(context, controller.conversation.target),
+                            ),
+                          const Spacer(),
+                          // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
+                          // 单聊直接发起,群聊先弹选人对话框再发起(见 startAvCall)
+                          if (controller.conversation.conversationType == ConversationType.Single || controller.conversation.conversationType == ConversationType.Group) ...[
+                            _ToolbarButton(
+                              icon: Icons.call_outlined,
+                              tooltip: l10n.audioCallAction,
+                              onTap: () => startAvCall(context, controller.conversation, audioOnly: true),
+                            ),
+                            _ToolbarButton(
+                              icon: Icons.videocam_outlined,
+                              tooltip: l10n.videoCallAction,
+                              onTap: () => startAvCall(context, controller.conversation, audioOnly: false),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        // 内联图片行可能超出输入区视口(如粘贴后拖矮输入栏),
+                        // 裁掉溢出绘制,防止盖住上方工具条
+                        child: ClipRect(
+                          child: LayoutBuilder(
+                            // 微信交互:粘贴的图片按原始尺寸内联显示,最大不超过可见输入区,
+                            // 粘贴后不出现滚动条。拖拽输入栏改变视口约束时 LayoutBuilder
+                            // 重跑,TextField 随之重建 span,图片高度上限实时跟随。
+                            builder: (context, constraints) {
+                              // 48 = 图片行超出图片本身的部分(WidgetSpan 内边距 + 基线下
+                              // 行距,随字体约 15~20)+ 视觉余量,保证整行落在视口内
+                              controller.textEditingController.inlineImageMaxHeight =
+                                  (constraints.maxHeight - 48).clamp(40.0, 456.0).toDouble();
+                              return Focus(
+                                onKeyEvent: (node, event) => _handleKeyEvent(node, event, controller),
+                                child: TextField(
+                                  key: _textFieldKey,
+                                  controller: controller.textEditingController,
+                                  focusNode: controller.focusNode,
+                                  onChanged: controller.onTextChanged,
+                                  maxLines: null,
+                                  expands: true,
+                                  // 本引擎的默认 strut 会强制行高:内联图片/大字号都撑不开
+                                  // 行框,超高部分溢出绘制盖住其他行,必须禁用。
+                                  // 回归用例见 test/inline_image_input_test.dart
+                                  strutStyle: StrutStyle.disabled,
+                                  textAlignVertical: TextAlignVertical.top,
+                                  keyboardType: TextInputType.multiline,
+                                  style: AppText.base.copyWith(height: 1.5, color: context.colors.textPrimary),
+                                  decoration: InputDecoration(
+                                    isCollapsed: true,
+                                    border: InputBorder.none,
+                                    hintText: l10n.enterToSendHint,
+                                    hintStyle: AppText.base.copyWith(color: context.colors.textTertiary),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),
-                      if (controller.hasQuote)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                          child: _QuoteChip(controller: controller),
-                        ),
-                    ],
-                  ),
+                    ),
+                    if (controller.hasQuote)
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                        child: _QuoteChip(controller: controller),
+                      ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
