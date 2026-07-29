@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:imclient/imclient_method_channel.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
@@ -73,6 +75,26 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
   /// 是否恢复标准标题栏(desktop_multi_window 创建的 macOS 子窗口默认
   /// 隐藏标题栏)。搜索窗为 true,其余默认 false。
   bool get useNormalTitleBar => false;
+
+  /// Ctrl/Cmd+W 是否关闭本窗口;默认 true。通话窗口没有独立的"关闭"语义
+  /// (只能挂断结束通话),覆写为 false 避免快捷键误触发关窗。
+  bool get closableByShortcut => true;
+
+  /// Ctrl/Cmd+W 触发的关闭动作。默认走 desktop_multi_window 自己的通道
+  /// 关闭窗口并通知主窗口;不能用 windowManager.close():若
+  /// ensureInitialized 尚未执行,macOS 侧会因 _mainWindow 为 nil 强解包
+  /// 直接崩溃进程。关闭前有额外收尾工作(如媒体预览窗要先暂停视频)的
+  /// 子类覆写本方法。
+  Future<void> requestClose() async {
+    await WindowEventChannel.invoke(0, '$windowKind.windowClosed', {
+      'windowId': windowId,
+    });
+    try {
+      await WindowController.fromWindowId(windowId).close();
+    } catch (e) {
+      debugPrint('$_tag close window failed: $e');
+    }
+  }
 
   /// 通知主窗口子窗口已就绪。默认发 `<kind>.ready`(带 windowId);
   /// 通话窗口覆写为 voipStatusChanged {status:'ready'}。
@@ -294,10 +316,35 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
                 ),
               );
             },
-            home: _isReady ? buildHome(context) : buildLoading(context),
+            home: _wrapWithCloseShortcut(
+                _isReady ? buildHome(context) : buildLoading(context)),
           );
         },
       ),
+    );
+  }
+
+  /// 包一层不抢初始焦点语义的按键节点:未被内层(如媒体预览窗自己的
+  /// Esc/Space)消费的 Ctrl/Cmd+W 冒泡到这里时关闭窗口。
+  Widget _wrapWithCloseShortcut(Widget child) {
+    if (!closableByShortcut) {
+      return child;
+    }
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is! KeyDownEvent) {
+          return KeyEventResult.ignored;
+        }
+        final isControl = HardwareKeyboard.instance.isControlPressed ||
+            HardwareKeyboard.instance.isMetaPressed;
+        if (isControl && event.logicalKey == LogicalKeyboardKey.keyW) {
+          requestClose();
+          return KeyEventResult.handled;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: child,
     );
   }
 }

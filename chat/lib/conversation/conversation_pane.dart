@@ -499,19 +499,32 @@ class _ConversationPaneState extends State<ConversationPane> {
             ],
           );
 
-          if (conversationViewModel.isMultiSelectMode) {
-            content = Focus(
-              autofocus: true,
-              onKeyEvent: (node, event) {
-                if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
-                  conversationViewModel.toggleMultiSelectMode();
+          // 常驻焦点节点(不只在多选模式才挂):
+          // - Esc 退出多选,仅多选模式下生效;
+          // - Cmd/Ctrl+C 复制气泡里的文本选区。事件走 Focus 冒泡,
+          //   若输入框等更内层的焦点节点自己处理了按键,不会冒泡到这里,
+          //   所以不会抢输入框自身的复制。
+          final conversationController = Provider.of<ConversationController>(innerContext, listen: false);
+          content = Focus(
+            autofocus: true,
+            onKeyEvent: (node, event) {
+              if (event is! KeyDownEvent) {
+                return KeyEventResult.ignored;
+              }
+              if (conversationViewModel.isMultiSelectMode && event.logicalKey == LogicalKeyboardKey.escape) {
+                conversationViewModel.toggleMultiSelectMode();
+                return KeyEventResult.handled;
+              }
+              final isControl = HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed;
+              if (isControl && event.logicalKey == LogicalKeyboardKey.keyC) {
+                if (conversationController.copySelectedTextIfAny(innerContext)) {
                   return KeyEventResult.handled;
                 }
-                return KeyEventResult.ignored;
-              },
-              child: content,
-            );
-          }
+              }
+              return KeyEventResult.ignored;
+            },
+            child: content,
+          );
 
           if (isDesktopShell) {
             return DropTarget(

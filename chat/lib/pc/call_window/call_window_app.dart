@@ -74,6 +74,11 @@ class _CallWindowAppState extends State<CallWindowApp>
   @override
   Size get minWindowSize => const Size(320, 480);
 
+  /// 通话窗没有独立的"关闭"语义,只能挂断结束通话(见 [_closeWindow] 的
+  /// 调用点),Ctrl/Cmd+W 不应绕过挂断直接关窗。
+  @override
+  bool get closableByShortcut => false;
+
   /// 通话窗是黑色全屏界面,亮暗主题都强制 dark(themeMode 跟随设置,
   /// 两个主题相同,效果与原来一致)。
   @override

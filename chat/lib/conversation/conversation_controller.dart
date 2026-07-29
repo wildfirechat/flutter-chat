@@ -465,6 +465,20 @@ class ConversationController extends ChangeNotifier {
     }
   }
 
+  /// Cmd/Ctrl+C 键盘复制:仅在气泡里有活跃选区时生效,复制选中部分,
+  /// 与长按菜单"复制"共用同一份选区状态。无选区时返回 false,交由调用方
+  /// (键盘事件走 Focus 冒泡,只有没被更内层消费——比如输入框自己的复制——
+  /// 时才会到这里)按未处理继续冒泡。
+  bool copySelectedTextIfAny(BuildContext context) {
+    final selectedText = _textSelectionText;
+    if (_textSelectionMessageId == 0 || selectedText == null || selectedText.isEmpty) {
+      return false;
+    }
+    Clipboard.setData(ClipboardData(text: selectedText));
+    showToast(msg: AppLocalizations.of(context)!.copy);
+    return true;
+  }
+
   void onLongPressedCell(
       BuildContext context, UIMessage model, Rect? bubbleRect) {
     _showPopupMenu(context, model, bubbleRect);

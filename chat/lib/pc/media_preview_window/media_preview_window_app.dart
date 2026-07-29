@@ -1,4 +1,3 @@
-import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
@@ -33,8 +32,6 @@ class MediaPreviewWindowApp extends StatefulWidget {
 
 class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
     with WindowListener, SubWindowAppBase<MediaPreviewWindowApp> {
-  static const String _tag = 'MediaPreviewWindowApp';
-
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey();
   GlobalKey<MMPreviewViewState> _previewKey = GlobalKey();
   List<Message> _mediaItems = [];
@@ -118,7 +115,7 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
               key: _previewKey,
               defaultIndex: _defaultIndex,
               pageToEnd: _loadMore,
-              onClose: _close,
+              onClose: requestClose,
             ),
     );
   }
@@ -156,19 +153,12 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
     return null;
   }
 
-  /// ESC / 关闭按钮触发的主动关窗。
-  Future<void> _close() async {
-    await WindowEventChannel.invoke(0, MediaPreviewEvents.windowClosed, {
-      'windowId': windowId,
-    });
-    // 不能走 windowManager.close():若 ensureInitialized 尚未执行,macOS 侧
-    // close 会因 _mainWindow 为 nil 强解包直接崩溃进程。WindowController 走
-    // desktop_multi_window 自己的通道,不依赖 window_manager 的初始化状态。
-    try {
-      await WindowController.fromWindowId(windowId).close();
-    } catch (e) {
-      debugPrint('$_tag close window failed: $e');
-    }
+  /// ESC / Space / 关闭按钮 / Ctrl+W 共用的主动关窗路径:先暂停视频,
+  /// 避免声音在窗口消失后还继续播放,再走基类的关窗+通知逻辑。
+  @override
+  Future<void> requestClose() async {
+    await _previewKey.currentState?.pauseAllVideos();
+    await super.requestClose();
   }
 
   /// 翻页到两端:请求主窗口加载该会话更多媒体消息(语义与内嵌预览一致)。
