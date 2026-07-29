@@ -32,6 +32,7 @@ import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/utils/online_state_builder.dart';
 import 'package:chat/utils/online_state_formatter.dart';
+import 'package:chat/utilities.dart';
 import 'package:imclient/model/domain_info.dart';
 
 import 'package:chat/utils/layout_scale.dart';
@@ -340,7 +341,7 @@ class _PcContactListState extends State<PcContactList> {
           return _EntryRow(
             portrait: channelInfo?.portrait,
             defaultPortrait: Config.defaultChannelPortrait,
-            title: channelInfo?.name ?? channelId,
+            title: channelInfo?.name.emptyToNull ?? '<$channelId>',
             isSelected: isSelected,
             onTap: () {
               shell.selectContactItem(itemId);

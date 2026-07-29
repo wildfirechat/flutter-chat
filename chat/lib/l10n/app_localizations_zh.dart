@@ -1071,6 +1071,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get notSupported => '暂不支持';
 
   @override
+  String get channelMenu => '频道菜单';
+
+  @override
+  String get switchToTextInput => '切换到输入框';
+
+  @override
   String get singleConversationDetails => '单聊会话详情';
 
   @override

@@ -128,8 +128,13 @@ class MessageInputBarController extends ChangeNotifier {
 
     if (conversation.conversationType == ConversationType.Channel) {
       Imclient.getChannelInfo(conversation.target).then((info) {
-        if (info != null) {
-          channelInfo = info;
+        if (info == null) return;
+        channelInfo = info;
+        // 对齐公众号交互:频道配了菜单就默认展示菜单栏,用户可切回输入框。
+        // 已经上手打字(有焦点)或已切过状态时不打扰。
+        if (info.menus != null && info.menus!.isNotEmpty && _status == ChatInputBarStatus.keyboardStatus && !focusNode.hasFocus) {
+          setStatus(ChatInputBarStatus.menuStatus);
+        } else {
           notifyListeners();
         }
       });

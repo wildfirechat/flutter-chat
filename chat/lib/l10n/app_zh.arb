@@ -332,6 +332,8 @@
   "screenshotException": "截图异常：{err}",
   "notSupportedOnCurrentPlatform": "当前平台暂不支持",
   "notSupported": "暂不支持",
+  "channelMenu": "频道菜单",
+  "switchToTextInput": "切换到输入框",
   "singleConversationDetails": "单聊会话详情",
   "searchChatContents": "查找聊天内容",
   "clearLocalMessages": "清空本地消息",

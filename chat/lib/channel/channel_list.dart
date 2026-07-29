@@ -12,6 +12,7 @@ import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/utilities.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
@@ -139,7 +140,7 @@ class ChannelItemState extends State<ChannelItem> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                channelInfo?.name ?? AppLocalizations.of(context)!.channelWithTarget(widget.channelId),
+                channelInfo?.name.emptyToNull ?? '<${widget.channelId}>',
                 style: AppText.lg,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

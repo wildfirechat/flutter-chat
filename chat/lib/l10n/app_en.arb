@@ -215,6 +215,8 @@
   "screenshotException": "Screenshot error: {err}",
   "notSupportedOnCurrentPlatform": "Not supported on current platform",
   "notSupported": "Not supported",
+  "channelMenu": "Channel Menu",
+  "switchToTextInput": "Switch to text input",
   "singleConversationDetails": "Single Conversation Details",
   "searchChatContents": "Search Chat Contents",
   "clearLocalMessages": "Clear Local Messages",

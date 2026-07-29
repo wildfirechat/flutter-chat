@@ -1086,6 +1086,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notSupported => 'Not supported';
 
   @override
+  String get channelMenu => 'Channel Menu';
+
+  @override
+  String get switchToTextInput => 'Switch to text input';
+
+  @override
   String get singleConversationDetails => 'Single Conversation Details';
 
   @override

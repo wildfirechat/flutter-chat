@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:imclient/message/articles_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/sound_message_content.dart';
@@ -147,10 +148,13 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                   child: Container(
                     key: _bubbleKey,
                     constraints: const BoxConstraints(minHeight: 44.0),
-                    padding:
-                        (model.message.content is ImageMessageContent || model.message.content is VideoMessageContent || model.message.content is StickerMessageContent)
-                            ? const EdgeInsets.all(0)
-                            : const EdgeInsets.all(8),
+                    // 图片/视频/表情/图文都是整块卡片,自带底色和圆角,气泡不再加内边距
+                    padding: (model.message.content is ImageMessageContent ||
+                            model.message.content is VideoMessageContent ||
+                            model.message.content is StickerMessageContent ||
+                            model.message.content is ArticlesMessageContent)
+                        ? const EdgeInsets.all(0)
+                        : const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       // 桌面端用品牌蓝浅色调气泡,移动端维持原配色;暗色下两端都是实心系统蓝
                       color: isSendMessage

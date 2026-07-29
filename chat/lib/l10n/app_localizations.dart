@@ -2048,6 +2048,18 @@ abstract class AppLocalizations {
   /// **'暂不支持'**
   String get notSupported;
 
+  /// No description provided for @channelMenu.
+  ///
+  /// In zh, this message translates to:
+  /// **'频道菜单'**
+  String get channelMenu;
+
+  /// No description provided for @switchToTextInput.
+  ///
+  /// In zh, this message translates to:
+  /// **'切换到输入框'**
+  String get switchToTextInput;
+
   /// No description provided for @singleConversationDetails.
   ///
   /// In zh, this message translates to:

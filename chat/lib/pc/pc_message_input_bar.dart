@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
+import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -16,6 +17,7 @@ import 'package:chat/collection/collection_icon.dart';
 import 'package:chat/config.dart';
 import 'package:chat/poll/poll_home_screen.dart';
 import 'package:chat/conversation/conversation_controller.dart';
+import 'package:chat/conversation/input_bar/channel_menu_widget.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
 import 'package:chat/call/av_call_launcher.dart';
@@ -310,6 +312,22 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     final layout = Provider.of<PcLayoutViewModel>(context, listen: false);
     final l10n = AppLocalizations.of(context)!;
 
+    // 频道(公众号)配了菜单时,输入栏可整体切换成菜单栏。菜单栏高度固定,
+    // 不参与输入栏的拖拽调高,所以在这里直接返回,不进下面的可调高结构。
+    final List<ChannelMenu> channelMenus = controller.conversation.conversationType == ConversationType.Channel
+        ? (controller.channelInfo?.menus ?? const [])
+        : const [];
+    if (channelMenus.isNotEmpty && controller.status == ChatInputBarStatus.menuStatus) {
+      return Container(
+        color: context.colors.chatBgDesktop,
+        child: ChannelMenuWidget(
+          menus: channelMenus,
+          conversation: controller.conversation,
+          onToggleInput: controller.onMenuButton,
+        ),
+      );
+    }
+
     // 高度单独用 Selector 订阅:拖拽期间只重建外层 Container,
     // 输入框/工具条整棵子树作为 child 复用,不逐帧重建。
     return Selector<PcLayoutViewModel, double>(
@@ -393,6 +411,13 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                               iconWidget: Icon(Icons.poll, size: 21, color: context.colors.iconSecondary),
                               tooltip: l10n.poll,
                               onTap: () => PollHomeScreen.show(context, controller.conversation.target),
+                            ),
+                          // 频道菜单入口:切回菜单栏(切换按钮在菜单栏自己右侧)
+                          if (channelMenus.isNotEmpty)
+                            _ToolbarButton(
+                              icon: Icons.menu,
+                              tooltip: l10n.channelMenu,
+                              onTap: controller.onMenuButton,
                             ),
                           const Spacer(),
                           // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
