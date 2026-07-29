@@ -10,6 +10,7 @@ import 'package:window_manager/window_manager.dart';
 
 import '../../app_theme.dart';
 import '../../l10n/app_localizations.dart';
+import '../../shortcuts/ambient_shortcuts.dart';
 import '../../viewmodel/font_size_view_model.dart';
 import '../../viewmodel/locale_view_model.dart';
 import '../../viewmodel/theme_view_model.dart';
@@ -157,6 +158,8 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
 
   bool _postFirstFrameInitDone = false;
 
+  AmbientShortcutRegistration? _closeShortcut;
+
   String get _tag => windowKind;
 
   // -------------------------------------------------------------- init 流程
@@ -167,7 +170,27 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
     fontSizeViewModel = FontSizeViewModel(autoLoad: false);
     themeViewModel = ThemeViewModel();
     localeViewModel = LocaleViewModel(autoLoad: false);
+    if (closableByShortcut) {
+      // 登记为环境快捷键而不是包一层 Focus:焦点在谁手里都能关窗,
+      // 内容区也不必再为了收按键去和祖先抢焦点(详见 ambient_shortcuts.dart)
+      _closeShortcut = AmbientShortcuts.instance.register(
+        bindings: {
+          const CmdOrCtrl(LogicalKeyboardKey.keyW): () {
+            requestClose();
+            return true;
+          },
+        },
+        isActive: () => mounted,
+        debugLabel: '$windowKind window',
+      );
+    }
     _init();
+  }
+
+  @override
+  void dispose() {
+    _closeShortcut?.dispose();
+    super.dispose();
   }
 
   Future<void> _init() async {
@@ -316,44 +339,10 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
                 ),
               );
             },
-            home: _wrapWithCloseShortcut(
-                _isReady ? buildHome(context) : buildLoading(context)),
+            home: _isReady ? buildHome(context) : buildLoading(context),
           );
         },
       ),
-    );
-  }
-
-  /// 包一层按键节点:未被内层消费的 Ctrl/Cmd+W 冒泡到这里时关闭窗口。
-  ///
-  /// 这里的 `autofocus: true` 是兜底 —— 内容区没有任何可聚焦控件时,若本节点
-  /// 不持有焦点,primaryFocus 会停在路由的 FocusScope(本节点的祖先),按键只
-  /// 沿祖先链向上冒泡,永远到不了本节点,Ctrl/Cmd+W 会失效。
-  ///
-  /// 代价是它会和内容区的 autofocus 抢焦点:同一 FocusScope 内多个 autofocus
-  /// 只有最先注册的生效,而祖先先 build 先注册,所以本节点会赢。**内容区若要
-  /// 自己处理按键(如媒体预览窗的方向键/Esc/空格),不能只写 autofocus,必须在
-  /// 首帧后显式 requestFocus 抢回来**(参见 MMPreviewViewState 的
-  /// _keyboardFocusNode);抢回来后本节点仍是其祖先,Ctrl/Cmd+W 照常冒泡上来。
-  Widget _wrapWithCloseShortcut(Widget child) {
-    if (!closableByShortcut) {
-      return child;
-    }
-    return Focus(
-      autofocus: true,
-      onKeyEvent: (node, event) {
-        if (event is! KeyDownEvent) {
-          return KeyEventResult.ignored;
-        }
-        final isControl = HardwareKeyboard.instance.isControlPressed ||
-            HardwareKeyboard.instance.isMetaPressed;
-        if (isControl && event.logicalKey == LogicalKeyboardKey.keyW) {
-          requestClose();
-          return KeyEventResult.handled;
-        }
-        return KeyEventResult.ignored;
-      },
-      child: child,
     );
   }
 }

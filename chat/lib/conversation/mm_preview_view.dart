@@ -13,6 +13,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/shortcuts/ambient_shortcuts.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utils/duration_formatter.dart';
@@ -49,7 +50,7 @@ class MMPreviewView extends StatefulWidget {
   State<MMPreviewView> createState() => MMPreviewViewState();
 }
 
-class MMPreviewViewState extends State<MMPreviewView> {
+class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin {
   late int currentIndex;
   late PageController _pageController;
   bool isZoomed = false; // Add zoomed state
@@ -64,33 +65,40 @@ class MMPreviewViewState extends State<MMPreviewView> {
   // 正常的 State.dispose() 流程，不主动 pause 的话窗口关掉后视频的声音还在放。
   final Map<int, VideoPlayerController> _videoControllers = {};
 
-  // 桌面端键盘快捷键(方向键/Esc/空格)的焦点宿主。
+  // 桌面端键盘快捷键(方向键/Esc/空格)登记为环境快捷键,不再自己持有焦点:
+  // 焦点归属由别处决定(工具栏按钮、视频播放器、子窗口基类都会动焦点),
+  // 靠"丢了就夺回来"维持链路很脆。详见 ambient_shortcuts.dart。
   //
-  // 用 FocusScope 而不是 Focus,有两个原因:
-  //
-  // 1) 必须在首帧后**显式** requestFocus,只写 autofocus 是不够的:子窗口基类
-  //    SubWindowAppBase._wrapWithCloseShortcut 在更外层也挂了一个 autofocus 的
-  //    Focus(用于 Ctrl/Cmd+W 关窗)。同一 FocusScope 内多个 autofocus 只有最先
-  //    注册的那个生效(祖先先 build 先注册),而按键事件只从 primaryFocus 沿祖先
-  //    链向「上」冒泡、不会下发给后代 —— 焦点被外层占住的话快捷键整体失灵。
-  //
-  // 2) 焦点一旦丢失,普通 Focus 会回落到「最近的祖先 scope」,也就是路由那个
-  //    scope —— 它是本节点的祖先,于是按键再也到不了这里,快捷键就永久失效了
-  //    (视频播完后出现的正是这种现象)。换成 FocusScope 后,最近的 scope 就是
-  //    自己,任何后代放弃焦点都回落到本节点,按键链路不会断。
-  //
-  // 抢焦点不影响外层:本节点是它的后代,未消费的按键(Ctrl/Cmd+W)照样继续向上
-  // 冒泡到基类节点。
-  final FocusScopeNode _keyboardFocusNode =
-      FocusScopeNode(debugLabel: 'MMPreviewKeyboard');
+  // 方向键必须走 beforeFocus 档 —— Flutter 的焦点遍历会无条件吞掉方向键。
+  @override
+  Map<ShortcutActivator, ShortcutHandler> get ambientShortcuts => {
+        const SingleActivator(LogicalKeyboardKey.escape): _closeByShortcut,
+        const SingleActivator(LogicalKeyboardKey.space): _spaceByShortcut,
+      };
 
-  // 焦点被外部抢走后重新夺回。仅在本路由仍在最前时执行,避免把焦点从弹出的
-  // 倍速菜单/另存为对话框(它们是压在上面的独立路由)手里抢回来。
-  void _ensureKeyboardFocus() {
-    if (!mounted || !isDesktopShell) return;
-    if (_keyboardFocusNode.hasFocus) return;
-    if (ModalRoute.of(context)?.isCurrent == false) return;
-    _keyboardFocusNode.requestFocus();
+  @override
+  Map<ShortcutActivator, ShortcutHandler> get ambientShortcutsBeforeFocus => {
+        const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _pageByShortcut(-1),
+        const SingleActivator(LogicalKeyboardKey.arrowRight): () => _pageByShortcut(1),
+      };
+
+  /// 移动端不接键盘;另存为对话框/倍速菜单压在上面时,快捷键交给它们
+  @override
+  bool get ambientShortcutsActive => isDesktopShell && super.ambientShortcutsActive;
+
+  bool _closeByShortcut() {
+    _requestClose();
+    return true;
+  }
+
+  bool _spaceByShortcut() {
+    _handleSpaceKey();
+    return true;
+  }
+
+  bool _pageByShortcut(int delta) {
+    _goToRelative(delta);
+    return true;
   }
 
   @override
@@ -98,14 +106,10 @@ class MMPreviewViewState extends State<MMPreviewView> {
     super.initState();
     currentIndex = widget.defaultIndex;
     _pageController = PageController(initialPage: widget.defaultIndex);
-    if (isDesktopShell) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _ensureKeyboardFocus());
-    }
   }
 
   @override
   void dispose() {
-    _keyboardFocusNode.dispose();
     _pageController.dispose();
     for (final controller in _scaleStateControllers.values) {
       controller.dispose();
@@ -138,26 +142,6 @@ class MMPreviewViewState extends State<MMPreviewView> {
     }
   }
 
-  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
-    if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
-      _goToRelative(-1);
-      return KeyEventResult.handled;
-    }
-    if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
-      _goToRelative(1);
-      return KeyEventResult.handled;
-    }
-    if (event.logicalKey == LogicalKeyboardKey.escape) {
-      _requestClose();
-      return KeyEventResult.handled;
-    }
-    if (event.logicalKey == LogicalKeyboardKey.space) {
-      _handleSpaceKey();
-      return KeyEventResult.handled;
-    }
-    return KeyEventResult.ignored;
-  }
 
   // 空格键:图片页关闭预览(与 Esc 一致);视频页则切换播放/暂停,不关闭预览。
   void _handleSpaceKey() {
@@ -409,9 +393,6 @@ class MMPreviewViewState extends State<MMPreviewView> {
             _zoomBy(math.exp(-event.scrollDelta.dy * 0.002));
           }
         },
-        // 兜底:在预览里点一下就把键盘焦点收回来(符合直觉,也保证万一焦点被
-        // 什么东西抢走,用户点一下画面即可恢复快捷键)
-        onPointerDown: (_) => _ensureKeyboardFocus(),
         child: gallery,
       );
     }
@@ -551,27 +532,13 @@ class MMPreviewViewState extends State<MMPreviewView> {
     );
 
     if (isDesktopShell) {
-      // 桌面端：黑色背景、键盘翻页、禁用拖拽关闭
-      // 用 onKeyEvent 而不是 CallbackShortcuts:空格要按当前页是图片还是视频
-      // 分别做关窗/播放暂停,SingleActivator 表达不了这种条件分支。
-      // 用 FocusScope 且显式抢焦点,原因见 _keyboardFocusNode 的注释。
-      return FocusScope(
-        node: _keyboardFocusNode,
-        autofocus: true,
-        onKeyEvent: _handleKeyEvent,
-        onFocusChange: (hasFocus) {
-          // 焦点被抢走时(且没有别的路由压在上面)下一帧夺回来
-          if (!hasFocus) {
-            WidgetsBinding.instance
-                .addPostFrameCallback((_) => _ensureKeyboardFocus());
-          }
-        },
-        // 内部按钮(翻页/工具栏)点击后不许夺焦,否则空格会重触发该按钮而非关窗
-        child: ExcludeFocus(
-          child: Container(
-            color: Colors.black,
-            child: content,
-          ),
+      // 桌面端：黑色背景、键盘翻页(见上面的环境快捷键声明)、禁用拖拽关闭。
+      // ExcludeFocus 仍要留着:内部按钮(翻页/工具栏)一旦拿到焦点,空格会被
+      // 按钮的"激活"语义吃掉,轮不到我们的关窗/播放暂停。
+      return ExcludeFocus(
+        child: Container(
+          color: Colors.black,
+          child: content,
         ),
       );
     }

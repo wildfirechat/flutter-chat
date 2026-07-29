@@ -25,6 +25,7 @@ import 'package:chat/conversation/message_cell.dart';
 import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'package:chat/group/join_group_request_screen.dart';
 import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/shortcuts/ambient_shortcuts.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/external_target_utils.dart';
 import 'package:chat/utils/online_state_cache.dart';
@@ -58,11 +59,10 @@ class ConversationPane extends StatefulWidget {
   State<ConversationPane> createState() => _ConversationPaneState();
 }
 
-class _ConversationPaneState extends State<ConversationPane> {
+class _ConversationPaneState extends State<ConversationPane> with AmbientShortcutsMixin {
   late ConversationViewModel _conversationViewModel;
   late MessageInputBarController _inputBarController;
   ConversationController? _conversationController;
-  ModalRoute<dynamic>? _route;
   final ScrollController _scrollController = ScrollController();
   double _pullDistance = 0.0;
   bool _isDragging = false;
@@ -101,43 +101,28 @@ class _ConversationPaneState extends State<ConversationPane> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _autoLoadHistoryIfNeeded());
     }
 
-    // 会话页级快捷键(Esc 退出多选、Cmd/Ctrl+C 复制气泡选区)注册为"迟到处理器":
-    // 焦点链上没人处理这个按键时才轮到我们。不能挂在 Focus 节点上——点一下或滚一下
-    // 消息列表就会走 resetStatus() → 输入框 unfocus(),主焦点交还给上层 FocusScope,
-    // 而会话页的 Focus 是那个 scope 的后代,按键从此绕过它,直到切会话重新 autofocus。
-    FocusManager.instance.addLateKeyEventHandler(_handleLateKeyEvent);
   }
 
+  /// 会话页的环境快捷键。不挂在 Focus 节点上的原因见 ambient_shortcuts.dart:
+  /// 点一下或滚一下消息列表就会走 resetStatus() → 输入框 unfocus(),
+  /// 主焦点交还给上层 FocusScope,页面里的 Focus 从此收不到按键。
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // 在 build 阶段取好路由,_handleLateKeyEvent 里只读 isCurrent(普通 getter),
-    // 避免在按键回调里做 InheritedWidget 查找
-    _route = ModalRoute.of(context);
+  Map<ShortcutActivator, ShortcutHandler> get ambientShortcuts => {
+        const SingleActivator(LogicalKeyboardKey.escape): _exitMultiSelectMode,
+        const CmdOrCtrl(LogicalKeyboardKey.keyC): _copySelectedText,
+      };
+
+  bool _exitMultiSelectMode() {
+    if (!_conversationViewModel.isMultiSelectMode) {
+      return false;
+    }
+    _conversationViewModel.toggleMultiSelectMode();
+    return true;
   }
 
-  /// 焦点链未消费的按键兜底。输入框自己有选区时它会先消费 Cmd/Ctrl+C(复制输入框内容),
-  /// 走不到这里,所以不会抢输入框的复制。
-  KeyEventResult _handleLateKeyEvent(KeyEvent event) {
-    if (event is! KeyDownEvent || !mounted) {
-      return KeyEventResult.ignored;
-    }
-    // 会话页被别的页面/弹窗盖住时(如打开用户详情)不响应
-    if (_route?.isCurrent == false) {
-      return KeyEventResult.ignored;
-    }
-    if (_conversationViewModel.isMultiSelectMode && event.logicalKey == LogicalKeyboardKey.escape) {
-      _conversationViewModel.toggleMultiSelectMode();
-      return KeyEventResult.handled;
-    }
-    final isControl = HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed;
-    if (isControl && event.logicalKey == LogicalKeyboardKey.keyC) {
-      if (_conversationController?.copySelectedTextIfAny(context) ?? false) {
-        return KeyEventResult.handled;
-      }
-    }
-    return KeyEventResult.ignored;
-  }
+  /// 输入框自己有选区时会先消费 Cmd/Ctrl+C(复制输入框内容),走不到这里,
+  /// 所以不会抢输入框的复制。
+  bool _copySelectedText() => _conversationController?.copySelectedTextIfAny(context) ?? false;
 
   Future<void> _watchOnlineState(Conversation conversation) async {
     if (conversation.conversationType != ConversationType.Single) return;
@@ -230,7 +215,6 @@ class _ConversationPaneState extends State<ConversationPane> {
 
   @override
   void dispose() {
-    FocusManager.instance.removeLateKeyEventHandler(_handleLateKeyEvent);
     _scrollController.dispose();
     _joinGroupRequestSubscription?.cancel();
     // 桌面端右栏切换会话时,新会话页 initState 先于旧页 dispose 执行,

@@ -17,6 +17,7 @@ import 'package:chat/config.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/conversation/pick_conversation_screen.dart';
 import 'package:chat/home/conversation_list_widget.dart';
+import 'package:chat/shortcuts/ambient_shortcuts.dart';
 import 'package:chat/pc/pc_contact_list.dart';
 import 'package:chat/pc/pc_conversation_pane.dart';
 import 'package:chat/pc/pc_discovery_list.dart';
@@ -61,7 +62,7 @@ class PCHome extends StatefulWidget {
   State<PCHome> createState() => _PCHomeState();
 }
 
-class _PCHomeState extends State<PCHome> {
+class _PCHomeState extends State<PCHome> with AmbientShortcutsMixin {
   final GlobalKey<NavigatorState> _paneNavKey = GlobalKey<NavigatorState>();
   final Map<int, Widget> _tabPages = {};
   late PCShellViewModel _shellViewModel;
@@ -305,28 +306,38 @@ class _PCHomeState extends State<PCHome> {
     );
   }
 
-  bool _isInputFieldFocused() {
-    final primaryFocus = FocusManager.instance.primaryFocus;
-    if (primaryFocus == null) return false;
-    final context = primaryFocus.context;
-    if (context == null) return false;
-    bool isEditable = false;
-    context.visitAncestorElements((element) {
-      if (element.widget is EditableText) {
-        isEditable = true;
-        return false;
-      }
-      return true;
-    });
-    return isEditable;
+  /// 主窗口的环境快捷键。方向键必须走 beforeFocus:Flutter 的焦点遍历
+  /// (DirectionalFocusAction)会无条件吞掉方向键,afterFocus 收不到;
+  /// 输入框持有焦点时由注册表统一让路,不用再自己判断。
+  @override
+  Map<ShortcutActivator, ShortcutHandler> get ambientShortcuts => {
+        const CmdOrCtrl(LogicalKeyboardKey.keyF): _openSearchByShortcut,
+        const CmdOrCtrl(LogicalKeyboardKey.keyW): _hideWindowByShortcut,
+      };
+
+  @override
+  Map<ShortcutActivator, ShortcutHandler> get ambientShortcutsBeforeFocus => {
+        const SingleActivator(LogicalKeyboardKey.arrowDown): () => _navigateConversation(true),
+        const SingleActivator(LogicalKeyboardKey.arrowUp): () => _navigateConversation(false),
+      };
+
+  bool _openSearchByShortcut() {
+    _openSearchModal();
+    return true;
   }
 
-  void _navigateConversation(bool next) {
+  bool _hideWindowByShortcut() {
+    windowManager.hide();
+    return true;
+  }
+
+  /// 返回 false 表示这一下方向键不归我(不在会话 tab、或列表为空),让给别人
+  bool _navigateConversation(bool next) {
     if (_shellViewModel.selectedTab != PCShellViewModel.tabChat) {
-      return;
+      return false;
     }
     final list = _conversationListViewModel.conversationList;
-    if (list.isEmpty) return;
+    if (list.isEmpty) return false;
     int index = -1;
     final selected = _shellViewModel.selectedConversation;
     if (selected != null) {
@@ -340,6 +351,7 @@ class _PCHomeState extends State<PCHome> {
       if (index < 0) index = list.length - 1;
     }
     _openConversation(list[index].conversation);
+    return true;
   }
 
   static const String _kAddFriendHintShownKey = 'pc_add_friend_hint_shown';
@@ -560,41 +572,6 @@ class _PCHomeState extends State<PCHome> {
     return PcBackupListener(
       child: Theme(
         data: PcTheme.themeData(context),
-        child: Focus(
-          autofocus: true,
-          onKeyEvent: (node, event) {
-          if (event is! KeyDownEvent) {
-            return KeyEventResult.ignored;
-          }
-          final isControl = HardwareKeyboard.instance.isControlPressed ||
-              HardwareKeyboard.instance.isMetaPressed;
-
-          // Ctrl+F or Cmd+F: Open search
-          if (event.logicalKey == LogicalKeyboardKey.keyF && isControl) {
-            _openSearchModal();
-            return KeyEventResult.handled;
-          }
-
-          // Ctrl+W or Cmd+W: Hide window
-          if (event.logicalKey == LogicalKeyboardKey.keyW && isControl) {
-            windowManager.hide();
-            return KeyEventResult.handled;
-          }
-
-          // Arrow Up/Down to navigate conversations (only when input fields are not focused)
-          if (event.logicalKey == LogicalKeyboardKey.arrowDown &&
-              !_isInputFieldFocused()) {
-            _navigateConversation(true);
-            return KeyEventResult.handled;
-          }
-          if (event.logicalKey == LogicalKeyboardKey.arrowUp &&
-              !_isInputFieldFocused()) {
-            _navigateConversation(false);
-            return KeyEventResult.handled;
-          }
-
-          return KeyEventResult.ignored;
-        },
         child: Stack(
           children: [
             Scaffold(
@@ -657,7 +634,6 @@ class _PCHomeState extends State<PCHome> {
             ),
           ],
         ),
-      ),
     ),
   );
   }
