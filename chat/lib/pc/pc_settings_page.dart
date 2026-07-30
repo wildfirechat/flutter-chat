@@ -10,6 +10,7 @@ import 'package:chat/pc/launch_at_login_service.dart';
 import 'package:chat/pc/widgets/pc_card.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/pc/widgets/pc_pane_content.dart';
+import 'package:chat/pc/widgets/pc_settings_row.dart';
 import 'package:chat/settings/account_safety_screen.dart';
 import 'package:chat/settings/blacklist_screen.dart';
 import 'package:chat/settings/destroy_account_screen.dart';
@@ -31,7 +32,6 @@ import 'package:chat/utilities.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/theme/app_typography.dart';
-import 'package:chat/widget/app_switch.dart';
 
 // ==========================================
 // 1. Middle Column: PcSettingsMenu
@@ -201,9 +201,9 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SettingsSectionTitle(l10n.chat),
+              PcSettingsSectionTitle(l10n.chat),
               PcCard(children: [
-                _SettingsSwitchRow(
+                PcSettingsSwitchRow(
                   title: l10n.syncDraft,
                   subtitle: l10n.syncDraftDesc,
                   value: _syncDraftEnabled,
@@ -214,9 +214,9 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                 ),
               ]),
               const SizedBox(height: 20),
-              _SettingsSectionTitle(l10n.startupAndWindow),
+              PcSettingsSectionTitle(l10n.startupAndWindow),
               PcCard(children: [
-                _SettingsSwitchRow(
+                PcSettingsSwitchRow(
                   title: l10n.closeToExitTitle,
                   subtitle: l10n.closeToExitDesc,
                   value: _closeToExit,
@@ -227,7 +227,7 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                   },
                 ),
                 const Divider(),
-                _SettingsSwitchRow(
+                PcSettingsSwitchRow(
                   title: l10n.minimizeToTaskbarTitle,
                   subtitle: l10n.minimizeToTaskbarDesc,
                   value: _enableMinimize,
@@ -238,7 +238,7 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                   },
                 ),
                 const Divider(),
-                _SettingsSwitchRow(
+                PcSettingsSwitchRow(
                   title: l10n.launchAtLoginTitle,
                   subtitle: l10n.launchAtLoginDesc,
                   value: _launchAtLogin,
@@ -253,9 +253,9 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                 ),
               ]),
               const SizedBox(height: 20),
-              _SettingsSectionTitle(l10n.termsOfService),
+              PcSettingsSectionTitle(l10n.termsOfService),
               PcCard(children: [
-                _SettingsClickableRow(
+                PcSettingsClickableRow(
                   title: l10n.userAgreement,
                   subtitle: l10n.userAgreementDesc,
                   onTap: () {
@@ -263,7 +263,7 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                   },
                 ),
                 const Divider(),
-                _SettingsClickableRow(
+                PcSettingsClickableRow(
                   title: l10n.privacyPolicy,
                   subtitle: l10n.privacyPolicyDesc,
                   onTap: () {
@@ -396,9 +396,9 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SettingsSectionTitle(l10n.messageAlerts),
+              PcSettingsSectionTitle(l10n.messageAlerts),
               PcCard(children: [
-                _SettingsSwitchRow(
+                PcSettingsSwitchRow(
                   title: l10n.receiveNewMessageNotification,
                   subtitle: l10n.receiveNewMessageNotificationDesc,
                   value: _receiveMsgNotification,
@@ -408,7 +408,7 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
                   },
                 ),
                 const Divider(),
-                _SettingsSwitchRow(
+                PcSettingsSwitchRow(
                   title: l10n.receiveCallNotification,
                   subtitle: l10n.receiveCallNotificationDesc,
                   value: _receiveVoipNotification,
@@ -418,7 +418,7 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
                   },
                 ),
                 const Divider(),
-                _SettingsSwitchRow(
+                PcSettingsSwitchRow(
                   title: l10n.showNotificationDetail,
                   subtitle: l10n.showNotificationDetailDesc,
                   value: _showNotificationDetail,
@@ -428,7 +428,7 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
                   },
                 ),
                 const Divider(),
-                _SettingsSwitchRow(
+                PcSettingsSwitchRow(
                   title: l10n.noDisturb,
                   subtitle: _noDisturbing && _noDisturbStartTime != _noDisturbEndTime
                       ? l10n.noDisturbPeriod(NotificationSettings.formatNoDisturbTime(_noDisturbStartTime, _noDisturbEndTime))
@@ -480,7 +480,7 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SettingsSectionTitle(l10n.interfaceAppearance),
+              PcSettingsSectionTitle(l10n.interfaceAppearance),
               PcCard(children: [
                 _SettingsSelectorRow(
                   title: l10n.interfaceLanguage,
@@ -669,7 +669,7 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _SettingsSectionTitle(l10n.currentLoginAccount),
+                  PcSettingsSectionTitle(l10n.currentLoginAccount),
                   Container(
                     decoration: BoxDecoration(
                       color: context.colors.surface,
@@ -713,9 +713,9 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  _SettingsSectionTitle(l10n.securitySection),
+                  PcSettingsSectionTitle(l10n.securitySection),
                   PcCard(children: [
-                    _SettingsClickableRow(
+                    PcSettingsClickableRow(
                       title: l10n.changePassword,
                       subtitle: l10n.changePasswordDesc,
                       onTap: () {
@@ -726,16 +726,16 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                       },
                     ),
                     const Divider(),
-                    _SettingsClickableRow(
+                    PcSettingsClickableRow(
                       title: l10n.reportTitle,
                       subtitle: l10n.reportDesc,
                       onTap: _showReportDialog,
                     ),
                   ]),
                   const SizedBox(height: 20),
-                  _SettingsSectionTitle(l10n.dataSection),
+                  PcSettingsSectionTitle(l10n.dataSection),
                   PcCard(children: [
-                    _SettingsClickableRow(
+                    PcSettingsClickableRow(
                       title: l10n.backup_and_restore,
                       subtitle: l10n.backupAndRestoreDesc,
                       onTap: () {
@@ -855,9 +855,9 @@ class _PcPrivacySettingsDetailState extends State<PcPrivacySettingsDetail> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _SettingsSectionTitle(l10n.privacy),
+              PcSettingsSectionTitle(l10n.privacy),
               PcCard(children: [
-                _SettingsClickableRow(
+                PcSettingsClickableRow(
                   title: l10n.findMeBy,
                   subtitle: l10n.findMeByDesc,
                   // pushPage 压入子页面,返回时回到本隐私页;
@@ -865,7 +865,7 @@ class _PcPrivacySettingsDetailState extends State<PcPrivacySettingsDetail> {
                   onTap: () => pushPage(context, const FindMeByScreen()),
                 ),
                 const Divider(),
-                _SettingsClickableRow(
+                PcSettingsClickableRow(
                   title: l10n.blacklist,
                   subtitle: l10n.blacklistDesc,
                   onTap: () {
@@ -878,7 +878,7 @@ class _PcPrivacySettingsDetailState extends State<PcPrivacySettingsDetail> {
                 // 消息回执:仅当服务端支持时展示
                 if (_receiptEnabled) ...[
                   const Divider(),
-                  _SettingsSwitchRow(
+                  PcSettingsSwitchRow(
                     title: l10n.msgReceipt,
                     subtitle: l10n.msgReceiptDesc,
                     value: _receiptOn,
@@ -888,7 +888,7 @@ class _PcPrivacySettingsDetailState extends State<PcPrivacySettingsDetail> {
                 // 在线状态:仅当服务端开启在线状态能力时展示
                 if (_onlineStateEnabled) ...[
                   const Divider(),
-                  _SettingsSwitchRow(
+                  PcSettingsSwitchRow(
                     title: l10n.onlineStatus,
                     subtitle: l10n.onlineStatusDesc,
                     value: _showOnlineState,
@@ -896,7 +896,7 @@ class _PcPrivacySettingsDetailState extends State<PcPrivacySettingsDetail> {
                   ),
                 ],
                 const Divider(),
-                _SettingsSwitchRow(
+                PcSettingsSwitchRow(
                   title: l10n.friendVerify,
                   subtitle: l10n.friendVerifyDesc,
                   value: _friendVerify,
@@ -905,7 +905,7 @@ class _PcPrivacySettingsDetailState extends State<PcPrivacySettingsDetail> {
                 // 朋友圈设置,受 Config.ENABLE_MOMENTS 开关控制
                 if (Config.ENABLE_MOMENTS) ...[
                   const Divider(),
-                  _SettingsClickableRow(
+                  PcSettingsClickableRow(
                     title: l10n.momentWindowTitle,
                     subtitle: l10n.momentsPrivacyDesc,
                     onTap: () => pushPage(context, const MomentPrivacySettingsScreen()),
@@ -1012,104 +1012,6 @@ class PcAboutSettingsDetail extends StatelessWidget {
 // ==========================================
 // 3. Shared Reusable Setting Design Components
 // ==========================================
-
-class _SettingsSectionTitle extends StatelessWidget {
-  final String title;
-  const _SettingsSectionTitle(this.title);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        title,
-        style: AppText.xs.copyWith(fontWeight: FontWeight.w600, color: context.colors.textSecondary),
-      ),
-    );
-  }
-}
-
-class _SettingsSwitchRow extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _SettingsSwitchRow({
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
-                const SizedBox(height: 4),
-                Text(subtitle, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
-              ],
-            ),
-          ),
-          AppSwitch(
-            value: value,
-            onChanged: onChanged,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SettingsClickableRow extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _SettingsClickableRow({
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hovered) {
-        return InkWell(
-          onTap: onTap,
-          child: Container(
-            color: hovered ? context.colors.hoverOverlay : Colors.transparent,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
-                      const SizedBox(height: 4),
-                      Text(subtitle, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
-                    ],
-                  ),
-                ),
-                Icon(Icons.arrow_forward_ios_rounded, size: 14, color: context.colors.textTertiary),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
 
 class _SettingsSelectorRow extends StatefulWidget {
   final String title;

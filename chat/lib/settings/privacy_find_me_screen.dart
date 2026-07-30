@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_card.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/pc/widgets/pc_pane_content.dart';
+import 'package:chat/pc/widgets/pc_settings_row.dart';
+import 'package:chat/theme/app_colors.dart';
 
 /// 找到我的方式页面
 ///
@@ -95,6 +101,35 @@ class _FindMeByScreenState extends State<FindMeByScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // PC 端与隐私设置主页一致的行样式(字体/开关大小对齐)
+    if (isDesktopShell) {
+      return Scaffold(
+        backgroundColor: context.colors.chatBgDesktop,
+        appBar: PcPageHeader(title: l10n.findMeBy),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: PcPaneContent.defaultPadding,
+                child: PcPaneContent(
+                  child: PcCard(children: [
+                    PcSettingsSwitchRow(
+                      title: l10n.account,
+                      subtitle: '',
+                      value: _accountOn,
+                      onChanged: (value) => _onChanged(_maskAccount, value),
+                    ),
+                    const Divider(),
+                    PcSettingsSwitchRow(
+                      title: l10n.phoneNumber,
+                      subtitle: '',
+                      value: _phoneOn,
+                      onChanged: (value) => _onChanged(_maskPhone, value),
+                    ),
+                  ]),
+                ),
+              ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.findMeBy),

@@ -7,6 +7,12 @@ import 'package:moment/moment.dart';
 import 'package:chat/config.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/mesh/mesh_cache.dart';
+import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/pc/widgets/pc_card.dart';
+import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/pc/widgets/pc_pane_content.dart';
+import 'package:chat/pc/widgets/pc_settings_row.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/portrait.dart';
@@ -86,6 +92,83 @@ class _MomentPrivacySettingsScreenState
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    // PC 端与隐私设置主页一致的行样式(字体/开关大小对齐)
+    if (isDesktopShell) {
+      return Scaffold(
+        backgroundColor: context.colors.chatBgDesktop,
+        appBar: PcPageHeader(title: l10n.momentWindowTitle),
+        body: _loading
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: PcPaneContent.defaultPadding,
+                child: PcPaneContent(
+                  child: PcCard(children: [
+                    PcSettingsClickableRow(
+                      title: l10n.blockThem,
+                      subtitle: '',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MomentBlockListScreen(
+                              isBlock: true,
+                              title: l10n.blockThem,
+                              userIds: _profiles?.blockList ?? const [],
+                            ),
+                          ),
+                        ).then((_) => _loadProfiles());
+                      },
+                    ),
+                    const Divider(),
+                    PcSettingsClickableRow(
+                      title: l10n.hideThem,
+                      subtitle: '',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MomentBlockListScreen(
+                              isBlock: false,
+                              title: l10n.hideThem,
+                              userIds: _profiles?.blackList ?? const [],
+                            ),
+                          ),
+                        ).then((_) => _loadProfiles());
+                      },
+                    ),
+                    const Divider(),
+                    PcSettingsSwitchRow(
+                      title: l10n.strangerTen,
+                      subtitle: '',
+                      value: (_profiles?.strangerVisiableCount ?? 0) > 0,
+                      onChanged: _onStrangerChanged,
+                    ),
+                    const Divider(),
+                    PcSettingsClickableRow(
+                      title: l10n.visibleRange,
+                      subtitle: _rangeText(l10n, _profiles?.visiableScope),
+                      onTap: () async {
+                        final scope = await Navigator.push<WFMVisiableScope>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MomentVisibleRangeScreen(
+                              current: _profiles?.visiableScope ??
+                                  WFMVisiableScope.WFMVisiableScope_NoLimit,
+                            ),
+                          ),
+                        );
+                        if (scope != null && mounted) {
+                          setState(() {
+                            _profiles?.visiableScope = scope;
+                          });
+                        }
+                      },
+                    ),
+                  ]),
+                ),
+              ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.momentWindowTitle),
