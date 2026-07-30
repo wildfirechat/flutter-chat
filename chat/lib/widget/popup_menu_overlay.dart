@@ -54,9 +54,7 @@ class PopupMenuPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double itemWidth = (popupWidth - _padding * 2) / crossAxisCount;
-    final double menuHeight = listMode
-        ? menuItems.length * _listItemHeight + (menuItems.length - 1) * _dividerHeight
-        : (menuItems.length / crossAxisCount).ceil() * _itemHeight + _padding * 2;
+    final double menuHeight = listMode ? menuItems.length * _listItemHeight + (menuItems.length - 1) * _dividerHeight : (menuItems.length / crossAxisCount).ceil() * _itemHeight + _padding * 2;
 
     final mediaQuery = MediaQuery.of(context);
     final screenSize = mediaQuery.size;
@@ -196,11 +194,18 @@ class PopupMenuPanel extends StatelessWidget {
 /// 支持自动定位（避免超出屏幕）、小三角指示器
 class PopupMenuOverlay {
   static OverlayEntry? _currentOverlay;
+  static VoidCallback? _onDismiss;
 
   /// 关闭当前菜单
   static void dismiss() {
+    if (_currentOverlay == null) {
+      return;
+    }
     _currentOverlay?.remove();
     _currentOverlay = null;
+    final callback = _onDismiss;
+    _onDismiss = null;
+    callback?.call();
   }
 
   /// 显示菜单
@@ -208,6 +213,7 @@ class PopupMenuOverlay {
   /// [targetRect] - 目标元素的全局位置（用于定位菜单和箭头）
   /// [menuItems] - 菜单项列表，每项包含 label, value, icon
   /// [onItemTap] - 菜单项点击回调
+  /// [onDismiss] - 菜单关闭时回调(点击空白、滑动关闭、点击菜单项)
   /// [popupWidth] - 菜单宽度，默认250
   /// [crossAxisCount] - 每行显示的菜单项数量，默认4
   /// [listMode] - true 时竖排列表（图标+文字一行），false 时网格（图标在上文字在下）
@@ -216,6 +222,7 @@ class PopupMenuOverlay {
     required Rect targetRect,
     required List<Map<String, dynamic>> menuItems,
     required Function(String value) onItemTap,
+    VoidCallback? onDismiss,
     double popupWidth = 250,
     int crossAxisCount = 4,
     bool listMode = false,
@@ -227,6 +234,7 @@ class PopupMenuOverlay {
     }
 
     final overlayState = Overlay.of(context);
+    _onDismiss = onDismiss;
 
     _currentOverlay = OverlayEntry(
       builder: (overlayContext) {

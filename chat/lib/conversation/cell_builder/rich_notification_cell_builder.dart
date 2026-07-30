@@ -22,9 +22,12 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
   ConversationController? conversationController;
   final GlobalKey _cardKey = GlobalKey();
 
-  RichNotificationCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
-    richNotificationContent = model.message.content as RichNotificationMessageContent;
-    conversationController = Provider.of<ConversationController?>(context, listen: false);
+  RichNotificationCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
+    richNotificationContent =
+        model.message.content as RichNotificationMessageContent;
+    conversationController =
+        Provider.of<ConversationController?>(context, listen: false);
   }
 
   static const double _maxWidth = 400;
@@ -57,14 +60,16 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
     }
 
     if (isDesktopShell) {
-      WFWebViewWindowManager.instance.show(url: url, title: richNotificationContent.title);
+      WFWebViewWindowManager.instance
+          .show(url: url, title: richNotificationContent.title);
       return;
     }
 
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => WFWebViewScreen(url, title: richNotificationContent.title),
+        builder: (_) =>
+            WFWebViewScreen(url, title: richNotificationContent.title),
       ),
     );
   }
@@ -75,7 +80,8 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double maxWidthByScreen = MediaQuery.sizeOf(context).width * 0.76;
-        final double cardMaxWidth = maxWidthByScreen.clamp(220.0, _maxWidth).toDouble();
+        final double cardMaxWidth =
+            maxWidthByScreen.clamp(220.0, _maxWidth).toDouble();
         return Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: cardMaxWidth),
@@ -83,13 +89,15 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
               onLongPressStart: isDesktopShell
                   ? null
                   : (details) {
-                      conversationController?.onLongPressedCell(context, model, _cardRect);
+                      conversationController?.onLongPressedCell(
+                          context, model, _cardRect);
                     },
               onSecondaryTapUp: (details) {
                 conversationController?.onLongPressedCell(
                   context,
                   model,
-                  Rect.fromCenter(center: details.globalPosition, width: 4, height: 4),
+                  Rect.fromCenter(
+                      center: details.globalPosition, width: 4, height: 4),
                 );
               },
               child: Material(
@@ -99,9 +107,13 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
                   onTap: () => _onTap(context),
                   child: Container(
                     key: _cardKey,
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: context.colors.surface,
+                      color: model.highlighted
+                          ? Color.alphaBlend(context.colors.messageHighlight,
+                              context.colors.surface)
+                          : context.colors.surface,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Column(
@@ -112,13 +124,16 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Text(
                             content.title,
-                            style: AppText.base.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600),
+                            style: AppText.base.copyWith(
+                                color: context.colors.textPrimary,
+                                fontWeight: FontWeight.w600),
                           ),
                         ),
                         if (content.desc.isNotEmpty)
                           Text(
                             content.desc,
-                            style: AppText.base.copyWith(color: context.colors.textPrimary),
+                            style: AppText.base
+                                .copyWith(color: context.colors.textPrimary),
                           ),
                         if (content.datas != null && content.datas!.isNotEmpty)
                           Padding(
@@ -127,16 +142,20 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: content.datas!
                                   .map((data) => Padding(
-                                        padding: const EdgeInsets.symmetric(vertical: 1),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 1),
                                         child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             SizedBox(
                                               width: 100,
                                               child: Text(
                                                 data.key,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: AppText.base.copyWith(color: context.colors.textPrimary),
+                                                style: AppText.base.copyWith(
+                                                    color: context
+                                                        .colors.textPrimary),
                                               ),
                                             ),
                                             Expanded(
@@ -145,7 +164,10 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
                                                 maxLines: 3,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: AppText.base.copyWith(
-                                                  color: _parseColor(data.color) ?? context.colors.textPrimary,
+                                                  color:
+                                                      _parseColor(data.color) ??
+                                                          context.colors
+                                                              .textPrimary,
                                                 ),
                                               ),
                                             ),
@@ -155,16 +177,20 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
                                   .toList(),
                             ),
                           ),
-                        if (content.exName != null && content.exName!.isNotEmpty)
+                        if (content.exName != null &&
+                            content.exName!.isNotEmpty)
                           Container(
                             margin: const EdgeInsets.only(top: 4),
                             padding: const EdgeInsets.only(top: 4),
                             decoration: BoxDecoration(
-                              border: Border(top: BorderSide(color: context.colors.hairlineSoft)),
+                              border: Border(
+                                  top: BorderSide(
+                                      color: context.colors.hairlineSoft)),
                             ),
                             child: Text(
                               content.exName!,
-                              style: AppText.base.copyWith(color: context.colors.textSecondary),
+                              style: AppText.base.copyWith(
+                                  color: context.colors.textSecondary),
                             ),
                           ),
                       ],

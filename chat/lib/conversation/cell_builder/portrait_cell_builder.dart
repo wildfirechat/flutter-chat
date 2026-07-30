@@ -28,16 +28,20 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   late bool isSendMessage;
   ConversationController? conversationController;
 
-  PortraitCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  PortraitCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     try {
-      conversationController = Provider.of<ConversationController>(context, listen: false);
+      conversationController =
+          Provider.of<ConversationController>(context, listen: false);
     } catch (e) {}
-    isSendMessage = model.message.direction == MessageDirection.MessageDirection_Send;
+    isSendMessage =
+        model.message.direction == MessageDirection.MessageDirection_Send;
   }
 
   @override
   Widget buildContent(BuildContext context) {
-    return Selector2<UserViewModel, ConversationViewModel, (UserInfo? senderUserInfo, bool showGroupMemberName)>(
+    return Selector2<UserViewModel, ConversationViewModel,
+            (UserInfo? senderUserInfo, bool showGroupMemberName)>(
         builder: (_, rec, __) => Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -48,7 +52,10 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
             ),
         selector: (context, userViewModel, conversationViewModel) => (
               userViewModel.getUserInfo(model.message.fromUser,
-                  groupId: model.message.conversation.conversationType == ConversationType.Group ? model.message.conversation.target : null),
+                  groupId: model.message.conversation.conversationType ==
+                          ConversationType.Group
+                      ? model.message.conversation.target
+                      : null),
               conversationViewModel.isHiddenConversationMemberName
             ));
   }
@@ -61,22 +68,32 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       child: Container(
           key: _portraitKey,
           margin: isDesktopShell
-              ? EdgeInsets.fromLTRB(isSendMessage ? 8 : 12, 0, isSendMessage ? 12 : 8, 0)
+              ? EdgeInsets.fromLTRB(
+                  isSendMessage ? 8 : 12, 0, isSendMessage ? 12 : 8, 0)
               : const EdgeInsets.fromLTRB(8, 0, 8, 0),
-          child: Portrait(portrait, Config.defaultUserPortrait, width: 44.0, height: 44.0, borderRadius: 6.0)),
+          child: Portrait(portrait, Config.defaultUserPortrait,
+              width: 44.0, height: 44.0, borderRadius: 6.0)),
       // 桌面端点头像弹用户信息卡片(微信 PC 形态),移动端仍整页打开
-      onTap: () => isDesktopShell ? _showUserCard(context) : conversationController?.onPortraitTaped(context, model),
-      onLongPress: () => conversationController?.onPortraitLongTaped(context, model),
+      onTap: () => isDesktopShell
+          ? _showUserCard(context)
+          : conversationController?.onPortraitTaped(context, model),
+      onLongPress: () =>
+          conversationController?.onPortraitLongTaped(context, model),
       onSecondaryTapUp: (details) {
-        if (!isSendMessage && isDesktopShell && model.message.conversation.conversationType == ConversationType.Group) {
-          conversationController?.onPortraitSecondaryTaped(context, model, details.globalPosition);
+        if (!isSendMessage &&
+            isDesktopShell &&
+            model.message.conversation.conversationType ==
+                ConversationType.Group) {
+          conversationController?.onPortraitSecondaryTaped(
+              context, model, details.globalPosition);
         }
       },
     );
   }
 
   void _showUserCard(BuildContext context) {
-    final renderBox = _portraitKey.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox =
+        _portraitKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) {
       return;
     }
@@ -85,7 +102,10 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       context: context,
       anchor: anchor,
       userId: model.message.fromUser,
-      groupId: model.message.conversation.conversationType == ConversationType.Group ? model.message.conversation.target : null,
+      groupId:
+          model.message.conversation.conversationType == ConversationType.Group
+              ? model.message.conversation.target
+              : null,
     );
   }
 
@@ -99,7 +119,8 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
 
   /// 气泡在窗口中的全局矩形,供子类(如文本 cell 内层手势)弹消息菜单时定位
   Rect? get bubbleRect {
-    final renderBox = _bubbleKey.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox =
+        _bubbleKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) {
       return null;
     }
@@ -115,44 +136,63 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return SelectableMessageText(
       selectionKey: ConversationController.selectionKeyOf(model.message),
       controller: controller,
-      onLongPressStart: (details) => controller?.onLongPressedCell(context, model, bubbleRect),
-      onSecondaryTapUp: (details) =>
-          controller?.onLongPressedCell(context, model, Rect.fromCenter(center: details.globalPosition, width: 4, height: 4)),
+      onLongPressStart: (details) =>
+          controller?.onLongPressedCell(context, model, bubbleRect),
+      onSecondaryTapUp: (details) => controller?.onLongPressedCell(
+          context,
+          model,
+          Rect.fromCenter(center: details.globalPosition, width: 4, height: 4)),
       menuItemsBuilder: controller == null
           ? null
-          : (partialSelection) => controller.buildMessageMenuItems(context, model, partialSelection: partialSelection),
+          : (partialSelection) => controller.buildMessageMenuItems(
+              context, model,
+              partialSelection: partialSelection),
       onMenuItemTap: controller == null
           ? null
-          : (value, selectedText) => controller.handleMessageMenuAction(context, value, model, selectedText: selectedText),
+          : (value, selectedText) => controller.handleMessageMenuAction(
+              context, value, model,
+              selectedText: selectedText),
       child: textChild,
     );
   }
 
-  Widget _messageContentContainer(BuildContext context, UserInfo? senderUserInfo, bool isHiddenGroupMemberName) {
+  Widget _messageContentContainer(BuildContext context,
+      UserInfo? senderUserInfo, bool isHiddenGroupMemberName) {
     return Flexible(
       child: Column(
-        crossAxisAlignment: isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment:
+            isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          (isDesktopShell ? !isSendMessage && !isHiddenGroupMemberName : !isHiddenGroupMemberName)
+          (isDesktopShell
+                  ? !isSendMessage && !isHiddenGroupMemberName
+                  : !isHiddenGroupMemberName)
               ? senderUserInfo != null
                   ? MeshUserName(
                       senderUserInfo,
-                      style: isDesktopShell ? AppText.xs.copyWith(color: context.colors.messageSenderName) : null,
+                      style: isDesktopShell
+                          ? AppText.xs
+                              .copyWith(color: context.colors.messageSenderName)
+                          : null,
                     )
                   : Text(
                       '<${model.message.fromUser}>',
-                      style: isDesktopShell ? AppText.xs.copyWith(color: context.colors.messageSenderName) : null,
+                      style: isDesktopShell
+                          ? AppText.xs
+                              .copyWith(color: context.colors.messageSenderName)
+                          : null,
                     )
               : Container(),
           Row(
-            mainAxisAlignment: isSendMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
+            mainAxisAlignment:
+                isSendMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               _sendStatus(),
               Flexible(
                 fit: FlexFit.loose,
                 child: GestureDetector(
-                  onTap: () => conversationController?.onTapedCell(context, model),
+                  onTap: () =>
+                      conversationController?.onTapedCell(context, model),
                   // 不注册 onDoubleTap(原实现是空操作):注册了会参与手势竞技场,
                   // 干扰文本消息 SelectionArea 的双击选词,还会给单击引入等待延迟。
                   // 桌面端同样不注册长按:鼠标按住不动超过 500ms 再拖时长按会抢赢竞技场,
@@ -161,12 +201,18 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                   onLongPressStart: isDesktopShell
                       ? null
                       : (details) {
-                          conversationController?.onLongPressedCell(context, model, bubbleRect);
+                          conversationController?.onLongPressedCell(
+                              context, model, bubbleRect);
                         },
                   // 桌面端右键在鼠标位置弹出同一套消息菜单
                   onSecondaryTapUp: (details) {
                     conversationController?.onLongPressedCell(
-                        context, model, Rect.fromCenter(center: details.globalPosition, width: 4, height: 4));
+                        context,
+                        model,
+                        Rect.fromCenter(
+                            center: details.globalPosition,
+                            width: 4,
+                            height: 4));
                   },
                   child: Container(
                     key: _bubbleKey,
@@ -179,10 +225,20 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                         ? const EdgeInsets.all(0)
                         : const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      // 桌面端用品牌蓝浅色调气泡,移动端维持原配色;暗色下两端都是实心系统蓝
-                      color: isSendMessage
-                          ? (isDesktopShell ? context.colors.bubbleSentDesktop : context.colors.bubbleSent)
-                          : (isDesktopShell ? context.colors.bubbleReceivedDesktop : context.colors.bubbleReceived),
+                      // 高亮时直接改消息内容 view 的背景色(原气泡色 + 高亮色叠加),而不是染外层。
+                      color: () {
+                        final baseColor = isSendMessage
+                            ? (isDesktopShell
+                                ? context.colors.bubbleSentDesktop
+                                : context.colors.bubbleSent)
+                            : (isDesktopShell
+                                ? context.colors.bubbleReceivedDesktop
+                                : context.colors.bubbleReceived);
+                        return model.highlighted
+                            ? Color.alphaBlend(
+                                context.colors.messageHighlight, baseColor)
+                            : baseColor;
+                      }(),
                       borderRadius: const BorderRadius.only(
                         topRight: Radius.circular(8),
                         topLeft: Radius.circular(8),
@@ -193,12 +249,16 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                     // 气泡内的正文色在这里一次性定死,而不是每个 cell_builder 各写一遍:
                     // 暗色下己方气泡是实心蓝,继承主题的灰白正文色对比度不够,必须走纯白。
                     child: Align(
-                      alignment: isSendMessage ? Alignment.centerRight : Alignment.centerLeft,
+                      alignment: isSendMessage
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
                       widthFactor: 1.0,
                       heightFactor: 1.0,
                       child: DefaultTextStyle.merge(
                         style: TextStyle(
-                          color: isSendMessage ? context.colors.bubbleSentText : context.colors.bubbleReceivedText,
+                          color: isSendMessage
+                              ? context.colors.bubbleSentText
+                              : context.colors.bubbleReceivedText,
                         ),
                         child: buildMessageContent(context),
                       ),
@@ -226,7 +286,8 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
           height: 10,
           child: const CircularProgressIndicator(),
         );
-      } else if (model.message.status == MessageStatus.Message_Status_Send_Failure) {
+      } else if (model.message.status ==
+          MessageStatus.Message_Status_Send_Failure) {
         return GestureDetector(
           child: Padding(
             padding: const EdgeInsets.all(3),
@@ -238,7 +299,8 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
           ),
           onTap: () => conversationController?.onResendTaped(model),
         );
-      } else if (model.message.status == MessageStatus.Message_Status_Sent || model.message.status == MessageStatus.Message_Status_Readed) {
+      } else if (model.message.status == MessageStatus.Message_Status_Sent ||
+          model.message.status == MessageStatus.Message_Status_Readed) {
         return ReadReceiptStatusWidget(model.message);
       }
     }
@@ -248,12 +310,16 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
 
   Widget _playStatus(BuildContext context) {
     if (model.message.content is SoundMessageContent) {
-      if (model.message.direction == MessageDirection.MessageDirection_Receive && model.message.status == MessageStatus.Message_Status_Readed) {
+      if (model.message.direction ==
+              MessageDirection.MessageDirection_Receive &&
+          model.message.status == MessageStatus.Message_Status_Readed) {
         return Container(
           margin: const EdgeInsets.fromLTRB(8, 0, 0, 8),
           width: 8,
           height: 8,
-          decoration: BoxDecoration(color: context.colors.badge, borderRadius: const BorderRadius.all(Radius.circular(8))),
+          decoration: BoxDecoration(
+              color: context.colors.badge,
+              borderRadius: const BorderRadius.all(Radius.circular(8))),
         );
       }
     }

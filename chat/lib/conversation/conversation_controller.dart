@@ -101,7 +101,8 @@ class ConversationController extends ChangeNotifier {
       return;
     }
 
-    if (avEngineKit.currentSession == null || avEngineKit.currentSession!.status == CallState.STATUS_IDLE) {
+    if (avEngineKit.currentSession == null ||
+        avEngineKit.currentSession!.status == CallState.STATUS_IDLE) {
       if (conversation.conversationType == ConversationType.Single) {
         showBottomActionSheet(
           context: context,
@@ -110,14 +111,18 @@ class ConversationController extends ChangeNotifier {
               label: AppLocalizations.of(context)!.videoCallAction,
               icon: Icons.videocam_rounded,
               onTap: () {
-                startAvCallWithParticipants(context, conversation, [conversation.target], audioOnly: false);
+                startAvCallWithParticipants(
+                    context, conversation, [conversation.target],
+                    audioOnly: false);
               },
             ),
             BottomActionSheetItem(
               label: AppLocalizations.of(context)!.audioCallAction,
               icon: Icons.call_rounded,
               onTap: () {
-                startAvCallWithParticipants(context, conversation, [conversation.target], audioOnly: true);
+                startAvCallWithParticipants(
+                    context, conversation, [conversation.target],
+                    audioOnly: true);
               },
             ),
           ],
@@ -143,13 +148,13 @@ class ConversationController extends ChangeNotifier {
           ],
         );
       }
-      } else {
-        showToast(
-            msg: AppLocalizations.of(context)!.callInProgress);
-      }
+    } else {
+      showToast(msg: AppLocalizations.of(context)!.callInProgress);
+    }
   }
 
-  void _pickGroupMembersAndStartCall(BuildContext context, Conversation conversation, bool audioOnly) {
+  void _pickGroupMembersAndStartCall(
+      BuildContext context, Conversation conversation, bool audioOnly) {
     Imclient.getGroupMembers(conversation.target).then((groupMembers) {
       if (!context.mounted) return;
       List<String> members = [];
@@ -163,14 +168,18 @@ class ConversationController extends ChangeNotifier {
             builder: (context) => PickUserScreen(
                   title: AppLocalizations.of(context)!.pickGroupMember,
                   (pickerContext, selectedMembers) async {
-                    final participants = selectedMembers.where((memberId) => memberId != Imclient.currentUserId).toList();
+                    final participants = selectedMembers
+                        .where((memberId) => memberId != Imclient.currentUserId)
+                        .toList();
                     if (participants.isEmpty) {
                       showToast(
                           msg: AppLocalizations.of(pickerContext)!
                               .selectMemberToCall);
                     } else {
                       Navigator.pop(pickerContext);
-                      startAvCallWithParticipants(context, conversation, participants, audioOnly: audioOnly);
+                      startAvCallWithParticipants(
+                          context, conversation, participants,
+                          audioOnly: audioOnly);
                     }
                   },
                   maxSelected: 9,
@@ -254,11 +263,17 @@ class ConversationController extends ChangeNotifier {
         model.message.content is VideoMessageContent) {
       // Windows/macOS/Linux 由 fvp 补上了应用内视频播放(见 main.dart 的注册调用)，
       // 走下面与图片一致的预览流程；鸿蒙电脑(isOhosPc)未覆盖，维持系统播放器降级
-      if (WfcPlatform.isOhosPc && model.message.content is VideoMessageContent) {
+      if (WfcPlatform.isOhosPc &&
+          model.message.content is VideoMessageContent) {
         final videoContent = model.message.content as VideoMessageContent;
-        final videoUrl = videoContent.localPath != null && videoContent.localPath!.isNotEmpty && File(videoContent.localPath!).existsSync()
+        final videoUrl = videoContent.localPath != null &&
+                videoContent.localPath!.isNotEmpty &&
+                File(videoContent.localPath!).existsSync()
             ? Uri.file(videoContent.localPath!)
-            : (videoContent.remoteUrl != null ? Uri.parse(MediaUrlRedirector.redirect(videoContent.remoteUrl!)) : null);
+            : (videoContent.remoteUrl != null
+                ? Uri.parse(
+                    MediaUrlRedirector.redirect(videoContent.remoteUrl!))
+                : null);
         if (videoUrl != null) {
           canLaunchUrl(videoUrl).then((canLaunch) {
             if (canLaunch) {
@@ -365,7 +380,8 @@ class ConversationController extends ChangeNotifier {
         startPlayVoiceMessage(model);
       }
     } else if (model.message.content is CallStartMessageContent) {
-      CallStartMessageContent callContent = model.message.content as CallStartMessageContent;
+      CallStartMessageContent callContent =
+          model.message.content as CallStartMessageContent;
       // if (model.message.conversation.conversationType == ConversationType.Single) {
       //   SingleVideoCallView callView = SingleVideoCallView(userId: conversation.target, audioOnly: callContent.audioOnly);
       //   Navigator.push(context, MaterialPageRoute(builder: (context) => callView));
@@ -410,7 +426,8 @@ class ConversationController extends ChangeNotifier {
     // 已有另一条语音在播放:必须先停掉，flutter_sound/audioplayers 在同一个
     // player 实例仍在播放时再 startPlayer/play 大概率静默失败，表现为"切不到
     // 下一条"；同时把上一条气泡的播放动画复位，否则它会一直卡在播放态。
-    if (_playingMessageId != 0 && _playingMessageId != model.message.messageId) {
+    if (_playingMessageId != 0 &&
+        _playingMessageId != model.message.messageId) {
       final previousMessageId = _playingMessageId;
       await _stopCurrentVoicePlayback();
       eventBus.fire(VoicePlayStatusChangedEvent(previousMessageId, false));
@@ -422,7 +439,8 @@ class ConversationController extends ChangeNotifier {
       _desktopSoundCompleteSubscription = player.onPlayerComplete.listen((_) {
         stopPlayVoiceMessage(model);
       });
-      await player.play(UrlSource(MediaUrlRedirector.redirect(soundContent.remoteUrl!)));
+      await player.play(
+          UrlSource(MediaUrlRedirector.redirect(soundContent.remoteUrl!)));
     } else {
       await _soundPlayer.openPlayer();
       await _soundPlayer.startPlayer(
@@ -453,7 +471,8 @@ class ConversationController extends ChangeNotifier {
   VoidCallback? _clearTextSelectionHighlight;
 
   /// 正文 cell 的 SelectionArea 选区变化时上报;选区收起/清空时传 null
-  void setTextSelection(String selectionKey, String? selectedText, {VoidCallback? clearHighlight}) {
+  void setTextSelection(String selectionKey, String? selectedText,
+      {VoidCallback? clearHighlight}) {
     if (selectedText == null || selectedText.isEmpty) {
       if (_textSelectionKey == selectionKey) {
         _textSelectionKey = null;
@@ -492,7 +511,9 @@ class ConversationController extends ChangeNotifier {
   /// 时才会到这里)按未处理继续冒泡。
   bool copySelectedTextIfAny(BuildContext context) {
     final selectedText = _textSelectionText;
-    if (_textSelectionKey == null || selectedText == null || selectedText.isEmpty) {
+    if (_textSelectionKey == null ||
+        selectedText == null ||
+        selectedText.isEmpty) {
       return false;
     }
     Clipboard.setData(ClipboardData(text: selectedText));
@@ -546,7 +567,8 @@ class ConversationController extends ChangeNotifier {
         if (userInfo != null) {
           final messageInputBarController =
               Provider.of<MessageInputBarController>(context, listen: false);
-          messageInputBarController.insertText("${MeshUserDisplay.getReadableName(userInfo)} ");
+          messageInputBarController
+              .insertText("${MeshUserDisplay.getReadableName(userInfo)} ");
           if (!messageInputBarController.focusNode.hasFocus) {
             messageInputBarController.focusNode.requestFocus();
           }
@@ -555,7 +577,8 @@ class ConversationController extends ChangeNotifier {
     }
   }
 
-  void onPortraitSecondaryTaped(BuildContext context, UIMessage model, Offset globalPosition) {
+  void onPortraitSecondaryTaped(
+      BuildContext context, UIMessage model, Offset globalPosition) {
     debugPrint("on portrait secondary taped");
     String userId = model.message.fromUser;
     var conversation = model.message.conversation;
@@ -566,13 +589,17 @@ class ConversationController extends ChangeNotifier {
           final messageInputBarController =
               Provider.of<MessageInputBarController>(context, listen: false);
 
-          final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox;
+          final overlayBox =
+              Overlay.of(context).context.findRenderObject() as RenderBox;
           final localAnchor = overlayBox.globalToLocal(globalPosition);
 
           showMenu<String>(
             context: context,
-            position: RelativeRect.fromRect(localAnchor & Size.zero, Offset.zero & overlayBox.size),
-            constraints: BoxConstraints(minWidth: LayoutScale.scale(context, 120, cap: LayoutScale.rowCap)),
+            position: RelativeRect.fromRect(
+                localAnchor & Size.zero, Offset.zero & overlayBox.size),
+            constraints: BoxConstraints(
+                minWidth:
+                    LayoutScale.scale(context, 120, cap: LayoutScale.rowCap)),
             items: [
               DesktopPopupMenuItem<String>(
                 value: 'mention',
@@ -581,9 +608,12 @@ class ConversationController extends ChangeNotifier {
                   children: [
                     Icon(
                       Icons.alternate_email,
-                      size: LayoutScale.scale(context, 16, cap: LayoutScale.iconCap),
+                      size: LayoutScale.scale(context, 16,
+                          cap: LayoutScale.iconCap),
                     ),
-                    SizedBox(width: LayoutScale.scale(context, 10, cap: LayoutScale.iconCap)),
+                    SizedBox(
+                        width: LayoutScale.scale(context, 10,
+                            cap: LayoutScale.iconCap)),
                     Text("@${MeshUserDisplay.getReadableName(userInfo)}"),
                   ],
                 ),
@@ -615,7 +645,9 @@ class ConversationController extends ChangeNotifier {
 
   /// 消息菜单项。partialSelection 为 true(用户在气泡里只选了一部分正文)时只保留
   /// "复制":其余操作都针对整条消息,此场景下无意义。
-  List<Map<String, dynamic>> buildMessageMenuItems(BuildContext context, UIMessage model, {bool partialSelection = false}) {
+  List<Map<String, dynamic>> buildMessageMenuItems(
+      BuildContext context, UIMessage model,
+      {bool partialSelection = false}) {
     if (partialSelection) {
       return [
         {
@@ -677,7 +709,8 @@ class ConversationController extends ChangeNotifier {
         model.message.direction == MessageDirection.MessageDirection_Send &&
         model.message.fromUser == Imclient.currentUserId) {
       final recallContent = model.message.content as RecallNotificationContent;
-      final hasOriginalText = recallContent.originalContentType == MESSAGE_CONTENT_TYPE_TEXT;
+      final hasOriginalText =
+          recallContent.originalContentType == MESSAGE_CONTENT_TYPE_TEXT;
       if (hasOriginalText) {
         menuItems.add({
           'label': AppLocalizations.of(context)!.reedit,
@@ -714,27 +747,46 @@ class ConversationController extends ChangeNotifier {
   }
 
   /// 供气泡内的选区菜单调用;selectedText 非空表示只针对选中的那部分正文
-  void handleMessageMenuAction(BuildContext context, String value, UIMessage model, {String? selectedText}) {
+  void handleMessageMenuAction(
+      BuildContext context, String value, UIMessage model,
+      {String? selectedText}) {
     final messageInputBarController =
         Provider.of<MessageInputBarController>(context, listen: false);
-    _handleMenuItemTap(context, value, model, messageInputBarController, selectedText: selectedText);
+    _handleMenuItemTap(context, value, model, messageInputBarController,
+        selectedText: selectedText);
   }
 
   void _showPopupMenu(BuildContext context, UIMessage model, Rect? bubbleRect) {
     final messageInputBarController =
         Provider.of<MessageInputBarController>(context, listen: false);
+    final bool previousHighlight = model.highlighted;
+    model.highlighted = true;
+    conversationViewModel.notifyListeners();
+
+    void clearHighlight() {
+      if (model.highlighted != previousHighlight) {
+        model.highlighted = previousHighlight;
+        conversationViewModel.notifyListeners();
+      }
+    }
+
     // 先快照本条消息的选区给"复制"用;若弹的是另一条消息的菜单,顺手清掉残留高亮
     final String selectionKey = selectionKeyOf(model.message);
-    final String? selectedText = _textSelectionKey == selectionKey ? _textSelectionText : null;
+    final String? selectedText =
+        _textSelectionKey == selectionKey ? _textSelectionText : null;
     if (_textSelectionKey != null && _textSelectionKey != selectionKey) {
       _clearTextSelectionHighlight?.call();
     }
-    final bool partialSelection = selectedText != null && selectedText.isNotEmpty;
-    final menuItems = buildMessageMenuItems(context, model, partialSelection: partialSelection);
+    final bool partialSelection =
+        selectedText != null && selectedText.isNotEmpty;
+    final menuItems = buildMessageMenuItems(context, model,
+        partialSelection: partialSelection);
 
     // 桌面端:标准垂直上下文菜单,锚定鼠标/气泡位置,showMenu 自动避让窗口边缘
     if (isDesktopShell) {
-      _showDesktopContextMenu(context, model, bubbleRect, menuItems, messageInputBarController, selectedText);
+      _showDesktopContextMenu(context, model, bubbleRect, menuItems,
+              messageInputBarController, selectedText)
+          .whenComplete(clearHighlight);
       return;
     }
 
@@ -751,29 +803,42 @@ class ConversationController extends ChangeNotifier {
       context: context,
       targetRect: targetRect,
       menuItems: menuItems,
+      onDismiss: clearHighlight,
       onItemTap: (value) {
-        _handleMenuItemTap(context, value, model, messageInputBarController, selectedText: selectedText);
+        _handleMenuItemTap(context, value, model, messageInputBarController,
+            selectedText: selectedText);
       },
     );
   }
 
-  void _showDesktopContextMenu(BuildContext context, UIMessage model, Rect? anchorRect, List<Map<String, dynamic>> menuItems,
-      MessageInputBarController messageInputBarController, String? selectedText) {
+  Future<void> _showDesktopContextMenu(
+      BuildContext context,
+      UIMessage model,
+      Rect? anchorRect,
+      List<Map<String, dynamic>> menuItems,
+      MessageInputBarController messageInputBarController,
+      String? selectedText) {
     // 会话页位于右栏嵌套 Navigator 中,showMenu 的 position 相对其 overlay 解析;
     // anchorRect 是窗口全局坐标,必须先换算,否则菜单会向右偏移一个侧栏+中栏的宽度。
-    final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox;
-    final globalAnchor = anchorRect?.center ?? overlayBox.localToGlobal(overlayBox.size.center(Offset.zero));
+    final overlayBox =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+    final globalAnchor = anchorRect?.center ??
+        overlayBox.localToGlobal(overlayBox.size.center(Offset.zero));
     final localAnchor = overlayBox.globalToLocal(globalAnchor);
 
     // Identify dangerous items and normal items, and put dangerous items at the end
-    final dangerousItems = menuItems.where((item) => item['value'] == 'delete').toList();
-    final normalItems = menuItems.where((item) => item['value'] != 'delete').toList();
+    final dangerousItems =
+        menuItems.where((item) => item['value'] == 'delete').toList();
+    final normalItems =
+        menuItems.where((item) => item['value'] != 'delete').toList();
     final sortedItems = [...normalItems, ...dangerousItems];
 
-    showMenu<String>(
+    return showMenu<String>(
       context: context,
-      position: RelativeRect.fromRect(localAnchor & Size.zero, Offset.zero & overlayBox.size),
-      constraints: BoxConstraints(minWidth: LayoutScale.scale(context, 140, cap: LayoutScale.rowCap)),
+      position: RelativeRect.fromRect(
+          localAnchor & Size.zero, Offset.zero & overlayBox.size),
+      constraints: BoxConstraints(
+          minWidth: LayoutScale.scale(context, 140, cap: LayoutScale.rowCap)),
       items: sortedItems
           .map((item) => DesktopPopupMenuItem<String>(
                 value: item['value'],
@@ -783,9 +848,12 @@ class ConversationController extends ChangeNotifier {
                   children: [
                     Icon(
                       item['icon'],
-                      size: LayoutScale.scale(context, 16, cap: LayoutScale.iconCap),
+                      size: LayoutScale.scale(context, 16,
+                          cap: LayoutScale.iconCap),
                     ),
-                    SizedBox(width: LayoutScale.scale(context, 10, cap: LayoutScale.iconCap)),
+                    SizedBox(
+                        width: LayoutScale.scale(context, 10,
+                            cap: LayoutScale.iconCap)),
                     Text(item['label']),
                   ],
                 ),
@@ -793,14 +861,15 @@ class ConversationController extends ChangeNotifier {
           .toList(),
     ).then((value) {
       if (value != null && context.mounted) {
-        _handleMenuItemTap(context, value, model, messageInputBarController, selectedText: selectedText);
+        _handleMenuItemTap(context, value, model, messageInputBarController,
+            selectedText: selectedText);
       }
     });
   }
 
-
   void _handleMenuItemTap(BuildContext context, String value, UIMessage model,
-      MessageInputBarController messageInputBarController, {String? selectedText}) async {
+      MessageInputBarController messageInputBarController,
+      {String? selectedText}) async {
     switch (value) {
       case "delete":
         _showDeleteOptions(context, model);
@@ -809,7 +878,9 @@ class ConversationController extends ChangeNotifier {
         {
           // 正文有部分选区时只复制选中的部分,否则复制整条消息
           final fullText = _copyableTextOf(model.message.content);
-          final textToCopy = (selectedText != null && selectedText.isNotEmpty) ? selectedText : fullText;
+          final textToCopy = (selectedText != null && selectedText.isNotEmpty)
+              ? selectedText
+              : fullText;
           if (textToCopy != null) {
             await Clipboard.setData(ClipboardData(text: textToCopy));
             showToast(msg: AppLocalizations.of(context)!.copy);
@@ -846,11 +917,9 @@ class ConversationController extends ChangeNotifier {
       case "favorite":
         var item = await FavoriteItem.fromMessage(model.message);
         AppServer.addFavoriteItem(item, () {
-          showToast(
-              msg: AppLocalizations.of(context)!.favoriteSuccess);
+          showToast(msg: AppLocalizations.of(context)!.favoriteSuccess);
         }, (msg) {
-          showToast(
-              msg: AppLocalizations.of(context)!.favoriteFail(msg));
+          showToast(msg: AppLocalizations.of(context)!.favoriteFail(msg));
         });
         break;
       case "report":
@@ -1002,14 +1071,14 @@ class ConversationController extends ChangeNotifier {
     try {
       // 获取音频文件的远程URL
       if (audioMessage.remoteUrl == null || audioMessage.remoteUrl!.isEmpty) {
-        showToast(
-            msg: AppLocalizations.of(context)!.audioFileNotAvailable);
+        showToast(msg: AppLocalizations.of(context)!.audioFileNotAvailable);
         audioMessage.speechToTextInProgress = false;
         eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
         return;
       }
 
-      await _makeAsrRequest(MediaUrlRedirector.redirect(audioMessage.remoteUrl!), (resultChunk) {
+      await _makeAsrRequest(
+          MediaUrlRedirector.redirect(audioMessage.remoteUrl!), (resultChunk) {
         // 回调函数：每接收到结果片段就更新
         audioMessage.speechText = (audioMessage.speechText ?? '') + resultChunk;
         eventBus.fire(VoiceSpeechToTextUpdatedEvent(model.message.messageId));
@@ -1020,11 +1089,9 @@ class ConversationController extends ChangeNotifier {
 
       if (audioMessage.speechText == null || audioMessage.speechText!.isEmpty) {
         audioMessage.speechText = AppLocalizations.of(context)!.convertFail;
-        showToast(
-            msg: AppLocalizations.of(context)!.speechToTextFail);
+        showToast(msg: AppLocalizations.of(context)!.speechToTextFail);
       } else {
-        showToast(
-            msg: AppLocalizations.of(context)!.speechToTextSuccess);
+        showToast(msg: AppLocalizations.of(context)!.speechToTextSuccess);
       }
     } catch (error) {
       debugPrint('语音转文字异常: $error');

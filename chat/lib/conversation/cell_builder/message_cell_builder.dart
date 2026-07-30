@@ -1,8 +1,4 @@
-import 'dart:async';
-
-import 'package:event_bus/event_bus.dart';
 import 'package:flutter/material.dart';
-import 'package:imclient/imclient.dart';
 
 import '../../utilities.dart';
 import '../message_cell.dart';
@@ -28,6 +24,7 @@ abstract class MessageCellBuilder {
 
   @protected
   setState(VoidCallback f) {
+    // ignore: invalid_use_of_protected_member
     state.setState(f);
   }
 
@@ -35,7 +32,6 @@ abstract class MessageCellBuilder {
     final basePadding = model.showTimeLabel ? 5.0 : 3.0;
     final verticalExtra = isDesktopShell ? 6.0 : 0.0;
     return Container(
-      color: model.highlighted ? context.colors.messageHighlight : null,
       padding: EdgeInsets.fromLTRB(
         basePadding,
         basePadding + verticalExtra,
