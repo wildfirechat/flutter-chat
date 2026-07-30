@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -12,6 +14,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:super_clipboard/super_clipboard.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/shortcuts/ambient_shortcuts.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -80,6 +83,7 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
   Map<ShortcutActivator, ShortcutHandler> get ambientShortcuts => {
         const SingleActivator(LogicalKeyboardKey.escape): _closeByShortcut,
         const SingleActivator(LogicalKeyboardKey.space): _spaceByShortcut,
+      const CmdOrCtrl(LogicalKeyboardKey.keyC): _copyCurrentImageByShortcut,
       };
 
   @override
@@ -99,6 +103,15 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
 
   bool _spaceByShortcut() {
     _handleSpaceKey();
+    return true;
+  }
+
+  bool _copyCurrentImageByShortcut() {
+    final message = widget.mediaItems[currentIndex];
+    if (message.content is! ImageMessageContent) {
+      return false;
+    }
+    unawaited(_copyCurrentImageToClipboard());
     return true;
   }
 
@@ -664,6 +677,147 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
     } catch (e) {
       showToast(msg: l10n.saveFail('$e'));
     }
+  }
+
+  Future<void> _copyCurrentImageToClipboard() async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final message = widget.mediaItems[currentIndex];
+      if (message.content is! ImageMessageContent) {
+        return;
+      }
+      final content = message.content as ImageMessageContent;
+      final Uint8List? bytes = await _readCurrentImageBytes(content);
+      if (!mounted || bytes == null || bytes.isEmpty) {
+        if (mounted) {
+          showToast(msg: l10n.copyFail);
+        }
+        return;
+      }
+
+      final clipboard = SystemClipboard.instance;
+      if (clipboard == null) {
+        showToast(msg: l10n.copyFail);
+        return;
+      }
+      final SimpleFileFormat? format = _detectImageFormat(
+        bytes,
+        fileNameHint: _imageNameHint(content),
+      );
+      if (format == null) {
+        showToast(msg: l10n.copyFail);
+        return;
+      }
+
+      final item = DataWriterItem();
+      item.add(format(bytes));
+      await clipboard.write([item]);
+      if (mounted) {
+        showToast(msg: l10n.copySuccess);
+      }
+    } catch (e) {
+      if (mounted) {
+        showToast(msg: l10n.copyFail);
+      }
+    }
+  }
+
+  Future<Uint8List?> _readCurrentImageBytes(ImageMessageContent content) async {
+    final sourcePath = content.localPath;
+    if (sourcePath != null && sourcePath.isNotEmpty) {
+      final file = File(sourcePath);
+      if (await file.exists()) {
+        return file.readAsBytes();
+      }
+    }
+    final remote = content.remoteUrl;
+    if (remote == null || remote.isEmpty) {
+      return null;
+    }
+    final url = MediaUrlRedirector.redirect(remote);
+    final client = HttpClient();
+    try {
+      final request = await client.getUrl(Uri.parse(url));
+      final response = await request.close();
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return null;
+      }
+      final bytes = await response.fold<List<int>>([], (prev, element) => prev..addAll(element));
+      return Uint8List.fromList(bytes);
+    } finally {
+      client.close(force: true);
+    }
+  }
+
+  String? _imageNameHint(ImageMessageContent content) {
+    final sourcePath = content.localPath;
+    if (sourcePath != null && sourcePath.isNotEmpty) {
+      return sourcePath;
+    }
+    final remote = content.remoteUrl;
+    if (remote == null || remote.isEmpty) {
+      return null;
+    }
+    final redirected = MediaUrlRedirector.redirect(remote);
+    final uri = Uri.tryParse(redirected);
+    if (uri == null || uri.pathSegments.isEmpty) {
+      return null;
+    }
+    return uri.pathSegments.last;
+  }
+
+  SimpleFileFormat? _detectImageFormat(Uint8List bytes, {String? fileNameHint}) {
+    final ext = fileNameHint == null ? '' : fileNameHint.toLowerCase();
+    if (ext.endsWith('.png')) return Formats.png;
+    if (ext.endsWith('.jpg') || ext.endsWith('.jpeg')) return Formats.jpeg;
+    if (ext.endsWith('.gif')) return Formats.gif;
+    if (ext.endsWith('.webp')) return Formats.webp;
+    if (ext.endsWith('.bmp')) return Formats.bmp;
+    if (ext.endsWith('.tif') || ext.endsWith('.tiff')) return Formats.tiff;
+
+    if (bytes.length >= 8 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47 &&
+        bytes[4] == 0x0D &&
+        bytes[5] == 0x0A &&
+        bytes[6] == 0x1A &&
+        bytes[7] == 0x0A) {
+      return Formats.png;
+    }
+    if (bytes.length >= 2 && bytes[0] == 0xFF && bytes[1] == 0xD8) {
+      return Formats.jpeg;
+    }
+    if (bytes.length >= 6 &&
+        bytes[0] == 0x47 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x38 &&
+        (bytes[4] == 0x37 || bytes[4] == 0x39) &&
+        bytes[5] == 0x61) {
+      return Formats.gif;
+    }
+    if (bytes.length >= 12 &&
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50) {
+      return Formats.webp;
+    }
+    if (bytes.length >= 2 && bytes[0] == 0x42 && bytes[1] == 0x4D) {
+      return Formats.bmp;
+    }
+    if (bytes.length >= 4 &&
+        ((bytes[0] == 0x49 && bytes[1] == 0x49 && bytes[2] == 0x2A && bytes[3] == 0x00) ||
+            (bytes[0] == 0x4D && bytes[1] == 0x4D && bytes[2] == 0x00 && bytes[3] == 0x2A))) {
+      return Formats.tiff;
+    }
+    return null;
   }
 }
 
