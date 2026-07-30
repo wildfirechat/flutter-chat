@@ -422,7 +422,7 @@ class ModelCodec {
 
 ### 7.1 子窗口侧：`CallWindowImclientChannel`
 
-文件：`chat/lib/pc/call_window/call_window_imclient_proxy.dart`
+文件：`chat/lib/pc/call_window/call_window_imclient_channel.dart`
 
 子窗口启动时**不执行** `Imclient.init`,只把 `ImclientPlatform.instance.channel` 替换为代理通道。
 三个连接 IM 的子窗口（通话/朋友圈/搜索）的 Channel 都基于公共层
@@ -822,7 +822,7 @@ if (isDesktopShell) {
 | `call_window_manager.dart` | 创建/管理通话窗（基于 SubWindowManagerBase，recreate 策略，类型尺寸表） |
 | `call_window_events.dart` | 通话窗事件名常量（`CallWindowEvents` voip.* / `MainWindowEvents` imclient.*） |
 | `main_avengine_kit_proxy.dart` | 主窗口代理：监听 IM、转发事件、代发消息、回传发送结果、路由 ready/closed |
-| `call_window_imclient_proxy.dart` | 子窗口 IM 代理（基于 ProxyImclientChannel，14 个方法） |
+| `call_window_imclient_channel.dart` | 子窗口 IM 代理（基于 ProxyImclientChannel，14 个方法） |
 | `voip_message_codec.dart` | 子窗口按 contentType 实例化 avenginekit 消息内容类 |
 | `raw_voip_message_content.dart` | 主窗口占位 VOIP 消息内容类 |
 | `model_codec.dart` | 用户/群成员信息编码(proto 形态,子窗口用 SDK 转换器解码) |

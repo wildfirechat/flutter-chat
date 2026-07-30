@@ -23,7 +23,7 @@ import '../multi_window/ipc_codec.dart';
 import '../multi_window/sub_window_app_base.dart';
 import '../multi_window/window_event_channel.dart';
 import 'call_window_events.dart';
-import 'call_window_imclient_proxy.dart';
+import 'call_window_imclient_channel.dart';
 import 'call_window_manager.dart';
 import 'voip_message_codec.dart';
 
