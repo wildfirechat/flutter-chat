@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/message/rich_notification_message_content.dart';
+import 'package:provider/provider.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -8,6 +9,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/wf_webview_window/wf_webview_window_manager.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
 
+import '../conversation_controller.dart';
 import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
 
@@ -17,12 +19,23 @@ import 'message_cell_builder.dart';
 /// 点击富通知时：移动端直接打开网页；桌面端用独立子窗口承载网页。
 class RichNotificationCellBuilder extends MessageCellBuilder {
   late RichNotificationMessageContent richNotificationContent;
+  ConversationController? conversationController;
+  final GlobalKey _cardKey = GlobalKey();
 
   RichNotificationCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
     richNotificationContent = model.message.content as RichNotificationMessageContent;
+    conversationController = Provider.of<ConversationController?>(context, listen: false);
   }
 
   static const double _maxWidth = 400;
+
+  Rect? get _cardRect {
+    final renderBox = _cardKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox == null) {
+      return null;
+    }
+    return renderBox.localToGlobal(Offset.zero) & renderBox.size;
+  }
 
   Color? _parseColor(String? hex) {
     if (hex == null || hex.isEmpty) {
@@ -44,16 +57,14 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
     }
 
     if (isDesktopShell) {
-      WFWebViewWindowManager.instance
-          .show(url: url, title: richNotificationContent.title);
+      WFWebViewWindowManager.instance.show(url: url, title: richNotificationContent.title);
       return;
     }
 
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) =>
-            WFWebViewScreen(url, title: richNotificationContent.title),
+        builder: (_) => WFWebViewScreen(url, title: richNotificationContent.title),
       ),
     );
   }
@@ -68,81 +79,96 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
         return Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: cardMaxWidth),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () => _onTap(context),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: context.colors.surface,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Text(
-                          content.title,
-                          style: AppText.base.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                      if (content.desc.isNotEmpty)
-                        Text(
-                          content.desc,
-                          style: AppText.base.copyWith(color: context.colors.textPrimary),
-                        ),
-                      if (content.datas != null && content.datas!.isNotEmpty)
+            child: GestureDetector(
+              onLongPressStart: isDesktopShell
+                  ? null
+                  : (details) {
+                      conversationController?.onLongPressedCell(context, model, _cardRect);
+                    },
+              onSecondaryTapUp: (details) {
+                conversationController?.onLongPressedCell(
+                  context,
+                  model,
+                  Rect.fromCenter(center: details.globalPosition, width: 4, height: 4),
+                );
+              },
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => _onTap(context),
+                  child: Container(
+                    key: _cardKey,
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: context.colors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
                         Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: content.datas!
-                                .map((data) => Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 1),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 100,
-                                            child: Text(
-                                              data.key,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppText.base.copyWith(color: context.colors.textPrimary),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Text(
-                                              data.value,
-                                              maxLines: 3,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppText.base.copyWith(
-                                                color: _parseColor(data.color) ?? context.colors.textPrimary,
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Text(
+                            content.title,
+                            style: AppText.base.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        if (content.desc.isNotEmpty)
+                          Text(
+                            content.desc,
+                            style: AppText.base.copyWith(color: context.colors.textPrimary),
+                          ),
+                        if (content.datas != null && content.datas!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: content.datas!
+                                  .map((data) => Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 1),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: 100,
+                                              child: Text(
+                                                data.key,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: AppText.base.copyWith(color: context.colors.textPrimary),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ))
-                                .toList(),
+                                            Expanded(
+                                              child: Text(
+                                                data.value,
+                                                maxLines: 3,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: AppText.base.copyWith(
+                                                  color: _parseColor(data.color) ?? context.colors.textPrimary,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
                           ),
-                        ),
-                      if (content.exName != null && content.exName!.isNotEmpty)
-                        Container(
-                          margin: const EdgeInsets.only(top: 4),
-                          padding: const EdgeInsets.only(top: 4),
-                          decoration: BoxDecoration(
-                            border: Border(top: BorderSide(color: context.colors.hairlineSoft)),
+                        if (content.exName != null && content.exName!.isNotEmpty)
+                          Container(
+                            margin: const EdgeInsets.only(top: 4),
+                            padding: const EdgeInsets.only(top: 4),
+                            decoration: BoxDecoration(
+                              border: Border(top: BorderSide(color: context.colors.hairlineSoft)),
+                            ),
+                            child: Text(
+                              content.exName!,
+                              style: AppText.base.copyWith(color: context.colors.textSecondary),
+                            ),
                           ),
-                          child: Text(
-                            content.exName!,
-                            style: AppText.base.copyWith(color: context.colors.textSecondary),
-                          ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
