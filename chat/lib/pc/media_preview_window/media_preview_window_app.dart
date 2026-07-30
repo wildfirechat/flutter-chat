@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
@@ -10,6 +12,7 @@ import '../multi_window/ipc_codec.dart';
 import '../multi_window/sub_window_app_base.dart';
 import '../multi_window/window_event_channel.dart';
 import 'media_preview_ipc.dart';
+import 'media_preview_window_size.dart';
 
 /// 媒体预览窗口的入口 Widget(参考微信:图片/视频在独立窗口中查看)。
 ///
@@ -38,11 +41,22 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
   int _defaultIndex = 0;
   Conversation? _conversation;
 
+  /// 期望的窗口尺寸;window_manager 未就绪时先记着,[applyWindowStyle] 后补上。
+  Size? _wantedWindowSize;
+  Timer? _resizeTimer;
+  bool _resizing = false;
+
   @override
   void initState() {
     super.initState();
     // 桌面端 showToast 依附 Navigator 的 Overlay(另存为的结果提示)。
     setToastNavigatorKey(_navigatorKey);
+  }
+
+  @override
+  void dispose() {
+    _resizeTimer?.cancel();
+    super.dispose();
   }
 
   // -------------------------------------------------------------- 基类钩子
@@ -104,6 +118,14 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
     super.onWindowClose();
   }
 
+  /// window_manager 就绪前提过的尺寸要求(如视频初始化很快,先于窗口初始化
+  /// 就报上来了)在这里补做。
+  @override
+  Future<void> applyWindowStyle() async {
+    await super.applyWindowStyle();
+    await _applyWantedWindowSize();
+  }
+
   @override
   Widget buildHome(BuildContext context) {
     return Scaffold(
@@ -116,6 +138,7 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
               defaultIndex: _defaultIndex,
               pageToEnd: _loadMore,
               onClose: requestClose,
+              onCurrentMediaChanged: _onCurrentMediaChanged,
             ),
     );
   }
@@ -150,7 +173,72 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
       // 换 key 强制重建 MMPreviewView,索引/缩放/旋转全部复位
       _previewKey = GlobalKey();
     });
+    // 复用已打开的窗口时,窗口也要跟着换成新媒体的形状(否则一直停在开窗
+    // 时那条媒体的大小上)。视频尺寸此时未知,等播放器初始化后再调。
+    _onCurrentMediaChanged(
+      _defaultIndex < _mediaItems.length ? _mediaItems[_defaultIndex] : null,
+      null,
+    );
     return null;
+  }
+
+  // ---------------------------------------------------------- 窗口自适应尺寸
+
+  /// 当前预览项变化:把窗口调成这条媒体的形状(尺寸策略见
+  /// [MediaPreviewWindowSize])。[naturalSize] 是播放器解析出的视频真实尺寸,
+  /// 为空则取消息自带的宽高(图片);都拿不到就维持当前窗口大小不动。
+  void _onCurrentMediaChanged(Message? message, Size? naturalSize) {
+    final Size? media = naturalSize ?? MediaPreviewWindowSize.mediaSize(message);
+    if (media == null) {
+      // 视频要等播放器初始化,期间别把窗口先弹成默认大小(会多跳一次)
+      _resizeTimer?.cancel();
+      _wantedWindowSize = null;
+      return;
+    }
+    _requestWindowSize(MediaPreviewWindowSize.forMedia(media));
+  }
+
+  /// 连续按方向键翻页时合并成一次 resize,窗口不至于跟着一页一页地抖。
+  void _requestWindowSize(Size size) {
+    _wantedWindowSize = size;
+    _resizeTimer?.cancel();
+    _resizeTimer =
+        Timer(const Duration(milliseconds: 120), _applyWantedWindowSize);
+  }
+
+  Future<void> _applyWantedWindowSize() async {
+    final Size? size = _wantedWindowSize;
+    if (size == null || !mounted) return;
+    // window_manager 未就绪时先留着,applyWindowStyle 里会补做
+    if (!windowManagerReady) return;
+    if (_resizing) {
+      // 上一次还没做完,稍后再试(避免 getBounds/setBounds 交叉打架)
+      _requestWindowSize(size);
+      return;
+    }
+    _resizing = true;
+    try {
+      // 用户自己最大化/全屏了就别再动窗口
+      if (await windowManager.isMaximized() ||
+          await windowManager.isFullScreen()) {
+        return;
+      }
+      final Rect bounds = await windowManager.getBounds();
+      if ((bounds.width - size.width).abs() < 2 &&
+          (bounds.height - size.height).abs() < 2) {
+        return;
+      }
+      // 以窗口中心为锚点缩放,视觉上不会整个窗口往右下角长
+      await windowManager.setBounds(Rect.fromCenter(
+        center: bounds.center,
+        width: size.width,
+        height: size.height,
+      ));
+    } catch (e) {
+      debugPrint('mediaPreview resize window failed: $e');
+    } finally {
+      _resizing = false;
+    }
   }
 
   /// ESC / Space / 关闭按钮 / Ctrl+W 共用的主动关窗路径:先暂停视频,

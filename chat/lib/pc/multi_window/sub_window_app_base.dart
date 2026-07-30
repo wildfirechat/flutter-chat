@@ -165,6 +165,10 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
   /// error 无法被 Dart try/catch 捕获)。
   bool _windowManagerInited = false;
 
+  /// 子类在调用任何 windowManager 方法前必须先看这个门闩(同上)。
+  @protected
+  bool get windowManagerReady => _windowManagerInited;
+
   bool _postFirstFrameInitDone = false;
 
   AmbientShortcutRegistration? _closeShortcut;

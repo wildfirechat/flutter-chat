@@ -1,8 +1,5 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
-import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/conversation.dart';
@@ -11,6 +8,7 @@ import '../multi_window/ipc_codec.dart';
 import '../multi_window/sub_window_manager_base.dart';
 import '../multi_window/window_event_channel.dart';
 import 'media_preview_ipc.dart';
+import 'media_preview_window_size.dart';
 
 /// 管理 PC 端独立的媒体预览窗口(参考微信:图片/视频在单独窗口中查看)。
 ///
@@ -27,7 +25,7 @@ class MediaPreviewWindowManager extends SubWindowManagerBase {
 
   /// 下一次创建窗口用的 payload / 首开尺寸(show 时算好,createAndShow 取用)。
   Map<String, dynamic>? _createShowPayload;
-  Size _nextInitialSize = const Size(960, 640);
+  Size _nextInitialSize = MediaPreviewWindowSize.fallback;
 
   /// 事件前缀是 'mediaPreview.'(与现网事件名一致)。
   @override
@@ -71,7 +69,13 @@ class MediaPreviewWindowManager extends SubWindowManagerBase {
       'defaultIndex': defaultIndex,
       'conversation': conversation != null ? IpcCodec.encodeConversation(conversation) : null,
     };
-    _nextInitialSize = _initialWindowSize(mediaItems, defaultIndex);
+    // 首开尺寸按目标媒体算;窗口已打开的情况由预览窗口自己在收到 show 后调整
+    // (它还要跟着翻页/视频真实尺寸继续调,统一放在那边)。
+    _nextInitialSize = MediaPreviewWindowSize.forMessage(
+      defaultIndex >= 0 && defaultIndex < mediaItems.length
+          ? mediaItems[defaultIndex]
+          : null,
+    );
 
     // 窗口可能已被系统关闭按钮销毁(Linux 收不到 windowClosed 事件),
     // 先校验存活,失效时 ensureWindowAlive 会清状态,下面直接走新建。
@@ -119,26 +123,5 @@ class MediaPreviewWindowManager extends SubWindowManagerBase {
       contentTypes: [MESSAGE_CONTENT_TYPE_IMAGE, MESSAGE_CONTENT_TYPE_VIDEO],
     );
     return MediaPreviewCodec.encodeMessages(messages);
-  }
-
-  /// 参考微信:首开时窗口大小随目标图片自适应,并限定在合理范围内。
-  Size _initialWindowSize(List<Message> mediaItems, int defaultIndex) {
-    const Size minSize = Size(720, 480);
-    const Size maxSize = Size(1280, 820);
-    double w = 0, h = 0;
-    if (defaultIndex >= 0 && defaultIndex < mediaItems.length) {
-      final content = mediaItems[defaultIndex].content;
-      if (content is ImageMessageContent) {
-        w = content.width.toDouble();
-        h = content.height.toDouble();
-      }
-    }
-    if (w <= 0 || h <= 0) return const Size(960, 640);
-    final double scale = math.min(maxSize.width / w, maxSize.height / h);
-    if (scale < 1) {
-      w *= scale;
-      h *= scale;
-    }
-    return Size(math.max(w, minSize.width), math.max(h, minSize.height));
   }
 }

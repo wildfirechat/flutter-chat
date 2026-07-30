@@ -36,6 +36,11 @@ class MMPreviewView extends StatefulWidget {
   final Rect? Function(Message message)? sourceRectProvider;
   // 桌面端关闭动作(独立预览窗口中是关窗);为空则退化为 Navigator.pop
   final VoidCallback? onClose;
+  // 当前预览项发生变化(翻页、或视频初始化后拿到真实尺寸)时回调。
+  // naturalSize 为已确切知道的媒体像素尺寸:视频消息里没有宽高,只有播放器
+  // 初始化完成后才知道,未知时为 null(调用方自行从消息里取)。
+  // PC 独立预览窗口用它把窗口调成当前媒体的形状。
+  final void Function(Message message, Size? naturalSize)? onCurrentMediaChanged;
 
   const MMPreviewView(this.mediaItems,
       {super.key,
@@ -44,7 +49,8 @@ class MMPreviewView extends StatefulWidget {
       this.direction = Axis.horizontal,
       this.decoration,
       this.sourceRectProvider,
-      this.onClose});
+      this.onClose,
+      this.onCurrentMediaChanged});
 
   @override
   State<MMPreviewView> createState() => MMPreviewViewState();
@@ -130,6 +136,21 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
   }
 
   int get _currentMessageId => widget.mediaItems[currentIndex].messageId;
+
+  // 已初始化的视频能给出真实像素尺寸(视频消息本身不带宽高);其它情况为 null
+  Size? _resolvedVideoSize(Message message) {
+    final controller = _videoControllers[message.messageId];
+    if (controller == null || !controller.value.isInitialized) return null;
+    final Size size = controller.value.size;
+    return size.isEmpty ? null : size;
+  }
+
+  void _notifyCurrentMediaChanged() {
+    final callback = widget.onCurrentMediaChanged;
+    if (callback == null) return;
+    final Message message = widget.mediaItems[currentIndex];
+    callback(message, _resolvedVideoSize(message));
+  }
 
   // 桌面端关闭:独立预览窗口里关窗,内嵌(对话框/整页路由)里出栈。
   // 关之前先暂停所有还挂着的视频，见 _videoControllers 的注释。
@@ -228,6 +249,8 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
       }
       widget.mediaItems.addAll(moreItems);
     });
+    // 往前插会让 currentIndex 落到另一条消息上,当前页的形状也就变了
+    _notifyCurrentMediaChanged();
   }
 
   @override
@@ -334,8 +357,14 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
                       onTap: () {
                         // Toggle controls or whatever if needed, or handle in player
                       },
-                      onControllerReady: (controller) =>
-                          _videoControllers[message.messageId] = controller,
+                      onControllerReady: (controller) {
+                        _videoControllers[message.messageId] = controller;
+                        // 视频消息里没有宽高,初始化完成才知道真实尺寸,
+                        // 上报给独立预览窗口据此调整窗口大小
+                        if (message.messageId == _currentMessageId) {
+                          _notifyCurrentMediaChanged();
+                        }
+                      },
                       onControllerDisposed: () =>
                           _videoControllers.remove(message.messageId),
                       // 图片的"另存为"在底部工具栏,视频没有那条工具栏,
@@ -384,6 +413,8 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
                         widget.pageToEnd!(message.messageId, true);
                       }
                     }
+                    // 翻到的这张形状变了,独立预览窗口要跟着调窗口大小
+                    _notifyCurrentMediaChanged();
                   }));
     if (isDesktopShell) {
       // 参考微信:滚轮向上放大、向下缩小当前图片
