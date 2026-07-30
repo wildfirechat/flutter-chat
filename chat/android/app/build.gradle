@@ -22,6 +22,20 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
 
+// 厂商推送的 appid/appkey 从 local.properties 读（该文件不入库），缺失时为空串。
+// 为空的厂商 PushService 会自行跳过注册，不影响构建和其他厂商。
+// 需要配置的键见 flutter-chat/PUSH_PLAN.md「凭据清单」。
+def pushProp = { String key -> localProperties.getProperty(key) ?: "" }
+
+// 华为、FCM 的 gradle 插件在缺少对应 json 时会让构建失败，所以按文件存在才 apply。
+// 对应的 classpath 声明在 android/build.gradle 里，也是同样的条件。
+if (file('agconnect-services.json').exists()) {
+    apply plugin: 'com.huawei.agconnect'
+}
+if (file('google-services.json').exists()) {
+    apply plugin: 'com.google.gms.google-services'
+}
+
 android {
     compileSdkVersion 36
     ndkVersion "26.1.10909125"
@@ -48,6 +62,18 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
+
+        // 厂商推送占位符，被 push 模块的 AndroidManifest 引用。
+        // 华为不在此列：它的 app_id 由 agconnect-services.json 提供。
+        manifestPlaceholders = [
+            XIAOMI_APP_ID  : pushProp('push.xiaomi.appId'),
+            XIAOMI_APP_KEY : pushProp('push.xiaomi.appKey'),
+            HONOR_APP_ID   : pushProp('push.honor.appId'),
+            VIVO_APP_ID    : pushProp('push.vivo.appId'),
+            VIVO_APP_KEY   : pushProp('push.vivo.appKey'),
+            OPPO_APP_KEY   : pushProp('push.oppo.appKey'),
+            OPPO_APP_SECRET: pushProp('push.oppo.appSecret'),
+        ]
     }
 
     buildTypes {
@@ -70,6 +96,11 @@ android {
         // 添加multidex支持
         implementation 'androidx.multidex:multidex:2.0.1'
         // wfc kit end
+
+        // 厂商离线推送（小米/华为/荣耀/vivo/OPPO/FCM）
+        implementation project(':push')
+        // 小米 SDK 只提供 aar，需要由 app 模块打进包（push 模块里是 compileOnly）
+        implementation fileTree(dir: "../push-aar-dep", include: ["*.aar"])
     }
     // 如果提示 libc++_shared.so 冲突，打开下面的注释
     packagingOptions {

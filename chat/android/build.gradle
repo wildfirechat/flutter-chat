@@ -1,9 +1,30 @@
+// 厂商推送用到的 gradle 插件。这两个插件缺少对应 json 时会让构建直接失败，
+// 所以只把它们放进 classpath，是否 apply 由 app/build.gradle 按 json 是否存在决定。
+// 这里不加载条件：华为仓库本来就是 :push 模块编译依赖(com.huawei.hms:push)的来源，
+// 多下一个插件 jar 不增加任何新的网络前置。
+// 荣耀不需要插件，其 app_id 走 manifest meta-data(HONOR_APP_ID 占位符)。
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://developer.huawei.com/repo/' }
+    }
+    dependencies {
+        classpath 'com.huawei.agconnect:agcp:1.9.1.301'
+        classpath 'com.google.gms:google-services:4.4.2'
+    }
+}
+
 allprojects {
     repositories {
         google()
         mavenCentral()
         maven { url 'https://jitpack.io' }
         maven { url 'https://dl.bintray.com/jenly/maven' }
+        // 华为 HMS Push + AGConnect
+        maven { url 'https://developer.huawei.com/repo/' }
+        // 荣耀 Push
+        maven { url 'https://developer.hihonor.com/repo/' }
     }
 }
 

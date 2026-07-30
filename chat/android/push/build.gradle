@@ -1,0 +1,41 @@
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'cn.wildfirechat.push'
+    compileSdkVersion 36
+
+    defaultConfig {
+        minSdkVersion 24
+        // 厂商 SDK 的混淆规则需要传递给 app 模块（app 开了 minifyEnabled），
+        // library 的 proguardFiles 不会传递，必须用 consumerProguardFiles。
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    // OPPO、vivo 的 SDK 只提供 jar
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    // 小米 SDK 是 aar，由 app 模块用 implementation 打进包，这里只需要编译期可见
+    compileOnly fileTree(dir: '../push-aar-dep', include: ['*.aar'])
+    // ChatManager / NotInitializedExecption 来自 IM client aar，app 模块已经打进包了，
+    // 这里必须 compileOnly，否则重复打包报 duplicate class
+    compileOnly fileTree(dir: '../../../imclient/android/android_client_aars', include: ['*.aar'])
+
+    // 华为
+    implementation 'com.huawei.hms:push:6.13.0.300'
+    // 荣耀
+    implementation 'com.hihonor.mcs:push:8.0.12.307'
+    // 谷歌 FCM
+    implementation platform('com.google.firebase:firebase-bom:33.2.0')
+    implementation 'com.google.firebase:firebase-messaging:24.0.1'
+    implementation 'com.google.android.gms:play-services-base:18.5.0'
+
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    // ProcessLifecycleOwner。用 lifecycle-process 而不是已废弃的 lifecycle-extensions
+    implementation 'androidx.lifecycle:lifecycle-process:2.8.7'
+}

@@ -11,3 +11,8 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# 厂商推送凭据，不要入库。小米/荣耀/vivo/OPPO 的 appid/appkey 走 local.properties(已忽略)。
+# 见 flutter-chat/PUSH_PLAN.md「凭据清单」
+app/agconnect-services.json
+app/google-services.json

@@ -23,3 +23,5 @@ plugins {
 }
 
 include ":app"
+// 厂商离线推送（小米/华为/荣耀/vivo/OPPO/FCM），见 flutter-chat/PUSH_PLAN.md
+include ":push"

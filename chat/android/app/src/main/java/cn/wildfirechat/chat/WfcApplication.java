@@ -8,6 +8,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.multidex.MultiDex;
 
+import cn.wildfirechat.push.PushService;
 import io.flutter.app.FlutterApplication;
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.embedding.engine.FlutterEngineCache;
@@ -41,6 +42,12 @@ public class WfcApplication extends FlutterApplication {
 
         // 预初始化 FlutterEngine 以提高启动性能
         initFlutterEngine();
+
+        // 厂商离线推送。必须放在 initFlutterEngine 之后:imclient 插件在引擎
+        // 注册插件时才调 ChatManager.init,而各厂商拿到 token 后要用
+        // ChatManager.Instance().setDeviceToken 上报,提前调会抛
+        // NotInitializedExecption。token 由 ChatManager 缓存,连接后自动上报。
+        PushService.init(this, getPackageName());
     }
 
     private void initFlutterEngine() {
