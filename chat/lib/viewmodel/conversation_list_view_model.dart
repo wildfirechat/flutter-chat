@@ -97,25 +97,21 @@ class ConversationListViewModel extends ChangeNotifier {
       _loadConversationList();
     });
     _sendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
-      debugPrint('jyj to _loadConversationList 10');
       if (event.message.messageId != 0) {
         _reloadConversation(event.message.conversation, insertWhenNotFound: true);
       }
     });
     _sendMessageSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
-      debugPrint('jyj to _loadConversationList 11');
       if (event.message.messageId != 0) {
         _reloadConversation(event.message.conversation, insertWhenNotFound: true);
       }
     });
     _sendMessageFailureSubscription = _eventBus.on<SendMessageFailureEvent>().listen((event) {
-      debugPrint('jyj to _loadConversationList 12');
       if (event.message.messageId != 0) {
         _reloadConversation(event.message.conversation, insertWhenNotFound: true);
       }
     });
     _clearMessagesSubscription = _eventBus.on<ClearMessagesEvent>().listen((event) {
-      debugPrint('jyj to _loadConversationList 13');
       _reloadConversation(event.conversation);
     });
     _draftUpdatedSubscription = _eventBus.on<ConversationDraftUpdatedEvent>().listen((event) {

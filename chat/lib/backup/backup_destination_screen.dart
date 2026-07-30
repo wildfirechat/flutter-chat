@@ -37,7 +37,7 @@ class _BackupDestinationScreenState extends State<BackupDestinationScreen> {
   Future<void> _checkPCOnline() async {
     try {
       final infos = await Imclient.getPCOnlineInfos();
-      debugPrint('jyj _checkPCOnline $infos');
+      debugPrint('_checkPCOnline $infos');
       if (mounted) {
         setState(() {
           _pcOnlineInfos = infos;

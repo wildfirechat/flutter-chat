@@ -75,7 +75,6 @@ class ContactListViewModel extends ChangeNotifier {
       });
     });
 
-    debugPrint('jyj viewmodel');
     _loadContactList(false);
 
     // 构造时如果已经连接，直接刷新一次，避免错过连接成功事件。
