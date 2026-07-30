@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:file_picker/file_picker.dart';
@@ -8,10 +7,7 @@ import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:super_clipboard/super_clipboard.dart';
 import 'package:chat/collection/create_collection_screen.dart';
 import 'package:chat/collection/collection_icon.dart';
 import 'package:chat/config.dart';
@@ -22,6 +18,7 @@ import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
 import 'package:chat/call/av_call_launcher.dart';
 import 'package:chat/pc/pc_layout_view_model.dart';
+import 'package:chat/pc/pc_clipboard_paste_handler.dart';
 import 'package:chat/pc/pc_mention_popup.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
@@ -52,6 +49,7 @@ class PcMessageInputBar extends StatefulWidget {
 
 class _PcMessageInputBarState extends State<PcMessageInputBar> {
   final GlobalKey _emojiButtonKey = GlobalKey();
+  final PcClipboardPasteHandler _clipboardPasteHandler = const PcClipboardPasteHandler();
 
   /// @ 浮层靠它反查 '@' 的光标位置,把浮层贴到 '@' 上方
   final GlobalKey _textFieldKey = GlobalKey();
@@ -140,92 +138,10 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     return KeyEventResult.handled;
   }
 
-  /// 粘贴,按优先级处理(微信 PC 交互):
-  /// 1. 剪贴板是文件路径(Finder/资源管理器里复制的文件):图片文件直接内联显示,
-  ///    其他文件内联显示为文件卡片;
-  /// 2. 图片数据(截图等):写入临时文件后内联插入;
-  /// 3. 其余插入剪贴板纯文本。
-  Future<void> _handlePaste(MessageInputBarController controller) async {
-    try {
-      final clipboard = SystemClipboard.instance;
-      final reader = clipboard == null ? null : await clipboard.read();
-      // 文件路径优先于图片数据:复制的图片文件也带合成的图片数据格式,
-      // 走文件路径可直接用原文件,免去重新编码/落临时文件
-      if (reader != null && await _tryPasteFiles(reader, controller)) {
-        return;
-      }
-      final format = reader == null ? null : _findAvailableImageFormat(reader);
-      if (reader == null || format == null) {
-        final data = await Clipboard.getData(Clipboard.kTextPlain);
-        final text = data?.text;
-        if (text != null && text.isNotEmpty) {
-          controller.insertText(text);
-        }
-        return;
-      }
-      // super_clipboard 的 getFile 使用回调模式
-      reader.getFile(format, (file) async {
-        try {
-          final bytes = await file.readAll();
-          if (!mounted || bytes.isEmpty) {
-            return;
-          }
-          final ext = format == Formats.png ? 'png' : (format == Formats.gif ? 'gif' : 'jpg');
-          final tempDir = await getTemporaryDirectory();
-          final path = '${tempDir.path}/paste_${DateTime.now().millisecondsSinceEpoch}.$ext';
-          await File(path).writeAsBytes(bytes);
-          if (!mounted) return;
-          controller.insertInlineImage(path);
-        } catch (e) {
-          debugPrint('paste image read failed: $e');
-        }
-      });
-    } catch (e) {
-      debugPrint('paste image failed: $e');
-    }
+  /// 粘贴逻辑下沉到 [PcClipboardPasteHandler],输入栏只负责按键路由。
+  Future<void> _handlePaste(MessageInputBarController controller) {
+    return _clipboardPasteHandler.handlePaste(controller, isMounted: () => mounted);
   }
-
-  SimpleFileFormat? _findAvailableImageFormat(ClipboardReader reader) {
-    if (reader.canProvide(Formats.png)) return Formats.png;
-    if (reader.canProvide(Formats.jpeg)) return Formats.jpeg;
-    if (reader.canProvide(Formats.gif)) return Formats.gif;
-    return null;
-  }
-
-  /// 剪贴板携带文件路径时按条目顺序逐个内联插入,返回是否插入了内容。
-  /// 图片文件内联显示原图,其他文件显示为文件卡片;
-  /// 文件夹和已失效的路径跳过(与微信 PC 一致,不支持粘贴文件夹)。
-  Future<bool> _tryPasteFiles(ClipboardReader reader, MessageInputBarController controller) async {
-    if (!reader.canProvide(Formats.fileUri)) {
-      return false;
-    }
-    // 先按剪贴板条目顺序读全所有路径,再统一插入,保证多选文件的粘贴顺序稳定
-    final List<String> paths = [];
-    for (final item in reader.items) {
-      if (!item.canProvide(Formats.fileUri)) continue;
-      final uri = await item.readValue(Formats.fileUri);
-      if (uri != null) paths.add(uri.toFilePath());
-    }
-    bool inserted = false;
-    for (final path in paths) {
-      final file = File(path);
-      // File.exists 对文件夹返回 false,顺带滤掉文件夹
-      if (!await file.exists()) continue;
-      final int size = await file.length();
-      if (!mounted) break;
-      if (_isImageFile(path)) {
-        controller.insertInlineImage(path);
-      } else {
-        controller.insertInlineFile(path, p.basename(path), size);
-      }
-      inserted = true;
-    }
-    return inserted;
-  }
-
-  static const Set<String> _inlineImageExtensions = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'};
-
-  bool _isImageFile(String path) => _inlineImageExtensions.contains(p.extension(path).toLowerCase());
 
   void _showEmojiPopover(MessageInputBarController controller) {
     final renderBox = _emojiButtonKey.currentContext?.findRenderObject() as RenderBox?;
@@ -676,3 +592,4 @@ class _QuoteChip extends StatelessWidget {
     );
   }
 }
+
