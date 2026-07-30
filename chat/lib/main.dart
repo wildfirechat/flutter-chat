@@ -105,7 +105,9 @@ void main([List<String>? args]) async {
     SubWindowWidgetsBinding.ensureInitialized();
     _registerDesktopVideoBackend();
     final windowId = int.parse(effectiveArgs[1]);
-    final arguments = effectiveArgs.length > 2 ? jsonDecode(effectiveArgs[2]) as Map<String, dynamic> : <String, dynamic>{};
+    final arguments = effectiveArgs.length > 2
+        ? jsonDecode(effectiveArgs[2]) as Map<String, dynamic>
+        : <String, dynamic>{};
     final kind = arguments[kWindowKindKey];
     if (kind == kMediaPreviewWindowKind) {
       runApp(MediaPreviewWindowApp(windowId: windowId, arguments: arguments));
@@ -156,7 +158,8 @@ void main([List<String>? args]) async {
       return files.map((f) => MomentPickedMedia(f.path)).toList();
     });
   }
-  final PcLayoutViewModel? pcLayoutViewModel = isDesktopShell ? PcLayoutViewModel() : null;
+  final PcLayoutViewModel? pcLayoutViewModel =
+      isDesktopShell ? PcLayoutViewModel() : null;
   if (isDesktopShell) {
     // window_manager 仅原生桌面(Windows/macOS/Linux)可用,鸿蒙电脑跳过
     if (WfcPlatform.isNativeDesktop) {
@@ -172,21 +175,31 @@ void main([List<String>? args]) async {
     providers: [
       ChangeNotifierProvider<UserViewModel>(create: (_) => UserViewModel()),
       ChangeNotifierProvider<GroupViewModel>(create: (_) => GroupViewModel()),
-      ChangeNotifierProvider<ChannelViewModel>(create: (_) => ChannelViewModel()),
-      ChangeNotifierProvider<ConversationViewModel>(create: (_) => ConversationViewModel()),
-      ChangeNotifierProvider<ConversationListViewModel>(create: (_) => ConversationListViewModel()),
-      ChangeNotifierProvider<ContactListViewModel>(create: (_) => ContactListViewModel()),
+      ChangeNotifierProvider<ChannelViewModel>(
+          create: (_) => ChannelViewModel()),
+      ChangeNotifierProvider<ConversationViewModel>(
+          create: (_) => ConversationViewModel()),
+      ChangeNotifierProvider<ConversationListViewModel>(
+          create: (_) => ConversationListViewModel()),
+      ChangeNotifierProvider<ContactListViewModel>(
+          create: (_) => ContactListViewModel()),
       ChangeNotifierProvider<LocaleViewModel>(create: (_) => LocaleViewModel()),
-      ChangeNotifierProvider<FontSizeViewModel>(create: (_) => FontSizeViewModel()),
+      ChangeNotifierProvider<FontSizeViewModel>(
+          create: (_) => FontSizeViewModel()),
       // 工作台页签与其 WebView controller。必须是应用级:右栏每次切 tab 都重建
       // 工作台那条路由,状态放在页面里会整页重新加载。
-      ChangeNotifierProvider<WorkspaceTabsViewModel>(create: (_) => WorkspaceTabsViewModel()),
+      ChangeNotifierProvider<WorkspaceTabsViewModel>(
+          create: (_) => WorkspaceTabsViewModel()),
       // 已在 main 中 load 完毕,用 .value 交给 Provider(应用级生命周期,不随登出销毁)
       ChangeNotifierProvider<ThemeViewModel>.value(value: themeViewModel),
       // 桌面 Shell 的导航状态。仅桌面注册:共享代码经 app_navigator.dart 查找,
       // 移动端取不到即走整页 push 路径。
-      if (isDesktopShell) ChangeNotifierProvider<PCShellViewModel>(create: (_) => PCShellViewModel()),
-      if (isDesktopShell) ChangeNotifierProvider<PcLayoutViewModel>.value(value: pcLayoutViewModel!),
+      if (isDesktopShell)
+        ChangeNotifierProvider<PCShellViewModel>(
+            create: (_) => PCShellViewModel()),
+      if (isDesktopShell)
+        ChangeNotifierProvider<PcLayoutViewModel>.value(
+            value: pcLayoutViewModel!),
     ],
     child: const MyApp(),
   ));
@@ -248,7 +261,8 @@ class _MyAppState extends State<MyApp> {
     SystemChannels.lifecycle.setMessageHandler((message) async {
       final state = parseStateFromString(message!);
       WidgetsBinding.instance.handleAppLifecycleStateChanged(state);
-      if (state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
+      if (state == AppLifecycleState.inactive ||
+          state == AppLifecycleState.paused) {
         _isBackground = true;
         debugPrint("goto background");
         updateAppBadge();
@@ -303,7 +317,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _initIMClient() async {
-
     Imclient.setDefaultPortraitProvider(WFPortraitProvider.instance);
 
     await Imclient.init((int status) {
@@ -376,7 +389,8 @@ class _MyAppState extends State<MyApp> {
       if (kDebugMode) {
         print('delete message $messageUid');
       }
-    }, onConnectedCallback: (String host, String ip, int port, bool mainNetwork) {
+    }, onConnectedCallback:
+        (String host, String ip, int port, bool mainNetwork) {
       MediaUrlRedirector.setConnectedToMainNetwork(mainNetwork);
     }, messageDeliveriedCallback: (Map<String, int> deliveryMap) {
       if (kDebugMode) {
@@ -445,13 +459,15 @@ class _MyAppState extends State<MyApp> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await OrganizationCache.instance.initialize();
     _currentUserId = prefs.getString("userId");
-    final hasCredentials = _currentUserId != null && prefs.getString("token") != null;
+    final hasCredentials =
+        _currentUserId != null && prefs.getString("token") != null;
     if (isDesktopShell) {
       // 桌面端先判断登录状态：未登录直接以登录页小窗显示，已登录才恢复上次窗口尺寸/位置
       await PCWindowManager().setupWindow(isLogined: hasCredentials);
     }
     if (hasCredentials) {
-      Imclient.connect(Config.IM_Host, _currentUserId!, prefs.getString("token")!);
+      Imclient.connect(
+          Config.IM_Host, _currentUserId!, prefs.getString("token")!);
       Future.delayed(const Duration(seconds: 1), () {
         setState(() {
           isLogined = true;
@@ -523,7 +539,8 @@ class _MyAppState extends State<MyApp> {
   /// 刷新未读角标。事件风暴期间(如初次同步)只在静默 300ms 后真正拉取一次。
   void updateAppBadge() {
     _badgeRefreshTimer?.cancel();
-    _badgeRefreshTimer = Timer(const Duration(milliseconds: 300), _refreshAppBadge);
+    _badgeRefreshTimer =
+        Timer(const Duration(milliseconds: 300), _refreshAppBadge);
   }
 
   void _refreshAppBadge() {
@@ -531,7 +548,13 @@ class _MyAppState extends State<MyApp> {
       if (!isLogined) {
         return;
       }
-      Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]).then((value) {
+      Imclient.getConversationInfos([
+        ConversationType.Single,
+        ConversationType.Group,
+        ConversationType.Channel
+      ], [
+        0
+      ]).then((value) {
         int unreadCount = 0;
         for (var element in value) {
           if (!element.isSilent) {
@@ -563,7 +586,8 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Consumer3<LocaleViewModel, FontSizeViewModel, ThemeViewModel>(
-      builder: (context, localeViewModel, fontSizeViewModel, themeViewModel, _) {
+      builder:
+          (context, localeViewModel, fontSizeViewModel, themeViewModel, _) {
         return MaterialApp(
           locale: localeViewModel.locale,
           builder: (context, child) {
@@ -572,7 +596,8 @@ class _MyAppState extends State<MyApp> {
             // 现有布局撑不住;若要恢复跟随系统,需要先把固定高度全部改成约束。
             Widget content = MediaQuery(
               data: MediaQuery.of(context).copyWith(
-                textScaler: TextScaler.linear(fontSizeViewModel.textScaleFactor),
+                textScaler:
+                    TextScaler.linear(fontSizeViewModel.textScaleFactor),
               ),
               child: child!,
             );
@@ -580,7 +605,8 @@ class _MyAppState extends State<MyApp> {
               // 这里的 context 位于 MaterialApp 的 Theme 之下,themeMode 为
               // ThemeMode.system 时也能拿到系统解析后的明暗。
               content = AnnotatedRegion<SystemUiOverlayStyle>(
-                value: AppTheme.systemOverlayStyle(Theme.of(context).brightness),
+                value:
+                    AppTheme.systemOverlayStyle(Theme.of(context).brightness),
                 child: content,
               );
             }
@@ -643,6 +669,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+
 class MainAVEngineCallback implements AVEngineCallback {
   final GlobalKey<NavigatorState> navKey;
 
@@ -668,7 +695,9 @@ class MainAVEngineCallback implements AVEngineCallback {
       return;
     }
     Navigator.of(navKey.currentContext!).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => ConferenceCallScreen(session: session), settings: const RouteSettings(name: "conferenceCall")),
+      MaterialPageRoute(
+          builder: (context) => ConferenceCallScreen(session: session),
+          settings: const RouteSettings(name: "conferenceCall")),
       (Route<dynamic> route) => route.settings.name != 'conferenceCall',
     );
   }
@@ -681,18 +710,25 @@ class MainAVEngineCallback implements AVEngineCallback {
 
     if (session.conference) {
       Navigator.of(navKey.currentContext!).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => ConferenceCallScreen(session: session), settings: const RouteSettings(name: "conferenceCall")),
+        MaterialPageRoute(
+            builder: (context) => ConferenceCallScreen(session: session),
+            settings: const RouteSettings(name: "conferenceCall")),
         (Route<dynamic> route) => route.settings.name != 'conferenceCall',
       );
-    } else if (session.conversation != null && session.conversation!.conversationType == ConversationType.Group) {
+    } else if (session.conversation != null &&
+        session.conversation!.conversationType == ConversationType.Group) {
       Navigator.of(navKey.currentContext!).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => MultiCallScreen(session: session), settings: const RouteSettings(name: "multiCall")),
+        MaterialPageRoute(
+            builder: (context) => MultiCallScreen(session: session),
+            settings: const RouteSettings(name: "multiCall")),
         (Route<dynamic> route) => route.settings.name != 'multiCall',
       );
     } else {
       VoipCallScreen callView = VoipCallScreen(session: session);
       navKey.currentState!.pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => callView, settings: const RouteSettings(name: "singleCall")),
+          MaterialPageRoute(
+              builder: (context) => callView,
+              settings: const RouteSettings(name: "singleCall")),
           (Route<dynamic> route) => route.settings.name != 'singleCall');
     }
   }
@@ -724,4 +760,3 @@ class MainAVEngineCallback implements AVEngineCallback {
     debugPrint('shouldStopRing');
   }
 }
-

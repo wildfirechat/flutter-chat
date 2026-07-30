@@ -31,20 +31,25 @@ class PollDetailScreen extends StatefulWidget {
   final int? pollId;
   final bool asDialog;
 
-  const PollDetailScreen({super.key, this.message, this.pollId, this.asDialog = false})
-      : assert(message != null || pollId != null, 'message or pollId must be provided');
+  const PollDetailScreen(
+      {super.key, this.message, this.pollId, this.asDialog = false})
+      : assert(message != null || pollId != null,
+            'message or pollId must be provided');
 
   /// 从消息进入(投票模式)
   static Future<void> showFromMessage(BuildContext context, Message message) {
-    return _show(context, (asDialog) => PollDetailScreen(message: message, asDialog: asDialog));
+    return _show(context,
+        (asDialog) => PollDetailScreen(message: message, asDialog: asDialog));
   }
 
   /// 从列表进入(创建者为管理模式)
   static Future<void> showFromList(BuildContext context, int pollId) {
-    return _show(context, (asDialog) => PollDetailScreen(pollId: pollId, asDialog: asDialog));
+    return _show(context,
+        (asDialog) => PollDetailScreen(pollId: pollId, asDialog: asDialog));
   }
 
-  static Future<void> _show(BuildContext context, PollDetailScreen Function(bool asDialog) create) {
+  static Future<void> _show(
+      BuildContext context, PollDetailScreen Function(bool asDialog) create) {
     if (isDesktopShell) {
       return showPcDialog(
         context: context,
@@ -53,7 +58,8 @@ class PollDetailScreen extends StatefulWidget {
         builder: (_) => create(true),
       );
     }
-    return Navigator.push(context, MaterialPageRoute(builder: (_) => create(false)));
+    return Navigator.push(
+        context, MaterialPageRoute(builder: (_) => create(false)));
   }
 
   @override
@@ -124,7 +130,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
   /// 服务端状态比消息里的快照新时,回写本地消息,气泡上的票数/状态才不会一直是旧的。
   void _updateLocalMessageIfNeeded() {
-    if (widget.message == null || widget.message!.content is! PollMessageContent) {
+    if (widget.message == null ||
+        widget.message!.content is! PollMessageContent) {
       return;
     }
 
@@ -154,7 +161,10 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
   /// 多选投票时在标题旁提示已选数量
   String? get _selectionHint {
-    if (poll != null && _canVote && poll!.isMultiChoice && selectedOptionIds.isNotEmpty) {
+    if (poll != null &&
+        _canVote &&
+        poll!.isMultiChoice &&
+        selectedOptionIds.isNotEmpty) {
       return _l10n.pollSelectedCount(selectedOptionIds.length, poll!.maxSelect);
     }
     return null;
@@ -198,8 +208,10 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         if (selectedOptionIds.contains(optionId)) {
           selectedOptionIds.remove(optionId);
         } else {
-          if (poll!.maxSelect > 0 && selectedOptionIds.length >= poll!.maxSelect) {
-            Fluttertoast.showToast(msg: _l10n.pollMaxSelectLimit(poll!.maxSelect));
+          if (poll!.maxSelect > 0 &&
+              selectedOptionIds.length >= poll!.maxSelect) {
+            Fluttertoast.showToast(
+                msg: _l10n.pollMaxSelectLimit(poll!.maxSelect));
             return;
           }
           selectedOptionIds.add(optionId);
@@ -208,7 +220,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
     });
   }
 
-  Future<bool> _confirm({required String message, required String confirmLabel}) async {
+  Future<bool> _confirm(
+      {required String message, required String confirmLabel}) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -221,7 +234,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(confirmLabel, style: TextStyle(color: dialogContext.colors.danger)),
+            child: Text(confirmLabel,
+                style: TextStyle(color: dialogContext.colors.danger)),
           ),
         ],
       ),
@@ -230,7 +244,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
   }
 
   Future<void> _closePoll() async {
-    if (!await _confirm(message: _l10n.pollCloseConfirm, confirmLabel: _l10n.close)) return;
+    if (!await _confirm(
+        message: _l10n.pollCloseConfirm, confirmLabel: _l10n.close)) return;
 
     try {
       await PollService.close(pollId);
@@ -244,7 +259,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
   }
 
   Future<void> _deletePoll() async {
-    if (!await _confirm(message: _l10n.pollDeleteConfirm, confirmLabel: _l10n.delete)) return;
+    if (!await _confirm(
+        message: _l10n.pollDeleteConfirm, confirmLabel: _l10n.delete)) return;
 
     try {
       await PollService.delete(pollId);
@@ -269,14 +285,19 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
       final buffer = StringBuffer();
       buffer.write('﻿'); // UTF-8 BOM,Excel 打开才不乱码
-      buffer.write('${_l10n.pollCsvOption},${_l10n.pollCsvUser},${_l10n.pollCsvTime}\n');
+      buffer.write(
+          '${_l10n.pollCsvOption},${_l10n.pollCsvUser},${_l10n.pollCsvTime}\n');
 
       for (final detail in details) {
-        final timeStr = DateTime.fromMillisecondsSinceEpoch(detail.voteTime).toString().substring(0, 19);
-        buffer.write('${_escapeCsv(detail.optionText)},${_escapeCsv(detail.userName)},$timeStr\n');
+        final timeStr = DateTime.fromMillisecondsSinceEpoch(detail.voteTime)
+            .toString()
+            .substring(0, 19);
+        buffer.write(
+            '${_escapeCsv(detail.optionText)},${_escapeCsv(detail.userName)},$timeStr\n');
       }
 
-      final fileName = '${_safeFileName(poll!.title)}_${_l10n.pollDetailsSuffix}.csv';
+      final fileName =
+          '${_safeFileName(poll!.title)}_${_l10n.pollDetailsSuffix}.csv';
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/$fileName');
       await file.writeAsString(buffer.toString(), encoding: const Utf8Codec());
@@ -365,7 +386,10 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _footerTextButton(icon: Icons.share_outlined, label: _l10n.forward, onPressed: _forwardPoll),
+        _footerTextButton(
+            icon: Icons.share_outlined,
+            label: _l10n.forward,
+            onPressed: _forwardPoll),
         if (_canExport)
           _footerTextButton(
             icon: Icons.file_download_outlined,
@@ -420,7 +444,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
   PcDialogAction? _buildSecondaryAction() {
     if (poll == null || !_canVote) return null;
-    return PcDialogAction(label: _l10n.cancel, onPressed: () => Navigator.pop(context));
+    return PcDialogAction(
+        label: _l10n.cancel, onPressed: () => Navigator.pop(context));
   }
 
   /// 移动端底部操作栏。管理模式实名投票时,导出与主操作并排。
@@ -453,7 +478,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                 child: FilledButton(
                   onPressed: primary.onPressed,
                   style: primary.danger
-                      ? FilledButton.styleFrom(backgroundColor: colors.danger).merge(AppTheme.largeButtonStyle())
+                      ? FilledButton.styleFrom(backgroundColor: colors.danger)
+                          .merge(AppTheme.largeButtonStyle())
                       : AppTheme.largeButtonStyle(),
                   child: Text(primary.label),
                 ),
@@ -497,7 +523,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         children: [
           Text(
             poll!.title,
-            style: AppText.xl.copyWith(fontWeight: FontWeight.w600, color: colors.textPrimary),
+            style: AppText.xl.copyWith(
+                fontWeight: FontWeight.w600, color: colors.textPrimary),
           ),
           if (poll!.desc.isNotEmpty) ...[
             const SizedBox(height: 6),
@@ -513,7 +540,9 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                 future: Imclient.getUserInfo(poll!.creatorId),
                 builder: (context, snapshot) {
                   final creatorInfo = snapshot.data;
-                  final creatorName = creatorInfo?.displayName ?? creatorInfo?.name ?? poll!.creatorId;
+                  final creatorName = creatorInfo?.displayName ??
+                      creatorInfo?.name ??
+                      poll!.creatorId;
                   return Expanded(
                     child: Row(
                       children: [
@@ -528,7 +557,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                         Flexible(
                           child: Text(
                             _l10n.pollCreatorFormat(creatorName),
-                            style: AppText.xs.copyWith(color: colors.textSecondary),
+                            style: AppText.xs
+                                .copyWith(color: colors.textSecondary),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -570,7 +600,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
+      decoration:
+          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
       child: Text(label, style: AppText.xxs.copyWith(color: fg)),
     );
   }
@@ -597,7 +628,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
   Widget _buildOptionRow(PollOption option) {
     final colors = context.colors;
     final isSelected = selectedOptionIds.contains(option.optionId);
-    final isMyVote = !_isManagerMode && poll!.myOptionIds.contains(option.optionId);
+    final isMyVote =
+        !_isManagerMode && poll!.myOptionIds.contains(option.optionId);
     final showResult = poll!.shouldShowResult;
 
     // 未出结果时靠勾选框表达选中;出结果后靠票数条,行底色再上色就太花了。
@@ -624,8 +656,11 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                   child: Text(
                     option.optionText,
                     style: AppText.base.copyWith(
-                      color: isMyVote || isSelected ? colors.accent : colors.textPrimary,
-                      fontWeight: isMyVote ? FontWeight.w500 : FontWeight.normal,
+                      color: isMyVote || isSelected
+                          ? colors.accent
+                          : colors.textPrimary,
+                      fontWeight:
+                          isMyVote ? FontWeight.w500 : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -633,7 +668,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                   const SizedBox(width: 12),
                   Text(
                     '${option.voteCount}${_l10n.pollVotes} · ${option.votePercent}%',
-                    style: AppText.xs.copyWith(color: isMyVote ? colors.accent : colors.textSecondary),
+                    style: AppText.xs.copyWith(
+                        color: isMyVote ? colors.accent : colors.textSecondary),
                   ),
                 ],
               ],
@@ -647,7 +683,8 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
                   value: (option.votePercent.clamp(0, 100)) / 100,
                   minHeight: 4,
                   backgroundColor: colors.hairlineSoft,
-                  valueColor: AlwaysStoppedAnimation<Color>(isMyVote ? colors.accent : colors.textTertiary),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      isMyVote ? colors.accent : colors.textTertiary),
                 ),
               ),
             ],
@@ -673,7 +710,9 @@ class _PollDetailScreenState extends State<PollDetailScreen> {
         ),
         color: isSelected ? colors.accent : Colors.transparent,
       ),
-      child: isSelected ? Icon(Icons.check, size: 14, color: colors.onAccent) : null,
+      child: isSelected
+          ? Icon(Icons.check, size: 14, color: colors.onAccent)
+          : null,
     );
   }
 

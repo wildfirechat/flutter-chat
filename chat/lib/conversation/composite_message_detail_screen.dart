@@ -39,13 +39,16 @@ import 'package:chat/theme/app_typography.dart';
 class CompositeMessageDetailScreen extends StatefulWidget {
   final CompositeMessageContent content;
 
-  const CompositeMessageDetailScreen(this.content, {Key? key}) : super(key: key);
+  const CompositeMessageDetailScreen(this.content, {Key? key})
+      : super(key: key);
 
   @override
-  State<CompositeMessageDetailScreen> createState() => _CompositeMessageDetailScreenState();
+  State<CompositeMessageDetailScreen> createState() =>
+      _CompositeMessageDetailScreenState();
 }
 
-class _CompositeMessageDetailScreenState extends State<CompositeMessageDetailScreen> {
+class _CompositeMessageDetailScreenState
+    extends State<CompositeMessageDetailScreen> {
   // cell builder 按消息位置缓存，每条消息只创建一次；
   // 否则 VoiceCellBuilder 等每次 build 都会重复注册 eventBus 订阅且无人释放
   final Map<int, MessageCellBuilder> _cellBuilders = {};
@@ -91,7 +94,8 @@ class _CompositeMessageDetailScreenState extends State<CompositeMessageDetailScr
     );
   }
 
-  Widget _buildMessageRow(BuildContext context, UIMessage uiMessage, bool showAvatar, int index) {
+  Widget _buildMessageRow(
+      BuildContext context, UIMessage uiMessage, bool showAvatar, int index) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
       child: Row(
@@ -99,7 +103,8 @@ class _CompositeMessageDetailScreenState extends State<CompositeMessageDetailScr
         children: [
           showAvatar
               ? Selector<UserViewModel, UserInfo?>(
-                  selector: (context, userViewModel) => userViewModel.getUserInfo(uiMessage.message.fromUser),
+                  selector: (context, userViewModel) =>
+                      userViewModel.getUserInfo(uiMessage.message.fromUser),
                   builder: (context, userInfo, child) {
                     return Portrait(
                       userInfo?.portrait ?? Config.defaultUserPortrait,
@@ -118,7 +123,8 @@ class _CompositeMessageDetailScreenState extends State<CompositeMessageDetailScr
               children: [
                 if (showAvatar)
                   Selector<UserViewModel, UserInfo?>(
-                    selector: (context, userViewModel) => userViewModel.getUserInfo(uiMessage.message.fromUser),
+                    selector: (context, userViewModel) =>
+                        userViewModel.getUserInfo(uiMessage.message.fromUser),
                     builder: (context, userInfo, child) {
                       return userInfo != null
                           ? MeshUserName(
@@ -184,7 +190,8 @@ class _CompositeMessageDetailScreenState extends State<CompositeMessageDetailScr
       cellBuilder = CardCellBuilder(context, model);
     } else if (model.message.content is VideoMessageContent) {
       cellBuilder = VideoCellBuilder(context, model);
-    } else if (model.message.content is StreamingTextGeneratingMessageContent || model.message.content is StreamingTextGeneratedMessageContent) {
+    } else if (model.message.content is StreamingTextGeneratingMessageContent ||
+        model.message.content is StreamingTextGeneratedMessageContent) {
       cellBuilder = StreamingTextCellBuilder(context, model);
     } else if (model.message.content is CompositeMessageContent) {
       cellBuilder = CompositeCellBuilder(context, model);

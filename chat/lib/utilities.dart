@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
@@ -42,7 +41,10 @@ class Utilities {
     var diff = now.difference(date);
     var time = '';
 
-    if (diff.inSeconds <= 0 || diff.inSeconds > 0 && diff.inMinutes == 0 || diff.inMinutes > 0 && diff.inHours == 0 || diff.inHours > 0 && diff.inDays == 0) {
+    if (diff.inSeconds <= 0 ||
+        diff.inSeconds > 0 && diff.inMinutes == 0 ||
+        diff.inMinutes > 0 && diff.inHours == 0 ||
+        diff.inHours > 0 && diff.inDays == 0) {
       var format = DateFormat('HH:mm');
       time = format.format(date);
     } else {
@@ -52,7 +54,8 @@ class Utilities {
         var format = DateFormat(AppLocalizations.of(context)!.monthDayFormat);
         time = format.format(date);
       } else {
-        var format = DateFormat(AppLocalizations.of(context)!.yearMonthDayFormat);
+        var format =
+            DateFormat(AppLocalizations.of(context)!.yearMonthDayFormat);
         time = format.format(date);
       }
     }
@@ -68,21 +71,28 @@ class Utilities {
 
     var format = _hourMinuteFormat;
     time = format.format(date);
-    if (diff.inSeconds <= 0 || diff.inSeconds > 0 && diff.inMinutes == 0 || diff.inMinutes > 0 && diff.inHours == 0 || diff.inHours > 0 && diff.inDays == 0) {
+    if (diff.inSeconds <= 0 ||
+        diff.inSeconds > 0 && diff.inMinutes == 0 ||
+        diff.inMinutes > 0 && diff.inHours == 0 ||
+        diff.inHours > 0 && diff.inDays == 0) {
     } else {
       if (diff.inDays == 1) {
         var day = AppLocalizations.of(context)!.yesterday;
         time = '$day $time';
       } else if (diff.inDays < 7) {
         // 前天及之前一周内：星期几 小时:分钟（对齐微信）
-        var weekday = _cachedDateFormat('EEEE', Localizations.localeOf(context).toString()).format(date);
+        var weekday = _cachedDateFormat(
+                'EEEE', Localizations.localeOf(context).toString())
+            .format(date);
         time = '$weekday $time';
       } else if (diff.inDays < 365) {
-        var dayformat = _cachedDateFormat(AppLocalizations.of(context)!.monthDayFormat);
+        var dayformat =
+            _cachedDateFormat(AppLocalizations.of(context)!.monthDayFormat);
         var day = dayformat.format(date);
         time = '$day $time';
       } else {
-        var dayformat = _cachedDateFormat(AppLocalizations.of(context)!.yearMonthDayFormat);
+        var dayformat =
+            _cachedDateFormat(AppLocalizations.of(context)!.yearMonthDayFormat);
         var day = dayformat.format(date);
         time = '$day $time';
       }
@@ -124,7 +134,10 @@ class Utilities {
       return "text";
     } else if (ext == ".jpg" || ext == ".png" || ext == ".jpeg") {
       return "image";
-    } else if (ext == ".mp3" || ext == ".amr" || ext == ".acm" || ext == ".aif") {
+    } else if (ext == ".mp3" ||
+        ext == ".amr" ||
+        ext == ".acm" ||
+        ext == ".aif") {
       return "audio";
     } else if (ext == ".mp4" ||
         ext == ".avi" ||
@@ -141,7 +154,11 @@ class Utilities {
       return "exe";
     } else if (ext == ".xml") {
       return "xml";
-    } else if (ext == ".zip" || ext == ".rar" || ext == ".gzip" || ext == ".gz" || ext == ".xz") {
+    } else if (ext == ".zip" ||
+        ext == ".rar" ||
+        ext == ".gzip" ||
+        ext == ".gz" ||
+        ext == ".xz") {
       return "zip";
     }
 
@@ -159,23 +176,34 @@ class Utilities {
     }
   }
 
-  static String conversationTitle(BuildContext context, Conversation conversation, UserInfo? userInfo, GroupInfo? groupInfo, ChannelInfo? channelInfo) {
+  static String conversationTitle(
+      BuildContext context,
+      Conversation conversation,
+      UserInfo? userInfo,
+      GroupInfo? groupInfo,
+      ChannelInfo? channelInfo) {
     String title = '';
     switch (conversation.conversationType) {
       case ConversationType.Single:
         if (userInfo != null) {
           title = MeshUserDisplay.getReadableName(userInfo);
         }
-        title = title.emptyToNull ?? AppLocalizations.of(context)!.singleChat(conversation.target);
+        title = title.emptyToNull ??
+            AppLocalizations.of(context)!.singleChat(conversation.target);
         break;
       case ConversationType.Group:
-        title = groupInfo?.remark.emptyToNull ?? groupInfo?.name.emptyToNull ?? AppLocalizations.of(context)!.groupChat;
+        title = groupInfo?.remark.emptyToNull ??
+            groupInfo?.name.emptyToNull ??
+            AppLocalizations.of(context)!.groupChat;
         break;
       case ConversationType.Channel:
-        title = channelInfo?.name.emptyToNull ?? AppLocalizations.of(context)!.channelWithTarget(conversation.target);
+        title = channelInfo?.name.emptyToNull ??
+            AppLocalizations.of(context)!
+                .channelWithTarget(conversation.target);
         break;
       case ConversationType.Chatroom:
-        title = AppLocalizations.of(context)!.chatroomWithTarget(conversation.target);
+        title = AppLocalizations.of(context)!
+            .chatroomWithTarget(conversation.target);
         break;
       case _:
         break;
@@ -190,7 +218,9 @@ class Utilities {
     }
     final uri = Uri.parse(MediaUrlRedirector.redirect(resolvedUrl));
     // PC 端统一交给系统默认浏览器打开,不使用内置浏览页;移动端保持原有内嵌 WebView 行为。
-    if (!isDesktopShell && (uri.scheme == 'http' || uri.scheme == 'https') && isInlineWebViewSupported) {
+    if (!isDesktopShell &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        isInlineWebViewSupported) {
       if (!context.mounted) {
         return;
       }
@@ -208,6 +238,4 @@ class Utilities {
       showToast(msg: failMessage);
     }
   }
-
-
 }

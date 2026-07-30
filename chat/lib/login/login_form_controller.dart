@@ -129,8 +129,7 @@ class LoginFormController extends ChangeNotifier {
           ),
         );
       } else {
-        AppServer.passwordLogin(phone, codeOrPwd,
-            (userId, token, isNewUser) {
+        AppServer.passwordLogin(phone, codeOrPwd, (userId, token, isNewUser) {
           _onLoginSuccess(context, userId, token);
         }, (msg) => showToast(msg: l10n.loginFail(msg)));
       }

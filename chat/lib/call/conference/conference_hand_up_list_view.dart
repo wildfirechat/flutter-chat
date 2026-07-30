@@ -19,7 +19,8 @@ class ConferenceHandUpListView extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<ConferenceHandUpListView> createState() => _ConferenceHandUpListViewState();
+  State<ConferenceHandUpListView> createState() =>
+      _ConferenceHandUpListViewState();
 }
 
 class _ConferenceHandUpListViewState extends State<ConferenceHandUpListView> {
@@ -46,7 +47,8 @@ class _ConferenceHandUpListViewState extends State<ConferenceHandUpListView> {
   @override
   void didUpdateWidget(covariant ConferenceHandUpListView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.conferenceManager.handUpMembers.length != oldWidget.conferenceManager.handUpMembers.length) {
+    if (widget.conferenceManager.handUpMembers.length !=
+        oldWidget.conferenceManager.handUpMembers.length) {
       _loadUserInfos();
     }
   }
@@ -72,7 +74,8 @@ class _ConferenceHandUpListViewState extends State<ConferenceHandUpListView> {
                 Text(
                   l10n.conferenceHandUpMembersCount(members.length),
                   style: AppText.base.copyWith(
-                      color: context.colors.textPrimary, fontWeight: FontWeight.w600),
+                      color: context.colors.textPrimary,
+                      fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -98,7 +101,8 @@ class _ConferenceHandUpListViewState extends State<ConferenceHandUpListView> {
                         ),
                         title: Text(
                           _name(info),
-                          style: AppText.sm.copyWith(color: context.colors.textPrimary),
+                          style: AppText.sm
+                              .copyWith(color: context.colors.textPrimary),
                         ),
                         trailing: ElevatedButton(
                           onPressed: () {

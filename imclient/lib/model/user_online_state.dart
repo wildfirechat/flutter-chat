@@ -1,4 +1,3 @@
-
 class ClientState {
   int platform;
   int state;

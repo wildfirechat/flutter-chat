@@ -43,8 +43,8 @@ class MomentPageScaffold extends StatelessWidget {
         body: centerContent
             ? Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                      maxWidth: kMomentContentMaxWidth),
+                  constraints:
+                      const BoxConstraints(maxWidth: kMomentContentMaxWidth),
                   child: body,
                 ),
               )

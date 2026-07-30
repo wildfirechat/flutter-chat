@@ -39,8 +39,8 @@ class PcProfileHeader extends StatelessWidget {
   });
 
   /// 名字的字号/字重。各资料页共用,避免每处再抄一遍。
-  static TextStyle titleStyle(BuildContext context) =>
-      AppText.xl.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary);
+  static TextStyle titleStyle(BuildContext context) => AppText.xl
+      .copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary);
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +95,12 @@ class PcProfileRow extends StatelessWidget {
   final String? placeholder;
   final VoidCallback? onTap;
 
-  const PcProfileRow({super.key, required this.label, this.value, this.placeholder, this.onTap});
+  const PcProfileRow(
+      {super.key,
+      required this.label,
+      this.value,
+      this.placeholder,
+      this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -104,14 +109,18 @@ class PcProfileRow extends StatelessWidget {
     final text = hasValue ? value! : (placeholder ?? '');
 
     return HoverBuilder(
-      cursor: onTap == null ? SystemMouseCursors.basic : SystemMouseCursors.click,
+      cursor:
+          onTap == null ? SystemMouseCursors.basic : SystemMouseCursors.click,
       builder: (context, hovered) => GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: _kRowInset, vertical: 10),
+          padding:
+              const EdgeInsets.symmetric(horizontal: _kRowInset, vertical: 10),
           decoration: BoxDecoration(
-            color: hovered && onTap != null ? colors.hoverOverlay : Colors.transparent,
+            color: hovered && onTap != null
+                ? colors.hoverOverlay
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(4),
           ),
           child: Row(
@@ -119,13 +128,16 @@ class PcProfileRow extends StatelessWidget {
             children: [
               SizedBox(
                 width: _kLabelWidth,
-                child: Text(label, style: AppText.base.copyWith(color: colors.textSecondary)),
+                child: Text(label,
+                    style: AppText.base.copyWith(color: colors.textSecondary)),
               ),
               Expanded(
                 child: Text(
                   text,
                   // 占位文案(还没设置)压到弱色,与真实值区分开。
-                  style: AppText.base.copyWith(color: hasValue ? colors.textPrimary : colors.textTertiary),
+                  style: AppText.base.copyWith(
+                      color:
+                          hasValue ? colors.textPrimary : colors.textTertiary),
                 ),
               ),
             ],

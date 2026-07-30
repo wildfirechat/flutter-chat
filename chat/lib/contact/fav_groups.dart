@@ -43,7 +43,9 @@ class FavGroupsPageState extends State<FavGroupsPage> {
       body: ListView.separated(
         itemCount: favGroupIds.length,
         separatorBuilder: (context, __) => Divider(
-          indent: 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 12.0,
+          indent: 16.0 +
+              LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) +
+              12.0,
         ),
         itemBuilder: (context, index) {
           return _buildGroupItem(favGroupIds[index]);
@@ -62,7 +64,10 @@ class FavGroupsPageState extends State<FavGroupsPage> {
               context,
               MaterialPageRoute(
                 builder: (context) => ConversationScreen(
-                  Conversation(conversationType: ConversationType.Group, target: groupId, line: 0),
+                  Conversation(
+                      conversationType: ConversationType.Group,
+                      target: groupId,
+                      line: 0),
                 ),
               ),
             );
@@ -71,11 +76,14 @@ class FavGroupsPageState extends State<FavGroupsPage> {
           child: Container(
             // 行高随字号档位缩放(封顶 rowCap),标题单行省略:
             // 二者配套才能保证最大字号下行与行不重叠。
-            height: LayoutScale.watchScale(context, 56.0, cap: LayoutScale.rowCap),
+            height:
+                LayoutScale.watchScale(context, 56.0, cap: LayoutScale.rowCap),
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
               children: [
-                Portrait(groupInfo.portrait ?? Config.defaultGroupPortrait, Config.defaultGroupPortrait, width: 40, height: 40),
+                Portrait(groupInfo.portrait ?? Config.defaultGroupPortrait,
+                    Config.defaultGroupPortrait,
+                    width: 40, height: 40),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(

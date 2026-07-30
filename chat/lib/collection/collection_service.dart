@@ -6,14 +6,14 @@ import '../utils/media_url_redirector.dart';
 import 'collection_model.dart';
 
 /// 接龙服务工具类
-/// 
+///
 /// 使用方式：
 /// ```dart
 /// if (CollectionService.isAvailable) {
 ///   final collection = await CollectionService.getCollection(id, groupId);
 /// }
 /// ```
-/// 
+///
 /// 认证方式：使用 getAuthCode 获取认证码，通过 HTTP Header 传递
 /// authCodeId = "collection", authCodeType = 2
 class CollectionService {
@@ -80,7 +80,8 @@ class CollectionService {
 
   /// 获取接龙详情
   /// POST /api/collections/{collectionId}/detail
-  static Future<Collection> getCollection(int collectionId, String groupId) async {
+  static Future<Collection> getCollection(
+      int collectionId, String groupId) async {
     final params = <String, dynamic>{
       'groupId': groupId,
     };
@@ -95,7 +96,8 @@ class CollectionService {
 
   /// 参与接龙或更新参与内容
   /// POST /api/collections/{collectionId}/join
-  static Future<void> join(int collectionId, String groupId, String content) async {
+  static Future<void> join(
+      int collectionId, String groupId, String content) async {
     final params = <String, dynamic>{
       'groupId': groupId,
       'content': content,

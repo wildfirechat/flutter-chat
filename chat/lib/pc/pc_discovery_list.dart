@@ -32,7 +32,11 @@ class PcDiscoveryList extends StatelessWidget {
         _DiscoveryRow(
           iconAsset: 'assets/images/discover_robot.png',
           title: l10n.robot,
-          onTap: () => openConversation(context, Conversation(conversationType: ConversationType.Single, target: 'FireRobot')),
+          onTap: () => openConversation(
+              context,
+              Conversation(
+                  conversationType: ConversationType.Single,
+                  target: 'FireRobot')),
         ),
         _DiscoveryRow(
           iconAsset: 'assets/images/discover_channel.png',
@@ -48,9 +52,11 @@ class PcDiscoveryList extends StatelessWidget {
         _DiscoveryRow(
           iconAsset: 'assets/images/discover_devdocs.png',
           title: l10n.developmentDocumentation,
-          onTap: () => openPage(context, const WFWebViewScreen('https://docs.wildfirechat.cn')),
+          onTap: () => openPage(
+              context, const WFWebViewScreen('https://docs.wildfirechat.cn')),
         ),
-        if (Config.panServerAddress != null && Config.panServerAddress!.isNotEmpty)
+        if (Config.panServerAddress != null &&
+            Config.panServerAddress!.isNotEmpty)
           _DiscoveryRow(
             iconAsset: 'assets/images/net_disk.png',
             title: l10n.cloudDrive,
@@ -66,7 +72,8 @@ class _DiscoveryRow extends StatelessWidget {
   final String title;
   final VoidCallback onTap;
 
-  const _DiscoveryRow({required this.iconAsset, required this.title, required this.onTap});
+  const _DiscoveryRow(
+      {required this.iconAsset, required this.title, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -83,14 +90,17 @@ class _DiscoveryRow extends StatelessWidget {
             children: [
               Image.asset(
                 iconAsset,
-                width: LayoutScale.watchScale(context, 22, cap: LayoutScale.iconCap),
-                height: LayoutScale.watchScale(context, 22, cap: LayoutScale.iconCap),
+                width: LayoutScale.watchScale(context, 22,
+                    cap: LayoutScale.iconCap),
+                height: LayoutScale.watchScale(context, 22,
+                    cap: LayoutScale.iconCap),
               ),
               const SizedBox(width: 12),
               Expanded(child: Text(title, style: PcTheme.cellTitle(context))),
               Icon(
                 Icons.chevron_right_rounded,
-                size: LayoutScale.watchScale(context, 18, cap: LayoutScale.iconCap),
+                size: LayoutScale.watchScale(context, 18,
+                    cap: LayoutScale.iconCap),
                 color: context.colors.textTertiary,
               ),
             ],

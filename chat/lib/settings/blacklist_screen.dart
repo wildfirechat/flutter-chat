@@ -133,7 +133,8 @@ class _BlacklistScreenState extends State<BlacklistScreen> {
           return userInfo != null ? MeshUserName(userInfo) : Text(userId);
         },
       ),
-      subtitle: Text(userId, style: AppText.xs.copyWith(color: Color(0xFF999999))),
+      subtitle:
+          Text(userId, style: AppText.xs.copyWith(color: Color(0xFF999999))),
       trailing: TextButton(
         onPressed: () => _removeFromBlacklist(userId),
         child: Text(AppLocalizations.of(context)!.blacklistRemove,

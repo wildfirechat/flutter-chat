@@ -49,29 +49,36 @@ class GroupConversationInfoScreen extends StatelessWidget {
         },
         child: Consumer<GroupConversationInfoViewModel>(
             builder: (context, viewModel, child) => Scaffold(
-                  backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
+                  backgroundColor: isDesktopShell
+                      ? context.colors.surface
+                      : context.colors.primaryBackground,
                   appBar: isDesktopShell
                       ? null
                       : AppBar(
-                          title: Text(AppLocalizations.of(context)!.groupConversationDetails),
+                          title: Text(AppLocalizations.of(context)!
+                              .groupConversationDetails),
                         ),
                   body: SafeArea(
                     child: viewModel.groupMember == null
                         ? const Center(
                             child: CircularProgressIndicator(),
                           )
-                        : _buildGroupConversationInfoView(context, viewModel, viewModel.groupMember!),
+                        : _buildGroupConversationInfoView(
+                            context, viewModel, viewModel.groupMember!),
                   ),
                 )));
   }
 
-  Widget _buildGroupConversationInfoView(BuildContext context, GroupConversationInfoViewModel groupConversationInfoViewModel, GroupMember groupMember) {
+  Widget _buildGroupConversationInfoView(
+      BuildContext context,
+      GroupConversationInfoViewModel groupConversationInfoViewModel,
+      GroupMember groupMember) {
     var groupViewModel = Provider.of<GroupViewModel>(context);
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationInfo = conversationViewModel.conversationInfo!;
     var groupInfo = groupViewModel.getGroupInfo(conversation.target);
     final l10n = AppLocalizations.of(context)!;
-    
+
     return SingleChildScrollView(
         child: Column(children: [
       if (isDesktopShell) const SizedBox(height: 12.0),
@@ -82,7 +89,11 @@ class GroupConversationInfoScreen extends StatelessWidget {
           onGroupMemberTap: (userInfo, anchor) {
             // 桌面端点群成员弹用户信息卡片(与会话内点头像一致),移动端仍整页打开
             if (isDesktopShell) {
-              showPcUserCard(context: context, anchor: anchor, userId: userInfo.userId, groupId: conversation.target);
+              showPcUserCard(
+                  context: context,
+                  anchor: anchor,
+                  userId: userInfo.userId,
+                  groupId: conversation.target);
             } else {
               openPage(context, UserInfoWidget(userInfo.userId));
             }
@@ -108,13 +119,22 @@ class GroupConversationInfoScreen extends StatelessWidget {
         child: Column(
           children: [
             OptionItem(l10n.groupMemberList, onTap: () {}),
-            OptionItem(l10n.groupNameLabel, desc: groupInfo?.name ?? '', onTap: () {
+            OptionItem(l10n.groupNameLabel, desc: groupInfo?.name ?? '',
+                onTap: () {
               if (groupInfo != null &&
                   groupInfo.type == GroupType.Restricted &&
-                  (groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager)) {
-                _showEditDialog(context, l10n.modifyGroupNameDialog, groupInfo?.name ?? '', (value) {
-                  Imclient.modifyGroupInfo(conversation.target, ModifyGroupInfoType.Modify_Group_Name, value, () {}, (errorCode) {
-                    Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
+                  (groupMember.type == GroupMemberType.Owner ||
+                      groupMember.type == GroupMemberType.Manager)) {
+                _showEditDialog(
+                    context, l10n.modifyGroupNameDialog, groupInfo?.name ?? '',
+                    (value) {
+                  Imclient.modifyGroupInfo(
+                      conversation.target,
+                      ModifyGroupInfoType.Modify_Group_Name,
+                      value,
+                      () {}, (errorCode) {
+                    Fluttertoast.showToast(
+                        msg: l10n.modifyFailedWithCode(errorCode.toString()));
                   });
                 });
               } else {
@@ -126,27 +146,41 @@ class GroupConversationInfoScreen extends StatelessWidget {
                 pushPage(context, GroupQrCodeScreen(groupInfo: groupInfo));
               }
             }),
-            OptionItem(l10n.groupAnnouncement, desc: groupConversationInfoViewModel.groupAnnouncement ?? l10n.clickToCheck, onTap: () {
+            OptionItem(l10n.groupAnnouncement,
+                desc: groupConversationInfoViewModel.groupAnnouncement ??
+                    l10n.clickToCheck, onTap: () {
               pushPage(
                 context,
                 GroupAnnouncementScreen(
                   groupId: conversation.target,
-                  canEdit: groupMember.type == GroupMemberType.Owner || groupMember.type == GroupMemberType.Manager,
+                  canEdit: groupMember.type == GroupMemberType.Owner ||
+                      groupMember.type == GroupMemberType.Manager,
                 ),
               );
-              groupConversationInfoViewModel.refreshGroupAnnouncement(conversation.target);
+              groupConversationInfoViewModel
+                  .refreshGroupAnnouncement(conversation.target);
             }),
-            OptionItem(l10n.groupRemarkLabel, desc: groupInfo?.remark, showBottomDivider: groupInfo == null || groupInfo.type != GroupType.Restricted || (groupMember.type != GroupMemberType.Manager && groupMember.type != GroupMemberType.Owner), onTap: () {
-              _showEditDialog(context, l10n.modifyGroupRemarkDialog, groupInfo?.remark ?? '', (value) {
-                Imclient.setGroupRemark(conversation.target, value, () {}, (errorCode) {
-                  Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
+            OptionItem(l10n.groupRemarkLabel,
+                desc: groupInfo?.remark,
+                showBottomDivider: groupInfo == null ||
+                    groupInfo.type != GroupType.Restricted ||
+                    (groupMember.type != GroupMemberType.Manager &&
+                        groupMember.type != GroupMemberType.Owner), onTap: () {
+              _showEditDialog(context, l10n.modifyGroupRemarkDialog,
+                  groupInfo?.remark ?? '', (value) {
+                Imclient.setGroupRemark(conversation.target, value, () {},
+                    (errorCode) {
+                  Fluttertoast.showToast(
+                      msg: l10n.modifyFailedWithCode(errorCode.toString()));
                 });
               });
             }),
             if (groupInfo != null &&
                 groupInfo.type == GroupType.Restricted &&
-                (groupMember.type == GroupMemberType.Manager || groupMember.type == GroupMemberType.Owner))
-              OptionItem(l10n.groupManagement, showBottomDivider: false, onTap: () {
+                (groupMember.type == GroupMemberType.Manager ||
+                    groupMember.type == GroupMemberType.Owner))
+              OptionItem(l10n.groupManagement, showBottomDivider: false,
+                  onTap: () {
                 if (groupInfo != null) {
                   pushPage(context, GroupManageScreen(groupInfo: groupInfo));
                 }
@@ -165,9 +199,8 @@ class GroupConversationInfoScreen extends StatelessWidget {
                 final groupName = groupInfo.name ?? '';
                 SearchWindowManager.instance.show(
                   conversation: conversation,
-                  conversationTitle: groupName.isNotEmpty
-                      ? groupName
-                      : conversation.target,
+                  conversationTitle:
+                      groupName.isNotEmpty ? groupName : conversation.target,
                 );
               } else {
                 pushPage(
@@ -193,14 +226,21 @@ class GroupConversationInfoScreen extends StatelessWidget {
         color: context.colors.surface,
         child: Column(
           children: [
-            OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
-              conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
+            OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent,
+                (enable) {
+              conversationViewModel.setConversationSilent(
+                  conversationInfo.conversation, enable);
             }),
-            OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0, (enable) {
-              conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
+            OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0,
+                (enable) {
+              conversationViewModel.setConversationTop(
+                  conversationInfo.conversation, enable ? 1 : 0);
             }),
-            OptionSwitchItem(l10n.favoriteGroup, groupConversationInfoViewModel.isFavGroup, showBottomDivider: false, (enable) {
-              groupConversationInfoViewModel.setFavGroup(conversationInfo.conversation.target, enable);
+            OptionSwitchItem(
+                l10n.favoriteGroup, groupConversationInfoViewModel.isFavGroup,
+                showBottomDivider: false, (enable) {
+              groupConversationInfoViewModel.setFavGroup(
+                  conversationInfo.conversation.target, enable);
             }),
           ],
         ),
@@ -210,15 +250,23 @@ class GroupConversationInfoScreen extends StatelessWidget {
         color: context.colors.surface,
         child: Column(
           children: [
-            OptionItem(l10n.myAliasInGroupLabel, desc: groupMember.alias, onTap: () {
-              _showEditDialog(context, l10n.modifyGroupAliasDialog, groupMember.alias ?? '', (value) {
-                Imclient.modifyGroupAlias(conversation.target, value, () {}, (errorCode) {
-                  Fluttertoast.showToast(msg: l10n.modifyFailedWithCode(errorCode.toString()));
+            OptionItem(l10n.myAliasInGroupLabel, desc: groupMember.alias,
+                onTap: () {
+              _showEditDialog(
+                  context, l10n.modifyGroupAliasDialog, groupMember.alias ?? '',
+                  (value) {
+                Imclient.modifyGroupAlias(conversation.target, value, () {},
+                    (errorCode) {
+                  Fluttertoast.showToast(
+                      msg: l10n.modifyFailedWithCode(errorCode.toString()));
                 });
               });
             }),
-            OptionSwitchItem(l10n.showGroupMemberNames, !conversationViewModel.isHiddenConversationMemberName, showBottomDivider: false, (enable) {
-              conversationViewModel.setHideGroupMemberName(conversationInfo.conversation.target, !enable);
+            OptionSwitchItem(l10n.showGroupMemberNames,
+                !conversationViewModel.isHiddenConversationMemberName,
+                showBottomDivider: false, (enable) {
+              conversationViewModel.setHideGroupMemberName(
+                  conversationInfo.conversation.target, !enable);
             }),
           ],
         ),
@@ -250,7 +298,8 @@ class GroupConversationInfoScreen extends StatelessWidget {
     ]));
   }
 
-  void _showClearMessageDialog(BuildContext context, Conversation conversation) {
+  void _showClearMessageDialog(
+      BuildContext context, Conversation conversation) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
@@ -276,7 +325,9 @@ class GroupConversationInfoScreen extends StatelessWidget {
                 Imclient.clearRemoteConversationMessage(conversation, () {
                   Fluttertoast.showToast(msg: l10n.clearRemoteMessagesSuccess);
                 }, (errorCode) {
-                  Fluttertoast.showToast(msg: l10n.clearRemoteMessagesFailed(errorCode.toString()));
+                  Fluttertoast.showToast(
+                      msg:
+                          l10n.clearRemoteMessagesFailed(errorCode.toString()));
                 });
               },
               child: Padding(
@@ -364,7 +415,12 @@ class GroupConversationInfoScreen extends StatelessWidget {
             }
             Imclient.createGroup(null, null, null, 2, groupMembers, (strValue) {
               // 用外层 context(详情页仍挂载):桌面右栏打开新群会话,移动端 push
-              openConversation(context, Conversation(conversationType: ConversationType.Group, target: strValue, line: 0));
+              openConversation(
+                  context,
+                  Conversation(
+                      conversationType: ConversationType.Group,
+                      target: strValue,
+                      line: 0));
             }, (errorCode) {
               Fluttertoast.showToast(msg: l10n.networkError);
             });
@@ -385,7 +441,8 @@ class GroupConversationInfoScreen extends StatelessWidget {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: InputDecoration(hintText: l10n.pleaseInputJoinGroupReason),
+          decoration:
+              InputDecoration(hintText: l10n.pleaseInputJoinGroupReason),
         ),
         actions: [
           TextButton(
@@ -415,9 +472,11 @@ class GroupConversationInfoScreen extends StatelessWidget {
     );
   }
 
-  void _showEditDialog(BuildContext context, String title, String initialValue, Function(String) onConfirm) {
+  void _showEditDialog(BuildContext context, String title, String initialValue,
+      Function(String) onConfirm) {
     final l10n = AppLocalizations.of(context)!;
-    TextEditingController controller = TextEditingController(text: initialValue);
+    TextEditingController controller =
+        TextEditingController(text: initialValue);
     showDialog(
       context: context,
       builder: (context) {
@@ -467,7 +526,8 @@ class GroupConversationInfoScreen extends StatelessWidget {
                 Navigator.pop(context);
                 _handleDismissGroup(context);
               },
-              child: Text(l10n.confirm, style: const TextStyle(color: Colors.red)),
+              child:
+                  Text(l10n.confirm, style: const TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -495,7 +555,8 @@ class GroupConversationInfoScreen extends StatelessWidget {
                 Navigator.pop(context);
                 _handleQuitGroup(context);
               },
-              child: Text(l10n.confirm, style: const TextStyle(color: Colors.red)),
+              child:
+                  Text(l10n.confirm, style: const TextStyle(color: Colors.red)),
             ),
           ],
         );
@@ -543,21 +604,22 @@ class GroupConversationInfoScreen extends StatelessWidget {
   void _handleDismissGroup(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final navigator = Navigator.of(context);
-    
+
     Imclient.dismissGroup(conversation.target, () {
       Fluttertoast.showToast(msg: l10n.groupActionSuccess(l10n.dismissGroup));
       Future.delayed(const Duration(milliseconds: 200), () {
         navigator.popUntil((r) => r.isFirst);
       });
     }, (errorCode) {
-      Fluttertoast.showToast(msg: l10n.groupActionFailedWithCode(l10n.dismissGroup, errorCode));
+      Fluttertoast.showToast(
+          msg: l10n.groupActionFailedWithCode(l10n.dismissGroup, errorCode));
     });
   }
 
   void _handleQuitGroup(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final navigator = Navigator.of(context);
-    
+
     Imclient.quitGroup(conversation.target, () {
       Fluttertoast.showToast(msg: l10n.groupActionSuccess(l10n.quitGroupChat));
       // 延迟后返回到会话列表
@@ -565,7 +627,8 @@ class GroupConversationInfoScreen extends StatelessWidget {
         navigator.popUntil((r) => r.isFirst);
       });
     }, (errorCode) {
-      Fluttertoast.showToast(msg: l10n.groupActionFailedWithCode(l10n.quitGroupChat, errorCode));
+      Fluttertoast.showToast(
+          msg: l10n.groupActionFailedWithCode(l10n.quitGroupChat, errorCode));
     });
   }
 }

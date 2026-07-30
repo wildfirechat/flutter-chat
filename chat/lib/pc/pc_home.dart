@@ -84,7 +84,8 @@ class _PCHomeState extends State<PCHome> with AmbientShortcutsMixin {
   double _resizeOffset = 0;
 
   late final ScrollController _conversationScrollController;
-  final ValueNotifier<double> _conversationScrollOffset = ValueNotifier<double>(0.0);
+  final ValueNotifier<double> _conversationScrollOffset =
+      ValueNotifier<double>(0.0);
 
   @override
   void initState() {
@@ -157,7 +158,8 @@ class _PCHomeState extends State<PCHome> with AmbientShortcutsMixin {
   /// 「本栏首页」的路由设置:侧栏/中栏点开的页面都属于这一类 —— 它们是
   /// pushAndRemoveUntil 上去的,下面压着的是空白占位页,没有"上一页"可回。
   /// PcPageHeader 靠这个名字决定不显示返回键,见 [kPcPaneRootRoute]。
-  static const RouteSettings _paneRootSettings = RouteSettings(name: kPcPaneRootRoute);
+  static const RouteSettings _paneRootSettings =
+      RouteSettings(name: kPcPaneRootRoute);
 
   /// 右栏内的路由不做转场动画,桌面端切换详情应即时呈现。
   Route<dynamic> _paneRoute(Widget page, [RouteSettings? settings]) {
@@ -321,8 +323,10 @@ class _PCHomeState extends State<PCHome> with AmbientShortcutsMixin {
 
   @override
   Map<ShortcutActivator, ShortcutHandler> get ambientShortcutsBeforeFocus => {
-        const SingleActivator(LogicalKeyboardKey.arrowDown): () => _navigateConversation(true),
-        const SingleActivator(LogicalKeyboardKey.arrowUp): () => _navigateConversation(false),
+        const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+            _navigateConversation(true),
+        const SingleActivator(LogicalKeyboardKey.arrowUp): () =>
+            _navigateConversation(false),
       };
 
   bool _openSearchByShortcut() {
@@ -383,13 +387,16 @@ class _PCHomeState extends State<PCHome> with AmbientShortcutsMixin {
           children: [
             Text(
               l10n.tips,
-              style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: dialogContext.colors.textPrimary),
+              style: AppText.lg.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: dialogContext.colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               l10n.addFriendSearchHint,
-              style: AppText.sm.copyWith(color: dialogContext.colors.textSecondary, height: 1.4),
+              style: AppText.sm.copyWith(
+                  color: dialogContext.colors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 20),
             Row(
@@ -481,7 +488,9 @@ class _PCHomeState extends State<PCHome> with AmbientShortcutsMixin {
               const SizedBox(height: 20),
               Text(
                 title,
-                style: AppText.sm.copyWith(color: context.colors.textPrimary, decoration: TextDecoration.none),
+                style: AppText.sm.copyWith(
+                    color: context.colors.textPrimary,
+                    decoration: TextDecoration.none),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -586,60 +595,60 @@ class _PCHomeState extends State<PCHome> with AmbientShortcutsMixin {
                   if (Platform.isWindows) const PcWindowCaption(),
                   Expanded(
                     child: Selector<PCShellViewModel, bool>(
-                selector: (_, shell) =>
-                    shell.selectedTab == PCShellViewModel.tabWork,
-                builder: (context, isWorkTab, _) => Row(
-                  children: [
-                    SizedBox(
-                        width: PcTheme.sideBarWidth,
-                        child: _PcSideBar(
-                          onTabSelected: _onTabSelected,
-                        )),
-                    if (!isWorkTab)
-                      // 宽度单独用 Selector 订阅:拖拽期间只重建 SizedBox,
-                      // 中栏子树作为 child 复用,不逐帧重建会话列表。
-                      Selector<PcLayoutViewModel, double>(
-                        selector: (_, layout) => layout.middleColumnWidth,
-                        builder: (context, width, child) =>
-                            SizedBox(width: width, child: child),
-                        child: _buildMiddleColumn(context),
-                      ),
-                    Expanded(
-                      child: Stack(
+                      selector: (_, shell) =>
+                          shell.selectedTab == PCShellViewModel.tabWork,
+                      builder: (context, isWorkTab, _) => Row(
                         children: [
-                          Positioned.fill(
-                            child: ClipRect(
-                              child: Navigator(
-                                key: _paneNavKey,
-                                onGenerateRoute: (settings) =>
-                                    _paneRoute(const _EmptyDetailPane(), settings),
-                              ),
+                          SizedBox(
+                              width: PcTheme.sideBarWidth,
+                              child: _PcSideBar(
+                                onTabSelected: _onTabSelected,
+                              )),
+                          if (!isWorkTab)
+                            // 宽度单独用 Selector 订阅:拖拽期间只重建 SizedBox,
+                            // 中栏子树作为 child 复用,不逐帧重建会话列表。
+                            Selector<PcLayoutViewModel, double>(
+                              selector: (_, layout) => layout.middleColumnWidth,
+                              builder: (context, width, child) =>
+                                  SizedBox(width: width, child: child),
+                              child: _buildMiddleColumn(context),
+                            ),
+                          Expanded(
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: ClipRect(
+                                    child: Navigator(
+                                      key: _paneNavKey,
+                                      onGenerateRoute: (settings) => _paneRoute(
+                                          const _EmptyDetailPane(), settings),
+                                    ),
+                                  ),
+                                ),
+                                // 中右栏的分隔条。发丝线画在右栏最左侧(即原来那条分隔线的位置),
+                                // 加厚的命中区向右压在右栏上,这样发丝线仍紧贴中栏列表的滚动条。
+                                if (!isWorkTab)
+                                  Positioned(
+                                    left: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                    width: PcTheme.resizeHandleThickness,
+                                    child: _buildColumnResizeHandle(context),
+                                  ),
+                              ],
                             ),
                           ),
-                          // 中右栏的分隔条。发丝线画在右栏最左侧(即原来那条分隔线的位置),
-                          // 加厚的命中区向右压在右栏上,这样发丝线仍紧贴中栏列表的滚动条。
-                          if (!isWorkTab)
-                            Positioned(
-                              left: 0,
-                              top: 0,
-                              bottom: 0,
-                              width: PcTheme.resizeHandleThickness,
-                              child: _buildColumnResizeHandle(context),
-                            ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
                   ),
                 ],
               ),
             ),
           ],
         ),
-    ),
-  );
+      ),
+    );
   }
 
   /// 中栏与右栏之间的分隔条。作为右栏的浮层放置:发丝线贴左缘落在两栏交界处,
@@ -672,122 +681,131 @@ class _PCHomeState extends State<PCHome> with AmbientShortcutsMixin {
         child: Container(
           color: context.colors.middleBgDesktop,
           child: Column(
-        children: [
-          Consumer<PCShellViewModel>(
-            builder: (context, shell, _) {
-              if (shell.selectedTab == PCShellViewModel.tabMe) {
-                return Container(
-                  height: PcTheme.headerHeight,
-                  padding: const EdgeInsets.only(left: 16),
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    AppLocalizations.of(context)!.settings,
-                    style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
-                  ),
-                );
-              }
-              if (avEngineKit.isSupportConference() && shell.selectedTab == PCShellViewModel.tabConference) {
-                return Container(
-                  height: PcTheme.headerHeight,
-                  padding: const EdgeInsets.only(left: 16),
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    AppLocalizations.of(context)!.conferenceTitle,
-                    style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
-                  ),
-                );
-              }
-              if (shell.selectedTab == PCShellViewModel.tabDiscovery) {
-                return Container(
-                  height: PcTheme.headerHeight,
-                  padding: const EdgeInsets.only(left: 16),
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    AppLocalizations.of(context)!.tabDiscovery,
-                    style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
-                  ),
-                );
-              }
-              if (shell.selectedTab == PCShellViewModel.tabChat) {
-                return Consumer<ConversationListViewModel>(
-                  builder: (context, conversationListVM, _) {
-                    return ValueListenableBuilder<double>(
-                      valueListenable: _conversationScrollOffset,
-                      builder: (context, offset, _) {
-                        final colors = context.colors;
-                        final list = conversationListVM.conversationList;
-                        Color headerBgColor = colors.middleBgDesktop;
-                         if (list.isNotEmpty) {
-                          double itemExtent = conversationItemExtent(context);
-                          int index = (offset / itemExtent).floor();
-                          if (index < 0) {
-                            index = 0;
-                          }
-                          if (index >= 0 && index < list.length) {
-                            if (list[index].isTop > 0) {
-                              headerBgColor = colors.cellTopDesktop;
+            children: [
+              Consumer<PCShellViewModel>(
+                builder: (context, shell, _) {
+                  if (shell.selectedTab == PCShellViewModel.tabMe) {
+                    return Container(
+                      height: PcTheme.headerHeight,
+                      padding: const EdgeInsets.only(left: 16),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        AppLocalizations.of(context)!.settings,
+                        style: AppText.lg.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: context.colors.textPrimary),
+                      ),
+                    );
+                  }
+                  if (avEngineKit.isSupportConference() &&
+                      shell.selectedTab == PCShellViewModel.tabConference) {
+                    return Container(
+                      height: PcTheme.headerHeight,
+                      padding: const EdgeInsets.only(left: 16),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        AppLocalizations.of(context)!.conferenceTitle,
+                        style: AppText.lg.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: context.colors.textPrimary),
+                      ),
+                    );
+                  }
+                  if (shell.selectedTab == PCShellViewModel.tabDiscovery) {
+                    return Container(
+                      height: PcTheme.headerHeight,
+                      padding: const EdgeInsets.only(left: 16),
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        AppLocalizations.of(context)!.tabDiscovery,
+                        style: AppText.lg.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: context.colors.textPrimary),
+                      ),
+                    );
+                  }
+                  if (shell.selectedTab == PCShellViewModel.tabChat) {
+                    return Consumer<ConversationListViewModel>(
+                      builder: (context, conversationListVM, _) {
+                        return ValueListenableBuilder<double>(
+                          valueListenable: _conversationScrollOffset,
+                          builder: (context, offset, _) {
+                            final colors = context.colors;
+                            final list = conversationListVM.conversationList;
+                            Color headerBgColor = colors.middleBgDesktop;
+                            if (list.isNotEmpty) {
+                              double itemExtent =
+                                  conversationItemExtent(context);
+                              int index = (offset / itemExtent).floor();
+                              if (index < 0) {
+                                index = 0;
+                              }
+                              if (index >= 0 && index < list.length) {
+                                if (list[index].isTop > 0) {
+                                  headerBgColor = colors.cellTopDesktop;
+                                }
+                              }
                             }
-                          }
-                        }
-                        return _MiddleColumnHeader(
-                          onSearchTap: _openSearchModal,
-                          onStartChat: _startChat,
-                          onAddFriend: _onAddFriend,
-                          backgroundColor: headerBgColor,
+                            return _MiddleColumnHeader(
+                              onSearchTap: _openSearchModal,
+                              onStartChat: _startChat,
+                              onAddFriend: _onAddFriend,
+                              backgroundColor: headerBgColor,
+                            );
+                          },
                         );
                       },
                     );
+                  }
+                  return _MiddleColumnHeader(
+                    onSearchTap: _openSearchModal,
+                    onStartChat: _startChat,
+                    onAddFriend: _onAddFriend,
+                    backgroundColor: context.colors.middleBgDesktop,
+                    showAddButton: false,
+                  );
+                },
+              ),
+              Expanded(
+                child: Consumer<PCShellViewModel>(
+                  builder: (context, shell, _) {
+                    if (shell.selectedTab == PCShellViewModel.tabFile) {
+                      return PcFileRecordsList(
+                        onOpenFileList: _openFileListScreen,
+                        onOpenConversationPicker: _openConversationFilePicker,
+                        onOpenUserPicker: _openUserFilePicker,
+                      );
+                    }
+                    if (shell.selectedTab == PCShellViewModel.tabFavorite) {
+                      return PcFavoriteCategoriesList(
+                        onOpenFavoriteList: _openFavoriteList,
+                      );
+                    }
+                    if (avEngineKit.isSupportConference() &&
+                        shell.selectedTab == PCShellViewModel.tabConference) {
+                      return const ConferenceHomeScreen(isEmbedded: true);
+                    }
+                    return IndexedStack(
+                      index: shell.selectedTab,
+                      children: [
+                        ConversationListWidget(
+                          onConversationSelected: _openConversation,
+                          selectedConversation: shell.selectedConversation,
+                          scrollController: _conversationScrollController,
+                          scrollOffset: _conversationScrollOffset,
+                        ),
+                        const PcContactList(),
+                        const _WorkTabPlaceholder(),
+                        const PcDiscoveryList(),
+                        const PcSettingsMenu(),
+                      ],
+                    );
                   },
-                );
-              }
-              return _MiddleColumnHeader(
-                onSearchTap: _openSearchModal,
-                onStartChat: _startChat,
-                onAddFriend: _onAddFriend,
-                backgroundColor: context.colors.middleBgDesktop,
-                showAddButton: false,
-              );
-            },
+                ),
+              ),
+            ],
           ),
-          Expanded(
-            child: Consumer<PCShellViewModel>(
-              builder: (context, shell, _) {
-                if (shell.selectedTab == PCShellViewModel.tabFile) {
-                  return PcFileRecordsList(
-                    onOpenFileList: _openFileListScreen,
-                    onOpenConversationPicker: _openConversationFilePicker,
-                    onOpenUserPicker: _openUserFilePicker,
-                  );
-                }
-                if (shell.selectedTab == PCShellViewModel.tabFavorite) {
-                  return PcFavoriteCategoriesList(
-                    onOpenFavoriteList: _openFavoriteList,
-                  );
-                }
-                if (avEngineKit.isSupportConference() && shell.selectedTab == PCShellViewModel.tabConference) {
-                  return const ConferenceHomeScreen(isEmbedded: true);
-                }
-                return IndexedStack(
-                  index: shell.selectedTab,
-                  children: [
-                    ConversationListWidget(
-                      onConversationSelected: _openConversation,
-                      selectedConversation: shell.selectedConversation,
-                      scrollController: _conversationScrollController,
-                      scrollOffset: _conversationScrollOffset,
-                    ),
-                    const PcContactList(),
-                    const _WorkTabPlaceholder(),
-                    const PcDiscoveryList(),
-                    const PcSettingsMenu(),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-      ),
+        ),
       ),
     );
   }
@@ -803,7 +821,7 @@ class _MiddleColumnHeader extends StatelessWidget {
 
   const _MiddleColumnHeader({
     required this.onSearchTap,
-      required this.onStartChat,
+    required this.onStartChat,
     required this.onAddFriend,
     this.backgroundColor,
     this.showAddButton = true,
@@ -839,7 +857,8 @@ class _MiddleColumnHeader extends StatelessWidget {
                           size: 15, color: colors.textSecondary),
                       const SizedBox(width: 4),
                       Text(l10n.search,
-                          style: AppText.xs.copyWith(color: colors.textSecondary)),
+                          style:
+                              AppText.xs.copyWith(color: colors.textSecondary)),
                     ],
                   ),
                 ),
@@ -875,10 +894,14 @@ class _PlusMenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
-    final itemHeight = LayoutScale.watchScale(context, 36, cap: LayoutScale.rowCap);
-    final iconSize = LayoutScale.watchScale(context, 17, cap: LayoutScale.iconCap);
-    final iconGap = LayoutScale.watchScale(context, 10, cap: LayoutScale.iconCap);
-    final menuOffset = Offset(0, LayoutScale.watchScale(context, 34, cap: LayoutScale.rowCap));
+    final itemHeight =
+        LayoutScale.watchScale(context, 36, cap: LayoutScale.rowCap);
+    final iconSize =
+        LayoutScale.watchScale(context, 17, cap: LayoutScale.iconCap);
+    final iconGap =
+        LayoutScale.watchScale(context, 10, cap: LayoutScale.iconCap);
+    final menuOffset =
+        Offset(0, LayoutScale.watchScale(context, 34, cap: LayoutScale.rowCap));
 
     return PopupMenuButton<String>(
       offset: menuOffset,
@@ -924,7 +947,9 @@ class _PlusMenuButton extends StatelessWidget {
           width: 20,
           height: 20,
           decoration: BoxDecoration(
-            color: hovered ? colors.inputBgHover : (backgroundColor ?? colors.cellTopDesktop),
+            color: hovered
+                ? colors.inputBgHover
+                : (backgroundColor ?? colors.cellTopDesktop),
             shape: BoxShape.circle,
             border: Border.all(color: colors.iconPrimary, width: 1),
           ),
@@ -968,98 +993,97 @@ class _PcSideBar extends StatelessWidget {
             const SizedBox(height: 28),
             _buildAvatar(context, shell),
             const SizedBox(height: PcTheme.sidebarAvatarGap),
-          Selector<ConversationListViewModel, int>(
-            selector: (_, model) => model.unreadMessageCount,
-            builder: (context, unreadCount, _) => _SideBarTab(
-              tab: PCShellViewModel.tabChat,
-              selectedIcon: Icons.chat_bubble_rounded,
-              normalIcon: Icons.chat_bubble_outline_rounded,
-              label: l10n.tabChat,
-              badgeCount: unreadCount,
+            Selector<ConversationListViewModel, int>(
+              selector: (_, model) => model.unreadMessageCount,
+              builder: (context, unreadCount, _) => _SideBarTab(
+                tab: PCShellViewModel.tabChat,
+                selectedIcon: Icons.chat_bubble_rounded,
+                normalIcon: Icons.chat_bubble_outline_rounded,
+                label: l10n.tabChat,
+                badgeCount: unreadCount,
+                onTabSelected: onTabSelected,
+              ),
+            ),
+            const SizedBox(height: PcTheme.sidebarTabGap),
+            Selector<ContactListViewModel, int>(
+              selector: (_, model) => model.unreadFriendRequestCount,
+              builder: (context, unreadFriendRequestCount, _) => _SideBarTab(
+                tab: PCShellViewModel.tabContact,
+                selectedIcon: Icons.contacts_rounded,
+                normalIcon: Icons.contacts_outlined,
+                label: l10n.tabContact,
+                badgeCount: unreadFriendRequestCount > 0 ? -1 : 0,
+                onTabSelected: onTabSelected,
+              ),
+            ),
+            const SizedBox(height: PcTheme.sidebarGroupGap),
+            _SideBarTab(
+              tab: PCShellViewModel.tabFile,
+              selectedIcon: Icons.folder_rounded,
+              normalIcon: Icons.folder_outlined,
+              label: l10n.files,
               onTabSelected: onTabSelected,
             ),
-          ),
-          const SizedBox(height: PcTheme.sidebarTabGap),
-          Selector<ContactListViewModel, int>(
-            selector: (_, model) => model.unreadFriendRequestCount,
-            builder: (context, unreadFriendRequestCount, _) => _SideBarTab(
-              tab: PCShellViewModel.tabContact,
-              selectedIcon: Icons.contacts_rounded,
-              normalIcon: Icons.contacts_outlined,
-              label: l10n.tabContact,
-              badgeCount: unreadFriendRequestCount > 0 ? -1 : 0,
-              onTabSelected: onTabSelected,
-            ),
-          ),
-          const SizedBox(height: PcTheme.sidebarGroupGap),
-          _SideBarTab(
-            tab: PCShellViewModel.tabFile,
-            selectedIcon: Icons.folder_rounded,
-            normalIcon: Icons.folder_outlined,
-            label: l10n.files,
-            onTabSelected: onTabSelected,
-          ),
-          const SizedBox(height: PcTheme.sidebarTabGap),
-          _SideBarTab(
-            tab: PCShellViewModel.tabFavorite,
-            selectedIcon: Icons.star_rounded,
-            normalIcon: Icons.star_border_rounded,
-            label: l10n.favorites,
-            onTabSelected: onTabSelected,
-          ),
-          if (avEngineKit.isSupportConference()) ...[
             const SizedBox(height: PcTheme.sidebarTabGap),
             _SideBarTab(
-              tab: PCShellViewModel.tabConference,
-              selectedIcon: Icons.video_call,
-              normalIcon: Icons.video_call_outlined,
-              label: l10n.conferenceTitle,
+              tab: PCShellViewModel.tabFavorite,
+              selectedIcon: Icons.star_rounded,
+              normalIcon: Icons.star_border_rounded,
+              label: l10n.favorites,
               onTabSelected: onTabSelected,
             ),
-          ],
-          if ((Config.workspaceUrl ?? '').isNotEmpty) ...[
+            if (avEngineKit.isSupportConference()) ...[
+              const SizedBox(height: PcTheme.sidebarTabGap),
+              _SideBarTab(
+                tab: PCShellViewModel.tabConference,
+                selectedIcon: Icons.video_call,
+                normalIcon: Icons.video_call_outlined,
+                label: l10n.conferenceTitle,
+                onTabSelected: onTabSelected,
+              ),
+            ],
+            if ((Config.workspaceUrl ?? '').isNotEmpty) ...[
+              const SizedBox(height: PcTheme.sidebarTabGap),
+              _SideBarTab(
+                tab: PCShellViewModel.tabWork,
+                selectedIcon: Icons.grid_view_rounded,
+                normalIcon: Icons.grid_view_outlined,
+                label: l10n.tabWork,
+                onTabSelected: onTabSelected,
+              ),
+            ],
             const SizedBox(height: PcTheme.sidebarTabGap),
             _SideBarTab(
-              tab: PCShellViewModel.tabWork,
-              selectedIcon: Icons.grid_view_rounded,
-              normalIcon: Icons.grid_view_outlined,
-              label: l10n.tabWork,
+              tab: PCShellViewModel.tabDiscovery,
+              selectedIcon: Icons.explore_rounded,
+              normalIcon: Icons.explore_outlined,
+              label: l10n.tabDiscovery,
               onTabSelected: onTabSelected,
             ),
-          ],
-          const SizedBox(height: PcTheme.sidebarTabGap),
-          _SideBarTab(
-            tab: PCShellViewModel.tabDiscovery,
-            selectedIcon: Icons.explore_rounded,
-            normalIcon: Icons.explore_outlined,
-            label: l10n.tabDiscovery,
-            onTabSelected: onTabSelected,
-          ),
-          const SizedBox(height: PcTheme.sidebarTabGap),
-          // 朋友圈入口受 Config.ENABLE_MOMENTS 开关控制
-          if (Config.ENABLE_MOMENTS)
-            _SideBarIconButton(
-              icon: Icons.dynamic_feed_rounded,
-              tooltip: l10n.momentWindowTitle,
-              onTap: () {
-                MomentWindowManager.instance.show();
-              },
+            const SizedBox(height: PcTheme.sidebarTabGap),
+            // 朋友圈入口受 Config.ENABLE_MOMENTS 开关控制
+            if (Config.ENABLE_MOMENTS)
+              _SideBarIconButton(
+                icon: Icons.dynamic_feed_rounded,
+                tooltip: l10n.momentWindowTitle,
+                onTap: () {
+                  MomentWindowManager.instance.show();
+                },
+              ),
+            const Spacer(),
+            _SideBarTab(
+              tab: PCShellViewModel.tabMe,
+              selectedIcon: Icons.settings_rounded,
+              normalIcon: Icons.settings_outlined,
+              label: l10n.settings,
+              onTabSelected: onTabSelected,
             ),
-          const Spacer(),
-          _SideBarTab(
-            tab: PCShellViewModel.tabMe,
-            selectedIcon: Icons.settings_rounded,
-            normalIcon: Icons.settings_outlined,
-            label: l10n.settings,
-            onTabSelected: onTabSelected,
-          ),
-          const SizedBox(height: PcTheme.sidebarBottomInset),
-        ],
+            const SizedBox(height: PcTheme.sidebarBottomInset),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   Widget _buildAvatar(BuildContext context, PCShellViewModel shell) {
     return Consumer<UserViewModel>(
@@ -1073,7 +1097,8 @@ class _PcSideBar extends StatelessWidget {
                 final renderBox = avatarContext.findRenderObject() as RenderBox;
                 final size = renderBox.size;
                 final offset = renderBox.localToGlobal(Offset.zero);
-                final anchor = Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height);
+                final anchor = Rect.fromLTWH(
+                    offset.dx, offset.dy, size.width, size.height);
                 showPcUserCard(
                   context: avatarContext,
                   anchor: anchor,
@@ -1194,16 +1219,16 @@ class _SideBarIconButton extends StatelessWidget {
             width: 38,
             height: 38,
             decoration: BoxDecoration(
-              color: hovered
-                  ? colors.sidebarHoverBg
-                  : Colors.transparent,
+              color: hovered ? colors.sidebarHoverBg : Colors.transparent,
               borderRadius: BorderRadius.circular(6),
             ),
             child: Center(
               child: Icon(
                 icon,
                 size: 22,
-                color: hovered ? colors.iconPrimary : colors.iconSecondary.withValues(alpha: 0.7),
+                color: hovered
+                    ? colors.iconPrimary
+                    : colors.iconSecondary.withValues(alpha: 0.7),
               ),
             ),
           ),

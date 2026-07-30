@@ -33,7 +33,10 @@ class DiscoveryTab extends StatelessWidget {
                     if (Config.ENABLE_MOMENTS)
                       OptionItem(
                         l10n.momentWindowTitle,
-                        leftImage: Image.asset('assets/images/discover_moments.png', width: 20.0, height: 20.0),
+                        leftImage: Image.asset(
+                            'assets/images/discover_moments.png',
+                            width: 20.0,
+                            height: 20.0),
                         onTap: () {
                           Navigator.push(
                             context,
@@ -44,35 +47,47 @@ class DiscoveryTab extends StatelessWidget {
                       ),
                     OptionItem(
                       l10n.chatroom,
-                      leftImage: Image.asset('assets/images/discover_chatroom.png', width: 20.0, height: 20.0),
+                      leftImage: Image.asset(
+                          'assets/images/discover_chatroom.png',
+                          width: 20.0,
+                          height: 20.0),
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => ChatroomList()),
+                          MaterialPageRoute(
+                              builder: (context) => ChatroomList()),
                         );
                       },
                     ),
                     OptionItem(
                       l10n.robot,
-                      leftImage: Image.asset('assets/images/discover_robot.png', width: 20.0, height: 20.0),
+                      leftImage: Image.asset('assets/images/discover_robot.png',
+                          width: 20.0, height: 20.0),
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => ConversationScreen(
-                                  Conversation(conversationType: ConversationType.Single, target: 'FireRobot'))),
+                                  Conversation(
+                                      conversationType: ConversationType.Single,
+                                      target: 'FireRobot'))),
                         );
                       },
                     ),
                     if (avEngineKit.isSupportConference())
                       OptionItem(
                         l10n.conferenceTitle,
-                        leftImage: Image.asset('assets/images/discover_channel.png', width: 20.0, height: 20.0),
+                        leftImage: Image.asset(
+                            'assets/images/discover_channel.png',
+                            width: 20.0,
+                            height: 20.0),
                         showBottomDivider: false,
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const ConferenceHomeScreen()),
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const ConferenceHomeScreen()),
                           );
                         },
                       ),
@@ -86,25 +101,33 @@ class DiscoveryTab extends StatelessWidget {
                   children: [
                     OptionItem(
                       l10n.developmentDocumentation,
-                      leftImage: Image.asset('assets/images/discover_devdocs.png', width: 20.0, height: 20.0),
-                      showBottomDivider: Config.panServerAddress != null && Config.panServerAddress!.isNotEmpty,
+                      leftImage: Image.asset(
+                          'assets/images/discover_devdocs.png',
+                          width: 20.0,
+                          height: 20.0),
+                      showBottomDivider: Config.panServerAddress != null &&
+                          Config.panServerAddress!.isNotEmpty,
                       onTap: () {
                         var url = 'https://docs.wildfirechat.cn';
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => WFWebViewScreen(url)),
+                          MaterialPageRoute(
+                              builder: (context) => WFWebViewScreen(url)),
                         );
                       },
                     ),
-                    if (Config.panServerAddress != null && Config.panServerAddress!.isNotEmpty)
+                    if (Config.panServerAddress != null &&
+                        Config.panServerAddress!.isNotEmpty)
                       OptionItem(
                         l10n.cloudDrive,
-                        leftImage: Image.asset('assets/images/net_disk.png', width: 20.0, height: 20.0),
+                        leftImage: Image.asset('assets/images/net_disk.png',
+                            width: 20.0, height: 20.0),
                         showBottomDivider: false,
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const PanHomeScreen()),
+                            MaterialPageRoute(
+                                builder: (context) => const PanHomeScreen()),
                           );
                         },
                       ),

@@ -26,13 +26,15 @@ class LayoutScale {
   static const double textCap = double.infinity;
 
   /// 缩放 [base],并在字号变化时重建调用方。
-  static double watchScale(BuildContext context, double base, {double cap = iconCap}) {
+  static double watchScale(BuildContext context, double base,
+      {double cap = iconCap}) {
     return base * min(context.watch<FontSizeViewModel>().textScaleFactor, cap);
   }
 
   /// 同 [watchScale],但不建立依赖。用于 layout 回调(如 itemExtentBuilder)中,
   /// 或调用方已在 build 里自行监听的场景 —— 在 layout 阶段注册依赖是非法的。
-  static double scale(BuildContext context, double base, {double cap = iconCap}) {
+  static double scale(BuildContext context, double base,
+      {double cap = iconCap}) {
     return base * min(context.read<FontSizeViewModel>().textScaleFactor, cap);
   }
 }

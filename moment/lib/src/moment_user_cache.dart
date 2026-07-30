@@ -41,12 +41,15 @@ class MomentUserCache extends ChangeNotifier {
   void _load(String userId) {
     if (_loading.contains(userId)) return;
     _loading.add(userId);
-    Imclient.getUserInfo(userId).then((info) {
-      if (info != null) {
-        _cache[userId] = info;
-        _notifyUser(userId);
-      }
-    }).catchError((_) {}).whenComplete(() => _loading.remove(userId));
+    Imclient.getUserInfo(userId)
+        .then((info) {
+          if (info != null) {
+            _cache[userId] = info;
+            _notifyUser(userId);
+          }
+        })
+        .catchError((_) {})
+        .whenComplete(() => _loading.remove(userId));
   }
 
   /// 强制刷新某个用户。

@@ -18,12 +18,14 @@ class ImageCellBuilder extends PortraitCellBuilder {
   // 本地文件存在性在构造时判断一次，避免每次 build 都在主 isolate 同步 stat
   bool _localFileExists = false;
 
-  ImageCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  ImageCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     imageMessageContent = model.message.content as ImageMessageContent;
     if (imageMessageContent.thumbnail != null) {
       thumbnail = imageMessageContent.thumbnail!;
     }
-    if (imageMessageContent.localPath != null && imageMessageContent.localPath!.isNotEmpty) {
+    if (imageMessageContent.localPath != null &&
+        imageMessageContent.localPath!.isNotEmpty) {
       _localFileExists = File(imageMessageContent.localPath!).existsSync();
     }
   }
@@ -38,7 +40,8 @@ class ImageCellBuilder extends PortraitCellBuilder {
   }
 
   Widget _buildThumbnail(BuildContext context) {
-    Size imageSize = Tools.getImageSizeByOrgSizeToWeChat(imageMessageContent.width, imageMessageContent.height);
+    Size imageSize = Tools.getImageSizeByOrgSizeToWeChat(
+        imageMessageContent.width, imageMessageContent.height);
     double width = imageSize.width > 0 ? imageSize.width : 200;
     double height = imageSize.height > 0 ? imageSize.height : 200;
 
@@ -73,7 +76,8 @@ class ImageCellBuilder extends PortraitCellBuilder {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: CachedNetworkImage(
-            imageUrl: MediaUrlRedirector.redirect(imageMessageContent.remoteUrl!),
+            imageUrl:
+                MediaUrlRedirector.redirect(imageMessageContent.remoteUrl!),
             width: width,
             height: height,
             memCacheWidth: (width * dpr).ceil(),

@@ -3,7 +3,6 @@ import '../message.dart';
 import '../message_content.dart';
 import 'notification_message_content.dart';
 
-
 // ignore: non_constant_identifier_names
 MessageContent FriendGreetingMessageContentCreator() {
   return FriendGreetingMessageContent();
@@ -24,7 +23,6 @@ class FriendGreetingMessageContent extends NotificationMessageContent {
     return payload;
   }
 
-
   @override
   Future<String> formatNotification(Message message) async {
     return digest(message);
@@ -37,5 +35,4 @@ class FriendGreetingMessageContent extends NotificationMessageContent {
 
   @override
   MessageContentMeta get meta => friendGreetingContentMeta;
-
 }

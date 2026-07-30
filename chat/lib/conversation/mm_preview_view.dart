@@ -43,7 +43,8 @@ class MMPreviewView extends StatefulWidget {
   // naturalSize 为已确切知道的媒体像素尺寸:视频消息里没有宽高,只有播放器
   // 初始化完成后才知道,未知时为 null(调用方自行从消息里取)。
   // PC 独立预览窗口用它把窗口调成当前媒体的形状。
-  final void Function(Message message, Size? naturalSize)? onCurrentMediaChanged;
+  final void Function(Message message, Size? naturalSize)?
+      onCurrentMediaChanged;
 
   const MMPreviewView(this.mediaItems,
       {super.key,
@@ -59,7 +60,8 @@ class MMPreviewView extends StatefulWidget {
   State<MMPreviewView> createState() => MMPreviewViewState();
 }
 
-class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin {
+class MMPreviewViewState extends State<MMPreviewView>
+    with AmbientShortcutsMixin {
   late int currentIndex;
   late PageController _pageController;
   bool isZoomed = false; // Add zoomed state
@@ -83,18 +85,21 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
   Map<ShortcutActivator, ShortcutHandler> get ambientShortcuts => {
         const SingleActivator(LogicalKeyboardKey.escape): _closeByShortcut,
         const SingleActivator(LogicalKeyboardKey.space): _spaceByShortcut,
-      const CmdOrCtrl(LogicalKeyboardKey.keyC): _copyCurrentImageByShortcut,
+        const CmdOrCtrl(LogicalKeyboardKey.keyC): _copyCurrentImageByShortcut,
       };
 
   @override
   Map<ShortcutActivator, ShortcutHandler> get ambientShortcutsBeforeFocus => {
-        const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _pageByShortcut(-1),
-        const SingleActivator(LogicalKeyboardKey.arrowRight): () => _pageByShortcut(1),
+        const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
+            _pageByShortcut(-1),
+        const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
+            _pageByShortcut(1),
       };
 
   /// 移动端不接键盘;另存为对话框/倍速菜单压在上面时,快捷键交给它们
   @override
-  bool get ambientShortcutsActive => isDesktopShell && super.ambientShortcutsActive;
+  bool get ambientShortcutsActive =>
+      isDesktopShell && super.ambientShortcutsActive;
 
   bool _closeByShortcut() {
     _requestClose();
@@ -145,7 +150,8 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
   }
 
   PhotoViewController _photoControllerFor(int messageId) {
-    return _photoControllers.putIfAbsent(messageId, () => PhotoViewController());
+    return _photoControllers.putIfAbsent(
+        messageId, () => PhotoViewController());
   }
 
   int get _currentMessageId => widget.mediaItems[currentIndex].messageId;
@@ -175,7 +181,6 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
       Navigator.pop(context);
     }
   }
-
 
   // 空格键:图片页关闭预览(与 Esc 一致);视频页则切换播放/暂停,不关闭预览。
   void _handleSpaceKey() {
@@ -216,11 +221,13 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
     final controller = _photoControllers[message.messageId];
     if (controller == null) return;
     final Size viewport = MediaQuery.of(context).size;
-    final Size child = _imageChildSize(content, _rotations[message.messageId] ?? 0);
+    final Size child =
+        _imageChildSize(content, _rotations[message.messageId] ?? 0);
     final double contained =
         math.min(viewport.width / child.width, viewport.height / child.height);
     final double maxScale =
-        math.max(viewport.width / child.width, viewport.height / child.height) * 2.5;
+        math.max(viewport.width / child.width, viewport.height / child.height) *
+            2.5;
     final double current = controller.scale ?? contained;
     controller.scale = (current * factor).clamp(contained, maxScale).toDouble();
   }
@@ -241,7 +248,8 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
     final Size screen = MediaQuery.of(context).size;
     final content = widget.mediaItems[currentIndex].content;
     if (content is ImageMessageContent) {
-      final Size child = _imageChildSize(content, _rotations[_currentMessageId] ?? 0);
+      final Size child =
+          _imageChildSize(content, _rotations[_currentMessageId] ?? 0);
       if (child != screen) {
         final double s =
             math.min(screen.width / child.width, screen.height / child.height);
@@ -270,165 +278,179 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
   Widget build(BuildContext context) {
     // 桌面端翻页走两侧按钮/方向键(与微信一致),滚轮专用于缩放
     Widget gallery = PhotoViewGallery.builder(
-              scrollPhysics: isDesktopShell
-                  ? const NeverScrollableScrollPhysics()
-                  : const BouncingScrollPhysics(),
-              builder: (BuildContext context, int index) {
-                Message message = widget.mediaItems[index];
+        scrollPhysics: isDesktopShell
+            ? const NeverScrollableScrollPhysics()
+            : const BouncingScrollPhysics(),
+        builder: (BuildContext context, int index) {
+          Message message = widget.mediaItems[index];
 
-                if (message.content is ImageMessageContent) {
-                  ImageMessageContent imageContent = message.content as ImageMessageContent;
+          if (message.content is ImageMessageContent) {
+            ImageMessageContent imageContent =
+                message.content as ImageMessageContent;
 
-                  // 优先检查本地文件（大图预览不进入 Flutter ImageCache）
-                  if (imageContent.localPath != null && imageContent.localPath!.isNotEmpty) {
-                    File localFile = File(imageContent.localPath!);
-                    if (localFile.existsSync()) {
-                      final rotation = _rotations[message.messageId] ?? 0;
-                      final Size childSize = _imageChildSize(imageContent, rotation);
-                      final Size screenSize = MediaQuery.of(context).size;
-                      // childSize 为原图尺寸时整页被 contained 比例缩放,占位/错误图标反向缩放保持视觉大小
-                      final double containedScale = math.min(
-                          screenSize.width / childSize.width, screenSize.height / childSize.height);
-                      Widget keepVisualSize(Widget child) => Center(
-                          child: Transform.scale(scale: 1 / containedScale, child: child));
-                      return PhotoViewGalleryPageOptions.customChild(
-                        child: RotatedBox(
-                          quarterTurns: rotation,
-                          child: NonCachedImage.file(
-                            path: imageContent.localPath!,
-                            placeholder: keepVisualSize(
-                              const CircularProgressIndicator(strokeWidth: 2, color: Colors.white30),
-                            ),
-                            errorWidget: keepVisualSize(
-                              const Icon(
-                                Icons.broken_image_rounded,
-                                color: Colors.white30,
-                                size: 48,
-                              ),
-                            ),
-                            fit: BoxFit.contain,
-                            filterQuality: FilterQuality.medium,
-                          ),
-                        ),
-                        childSize: childSize,
-                        minScale: PhotoViewComputedScale.contained,
-                        maxScale: PhotoViewComputedScale.covered * 2.5,
-                        controller: _photoControllerFor(message.messageId),
-                        scaleStateController: _scaleStateControllerFor(message.messageId),
-                      );
-                    }
-                  }
-
-                  // 使用网络图片（大图预览不进入 Flutter ImageCache，仍复用磁盘缓存）
-                  if (imageContent.remoteUrl != null && imageContent.remoteUrl!.isNotEmpty) {
-                    final rotation = _rotations[message.messageId] ?? 0;
-                    final Size childSize = _imageChildSize(imageContent, rotation);
-                    final Size screenSize = MediaQuery.of(context).size;
-                    // childSize 为原图尺寸时整页被 contained 比例缩放,占位/错误图标反向缩放保持视觉大小
-                    final double containedScale = math.min(
-                        screenSize.width / childSize.width, screenSize.height / childSize.height);
-                    Widget keepVisualSize(Widget child) => Center(
-                        child: Transform.scale(scale: 1 / containedScale, child: child));
-                    return PhotoViewGalleryPageOptions.customChild(
-                      child: RotatedBox(
-                        quarterTurns: rotation,
-                        child: NonCachedImage.network(
-                          url: MediaUrlRedirector.redirect(imageContent.remoteUrl!),
-                          placeholder: keepVisualSize(
-                            const CircularProgressIndicator(strokeWidth: 2, color: Colors.white30),
-                          ),
-                          errorWidget: keepVisualSize(
-                            const Icon(
-                              Icons.broken_image_rounded,
-                              color: Colors.white30,
-                              size: 48,
-                            ),
-                          ),
-                          fit: BoxFit.contain,
-                          filterQuality: FilterQuality.medium,
+            // 优先检查本地文件（大图预览不进入 Flutter ImageCache）
+            if (imageContent.localPath != null &&
+                imageContent.localPath!.isNotEmpty) {
+              File localFile = File(imageContent.localPath!);
+              if (localFile.existsSync()) {
+                final rotation = _rotations[message.messageId] ?? 0;
+                final Size childSize = _imageChildSize(imageContent, rotation);
+                final Size screenSize = MediaQuery.of(context).size;
+                // childSize 为原图尺寸时整页被 contained 比例缩放,占位/错误图标反向缩放保持视觉大小
+                final double containedScale = math.min(
+                    screenSize.width / childSize.width,
+                    screenSize.height / childSize.height);
+                Widget keepVisualSize(Widget child) => Center(
+                    child: Transform.scale(
+                        scale: 1 / containedScale, child: child));
+                return PhotoViewGalleryPageOptions.customChild(
+                  child: RotatedBox(
+                    quarterTurns: rotation,
+                    child: NonCachedImage.file(
+                      path: imageContent.localPath!,
+                      placeholder: keepVisualSize(
+                        const CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white30),
+                      ),
+                      errorWidget: keepVisualSize(
+                        const Icon(
+                          Icons.broken_image_rounded,
+                          color: Colors.white30,
+                          size: 48,
                         ),
                       ),
-                      childSize: childSize,
-                      minScale: PhotoViewComputedScale.contained,
-                      maxScale: PhotoViewComputedScale.covered * 2.5,
-                      controller: _photoControllerFor(message.messageId),
-                      scaleStateController: _scaleStateControllerFor(message.messageId),
-                    );
-                  }
-
-                  // 默认占位符
-                  return PhotoViewGalleryPageOptions(
-                    imageProvider: const AssetImage('assets/images/placeholder.png'),
-                    minScale: PhotoViewComputedScale.contained,
-                    maxScale: PhotoViewComputedScale.covered * 2.5,
-                  );
-                } else if (message.content is VideoMessageContent) {
-                  VideoMessageContent videoContent = message.content as VideoMessageContent;
-                  return PhotoViewGalleryPageOptions.customChild(
-                    child: MMVideoPlayer(
-                      videoContent,
-                      onTap: () {
-                        // Toggle controls or whatever if needed, or handle in player
-                      },
-                      onControllerReady: (controller) {
-                        _videoControllers[message.messageId] = controller;
-                        // 视频消息里没有宽高,初始化完成才知道真实尺寸,
-                        // 上报给独立预览窗口据此调整窗口大小
-                        if (message.messageId == _currentMessageId) {
-                          _notifyCurrentMediaChanged();
-                        }
-                      },
-                      onControllerDisposed: () =>
-                          _videoControllers.remove(message.messageId),
-                      // 图片的"另存为"在底部工具栏,视频没有那条工具栏,
-                      // 改放到自己控制条的最右侧
-                      onSave: _saveCurrentMedia,
+                      fit: BoxFit.contain,
+                      filterQuality: FilterQuality.medium,
                     ),
-                    childSize: MediaQuery.of(context).size,
-                    initialScale: PhotoViewComputedScale.contained,
-                    minScale: PhotoViewComputedScale.contained,
-                    maxScale: PhotoViewComputedScale.contained, // Video usually doesn't zoom
-                    heroAttributes: PhotoViewHeroAttributes(tag: message.messageUid ?? message.messageId),
-                  );
-                }
-
-                return PhotoViewGalleryPageOptions(
-                    imageProvider: const AssetImage('assets/images/placeholder.png'),
+                  ),
+                  childSize: childSize,
+                  minScale: PhotoViewComputedScale.contained,
+                  maxScale: PhotoViewComputedScale.covered * 2.5,
+                  controller: _photoControllerFor(message.messageId),
+                  scaleStateController:
+                      _scaleStateControllerFor(message.messageId),
                 );
-              },
-              scrollDirection: widget.direction,
-              itemCount: widget.mediaItems.length,
-              backgroundDecoration: widget.decoration ??
-                  const BoxDecoration(color: Colors.transparent),
-              pageController: _pageController,
-              // 双指缩放、双击缩放(含动画中途)都会走这里,isZoomed 驱动 DragToDismiss 开关
-              scaleStateChangedCallback: (state) {
-                final bool zoomed = state != PhotoViewScaleState.initial;
-                if (zoomed != isZoomed) {
-                  setState(() => isZoomed = zoomed);
-                }
-              },
-              onPageChanged: (index) => setState(() {
-                    currentIndex = index;
-                    if (index == _navTarget) {
-                      _navTarget = null;
-                    }
-                    isZoomed = false;
-                    // 参考微信:切走页面时复位缩放,切回来是初始大小
-                    for (final controller in _scaleStateControllers.values) {
-                      controller.reset();
-                    }
-                    if (widget.pageToEnd != null) {
-                      Message message = widget.mediaItems[index];
-                      if (index == 0) {
-                        widget.pageToEnd!(message.messageId, false);
-                      } else if (index == widget.mediaItems.length - 1) {
-                        widget.pageToEnd!(message.messageId, true);
-                      }
-                    }
-                    // 翻到的这张形状变了,独立预览窗口要跟着调窗口大小
+              }
+            }
+
+            // 使用网络图片（大图预览不进入 Flutter ImageCache，仍复用磁盘缓存）
+            if (imageContent.remoteUrl != null &&
+                imageContent.remoteUrl!.isNotEmpty) {
+              final rotation = _rotations[message.messageId] ?? 0;
+              final Size childSize = _imageChildSize(imageContent, rotation);
+              final Size screenSize = MediaQuery.of(context).size;
+              // childSize 为原图尺寸时整页被 contained 比例缩放,占位/错误图标反向缩放保持视觉大小
+              final double containedScale = math.min(
+                  screenSize.width / childSize.width,
+                  screenSize.height / childSize.height);
+              Widget keepVisualSize(Widget child) => Center(
+                  child:
+                      Transform.scale(scale: 1 / containedScale, child: child));
+              return PhotoViewGalleryPageOptions.customChild(
+                child: RotatedBox(
+                  quarterTurns: rotation,
+                  child: NonCachedImage.network(
+                    url: MediaUrlRedirector.redirect(imageContent.remoteUrl!),
+                    placeholder: keepVisualSize(
+                      const CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white30),
+                    ),
+                    errorWidget: keepVisualSize(
+                      const Icon(
+                        Icons.broken_image_rounded,
+                        color: Colors.white30,
+                        size: 48,
+                      ),
+                    ),
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.medium,
+                  ),
+                ),
+                childSize: childSize,
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 2.5,
+                controller: _photoControllerFor(message.messageId),
+                scaleStateController:
+                    _scaleStateControllerFor(message.messageId),
+              );
+            }
+
+            // 默认占位符
+            return PhotoViewGalleryPageOptions(
+              imageProvider: const AssetImage('assets/images/placeholder.png'),
+              minScale: PhotoViewComputedScale.contained,
+              maxScale: PhotoViewComputedScale.covered * 2.5,
+            );
+          } else if (message.content is VideoMessageContent) {
+            VideoMessageContent videoContent =
+                message.content as VideoMessageContent;
+            return PhotoViewGalleryPageOptions.customChild(
+              child: MMVideoPlayer(
+                videoContent,
+                onTap: () {
+                  // Toggle controls or whatever if needed, or handle in player
+                },
+                onControllerReady: (controller) {
+                  _videoControllers[message.messageId] = controller;
+                  // 视频消息里没有宽高,初始化完成才知道真实尺寸,
+                  // 上报给独立预览窗口据此调整窗口大小
+                  if (message.messageId == _currentMessageId) {
                     _notifyCurrentMediaChanged();
-                  }));
+                  }
+                },
+                onControllerDisposed: () =>
+                    _videoControllers.remove(message.messageId),
+                // 图片的"另存为"在底部工具栏,视频没有那条工具栏,
+                // 改放到自己控制条的最右侧
+                onSave: _saveCurrentMedia,
+              ),
+              childSize: MediaQuery.of(context).size,
+              initialScale: PhotoViewComputedScale.contained,
+              minScale: PhotoViewComputedScale.contained,
+              maxScale: PhotoViewComputedScale
+                  .contained, // Video usually doesn't zoom
+              heroAttributes: PhotoViewHeroAttributes(
+                  tag: message.messageUid ?? message.messageId),
+            );
+          }
+
+          return PhotoViewGalleryPageOptions(
+            imageProvider: const AssetImage('assets/images/placeholder.png'),
+          );
+        },
+        scrollDirection: widget.direction,
+        itemCount: widget.mediaItems.length,
+        backgroundDecoration:
+            widget.decoration ?? const BoxDecoration(color: Colors.transparent),
+        pageController: _pageController,
+        // 双指缩放、双击缩放(含动画中途)都会走这里,isZoomed 驱动 DragToDismiss 开关
+        scaleStateChangedCallback: (state) {
+          final bool zoomed = state != PhotoViewScaleState.initial;
+          if (zoomed != isZoomed) {
+            setState(() => isZoomed = zoomed);
+          }
+        },
+        onPageChanged: (index) => setState(() {
+              currentIndex = index;
+              if (index == _navTarget) {
+                _navTarget = null;
+              }
+              isZoomed = false;
+              // 参考微信:切走页面时复位缩放,切回来是初始大小
+              for (final controller in _scaleStateControllers.values) {
+                controller.reset();
+              }
+              if (widget.pageToEnd != null) {
+                Message message = widget.mediaItems[index];
+                if (index == 0) {
+                  widget.pageToEnd!(message.messageId, false);
+                } else if (index == widget.mediaItems.length - 1) {
+                  widget.pageToEnd!(message.messageId, true);
+                }
+              }
+              // 翻到的这张形状变了,独立预览窗口要跟着调窗口大小
+              _notifyCurrentMediaChanged();
+            }));
     if (isDesktopShell) {
       // 参考微信:滚轮向上放大、向下缩小当前图片
       gallery = Listener(
@@ -456,10 +478,13 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
               child: Center(
                 child: HoverBuilder(
                   builder: (context, isHovered) => Material(
-                    color: isHovered ? Colors.black.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.25),
+                    color: isHovered
+                        ? Colors.black.withValues(alpha: 0.5)
+                        : Colors.black.withValues(alpha: 0.25),
                     shape: const CircleBorder(),
                     child: IconButton(
-                      icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 36),
+                      icon: const Icon(Icons.chevron_left_rounded,
+                          color: Colors.white, size: 36),
                       onPressed: () => _goToRelative(-1),
                       tooltip: AppLocalizations.of(context)!.previousImage,
                     ),
@@ -476,10 +501,13 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
               child: Center(
                 child: HoverBuilder(
                   builder: (context, isHovered) => Material(
-                    color: isHovered ? Colors.black.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.25),
+                    color: isHovered
+                        ? Colors.black.withValues(alpha: 0.5)
+                        : Colors.black.withValues(alpha: 0.25),
                     shape: const CircleBorder(),
                     child: IconButton(
-                      icon: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 36),
+                      icon: const Icon(Icons.chevron_right_rounded,
+                          color: Colors.white, size: 36),
                       onPressed: () => _goToRelative(1),
                       tooltip: AppLocalizations.of(context)!.nextImage,
                     ),
@@ -495,10 +523,13 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
               right: 16,
               child: HoverBuilder(
                 builder: (context, isHovered) => Material(
-                  color: isHovered ? Colors.black.withValues(alpha: 0.5) : Colors.black.withValues(alpha: 0.25),
+                  color: isHovered
+                      ? Colors.black.withValues(alpha: 0.5)
+                      : Colors.black.withValues(alpha: 0.25),
                   shape: const CircleBorder(),
                   child: IconButton(
-                    icon: const Icon(Icons.close_rounded, color: Colors.white, size: 24),
+                    icon: const Icon(Icons.close_rounded,
+                        color: Colors.white, size: 24),
                     onPressed: _requestClose,
                     tooltip: AppLocalizations.of(context)!.close,
                   ),
@@ -507,7 +538,8 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
             ),
           // Bottom toolbar on desktop:缩放/旋转对视频没有意义,存储已挪到右键菜单,
           // 只在图片页显示;视频页由 MMVideoPlayer 自己的底部控制条负责。
-          if (isDesktopShell && widget.mediaItems[currentIndex].content is ImageMessageContent)
+          if (isDesktopShell &&
+              widget.mediaItems[currentIndex].content is ImageMessageContent)
             Positioned(
               bottom: 30,
               left: 0,
@@ -519,31 +551,37 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.65),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 0.5),
+                    border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.1), width: 0.5),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Zoom Out
                       IconButton(
-                        icon: const Icon(Icons.zoom_out_rounded, color: Colors.white70, size: 20),
+                        icon: const Icon(Icons.zoom_out_rounded,
+                            color: Colors.white70, size: 20),
                         onPressed: () => _zoomBy(1 / 1.25),
                         tooltip: AppLocalizations.of(context)!.zoomOut,
                       ),
                       const SizedBox(width: 8),
                       // Zoom In
                       IconButton(
-                        icon: const Icon(Icons.zoom_in_rounded, color: Colors.white70, size: 20),
+                        icon: const Icon(Icons.zoom_in_rounded,
+                            color: Colors.white70, size: 20),
                         onPressed: () => _zoomBy(1.25),
                         tooltip: AppLocalizations.of(context)!.zoomIn,
                       ),
                       const SizedBox(width: 8),
                       // Rotate Left
                       IconButton(
-                        icon: const Icon(Icons.rotate_left_rounded, color: Colors.white70, size: 20),
+                        icon: const Icon(Icons.rotate_left_rounded,
+                            color: Colors.white70, size: 20),
                         onPressed: () {
                           setState(() {
-                            _rotations[_currentMessageId] = ((_rotations[_currentMessageId] ?? 0) - 1 + 4) % 4;
+                            _rotations[_currentMessageId] =
+                                ((_rotations[_currentMessageId] ?? 0) - 1 + 4) %
+                                    4;
                           });
                         },
                         tooltip: AppLocalizations.of(context)!.rotateLeft,
@@ -551,10 +589,12 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
                       const SizedBox(width: 8),
                       // Rotate Right
                       IconButton(
-                        icon: const Icon(Icons.rotate_right_rounded, color: Colors.white70, size: 20),
+                        icon: const Icon(Icons.rotate_right_rounded,
+                            color: Colors.white70, size: 20),
                         onPressed: () {
                           setState(() {
-                            _rotations[_currentMessageId] = ((_rotations[_currentMessageId] ?? 0) + 1) % 4;
+                            _rotations[_currentMessageId] =
+                                ((_rotations[_currentMessageId] ?? 0) + 1) % 4;
                           });
                         },
                         tooltip: AppLocalizations.of(context)!.rotateRight,
@@ -562,7 +602,8 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
                       const SizedBox(width: 8),
                       // Save As
                       IconButton(
-                        icon: const Icon(Icons.download_rounded, color: Colors.white70, size: 20),
+                        icon: const Icon(Icons.download_rounded,
+                            color: Colors.white70, size: 20),
                         onPressed: _saveCurrentMedia,
                         tooltip: AppLocalizations.of(context)!.saveAs,
                       ),
@@ -668,7 +709,8 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
         final client = HttpClient();
         final request = await client.getUrl(Uri.parse(remoteUrl));
         final response = await request.close();
-        final bytes = await response.fold<List<int>>([], (prev, element) => prev..addAll(element));
+        final bytes = await response
+            .fold<List<int>>([], (prev, element) => prev..addAll(element));
         await File(outputFile).writeAsBytes(bytes);
         showToast(msg: l10n.saveSuccess);
       } else {
@@ -742,7 +784,8 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return null;
       }
-      final bytes = await response.fold<List<int>>([], (prev, element) => prev..addAll(element));
+      final bytes = await response
+          .fold<List<int>>([], (prev, element) => prev..addAll(element));
       return Uint8List.fromList(bytes);
     } finally {
       client.close(force: true);
@@ -766,7 +809,8 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
     return uri.pathSegments.last;
   }
 
-  SimpleFileFormat? _detectImageFormat(Uint8List bytes, {String? fileNameHint}) {
+  SimpleFileFormat? _detectImageFormat(Uint8List bytes,
+      {String? fileNameHint}) {
     final ext = fileNameHint == null ? '' : fileNameHint.toLowerCase();
     if (ext.endsWith('.png')) return Formats.png;
     if (ext.endsWith('.jpg') || ext.endsWith('.jpeg')) return Formats.jpeg;
@@ -813,8 +857,14 @@ class MMPreviewViewState extends State<MMPreviewView> with AmbientShortcutsMixin
       return Formats.bmp;
     }
     if (bytes.length >= 4 &&
-        ((bytes[0] == 0x49 && bytes[1] == 0x49 && bytes[2] == 0x2A && bytes[3] == 0x00) ||
-            (bytes[0] == 0x4D && bytes[1] == 0x4D && bytes[2] == 0x00 && bytes[3] == 0x2A))) {
+        ((bytes[0] == 0x49 &&
+                bytes[1] == 0x49 &&
+                bytes[2] == 0x2A &&
+                bytes[3] == 0x00) ||
+            (bytes[0] == 0x4D &&
+                bytes[1] == 0x4D &&
+                bytes[2] == 0x00 &&
+                bytes[3] == 0x2A))) {
       return Formats.tiff;
     }
     return null;
@@ -868,13 +918,17 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
   }
 
   void _initializeController() {
-    if (widget.content.localPath != null && widget.content.localPath!.isNotEmpty && File(widget.content.localPath!).existsSync()) {
+    if (widget.content.localPath != null &&
+        widget.content.localPath!.isNotEmpty &&
+        File(widget.content.localPath!).existsSync()) {
       _controller = VideoPlayerController.file(File(widget.content.localPath!));
-    } else if (widget.content.remoteUrl != null && widget.content.remoteUrl!.isNotEmpty) {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(MediaUrlRedirector.redirect(widget.content.remoteUrl!)));
+    } else if (widget.content.remoteUrl != null &&
+        widget.content.remoteUrl!.isNotEmpty) {
+      _controller = VideoPlayerController.networkUrl(
+          Uri.parse(MediaUrlRedirector.redirect(widget.content.remoteUrl!)));
     } else {
-       // fallback or error handling
-       _controller = VideoPlayerController.networkUrl(Uri.parse(""));
+      // fallback or error handling
+      _controller = VideoPlayerController.networkUrl(Uri.parse(""));
     }
 
     // 播放/暂停按钮、加载态都要跟着控制器的真实状态走(而不是只在手动调用的
@@ -907,7 +961,8 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
         _controller.setVolume(_volumeBeforeMute > 0 ? _volumeBeforeMute : 1.0);
         _isMuted = false;
       } else {
-        _volumeBeforeMute = _controller.value.volume > 0 ? _controller.value.volume : 1.0;
+        _volumeBeforeMute =
+            _controller.value.volume > 0 ? _controller.value.volume : 1.0;
         _controller.setVolume(0);
         _isMuted = true;
       }
@@ -929,15 +984,17 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
     final VideoPlayerValue value = _controller.value;
     final Duration total = value.duration;
     final double totalMs = total.inMilliseconds.toDouble();
-    final double currentMs = (_dragPositionMs ?? value.position.inMilliseconds.toDouble())
-        .clamp(0.0, totalMs > 0 ? totalMs : 1.0);
+    final double currentMs =
+        (_dragPositionMs ?? value.position.inMilliseconds.toDouble())
+            .clamp(0.0, totalMs > 0 ? totalMs : 1.0);
     final bool muted = _isMuted || value.volume <= 0;
     final l10n = AppLocalizations.of(context)!;
 
     return Positioned(
       left: 24,
       right: 24,
-      bottom: isDesktopShell ? 30 : (24 + MediaQuery.of(context).padding.bottom),
+      bottom:
+          isDesktopShell ? 30 : (24 + MediaQuery.of(context).padding.bottom),
       child: Container(
         height: 40,
         padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -962,8 +1019,10 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
               child: SliderTheme(
                 data: SliderTheme.of(context).copyWith(
                   trackHeight: 2,
-                  thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                  overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
+                  thumbShape:
+                      const RoundSliderThumbShape(enabledThumbRadius: 6),
+                  overlayShape:
+                      const RoundSliderOverlayShape(overlayRadius: 12),
                   activeTrackColor: Colors.white,
                   inactiveTrackColor: Colors.white.withValues(alpha: 0.3),
                   thumbColor: Colors.white,
@@ -972,11 +1031,16 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
                   value: currentMs,
                   min: 0,
                   max: totalMs > 0 ? totalMs : 1.0,
-                  onChangeStart: totalMs > 0 ? (v) => setState(() => _dragPositionMs = v) : null,
-                  onChanged: totalMs > 0 ? (v) => setState(() => _dragPositionMs = v) : null,
+                  onChangeStart: totalMs > 0
+                      ? (v) => setState(() => _dragPositionMs = v)
+                      : null,
+                  onChanged: totalMs > 0
+                      ? (v) => setState(() => _dragPositionMs = v)
+                      : null,
                   onChangeEnd: totalMs > 0
                       ? (v) async {
-                          await _controller.seekTo(Duration(milliseconds: v.round()));
+                          await _controller
+                              .seekTo(Duration(milliseconds: v.round()));
                           if (mounted) setState(() => _dragPositionMs = null);
                         }
                       : null,
@@ -1007,7 +1071,8 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
                         ),
                       ))
                   .toList(),
-              child: Text(l10n.playbackSpeed, style: const TextStyle(color: Colors.white, fontSize: 12)),
+              child: Text(l10n.playbackSpeed,
+                  style: const TextStyle(color: Colors.white, fontSize: 12)),
             ),
             const SizedBox(width: 10),
             Tooltip(
@@ -1027,7 +1092,8 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
                 message: l10n.saveAs,
                 child: GestureDetector(
                   onTap: widget.onSave,
-                  child: const Icon(Icons.download_rounded, color: Colors.white, size: 20),
+                  child: const Icon(Icons.download_rounded,
+                      color: Colors.white, size: 20),
                 ),
               ),
             ],
@@ -1054,9 +1120,13 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
   }
 
   Future<void> _openWithSystemPlayer() async {
-    final videoUrl = widget.content.localPath != null && widget.content.localPath!.isNotEmpty && File(widget.content.localPath!).existsSync()
+    final videoUrl = widget.content.localPath != null &&
+            widget.content.localPath!.isNotEmpty &&
+            File(widget.content.localPath!).existsSync()
         ? Uri.file(widget.content.localPath!)
-        : (widget.content.remoteUrl != null ? Uri.parse(MediaUrlRedirector.redirect(widget.content.remoteUrl!)) : null);
+        : (widget.content.remoteUrl != null
+            ? Uri.parse(MediaUrlRedirector.redirect(widget.content.remoteUrl!))
+            : null);
     if (videoUrl != null && await canLaunchUrl(videoUrl)) {
       await launchUrl(videoUrl, mode: LaunchMode.externalApplication);
     }
@@ -1083,11 +1153,13 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.play_circle_outline, color: Colors.white.withValues(alpha: 0.8), size: 64),
+                Icon(Icons.play_circle_outline,
+                    color: Colors.white.withValues(alpha: 0.8), size: 64),
                 const SizedBox(height: 12),
                 Text(
                   AppLocalizations.of(context)!.openWithSystemPlayer,
-                  style: AppText.base.copyWith(color: Colors.white.withValues(alpha: 0.8)),
+                  style: AppText.base
+                      .copyWith(color: Colors.white.withValues(alpha: 0.8)),
                 ),
               ],
             ),
@@ -1125,7 +1197,8 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
                 : const CircularProgressIndicator(color: Colors.white),
           ),
           // 播放/暂停已经交给底部控制条和空格键,不再需要居中的大按钮
-          if (_controller.value.isInitialized && _controlsVisible) _buildControlBar(),
+          if (_controller.value.isInitialized && _controlsVisible)
+            _buildControlBar(),
         ],
       ),
     );

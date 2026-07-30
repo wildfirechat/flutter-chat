@@ -22,7 +22,6 @@ class FriendRequestPage extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => FriendRequestPageState();
-
 }
 
 class FriendRequestPageState extends State<FriendRequestPage> {
@@ -39,13 +38,13 @@ class FriendRequestPageState extends State<FriendRequestPage> {
   void _loadFriendRequestAndUserInfos() {
     Imclient.getIncommingFriendRequest().then((value) {
       List<String> userIds = [];
-      for(var f in value) {
+      for (var f in value) {
         userIds.add(f.target);
       }
 
       Imclient.getUserInfos(userIds).then((userInfos) {
         setState(() {
-          for(var ui in userInfos) {
+          for (var ui in userInfos) {
             cachedUserInfos[ui.userId] = ui;
           }
           requests = value;
@@ -79,7 +78,10 @@ class FriendRequestPageState extends State<FriendRequestPage> {
         child: ListView.separated(
           itemCount: requests.length,
           separatorBuilder: (context, __) => Divider(
-            indent: 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 12.0,
+            indent: 16.0 +
+                LayoutScale.watchScale(context, 40.0,
+                    cap: LayoutScale.iconCap) +
+                12.0,
           ),
           itemBuilder: _buildRow,
         ),
@@ -87,14 +89,12 @@ class FriendRequestPageState extends State<FriendRequestPage> {
     );
   }
 
-  void _loadUserInfo(String userId) {
-
-  }
+  void _loadUserInfo(String userId) {}
 
   Widget _buildRow(BuildContext context, int index) {
     FriendRequest request = requests[index];
     UserInfo? userInfo = cachedUserInfos[request.target];
-    if(userInfo == null) {
+    if (userInfo == null) {
       _loadUserInfo(request.target);
     }
 
@@ -105,22 +105,32 @@ class FriendRequestPageState extends State<FriendRequestPage> {
           onTap: () => pushPage(context, UserInfoWidget(request.target)),
           hoverColor: context.colors.hoverOverlay,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               children: [
-                Portrait(userInfo?.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40, height: 40),
+                Portrait(userInfo?.portrait ?? Config.defaultUserPortrait,
+                    Config.defaultUserPortrait,
+                    width: 40, height: 40),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       userInfo != null
-                          ? MeshUserName(userInfo, style: AppText.lg, maxLines: 1, overflow: TextOverflow.ellipsis)
-                          : Text("<${request.target}>", style: AppText.lg, maxLines: 1, overflow: TextOverflow.ellipsis),
+                          ? MeshUserName(userInfo,
+                              style: AppText.lg,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis)
+                          : Text("<${request.target}>",
+                              style: AppText.lg,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
                       if (request.reason != null && request.reason!.isNotEmpty)
                         Text(
                           request.reason!,
-                          style: AppText.sm.copyWith(color: context.colors.textSecondary),
+                          style: AppText.sm
+                              .copyWith(color: context.colors.textSecondary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -132,14 +142,16 @@ class FriendRequestPageState extends State<FriendRequestPage> {
                   // 行内主行动,中档实底(微信「新的朋友」同款形态)。
                   FilledButton(
                     onPressed: () => _acceptRequest(context, request.target),
-                    child: Text(AppLocalizations.of(context)!.friendRequestAccept),
+                    child:
+                        Text(AppLocalizations.of(context)!.friendRequestAccept),
                   )
                 else
                   Text(
                     request.status == FriendRequestStatus.Accepted
                         ? AppLocalizations.of(context)!.friendRequestAccepted
                         : AppLocalizations.of(context)!.friendRequestRejected,
-                    style: AppText.sm.copyWith(color: context.colors.textSecondary),
+                    style: AppText.sm
+                        .copyWith(color: context.colors.textSecondary),
                   ),
               ],
             ),
@@ -155,7 +167,7 @@ class FriendRequestPageState extends State<FriendRequestPage> {
       Fluttertoast.showToast(msg: l10n.friendRequestAccepted);
       _loadFriendRequestAndUserInfos();
     }, (errorCode) {
-      if(errorCode == 19) {
+      if (errorCode == 19) {
         Fluttertoast.showToast(msg: l10n.expired);
       } else {
         Fluttertoast.showToast(msg: l10n.networkErrorWithCode(errorCode));

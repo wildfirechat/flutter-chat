@@ -12,19 +12,135 @@ typedef OnPickerStickerCallback = void Function(String stickerPath);
 
 /// 内置 emoji 列表,移动端输入栏与桌面端表情弹层共用。
 const List<String> kChatEmojis = [
-  '😊', '😨', '😍', '😳', '😎', '😭', '😌', '😵', '😴', '😢',
-  '😅', '😡', '😜', '😀', '😲', '😟', '😤', '😞', '😫', '😣',
-  '😈', '😉', '😯', '😕', '😰', '😋', '😝', '😓', '😃', '😂',
-  '😘', '😒', '😏', '😶', '😱', '😖', '😩', '😔', '😑', '😚',
-  '😪', '😇', '🙊', '👊', '👎', '☝', '✌', '😬', '😷', '🙈',
-  '👌', '👏', '✊', '💪', '😆', '☺', '🙉', '👍', '🙏', '✋',
-  '☀', '☕', '⛄', '📚', '🎁', '🎉', '🍦', '☁', '❄', '⚡',
-  '💰', '🎂', '🎓', '🍖', '☔', '⛅', '✏', '💩', '🎄', '🍷',
-  '🎤', '🏀', '🀄', '💣', '📢', '🌏', '🍫', '🎲', '🏂', '💡',
-  '💤', '🚫', '🌻', '🍻', '🎵', '🏡', '💢', '📞', '🚿', '🍚',
-  '👪', '👼', '💊', '🔫', '🌹', '🐶', '💄', '👫', '👽', '💋',
-  '🌙', '🍉', '🐷', '💔', '👻', '👿', '💍', '🌲', '🐴', '👑',
-  '🔥', '⭐', '⚽', '🕖', '⏰', '😁', '🚀', '⏳', '🏡'
+  '😊',
+  '😨',
+  '😍',
+  '😳',
+  '😎',
+  '😭',
+  '😌',
+  '😵',
+  '😴',
+  '😢',
+  '😅',
+  '😡',
+  '😜',
+  '😀',
+  '😲',
+  '😟',
+  '😤',
+  '😞',
+  '😫',
+  '😣',
+  '😈',
+  '😉',
+  '😯',
+  '😕',
+  '😰',
+  '😋',
+  '😝',
+  '😓',
+  '😃',
+  '😂',
+  '😘',
+  '😒',
+  '😏',
+  '😶',
+  '😱',
+  '😖',
+  '😩',
+  '😔',
+  '😑',
+  '😚',
+  '😪',
+  '😇',
+  '🙊',
+  '👊',
+  '👎',
+  '☝',
+  '✌',
+  '😬',
+  '😷',
+  '🙈',
+  '👌',
+  '👏',
+  '✊',
+  '💪',
+  '😆',
+  '☺',
+  '🙉',
+  '👍',
+  '🙏',
+  '✋',
+  '☀',
+  '☕',
+  '⛄',
+  '📚',
+  '🎁',
+  '🎉',
+  '🍦',
+  '☁',
+  '❄',
+  '⚡',
+  '💰',
+  '🎂',
+  '🎓',
+  '🍖',
+  '☔',
+  '⛅',
+  '✏',
+  '💩',
+  '🎄',
+  '🍷',
+  '🎤',
+  '🏀',
+  '🀄',
+  '💣',
+  '📢',
+  '🌏',
+  '🍫',
+  '🎲',
+  '🏂',
+  '💡',
+  '💤',
+  '🚫',
+  '🌻',
+  '🍻',
+  '🎵',
+  '🏡',
+  '💢',
+  '📞',
+  '🚿',
+  '🍚',
+  '👪',
+  '👼',
+  '💊',
+  '🔫',
+  '🌹',
+  '🐶',
+  '💄',
+  '👫',
+  '👽',
+  '💋',
+  '🌙',
+  '🍉',
+  '🐷',
+  '💔',
+  '👻',
+  '👿',
+  '💍',
+  '🌲',
+  '🐴',
+  '👑',
+  '🔥',
+  '⭐',
+  '⚽',
+  '🕖',
+  '⏰',
+  '😁',
+  '🚀',
+  '⏳',
+  '🏡'
 ];
 
 class EmojiBoard extends StatefulWidget {
@@ -53,7 +169,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
   final ScrollController _emojiScrollController = ScrollController();
   final GlobalKey _emojiGridKey = GlobalKey();
   OverlayEntry? _overlayEntry;
-  
+
   // Unified preview state
   final ValueNotifier<_PreviewData?> _previewNotifier = ValueNotifier(null);
 
@@ -76,7 +192,8 @@ class _EmojiBoardState extends State<EmojiBoard> {
   }
 
   void _showEmojiPreview(Offset cellCenterGlobal, String emoji) {
-    _previewNotifier.value = _PreviewData(emoji: emoji, position: cellCenterGlobal);
+    _previewNotifier.value =
+        _PreviewData(emoji: emoji, position: cellCenterGlobal);
     _ensureOverlayVisible();
   }
 
@@ -106,7 +223,8 @@ class _EmojiBoardState extends State<EmojiBoard> {
             // Emoji Preview
             return Positioned(
               left: data.position!.dx - previewWidth / 2,
-              top: data.position!.dy - (previewHeight + arrowHeight + 32 * fontScale),
+              top: data.position!.dy -
+                  (previewHeight + arrowHeight + 32 * fontScale),
               child: MediaQuery(
                 data: MediaQuery.of(context).copyWith(
                   textScaler: TextScaler.noScaling,
@@ -181,12 +299,14 @@ class _EmojiBoardState extends State<EmojiBoard> {
   }
 
   void _updateEmojiPreview(Offset globalPosition) {
-    RenderBox? renderBox = _emojiGridKey.currentContext?.findRenderObject() as RenderBox?;
+    RenderBox? renderBox =
+        _emojiGridKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
     Offset localPosition = renderBox.globalToLocal(globalPosition);
     double width = renderBox.size.width;
-    final fontSizeViewModel = Provider.of<FontSizeViewModel>(context, listen: false);
+    final fontSizeViewModel =
+        Provider.of<FontSizeViewModel>(context, listen: false);
     final int fontIndex = fontSizeViewModel.index;
     int lineCount = 8;
     if (fontIndex == 3) {
@@ -208,9 +328,11 @@ class _EmojiBoardState extends State<EmojiBoard> {
     if (index >= 0 && index < widget.emojis.length) {
       // Calculate cell center
       double cellCenterX = (col + 0.5) * cellWidth;
-      double cellCenterY = (row + 0.5) * cellHeight - _emojiScrollController.offset + 10;
-      Offset cellCenterGlobal = renderBox.localToGlobal(Offset(cellCenterX, cellCenterY));
-      
+      double cellCenterY =
+          (row + 0.5) * cellHeight - _emojiScrollController.offset + 10;
+      Offset cellCenterGlobal =
+          renderBox.localToGlobal(Offset(cellCenterX, cellCenterY));
+
       _showEmojiPreview(cellCenterGlobal, widget.emojis[index]);
     } else {
       _hidePreview();
@@ -230,7 +352,8 @@ class _EmojiBoardState extends State<EmojiBoard> {
 
     return Container(
       height: boardHeight,
-      color: isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
+      color:
+          isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
       child: Column(
         children: [
           // Tab Bar (Top Row as requested)
@@ -274,7 +397,9 @@ class _EmojiBoardState extends State<EmojiBoard> {
           bool isSelected = _selectedIndex == index;
           return Material(
             color: isSelected
-                ? (isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg)
+                ? (isDesktopShell
+                    ? context.colors.chatBgDesktop
+                    : context.colors.chatBg)
                 : context.colors.surface,
             child: InkWell(
               onTap: () {
@@ -284,7 +409,8 @@ class _EmojiBoardState extends State<EmojiBoard> {
                 width: 50,
                 padding: const EdgeInsets.all(8),
                 child: index == 0
-                    ? Image.asset('assets/images/input/chat_input_bar_emoji.png')
+                    ? Image.asset(
+                        'assets/images/input/chat_input_bar_emoji.png')
                     : Image.asset(categories[index - 1].coverPath),
               ),
             ),
@@ -314,25 +440,33 @@ class _EmojiBoardState extends State<EmojiBoard> {
         // 删除按钮贴在右下角,内缩量与表情格子的留白对齐。
         // 取面板自身宽度而非屏幕宽度:桌面端面板是窄弹层,用屏幕宽会把按钮推到面板中间。
         final double scaledTextSize = textSize * fontScale;
-        double paddingSize = ((constraints.maxWidth - scaledTextSize * lineCount) / lineCount / 2).clamp(0.0, double.infinity);
+        double paddingSize =
+            ((constraints.maxWidth - scaledTextSize * lineCount) /
+                    lineCount /
+                    2)
+                .clamp(0.0, double.infinity);
 
         return Stack(
           children: [
             GestureDetector(
-              onLongPressStart: (details) => _updateEmojiPreview(details.globalPosition),
-              onLongPressMoveUpdate: (details) => _updateEmojiPreview(details.globalPosition),
+              onLongPressStart: (details) =>
+                  _updateEmojiPreview(details.globalPosition),
+              onLongPressMoveUpdate: (details) =>
+                  _updateEmojiPreview(details.globalPosition),
               onLongPressEnd: (_) => _hidePreview(),
               child: GridView.builder(
                 key: _emojiGridKey,
                 controller: _emojiScrollController,
                 padding: const EdgeInsets.only(top: 10, bottom: 50),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: lineCount),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: lineCount),
                 itemCount: widget.emojis.length,
                 itemBuilder: (context, index) {
                   return Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => widget.pickerEmojiCallback(widget.emojis[index]),
+                      onTap: () =>
+                          widget.pickerEmojiCallback(widget.emojis[index]),
                       child: Center(
                         child: Text(
                           widget.emojis[index],
@@ -400,7 +534,8 @@ class StickerGridPage extends StatefulWidget {
   State<StickerGridPage> createState() => _StickerGridPageState();
 }
 
-class _StickerGridPageState extends State<StickerGridPage> with AutomaticKeepAliveClientMixin {
+class _StickerGridPageState extends State<StickerGridPage>
+    with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _gridKey = GlobalKey();
   final ValueNotifier<int?> _previewingIndexNotifier = ValueNotifier(null);
@@ -416,12 +551,13 @@ class _StickerGridPageState extends State<StickerGridPage> with AutomaticKeepAli
   }
 
   void _handleLongPressUpdate(Offset globalPosition) {
-    RenderBox? renderBox = _gridKey.currentContext?.findRenderObject() as RenderBox?;
+    RenderBox? renderBox =
+        _gridKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) return;
 
     Offset localPosition = renderBox.globalToLocal(globalPosition);
     double width = renderBox.size.width;
-    
+
     // GridView configuration
     int crossAxisCount = 4;
     double mainAxisSpacing = 10;
@@ -436,7 +572,9 @@ class _StickerGridPageState extends State<StickerGridPage> with AutomaticKeepAli
       return;
     }
 
-    double itemWidth = (width - 2 * padding - (crossAxisCount - 1) * crossAxisSpacing) / crossAxisCount;
+    double itemWidth =
+        (width - 2 * padding - (crossAxisCount - 1) * crossAxisSpacing) /
+            crossAxisCount;
     double itemHeight = itemWidth; // Aspect ratio 1.0
 
     double strideX = itemWidth + crossAxisSpacing;
@@ -449,7 +587,10 @@ class _StickerGridPageState extends State<StickerGridPage> with AutomaticKeepAli
     double relativeX = effectiveX - col * strideX;
     double relativeY = effectiveY - row * strideY;
 
-    if (col >= 0 && col < crossAxisCount && relativeX <= itemWidth && relativeY <= itemHeight) {
+    if (col >= 0 &&
+        col < crossAxisCount &&
+        relativeX <= itemWidth &&
+        relativeY <= itemHeight) {
       int index = row * crossAxisCount + col;
       if (index >= 0 && index < widget.stickerPaths.length) {
         if (_previewingIndexNotifier.value != index) {
@@ -474,8 +615,10 @@ class _StickerGridPageState extends State<StickerGridPage> with AutomaticKeepAli
   Widget build(BuildContext context) {
     super.build(context);
     return GestureDetector(
-      onLongPressStart: (details) => _handleLongPressUpdate(details.globalPosition),
-      onLongPressMoveUpdate: (details) => _handleLongPressUpdate(details.globalPosition),
+      onLongPressStart: (details) =>
+          _handleLongPressUpdate(details.globalPosition),
+      onLongPressMoveUpdate: (details) =>
+          _handleLongPressUpdate(details.globalPosition),
       onLongPressEnd: (_) => _clearPreview(),
       child: GridView.builder(
         key: _gridKey,
@@ -504,7 +647,8 @@ class _StickerGridPageState extends State<StickerGridPage> with AutomaticKeepAli
                 borderRadius: BorderRadius.circular(8),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(8),
-                  onTap: () => widget.onStickerSelected(widget.stickerPaths[index]),
+                  onTap: () =>
+                      widget.onStickerSelected(widget.stickerPaths[index]),
                   child: child,
                 ),
               );

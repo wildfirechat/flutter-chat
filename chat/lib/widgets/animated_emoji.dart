@@ -2,13 +2,13 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 enum EmojiAnimationType {
-  bounce,     // Happy / jumping
-  heartbeat,  // Love / pulsing
-  weep,       // Sad / weeping
-  tremble,    // Angry / scared
-  tilt,       // Cool / party / sliding tilt
-  breath,     // Sleep / breathing
-  pulse,      // Default gentle pulsing
+  bounce, // Happy / jumping
+  heartbeat, // Love / pulsing
+  weep, // Sad / weeping
+  tremble, // Angry / scared
+  tilt, // Cool / party / sliding tilt
+  breath, // Sleep / breathing
+  pulse, // Default gentle pulsing
 }
 
 class AnimatedEmojiWidget extends StatefulWidget {
@@ -101,21 +101,46 @@ class _AnimatedEmojiWidgetState extends State<AnimatedEmojiWidget>
       case EmojiAnimationType.heartbeat:
         return false; // Loop continuously
       default:
-        return true;  // Yoyo back and forth
+        return true; // Yoyo back and forth
     }
   }
 
   EmojiAnimationType _determineAnimationType(String emoji) {
     // Group emojis into appropriate animation styles
-    if (const ['😊', '😀', '😁', '😃', '😅', '😜', '😝', '😆', '☺', '😄', '😋'].contains(emoji)) {
+    if (const ['😊', '😀', '😁', '😃', '😅', '😜', '😝', '😆', '☺', '😄', '😋']
+        .contains(emoji)) {
       return EmojiAnimationType.bounce;
     } else if (const ['😍', '😘', '😚', '💋', '💔', '👼'].contains(emoji)) {
       return EmojiAnimationType.heartbeat;
-    } else if (const ['😭', '😢', '😰', '😓', '😩', '😔', '😞', '😟', '😖', '😫', '😣'].contains(emoji)) {
+    } else if (const [
+      '😭',
+      '😢',
+      '😰',
+      '😓',
+      '😩',
+      '😔',
+      '😞',
+      '😟',
+      '😖',
+      '😫',
+      '😣'
+    ].contains(emoji)) {
       return EmojiAnimationType.weep;
-    } else if (const ['😡', '😤', '😨', '😱', '😬', '👿', '😈', '💣', '🔥', '💢'].contains(emoji)) {
+    } else if (const [
+      '😡',
+      '😤',
+      '😨',
+      '😱',
+      '😬',
+      '👿',
+      '😈',
+      '💣',
+      '🔥',
+      '💢'
+    ].contains(emoji)) {
       return EmojiAnimationType.tremble;
-    } else if (const ['😎', '😉', '😏', '🎩', '🎉', '🎁', '🎵', '🍻', '🚀'].contains(emoji)) {
+    } else if (const ['😎', '😉', '😏', '🎩', '🎉', '🎁', '🎵', '🍻', '🚀']
+        .contains(emoji)) {
       return EmojiAnimationType.tilt;
     } else if (const ['😴', '💤', '😌', '😶', '😑'].contains(emoji)) {
       return EmojiAnimationType.breath;
@@ -146,125 +171,129 @@ class _AnimatedEmojiWidgetState extends State<AnimatedEmojiWidget>
       child: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
-        final Widget animatedChild = Text(
-          widget.emoji,
-          style: TextStyle(
-            fontSize: widget.size,
-            // Keep height 1 to prevent text baseline alignment issues in WidgetSpan
-            height: 1.0, 
-          ),
-        );
+          final Widget animatedChild = Text(
+            widget.emoji,
+            style: TextStyle(
+              fontSize: widget.size,
+              // Keep height 1 to prevent text baseline alignment issues in WidgetSpan
+              height: 1.0,
+            ),
+          );
 
-        switch (_animationType) {
-          case EmojiAnimationType.bounce:
-            // Jumps up and down with squash and stretch at the bottom
-            final double value = _controller.value;
-            final double bounceY = -math.sin(value * math.pi) * (widget.size * 0.25);
-            // Squashes slightly when reaching the bottom (value near 0 or 1)
-            final double scaleY = 1.0 + (math.cos(value * math.pi * 2) * 0.1);
-            final double scaleX = 1.0 - (math.cos(value * math.pi * 2) * 0.08);
+          switch (_animationType) {
+            case EmojiAnimationType.bounce:
+              // Jumps up and down with squash and stretch at the bottom
+              final double value = _controller.value;
+              final double bounceY =
+                  -math.sin(value * math.pi) * (widget.size * 0.25);
+              // Squashes slightly when reaching the bottom (value near 0 or 1)
+              final double scaleY = 1.0 + (math.cos(value * math.pi * 2) * 0.1);
+              final double scaleX =
+                  1.0 - (math.cos(value * math.pi * 2) * 0.08);
 
-            return Transform.translate(
-              offset: Offset(0, bounceY),
-              child: Transform.scale(
-                scaleX: scaleX,
-                scaleY: scaleY,
-                alignment: Alignment.bottomCenter,
-                child: animatedChild,
-              ),
-            );
+              return Transform.translate(
+                offset: Offset(0, bounceY),
+                child: Transform.scale(
+                  scaleX: scaleX,
+                  scaleY: scaleY,
+                  alignment: Alignment.bottomCenter,
+                  child: animatedChild,
+                ),
+              );
 
-          case EmojiAnimationType.heartbeat:
-            // Dual beat pulsing pattern (scale up fast twice, then reset)
-            final double value = _controller.value;
-            double scale = 1.0;
-            if (value < 0.2) {
-              scale = 1.0 + (value / 0.2) * 0.25; // First beat
-            } else if (value < 0.4) {
-              scale = 1.25 - ((value - 0.2) / 0.2) * 0.15; // First decay
-            } else if (value < 0.6) {
-              scale = 1.1 + ((value - 0.4) / 0.2) * 0.2; // Second beat
-            } else {
-              scale = 1.3 - ((value - 0.6) / 0.4) * 0.3; // Full decay
-            }
+            case EmojiAnimationType.heartbeat:
+              // Dual beat pulsing pattern (scale up fast twice, then reset)
+              final double value = _controller.value;
+              double scale = 1.0;
+              if (value < 0.2) {
+                scale = 1.0 + (value / 0.2) * 0.25; // First beat
+              } else if (value < 0.4) {
+                scale = 1.25 - ((value - 0.2) / 0.2) * 0.15; // First decay
+              } else if (value < 0.6) {
+                scale = 1.1 + ((value - 0.4) / 0.2) * 0.2; // Second beat
+              } else {
+                scale = 1.3 - ((value - 0.6) / 0.4) * 0.3; // Full decay
+              }
 
-            return Transform.scale(
-              scale: scale,
-              alignment: Alignment.center,
-              child: animatedChild,
-            );
-
-          case EmojiAnimationType.weep:
-            // Weeps / shakes vertically with slow breathing
-            final double value = _controller.value;
-            final double offsetY = math.sin(value * math.pi * 6) * 1.5;
-            final double scale = 0.95 + (math.sin(value * math.pi) * 0.1);
-            
-            return Transform.translate(
-              offset: Offset(0, offsetY),
-              child: Transform.scale(
+              return Transform.scale(
                 scale: scale,
                 alignment: Alignment.center,
                 child: animatedChild,
-              ),
-            );
+              );
 
-          case EmojiAnimationType.tremble:
-            // Trembles rapidly in random directions (simulating anger or extreme fear)
-            final double value = _controller.value;
-            final double envelope = widget.repeat ? 1.0 : (1.0 - value);
-            final double offsetX = (math.sin(value * math.pi * 10) * 1.5) * envelope;
-            final double offsetY = (math.cos(value * math.pi * 8) * 1.0) * envelope;
+            case EmojiAnimationType.weep:
+              // Weeps / shakes vertically with slow breathing
+              final double value = _controller.value;
+              final double offsetY = math.sin(value * math.pi * 6) * 1.5;
+              final double scale = 0.95 + (math.sin(value * math.pi) * 0.1);
 
-            return Transform.translate(
-              offset: Offset(offsetX, offsetY),
-              child: animatedChild,
-            );
+              return Transform.translate(
+                offset: Offset(0, offsetY),
+                child: Transform.scale(
+                  scale: scale,
+                  alignment: Alignment.center,
+                  child: animatedChild,
+                ),
+              );
 
-          case EmojiAnimationType.tilt:
-            // Cool tilt left and right (rotation)
-            final double value = _controller.value;
-            final double angle = (value - 0.5) * 0.35; // radians
-            final double scale = 1.0 + (math.sin(value * math.pi) * 0.05);
+            case EmojiAnimationType.tremble:
+              // Trembles rapidly in random directions (simulating anger or extreme fear)
+              final double value = _controller.value;
+              final double envelope = widget.repeat ? 1.0 : (1.0 - value);
+              final double offsetX =
+                  (math.sin(value * math.pi * 10) * 1.5) * envelope;
+              final double offsetY =
+                  (math.cos(value * math.pi * 8) * 1.0) * envelope;
 
-            return Transform.rotate(
-              angle: angle,
-              alignment: Alignment.center,
-              child: Transform.scale(
+              return Transform.translate(
+                offset: Offset(offsetX, offsetY),
+                child: animatedChild,
+              );
+
+            case EmojiAnimationType.tilt:
+              // Cool tilt left and right (rotation)
+              final double value = _controller.value;
+              final double angle = (value - 0.5) * 0.35; // radians
+              final double scale = 1.0 + (math.sin(value * math.pi) * 0.05);
+
+              return Transform.rotate(
+                angle: angle,
+                alignment: Alignment.center,
+                child: Transform.scale(
+                  scale: scale,
+                  alignment: Alignment.center,
+                  child: animatedChild,
+                ),
+              );
+
+            case EmojiAnimationType.breath:
+              // Slow, deep breathing scale and fade effect
+              final double value = _controller.value;
+              final double scale = 0.9 + (value * 0.18);
+              final double opacity = 0.65 + (value * 0.35);
+
+              return Opacity(
+                opacity: opacity.clamp(0.0, 1.0),
+                child: Transform.scale(
+                  scale: scale,
+                  alignment: Alignment.bottomCenter,
+                  child: animatedChild,
+                ),
+              );
+
+            case EmojiAnimationType.pulse:
+              // Default gentle pulse
+              final double value = _controller.value;
+              final double scale = 1.0 + (value * 0.12);
+
+              return Transform.scale(
                 scale: scale,
                 alignment: Alignment.center,
                 child: animatedChild,
-              ),
-            );
-
-          case EmojiAnimationType.breath:
-            // Slow, deep breathing scale and fade effect
-            final double value = _controller.value;
-            final double scale = 0.9 + (value * 0.18);
-            final double opacity = 0.65 + (value * 0.35);
-
-            return Opacity(
-              opacity: opacity.clamp(0.0, 1.0),
-              child: Transform.scale(
-                scale: scale,
-                alignment: Alignment.bottomCenter,
-                child: animatedChild,
-              ),
-            );
-
-          case EmojiAnimationType.pulse:
-            // Default gentle pulse
-            final double value = _controller.value;
-            final double scale = 1.0 + (value * 0.12);
-
-            return Transform.scale(
-              scale: scale,
-              alignment: Alignment.center,
-              child: animatedChild,
-            );
-        }
-      },
-    ),
-  );
-}
+              );
+          }
+        },
+      ),
+    );
+  }
 }

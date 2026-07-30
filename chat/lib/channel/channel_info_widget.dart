@@ -18,7 +18,8 @@ class ChannelInfoWidget extends StatefulWidget {
   final ChannelInfo? channelInfo;
   final String? channelId;
 
-  const ChannelInfoWidget({this.channelInfo, this.channelId, Key? key}) : super(key: key);
+  const ChannelInfoWidget({this.channelInfo, this.channelId, Key? key})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => ChannelInfoWidgetState();
@@ -70,7 +71,9 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     } else {
       body = ListView.builder(
         itemCount: 7, //头像，名字，拥有者，描述，清空消息，操作（订阅/取消订阅），进入会话
-        itemBuilder: (BuildContext context, int index) { return _buildRow(context, index);},
+        itemBuilder: (BuildContext context, int index) {
+          return _buildRow(context, index);
+        },
       );
     }
 
@@ -109,7 +112,8 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
                         width: 64,
                         height: 64,
                         color: context.colors.hoverOverlay,
-                        child: Icon(Icons.rss_feed, color: context.colors.textTertiary, size: 32),
+                        child: Icon(Icons.rss_feed,
+                            color: context.colors.textTertiary, size: 32),
                       ),
               ),
               title: Text(
@@ -120,7 +124,10 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
               ),
             ),
             const PcProfileDivider(),
-            PcProfileRow(label: l10n.channelIntro, value: info.desc, placeholder: l10n.noIntro),
+            PcProfileRow(
+                label: l10n.channelIntro,
+                value: info.desc,
+                placeholder: l10n.noIntro),
             PcProfileRow(label: l10n.channelOwner, value: info.owner),
             const PcProfileDivider(),
             PcProfileActions(children: [
@@ -129,7 +136,11 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
                   icon: Icons.chat_bubble_outline_rounded,
                   label: l10n.enterConversation,
                   labelColor: accent,
-                  onTap: () => openConversation(context, Conversation(conversationType: ConversationType.Channel, target: info.channelId)),
+                  onTap: () => openConversation(
+                      context,
+                      Conversation(
+                          conversationType: ConversationType.Channel,
+                          target: info.channelId)),
                 ),
                 PcIconAction(
                   icon: Icons.notifications_off_outlined,
@@ -163,80 +174,150 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
 
   Widget _buildRow(BuildContext context, int index) {
     final info = channelInfo!;
-    if(index == 0) {
-      return Column(children: [
-        const SizedBox(height: 20),
-        SizedBox(width: 80, height: 80, child: info.portrait != null && info.portrait!.isNotEmpty ? Image.network(MediaUrlRedirector.redirect(info.portrait!)) : Container(color: Colors.grey),),
-        const SizedBox(height: 20),
-        const Divider(indent: 12, endIndent: 12),
-      ],);
-    } else if(index == 1) {
-      return Column(children: [
-        Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-          Text(AppLocalizations.of(context)!.channelNameLabel, style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
-          Text(info.name ?? '', style: AppText.lg,),
-        ],),),
-        const Divider(indent: 12, endIndent: 12),
-      ],);
-    } else if(index == 2) {
-      return Column(children: [
-        Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-          Text(AppLocalizations.of(context)!.channelOwnerLabel, style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
-          Text(info.owner ?? '', style: AppText.lg,),
-        ],),),
-        const Divider(indent: 12, endIndent: 12),
-      ],);
-    } else if(index == 3) {
-      return Column(children: [
-        Padding(padding: const EdgeInsets.all(12), child: Row(children: [
-          Text(AppLocalizations.of(context)!.channelDescLabel, style: AppText.lg.copyWith(fontWeight: FontWeight.bold),),
-          Expanded(child: Text(info.desc ?? '', style: AppText.lg,)),
-        ],),),
-        const Divider(indent: 12, endIndent: 12),
-      ],);
-    } else if(index == 4) {
-      return GestureDetector(
-        child: Column(children: [
+    if (index == 0) {
+      return Column(
+        children: [
+          const SizedBox(height: 20),
           SizedBox(
-            height: 48,
-            child: Center(child: Text(AppLocalizations.of(context)!.clearHistoryMessages, style: AppText.lg.copyWith(color: Colors.red),)),
+            width: 80,
+            height: 80,
+            child: info.portrait != null && info.portrait!.isNotEmpty
+                ? Image.network(MediaUrlRedirector.redirect(info.portrait!))
+                : Container(color: Colors.grey),
+          ),
+          const SizedBox(height: 20),
+          const Divider(indent: 12, endIndent: 12),
+        ],
+      );
+    } else if (index == 1) {
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.channelNameLabel,
+                  style: AppText.lg.copyWith(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  info.name ?? '',
+                  style: AppText.lg,
+                ),
+              ],
+            ),
           ),
           const Divider(indent: 12, endIndent: 12),
-        ],),
+        ],
+      );
+    } else if (index == 2) {
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.channelOwnerLabel,
+                  style: AppText.lg.copyWith(fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  info.owner ?? '',
+                  style: AppText.lg,
+                ),
+              ],
+            ),
+          ),
+          const Divider(indent: 12, endIndent: 12),
+        ],
+      );
+    } else if (index == 3) {
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.channelDescLabel,
+                  style: AppText.lg.copyWith(fontWeight: FontWeight.bold),
+                ),
+                Expanded(
+                    child: Text(
+                  info.desc ?? '',
+                  style: AppText.lg,
+                )),
+              ],
+            ),
+          ),
+          const Divider(indent: 12, endIndent: 12),
+        ],
+      );
+    } else if (index == 4) {
+      return GestureDetector(
+        child: Column(
+          children: [
+            SizedBox(
+              height: 48,
+              child: Center(
+                  child: Text(
+                AppLocalizations.of(context)!.clearHistoryMessages,
+                style: AppText.lg.copyWith(color: Colors.red),
+              )),
+            ),
+            const Divider(indent: 12, endIndent: 12),
+          ],
+        ),
         onTap: () {},
       );
-    } else if(index == 5) {
+    } else if (index == 5) {
       final l10n = AppLocalizations.of(context)!;
       return GestureDetector(
-        child: Column(children: [
-          SizedBox(
-            height: 48,
-            child: Center(child: Text(isListened ? l10n.unsubscribeChannel : l10n.subscribeChannel, style: AppText.lg.copyWith(color: Colors.red),)),
-          ),
-          const Divider(indent: 12, endIndent: 12),
-        ],),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 48,
+              child: Center(
+                  child: Text(
+                isListened ? l10n.unsubscribeChannel : l10n.subscribeChannel,
+                style: AppText.lg.copyWith(color: Colors.red),
+              )),
+            ),
+            const Divider(indent: 12, endIndent: 12),
+          ],
+        ),
         onTap: () {
-            Imclient.listenChannel(info.channelId, !isListened, () {
-              setState(() {
-                isListened = !isListened;
-              });
-            }, (errorCode) {
-              Fluttertoast.showToast(msg: l10n.networkError);
+          Imclient.listenChannel(info.channelId, !isListened, () {
+            setState(() {
+              isListened = !isListened;
             });
+          }, (errorCode) {
+            Fluttertoast.showToast(msg: l10n.networkError);
+          });
         },
       );
-    } else if(index == 6) {
+    } else if (index == 6) {
       if (!isListened) return Container();
       return GestureDetector(
-        child: Column(children: [
-          SizedBox(
-            height: 48,
-            child: Center(child: Text(AppLocalizations.of(context)!.enterConversation, style: AppText.lg.copyWith(color: Colors.blue),)),
-          ),
-          const Divider(indent: 12, endIndent: 12),
-        ],),
+        child: Column(
+          children: [
+            SizedBox(
+              height: 48,
+              child: Center(
+                  child: Text(
+                AppLocalizations.of(context)!.enterConversation,
+                style: AppText.lg.copyWith(color: Colors.blue),
+              )),
+            ),
+            const Divider(indent: 12, endIndent: 12),
+          ],
+        ),
         onTap: () {
-          openConversation(context, Conversation(conversationType: ConversationType.Channel, target: info.channelId));
+          openConversation(
+              context,
+              Conversation(
+                  conversationType: ConversationType.Channel,
+                  target: info.channelId));
         },
       );
     }

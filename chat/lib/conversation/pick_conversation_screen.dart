@@ -11,9 +11,12 @@ import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 class PickConversationScreen extends StatefulWidget {
-  final Function(BuildContext context, Conversation conversation)? onConversationSelected;
+  final Function(BuildContext context, Conversation conversation)?
+      onConversationSelected;
   final VoidCallback? onBack;
-  const PickConversationScreen({Key? key, this.onConversationSelected, this.onBack}) : super(key: key);
+  const PickConversationScreen(
+      {Key? key, this.onConversationSelected, this.onBack})
+      : super(key: key);
 
   @override
   State<PickConversationScreen> createState() => _PickConversationScreenState();
@@ -22,7 +25,8 @@ class PickConversationScreen extends StatefulWidget {
 class _PickConversationScreenState extends State<PickConversationScreen> {
   @override
   Widget build(BuildContext context) {
-    var conversationListViewModel = Provider.of<ConversationListViewModel>(context);
+    var conversationListViewModel =
+        Provider.of<ConversationListViewModel>(context);
     final title = AppLocalizations.of(context)!.selectConversations;
     return Scaffold(
       appBar: isDesktopShell
@@ -36,10 +40,14 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
       body: SafeArea(
         child: ListView.builder(
             itemCount: conversationListViewModel.conversationList.length,
-            itemExtent: LayoutScale.watchScale(context, kConversationRowHeight, cap: LayoutScale.rowCap) + 0.5,
-            key: ValueKey<int>(conversationListViewModel.conversationList.length),
+            itemExtent: LayoutScale.watchScale(context, kConversationRowHeight,
+                    cap: LayoutScale.rowCap) +
+                0.5,
+            key: ValueKey<int>(
+                conversationListViewModel.conversationList.length),
             itemBuilder: (context, i) {
-              ConversationInfo info = conversationListViewModel.conversationList[i];
+              ConversationInfo info =
+                  conversationListViewModel.conversationList[i];
               var key =
                   '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}-${info.timestamp}';
               return ConversationListItem(

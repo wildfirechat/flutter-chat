@@ -37,7 +37,8 @@ class FormCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       padding: padding,
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: rows),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch, children: rows),
     );
   }
 }
@@ -113,7 +114,8 @@ Future<T?> showFormOptionPicker<T>({
     builder: (dialogContext) {
       final colors = dialogContext.colors;
       return SimpleDialog(
-        title: Text(title, style: AppText.lg.copyWith(color: colors.textPrimary)),
+        title:
+            Text(title, style: AppText.lg.copyWith(color: colors.textPrimary)),
         backgroundColor: colors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         children: [
@@ -128,7 +130,8 @@ Future<T?> showFormOptionPicker<T>({
                       style: AppText.base.copyWith(color: colors.textPrimary),
                     ),
                   ),
-                  if (option.value == current) Icon(Icons.check, size: 18, color: colors.accent),
+                  if (option.value == current)
+                    Icon(Icons.check, size: 18, color: colors.accent),
                 ],
               ),
             ),

@@ -18,9 +18,10 @@ String callStartStatusText(
   required bool audioOnly,
 }) {
   final l10n = AppLocalizations.of(context)!;
-  final isHangup = status == CallStartEndStatus.kWFAVCallEndReasonHangup.index ||
-      status == CallStartEndStatus.kWFAVCallEndReasonRemoteHangup.index ||
-      status == CallStartEndStatus.kWFAVCallEndReasonAllLeft.index;
+  final isHangup =
+      status == CallStartEndStatus.kWFAVCallEndReasonHangup.index ||
+          status == CallStartEndStatus.kWFAVCallEndReasonRemoteHangup.index ||
+          status == CallStartEndStatus.kWFAVCallEndReasonAllLeft.index;
 
   if (isHangup) {
     if (endTime != null &&
@@ -69,7 +70,9 @@ Widget callStartMessageTile(
         ),
         const SizedBox(width: 4),
         Icon(
-          audioOnly ? CupertinoIcons.phone_fill : CupertinoIcons.video_camera_solid,
+          audioOnly
+              ? CupertinoIcons.phone_fill
+              : CupertinoIcons.video_camera_solid,
           size: 18,
           color: iconColor,
         ),

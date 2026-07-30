@@ -121,7 +121,8 @@ class ProxyImclientChannel implements ImclientChannel {
   }
 
   @override
-  void setMethodCallHandler(Future<dynamic> Function(MethodCall call)? handler) {
+  void setMethodCallHandler(
+      Future<dynamic> Function(MethodCall call)? handler) {
     // 子窗口不执行 ImclientPlatform.init,没有原生事件经此 handler 分发;
     // 主窗口转发来的事件由各 WindowApp 直接处理。
   }
@@ -132,24 +133,28 @@ class ProxyImclientChannel implements ImclientChannel {
   /// 主窗口返回 `{errorCode, result}`,按 onOperationStringSuccess /
   /// onOperationFailure 的既有语义触发回调。
   static void dispatchStringResult(int requestId, dynamic result) {
-    final errorCode = (result is Map) ? (result['errorCode'] as int? ?? -1) : -1;
+    final errorCode =
+        (result is Map) ? (result['errorCode'] as int? ?? -1) : -1;
     final raw = (result is Map) ? result['result'] : null;
-    ImclientPlatform.dispatchStringResult(
-        requestId, errorCode, result: raw is String ? raw : '');
+    ImclientPlatform.dispatchStringResult(requestId, errorCode,
+        result: raw is String ? raw : '');
   }
 
   /// 文件记录列表类接口(getConversationFiles/searchFiles):
   /// 主窗口返回 `{errorCode, files}`,按 onFilesResult 的语义触发回调。
   static void dispatchFilesResult(int requestId, dynamic result) {
-    final errorCode = (result is Map) ? (result['errorCode'] as int? ?? -1) : -1;
+    final errorCode =
+        (result is Map) ? (result['errorCode'] as int? ?? -1) : -1;
     final files = (result is Map) ? result['files'] as List<dynamic>? : null;
-    ImclientPlatform.dispatchOperationResult(requestId, errorCode, files: files);
+    ImclientPlatform.dispatchOperationResult(requestId, errorCode,
+        files: files);
   }
 
   /// 无参成功回调类接口(deleteFileRecord/configApplication):
   /// 主窗口返回 `{errorCode}`,按 onOperationVoidSuccess 的语义触发回调。
   static void dispatchVoidResult(int requestId, dynamic result) {
-    final errorCode = (result is Map) ? (result['errorCode'] as int? ?? -1) : -1;
+    final errorCode =
+        (result is Map) ? (result['errorCode'] as int? ?? -1) : -1;
     ImclientPlatform.dispatchOperationResult(requestId, errorCode);
   }
 

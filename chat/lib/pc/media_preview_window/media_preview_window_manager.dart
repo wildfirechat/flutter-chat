@@ -16,7 +16,8 @@ import 'media_preview_window_size.dart';
 /// 子窗口不连接 IM,翻页加载更多媒体(loadMore)由本类代查后回传。
 /// 创建序列/ready/closed 等样板见 [SubWindowManagerBase]。
 class MediaPreviewWindowManager extends SubWindowManagerBase {
-  static final MediaPreviewWindowManager instance = MediaPreviewWindowManager._internal();
+  static final MediaPreviewWindowManager instance =
+      MediaPreviewWindowManager._internal();
 
   MediaPreviewWindowManager._internal();
 
@@ -67,7 +68,9 @@ class MediaPreviewWindowManager extends SubWindowManagerBase {
     final payload = <String, dynamic>{
       'items': MediaPreviewCodec.encodeMessages(mediaItems),
       'defaultIndex': defaultIndex,
-      'conversation': conversation != null ? IpcCodec.encodeConversation(conversation) : null,
+      'conversation': conversation != null
+          ? IpcCodec.encodeConversation(conversation)
+          : null,
     };
     // 首开尺寸按目标媒体算;窗口已打开的情况由预览窗口自己在收到 show 后调整
     // (它还要跟着翻页/视频真实尺寸继续调,统一放在那边)。
@@ -82,7 +85,8 @@ class MediaPreviewWindowManager extends SubWindowManagerBase {
     final controller = await ensureWindowAlive() ? windowController : null;
     if (controller != null) {
       if (windowReady) {
-        await WindowEventChannel.invoke(controller.windowId, MediaPreviewEvents.show, payload);
+        await WindowEventChannel.invoke(
+            controller.windowId, MediaPreviewEvents.show, payload);
         // 置顶已有窗口
         await controller.show();
       } else {
@@ -102,7 +106,8 @@ class MediaPreviewWindowManager extends SubWindowManagerBase {
     final pending = _pendingShow;
     _pendingShow = null;
     if (pending != null) {
-      await WindowEventChannel.invoke(windowId, MediaPreviewEvents.show, pending);
+      await WindowEventChannel.invoke(
+          windowId, MediaPreviewEvents.show, pending);
     }
   }
 
@@ -113,7 +118,8 @@ class MediaPreviewWindowManager extends SubWindowManagerBase {
 
   /// 子窗口翻页到两端:代查该会话的更多媒体消息(与内嵌预览的翻页语义一致)。
   Future<dynamic> _handleLoadMore(dynamic args) async {
-    final conversation = IpcCodec.decodeConversation(args['conversation'] as Map<String, dynamic>);
+    final conversation = IpcCodec.decodeConversation(
+        args['conversation'] as Map<String, dynamic>);
     final fromMessageId = args['fromMessageId'] as int? ?? 0;
     final tail = args['tail'] as bool? ?? false;
     final messages = await Imclient.getMessages(

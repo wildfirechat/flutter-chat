@@ -19,7 +19,6 @@ class InviteFriendPage extends StatefulWidget {
 class InviteFriendPageState extends State<InviteFriendPage> {
   final fieldController = TextEditingController();
 
-
   @override
   void initState() {
     super.initState();
@@ -52,25 +51,30 @@ class InviteFriendPageState extends State<InviteFriendPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 8), child: Text(l10n.inviteReasonHint),),
-            Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 8), child: CupertinoTextField(
-              placeholder: l10n.inputReason,
-              controller: fieldController,
-              clearButtonMode: OverlayVisibilityMode.editing,
-              autocorrect: false,
-              onChanged: (text) {
-                setState(() {
-
-                });
-              },
-            ),)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(l10n.inviteReasonHint),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: CupertinoTextField(
+                placeholder: l10n.inputReason,
+                controller: fieldController,
+                clearButtonMode: OverlayVisibilityMode.editing,
+                autocorrect: false,
+                onChanged: (text) {
+                  setState(() {});
+                },
+              ),
+            )
           ],
-        ),),
+        ),
+      ),
     );
   }
 
   void _sendInvite(BuildContext context) {
-    if(fieldController.value.text.isNotEmpty) {
+    if (fieldController.value.text.isNotEmpty) {
       final l10n = AppLocalizations.of(context)!;
       Imclient.sendFriendRequest(widget.userId, fieldController.value.text, () {
         Fluttertoast.showToast(msg: l10n.requestSent);
@@ -80,5 +84,4 @@ class InviteFriendPageState extends State<InviteFriendPage> {
       });
     }
   }
-
 }

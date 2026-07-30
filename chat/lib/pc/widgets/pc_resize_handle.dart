@@ -84,7 +84,9 @@ class _PcResizeHandleState extends State<PcResizeHandle> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      cursor: _isHorizontal ? SystemMouseCursors.resizeColumn : SystemMouseCursors.resizeRow,
+      cursor: _isHorizontal
+          ? SystemMouseCursors.resizeColumn
+          : SystemMouseCursors.resizeRow,
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(

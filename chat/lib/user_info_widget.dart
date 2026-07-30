@@ -62,7 +62,10 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   /// 发起单聊:桌面 Shell 内交给 PCShellViewModel 在右栏打开并同步选中态,
   /// 移动端(无该 Provider)保持整页 push。
   void _openSingleConversation(BuildContext context) {
-    openConversation(context, Conversation(conversationType: ConversationType.Single, target: widget.userId));
+    openConversation(
+        context,
+        Conversation(
+            conversationType: ConversationType.Single, target: widget.userId));
   }
 
   @override
@@ -103,12 +106,14 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       return;
     }
 
-    final ex = OrganizationCache.instance.getEmployeeEx(widget.userId, refresh: refresh);
+    final ex = OrganizationCache.instance
+        .getEmployeeEx(widget.userId, refresh: refresh);
     final relationships = ex?.relationships ?? [];
     final bottomRels = relationships.where((r) => r.bottom).toList();
     final Map<int, Organization> orgs = {};
     for (final rel in bottomRels) {
-      final org = OrganizationCache.instance.getOrganization(rel.organizationId, refresh: false);
+      final org = OrganizationCache.instance
+          .getOrganization(rel.organizationId, refresh: false);
       if (org != null) {
         orgs[rel.organizationId] = org;
       }
@@ -127,7 +132,8 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   void _openOrganization(int organizationId) {
     // 返回键由 PcPageHeader 按导航栈自行判断:这一页是 push 出来的,组织架构还压在
     // 用户资料上面,返回键自然会出现。
-    pushPage(context, OrganizationScreen(initialOrganizationId: organizationId));
+    pushPage(
+        context, OrganizationScreen(initialOrganizationId: organizationId));
   }
 
   Future<void> _refreshUserInfo() async {
@@ -163,11 +169,15 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
             if (isFriend) {
               items.add(PopupMenuItem(
                 value: 'blacklist',
-                child: Text(_isBlacklisted ? AppLocalizations.of(context)!.removeFromBlacklist : AppLocalizations.of(context)!.addToBlacklist),
+                child: Text(_isBlacklisted
+                    ? AppLocalizations.of(context)!.removeFromBlacklist
+                    : AppLocalizations.of(context)!.addToBlacklist),
               ));
               items.add(PopupMenuItem(
                 value: 'star',
-                child: Text(_isStarred ? AppLocalizations.of(context)!.cancelStarredFriend : AppLocalizations.of(context)!.setStarredFriend),
+                child: Text(_isStarred
+                    ? AppLocalizations.of(context)!.cancelStarredFriend
+                    : AppLocalizations.of(context)!.setStarredFriend),
               ));
               items.add(PopupMenuItem(
                 value: 'delete',
@@ -176,7 +186,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
             } else {
               items.add(PopupMenuItem(
                 value: 'blacklist',
-                child: Text(_isBlacklisted ? AppLocalizations.of(context)!.removeFromBlacklist : AppLocalizations.of(context)!.addToBlacklist),
+                child: Text(_isBlacklisted
+                    ? AppLocalizations.of(context)!.removeFromBlacklist
+                    : AppLocalizations.of(context)!.addToBlacklist),
               ));
               items.add(PopupMenuItem(
                 value: 'add_friend',
@@ -193,7 +205,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       // 桌面端整页一张白底:正文限宽居中,分组之间只由弱分隔线交代,不套卡片
       // (面板本来就是白的,再套一层白卡片只会多出一圈没有意义的边框)。
       // 移动端仍是白卡片 + 凹槽灰。
-      backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
+      backgroundColor: isDesktopShell
+          ? context.colors.surface
+          : context.colors.primaryBackground,
       appBar: isDesktopShell
           // 标题只会是「用户信息」这个恒定名词,信息量为零 —— 去掉标题,但顶区(返回键、
           // 右上角菜单、三栏共用的 60px 水平线)必须留住,详见 PcPageHeader.bare。
@@ -204,13 +218,15 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
             ),
       body: SafeArea(
         child: Selector<UserViewModel, UserInfo?>(
-          selector: (context, viewModel) => viewModel.getUserInfo(widget.userId, groupId: widget.inGroupId),
+          selector: (context, viewModel) =>
+              viewModel.getUserInfo(widget.userId, groupId: widget.inGroupId),
           builder: (context, userInfo, child) {
             return FutureBuilder<bool>(
               future: _isFriend(widget.userId),
               builder: (context, snapshot) {
                 if (userInfo == null || !snapshot.hasData) {
-                  return Center(child: Text(AppLocalizations.of(context)!.loading));
+                  return Center(
+                      child: Text(AppLocalizations.of(context)!.loading));
                 }
                 bool isFriend = snapshot.data!;
                 bool isMe = widget.userId == Imclient.currentUserId;
@@ -228,7 +244,8 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
 
   /// 桌面端右栏:限宽居中的一栏正文。头像/名字一组、资料行一组、底部图标动作一组,
   /// 组与组之间只用一条弱分隔线,没有卡片、没有边框、没有右箭头。
-  Widget _buildDesktopBody(BuildContext context, UserInfo userInfo, bool isFriend, bool isMe) {
+  Widget _buildDesktopBody(
+      BuildContext context, UserInfo userInfo, bool isFriend, bool isMe) {
     final l10n = AppLocalizations.of(context)!;
 
     final List<Widget> infoRows = [];
@@ -285,10 +302,14 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   }
 
   /// 头像 + 名字 + 野火号。
-  Widget _buildDesktopProfile(BuildContext context, UserInfo userInfo, bool isFriend) {
-    final portrait = (userInfo.portrait?.isNotEmpty ?? false) ? userInfo.portrait! : Config.defaultUserPortrait;
+  Widget _buildDesktopProfile(
+      BuildContext context, UserInfo userInfo, bool isFriend) {
+    final portrait = (userInfo.portrait?.isNotEmpty ?? false)
+        ? userInfo.portrait!
+        : Config.defaultUserPortrait;
     return PcProfileHeader(
-      leading: Portrait(portrait, Config.defaultUserPortrait, width: 64, height: 64, borderRadius: 4),
+      leading: Portrait(portrait, Config.defaultUserPortrait,
+          width: 64, height: 64, borderRadius: 4),
       title: MeshUserName(
         userInfo,
         style: PcProfileHeader.titleStyle(context),
@@ -296,7 +317,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: AppLocalizations.of(context)!.wildfireId(userInfo.name),
-      trailing: isFriend && _isStarred ? const Icon(Icons.star, color: Colors.amber, size: 16) : null,
+      trailing: isFriend && _isStarred
+          ? const Icon(Icons.star, color: Colors.amber, size: 16)
+          : null,
     );
   }
 
@@ -327,7 +350,8 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
         icon: Icons.videocam_outlined,
         label: l10n.videoCallAction,
         labelColor: accent,
-        onTap: () => startSingleAvCall(context, widget.userId, audioOnly: false),
+        onTap: () =>
+            startSingleAvCall(context, widget.userId, audioOnly: false),
       ));
     }
     if (!isMe && !isFriend) {
@@ -341,12 +365,17 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       // 译文过长时换行而非溢出(同 PC 用户卡片)。
-      child: Wrap(alignment: WrapAlignment.center, spacing: 24, runSpacing: 8, children: actions),
+      child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 24,
+          runSpacing: 8,
+          children: actions),
     );
   }
 
   /// 移动端:整页凹槽灰 + 白卡片分组,由 SectionDivider 交代分组间隙。
-  Widget _buildMobileBody(BuildContext context, UserInfo userInfo, bool isFriend, bool isMe) {
+  Widget _buildMobileBody(
+      BuildContext context, UserInfo userInfo, bool isFriend, bool isMe) {
     final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
       child: Column(
@@ -372,8 +401,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (_) =>
-                              FeedListPage(userId: widget.userId)),
+                          builder: (_) => FeedListPage(userId: widget.userId)),
                     );
                   }),
                 if (isMe)
@@ -406,9 +434,13 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                   },
                   // 发消息/加好友不是危险操作,不该走 OptionButtonItem 的 danger 默认色。
                   titleColor: context.colors.accent,
-                  showBottomDivider: isFriend && !isMe && !Config.AI_ROBOTS.contains(widget.userId),
+                  showBottomDivider: isFriend &&
+                      !isMe &&
+                      !Config.AI_ROBOTS.contains(widget.userId),
                 ),
-                if (isFriend && !isMe && !Config.AI_ROBOTS.contains(widget.userId))
+                if (isFriend &&
+                    !isMe &&
+                    !Config.AI_ROBOTS.contains(widget.userId))
                   OptionButtonItem(
                     l10n.audioVideoCall,
                     () {
@@ -416,17 +448,21 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                         context: context,
                         items: [
                           BottomActionSheetItem(
-                            label: AppLocalizations.of(context)!.videoCallAction,
+                            label:
+                                AppLocalizations.of(context)!.videoCallAction,
                             icon: Icons.videocam_rounded,
                             onTap: () {
-                              startSingleAvCall(context, widget.userId, audioOnly: false);
+                              startSingleAvCall(context, widget.userId,
+                                  audioOnly: false);
                             },
                           ),
                           BottomActionSheetItem(
-                            label: AppLocalizations.of(context)!.audioCallAction,
+                            label:
+                                AppLocalizations.of(context)!.audioCallAction,
                             icon: Icons.call_rounded,
                             onTap: () {
-                              startSingleAvCall(context, widget.userId, audioOnly: true);
+                              startSingleAvCall(context, widget.userId,
+                                  audioOnly: true);
                             },
                           ),
                         ],
@@ -451,7 +487,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
         final index = entry.key;
         final rel = entry.value;
         final org = _bottomOrganizations[rel.organizationId];
-        final title = org?.name ?? AppLocalizations.of(context)!.departmentFallback(rel.organizationId);
+        final title = org?.name ??
+            AppLocalizations.of(context)!
+                .departmentFallback(rel.organizationId);
         return OptionItem(
           title,
           showBottomDivider: index < _bottomRelationships.length - 1,
@@ -469,7 +507,8 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   }
 
   void _showSetDisplayNameDialog(BuildContext context, UserInfo userInfo) {
-    TextEditingController controller = TextEditingController(text: userInfo.displayName);
+    TextEditingController controller =
+        TextEditingController(text: userInfo.displayName);
     showDialog(
       context: context,
       builder: (context) {
@@ -477,7 +516,8 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
           title: Text(AppLocalizations.of(context)!.modifyAlias),
           content: TextField(
             controller: controller,
-            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.inputNickname),
+            decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.inputNickname),
             autofocus: true,
           ),
           actions: [
@@ -490,10 +530,14 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                Imclient.modifyMyInfo({ModifyMyInfoType.Modify_DisplayName: controller.text}, () {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.modifySuccess);
+                Imclient.modifyMyInfo(
+                    {ModifyMyInfoType.Modify_DisplayName: controller.text}, () {
+                  Fluttertoast.showToast(
+                      msg: AppLocalizations.of(context)!.modifySuccess);
                 }, (errorCode) {
-                  Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.modifyFail}: $errorCode");
+                  Fluttertoast.showToast(
+                      msg:
+                          "${AppLocalizations.of(context)!.modifyFail}: $errorCode");
                 });
               },
               child: Text(AppLocalizations.of(context)!.confirm),
@@ -505,7 +549,8 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   }
 
   void _showSetAliasDialog(BuildContext context, UserInfo userInfo) {
-    TextEditingController controller = TextEditingController(text: userInfo.friendAlias);
+    TextEditingController controller =
+        TextEditingController(text: userInfo.friendAlias);
     showDialog(
       context: context,
       builder: (context) {
@@ -513,7 +558,8 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
           title: Text(AppLocalizations.of(context)!.setAlias),
           content: TextField(
             controller: controller,
-            decoration: InputDecoration(hintText: AppLocalizations.of(context)!.inputAlias),
+            decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.inputAlias),
             autofocus: true,
           ),
           actions: [
@@ -527,9 +573,12 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
               onPressed: () {
                 Navigator.pop(context);
                 Imclient.setFriendAlias(userInfo.userId, controller.text, () {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.setSuccess);
+                  Fluttertoast.showToast(
+                      msg: AppLocalizations.of(context)!.setSuccess);
                 }, (errorCode) {
-                  Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.setFail}: $errorCode");
+                  Fluttertoast.showToast(
+                      msg:
+                          "${AppLocalizations.of(context)!.setFail}: $errorCode");
                 });
               },
               child: Text(AppLocalizations.of(context)!.confirm),
@@ -552,7 +601,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       textAlign: TextAlign.left,
       style: AppText.lg,
     ));
-    bool hasAlias = isFriend && userInfo.friendAlias != null && userInfo.friendAlias!.isNotEmpty;
+    bool hasAlias = isFriend &&
+        userInfo.friendAlias != null &&
+        userInfo.friendAlias!.isNotEmpty;
     nameList.add(Container(
       margin: EdgeInsets.only(top: hasAlias ? 3 : 6),
     ));
@@ -586,7 +637,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
     ));
 
     return Container(
-      constraints: BoxConstraints(minHeight: LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap)),
+      constraints: BoxConstraints(
+          minHeight:
+              LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap)),
       margin: const EdgeInsets.fromLTRB(10, 10, 10, 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -594,7 +647,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
           GestureDetector(
             child: Container(
               margin: const EdgeInsets.only(right: 16),
-              child: Portrait(portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 60, height: 60, borderRadius: 6),
+              child: Portrait(portrait ?? Config.defaultUserPortrait,
+                  Config.defaultUserPortrait,
+                  width: 60, height: 60, borderRadius: 6),
             ),
             onTap: () {
               //show user portrait
@@ -639,12 +694,14 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       });
       Fluttertoast.showToast(msg: AppLocalizations.of(context)!.success);
     }, (errorCode) {
-      Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.failed}: $errorCode");
+      Fluttertoast.showToast(
+          msg: "${AppLocalizations.of(context)!.failed}: $errorCode");
     });
   }
 
   void _toggleStar() {
-    var contactListViewModel = Provider.of<ContactListViewModel>(context, listen: false);
+    var contactListViewModel =
+        Provider.of<ContactListViewModel>(context, listen: false);
     contactListViewModel.setFavUser(widget.userId, !_isStarred);
     setState(() {
       _isStarred = !_isStarred;
@@ -670,13 +727,17 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
               onPressed: () {
                 Navigator.pop(context);
                 Imclient.deleteFriend(widget.userId, () {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.success);
+                  Fluttertoast.showToast(
+                      msg: AppLocalizations.of(context)!.success);
                   Navigator.pop(context);
                 }, (errorCode) {
-                  Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.failed}: $errorCode");
+                  Fluttertoast.showToast(
+                      msg:
+                          "${AppLocalizations.of(context)!.failed}: $errorCode");
                 });
               },
-              child: Text(AppLocalizations.of(context)!.delete, style: TextStyle(color: context.colors.danger)),
+              child: Text(AppLocalizations.of(context)!.delete,
+                  style: TextStyle(color: context.colors.danger)),
             ),
           ],
         );

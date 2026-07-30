@@ -25,7 +25,9 @@ void showToast({
   if (!isDesktopShell) {
     Fluttertoast.showToast(
       msg: msg,
-      toastLength: duration.inMilliseconds > 2500 ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT,
+      toastLength: duration.inMilliseconds > 2500
+          ? Toast.LENGTH_LONG
+          : Toast.LENGTH_SHORT,
       gravity: gravity ?? ToastGravity.BOTTOM,
     );
     return;
@@ -110,7 +112,8 @@ class _DesktopToastWidgetState extends State<_DesktopToastWidget>
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 360),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
                   color: const Color(0xCC333333),
                   borderRadius: BorderRadius.circular(6),

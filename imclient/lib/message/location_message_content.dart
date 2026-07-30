@@ -23,15 +23,15 @@ class LocationMessageContent extends MessageContent {
   @override
   Future<void> decode(MessagePayload payload) async {
     super.decode(payload);
-    if(payload.searchableContent != null) {
+    if (payload.searchableContent != null) {
       title = payload.searchableContent!;
     } else {
       title = "";
     }
-    if(payload.binaryContent != null) {
+    if (payload.binaryContent != null) {
       thumbnail = decodeJpg(payload.binaryContent!);
     }
-    if(payload.content != null) {
+    if (payload.content != null) {
       var map = json.decode(payload.content!);
       latitude = map['lat'];
       longitude = map['long'];
@@ -49,7 +49,7 @@ class LocationMessageContent extends MessageContent {
     MessagePayload payload = super.encode();
     payload.searchableContent = title;
     payload.content = json.encode({'lat': latitude, 'long': longitude});
-    if(thumbnail != null) {
+    if (thumbnail != null) {
       payload.binaryContent = encodeJpg(thumbnail!, quality: 35);
     }
     return payload;

@@ -29,12 +29,14 @@ class CreateCollectionScreen extends StatefulWidget {
         context: context,
         width: 460,
         height: 560,
-        builder: (_) => CreateCollectionScreen(conversation: conversation, asDialog: true),
+        builder: (_) =>
+            CreateCollectionScreen(conversation: conversation, asDialog: true),
       );
     }
     return Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => CreateCollectionScreen(conversation: conversation)),
+      MaterialPageRoute(
+          builder: (_) => CreateCollectionScreen(conversation: conversation)),
     );
   }
 
@@ -62,7 +64,8 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
     super.dispose();
   }
 
-  bool get _canSubmit => _titleController.text.trim().isNotEmpty && !_isCreating;
+  bool get _canSubmit =>
+      _titleController.text.trim().isNotEmpty && !_isCreating;
 
   Future<void> _createCollection() async {
     if (!_canSubmit) return;
@@ -79,7 +82,8 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
     int expireType = 0;
     int expireAt = 0;
     if (_expireAt != null && _expireAt! > 0) {
-      if (DateTime.fromMillisecondsSinceEpoch(_expireAt!).isBefore(DateTime.now())) {
+      if (DateTime.fromMillisecondsSinceEpoch(_expireAt!)
+          .isBefore(DateTime.now())) {
         Fluttertoast.showToast(msg: _l10n.expireTimeInvalid);
         return;
       }
@@ -118,7 +122,9 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
     final now = DateTime.now();
     final date = await showDatePicker(
       context: context,
-      initialDate: _expireAt != null ? DateTime.fromMillisecondsSinceEpoch(_expireAt!) : now.add(const Duration(days: 1)),
+      initialDate: _expireAt != null
+          ? DateTime.fromMillisecondsSinceEpoch(_expireAt!)
+          : now.add(const Duration(days: 1)),
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
     );
@@ -127,13 +133,16 @@ class _CreateCollectionScreenState extends State<CreateCollectionScreen> {
     final time = await showTimePicker(
       context: context,
       initialTime: _expireAt != null
-          ? TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(_expireAt!))
+          ? TimeOfDay.fromDateTime(
+              DateTime.fromMillisecondsSinceEpoch(_expireAt!))
           : TimeOfDay.now(),
     );
     if (time == null) return;
 
     setState(() {
-      _expireAt = DateTime(date.year, date.month, date.day, time.hour, time.minute).millisecondsSinceEpoch;
+      _expireAt =
+          DateTime(date.year, date.month, date.day, time.hour, time.minute)
+              .millisecondsSinceEpoch;
     });
   }
 

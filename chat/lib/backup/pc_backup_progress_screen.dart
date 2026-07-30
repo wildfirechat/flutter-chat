@@ -124,7 +124,8 @@ class _PCBackupProgressScreenState extends State<PCBackupProgressScreen> {
 
   void _onClose() {
     // Navigate back to the main Backup Screen (pop 3 times: Progress -> Destination -> Picker)
-    Navigator.of(context).popUntil((route) => route.settings.name == null && route.isFirst == false);
+    Navigator.of(context).popUntil(
+        (route) => route.settings.name == null && route.isFirst == false);
     // This might be too aggressive if route names are not set.
     // Let's just pop 3 times manually or use named routes if they were set up.
     // A safer way is to pop until we are back to BackupAndRestoreScreen.
@@ -137,7 +138,9 @@ class _PCBackupProgressScreenState extends State<PCBackupProgressScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.pcBackupProgressTitle), automaticallyImplyLeading: false),
+      appBar: AppBar(
+          title: Text(l10n.pcBackupProgressTitle),
+          automaticallyImplyLeading: false),
       body: SafeArea(
         child: SizedBox.expand(
           child: Padding(
@@ -149,9 +152,11 @@ class _PCBackupProgressScreenState extends State<PCBackupProgressScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       if (_isError)
-                        const Icon(Icons.error_outline, size: 80, color: Colors.red)
+                        const Icon(Icons.error_outline,
+                            size: 80, color: Colors.red)
                       else if (_isFinished)
-                        const Icon(Icons.check_circle_outline, size: 80, color: Colors.green)
+                        const Icon(Icons.check_circle_outline,
+                            size: 80, color: Colors.green)
                       else
                         const SizedBox(
                           width: 80,
@@ -171,7 +176,8 @@ class _PCBackupProgressScreenState extends State<PCBackupProgressScreen> {
                         style: const TextStyle(color: Colors.grey),
                       ),
                       const SizedBox(height: 32),
-                      if (!_isFinished && !_isError) LinearProgressIndicator(value: _progress),
+                      if (!_isFinished && !_isError)
+                        LinearProgressIndicator(value: _progress),
                     ],
                   ),
                 ),
@@ -190,10 +196,11 @@ class _PCBackupProgressScreenState extends State<PCBackupProgressScreen> {
                     padding: const EdgeInsets.only(bottom: 16),
                     child: TextButton(
                       onPressed: () {
-                         BackupManager().cancelCurrentOperation();
-                         Navigator.pop(context);
+                        BackupManager().cancelCurrentOperation();
+                        Navigator.pop(context);
                       },
-                      child: Text(l10n.cancel, style: TextStyle(color: context.colors.danger)),
+                      child: Text(l10n.cancel,
+                          style: TextStyle(color: context.colors.danger)),
                     ),
                   ),
               ],

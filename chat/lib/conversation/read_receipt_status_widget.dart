@@ -14,7 +14,8 @@ class ReadReceiptStatusWidget extends StatefulWidget {
   const ReadReceiptStatusWidget(this.message, {super.key});
 
   @override
-  State<ReadReceiptStatusWidget> createState() => _ReadReceiptStatusWidgetState();
+  State<ReadReceiptStatusWidget> createState() =>
+      _ReadReceiptStatusWidgetState();
 }
 
 class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
@@ -27,7 +28,8 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
   // 会话级缓存:群成员列表和已读状态按会话缓存一份,避免每条已发消息的 cell 各自重复查询。
   // 收到群成员变更/已读回执事件时对应缓存失效(见 _ensureCacheEventSubscription)。
   static final Map<String, Future<List<GroupMember>>> _groupMembersCache = {};
-  static final Map<Conversation, Future<Map<String, int>>> _conversationReadCache = {};
+  static final Map<Conversation, Future<Map<String, int>>>
+      _conversationReadCache = {};
   static bool _cacheEventSubscribed = false;
 
   static void _ensureCacheEventSubscription() {
@@ -44,11 +46,14 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
   }
 
   static Future<List<GroupMember>> _getGroupMembers(String groupId) {
-    return _groupMembersCache.putIfAbsent(groupId, () => Imclient.getGroupMembers(groupId));
+    return _groupMembersCache.putIfAbsent(
+        groupId, () => Imclient.getGroupMembers(groupId));
   }
 
-  static Future<Map<String, int>> _getConversationRead(Conversation conversation) {
-    return _conversationReadCache.putIfAbsent(conversation, () => Imclient.getConversationRead(conversation));
+  static Future<Map<String, int>> _getConversationRead(
+      Conversation conversation) {
+    return _conversationReadCache.putIfAbsent(
+        conversation, () => Imclient.getConversationRead(conversation));
   }
 
   @override
@@ -59,7 +64,8 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
   }
 
   void _subscribeReadEvent() {
-    _readEventSubscription ??= Imclient.IMEventBus.on<MessageReadedEvent>().listen((event) {
+    _readEventSubscription ??=
+        Imclient.IMEventBus.on<MessageReadedEvent>().listen((event) {
       bool needUpdate = false;
       for (var report in event.readedReports) {
         if (report.conversation == widget.message.conversation) {
@@ -68,9 +74,11 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
         }
       }
       if (needUpdate) {
-        if (widget.message.conversation.conversationType == ConversationType.Single) {
+        if (widget.message.conversation.conversationType ==
+            ConversationType.Single) {
           _updateSingleReadStatus();
-        } else if (widget.message.conversation.conversationType == ConversationType.Group) {
+        } else if (widget.message.conversation.conversationType ==
+            ConversationType.Group) {
           _updateGroupReadStatus();
         }
       }
@@ -87,13 +95,17 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
     bool receiptEnabled = await Imclient.isReceiptEnabled();
     bool userEnabled = await Imclient.isUserEnableReceipt();
     bool singleReceiptEnabled = receiptEnabled && userEnabled;
-    if (widget.message.conversation.conversationType == ConversationType.Single) {
+    if (widget.message.conversation.conversationType ==
+        ConversationType.Single) {
       if (singleReceiptEnabled) {
         _updateSingleReadStatus();
       }
       _isEnabled = singleReceiptEnabled;
-    } else if (widget.message.conversation.conversationType == ConversationType.Group) {
-      bool groupReceiptEnabled = receiptEnabled && userEnabled && await Imclient.isGroupReceiptEnabled();
+    } else if (widget.message.conversation.conversationType ==
+        ConversationType.Group) {
+      bool groupReceiptEnabled = receiptEnabled &&
+          userEnabled &&
+          await Imclient.isGroupReceiptEnabled();
       if (groupReceiptEnabled) {
         _updateGroupReadStatus();
       }
@@ -107,7 +119,8 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
   }
 
   void _updateSingleReadStatus() async {
-    Map<String, int> readMap = await _getConversationRead(widget.message.conversation);
+    Map<String, int> readMap =
+        await _getConversationRead(widget.message.conversation);
     int? readTime = readMap[widget.message.conversation.target];
     bool read = readTime != null && readTime >= widget.message.serverTime;
     if (mounted && _isSingleConversationRead != read) {
@@ -116,17 +129,22 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
       });
     }
   }
+
   void _updateGroupReadStatus() async {
     String groupId = widget.message.conversation.target;
     List<GroupMember> members = await _getGroupMembers(groupId);
 
     int messageTime = widget.message.serverTime;
     // Filter members who joined before the message was sent and exclude self
-    List<GroupMember> validMembers = members.where((m) => m.createDt <= messageTime && m.memberId != Imclient.currentUserId).toList();
+    List<GroupMember> validMembers = members
+        .where((m) =>
+            m.createDt <= messageTime && m.memberId != Imclient.currentUserId)
+        .toList();
 
     if (validMembers.isEmpty) return;
 
-    Map<String, int> readMap = await _getConversationRead(widget.message.conversation);
+    Map<String, int> readMap =
+        await _getConversationRead(widget.message.conversation);
     int readCount = 0;
     for (var member in validMembers) {
       int? readTime = readMap[member.memberId];
@@ -135,7 +153,9 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
       }
     }
 
-    if (mounted && (_groupTotalCount != validMembers.length || _groupReadCount != readCount)) {
+    if (mounted &&
+        (_groupTotalCount != validMembers.length ||
+            _groupReadCount != readCount)) {
       setState(() {
         _groupTotalCount = validMembers.length;
         _groupReadCount = readCount;
@@ -147,9 +167,11 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
   void didUpdateWidget(covariant ReadReceiptStatusWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (_isEnabled) {
-      if (widget.message.conversation.conversationType == ConversationType.Group) {
+      if (widget.message.conversation.conversationType ==
+          ConversationType.Group) {
         _updateGroupReadStatus();
-      } else if (widget.message.conversation.conversationType == ConversationType.Single) {
+      } else if (widget.message.conversation.conversationType ==
+          ConversationType.Single) {
         _updateSingleReadStatus();
       }
     }
@@ -161,7 +183,8 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
       return Container();
     }
 
-    if (widget.message.conversation.conversationType == ConversationType.Single) {
+    if (widget.message.conversation.conversationType ==
+        ConversationType.Single) {
       return Padding(
         padding: const EdgeInsets.only(right: 4, bottom: 2),
         child: Icon(
@@ -170,7 +193,8 @@ class _ReadReceiptStatusWidgetState extends State<ReadReceiptStatusWidget> {
           color: _isSingleConversationRead ? Colors.blue : Colors.grey,
         ),
       );
-    } else if (widget.message.conversation.conversationType == ConversationType.Group) {
+    } else if (widget.message.conversation.conversationType ==
+        ConversationType.Group) {
       if (_groupTotalCount == 0) {
         return Container();
       }

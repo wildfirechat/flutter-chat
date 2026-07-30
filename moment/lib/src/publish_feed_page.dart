@@ -154,8 +154,8 @@ class _PublishFeedPageState extends State<PublishFeedPage> {
         _publishing = false;
         _publishProgress = '';
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('发表失败($e)'), duration: const Duration(seconds: 2)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text('发表失败($e)'), duration: const Duration(seconds: 2)));
     }
   }
 
@@ -198,9 +198,7 @@ class _PublishFeedPageState extends State<PublishFeedPage> {
               if (MomentKit.contactPicker != null) ...[
                 _buildOptionRow(
                   '提醒谁看',
-                  _mentionUsers.isEmpty
-                      ? ''
-                      : '${_mentionUsers.length} 人',
+                  _mentionUsers.isEmpty ? '' : '${_mentionUsers.length} 人',
                   _pickMentionUsers,
                 ),
                 const Divider(height: 0.5),
@@ -244,8 +242,7 @@ class _PublishFeedPageState extends State<PublishFeedPage> {
       mainAxisSpacing: 4,
       crossAxisSpacing: 4,
       children: [
-        for (var i = 0; i < _medias.length; i++)
-          _buildMediaCell(_medias[i], i),
+        for (var i = 0; i < _medias.length; i++) _buildMediaCell(_medias[i], i),
         if (_medias.length < 9)
           GestureDetector(
             onTap: _addMedia,

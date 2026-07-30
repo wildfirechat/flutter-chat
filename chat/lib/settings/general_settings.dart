@@ -29,7 +29,9 @@ class GeneralSettings extends StatelessWidget {
           : AppBar(
               title: Text(AppLocalizations.of(context)!.settings),
             ),
-      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : context.colors.primaryBackground,
+      backgroundColor: isDesktopShell
+          ? context.colors.chatBgDesktop
+          : context.colors.primaryBackground,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -74,7 +76,8 @@ class GeneralSettings extends StatelessWidget {
                   AppLocalizations.of(context)!.about,
                   showBottomDivider: false,
                   onTap: () {
-                    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                    Fluttertoast.showToast(
+                        msg: AppLocalizations.of(context)!.methodNotImpl);
                   },
                 ),
               ),
@@ -92,7 +95,8 @@ class GeneralSettings extends StatelessWidget {
                     OptionItem(
                       AppLocalizations.of(context)!.privacyPolicy,
                       onTap: () {
-                        Utilities.openLink(context, Config.PRIVACY_AGREEMENT_URL);
+                        Utilities.openLink(
+                            context, Config.PRIVACY_AGREEMENT_URL);
                       },
                     ),
                     OptionItem(
@@ -112,7 +116,8 @@ class GeneralSettings extends StatelessWidget {
                   AppLocalizations.of(context)!.diagnostics,
                   showBottomDivider: false,
                   onTap: () {
-                    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                    Fluttertoast.showToast(
+                        msg: AppLocalizations.of(context)!.methodNotImpl);
                   },
                 ),
               ),
@@ -129,7 +134,8 @@ class GeneralSettings extends StatelessWidget {
                     child: Center(
                       child: Text(
                         AppLocalizations.of(context)!.logout,
-                        style: AppText.lg.copyWith(color: context.colors.danger),
+                        style:
+                            AppText.lg.copyWith(color: context.colors.danger),
                       ),
                     ),
                   ),
@@ -143,9 +149,10 @@ class GeneralSettings extends StatelessWidget {
   }
 
   void _showLanguageDialog(BuildContext context) {
-    final localeViewModel = Provider.of<LocaleViewModel>(context, listen: false);
+    final localeViewModel =
+        Provider.of<LocaleViewModel>(context, listen: false);
     final l10n = AppLocalizations.of(context)!;
-    
+
     showDialog(
       context: context,
       builder: (BuildContext context) {

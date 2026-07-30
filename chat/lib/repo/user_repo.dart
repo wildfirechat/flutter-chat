@@ -17,7 +17,8 @@ mixin UserRepo {
     _groupUserMap.clear();
   }
 
-  static Future<List<UserInfo>> getFriendUserInfos({bool refresh = false}) async {
+  static Future<List<UserInfo>> getFriendUserInfos(
+      {bool refresh = false}) async {
     if (!refresh && _friendUserMap.isNotEmpty) {
       return _friendUserMap.values.toList();
     }
@@ -34,7 +35,7 @@ mixin UserRepo {
   static UserInfo getUserInfo(String userId, {String? groupId}) {
     var targetMap = _targetMap(userId, groupId: groupId);
     var userInfo = targetMap[userId];
-    if(userInfo == null){
+    if (userInfo == null) {
       // for reactive
       userInfo = UserInfo(userId, updateDt: 0);
       targetMap[userId] = userInfo;
@@ -46,7 +47,8 @@ mixin UserRepo {
     return _groupUserMap[groupId]?.values.toList();
   }
 
-  static void putGroupMemberUserInfos(String groupId, List<UserInfo> userInfos) {
+  static void putGroupMemberUserInfos(
+      String groupId, List<UserInfo> userInfos) {
     var map = _groupUserMap[groupId];
     if (map == null) {
       map = {};

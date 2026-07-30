@@ -25,7 +25,8 @@ class OptionSwitchItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rowHeight = LayoutScale.watchScale(context, 36.0, cap: LayoutScale.rowCap);
+    final rowHeight =
+        LayoutScale.watchScale(context, 36.0, cap: LayoutScale.rowCap);
     final colors = context.colors;
 
     return Material(
@@ -54,7 +55,8 @@ class OptionSwitchItem extends StatelessWidget {
                           desc!,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.right,
-                          style: AppText.base.copyWith(color: colors.textSecondary),
+                          style: AppText.base
+                              .copyWith(color: colors.textSecondary),
                         ),
                       ),
                     )

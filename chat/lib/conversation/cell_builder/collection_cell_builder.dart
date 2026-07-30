@@ -16,12 +16,14 @@ class CollectionCellBuilder extends PortraitCellBuilder {
 
   late CollectionMessageContent content;
 
-  CollectionCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  CollectionCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     content = model.message.content as CollectionMessageContent;
   }
 
-  Color _onBubble(BuildContext context) =>
-      isSendMessage ? context.colors.bubbleSentText : context.colors.bubbleReceivedText;
+  Color _onBubble(BuildContext context) => isSendMessage
+      ? context.colors.bubbleSentText
+      : context.colors.bubbleReceivedText;
 
   @override
   Widget buildMessageContent(BuildContext context) {
@@ -46,7 +48,8 @@ class CollectionCellBuilder extends PortraitCellBuilder {
               Expanded(
                 child: Text(
                   content.title,
-                  style: AppText.base.copyWith(fontWeight: FontWeight.w600, color: onBubble),
+                  style: AppText.base
+                      .copyWith(fontWeight: FontWeight.w600, color: onBubble),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -116,7 +119,8 @@ class CollectionCellBuilder extends PortraitCellBuilder {
           const SizedBox(height: 8),
           Text(
             _actionText(l10n),
-            style: AppText.xs.copyWith(fontWeight: FontWeight.w500, color: onBubble),
+            style: AppText.xs
+                .copyWith(fontWeight: FontWeight.w500, color: onBubble),
           ),
         ],
       ),

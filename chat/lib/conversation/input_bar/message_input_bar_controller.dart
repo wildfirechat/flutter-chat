@@ -25,7 +25,15 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'draft_data.dart';
 
-enum ChatInputBarStatus { keyboardStatus, pluginStatus, emojiStatus, recordStatus, muteStatus, pttStatus, menuStatus }
+enum ChatInputBarStatus {
+  keyboardStatus,
+  pluginStatus,
+  emojiStatus,
+  recordStatus,
+  muteStatus,
+  pttStatus,
+  menuStatus
+}
 
 /// 内联图片在输入框文本中的占位字符(U+FFFC OBJECT REPLACEMENT CHARACTER)。
 /// 第 N 个占位符对应 [MessageInputBarController._inlineAttachments] 的第 N 项。
@@ -74,7 +82,8 @@ class Mention {
 
 /// 控制器类，用于管理输入栏的状态
 class MessageInputBarController extends ChangeNotifier {
-  final EmojiTextEditingController textEditingController = EmojiTextEditingController();
+  final EmojiTextEditingController textEditingController =
+      EmojiTextEditingController();
   final FocusNode focusNode = FocusNode();
   final Conversation conversation;
   final ConversationViewModel conversationViewModel;
@@ -116,12 +125,15 @@ class MessageInputBarController extends ChangeNotifier {
     // 纯光标移动不会触发 onTextChanged,需单独校验 @ 会话
     textEditingController.addListener(_onEditingValueChanged);
     // 渲染层按占位符序号取对应附件,内联显示在输入框里
-    textEditingController.inlineAttachmentResolver =
-        (ordinal) => ordinal < _inlineAttachments.length ? _inlineAttachments[ordinal] : null;
+    textEditingController.inlineAttachmentResolver = (ordinal) =>
+        ordinal < _inlineAttachments.length
+            ? _inlineAttachments[ordinal]
+            : null;
     _loadRemoteUrlCache();
 
     Imclient.getConversationInfo(conversation).then((conversationInfo) {
-      if (conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty) {
+      if (conversationInfo.draft != null &&
+          conversationInfo.draft!.isNotEmpty) {
         setDraft(conversationInfo.draft!);
       }
     });
@@ -132,7 +144,10 @@ class MessageInputBarController extends ChangeNotifier {
         channelInfo = info;
         // 对齐公众号交互:频道配了菜单就默认展示菜单栏,用户可切回输入框。
         // 已经上手打字(有焦点)或已切过状态时不打扰。
-        if (info.menus != null && info.menus!.isNotEmpty && _status == ChatInputBarStatus.keyboardStatus && !focusNode.hasFocus) {
+        if (info.menus != null &&
+            info.menus!.isNotEmpty &&
+            _status == ChatInputBarStatus.keyboardStatus &&
+            !focusNode.hasFocus) {
           setStatus(ChatInputBarStatus.menuStatus);
         } else {
           notifyListeners();
@@ -140,12 +155,14 @@ class MessageInputBarController extends ChangeNotifier {
       });
     }
 
-    _draftUpdatedSubscription = Imclient.IMEventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
+    _draftUpdatedSubscription =
+        Imclient.IMEventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
       if (event.conversation != conversation) return;
       final currentDraft = getDraft();
       // 仅当本地未编辑（当前草稿与上次加载/保存的草稿一致）且远程草稿变化时才更新，
       // 避免本地输入被远端同步覆盖。
-      if (currentDraft == _conversationDraft && event.draft != _conversationDraft) {
+      if (currentDraft == _conversationDraft &&
+          event.draft != _conversationDraft) {
         setDraft(event.draft);
       }
     });
@@ -206,7 +223,9 @@ class MessageInputBarController extends ChangeNotifier {
       if (!focusNode.hasFocus) {
         focusNode.requestFocus();
       }
-    } else if (newStatus == ChatInputBarStatus.pluginStatus || newStatus == ChatInputBarStatus.emojiStatus || newStatus == ChatInputBarStatus.menuStatus) {
+    } else if (newStatus == ChatInputBarStatus.pluginStatus ||
+        newStatus == ChatInputBarStatus.emojiStatus ||
+        newStatus == ChatInputBarStatus.menuStatus) {
       if (focusNode.hasFocus) {
         focusNode.unfocus();
       }
@@ -216,7 +235,9 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void resetStatus() {
-    if (_status == ChatInputBarStatus.pluginStatus || _status == ChatInputBarStatus.emojiStatus || _status == ChatInputBarStatus.menuStatus) {
+    if (_status == ChatInputBarStatus.pluginStatus ||
+        _status == ChatInputBarStatus.emojiStatus ||
+        _status == ChatInputBarStatus.menuStatus) {
       _status = ChatInputBarStatus.keyboardStatus;
       notifyListeners();
     }
@@ -257,9 +278,13 @@ class MessageInputBarController extends ChangeNotifier {
 
   void onSendButton() {
     // 以文本中实际存在的占位符数为准,防止极端场景(如 undo)下列表残留看不见的附件
-    final int placeholderCount = _countInlineAttachmentPlaceholders(textEditingController.text);
-    final List<InlineAttachment> attachments = _inlineAttachments.take(placeholderCount).toList();
-    final String text = textEditingController.text.replaceAll(_inlineAttachmentPlaceholder, '').trim();
+    final int placeholderCount =
+        _countInlineAttachmentPlaceholders(textEditingController.text);
+    final List<InlineAttachment> attachments =
+        _inlineAttachments.take(placeholderCount).toList();
+    final String text = textEditingController.text
+        .replaceAll(_inlineAttachmentPlaceholder, '')
+        .trim();
     if (attachments.isEmpty && text.isEmpty) {
       return;
     }
@@ -271,7 +296,8 @@ class MessageInputBarController extends ChangeNotifier {
           ..size = attachment.fileSize
           ..localPath = attachment.path);
       } else {
-        conversationViewModel.sendMediaMessage(ImageMessageContent()..localPath = attachment.path);
+        conversationViewModel.sendMediaMessage(
+            ImageMessageContent()..localPath = attachment.path);
       }
     }
     if (text.isNotEmpty) {
@@ -295,10 +321,12 @@ class MessageInputBarController extends ChangeNotifier {
   void onTextChanged(String text) {
     if (_isInsertingMention) {
       if (text != _lastText) {
-        debugPrint('Spurious text change detected ("$text"). Restoring to "$_lastText"');
+        debugPrint(
+            'Spurious text change detected ("$text"). Restoring to "$_lastText"');
         textEditingController.value = TextEditingValue(
           text: _lastText,
-          selection: TextSelection.fromPosition(TextPosition(offset: _lastText.length)),
+          selection: TextSelection.fromPosition(
+              TextPosition(offset: _lastText.length)),
         );
         return;
       }
@@ -319,7 +347,8 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   /// 在光标处插入一张内联图片(微信 PC 交互:粘贴的图片直接显示在输入框里)。
-  void insertInlineImage(String path) => _insertInlineAttachment(InlineAttachment.image(path));
+  void insertInlineImage(String path) =>
+      _insertInlineAttachment(InlineAttachment.image(path));
 
   /// 在光标处插入一个内联文件卡片(微信 PC 交互:粘贴的文件以卡片显示在输入框里)。
   void insertInlineFile(String path, String name, int size) =>
@@ -334,12 +363,16 @@ class MessageInputBarController extends ChangeNotifier {
     }
     final int start = selection.start;
     final int end = selection.end;
-    final int before = _countInlineAttachmentPlaceholders(text.substring(0, start));
-    final int inside = _countInlineAttachmentPlaceholders(text.substring(start, end));
+    final int before =
+        _countInlineAttachmentPlaceholders(text.substring(0, start));
+    final int inside =
+        _countInlineAttachmentPlaceholders(text.substring(start, end));
     if (inside > 0) {
-      _inlineAttachments.removeRange(before, math.min(before + inside, _inlineAttachments.length));
+      _inlineAttachments.removeRange(
+          before, math.min(before + inside, _inlineAttachments.length));
     }
-    final String newText = text.replaceRange(start, end, _inlineAttachmentPlaceholder);
+    final String newText =
+        text.replaceRange(start, end, _inlineAttachmentPlaceholder);
     _inlineAttachments.insert(before, attachment);
 
     textEditingController.value = TextEditingValue(
@@ -360,32 +393,40 @@ class MessageInputBarController extends ChangeNotifier {
   /// 粘贴文本里混入的外来 U+FFFC 一律剔除,避免占位符与附件错位。
   /// 必须在 _lastText 更新前调用;返回(可能被改写的)最新文本。
   String _syncInlineAttachments(String text) {
-    if (_inlineAttachments.isEmpty && !text.contains(_inlineAttachmentPlaceholder)) {
+    if (_inlineAttachments.isEmpty &&
+        !text.contains(_inlineAttachmentPlaceholder)) {
       return text;
     }
     final String old = _lastText;
     int prefix = 0;
     final int minLen = math.min(old.length, text.length);
-    while (prefix < minLen && old.codeUnitAt(prefix) == text.codeUnitAt(prefix)) {
+    while (
+        prefix < minLen && old.codeUnitAt(prefix) == text.codeUnitAt(prefix)) {
       prefix++;
     }
     // 相邻占位符是同一字符,退格删除时前后缀 diff 无法区分删的是哪个,用光标位置消歧
     final TextSelection selection = textEditingController.selection;
-    if (text.length < old.length && selection.isValid && selection.isCollapsed && selection.start < prefix) {
+    if (text.length < old.length &&
+        selection.isValid &&
+        selection.isCollapsed &&
+        selection.start < prefix) {
       prefix = selection.start;
     }
     int suffix = 0;
     while (suffix < minLen - prefix &&
-        old.codeUnitAt(old.length - 1 - suffix) == text.codeUnitAt(text.length - 1 - suffix)) {
+        old.codeUnitAt(old.length - 1 - suffix) ==
+            text.codeUnitAt(text.length - 1 - suffix)) {
       suffix++;
     }
 
     final String removed = old.substring(prefix, old.length - suffix);
     final int removedCount = _countInlineAttachmentPlaceholders(removed);
     if (removedCount > 0) {
-      final int before = _countInlineAttachmentPlaceholders(old.substring(0, prefix));
+      final int before =
+          _countInlineAttachmentPlaceholders(old.substring(0, prefix));
       final int rangeStart = math.min(before, _inlineAttachments.length);
-      final int rangeEnd = math.min(before + removedCount, _inlineAttachments.length);
+      final int rangeEnd =
+          math.min(before + removedCount, _inlineAttachments.length);
       if (rangeStart < rangeEnd) {
         _inlineAttachments.removeRange(rangeStart, rangeEnd);
       }
@@ -393,7 +434,8 @@ class MessageInputBarController extends ChangeNotifier {
 
     final String inserted = text.substring(prefix, text.length - suffix);
     if (_countInlineAttachmentPlaceholders(inserted) > 0) {
-      final String cleaned = inserted.replaceAll(_inlineAttachmentPlaceholder, '');
+      final String cleaned =
+          inserted.replaceAll(_inlineAttachmentPlaceholder, '');
       text = text.replaceRange(prefix, text.length - suffix, cleaned);
       textEditingController.value = TextEditingValue(
         text: text,
@@ -408,9 +450,12 @@ class MessageInputBarController extends ChangeNotifier {
   /// 在 onTextChanged 中调用,依赖 _lastText 是变化前的文本。
   void _updateMentionSession(String text) {
     final TextSelection selection = textEditingController.selection;
-    final int cursor = selection.isValid && selection.isCollapsed ? selection.start : -1;
+    final int cursor =
+        selection.isValid && selection.isCollapsed ? selection.start : -1;
 
-    if (text.length == _lastText.length + 1 && cursor > 0 && text[cursor - 1] == '@') {
+    if (text.length == _lastText.length + 1 &&
+        cursor > 0 &&
+        text[cursor - 1] == '@') {
       // 确认是在光标处插入了单个 '@'(排除等长度的其他变化)
       if (text.substring(0, cursor - 1) + text.substring(cursor) == _lastText) {
         _mentionAtIndex = cursor - 1;
@@ -423,7 +468,9 @@ class MessageInputBarController extends ChangeNotifier {
     if (_mentionAtIndex < 0) {
       return;
     }
-    if (cursor <= _mentionAtIndex || _mentionAtIndex >= text.length || text[_mentionAtIndex] != '@') {
+    if (cursor <= _mentionAtIndex ||
+        _mentionAtIndex >= text.length ||
+        text[_mentionAtIndex] != '@') {
       _endMentionSession();
       return;
     }
@@ -438,12 +485,16 @@ class MessageInputBarController extends ChangeNotifier {
   /// 纯光标移动(文本未变)时,光标离开查询串尾部即结束会话(微信:点击别处关闭浮层)。
   /// 失焦时不结束:移动端 @ 后跳选人页会失焦,会话要保留到选人返回。
   void _onEditingValueChanged() {
-    if (_mentionAtIndex < 0 || textEditingController.text != _lastText || !focusNode.hasFocus) {
+    if (_mentionAtIndex < 0 ||
+        textEditingController.text != _lastText ||
+        !focusNode.hasFocus) {
       return;
     }
     final TextSelection selection = textEditingController.selection;
     final int expected = _mentionAtIndex + 1 + _mentionQuery.length;
-    if (!selection.isValid || !selection.isCollapsed || selection.start != expected) {
+    if (!selection.isValid ||
+        !selection.isCollapsed ||
+        selection.start != expected) {
       _endMentionSession();
       notifyListeners();
     }
@@ -472,9 +523,11 @@ class MessageInputBarController extends ChangeNotifier {
 
     final String name = MeshUserDisplay.getReadableName(user);
     final String text = textEditingController.text;
-    final int replaceEnd = (_mentionAtIndex + 1 + _mentionQuery.length).clamp(0, text.length);
+    final int replaceEnd =
+        (_mentionAtIndex + 1 + _mentionQuery.length).clamp(0, text.length);
     final String textToInsert = '@$name ';
-    final String newText = text.replaceRange(_mentionAtIndex, replaceEnd, textToInsert);
+    final String newText =
+        text.replaceRange(_mentionAtIndex, replaceEnd, textToInsert);
 
     // 替换区间长度变化,平移其后已登记的 mention
     final int shift = textToInsert.length - (replaceEnd - _mentionAtIndex);
@@ -485,7 +538,8 @@ class MessageInputBarController extends ChangeNotifier {
       }
     }
     final int newCursorPos = _mentionAtIndex + textToInsert.length;
-    _mentionsList.add(Mention(user.userId, name, _mentionAtIndex, newCursorPos - 1)); // -1 排除末尾空格
+    _mentionsList.add(Mention(
+        user.userId, name, _mentionAtIndex, newCursorPos - 1)); // -1 排除末尾空格
 
     _lastText = newText;
     _endMentionSession();
@@ -555,7 +609,8 @@ class MessageInputBarController extends ChangeNotifier {
           // The 'start' of the edit is a good approximation, or the debrisStart of the last processed (first in text).
 
           var firstRemoved = toRemove.last;
-          int firstDebrisStart = firstRemoved.start < start ? firstRemoved.start : start;
+          int firstDebrisStart =
+              firstRemoved.start < start ? firstRemoved.start : start;
 
           textEditingController.value = TextEditingValue(
             text: tempText,
@@ -596,13 +651,16 @@ class MessageInputBarController extends ChangeNotifier {
     final int selectionStart = currentVal.selection.start;
 
     final int atSignIndex = selectionStart - 1;
-    if (atSignIndex < 0 || atSignIndex >= currentText.length || currentText[atSignIndex] != '@') {
+    if (atSignIndex < 0 ||
+        atSignIndex >= currentText.length ||
+        currentText[atSignIndex] != '@') {
       _isInsertingMention = false;
       return;
     }
 
     final String textToInsert = "@$name ";
-    final String newText = currentText.replaceRange(atSignIndex, selectionStart, textToInsert);
+    final String newText =
+        currentText.replaceRange(atSignIndex, selectionStart, textToInsert);
     final int newCursorPos = atSignIndex + textToInsert.length;
 
     textEditingController.value = TextEditingValue(
@@ -632,7 +690,8 @@ class MessageInputBarController extends ChangeNotifier {
     }
 
     final String textToInsert = "@$name ";
-    final String newText = currentText.replaceRange(insertPos, insertPos, textToInsert);
+    final String newText =
+        currentText.replaceRange(insertPos, insertPos, textToInsert);
 
     // Shift existing mentions
     if (_mentionsList.isNotEmpty) {
@@ -696,7 +755,8 @@ class MessageInputBarController extends ChangeNotifier {
     _remoteUrlCache[stickerPath] = remoteUrl;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('wfc_sticker_remote_urls', json.encode(_remoteUrlCache));
+      await prefs.setString(
+          'wfc_sticker_remote_urls', json.encode(_remoteUrlCache));
     } catch (e) {
       debugPrint('Error saving remote url: $e');
     }
@@ -719,10 +779,12 @@ class MessageInputBarController extends ChangeNotifier {
         } else {
           // If not in memory cache, we might want to load it once to get dimensions
           final byteData = await rootBundle.load(stickerPath);
-          final image = await decodeImageFromList(byteData.buffer.asUint8List());
+          final image =
+              await decodeImageFromList(byteData.buffer.asUint8List());
           content.width = image.width;
           content.height = image.height;
-          _stickerCache[stickerPath] = _StickerInfo(path: '', width: image.width, height: image.height);
+          _stickerCache[stickerPath] =
+              _StickerInfo(path: '', width: image.width, height: image.height);
         }
         conversationViewModel.sendMessage(content);
         onSend?.call();
@@ -744,7 +806,8 @@ class MessageInputBarController extends ChangeNotifier {
         int width = 0;
         int height = 0;
         try {
-          final image = await decodeImageFromList(byteData.buffer.asUint8List());
+          final image =
+              await decodeImageFromList(byteData.buffer.asUint8List());
           width = image.width;
           height = image.height;
         } catch (e) {
@@ -759,7 +822,8 @@ class MessageInputBarController extends ChangeNotifier {
       content.width = info.width;
       content.height = info.height;
 
-      conversationViewModel.sendMediaMessage(content, uploadedCallback: (remoteUrl) {
+      conversationViewModel.sendMediaMessage(content,
+          uploadedCallback: (remoteUrl) {
         _saveRemoteUrl(stickerPath, remoteUrl);
       });
       onSend?.call();
@@ -770,7 +834,8 @@ class MessageInputBarController extends ChangeNotifier {
 
   void _sendTyping(String text) {
     // 12 秒节流;时间戳统一用毫秒(此前 second 与 microsecondsSinceEpoch 量纲不匹配,整个会话只会发一次)
-    if (DateTime.now().millisecondsSinceEpoch - _sendTypingTime > 12000 && text.isNotEmpty) {
+    if (DateTime.now().millisecondsSinceEpoch - _sendTypingTime > 12000 &&
+        text.isNotEmpty) {
       _sendTypingTime = DateTime.now().millisecondsSinceEpoch;
       TypingMessageContent typingMessageContent = TypingMessageContent();
       typingMessageContent.type = TypingType.Typing_TEXT;
@@ -804,7 +869,8 @@ class MessageInputBarController extends ChangeNotifier {
     draft.mentions = _mentionsList.map((m) {
       // 占位符被剔除后文本变短,mention 下标要减去其前方的占位符数
       // (占位符不可能落在 mention 内部,start/end 平移量相同)
-      final int shift = _countInlineAttachmentPlaceholders(raw.substring(0, math.min(m.start, raw.length)));
+      final int shift = _countInlineAttachmentPlaceholders(
+          raw.substring(0, math.min(m.start, raw.length)));
       return DraftMention(
         uid: m.userId,
         isMentionAll: m.userId == '@all',
@@ -831,7 +897,8 @@ class MessageInputBarController extends ChangeNotifier {
 
     final data = DraftData.fromDraftString(draft);
     textEditingController.text = data.content;
-    textEditingController.selection = TextSelection(baseOffset: data.content.length, extentOffset: data.content.length);
+    textEditingController.selection = TextSelection(
+        baseOffset: data.content.length, extentOffset: data.content.length);
     _lastText = data.content;
     _conversationDraft = draft;
 
@@ -991,7 +1058,8 @@ class EmojiTextEditingController extends TextEditingController {
   @override
   set value(TextEditingValue newValue) {
     if (newValue.selection.isValid &&
-        (newValue.selection.start > newValue.text.length || newValue.selection.end > newValue.text.length)) {
+        (newValue.selection.start > newValue.text.length ||
+            newValue.selection.end > newValue.text.length)) {
       newValue = newValue.copyWith(
         selection: TextSelection.collapsed(offset: newValue.text.length),
       );
@@ -1017,20 +1085,28 @@ class EmojiTextEditingController extends TextEditingController {
     TextStyle? style,
     required bool withComposing,
   }) {
-    assert(!value.composing.isValid || !withComposing || value.composing.isCollapsed || (value.composing.start >= 0 && value.composing.end <= value.text.length));
+    assert(!value.composing.isValid ||
+        !withComposing ||
+        value.composing.isCollapsed ||
+        (value.composing.start >= 0 &&
+            value.composing.end <= value.text.length));
 
     _inlineAttachmentOrdinal = 0;
-    final bool hasComposing = value.composing.isValid && withComposing && !value.composing.isCollapsed;
+    final bool hasComposing = value.composing.isValid &&
+        withComposing &&
+        !value.composing.isCollapsed;
 
     final List<InlineSpan> children;
     if (!hasComposing) {
       children = <InlineSpan>[_buildEmojiTextSpan(context, text, style)];
     } else {
-      final TextStyle composingStyle = style?.merge(const TextStyle(decoration: TextDecoration.underline))
-          ?? const TextStyle(decoration: TextDecoration.underline);
+      final TextStyle composingStyle =
+          style?.merge(const TextStyle(decoration: TextDecoration.underline)) ??
+              const TextStyle(decoration: TextDecoration.underline);
 
       final String beforeText = value.text.substring(0, value.composing.start);
-      final String composingText = value.text.substring(value.composing.start, value.composing.end);
+      final String composingText =
+          value.text.substring(value.composing.start, value.composing.end);
       final String afterText = value.text.substring(value.composing.end);
 
       children = <InlineSpan>[
@@ -1040,7 +1116,8 @@ class EmojiTextEditingController extends TextEditingController {
       ];
     }
     if (_needsTrailingLineAnchor(value.text)) {
-      children.add(const TextSpan(text: '\u200B')); // 幻影末行锚点,见 _needsTrailingLineAnchor
+      children.add(
+          const TextSpan(text: '\u200B')); // 幻影末行锚点,见 _needsTrailingLineAnchor
     }
     return TextSpan(style: style, children: children);
   }
@@ -1048,7 +1125,8 @@ class EmojiTextEditingController extends TextEditingController {
   /// 先按内联附件占位符切段:占位符渲染为图片/文件卡片 WidgetSpan,其余文本做
   /// emoji 处理。占位符与 WidgetSpan 一一对应(各占 1 个字符位),保证光标/选区
   /// 位置映射不乱。
-  TextSpan _buildEmojiTextSpan(BuildContext context, String text, TextStyle? style) {
+  TextSpan _buildEmojiTextSpan(
+      BuildContext context, String text, TextStyle? style) {
     final List<InlineSpan> children = [];
     int runStart = 0;
     for (int i = 0; i < text.length; i++) {
@@ -1066,8 +1144,10 @@ class EmojiTextEditingController extends TextEditingController {
     return TextSpan(style: style, children: children);
   }
 
-  InlineSpan _buildInlineAttachmentSpan(BuildContext context, TextStyle? style) {
-    final InlineAttachment? attachment = inlineAttachmentResolver?.call(_inlineAttachmentOrdinal++);
+  InlineSpan _buildInlineAttachmentSpan(
+      BuildContext context, TextStyle? style) {
+    final InlineAttachment? attachment =
+        inlineAttachmentResolver?.call(_inlineAttachmentOrdinal++);
     if (attachment == null) {
       // 没有对应附件(不应出现):原样保留占位字符,维持文本与 span 的长度一致
       return TextSpan(text: _inlineAttachmentPlaceholder, style: style);
@@ -1082,7 +1162,9 @@ class EmojiTextEditingController extends TextEditingController {
       baseline: TextBaseline.alphabetic,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 1),
-        child: attachment.isFile ? _buildInlineFileCard(context, attachment) : _buildInlineImage(attachment),
+        child: attachment.isFile
+            ? _buildInlineFileCard(context, attachment)
+            : _buildInlineImage(attachment),
       ),
     );
   }
@@ -1092,7 +1174,8 @@ class EmojiTextEditingController extends TextEditingController {
       borderRadius: BorderRadius.circular(4),
       child: ConstrainedBox(
         // 高度上限动态跟随输入区;宽度由文本段落宽度约束,600 只是兜底
-        constraints: BoxConstraints(maxWidth: 600, maxHeight: inlineImageMaxHeight),
+        constraints:
+            BoxConstraints(maxWidth: 600, maxHeight: inlineImageMaxHeight),
         child: Image.file(
           File(attachment.path),
           fit: BoxFit.contain,
@@ -1106,7 +1189,8 @@ class EmojiTextEditingController extends TextEditingController {
 
   /// 文件卡片:类型图标 + 文件名 + 大小,样式对齐文件消息气泡
   /// (微信 PC:粘贴的文件以卡片显示在输入框里,发送时发文件消息)。
-  Widget _buildInlineFileCard(BuildContext context, InlineAttachment attachment) {
+  Widget _buildInlineFileCard(
+      BuildContext context, InlineAttachment attachment) {
     final colors = context.colors;
     return Container(
       width: 220,
@@ -1148,12 +1232,14 @@ class EmojiTextEditingController extends TextEditingController {
     );
   }
 
-  void _appendEmojiRuns(String text, TextStyle? style, List<InlineSpan> children) {
+  void _appendEmojiRuns(
+      String text, TextStyle? style, List<InlineSpan> children) {
     final baseFontSize = style?.fontSize ?? 16.0;
     // Scale emoji font size to make them look comparable to or slightly larger than text.
     final emojiStyle = style?.copyWith(
-      fontSize: baseFontSize * 1.35,
-    ) ?? TextStyle(fontSize: baseFontSize * 1.35);
+          fontSize: baseFontSize * 1.35,
+        ) ??
+        TextStyle(fontSize: baseFontSize * 1.35);
 
     text.splitMapJoin(
       _emojiRegex,

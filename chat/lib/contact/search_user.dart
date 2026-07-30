@@ -12,15 +12,18 @@ import '../utils/mesh_user_name.dart';
 class SearchUserDelegate extends SearchDelegate<String> {
   final String? domainId;
 
-  SearchUserDelegate({this.domainId, required String searchFieldHint}) : super(searchFieldLabel: searchFieldHint);
+  SearchUserDelegate({this.domainId, required String searchFieldHint})
+      : super(searchFieldLabel: searchFieldHint);
 
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
-      IconButton(onPressed: (){
-        query = "";
-        showSuggestions(context);
-      }, icon: const Icon(Icons.clear)),
+      IconButton(
+          onPressed: () {
+            query = "";
+            showSuggestions(context);
+          },
+          icon: const Icon(Icons.clear)),
     ];
   }
 
@@ -41,20 +44,21 @@ class SearchUserDelegate extends SearchDelegate<String> {
   }
 
   Future<List<UserInfo>> searchUsersInServer() async {
-    if(query.isEmpty) {
+    if (query.isEmpty) {
       return [];
     }
 
     List<UserInfo> us = [];
     bool finish = false;
-    Imclient.searchUser(query, SearchUserType.SearchUserType_Name_Mobile.index, 0, (userInfos) {
-        us = userInfos!;
-        finish = true;
+    Imclient.searchUser(
+        query, SearchUserType.SearchUserType_Name_Mobile.index, 0, (userInfos) {
+      us = userInfos!;
+      finish = true;
     }, (errorCode) {
-        finish = true;
+      finish = true;
     }, domainId: domainId);
 
-    while(!finish) {
+    while (!finish) {
       await Future.delayed(const Duration(microseconds: 100));
     }
     return us;
@@ -69,8 +73,23 @@ class SearchUserDelegate extends SearchDelegate<String> {
         height: 48,
         child: Row(
           children: [
-            Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (userInfo.portrait == null || userInfo.portrait!.isEmpty)?Image.asset(Config.defaultUserPortrait, width: 40.0, height: 40.0):Image.network(MediaUrlRedirector.redirect(userInfo.portrait!), width: 40, height: 40,),),),
-            Expanded(child: MeshUserName(userInfo, overflow: TextOverflow.ellipsis)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: (userInfo.portrait == null || userInfo.portrait!.isEmpty)
+                    ? Image.asset(Config.defaultUserPortrait,
+                        width: 40.0, height: 40.0)
+                    : Image.network(
+                        MediaUrlRedirector.redirect(userInfo.portrait!),
+                        width: 40,
+                        height: 40,
+                      ),
+              ),
+            ),
+            Expanded(
+                child: MeshUserName(userInfo, overflow: TextOverflow.ellipsis)),
           ],
         ),
       ),
@@ -84,16 +103,18 @@ class SearchUserDelegate extends SearchDelegate<String> {
       MaterialPageRoute(builder: (context) => UserInfoWidget(userInfo.userId)),
     );
   }
-  
+
   @override
   Widget buildResults(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<List<UserInfo>>(
         future: searchUsersInServer(),
         builder: (context, snapshot) {
-          if(snapshot.connectionState == ConnectionState.done) {
-            if(snapshot.data!.isEmpty) {
-              return Center(child: Text(l10n.searchUserNotFound),);
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.data!.isEmpty) {
+              return Center(
+                child: Text(l10n.searchUserNotFound),
+              );
             } else {
               searchedUsers = snapshot.data!;
               return ListView.separated(
@@ -103,9 +124,10 @@ class SearchUserDelegate extends SearchDelegate<String> {
               );
             }
           }
-          return const Center(child: CircularProgressIndicator(),);
-        }
-    );
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        });
   }
 
   @override
@@ -117,7 +139,7 @@ class SearchUserDelegate extends SearchDelegate<String> {
         child: Text(l10n.searchInCurrentDomain),
       );
     }
-    if(query.isNotEmpty) {
+    if (query.isNotEmpty) {
       return Container();
     } else {
       return Container(

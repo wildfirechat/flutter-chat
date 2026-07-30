@@ -108,7 +108,8 @@ class _ConferenceGridLayoutState extends State<ConferenceGridLayout> {
               child: Center(
                 child: Text(
                   '${_currentPage + 1} / $pageCount',
-                  style: TextStyle(color: context.colors.textSecondary, fontSize: 12),
+                  style: TextStyle(
+                      color: context.colors.textSecondary, fontSize: 12),
                 ),
               ),
             ),
@@ -118,15 +119,17 @@ class _ConferenceGridLayoutState extends State<ConferenceGridLayout> {
     });
   }
 
-  Widget _buildGrid(List<ConferenceParticipantItem> pageItems, BoxConstraints constraints) {
+  Widget _buildGrid(
+      List<ConferenceParticipantItem> pageItems, BoxConstraints constraints) {
     const padding = 12.0;
     const spacing = 8.0;
     final count = pageItems.length;
     if (count == 0) return const SizedBox.shrink();
     final crossAxisCount = count == 1 ? 1 : (count <= 4 ? 2 : 3);
     final rows = (count + crossAxisCount - 1) ~/ crossAxisCount;
-    final cellW = (constraints.maxWidth - padding * 2 - spacing * (crossAxisCount - 1)) /
-        crossAxisCount;
+    final cellW =
+        (constraints.maxWidth - padding * 2 - spacing * (crossAxisCount - 1)) /
+            crossAxisCount;
     final cellH =
         (constraints.maxHeight - padding * 2 - spacing * (rows - 1)) / rows;
     return GridView.builder(

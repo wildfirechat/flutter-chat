@@ -142,7 +142,9 @@ class _CaptionButton extends StatelessWidget {
         child: Container(
           width: 46,
           height: _PcWindowCaptionState.captionHeight,
-          color: hovered ? (hoverColor ?? colors.inputBgHover) : Colors.transparent,
+          color: hovered
+              ? (hoverColor ?? colors.inputBgHover)
+              : Colors.transparent,
           child: Icon(
             icon,
             size: iconSize,

@@ -114,7 +114,8 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
                 );
               });
             },
-            child: Text(l10n.conferenceDestroyAction, style: TextStyle(color: context.colors.danger)),
+            child: Text(l10n.conferenceDestroyAction,
+                style: TextStyle(color: context.colors.danger)),
           ),
         ],
       ),
@@ -192,7 +193,8 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
   @override
   Widget build(BuildContext context) {
     var l10n = AppLocalizations.of(context)!;
-    var title = info['conferenceTitle'] ?? info['title'] ?? l10n.conferenceUntitled;
+    var title =
+        info['conferenceTitle'] ?? info['title'] ?? l10n.conferenceUntitled;
     var conferenceId = info['conferenceId'] as String? ?? '';
     var startTime = info['startTime'] ?? 0;
     var endTime = info['endTime'] ?? 0;
@@ -234,11 +236,16 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
                       Text(
                         title,
                         style: AppText.base.copyWith(
-                            color: context.colors.textPrimary, fontWeight: FontWeight.w600),
+                            color: context.colors.textPrimary,
+                            fontWeight: FontWeight.w600),
                       ),
                       Text(
-                        l10n.conferenceOwnerLabel(_ownerInfo?.getReadableName() ?? info['owner'] ?? ''),
-                        style: AppText.sm.copyWith(color: context.colors.textSecondary),
+                        l10n.conferenceOwnerLabel(
+                            _ownerInfo?.getReadableName() ??
+                                info['owner'] ??
+                                ''),
+                        style: AppText.sm
+                            .copyWith(color: context.colors.textSecondary),
                       ),
                     ],
                   ),
@@ -248,9 +255,12 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
             const SizedBox(height: 20),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(l10n.conferenceIdLabel, style: AppText.sm.copyWith(color: context.colors.textSecondary)),
+              title: Text(l10n.conferenceIdLabel,
+                  style:
+                      AppText.sm.copyWith(color: context.colors.textSecondary)),
               subtitle: Text(conferenceId,
-                  style: AppText.base.copyWith(color: context.colors.textPrimary)),
+                  style:
+                      AppText.base.copyWith(color: context.colors.textPrimary)),
               trailing: IconButton(
                 icon: Icon(Icons.copy, color: context.colors.iconSecondary),
                 onPressed: _copyConferenceId,
@@ -260,32 +270,42 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
               Divider(color: context.colors.hairlineSoft),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(l10n.conferenceStartTime, style: AppText.sm.copyWith(color: context.colors.textSecondary)),
+                title: Text(l10n.conferenceStartTime,
+                    style: AppText.sm
+                        .copyWith(color: context.colors.textSecondary)),
                 subtitle: Text(_formatTime(startTime),
-                    style: AppText.base.copyWith(color: context.colors.textPrimary)),
+                    style: AppText.base
+                        .copyWith(color: context.colors.textPrimary)),
               ),
             ],
             if (endTime > 0) ...[
               Divider(color: context.colors.hairlineSoft),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(l10n.conferenceEndTime, style: AppText.sm.copyWith(color: context.colors.textSecondary)),
+                title: Text(l10n.conferenceEndTime,
+                    style: AppText.sm
+                        .copyWith(color: context.colors.textSecondary)),
                 subtitle: Text(_formatTime(endTime),
-                    style: AppText.base.copyWith(color: context.colors.textPrimary)),
+                    style: AppText.base
+                        .copyWith(color: context.colors.textPrimary)),
               ),
             ],
             const SizedBox(height: 20),
             if (_canJoin) ...[
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(l10n.conferenceEnableMic, style: AppText.sm.copyWith(color: context.colors.textPrimary)),
+                title: Text(l10n.conferenceEnableMic,
+                    style:
+                        AppText.sm.copyWith(color: context.colors.textPrimary)),
                 value: _enableAudio,
                 activeColor: context.colors.success,
                 onChanged: (v) => setState(() => _enableAudio = v),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: Text(l10n.conferenceEnableCamera, style: AppText.sm.copyWith(color: context.colors.textPrimary)),
+                title: Text(l10n.conferenceEnableCamera,
+                    style:
+                        AppText.sm.copyWith(color: context.colors.textPrimary)),
                 value: _enableVideo,
                 activeColor: context.colors.success,
                 onChanged: (v) => setState(() => _enableVideo = v),
@@ -301,7 +321,9 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text(_canJoin ? l10n.conferenceJoinMeeting : l10n.conferenceMeetingEnded),
+                    : Text(_canJoin
+                        ? l10n.conferenceJoinMeeting
+                        : l10n.conferenceMeetingEnded),
               ),
             ),
             const SizedBox(height: 12),

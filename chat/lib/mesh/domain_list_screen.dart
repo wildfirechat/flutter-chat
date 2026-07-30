@@ -121,9 +121,11 @@ class _DomainListScreenState extends State<DomainListScreen> {
             leading: const Icon(Icons.domain),
             title: Text(domain.name),
             subtitle: domain.desc != null && domain.desc!.isNotEmpty
-                ? Text(domain.desc!, maxLines: 1, overflow: TextOverflow.ellipsis)
+                ? Text(domain.desc!,
+                    maxLines: 1, overflow: TextOverflow.ellipsis)
                 : null,
-            trailing: widget.selectMode ? const Icon(Icons.chevron_right) : null,
+            trailing:
+                widget.selectMode ? const Icon(Icons.chevron_right) : null,
             onTap: () => _onDomainTap(domain),
           );
         },

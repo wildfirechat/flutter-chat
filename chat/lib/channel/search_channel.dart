@@ -8,15 +8,18 @@ import '../utils/media_url_redirector.dart';
 import '../channel/channel_info_widget.dart';
 
 class SearchChannelDelegate extends SearchDelegate<String> {
-  SearchChannelDelegate({required String searchFieldHint}) : super(searchFieldLabel: searchFieldHint);
+  SearchChannelDelegate({required String searchFieldHint})
+      : super(searchFieldLabel: searchFieldHint);
 
   @override
   List<Widget>? buildActions(BuildContext context) {
     return [
-      IconButton(onPressed: (){
-        query = "";
-        showSuggestions(context);
-      }, icon: const Icon(Icons.clear)),
+      IconButton(
+          onPressed: () {
+            query = "";
+            showSuggestions(context);
+          },
+          icon: const Icon(Icons.clear)),
     ];
   }
 
@@ -37,7 +40,7 @@ class SearchChannelDelegate extends SearchDelegate<String> {
   }
 
   Future<List<ChannelInfo>> searchChannelsInServer() async {
-    if(query.isEmpty) {
+    if (query.isEmpty) {
       return [];
     }
 
@@ -51,7 +54,7 @@ class SearchChannelDelegate extends SearchDelegate<String> {
       finish = true;
     });
 
-    while(!finish) {
+    while (!finish) {
       await Future.delayed(const Duration(microseconds: 100));
     }
     return us;
@@ -59,20 +62,36 @@ class SearchChannelDelegate extends SearchDelegate<String> {
 
   late List<ChannelInfo> searchedChannels;
 
-
   Widget _buildRow(BuildContext context, int index) {
     ChannelInfo channelInfo = searchedChannels[index];
     return GestureDetector(
-      child: Column(children: [
-        Row(
-          children: [
-            Padding(padding: const EdgeInsets.fromLTRB(8, 4, 8, 4), child: SizedBox(width: 40, height: 40, child: (channelInfo.portrait == null || channelInfo.portrait!.isEmpty)?Image.asset(Config.defaultChannelPortrait, width: 40.0, height: 40.0):Image.network(MediaUrlRedirector.redirect(channelInfo.portrait!), width: 40, height: 40,),),),
-            Expanded(child: Text(channelInfo.name!)),
-          ],
-        ),
-        // height 9 保留原 4+1+4 的行间留白。
-        const Divider(height: 9, indent: 12, endIndent: 12),
-      ],),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+                child: SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: (channelInfo.portrait == null ||
+                          channelInfo.portrait!.isEmpty)
+                      ? Image.asset(Config.defaultChannelPortrait,
+                          width: 40.0, height: 40.0)
+                      : Image.network(
+                          MediaUrlRedirector.redirect(channelInfo.portrait!),
+                          width: 40,
+                          height: 40,
+                        ),
+                ),
+              ),
+              Expanded(child: Text(channelInfo.name!)),
+            ],
+          ),
+          // height 9 保留原 4+1+4 的行间留白。
+          const Divider(height: 9, indent: 12, endIndent: 12),
+        ],
+      ),
       onTap: () => _toChannelInfoView(context, channelInfo),
     );
   }
@@ -80,18 +99,22 @@ class SearchChannelDelegate extends SearchDelegate<String> {
   void _toChannelInfoView(BuildContext context, ChannelInfo channelInfo) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ChannelInfoWidget(channelInfo: channelInfo)),
+      MaterialPageRoute(
+          builder: (context) => ChannelInfoWidget(channelInfo: channelInfo)),
     );
   }
-  
+
   @override
   Widget buildResults(BuildContext context) {
     return FutureBuilder<List<ChannelInfo>>(
         future: searchChannelsInServer(),
         builder: (context, snapshot) {
-          if(snapshot.connectionState == ConnectionState.done) {
-            if(snapshot.data!.isEmpty) {
-              return Center(child: Text(AppLocalizations.of(context)!.searchChannelNotFound),);
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.data!.isEmpty) {
+              return Center(
+                child:
+                    Text(AppLocalizations.of(context)!.searchChannelNotFound),
+              );
             } else {
               searchedChannels = snapshot.data!;
               return ListView.builder(
@@ -100,14 +123,15 @@ class SearchChannelDelegate extends SearchDelegate<String> {
               );
             }
           }
-          return const Center(child: CircularProgressIndicator(),);
-        }
-    );
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        });
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    if(query.isNotEmpty) {
+    if (query.isNotEmpty) {
       return Container();
     } else {
       return Container(

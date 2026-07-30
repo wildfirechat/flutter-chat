@@ -33,11 +33,21 @@ class SplashScreen extends StatelessWidget {
               // 参考 iOS 原生 LaunchScreen:图标顶部距离安全区 112,
               // App 名在图标下方 28,标语固定在底部。
               const Padding(padding: EdgeInsets.only(top: 112)),
-              Center(child: Image.asset('assets/images/app_icon.png', width: 180.0, height: 180.0)),
+              Center(
+                  child: Image.asset('assets/images/app_icon.png',
+                      width: 180.0, height: 180.0)),
               const Padding(padding: EdgeInsets.only(top: 28)),
-              Center(child: Text(l10n.appTitle, style: AppText.xxl.copyWith(color: colors.textPrimary, decoration: TextDecoration.none))),
+              Center(
+                  child: Text(l10n.appTitle,
+                      style: AppText.xxl.copyWith(
+                          color: colors.textPrimary,
+                          decoration: TextDecoration.none))),
               Expanded(child: Container()),
-              Center(child: Text(l10n.appTagline, style: AppText.lg.copyWith(color: colors.textSecondary, decoration: TextDecoration.none))),
+              Center(
+                  child: Text(l10n.appTagline,
+                      style: AppText.lg.copyWith(
+                          color: colors.textSecondary,
+                          decoration: TextDecoration.none))),
               const Padding(padding: EdgeInsets.only(bottom: 53))
             ],
           ),

@@ -86,7 +86,8 @@ class _MultiCallScreenState extends State<MultiCallScreen>
   Future<void> _initSelf() async {
     var renderer = RTCVideoRenderer();
     await renderer.initialize();
-    _selfItem = _ParticipantItem(userId: Imclient.currentUserId, renderer: renderer);
+    _selfItem =
+        _ParticipantItem(userId: Imclient.currentUserId, renderer: renderer);
     var info = await Imclient.getUserInfo(Imclient.currentUserId);
     _selfItem!.userInfo = info;
     _selfItem!.videoMuted = _session.isVideoMuted;
@@ -239,14 +240,19 @@ class _MultiCallScreenState extends State<MultiCallScreen>
     if (_session.conversation == null) return;
     List<String> candidates = [];
     if (_session.conversation!.conversationType == ConversationType.Group) {
-      var members = await Imclient.getGroupMembers(_session.conversation!.target);
+      var members =
+          await Imclient.getGroupMembers(_session.conversation!.target);
       candidates = members.map((m) => m.memberId).toList();
     }
-    candidates.removeWhere((uid) => uid == Imclient.currentUserId || _session.getParticipantIds().contains(uid));
+    candidates.removeWhere((uid) =>
+        uid == Imclient.currentUserId ||
+        _session.getParticipantIds().contains(uid));
 
     if (candidates.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.callInviteNoCandidates)),
+        SnackBar(
+            content:
+                Text(AppLocalizations.of(context)!.callInviteNoCandidates)),
       );
       return;
     }
@@ -319,9 +325,8 @@ class _MultiCallScreenState extends State<MultiCallScreen>
   }
 
   @override
-  void didParticipantJoined(String userId, {bool screenSharing = false}) async {
-
-  }
+  void didParticipantJoined(String userId,
+      {bool screenSharing = false}) async {}
 
   @override
   void didParticipantConnected(String userId, {bool screenSharing = false}) {
@@ -542,7 +547,9 @@ class _MultiCallScreenState extends State<MultiCallScreen>
                   valueListenable: _durationSeconds,
                   builder: (context, seconds, child) {
                     return Text(
-                      isConnected ? _formatDuration(Duration(seconds: seconds)) : _statusLabel(l10n),
+                      isConnected
+                          ? _formatDuration(Duration(seconds: seconds))
+                          : _statusLabel(l10n),
                       style: AppText.base.copyWith(
                           color: Colors.white, fontWeight: FontWeight.w600),
                     );
@@ -605,8 +612,10 @@ class _MultiCallScreenState extends State<MultiCallScreen>
         final rows = (count / crossAxisCount).ceil();
         final hSpacing = 8.0 * (crossAxisCount - 1);
         final vSpacing = 8.0 * (rows - 1);
-        final availableW = constraints.maxWidth - hSpacing - 24; // 左右 padding 12
-        final availableH = constraints.maxHeight - vSpacing - 24; // 上下 padding 12
+        final availableW =
+            constraints.maxWidth - hSpacing - 24; // 左右 padding 12
+        final availableH =
+            constraints.maxHeight - vSpacing - 24; // 上下 padding 12
         final cellW = availableW / crossAxisCount;
         final cellH = availableH / rows;
         final aspectRatio = cellW / cellH;
@@ -630,8 +639,11 @@ class _MultiCallScreenState extends State<MultiCallScreen>
 
   Widget _buildParticipantCell(_ParticipantItem item, bool isVideoCall) {
     bool isSelf = item.userId == Imclient.currentUserId;
-    bool showVideo = isVideoCall && !item.videoMuted && item.renderer.srcObject != null;
-    String name = isSelf ? AppLocalizations.of(context)!.meLabel : _participantName(item.userInfo);
+    bool showVideo =
+        isVideoCall && !item.videoMuted && item.renderer.srcObject != null;
+    String name = isSelf
+        ? AppLocalizations.of(context)!.meLabel
+        : _participantName(item.userInfo);
 
     // 说话指示(绿框/角标)由 item.speakingNotifier 驱动局部刷新,
     // 音量高频上报时不再随整页 setState 重建 RTCVideoView。
@@ -688,7 +700,8 @@ class _MultiCallScreenState extends State<MultiCallScreen>
                   right: 0,
                   bottom: 0,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
@@ -778,8 +791,9 @@ class _MultiCallScreenState extends State<MultiCallScreen>
             children: [
               _CallActionButton(
                 icon: _isMicMuted ? Icons.mic_off : Icons.mic_none,
-                backgroundColor:
-                    _isMicMuted ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                backgroundColor: _isMicMuted
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.1),
                 iconColor: _isMicMuted ? Colors.black87 : Colors.white,
                 onPressed: _onToggleMic,
                 label: l10n.callMute,
@@ -793,17 +807,21 @@ class _MultiCallScreenState extends State<MultiCallScreen>
               if (isVideoCall)
                 _CallActionButton(
                   icon: _isCameraOff ? Icons.videocam_off : Icons.videocam,
-                  backgroundColor:
-                      _isCameraOff ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                  backgroundColor: _isCameraOff
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.1),
                   iconColor: _isCameraOff ? Colors.black87 : Colors.white,
                   onPressed: _onToggleCamera,
                   label: _isCameraOff ? l10n.callCameraOn : l10n.callCameraOff,
                 )
               else
                 _CallActionButton(
-                  icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_mute_outlined,
-                  backgroundColor:
-                      _isSpeakerOn ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                  icon: _isSpeakerOn
+                      ? Icons.volume_up
+                      : Icons.volume_mute_outlined,
+                  backgroundColor: _isSpeakerOn
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.1),
                   iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
                   onPressed: _onToggleSpeaker,
                   label: l10n.callSpeaker,
@@ -829,9 +847,12 @@ class _MultiCallScreenState extends State<MultiCallScreen>
                   label: l10n.callSwitchCamera,
                 ),
                 _CallActionButton(
-                  icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_mute_outlined,
-                  backgroundColor:
-                      _isSpeakerOn ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                  icon: _isSpeakerOn
+                      ? Icons.volume_up
+                      : Icons.volume_mute_outlined,
+                  backgroundColor: _isSpeakerOn
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.1),
                   iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
                   onPressed: _onToggleSpeaker,
                   label: l10n.callSpeaker,
@@ -848,8 +869,9 @@ class _MultiCallScreenState extends State<MultiCallScreen>
         children: [
           _CallActionButton(
             icon: _isMicMuted ? Icons.mic_off : Icons.mic_none,
-            backgroundColor:
-                _isMicMuted ? Colors.white : Colors.white.withValues(alpha: 0.1),
+            backgroundColor: _isMicMuted
+                ? Colors.white
+                : Colors.white.withValues(alpha: 0.1),
             iconColor: _isMicMuted ? Colors.black87 : Colors.white,
             onPressed: _onToggleMic,
             label: l10n.callMute,
@@ -870,8 +892,9 @@ class _MultiCallScreenState extends State<MultiCallScreen>
           else
             _CallActionButton(
               icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_mute_outlined,
-              backgroundColor:
-                  _isSpeakerOn ? Colors.white : Colors.white.withValues(alpha: 0.1),
+              backgroundColor: _isSpeakerOn
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.1),
               iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
               onPressed: _onToggleSpeaker,
               label: l10n.callSpeaker,
@@ -925,7 +948,8 @@ class _CallActionButtonState extends State<_CallActionButton> {
               transformAlignment: Alignment.center,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: widget.isActive ? widget.backgroundColor : Colors.white12,
+                color:
+                    widget.isActive ? widget.backgroundColor : Colors.white12,
                 boxShadow: [
                   if (_isHovered)
                     BoxShadow(

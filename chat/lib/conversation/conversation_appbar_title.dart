@@ -25,9 +25,20 @@ class ConversationAppbarTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = Selector4<ConversationViewModel, UserViewModel, GroupViewModel, ChannelViewModel,
-        (int typingKind, int typingCount, String? typingUserName, String typingDots, UserInfo? targetUserInfo,
-            GroupInfo? targetGroupInfo, ChannelInfo? targetChannelInfo)>(
+    Widget child = Selector4<
+        ConversationViewModel,
+        UserViewModel,
+        GroupViewModel,
+        ChannelViewModel,
+        (
+          int typingKind,
+          int typingCount,
+          String? typingUserName,
+          String typingDots,
+          UserInfo? targetUserInfo,
+          GroupInfo? targetGroupInfo,
+          ChannelInfo? targetChannelInfo
+        )>(
       builder: (context, rec, __) {
         String? typingStatus;
         if (rec.$1 != 0) {
@@ -41,13 +52,17 @@ class ConversationAppbarTitle extends StatelessWidget {
             typingStatus = '${l10n.namedUserTyping(rec.$3 ?? '')}$dots';
           }
         }
-        var baseTitle = typingStatus ?? Utilities.conversationTitle(context, conversation, rec.$5, rec.$6, rec.$7);
+        var baseTitle = typingStatus ??
+            Utilities.conversationTitle(
+                context, conversation, rec.$5, rec.$6, rec.$7);
         // 群组标题后追加当前群人数，对齐 iOS："群名称(人数)"
-        if (conversation.conversationType == ConversationType.Group && rec.$6 != null) {
+        if (conversation.conversationType == ConversationType.Group &&
+            rec.$6 != null) {
           baseTitle = '$baseTitle(${rec.$6!.memberCount})';
         }
-        final isExternal = conversation.conversationType == ConversationType.Single &&
-            ExternalTargetUtils.isExternalTarget(conversation.target);
+        final isExternal =
+            conversation.conversationType == ConversationType.Single &&
+                ExternalTargetUtils.isExternalTarget(conversation.target);
 
         // 外部域用户的标题需要使用带黄色、小字号域后缀的富文本样式。
         if (typingStatus == null && isExternal && rec.$5 != null) {
@@ -61,14 +76,16 @@ class ConversationAppbarTitle extends StatelessWidget {
           );
         }
 
-        if (conversation.conversationType != ConversationType.Single || isExternal) {
+        if (conversation.conversationType != ConversationType.Single ||
+            isExternal) {
           return MiddleEllipsisText(baseTitle);
         }
         return OnlineStateBuilder(
           userId: conversation.target,
           builder: (context, state) {
             final l10n = AppLocalizations.of(context)!;
-            final status = OnlineStateFormatter.conversationStatusText(state, l10n);
+            final status =
+                OnlineStateFormatter.conversationStatusText(state, l10n);
             if (status == null || status.isEmpty) {
               return MiddleEllipsisText(baseTitle);
             }
@@ -79,7 +96,9 @@ class ConversationAppbarTitle extends StatelessWidget {
                   TextSpan(
                     text: '($status)',
                     style: TextStyle(
-                      fontSize: (DefaultTextStyle.of(context).style.fontSize ?? 16) - 2,
+                      fontSize:
+                          (DefaultTextStyle.of(context).style.fontSize ?? 16) -
+                              2,
                       color: Theme.of(context).colorScheme.secondary,
                     ),
                   ),
@@ -91,21 +110,30 @@ class ConversationAppbarTitle extends StatelessWidget {
           },
         );
       },
-      selector: (context, conversationViewModel, userViewModel, groupViewModel, channelViewModel) => (
+      selector: (context, conversationViewModel, userViewModel, groupViewModel,
+              channelViewModel) =>
+          (
         conversationViewModel.typingKind,
         conversationViewModel.typingCount,
         conversationViewModel.typingUserName,
         conversationViewModel.typingDots,
-        conversation.conversationType == ConversationType.Single ? userViewModel.getUserInfo(conversation.target) : null,
-        conversation.conversationType == ConversationType.Group ? groupViewModel.getGroupInfo(conversation.target) : null,
-        conversation.conversationType == ConversationType.Channel ? channelViewModel.getChannelInfo(conversation.target) : null
+        conversation.conversationType == ConversationType.Single
+            ? userViewModel.getUserInfo(conversation.target)
+            : null,
+        conversation.conversationType == ConversationType.Group
+            ? groupViewModel.getGroupInfo(conversation.target)
+            : null,
+        conversation.conversationType == ConversationType.Channel
+            ? channelViewModel.getChannelInfo(conversation.target)
+            : null
       ),
     );
 
     // 移动端标题字号比 AppBar 默认小 2pt
     if (isDesktopShell) return child;
     return DefaultTextStyle.merge(
-      style: TextStyle(fontSize: (DefaultTextStyle.of(context).style.fontSize ?? 18) - 2),
+      style: TextStyle(
+          fontSize: (DefaultTextStyle.of(context).style.fontSize ?? 18) - 2),
       child: child,
     );
   }

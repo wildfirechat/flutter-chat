@@ -255,7 +255,8 @@ class _PcBackupRestorePageState extends State<PcBackupRestorePage> {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         title,
-        style: AppText.xs.copyWith(fontWeight: FontWeight.w600, color: context.colors.textSecondary),
+        style: AppText.xs.copyWith(
+            fontWeight: FontWeight.w600, color: context.colors.textSecondary),
       ),
     );
   }
@@ -271,7 +272,8 @@ class _PcBackupRestorePageState extends State<PcBackupRestorePage> {
     );
   }
 
-  Widget _buildClickableRow(String title, String subtitle, IconData icon, VoidCallback onTap) {
+  Widget _buildClickableRow(
+      String title, String subtitle, IconData icon, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -284,13 +286,19 @@ class _PcBackupRestorePageState extends State<PcBackupRestorePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
+                  Text(title,
+                      style: AppText.base.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: context.colors.textPrimary)),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
+                  Text(subtitle,
+                      style: AppText.xs
+                          .copyWith(color: context.colors.textSecondary)),
                 ],
               ),
             ),
-            Icon(Icons.arrow_forward_ios_rounded, size: 14, color: context.colors.textTertiary),
+            Icon(Icons.arrow_forward_ios_rounded,
+                size: 14, color: context.colors.textTertiary),
           ],
         ),
       ),
@@ -311,20 +319,25 @@ class _PcBackupRestorePageState extends State<PcBackupRestorePage> {
               },
               child: Row(
                 children: [
-                  Icon(Icons.backup, size: 20, color: context.colors.iconSecondary),
+                  Icon(Icons.backup,
+                      size: 20, color: context.colors.iconSecondary),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_formatDate(backup.backupTime), style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
+                        Text(_formatDate(backup.backupTime),
+                            style: AppText.base.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: context.colors.textPrimary)),
                         const SizedBox(height: 4),
                         Text(
                           l10n.backupListSubtitle(
                             '${backup.statistics?.totalConversations ?? 0}',
                             '${backup.statistics?.totalMessages ?? 0}',
                           ),
-                          style: AppText.xs.copyWith(color: context.colors.textSecondary),
+                          style: AppText.xs
+                              .copyWith(color: context.colors.textSecondary),
                         ),
                       ],
                     ),
@@ -362,10 +375,12 @@ class _LocalBackupProgressDialog extends StatefulWidget {
   const _LocalBackupProgressDialog({required this.conversations});
 
   @override
-  State<_LocalBackupProgressDialog> createState() => _LocalBackupProgressDialogState();
+  State<_LocalBackupProgressDialog> createState() =>
+      _LocalBackupProgressDialogState();
 }
 
-class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> {
+class _LocalBackupProgressDialogState
+    extends State<_LocalBackupProgressDialog> {
   AppLocalizations get l10n => AppLocalizations.of(context)!;
   String _status = '';
   double _progress = 0;
@@ -400,7 +415,8 @@ class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> 
       onProgress: (p) {
         if (mounted) {
           setState(() {
-            _status = '${localizeBackupPhase(l10n, p.phase)} (${p.current}/${p.total})';
+            _status =
+                '${localizeBackupPhase(l10n, p.phase)} (${p.current}/${p.total})';
             if (p.total > 0) _progress = p.current / p.total;
           });
         }
@@ -433,7 +449,8 @@ class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> 
         mainAxisSize: MainAxisSize.min,
         children: [
           if (_error != null)
-            Text(l10n.backupFailed(_error!), style: const TextStyle(color: Colors.red))
+            Text(l10n.backupFailed(_error!),
+                style: const TextStyle(color: Colors.red))
           else ...[
             Text(_status),
             const SizedBox(height: 10),
@@ -466,10 +483,12 @@ class _LocalRestoreProgressDialog extends StatefulWidget {
   const _LocalRestoreProgressDialog({required this.backupDir});
 
   @override
-  State<_LocalRestoreProgressDialog> createState() => _LocalRestoreProgressDialogState();
+  State<_LocalRestoreProgressDialog> createState() =>
+      _LocalRestoreProgressDialogState();
 }
 
-class _LocalRestoreProgressDialogState extends State<_LocalRestoreProgressDialog> {
+class _LocalRestoreProgressDialogState
+    extends State<_LocalRestoreProgressDialog> {
   AppLocalizations get l10n => AppLocalizations.of(context)!;
   String _status = '';
   double _progress = 0;
@@ -501,7 +520,8 @@ class _LocalRestoreProgressDialogState extends State<_LocalRestoreProgressDialog
       onProgress: (p) {
         if (mounted) {
           setState(() {
-            _status = '${localizeBackupPhase(l10n, p.phase)} (${p.current}/${p.total})';
+            _status =
+                '${localizeBackupPhase(l10n, p.phase)} (${p.current}/${p.total})';
             if (p.total > 0) _progress = p.current / p.total;
           });
         }
@@ -534,7 +554,8 @@ class _LocalRestoreProgressDialogState extends State<_LocalRestoreProgressDialog
         mainAxisSize: MainAxisSize.min,
         children: [
           if (_error != null)
-            Text(l10n.backupFailed(_error!), style: const TextStyle(color: Colors.red))
+            Text(l10n.backupFailed(_error!),
+                style: const TextStyle(color: Colors.red))
           else ...[
             Text(_status),
             const SizedBox(height: 10),

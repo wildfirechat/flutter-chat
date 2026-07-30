@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
@@ -37,7 +36,8 @@ class BackupCrypto {
     };
   }
 
-  static Uint8List decryptData(Map<String, dynamic> encryptedData, String password) {
+  static Uint8List decryptData(
+      Map<String, dynamic> encryptedData, String password) {
     if (password.isEmpty) {
       throw ArgumentError("Password must not be empty");
     }
@@ -59,21 +59,30 @@ class BackupCrypto {
     }
   }
 
-  static Uint8List _deriveKeyFromPassword(String password, Uint8List salt, int iterations) {
+  static Uint8List _deriveKeyFromPassword(
+      String password, Uint8List salt, int iterations) {
     final pbkdf2 = PBKDF2KeyDerivator(HMac(SHA256Digest(), 64))
       ..init(Pbkdf2Parameters(salt, iterations, KEY_LENGTH));
     return pbkdf2.process(utf8.encode(password));
   }
 
-  static Uint8List _encryptAES256CBC(Uint8List data, Uint8List key, Uint8List iv) {
+  static Uint8List _encryptAES256CBC(
+      Uint8List data, Uint8List key, Uint8List iv) {
     final cipher = PaddedBlockCipher("AES/CBC/PKCS7")
-      ..init(true, PaddedBlockCipherParameters(ParametersWithIV(KeyParameter(key), iv), null));
+      ..init(
+          true,
+          PaddedBlockCipherParameters(
+              ParametersWithIV(KeyParameter(key), iv), null));
     return cipher.process(data);
   }
 
-  static Uint8List _decryptAES256CBC(Uint8List encryptedData, Uint8List key, Uint8List iv) {
+  static Uint8List _decryptAES256CBC(
+      Uint8List encryptedData, Uint8List key, Uint8List iv) {
     final cipher = PaddedBlockCipher("AES/CBC/PKCS7")
-      ..init(false, PaddedBlockCipherParameters(ParametersWithIV(KeyParameter(key), iv), null));
+      ..init(
+          false,
+          PaddedBlockCipherParameters(
+              ParametersWithIV(KeyParameter(key), iv), null));
     return cipher.process(encryptedData);
   }
 
@@ -86,7 +95,8 @@ class BackupCrypto {
     return data;
   }
 
-  static bool verifyPassword(Map<String, dynamic> encryptedData, String password) {
+  static bool verifyPassword(
+      Map<String, dynamic> encryptedData, String password) {
     try {
       decryptData(encryptedData, password);
       return true;

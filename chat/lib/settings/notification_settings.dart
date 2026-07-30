@@ -36,7 +36,8 @@ class NotificationSettings {
     required void Function(int errorCode) onFailure,
   }) {
     final sendVal = invert ? !value : value;
-    Imclient.setUserSetting(scope, "", sendVal ? "1" : "0", onSuccess, onFailure);
+    Imclient.setUserSetting(
+        scope, "", sendVal ? "1" : "0", onSuccess, onFailure);
   }
 
   /// 格式化免打扰时段（UTC 分钟）为本地时间 'HH:mm - HH:mm'。

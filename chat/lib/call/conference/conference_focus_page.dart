@@ -81,8 +81,10 @@ class _ConferenceFocusPageState extends State<ConferenceFocusPage> {
                     final current = _previewOffset ?? _initialOffset(size);
                     final next = current + details.delta;
                     _previewOffset = Offset(
-                      next.dx.clamp(_margin, size.width - _previewWidth - _margin),
-                      next.dy.clamp(_margin, size.height - _previewHeight - _margin),
+                      next.dx
+                          .clamp(_margin, size.width - _previewWidth - _margin),
+                      next.dy.clamp(
+                          _margin, size.height - _previewHeight - _margin),
                     );
                   });
                 },

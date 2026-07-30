@@ -241,8 +241,7 @@ class _ConversationSearchPanelState extends State<ConversationSearchPanel> {
             widget.conversation, beforeTs, 50);
         if (page.isEmpty) break;
         page.sort((a, b) => a.serverTime.compareTo(b.serverTime));
-        final inDay =
-            page.where((m) => m.serverTime >= dayStartMs).toList();
+        final inDay = page.where((m) => m.serverTime >= dayStartMs).toList();
         result.insertAll(0, inDay);
         // 本页有早于当天的消息，或已不足一页，说明当天消息拉完了
         if (inDay.length < page.length || page.length < 50) break;

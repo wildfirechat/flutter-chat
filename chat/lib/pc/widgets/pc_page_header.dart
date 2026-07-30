@@ -54,7 +54,9 @@ class PcPageHeader extends StatelessWidget implements PreferredSizeWidget {
   /// 判据见 [kPcPaneRootRoute]。
   bool _hasPageBelow(BuildContext context) {
     final route = ModalRoute.of(context);
-    if (route == null || route.isFirst || route.settings.name == kPcPaneRootRoute) {
+    if (route == null ||
+        route.isFirst ||
+        route.settings.name == kPcPaneRootRoute) {
       return false;
     }
     return Navigator.of(context).canPop();
@@ -110,7 +112,9 @@ class PcPageHeader extends StatelessWidget implements PreferredSizeWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: bare ? Colors.transparent : colors.surface,
-        border: bare ? null : Border(bottom: BorderSide(width: 0.5, color: colors.hairline)),
+        border: bare
+            ? null
+            : Border(bottom: BorderSide(width: 0.5, color: colors.hairline)),
       ),
       child: Row(
         children: [
@@ -142,7 +146,10 @@ class PcPageHeader extends StatelessWidget implements PreferredSizeWidget {
                 : titleWidget ??
                     Text(
                       title ?? '',
-                      style: AppText.lg.copyWith(fontWeight: FontWeight.w500, color: colors.textPrimary, decoration: TextDecoration.none),
+                      style: AppText.lg.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: colors.textPrimary,
+                          decoration: TextDecoration.none),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

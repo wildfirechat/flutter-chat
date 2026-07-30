@@ -9,9 +9,12 @@ class ConversationInfoMemberActionItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     late Image image;
-    image = isPlus ? Image.asset('assets/images/conversation_setting_member_plus.png') : Image.asset('assets/images/conversation_setting_member_minus.png');
+    image = isPlus
+        ? Image.asset('assets/images/conversation_setting_member_plus.png')
+        : Image.asset('assets/images/conversation_setting_member_minus.png');
 
-    final double dimension = LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap);
+    final double dimension =
+        LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap);
 
     return Column(
       children: [

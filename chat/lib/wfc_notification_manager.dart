@@ -4,7 +4,8 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart' hide Message;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    hide Message;
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
@@ -19,11 +20,13 @@ import 'package:chat/pc/pc_tray_manager.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 
 class WfcNotificationManager {
-  static final WfcNotificationManager _instance = WfcNotificationManager._internal();
+  static final WfcNotificationManager _instance =
+      WfcNotificationManager._internal();
   factory WfcNotificationManager() => _instance;
   WfcNotificationManager._internal();
 
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   static const String wfcNotificationChannelId = "wfc_notification";
 
@@ -41,7 +44,8 @@ class WfcNotificationManager {
         DarwinInitializationSettings(
             onDidReceiveLocalNotification: onDidReceiveLocalNotification);
 
-    final InitializationSettings initializationSettings = InitializationSettings(
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
       macOS: initializationSettingsDarwin,
@@ -55,29 +59,30 @@ class WfcNotificationManager {
 
   Future<void> _createNotificationChannel() async {
     if (Platform.isAndroid) {
-        const AndroidNotificationChannel channel = AndroidNotificationChannel(
-          wfcNotificationChannelId,
-          '野火IM 消息通知',
-          description: 'WildfireChat Message Notification',
-          importance: Importance.high,
-          playSound: true,
-          // sound: RawResourceAndroidNotificationSound('receive_msg_notification'),
-          enableLights: true,
-          enableVibration: true,
-          showBadge: true,
-        );
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        wfcNotificationChannelId,
+        '野火IM 消息通知',
+        description: 'WildfireChat Message Notification',
+        importance: Importance.high,
+        playSound: true,
+        // sound: RawResourceAndroidNotificationSound('receive_msg_notification'),
+        enableLights: true,
+        enableVibration: true,
+        showBadge: true,
+      );
 
-        await flutterLocalNotificationsPlugin
-            .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-            ?.createNotificationChannel(channel);
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(channel);
     }
   }
 
   void onDidReceiveLocalNotification(
-      int id, String? title, String? body, String? payload) async {
-  }
+      int id, String? title, String? body, String? payload) async {}
 
-  void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
+  void onDidReceiveNotificationResponse(
+      NotificationResponse notificationResponse) async {
     final String? payload = notificationResponse.payload;
     if (payload != null) {
       debugPrint("Notification tapped with payload: $payload");
@@ -114,7 +119,8 @@ class WfcNotificationManager {
         continue;
       }
 
-      var conversationInfo = await Imclient.getConversationInfo(message.conversation);
+      var conversationInfo =
+          await Imclient.getConversationInfo(message.conversation);
       if (conversationInfo.isSilent) continue;
 
       String pushContent = hiddenNotificationDetail ? "新消息" : "";
@@ -122,23 +128,34 @@ class WfcNotificationManager {
         pushContent = await message.content.digest(message);
       }
 
-      int unreadCount = (await Imclient.getConversationUnreadCount(message.conversation)).unread;
+      int unreadCount =
+          (await Imclient.getConversationUnreadCount(message.conversation))
+              .unread;
       if (unreadCount > 1) {
         pushContent = "[$unreadCount条]$pushContent";
       }
 
       String title = "";
       if (message.conversation.conversationType == ConversationType.Single) {
-        UserInfo? userInfo = await Imclient.getUserInfo(message.conversation.target);
-        title = userInfo != null ? await MeshUserDisplay.resolveReadableName(userInfo) : "新消息";
-      } else if (message.conversation.conversationType == ConversationType.Group) {
-        GroupInfo? groupInfo = await Imclient.getGroupInfo(message.conversation.target);
+        UserInfo? userInfo =
+            await Imclient.getUserInfo(message.conversation.target);
+        title = userInfo != null
+            ? await MeshUserDisplay.resolveReadableName(userInfo)
+            : "新消息";
+      } else if (message.conversation.conversationType ==
+          ConversationType.Group) {
+        GroupInfo? groupInfo =
+            await Imclient.getGroupInfo(message.conversation.target);
         title = groupInfo?.name ?? "群聊";
-        if (groupInfo != null && groupInfo.remark != null && groupInfo.remark!.isNotEmpty) {
-            title = groupInfo.remark!;
+        if (groupInfo != null &&
+            groupInfo.remark != null &&
+            groupInfo.remark!.isNotEmpty) {
+          title = groupInfo.remark!;
         }
-      } else if (message.conversation.conversationType == ConversationType.Channel) {
-        ChannelInfo? channelInfo = await Imclient.getChannelInfo(message.conversation.target);
+      } else if (message.conversation.conversationType ==
+          ConversationType.Channel) {
+        ChannelInfo? channelInfo =
+            await Imclient.getChannelInfo(message.conversation.target);
         title = channelInfo?.name ?? "公众号新消息";
       } else {
         title = "新消息";
@@ -165,31 +182,34 @@ class WfcNotificationManager {
   }
 
   Future<void> handleFriendRequest(List<String> friendRequests) async {
-      if (friendRequests.isEmpty) return;
-      if (await Imclient.isGlobalSilent()) return;
+    if (friendRequests.isEmpty) return;
+    if (await Imclient.isGlobalSilent()) return;
 
-      UserInfo? userInfo = await Imclient.getUserInfo(friendRequests[0], refresh: true);
-      if (userInfo != null) {
-          String text = await MeshUserDisplay.resolveReadableName(userInfo);
-          if (friendRequests.length > 1) {
-              text += " 等";
-          }
-          text += "请求添加你为好友";
-          String title = "好友申请";
-
-          _friendRequestNotificationId++;
-          showNotification(_friendRequestNotificationId, title, text, _buildFriendRequestPayload(friendRequests[0]));
-          if (_shouldShowDesktopNotification) {
-            PCTrayManager().notifyNewMessage();
-          }
+    UserInfo? userInfo =
+        await Imclient.getUserInfo(friendRequests[0], refresh: true);
+    if (userInfo != null) {
+      String text = await MeshUserDisplay.resolveReadableName(userInfo);
+      if (friendRequests.length > 1) {
+        text += " 等";
       }
+      text += "请求添加你为好友";
+      String title = "好友申请";
+
+      _friendRequestNotificationId++;
+      showNotification(_friendRequestNotificationId, title, text,
+          _buildFriendRequestPayload(friendRequests[0]));
+      if (_shouldShowDesktopNotification) {
+        PCTrayManager().notifyNewMessage();
+      }
+    }
   }
 
   String _buildFriendRequestPayload(String userId) {
     return jsonEncode({'type': 'friend_request', 'userId': userId});
   }
 
-  Future<void> showNotification(int id, String title, String body, String payload) async {
+  Future<void> showNotification(
+      int id, String title, String body, String payload) async {
     if (Platform.isWindows) {
       // Windows: flutter_local_notifications 官方不支持,使用系统 toast 降级。
       // 真实项目可接入 local_notifier / windows_notification。
@@ -199,34 +219,36 @@ class WfcNotificationManager {
 
     const AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
-            wfcNotificationChannelId,
-            '野火IM 消息通知',
-            channelDescription: 'WildfireChat Message Notification',
-            importance: Importance.high,
-            priority: Priority.high,
-            ticker: 'ticker',
-            // sound: RawResourceAndroidSound('receive_msg_notification'),
-        );
+      wfcNotificationChannelId,
+      '野火IM 消息通知',
+      channelDescription: 'WildfireChat Message Notification',
+      importance: Importance.high,
+      priority: Priority.high,
+      ticker: 'ticker',
+      // sound: RawResourceAndroidSound('receive_msg_notification'),
+    );
 
-    const DarwinNotificationDetails darwinNotificationDetails = DarwinNotificationDetails();
+    const DarwinNotificationDetails darwinNotificationDetails =
+        DarwinNotificationDetails();
 
-    const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidNotificationDetails, iOS: darwinNotificationDetails, macOS: darwinNotificationDetails);
+    const NotificationDetails notificationDetails = NotificationDetails(
+        android: androidNotificationDetails,
+        iOS: darwinNotificationDetails,
+        macOS: darwinNotificationDetails);
 
-    await flutterLocalNotificationsPlugin.show(
-        id, title, body, notificationDetails,
-        payload: payload);
+    await flutterLocalNotificationsPlugin
+        .show(id, title, body, notificationDetails, payload: payload);
   }
 
   int _notificationId(int messageUid) {
-      if (!_notificationMessages.contains(messageUid)) {
-          _notificationMessages.add(messageUid);
-      }
-      return _notificationMessages.indexOf(messageUid);
+    if (!_notificationMessages.contains(messageUid)) {
+      _notificationMessages.add(messageUid);
+    }
+    return _notificationMessages.indexOf(messageUid);
   }
 
   void clearAllNotification() {
-      flutterLocalNotificationsPlugin.cancelAll();
-      _notificationMessages.clear();
+    flutterLocalNotificationsPlugin.cancelAll();
+    _notificationMessages.clear();
   }
 }

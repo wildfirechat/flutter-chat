@@ -17,7 +17,7 @@ const pollContentMeta = MessageContentMeta(
 );
 
 /// 投票消息内容
-/// 
+///
 /// 用于表示群聊中的投票创建消息
 /// 消息类型: 18
 class PollMessageContent extends MessageContent {
@@ -64,7 +64,8 @@ class PollMessageContent extends MessageContent {
 
     if (payload.binaryContent != null) {
       try {
-        Map<dynamic, dynamic> json = jsonDecode(utf8.decode(payload.binaryContent!));
+        Map<dynamic, dynamic> json =
+            jsonDecode(utf8.decode(payload.binaryContent!));
         pollId = json['pollId'] ?? '';
         groupId = json['groupId'] ?? '';
         creatorId = json['creatorId'] ?? '';
@@ -110,7 +111,8 @@ class PollMessageContent extends MessageContent {
       jsonObject['desc'] = desc;
     }
 
-    payload.binaryContent = Uint8List.fromList(utf8.encode(jsonEncode(jsonObject)));
+    payload.binaryContent =
+        Uint8List.fromList(utf8.encode(jsonEncode(jsonObject)));
     return payload;
   }
 

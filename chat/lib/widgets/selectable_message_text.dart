@@ -42,7 +42,8 @@ class SelectableMessageText extends StatefulWidget {
 
   /// 移动端长按后跟随选区弹出的菜单项;partialSelection 为 true(用户拖手柄
   /// 改过选择范围)时只给"复制"。为 null 时长按回退到整条消息的菜单。
-  final List<Map<String, dynamic>> Function(bool partialSelection)? menuItemsBuilder;
+  final List<Map<String, dynamic>> Function(bool partialSelection)?
+      menuItemsBuilder;
 
   /// 菜单项点击;selectedText 非空表示用户调整过选区,操作只针对选中的部分
   final void Function(String value, String? selectedText)? onMenuItemTap;
@@ -52,8 +53,10 @@ class SelectableMessageText extends StatefulWidget {
 }
 
 class _SelectableMessageTextState extends State<SelectableMessageText> {
-  final GlobalKey<SelectionAreaState> _selectionAreaKey = GlobalKey<SelectionAreaState>();
-  late final FocusNode _focusNode = FocusNode(canRequestFocus: false, skipTraversal: true);
+  final GlobalKey<SelectionAreaState> _selectionAreaKey =
+      GlobalKey<SelectionAreaState>();
+  late final FocusNode _focusNode =
+      FocusNode(canRequestFocus: false, skipTraversal: true);
 
   /// 当前选区文本
   String? _selectedText;
@@ -68,7 +71,10 @@ class _SelectableMessageTextState extends State<SelectableMessageText> {
 
   /// 长按全选 + 跟随选区弹菜单,只在移动端启用:桌面端没有手柄可拖,
   /// 右键菜单仍走 showMenu。
-  bool get _inlineMenuEnabled => !isDesktopShell && widget.menuItemsBuilder != null && widget.onMenuItemTap != null;
+  bool get _inlineMenuEnabled =>
+      !isDesktopShell &&
+      widget.menuItemsBuilder != null &&
+      widget.onMenuItemTap != null;
 
   void _clearHighlight() {
     // 选区清空后 SelectableRegion 会连同手柄和菜单一起销毁
@@ -88,12 +94,15 @@ class _SelectableMessageTextState extends State<SelectableMessageText> {
     }
     // 不是长按全选出来的选区就算"选了一部分":除了拖手柄改范围,
     // 移动端双击选词也走这里,菜单同样只给"复制"
-    _partialSelection.value = text != null && text.isNotEmpty && text != _fullText;
-    widget.controller?.setTextSelection(widget.selectionKey, text, clearHighlight: _clearHighlight);
+    _partialSelection.value =
+        text != null && text.isNotEmpty && text != _fullText;
+    widget.controller?.setTextSelection(widget.selectionKey, text,
+        clearHighlight: _clearHighlight);
   }
 
   void _handleLongPressStart(LongPressStartDetails details) {
-    final SelectableRegionState? region = _selectionAreaKey.currentState?.selectableRegion;
+    final SelectableRegionState? region =
+        _selectionAreaKey.currentState?.selectableRegion;
     if (!_inlineMenuEnabled || region == null) {
       widget.onLongPressStart(details);
       return;
@@ -126,7 +135,8 @@ class _SelectableMessageTextState extends State<SelectableMessageText> {
     final anchors = state.contextMenuAnchors;
     final Offset above = anchors.primaryAnchor;
     final Offset below = anchors.secondaryAnchor ?? anchors.primaryAnchor;
-    final Rect targetRect = Rect.fromLTRB(above.dx, above.dy, above.dx, below.dy + handleAllowance);
+    final Rect targetRect =
+        Rect.fromLTRB(above.dx, above.dy, above.dx, below.dy + handleAllowance);
 
     return ValueListenableBuilder<bool>(
       valueListenable: _partialSelection,
@@ -138,7 +148,8 @@ class _SelectableMessageTextState extends State<SelectableMessageText> {
           popupWidth: PopupMenuPanel.widthForItems(items.length),
           crossAxisCount: items.length < 4 ? items.length : 4,
           onItemTap: (value) {
-            final String? selectedText = partialSelection ? _selectedText : null;
+            final String? selectedText =
+                partialSelection ? _selectedText : null;
             _clearHighlight();
             onMenuItemTap(value, selectedText);
           },
@@ -153,7 +164,8 @@ class _SelectableMessageTextState extends State<SelectableMessageText> {
     // 流式消息生成结束落库后标识会从 stream-* 变成 msg-*,此时正文也从 Text 换成 Linkify、
     // 选区随之失效,把旧标识的登记解除,避免 controller 里残留一条选不中的选区
     if (oldWidget.selectionKey != widget.selectionKey) {
-      (oldWidget.controller ?? widget.controller)?.detachTextSelection(oldWidget.selectionKey);
+      (oldWidget.controller ?? widget.controller)
+          ?.detachTextSelection(oldWidget.selectionKey);
       _fullText = null;
       _selectedText = null;
       _partialSelection.value = false;
@@ -183,11 +195,13 @@ class _SelectableMessageTextState extends State<SelectableMessageText> {
           // SelectableRegion 的鼠标识别器被判负后触发 onCancel → clearSelection,
           // 拖选就选不出东西/选区被清掉。PC 端的消息菜单本来就走右键。
           if (!isDesktopShell)
-            LongPressGestureRecognizer: GestureRecognizerFactoryWithHandlers<LongPressGestureRecognizer>(
+            LongPressGestureRecognizer: GestureRecognizerFactoryWithHandlers<
+                LongPressGestureRecognizer>(
               () => LongPressGestureRecognizer(debugOwner: this),
               (instance) => instance.onLongPressStart = _handleLongPressStart,
             ),
-          _EagerSecondaryTapRecognizer: GestureRecognizerFactoryWithHandlers<_EagerSecondaryTapRecognizer>(
+          _EagerSecondaryTapRecognizer: GestureRecognizerFactoryWithHandlers<
+              _EagerSecondaryTapRecognizer>(
             () => _EagerSecondaryTapRecognizer(debugOwner: this),
             (instance) => instance.onSecondaryTapUp = widget.onSecondaryTapUp,
           ),
@@ -209,7 +223,8 @@ class _EagerSecondaryTapRecognizer extends OneSequenceGestureRecognizer {
   GestureTapUpCallback? onSecondaryTapUp;
 
   @override
-  bool isPointerAllowed(PointerDownEvent event) => event.buttons == kSecondaryButton && onSecondaryTapUp != null;
+  bool isPointerAllowed(PointerDownEvent event) =>
+      event.buttons == kSecondaryButton && onSecondaryTapUp != null;
 
   @override
   void addAllowedPointer(PointerDownEvent event) {

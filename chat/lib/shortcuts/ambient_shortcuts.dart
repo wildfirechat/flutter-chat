@@ -77,7 +77,8 @@ class CmdOrCtrl extends ShortcutActivator {
   }
 
   @override
-  String debugDescribeKeys() => '${shift ? 'Shift + ' : ''}Cmd/Ctrl + ${trigger.keyLabel}';
+  String debugDescribeKeys() =>
+      '${shift ? 'Shift + ' : ''}Cmd/Ctrl + ${trigger.keyLabel}';
 }
 
 /// 当前持有焦点的是不是文本输入框。beforeFocus 档内部据此让路,
@@ -102,7 +103,8 @@ bool isTextInputFocused() {
 
 /// 一次登记的句柄,[dispose] 后不再参与派发。
 class AmbientShortcutRegistration {
-  AmbientShortcutRegistration._(this._owner, this.bindings, this.isActive, this.debugLabel);
+  AmbientShortcutRegistration._(
+      this._owner, this.bindings, this.isActive, this.debugLabel);
 
   final AmbientShortcuts _owner;
   final Map<ShortcutActivator, ShortcutHandler> bindings;
@@ -125,8 +127,10 @@ class AmbientShortcuts {
 
   static final AmbientShortcuts instance = AmbientShortcuts._();
 
-  final List<AmbientShortcutRegistration> _beforeFocus = <AmbientShortcutRegistration>[];
-  final List<AmbientShortcutRegistration> _afterFocus = <AmbientShortcutRegistration>[];
+  final List<AmbientShortcutRegistration> _beforeFocus =
+      <AmbientShortcutRegistration>[];
+  final List<AmbientShortcutRegistration> _afterFocus =
+      <AmbientShortcutRegistration>[];
 
   /// 已挂上处理器的那个 FocusManager。记实例而不是布尔开关:FocusManager 可能
   /// 被换掉(测试环境每个用例换一个),挂在旧实例上的处理器再也不会被调用。
@@ -140,7 +144,8 @@ class AmbientShortcuts {
     String? debugLabel,
   }) {
     _install();
-    final registration = AmbientShortcutRegistration._(this, bindings, isActive, debugLabel);
+    final registration =
+        AmbientShortcutRegistration._(this, bindings, isActive, debugLabel);
     _listFor(phase).add(registration);
     return registration;
   }
@@ -171,16 +176,20 @@ class AmbientShortcuts {
     return _dispatch(_beforeFocus, event);
   }
 
-  KeyEventResult _dispatchAfterFocus(KeyEvent event) => _dispatch(_afterFocus, event);
+  KeyEventResult _dispatchAfterFocus(KeyEvent event) =>
+      _dispatch(_afterFocus, event);
 
-  KeyEventResult _dispatch(List<AmbientShortcutRegistration> registrations, KeyEvent event) {
+  KeyEventResult _dispatch(
+      List<AmbientShortcutRegistration> registrations, KeyEvent event) {
     // 后注册者先匹配;派发期间 handler 可能改动列表(如关闭页面),先拷一份
     for (final registration in registrations.reversed.toList(growable: false)) {
       if (registration._disposed || !registration.isActive()) {
         continue;
       }
-      for (final MapEntry<ShortcutActivator, ShortcutHandler> entry in registration.bindings.entries) {
-        if (entry.key.accepts(event, HardwareKeyboard.instance) && entry.value()) {
+      for (final MapEntry<ShortcutActivator, ShortcutHandler> entry
+          in registration.bindings.entries) {
+        if (entry.key.accepts(event, HardwareKeyboard.instance) &&
+            entry.value()) {
           return KeyEventResult.handled;
         }
       }
@@ -199,18 +208,21 @@ mixin AmbientShortcutsMixin<T extends StatefulWidget> on State<T> {
   AmbientShortcutRegistration? _beforeFocusRegistration;
   ModalRoute<dynamic>? _shortcutRoute;
 
-  Map<ShortcutActivator, ShortcutHandler> get ambientShortcuts => const <ShortcutActivator, ShortcutHandler>{};
+  Map<ShortcutActivator, ShortcutHandler> get ambientShortcuts =>
+      const <ShortcutActivator, ShortcutHandler>{};
 
   Map<ShortcutActivator, ShortcutHandler> get ambientShortcutsBeforeFocus =>
       const <ShortcutActivator, ShortcutHandler>{};
 
-  bool get ambientShortcutsActive => mounted && _shortcutRoute?.isCurrent != false;
+  bool get ambientShortcutsActive =>
+      mounted && _shortcutRoute?.isCurrent != false;
 
   @override
   void initState() {
     super.initState();
     final Map<ShortcutActivator, ShortcutHandler> after = ambientShortcuts;
-    final Map<ShortcutActivator, ShortcutHandler> before = ambientShortcutsBeforeFocus;
+    final Map<ShortcutActivator, ShortcutHandler> before =
+        ambientShortcutsBeforeFocus;
     if (after.isNotEmpty) {
       _afterFocusRegistration = AmbientShortcuts.instance.register(
         bindings: after,

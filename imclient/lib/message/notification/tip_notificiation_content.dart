@@ -1,5 +1,3 @@
-
-
 // ignore: non_constant_identifier_names
 import '../../model/message_payload.dart';
 import '../message.dart';
@@ -19,7 +17,7 @@ class TipNotificationContent extends NotificationMessageContent {
   @override
   Future<void> decode(MessagePayload payload) async {
     super.decode(payload);
-    if(payload.content != null) {
+    if (payload.content != null) {
       tip = payload.content!;
     } else {
       tip = "";

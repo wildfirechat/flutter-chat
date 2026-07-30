@@ -24,7 +24,8 @@ import 'package:chat/theme/app_typography.dart';
 class TextCellBuilder extends PortraitCellBuilder {
   late TextMessageContent textMessageContent;
 
-  TextCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  TextCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     textMessageContent = model.message.content as TextMessageContent;
   }
 
@@ -35,18 +36,21 @@ class TextCellBuilder extends PortraitCellBuilder {
       child = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-         selectableText(context, Text(
-            textMessageContent.text,
-            overflow: TextOverflow.ellipsis,
-            maxLines: 3,
-          )),
+          selectableText(
+              context,
+              Text(
+                textMessageContent.text,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 3,
+              )),
           const SizedBox(height: 6),
           GestureDetector(
             onTap: () async {
               var messageUid = textMessageContent.quoteInfo!.messageUid;
               var message = await Imclient.getMessageByUid(messageUid);
               if (message != null) {
-                if (message.content is ImageMessageContent || message.content is VideoMessageContent) {
+                if (message.content is ImageMessageContent ||
+                    message.content is VideoMessageContent) {
                   if (context.mounted) {
                     if (isDesktopShell) {
                       // 参考微信:引用的图片/视频在独立窗口中预览(单条,不翻页)
@@ -59,7 +63,9 @@ class TextCellBuilder extends PortraitCellBuilder {
                         context,
                         PageRouteBuilder(
                           opaque: false,
-                          pageBuilder: (context, animation, secondaryAnimation) => MMPreviewView(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  MMPreviewView(
                             [message],
                             defaultIndex: 0,
                             pageToEnd: (fromIndex, tail) {},
@@ -74,7 +80,8 @@ class TextCellBuilder extends PortraitCellBuilder {
                 }
               } else {
                 if (context.mounted) {
-                  Fluttertoast.showToast(msg: AppLocalizations.of(context)!.messageNotExist);
+                  Fluttertoast.showToast(
+                      msg: AppLocalizations.of(context)!.messageNotExist);
                 }
               }
             },
@@ -87,7 +94,8 @@ class TextCellBuilder extends PortraitCellBuilder {
               ),
               child: Text(
                 "${textMessageContent.quoteInfo!.userDisplayName ?? ''}: ${textMessageContent.quoteInfo!.messageDigest ?? ''}",
-                style: AppText.xs.copyWith(color: context.colors.bubbleQuotedText),
+                style:
+                    AppText.xs.copyWith(color: context.colors.bubbleQuotedText),
               ),
             ),
           )
@@ -96,19 +104,27 @@ class TextCellBuilder extends PortraitCellBuilder {
     } else {
       final text = textMessageContent.text.trim();
       final charList = text.characters;
-      final bool isSingleEmoji = charList.length == 1 && kChatEmojis.contains(charList.first);
+      final bool isSingleEmoji =
+          charList.length == 1 && kChatEmojis.contains(charList.first);
 
-      final conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
+      final conversationViewModel =
+          Provider.of<ConversationViewModel>(context, listen: false);
       final messageList = conversationViewModel.conversationMessageList;
-      final bool isLastMessage = messageList.isNotEmpty && messageList.first.message.messageId == model.message.messageId;
+      final bool isLastMessage = messageList.isNotEmpty &&
+          messageList.first.message.messageId == model.message.messageId;
 
-      final onSolidAccent = isSendMessage && Theme.of(context).brightness == Brightness.dark;
+      final onSolidAccent =
+          isSendMessage && Theme.of(context).brightness == Brightness.dark;
       child = selectableText(
         context,
         RichTextMessageWidget(
           text: textMessageContent.text,
           style: AppText.lg,
-          linkStyle: AppText.lg.copyWith(color: onSolidAccent ? context.colors.bubbleSentText : context.colors.link, decoration: TextDecoration.underline),
+          linkStyle: AppText.lg.copyWith(
+              color: onSolidAccent
+                  ? context.colors.bubbleSentText
+                  : context.colors.link,
+              decoration: TextDecoration.underline),
           onLinkTap: (url) => Utilities.openLink(context, url),
           isSingleEmoji: isSingleEmoji && !isDesktopShell,
           isLastMessage: isLastMessage,
@@ -126,5 +142,4 @@ class TextCellBuilder extends PortraitCellBuilder {
     }
     return child;
   }
-
 }

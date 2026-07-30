@@ -193,9 +193,9 @@ class _CallFloatingWindowState extends State<_CallFloatingWindow> {
     if (remoteIds.isEmpty) return;
     final profiles = session.getParticipantProfiles();
 
-    ParticipantProfile profileOf(String userId) => profiles.firstWhere(
-        (p) => p.userId == userId,
-        orElse: () => ParticipantProfile(userId));
+    ParticipantProfile profileOf(String userId) =>
+        profiles.firstWhere((p) => p.userId == userId,
+            orElse: () => ParticipantProfile(userId));
 
     String targetId;
     if (remoteIds.length == 1) {
@@ -352,7 +352,6 @@ class _CallFloatingWindowState extends State<_CallFloatingWindow> {
   }
 }
 
-
 /// 最小化期间接管 session 回调的对象：原通话界面 pop 后其 State 已销毁，
 /// 由它把接通/挂断/远端视频变化转发给悬浮窗，其余事件无需处理。
 class _MinimizedSessionCallback implements CallSessionCallback {
@@ -423,8 +422,8 @@ class _MinimizedSessionCallback implements CallSessionCallback {
       {bool screenSharing = false}) {}
 
   @override
-  void didUserMediaLostPacket(String userId, String media, int lostPacket,
-      bool uplink,
+  void didUserMediaLostPacket(
+      String userId, String media, int lostPacket, bool uplink,
       {bool screenSharing = false}) {}
 
   @override

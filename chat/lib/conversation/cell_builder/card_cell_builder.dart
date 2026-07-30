@@ -12,7 +12,8 @@ import 'package:chat/l10n/app_localizations.dart';
 class CardCellBuilder extends PortraitCellBuilder {
   late CardMessageContent cardMessageContent;
 
-  CardCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  CardCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     cardMessageContent = model.message.content as CardMessageContent;
   }
 

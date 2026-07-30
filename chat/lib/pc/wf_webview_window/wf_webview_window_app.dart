@@ -60,7 +60,6 @@ class _WFWebViewWindowAppState extends State<WFWebViewWindowApp>
     return WFWebViewScreen(_url, title: _title);
   }
 
-
   void _applyPayload(Map<dynamic, dynamic> args) {
     _url = WFWebViewWindowPayload.decodeUrl(args);
     _title = WFWebViewWindowPayload.decodeTitle(args);

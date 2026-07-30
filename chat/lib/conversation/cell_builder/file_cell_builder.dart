@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
@@ -14,17 +13,29 @@ import 'package:chat/theme/app_typography.dart';
 class FileCellBuilder extends PortraitCellBuilder {
   late FileMessageContent fileMessageContent;
 
-  FileCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  FileCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     fileMessageContent = model.message.content as FileMessageContent;
   }
 
   @override
   Widget buildMessageContent(BuildContext context) {
-    String imagePaht = 'assets/images/file_type/${Utilities.fileType(fileMessageContent.name)}.png';
+    String imagePaht =
+        'assets/images/file_type/${Utilities.fileType(fileMessageContent.name)}.png';
     Image image = Image.asset(imagePaht, width: 32.0, height: 32.0);
-    Text nameText = Text(fileMessageContent.name, maxLines: 2, overflow: TextOverflow.ellipsis,);
-    SizedBox padding = const SizedBox(width: 3, height: 3,);
-    Text sizeText = Text(Utilities.formatSize(fileMessageContent.size), style: AppText.xs,);
+    Text nameText = Text(
+      fileMessageContent.name,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
+    );
+    SizedBox padding = const SizedBox(
+      width: 3,
+      height: 3,
+    );
+    Text sizeText = Text(
+      Utilities.formatSize(fileMessageContent.size),
+      style: AppText.xs,
+    );
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -32,12 +43,23 @@ class FileCellBuilder extends PortraitCellBuilder {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ConstrainedBox(constraints: BoxConstraints(maxWidth:PlatformDispatcher.instance.views.first.physicalSize.width/PlatformDispatcher.instance.views.first.devicePixelRatio/3), child: nameText,),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                  maxWidth: PlatformDispatcher
+                          .instance.views.first.physicalSize.width /
+                      PlatformDispatcher.instance.views.first.devicePixelRatio /
+                      3),
+              child: nameText,
+            ),
             padding,
             sizeText,
           ],
         ),
-        SizedBox(width: 32, height: 32, child: image,),
+        SizedBox(
+          width: 32,
+          height: 32,
+          child: image,
+        ),
         padding,
       ],
     );

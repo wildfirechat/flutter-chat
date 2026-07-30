@@ -75,7 +75,8 @@ class _ConferenceApplyUnmuteAudioListViewState
                 Text(
                   l10n.conferenceApplyAudioCount(members.length),
                   style: AppText.base.copyWith(
-                      color: context.colors.textPrimary, fontWeight: FontWeight.w600),
+                      color: context.colors.textPrimary,
+                      fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -101,22 +102,23 @@ class _ConferenceApplyUnmuteAudioListViewState
                         ),
                         title: Text(
                           _name(info),
-                          style: AppText.sm.copyWith(color: context.colors.textPrimary),
+                          style: AppText.sm
+                              .copyWith(color: context.colors.textPrimary),
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             TextButton(
                               onPressed: () {
-                                widget.conferenceManager.approveUnmute(
-                                    userId, true, false);
+                                widget.conferenceManager
+                                    .approveUnmute(userId, true, false);
                               },
                               child: Text(l10n.conferenceReject),
                             ),
                             ElevatedButton(
                               onPressed: () {
-                                widget.conferenceManager.approveUnmute(
-                                    userId, true, true);
+                                widget.conferenceManager
+                                    .approveUnmute(userId, true, true);
                               },
                               child: Text(l10n.conferenceApprove),
                             ),

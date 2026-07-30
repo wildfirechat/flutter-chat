@@ -354,7 +354,8 @@ class _GroupListViewState extends State<GroupListView> {
     } else if (listItem.type.isSectionSeparator) {
       return widget.sectionSeparatorBuilder!(context, indexPath.section);
     } else if (listItem.type.isItemSeparator) {
-      if (_sectionExpandStatus[indexPath.section] == true || indexPath.index < widget.defaultItemCountPerGroup) {
+      if (_sectionExpandStatus[indexPath.section] == true ||
+          indexPath.index < widget.defaultItemCountPerGroup) {
         return widget.separatorBuilder!(context, indexPath);
       } else {
         return Container(
@@ -362,15 +363,18 @@ class _GroupListViewState extends State<GroupListView> {
         );
       }
     }
-    if (_sectionExpandStatus[indexPath.section] == true || indexPath.index < widget.defaultItemCountPerGroup) {
+    if (_sectionExpandStatus[indexPath.section] == true ||
+        indexPath.index < widget.defaultItemCountPerGroup) {
       return widget.itemBuilder(context, indexPath);
     } else {
-      if (indexPath.index == widget.countOfItemInSection(indexPath.section) - 1) {
+      if (indexPath.index ==
+          widget.countOfItemInSection(indexPath.section) - 1) {
         return widget.groupExpandBuilder != null
             ? widget.groupExpandBuilder!(context, indexPath.section)
             : ListTile(
                 dense: true,
-                title: Text(AppLocalizations.of(context)!.expandAll, style: AppText.sm),
+                title: Text(AppLocalizations.of(context)!.expandAll,
+                    style: AppText.sm),
                 visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
                 onTap: () {
                   setState(() {

@@ -153,7 +153,8 @@ class OrganizationViewModel extends ChangeNotifier {
         final rootOrgs = await _service.getRootOrganization();
         if (rootOrgs.isNotEmpty) {
           _breadcrumbPath.add(rootOrgs.first);
-          await _loadOrganizationDataInternal(rootOrgs.first.id, orgForBreadcrumb: rootOrgs.first, isInitialRoot: true);
+          await _loadOrganizationDataInternal(rootOrgs.first.id,
+              orgForBreadcrumb: rootOrgs.first, isInitialRoot: true);
         } else {
           throw Exception('No root organizations found.');
         }
@@ -167,7 +168,10 @@ class OrganizationViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> _loadOrganizationDataInternal(int organizationId, {Organization? orgForBreadcrumb, bool isInitialRoot = false, bool refresh = false}) async {
+  Future<void> _loadOrganizationDataInternal(int organizationId,
+      {Organization? orgForBreadcrumb,
+      bool isInitialRoot = false,
+      bool refresh = false}) async {
     _isLoading = true;
     _error = null;
     // Do not notify listeners here if called from another method that handles it at start/end
@@ -175,20 +179,24 @@ class OrganizationViewModel extends ChangeNotifier {
 
     try {
       await _ensureLoggedIn();
-      final details = await _cache.getOrganizationEx(organizationId, refresh: refresh);
+      final details =
+          await _cache.getOrganizationEx(organizationId, refresh: refresh);
       _currentOrganizationDetails = details;
 
       if (isInitialRoot && orgForBreadcrumb != null) {
         // Ensure the root organization is present in the breadcrumb path.
-        if (_breadcrumbPath.isEmpty || _breadcrumbPath.last.id != orgForBreadcrumb.id) {
+        if (_breadcrumbPath.isEmpty ||
+            _breadcrumbPath.last.id != orgForBreadcrumb.id) {
           _breadcrumbPath.add(orgForBreadcrumb);
         }
       } else if (orgForBreadcrumb != null) {
         // This is a navigation to a sub-organization
-        int existingIndex = _breadcrumbPath.indexWhere((o) => o.id == orgForBreadcrumb.id);
+        int existingIndex =
+            _breadcrumbPath.indexWhere((o) => o.id == orgForBreadcrumb.id);
         if (existingIndex != -1) {
           // Navigating up via breadcrumb
-          _breadcrumbPath.removeRange(existingIndex + 1, _breadcrumbPath.length);
+          _breadcrumbPath.removeRange(
+              existingIndex + 1, _breadcrumbPath.length);
         } else {
           // Navigating down
           _breadcrumbPath.add(orgForBreadcrumb);
@@ -244,9 +252,13 @@ class OrganizationViewModel extends ChangeNotifier {
       await _ensureLoggedIn();
       if (_breadcrumbPath.isNotEmpty) {
         // Retry loading the current organization in the breadcrumb path
-        await _loadOrganizationDataInternal(_breadcrumbPath.last.id!, orgForBreadcrumb: _breadcrumbPath.last, refresh: true);
+        await _loadOrganizationDataInternal(_breadcrumbPath.last.id!,
+            orgForBreadcrumb: _breadcrumbPath.last, refresh: true);
       } else if (currentOrganizationDetails != null) {
-        await _loadOrganizationDataInternal(currentOrganizationDetails!.organizationId, orgForBreadcrumb: currentOrganizationDetails?.organization, refresh: true);
+        await _loadOrganizationDataInternal(
+            currentOrganizationDetails!.organizationId,
+            orgForBreadcrumb: currentOrganizationDetails?.organization,
+            refresh: true);
       } else {
         await loadInitialData();
       }
@@ -266,7 +278,8 @@ class OrganizationViewModel extends ChangeNotifier {
   Future<void> navigateBackInHierarchy() async {
     if (canNavigateBackInHierarchy()) {
       Organization parentOrg = _breadcrumbPath[_breadcrumbPath.length - 2];
-      await navigateToOrganization(parentOrg); // This will update breadcrumb path correctly
+      await navigateToOrganization(
+          parentOrg); // This will update breadcrumb path correctly
     }
   }
 }

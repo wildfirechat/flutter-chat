@@ -93,14 +93,16 @@ class AppTheme {
     );
   }
 
-  static ThemeData _withColors(ThemeData base, AppColors colors) => base.copyWith(
+  static ThemeData _withColors(ThemeData base, AppColors colors) =>
+      base.copyWith(
         extensions: <ThemeExtension<dynamic>>[colors],
         // ---- 分割线基线 ----
         // 列表行间线全端统一:hairlineSoft、0.5 粗、0.5 占位,裸 `const Divider()`
         // 即标准形态,调用点不要再传 color/thickness;内容对齐传 indent,
         // 需要留白的场景显式传 height(例如气泡内 Divider(height: 16))。
         // hairline 留给结构边界(header 下边线、栏间分隔),用 Border/VerticalDivider 画。
-        dividerTheme: DividerThemeData(color: colors.hairlineSoft, thickness: 0.5, space: 0.5),
+        dividerTheme: DividerThemeData(
+            color: colors.hairlineSoft, thickness: 0.5, space: 0.5),
         checkboxTheme: checkboxTheme(colors, base.brightness),
         switchTheme: switchTheme(colors, base.brightness),
         filledButtonTheme: FilledButtonThemeData(style: buttonShapeStyle()),
@@ -154,14 +156,16 @@ class AppTheme {
 
   /// 实底/灰底按钮共用的「中档」形态(尺寸、圆角、字号),不含任何颜色。
   static ButtonStyle buttonShapeStyle() => ButtonStyle(
-        shape: WidgetStatePropertyAll(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(isDesktopShell ? 4 : 6))),
-        minimumSize: WidgetStatePropertyAll(isDesktopShell ? const Size(64, 40) : const Size(64, 36)),
+        shape: WidgetStatePropertyAll(RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(isDesktopShell ? 4 : 6))),
+        minimumSize: WidgetStatePropertyAll(
+            isDesktopShell ? const Size(64, 40) : const Size(64, 36)),
         padding: WidgetStatePropertyAll(isDesktopShell
             ? const EdgeInsets.symmetric(horizontal: 20, vertical: 10)
             : const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
-        textStyle: WidgetStatePropertyAll(
-            isDesktopShell ? AppText.sm : AppText.base.copyWith(fontWeight: FontWeight.w500)),
+        textStyle: WidgetStatePropertyAll(isDesktopShell
+            ? AppText.sm
+            : AppText.base.copyWith(fontWeight: FontWeight.w500)),
         // 移动端保持默认 padded:36 的视觉高度外,可点区域仍撑到 48 不缩水。
         tapTargetSize: isDesktopShell ? MaterialTapTargetSize.shrinkWrap : null,
       );
@@ -170,18 +174,21 @@ class AppTheme {
   /// 只放大形态不带颜色,FilledButton / FilledButton.tonal 都能叠;
   /// 需要同时改色时:FilledButton.styleFrom(backgroundColor: …).merge(largeButtonStyle())。
   static ButtonStyle largeButtonStyle() => ButtonStyle(
-        minimumSize: WidgetStatePropertyAll(isDesktopShell ? const Size(80, 48) : const Size(64, 44)),
+        minimumSize: WidgetStatePropertyAll(
+            isDesktopShell ? const Size(80, 48) : const Size(64, 44)),
         padding: WidgetStatePropertyAll(isDesktopShell
             ? const EdgeInsets.symmetric(horizontal: 32, vertical: 12)
             : const EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
-        textStyle: WidgetStatePropertyAll(
-            isDesktopShell ? AppText.base : AppText.lg.copyWith(fontWeight: FontWeight.w500)),
+        textStyle: WidgetStatePropertyAll(isDesktopShell
+            ? AppText.base
+            : AppText.lg.copyWith(fontWeight: FontWeight.w500)),
       );
 
   /// 文字动作:前景色走组件默认值(colorScheme.primary,即品牌蓝),
   /// 这里只收桌面字号与点击区。
   static ButtonStyle textButtonStyle() => ButtonStyle(
-        textStyle: isDesktopShell ? const WidgetStatePropertyAll(AppText.sm) : null,
+        textStyle:
+            isDesktopShell ? const WidgetStatePropertyAll(AppText.sm) : null,
         tapTargetSize: isDesktopShell ? MaterialTapTargetSize.shrinkWrap : null,
       );
 
@@ -214,10 +221,13 @@ class AppTheme {
   ///
   /// 描边/禁用灰是勾选框自己的中性灰,不复用文字令牌 —— 文字灰在暗色下
   /// (#636366)压不住 #2C2C2E 的面,描边会看不见。
-  static CheckboxThemeData checkboxTheme(AppColors colors, Brightness brightness) {
+  static CheckboxThemeData checkboxTheme(
+      AppColors colors, Brightness brightness) {
     final isDark = brightness == Brightness.dark;
-    final borderGray = isDark ? const Color(0xFF5A5A5C) : const Color(0xFFC0C0C0);
-    final disabledGray = isDark ? const Color(0xFF48484A) : const Color(0xFFC6C6C6);
+    final borderGray =
+        isDark ? const Color(0xFF5A5A5C) : const Color(0xFFC0C0C0);
+    final disabledGray =
+        isDark ? const Color(0xFF48484A) : const Color(0xFFC6C6C6);
     return CheckboxThemeData(
       shape: const CircleBorder(),
       side: BorderSide(color: borderGray, width: 1.5),
@@ -225,7 +235,9 @@ class AppTheme {
         if (!states.contains(WidgetState.selected)) {
           return Colors.transparent;
         }
-        return states.contains(WidgetState.disabled) ? disabledGray : colors.accent;
+        return states.contains(WidgetState.disabled)
+            ? disabledGray
+            : colors.accent;
       }),
       checkColor: WidgetStatePropertyAll(colors.onAccent),
     );
@@ -242,7 +254,8 @@ class AppTheme {
       statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
       systemNavigationBarColor: colors.cellTop,
       systemNavigationBarDividerColor: Colors.transparent,
-      systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarIconBrightness:
+          isDark ? Brightness.light : Brightness.dark,
       systemNavigationBarContrastEnforced: false,
       systemStatusBarContrastEnforced: false,
     );

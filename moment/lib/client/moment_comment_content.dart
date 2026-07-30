@@ -6,8 +6,6 @@ import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/message_payload.dart';
 import 'package:moment/client/momentclient.dart';
 
-
-
 // ignore: non_constant_identifier_names
 MessageContent MomentCommentMessageContentCreator() {
   return MomentCommentMessageContent();
@@ -39,8 +37,8 @@ class MomentCommentMessageContent extends MessageContent {
   void decode(MessagePayload payload) {
     super.decode(payload);
 
-    Map<dynamic, dynamic> map = json.decode(
-        utf8.decode(payload.binaryContent!));
+    Map<dynamic, dynamic> map =
+        json.decode(utf8.decode(payload.binaryContent!));
     feedId = map["feedId"];
     commentId = map["commentId"];
     replyCommentId = map["replyId"];
@@ -54,17 +52,16 @@ class MomentCommentMessageContent extends MessageContent {
     feedType = WFMContentType.values[map['ftype']];
     feedSender = map['fsender'];
     feedText = map['fcontent'];
-    if(map['fmedias'] != null) {
+    if (map['fmedias'] != null) {
       List<dynamic> ms = map['fmedias'];
       feedMedias = [];
       for (var value in ms) {
-        if(value is Map) {
+        if (value is Map) {
           feedMedias!.add(MomentClientImpl.entryFromMap(value));
         }
       }
     }
     text = payload.searchableContent;
-
   }
 
   @override
@@ -72,23 +69,31 @@ class MomentCommentMessageContent extends MessageContent {
     MessagePayload payload = super.encode();
 
     payload.searchableContent = text;
-    Map<String, dynamic> map = {'feedId':feedId, 'commentId':commentId, 'type':type.index, 'sender':sender, 'serverTime':serverTime, 'ftype':feedType.index, 'fsender':feedSender};
-    if(text != null) {
+    Map<String, dynamic> map = {
+      'feedId': feedId,
+      'commentId': commentId,
+      'type': type.index,
+      'sender': sender,
+      'serverTime': serverTime,
+      'ftype': feedType.index,
+      'fsender': feedSender
+    };
+    if (text != null) {
       map['text'] = text;
     }
-    if(replyCommentId != null) {
+    if (replyCommentId != null) {
       map['replyId'] = replyCommentId;
     }
-    if(replyTo != null) {
+    if (replyTo != null) {
       map['replyTo'] = replyTo;
     }
-    if(feedText != null) {
+    if (feedText != null) {
       map['fcontent'] = feedText;
     }
-    if(feedMedias != null && feedMedias!.isNotEmpty) {
+    if (feedMedias != null && feedMedias!.isNotEmpty) {
       map['fmedias'] = MomentClientImpl.feedEntryList2Map(feedMedias!);
     }
-    if(extra != null) {
+    if (extra != null) {
       map['e'] = extra;
     }
     payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));

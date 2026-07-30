@@ -75,7 +75,8 @@ class OrganizationCache {
   // Singleton
   OrganizationCache._privateConstructor();
 
-  static final OrganizationCache _instance = OrganizationCache._privateConstructor();
+  static final OrganizationCache _instance =
+      OrganizationCache._privateConstructor();
 
   static OrganizationCache get instance => _instance;
 
@@ -87,9 +88,13 @@ class OrganizationCache {
     final prefs = await SharedPreferences.getInstance();
     final List<String> restoreIds = [];
 
-    final List<String>? bottoms = prefs.getStringList(_keyBottomOrganizationIds);
+    final List<String>? bottoms =
+        prefs.getStringList(_keyBottomOrganizationIds);
     if (bottoms != null) {
-      bottomOrganizationIds = bottoms.map((e) => int.tryParse(e) ?? 0).where((e) => e != 0).toList();
+      bottomOrganizationIds = bottoms
+          .map((e) => int.tryParse(e) ?? 0)
+          .where((e) => e != 0)
+          .toList();
       restoreIds.addAll(bottoms);
     } else {
       bottomOrganizationIds = [];
@@ -97,7 +102,8 @@ class OrganizationCache {
 
     final List<String>? roots = prefs.getStringList(_keyRootOrganizationIds);
     if (roots != null) {
-      rootOrganizationIds = roots.map((e) => int.tryParse(e) ?? 0).where((e) => e != 0).toList();
+      rootOrganizationIds =
+          roots.map((e) => int.tryParse(e) ?? 0).where((e) => e != 0).toList();
       restoreIds.addAll(roots);
     } else {
       rootOrganizationIds = [];
@@ -151,7 +157,8 @@ class OrganizationCache {
 
     final currentUserId = Imclient.currentUserId;
     if (currentUserId == null || currentUserId.isEmpty) {
-      print('OrganizationCache loadMyOrganizationInfos: current user id is empty');
+      print(
+          'OrganizationCache loadMyOrganizationInfos: current user id is empty');
       return;
     }
 
@@ -160,11 +167,15 @@ class OrganizationCache {
       _relationshipDict[currentUserId] = relationships;
       eventBus.fire(OrgRelationUpdatedEvent(currentUserId, relationships));
 
-      final bottomIds = relationships.where((r) => r.bottom).map((r) => r.organizationId).toList();
+      final bottomIds = relationships
+          .where((r) => r.bottom)
+          .map((r) => r.organizationId)
+          .toList();
       bottomOrganizationIds = bottomIds;
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList(_keyBottomOrganizationIds, bottomIds.map((e) => e.toString()).toList());
+      await prefs.setStringList(_keyBottomOrganizationIds,
+          bottomIds.map((e) => e.toString()).toList());
 
       if (bottomIds.isNotEmpty) {
         _service.getOrganizations(bottomIds).then((organizations) async {
@@ -195,18 +206,22 @@ class OrganizationCache {
         }
       }
       rootOrganizationIds = rootIds;
-      await prefs.setStringList(_keyRootOrganizationIds, rootIds.map((e) => e.toString()).toList());
+      await prefs.setStringList(
+          _keyRootOrganizationIds, rootIds.map((e) => e.toString()).toList());
       eventBus.fire(RootOrganizationUpdatedEvent());
     }).catchError((error) {
       print('Failed to load root organizations: $error');
     });
   }
 
-  Future<void> _persistOrganization(Organization org, SharedPreferences prefs) async {
-    await prefs.setString('$_keyOrganizationPrefix${org.id}', org.toJsonString());
+  Future<void> _persistOrganization(
+      Organization org, SharedPreferences prefs) async {
+    await prefs.setString(
+        '$_keyOrganizationPrefix${org.id}', org.toJsonString());
   }
 
-  Future<List<OrganizationRelationship>> getRelationship(String employeeId, {bool refresh = false}) async {
+  Future<List<OrganizationRelationship>> getRelationship(String employeeId,
+      {bool refresh = false}) async {
     var rs = _relationshipDict[employeeId];
     if (rs == null) {
       refresh = true;
@@ -228,7 +243,8 @@ class OrganizationCache {
     return rs ?? [];
   }
 
-  List<OrganizationRelationship>? getRelationshipSync(String employeeId, {bool refresh = false}) {
+  List<OrganizationRelationship>? getRelationshipSync(String employeeId,
+      {bool refresh = false}) {
     var rs = _relationshipDict[employeeId];
     if (rs == null) {
       refresh = true;
@@ -285,7 +301,8 @@ class OrganizationCache {
         eventBus.fire(EmployeeExUpdatedEvent(employeeId, value));
         eventBus.fire(EmployeeUpdatedEvent(employeeId, value.employee));
         if (value.relationships != null) {
-          eventBus.fire(OrgRelationUpdatedEvent(employeeId, value.relationships!));
+          eventBus
+              .fire(OrgRelationUpdatedEvent(employeeId, value.relationships!));
         }
       }).catchError((error) {
         print('Failed to get employee ex $employeeId: $error');
@@ -352,7 +369,8 @@ class OrganizationCache {
     return _organizationExDict[organizationId] ?? ex;
   }
 
-  OrganizationEx? getOrganizationExSync(int organizationId, {bool refresh = false}) {
+  OrganizationEx? getOrganizationExSync(int organizationId,
+      {bool refresh = false}) {
     var ex = _organizationExDict[organizationId];
     if (ex == null) {
       refresh = true;

@@ -9,7 +9,6 @@ import '../message.dart';
 import '../message_content.dart';
 import 'notification_message_content.dart';
 
-
 // ignore: non_constant_identifier_names
 MessageContent CallAddParticipantsNotificationContentCreator() {
   return CallAddParticipantsNotificationContent();
@@ -20,7 +19,8 @@ const callAddParticipantsNotificationContentMeta = MessageContentMeta(
     MessageFlag.PERSIST,
     CallAddParticipantsNotificationContentCreator);
 
-class CallAddParticipantsNotificationContent extends NotificationMessageContent {
+class CallAddParticipantsNotificationContent
+    extends NotificationMessageContent {
   late String callId;
   String? initiator;
   String? pin;
@@ -37,18 +37,18 @@ class CallAddParticipantsNotificationContent extends NotificationMessageContent 
   Future<void> decode(MessagePayload payload) async {
     super.decode(payload);
     callId = payload.content!;
-    if(payload.binaryContent != null) {
-      Map<dynamic, dynamic> map = json.decode(
-          utf8.decode(payload.binaryContent!));
+    if (payload.binaryContent != null) {
+      Map<dynamic, dynamic> map =
+          json.decode(utf8.decode(payload.binaryContent!));
       initiator = map['initiator'];
       pin = map['pin'];
       participants = Tools.convertDynamicList(map['participants']);
       existParticipants = map['existParticipants'];
-      if(map['audioOnly'] != null) {
+      if (map['audioOnly'] != null) {
         audioOnly = map['audioOnly'] == 1 ? true : false;
       }
 
-      if(map['autoAnswer'] != null) {
+      if (map['autoAnswer'] != null) {
         autoAnswer = map['autoAnswer'];
       }
       clientId = map['clientId'];
@@ -84,11 +84,12 @@ class CallAddParticipantsNotificationContent extends NotificationMessageContent 
   @override
   Future<String> digest(Message message) async {
     String formatMsg = "";
-    if(message.fromUser == Imclient.currentUserId) {
+    if (message.fromUser == Imclient.currentUserId) {
       formatMsg = "你";
     } else {
-      UserInfo? fromUser = await Imclient.getUserInfo(message.fromUser, groupId: message.conversation.target);
-      if(fromUser != null) {
+      UserInfo? fromUser = await Imclient.getUserInfo(message.fromUser,
+          groupId: message.conversation.target);
+      if (fromUser != null) {
         formatMsg = fromUser.getReadableName();
       }
     }
@@ -101,7 +102,7 @@ class CallAddParticipantsNotificationContent extends NotificationMessageContent 
         formatMsg = '$formatMsg 你';
       } else {
         UserInfo? userInfo =
-        await Imclient.getUserInfo(memberId, groupId: message.fromUser);
+            await Imclient.getUserInfo(memberId, groupId: message.fromUser);
         if (userInfo != null) {
           formatMsg = '$formatMsg ${userInfo.getReadableName()}';
         } else {

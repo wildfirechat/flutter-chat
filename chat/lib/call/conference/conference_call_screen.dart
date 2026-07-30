@@ -46,7 +46,8 @@ extension _FirstWhereOrNullExtension<E> on Iterable<E> {
 class ConferenceCallScreen extends StatefulWidget {
   final CallSession session;
 
-  const ConferenceCallScreen({Key? key, required this.session}) : super(key: key);
+  const ConferenceCallScreen({Key? key, required this.session})
+      : super(key: key);
 
   @override
   State<ConferenceCallScreen> createState() => _ConferenceCallScreenState();
@@ -128,7 +129,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   Future<void> _initSelf() async {
     var renderer = RTCVideoRenderer();
     await renderer.initialize();
-    _selfItem = ConferenceParticipantItem(userId: Imclient.currentUserId, renderer: renderer);
+    _selfItem = ConferenceParticipantItem(
+        userId: Imclient.currentUserId, renderer: renderer);
     var info = await Imclient.getUserInfo(Imclient.currentUserId);
     _selfItem!.userInfo = info;
     _selfItem!.videoMuted = _session.isVideoMuted;
@@ -232,7 +234,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   void _onToggleMic() {
     bool nextMute = !_isMicMuted;
     if (!nextMute && _session.audience && !_conferenceManager.isOwner) {
-      var allowSwitch = _conferenceManager.conferenceInfo['allowSwitchMode'] == true;
+      var allowSwitch =
+          _conferenceManager.conferenceInfo['allowSwitchMode'] == true;
       if (!allowSwitch) {
         _requestUnmute(true);
         return;
@@ -253,7 +256,9 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   }
 
   void _requestUnmute(bool audio) {
-    var allow = audio ? _conferenceManager.allowUnmuteAudio : _conferenceManager.allowUnmuteVideo;
+    var allow = audio
+        ? _conferenceManager.allowUnmuteAudio
+        : _conferenceManager.allowUnmuteVideo;
     if (allow) {
       if (audio) {
         _setMicMuted(false);
@@ -266,7 +271,9 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(audio ? loc.conferenceRequestUnmuteAudio : loc.conferenceRequestUnmuteVideo),
+        title: Text(audio
+            ? loc.conferenceRequestUnmuteAudio
+            : loc.conferenceRequestUnmuteVideo),
         content: Text(audio
             ? loc.conferenceRequestUnmuteAudioDesc
             : loc.conferenceRequestUnmuteVideoDesc),
@@ -290,7 +297,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   void _onToggleCamera() {
     bool nextOff = !_isCameraOff;
     if (!nextOff && _session.audience && !_conferenceManager.isOwner) {
-      var allowSwitch = _conferenceManager.conferenceInfo['allowSwitchMode'] == true;
+      var allowSwitch =
+          _conferenceManager.conferenceInfo['allowSwitchMode'] == true;
       if (!allowSwitch) {
         _requestUnmute(false);
         return;
@@ -323,7 +331,9 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   Future<void> _onScreenShare() async {
     // TODO: Implement screen share
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.conferenceScreenShareNotImplemented)),
+      SnackBar(
+          content: Text(AppLocalizations.of(context)!
+              .conferenceScreenShareNotImplemented)),
     );
   }
 
@@ -588,7 +598,9 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
       builder: (context) {
         var l10n = AppLocalizations.of(context)!;
         return AlertDialog(
-          title: Text(audience ? l10n.conferenceHostInviteAudience : l10n.conferenceHostInviteStage),
+          title: Text(audience
+              ? l10n.conferenceHostInviteAudience
+              : l10n.conferenceHostInviteStage),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -633,7 +645,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
 
   /// 排序:焦点 > 非观众 > 屏幕共享 > 开视频 > userId;
   /// 移动端最后把自己固定到第一位(网格第一格)。
-  List<ConferenceParticipantItem> _sortItems(List<ConferenceParticipantItem> items) {
+  List<ConferenceParticipantItem> _sortItems(
+      List<ConferenceParticipantItem> items) {
     final focusId = _conferenceManager.currentFocusUser;
     var sorted = List<ConferenceParticipantItem>.from(items);
     sorted.sort((a, b) {
@@ -642,12 +655,14 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
         if (b.userId == focusId) return 1;
       }
       if (a.isAudience != b.isAudience) return a.isAudience ? 1 : -1;
-      if (a.isScreenSharing != b.isScreenSharing) return a.isScreenSharing ? -1 : 1;
+      if (a.isScreenSharing != b.isScreenSharing)
+        return a.isScreenSharing ? -1 : 1;
       if (a.videoMuted != b.videoMuted) return a.videoMuted ? 1 : -1;
       return a.userId.compareTo(b.userId);
     });
     if (!isDesktopShell) {
-      var selfIndex = sorted.indexWhere((i) => i.userId == Imclient.currentUserId);
+      var selfIndex =
+          sorted.indexWhere((i) => i.userId == Imclient.currentUserId);
       if (selfIndex > 0) {
         var self = sorted.removeAt(selfIndex);
         sorted.insert(0, self);
@@ -656,15 +671,20 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     return sorted;
   }
 
-  ConferenceParticipantItem? _resolveFocusItem(List<ConferenceParticipantItem> items) {
+  ConferenceParticipantItem? _resolveFocusItem(
+      List<ConferenceParticipantItem> items) {
     // 1. 主持人设置的焦点
     var focusId = _conferenceManager.currentFocusUser;
-    var focusItem = items.firstWhereOrNull((i) => i.userId == focusId && focusId != null && focusId.isNotEmpty);
+    var focusItem = items.firstWhereOrNull(
+        (i) => i.userId == focusId && focusId != null && focusId.isNotEmpty);
     if (focusItem != null) return focusItem;
 
     // 2. 本地个人焦点
     var localFocusId = _localFocusUserId ?? _conferenceManager.localFocusUser;
-    var localItem = items.firstWhereOrNull((i) => i.userId == localFocusId && localFocusId != null && localFocusId.isNotEmpty);
+    var localItem = items.firstWhereOrNull((i) =>
+        i.userId == localFocusId &&
+        localFocusId != null &&
+        localFocusId.isNotEmpty);
     if (localItem != null) return localItem;
 
     // 3. 正在屏幕共享者
@@ -672,7 +692,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     if (screenSharer != null) return screenSharer;
 
     // 4. 第一个未静音且有视频的用户
-    var videoUser = items.firstWhereOrNull((i) => !i.isAudience && !i.videoMuted && i.renderer.srcObject != null);
+    var videoUser = items.firstWhereOrNull(
+        (i) => !i.isAudience && !i.videoMuted && i.renderer.srcObject != null);
     if (videoUser != null) return videoUser;
 
     return items.firstOrNull;
@@ -761,7 +782,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     desired.forEach((userId, type) {
       if (_subscriptionState[userId] != type) {
         final item = sortedItems.firstWhereOrNull((e) => e.userId == userId);
-        _session.setParticipantVideoType(userId, item?.isScreenSharing ?? false, type);
+        _session.setParticipantVideoType(
+            userId, item?.isScreenSharing ?? false, type);
         _subscriptionState[userId] = type;
       }
     });
@@ -896,9 +918,12 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _session.title.isNotEmpty ? _session.title : l10n.conferenceTitle,
+                  _session.title.isNotEmpty
+                      ? _session.title
+                      : l10n.conferenceTitle,
                   style: AppText.base.copyWith(
-                      color: context.colors.textPrimary, fontWeight: FontWeight.w600),
+                      color: context.colors.textPrimary,
+                      fontWeight: FontWeight.w600),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
@@ -912,7 +937,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
                           : _session.status == CallState.STATUS_INCOMING
                               ? l10n.conferenceInviteJoin
                               : l10n.callStatusConnecting,
-                      style: AppText.sm.copyWith(color: context.colors.textSecondary),
+                      style: AppText.sm
+                          .copyWith(color: context.colors.textSecondary),
                     );
                   },
                 ),
@@ -943,19 +969,22 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
               onPressed: _onMinimize,
             ),
           IconButton(
-            icon: Icon(Icons.people_outline, color: context.colors.textSecondary),
+            icon:
+                Icon(Icons.people_outline, color: context.colors.textSecondary),
             onPressed: _onToggleMemberList,
             tooltip: l10n.conferenceMemberList,
           ),
           // 布局切换仅 PC 提供;移动端只有"焦点页+网格分页"一种布局
           if (isDesktopShell)
             PopupMenuButton<int>(
-              icon: Icon(Icons.view_comfy_outlined, color: context.colors.textSecondary),
+              icon: Icon(Icons.view_comfy_outlined,
+                  color: context.colors.textSecondary),
               tooltip: l10n.conferenceLayout,
               onSelected: _onLayoutChanged,
               itemBuilder: (context) => [
                 PopupMenuItem(value: 0, child: Text(l10n.conferenceGridView)),
-                PopupMenuItem(value: 1, child: Text(l10n.conferenceSpeakerView)),
+                PopupMenuItem(
+                    value: 1, child: Text(l10n.conferenceSpeakerView)),
               ],
             ),
         ],
@@ -973,7 +1002,9 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     } else {
       if (_conferenceManager.currentFocusUser != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.conferenceHostFocusSet)),
+          SnackBar(
+              content:
+                  Text(AppLocalizations.of(context)!.conferenceHostFocusSet)),
         );
       } else {
         setState(() {
@@ -1014,16 +1045,18 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
           children: [
             _CallActionButton(
               icon: _isMicMuted ? Icons.mic_off : Icons.mic_none,
-              backgroundColor:
-                  _isMicMuted ? Colors.white : Colors.white.withValues(alpha: 0.1),
+              backgroundColor: _isMicMuted
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.1),
               iconColor: _isMicMuted ? Colors.black87 : Colors.white,
               onPressed: _onToggleMic,
               label: l10n.callMute,
             ),
             _CallActionButton(
               icon: _isCameraOff ? Icons.videocam_off : Icons.videocam,
-              backgroundColor:
-                  _isCameraOff ? Colors.white : Colors.white.withValues(alpha: 0.1),
+              backgroundColor: _isCameraOff
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.1),
               iconColor: _isCameraOff ? Colors.black87 : Colors.white,
               onPressed: _onToggleCamera,
               label: _isCameraOff ? l10n.callCameraOn : l10n.callCameraOff,
@@ -1059,24 +1092,33 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
               label: l10n.callSwitchCamera,
             ),
             _CallActionButton(
-              icon: _session.audience ? Icons.person_outline : Icons.record_voice_over,
+              icon: _session.audience
+                  ? Icons.person_outline
+                  : Icons.record_voice_over,
               backgroundColor: Colors.white.withValues(alpha: 0.1),
               onPressed: _onSwitchAudience,
-              label: _session.audience ? l10n.conferenceSwitchToStage : l10n.conferenceSwitchToAudience,
+              label: _session.audience
+                  ? l10n.conferenceSwitchToStage
+                  : l10n.conferenceSwitchToAudience,
             ),
             if (!_conferenceManager.isOwner)
               _CallActionButton(
-                icon: _conferenceManager.isHandUp ? Icons.pan_tool : Icons.pan_tool_outlined,
+                icon: _conferenceManager.isHandUp
+                    ? Icons.pan_tool
+                    : Icons.pan_tool_outlined,
                 backgroundColor: _conferenceManager.isHandUp
                     ? context.colors.success
                     : Colors.white.withValues(alpha: 0.1),
                 onPressed: _onToggleHandUp,
-                label: _conferenceManager.isHandUp ? l10n.conferenceHandUpDone : l10n.conferenceHandUp,
+                label: _conferenceManager.isHandUp
+                    ? l10n.conferenceHandUpDone
+                    : l10n.conferenceHandUp,
               ),
             _CallActionButton(
               icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_mute_outlined,
-              backgroundColor:
-                  _isSpeakerOn ? Colors.white : Colors.white.withValues(alpha: 0.1),
+              backgroundColor: _isSpeakerOn
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.1),
               iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
               onPressed: _onToggleSpeaker,
               label: l10n.callSpeaker,
@@ -1151,8 +1193,7 @@ class _CallActionButtonState extends State<_CallActionButton> {
         Text(
           widget.label,
           style: AppText.xs.copyWith(
-              color: context.colors.textSecondary,
-              fontWeight: FontWeight.w400),
+              color: context.colors.textSecondary, fontWeight: FontWeight.w400),
         ),
       ],
     );

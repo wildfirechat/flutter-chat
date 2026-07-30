@@ -22,8 +22,10 @@ class PcLayoutViewModel extends ChangeNotifier {
   Future<void> load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _middleColumnWidth = clampMiddleColumnWidth(prefs.getDouble(_middleColumnWidthKey) ?? _middleColumnWidth);
-      _inputBarHeight = clampInputBarHeight(prefs.getDouble(_inputBarHeightKey) ?? _inputBarHeight);
+      _middleColumnWidth = clampMiddleColumnWidth(
+          prefs.getDouble(_middleColumnWidthKey) ?? _middleColumnWidth);
+      _inputBarHeight = clampInputBarHeight(
+          prefs.getDouble(_inputBarHeightKey) ?? _inputBarHeight);
     } catch (e) {
       debugPrint('load pc layout failed: $e');
     }
@@ -58,9 +60,11 @@ class PcLayoutViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  static double clampMiddleColumnWidth(double width) =>
-      width.clamp(PcTheme.middleColumnMinWidth, PcTheme.middleColumnMaxWidth).toDouble();
+  static double clampMiddleColumnWidth(double width) => width
+      .clamp(PcTheme.middleColumnMinWidth, PcTheme.middleColumnMaxWidth)
+      .toDouble();
 
-  static double clampInputBarHeight(double height) =>
-      height.clamp(PcTheme.inputBarMinHeight, PcTheme.inputBarMaxHeight).toDouble();
+  static double clampInputBarHeight(double height) => height
+      .clamp(PcTheme.inputBarMinHeight, PcTheme.inputBarMaxHeight)
+      .toDouble();
 }

@@ -10,14 +10,17 @@ import 'package:chat/repo/user_repo.dart';
 
 class GroupViewModel extends ChangeNotifier {
   late StreamSubscription<GroupInfoUpdatedEvent> _groupInfoUpdatedSubscription;
-  late StreamSubscription<GroupMembersUpdatedEvent> _groupMembersUpdatedSubscription;
+  late StreamSubscription<GroupMembersUpdatedEvent>
+      _groupMembersUpdatedSubscription;
 
   GroupViewModel() {
-    _groupInfoUpdatedSubscription = Imclient.IMEventBus.on<GroupInfoUpdatedEvent>().listen((event) {
+    _groupInfoUpdatedSubscription =
+        Imclient.IMEventBus.on<GroupInfoUpdatedEvent>().listen((event) {
       GroupRepo.updateGroupInfos(event.groupInfos);
       notifyListeners();
     });
-    _groupMembersUpdatedSubscription = Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
+    _groupMembersUpdatedSubscription =
+        Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
       _loadAndNotifyGroupMemberUserInfos(event.groupId, event.members);
     });
   }
@@ -58,7 +61,8 @@ class GroupViewModel extends ChangeNotifier {
     // 同一 groupId 只查一次，避免 build 重建反复发 DB 查询
     if (_fetchedGroupMemberIds.add(groupId)) {
       Imclient.getGroupMembers(groupId).then((members) {
-        if (memberUserInfos == null || members.length != memberUserInfos.length) {
+        if (memberUserInfos == null ||
+            members.length != memberUserInfos.length) {
           _loadAndNotifyGroupMemberUserInfos(groupId, members);
         }
       });
@@ -66,7 +70,8 @@ class GroupViewModel extends ChangeNotifier {
     return memberUserInfos;
   }
 
-  _loadAndNotifyGroupMemberUserInfos(String groupId, List<GroupMember> members) {
+  _loadAndNotifyGroupMemberUserInfos(
+      String groupId, List<GroupMember> members) {
     if (members.isNotEmpty) {
       var memberIds = members.map((e) => e.memberId).toList();
       Imclient.getUserInfos(memberIds, groupId: groupId).then((userInfos) {

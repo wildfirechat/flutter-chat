@@ -50,13 +50,19 @@ const double _kIconBox = 36; // 图标/头像统一 36x36
 const double _kContentInset = 36; // 图标/头像左缘
 const double _kIconGap = 10;
 
-double _sectionHeaderHeight(BuildContext context) => LayoutScale.watchScale(context, _kSectionHeaderHeight, cap: LayoutScale.rowCap);
-double _childRowHeight(BuildContext context) => LayoutScale.watchScale(context, _kChildRowHeight, cap: LayoutScale.rowCap);
-double _groupLabelHeight(BuildContext context) => LayoutScale.watchScale(context, _kGroupLabelHeight, cap: LayoutScale.rowCap);
+double _sectionHeaderHeight(BuildContext context) =>
+    LayoutScale.watchScale(context, _kSectionHeaderHeight,
+        cap: LayoutScale.rowCap);
+double _childRowHeight(BuildContext context) =>
+    LayoutScale.watchScale(context, _kChildRowHeight, cap: LayoutScale.rowCap);
+double _groupLabelHeight(BuildContext context) =>
+    LayoutScale.watchScale(context, _kGroupLabelHeight,
+        cap: LayoutScale.rowCap);
 
 /// 图标/头像的实际占位。注意 [Portrait] 会自己缩放,所以传给它的是未缩放的
 /// [_kIconBox],渲染结果恰好等于本函数的返回值 —— 不要再把本函数的结果传进去。
-double _iconBox(BuildContext context) => LayoutScale.watchScale(context, _kIconBox, cap: LayoutScale.iconCap);
+double _iconBox(BuildContext context) =>
+    LayoutScale.watchScale(context, _kIconBox, cap: LayoutScale.iconCap);
 
 /// 桌面端联系人中栏(参照微信 PC):固定分类(新的朋友/收藏群组/订阅频道)+
 /// 可折叠的「组织架构」「联系人」。联系人下按 星标 / AI 机器人 / 字母序 分组内联铺开。
@@ -70,7 +76,8 @@ class PcContactList extends StatefulWidget {
 
 class _PcContactListState extends State<PcContactList> {
   void _openUser(String userId) {
-    Provider.of<PCShellViewModel>(context, listen: false).selectContactItem('user-$userId');
+    Provider.of<PCShellViewModel>(context, listen: false)
+        .selectContactItem('user-$userId');
     openPage(context, UserInfoWidget(userId, key: ValueKey('pc-user-$userId')));
   }
 
@@ -89,7 +96,8 @@ class _PcContactListState extends State<PcContactList> {
   List<String>? _favGroupIds;
   List<String>? _channelIds;
   List<DomainInfo>? _meshDomains;
-  late final StreamSubscription<FavGroupUpdatedEvent> _favGroupUpdatedSubscription;
+  late final StreamSubscription<FavGroupUpdatedEvent>
+      _favGroupUpdatedSubscription;
 
   @override
   void initState() {
@@ -100,12 +108,14 @@ class _PcContactListState extends State<PcContactList> {
     });
     // 右栏群信息页「从通讯录移除」/会话资料页「保存到通讯录」开关变更后刷新本列表;
     // 被移除的群若正处于选中态,一并清掉(行即将消失,右栏也已清回占位页)。
-    _favGroupUpdatedSubscription = Imclient.IMEventBus.on<FavGroupUpdatedEvent>().listen((event) {
+    _favGroupUpdatedSubscription =
+        Imclient.IMEventBus.on<FavGroupUpdatedEvent>().listen((event) {
       if (!mounted || _favGroupIds == null) {
         return;
       }
       final shell = Provider.of<PCShellViewModel>(context, listen: false);
-      if (!event.isFav && shell.selectedContactItemId == 'group-${event.groupId}') {
+      if (!event.isFav &&
+          shell.selectedContactItemId == 'group-${event.groupId}') {
         shell.selectContactItem(null);
       }
       _loadFavGroups();
@@ -163,7 +173,9 @@ class _PcContactListState extends State<PcContactList> {
 
   void _loadFriendRequests() {
     Imclient.getIncommingFriendRequest().then((requests) async {
-      final userInfos = requests.isEmpty ? <UserInfo>[] : await Imclient.getUserInfos(requests.map((r) => r.target).toList());
+      final userInfos = requests.isEmpty
+          ? <UserInfo>[]
+          : await Imclient.getUserInfos(requests.map((r) => r.target).toList());
       if (!mounted) {
         return;
       }
@@ -199,11 +211,19 @@ class _PcContactListState extends State<PcContactList> {
     final l10n = AppLocalizations.of(context)!;
     return ChangeNotifierProvider<OrganizationViewModel>(
       create: (_) => OrganizationViewModel()..loadMyOrganizations(),
-      child: Selector2<ContactListViewModel, OrganizationViewModel,
-          ({List<UIContactInfo> contactList, int unreadFriendRequestCount, List<Organization> rootOrgs, List<Organization> myOrgs})>(
+      child: Selector2<
+          ContactListViewModel,
+          OrganizationViewModel,
+          ({
+            List<UIContactInfo> contactList,
+            int unreadFriendRequestCount,
+            List<Organization> rootOrgs,
+            List<Organization> myOrgs
+          })>(
         selector: (_, contactListViewModel, organizationViewModel) => (
           contactList: contactListViewModel.contactList,
-          unreadFriendRequestCount: contactListViewModel.unreadFriendRequestCount,
+          unreadFriendRequestCount:
+              contactListViewModel.unreadFriendRequestCount,
           rootOrgs: organizationViewModel.rootOrganizations,
           myOrgs: organizationViewModel.myOrganizations
         ),
@@ -253,8 +273,10 @@ class _PcContactListState extends State<PcContactList> {
                 onTap: () => setState(() => _orgExpanded = !_orgExpanded),
               ),
               if (_orgExpanded) ...[
-                for (var org in record.rootOrgs) _buildOrgRow(context, org, true),
-                for (var org in record.myOrgs) _buildOrgRow(context, org, false),
+                for (var org in record.rootOrgs)
+                  _buildOrgRow(context, org, true),
+                for (var org in record.myOrgs)
+                  _buildOrgRow(context, org, false),
               ],
             ],
             // 「联系人」可折叠分组:星标联系人 / AI 机器人 / 普通联系人(字母序)全部收入其下
@@ -263,9 +285,11 @@ class _PcContactListState extends State<PcContactList> {
                 icon: Icons.contacts_outlined,
                 title: l10n.contactCategory,
                 expanded: _contactExpanded,
-                onTap: () => setState(() => _contactExpanded = !_contactExpanded),
+                onTap: () =>
+                    setState(() => _contactExpanded = !_contactExpanded),
               ),
-              if (_contactExpanded) ..._buildContactRows(context, record.contactList),
+              if (_contactExpanded)
+                ..._buildContactRows(context, record.contactList),
             ],
           ];
           return ListView.builder(
@@ -283,9 +307,12 @@ class _PcContactListState extends State<PcContactList> {
       return [const _SectionLoadingRow()];
     }
     if (requests.isEmpty) {
-      return [_SectionEmptyRow(text: AppLocalizations.of(context)!.noSearchResult)];
+      return [
+        _SectionEmptyRow(text: AppLocalizations.of(context)!.noSearchResult)
+      ];
     }
-    final selectedId = Provider.of<PCShellViewModel>(context).selectedContactItemId;
+    final selectedId =
+        Provider.of<PCShellViewModel>(context).selectedContactItemId;
     return requests
         .map((request) => _FriendRequestRow(
               request: request,
@@ -345,7 +372,10 @@ class _PcContactListState extends State<PcContactList> {
             isSelected: isSelected,
             onTap: () {
               shell.selectContactItem(itemId);
-              openPage(context, ChannelInfoWidget(channelId: channelId, channelInfo: channelInfo));
+              openPage(
+                  context,
+                  ChannelInfoWidget(
+                      channelId: channelId, channelInfo: channelInfo));
             },
           );
         },
@@ -378,7 +408,8 @@ class _PcContactListState extends State<PcContactList> {
   /// 「联系人」展开后的行:从 view model 的字母序 [contactList] 就地拆分为
   /// 星标(category '☆') / AI 机器人(category 'AI') / 普通好友(字母)三段,
   /// 各段前置一个分组小标题,成员用统一的 [_ContactRow] 渲染。
-  List<Widget> _buildContactRows(BuildContext context, List<UIContactInfo> contactList) {
+  List<Widget> _buildContactRows(
+      BuildContext context, List<UIContactInfo> contactList) {
     final l10n = AppLocalizations.of(context)!;
     final fav = <UIContactInfo>[];
     final ai = <UIContactInfo>[];
@@ -397,13 +428,19 @@ class _PcContactListState extends State<PcContactList> {
     if (fav.isNotEmpty) {
       rows.add(_GroupLabel(title: l10n.starredContact));
       for (final c in fav) {
-        rows.add(_ContactRow(key: ValueKey('pc-fav-${c.userInfo.userId}'), userInfo: c.userInfo, onTap: () => _openUser(c.userInfo.userId)));
+        rows.add(_ContactRow(
+            key: ValueKey('pc-fav-${c.userInfo.userId}'),
+            userInfo: c.userInfo,
+            onTap: () => _openUser(c.userInfo.userId)));
       }
     }
     if (ai.isNotEmpty) {
       rows.add(_GroupLabel(title: l10n.aiRobot));
       for (final c in ai) {
-        rows.add(_ContactRow(key: ValueKey('pc-ai-${c.userInfo.userId}'), userInfo: c.userInfo, onTap: () => _openUser(c.userInfo.userId)));
+        rows.add(_ContactRow(
+            key: ValueKey('pc-ai-${c.userInfo.userId}'),
+            userInfo: c.userInfo,
+            onTap: () => _openUser(c.userInfo.userId)));
       }
     }
     for (final c in regular) {
@@ -411,7 +448,10 @@ class _PcContactListState extends State<PcContactList> {
       if (c.showCategory) {
         rows.add(_GroupLabel(title: c.category == '{' ? '#' : c.category));
       }
-      rows.add(_ContactRow(key: ValueKey('pc-contact-${c.userInfo.userId}'), userInfo: c.userInfo, onTap: () => _openUser(c.userInfo.userId)));
+      rows.add(_ContactRow(
+          key: ValueKey('pc-contact-${c.userInfo.userId}'),
+          userInfo: c.userInfo,
+          onTap: () => _openUser(c.userInfo.userId)));
     }
     return rows;
   }
@@ -421,7 +461,9 @@ class _PcContactListState extends State<PcContactList> {
     final itemId = 'org-${org.id}';
     final isSelected = shell.selectedContactItemId == itemId;
     return _EntryRow(
-      assetIcon: isRoot ? 'assets/images/contact_organization.png' : 'assets/images/contact_organization_expended.png',
+      assetIcon: isRoot
+          ? 'assets/images/contact_organization.png'
+          : 'assets/images/contact_organization_expended.png',
       title: org.name,
       isSelected: isSelected,
       onTap: () {
@@ -465,7 +507,9 @@ class _SectionHeader extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                expanded ? Icons.expand_more_rounded : Icons.chevron_right_rounded,
+                expanded
+                    ? Icons.expand_more_rounded
+                    : Icons.chevron_right_rounded,
                 size: 18,
                 color: context.colors.textTertiary,
               ),
@@ -475,16 +519,23 @@ class _SectionHeader extends StatelessWidget {
                 height: _iconBox(context),
                 child: Center(
                   child: icon != null
-                      ? Icon(icon, size: LayoutScale.watchScale(context, 24), color: context.colors.accent)
-                      : Image.asset(iconAsset!, width: LayoutScale.watchScale(context, 28), height: LayoutScale.watchScale(context, 28)),
+                      ? Icon(icon,
+                          size: LayoutScale.watchScale(context, 24),
+                          color: context.colors.accent)
+                      : Image.asset(iconAsset!,
+                          width: LayoutScale.watchScale(context, 28),
+                          height: LayoutScale.watchScale(context, 28)),
                 ),
               ),
               const SizedBox(width: _kIconGap),
               Expanded(child: Text(title, style: PcTheme.cellTitle(context))),
               if (badgeCount > 0)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: context.colors.badge, borderRadius: BorderRadius.circular(9)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                      color: context.colors.badge,
+                      borderRadius: BorderRadius.circular(9)),
                   child: Text(
                     badgeCount > 99 ? '99+' : '$badgeCount',
                     style: AppText.xxs.copyWith(color: Colors.white),
@@ -512,7 +563,8 @@ class _GroupLabel extends StatelessWidget {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: AppText.xs.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.w500),
+        style: AppText.xs.copyWith(
+            color: context.colors.textSecondary, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -558,13 +610,31 @@ class _EntryRow extends StatelessWidget {
           child: Row(
             children: [
               if (assetIcon != null)
-                SizedBox(width: _iconBox(context), height: _iconBox(context), child: Center(child: Image.asset(assetIcon!, width: LayoutScale.watchScale(context, 28), height: LayoutScale.watchScale(context, 28))))
+                SizedBox(
+                    width: _iconBox(context),
+                    height: _iconBox(context),
+                    child: Center(
+                        child: Image.asset(assetIcon!,
+                            width: LayoutScale.watchScale(context, 28),
+                            height: LayoutScale.watchScale(context, 28))))
               else if (icon != null)
-                SizedBox(width: _iconBox(context), height: _iconBox(context), child: Center(child: Icon(icon, size: LayoutScale.watchScale(context, 28), color: context.colors.textSecondary)))
+                SizedBox(
+                    width: _iconBox(context),
+                    height: _iconBox(context),
+                    child: Center(
+                        child: Icon(icon,
+                            size: LayoutScale.watchScale(context, 28),
+                            color: context.colors.textSecondary)))
               else
-                Portrait(portrait ?? defaultPortrait!, defaultPortrait!, width: _kIconBox, height: _kIconBox, borderRadius: 4),
+                Portrait(portrait ?? defaultPortrait!, defaultPortrait!,
+                    width: _kIconBox, height: _kIconBox, borderRadius: 4),
               const SizedBox(width: _kIconGap),
-              Expanded(child: Text(title, style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis)),
+              Expanded(
+                  child: Text(title,
+                      style: PcTheme.cellTitle(context)
+                          .copyWith(color: isSelected ? Colors.white : null),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis)),
             ],
           ),
         ),
@@ -587,7 +657,8 @@ class _ContactRow extends StatelessWidget {
       builder: (context, child) {
         // 订阅收窄为「本行是否被选中」的布尔值,避免选中项变化时全部联系人行重建。
         return Selector<PCShellViewModel, bool>(
-          selector: (_, shell) => shell.selectedContactItemId == 'user-${userInfo.userId}',
+          selector: (_, shell) =>
+              shell.selectedContactItemId == 'user-${userInfo.userId}',
           builder: (context, isSelected, _) {
             Color getBgColor(bool hovered) {
               if (isSelected) return context.colors.cellSelectedDesktop;
@@ -602,11 +673,14 @@ class _ContactRow extends StatelessWidget {
                 onTap: onTap,
                 child: Container(
                   height: _childRowHeight(context),
-                  padding: const EdgeInsets.only(left: _kContentInset, right: 14),
+                  padding:
+                      const EdgeInsets.only(left: _kContentInset, right: 14),
                   color: getBgColor(hovered),
                   child: Row(
                     children: [
-                      Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
+                      Portrait(userInfo.portrait ?? Config.defaultUserPortrait,
+                          Config.defaultUserPortrait,
+                          width: _kIconBox, height: _kIconBox, borderRadius: 4),
                       const SizedBox(width: _kIconGap),
                       Expanded(child: _buildName(context, isSelected)),
                     ],
@@ -622,7 +696,11 @@ class _ContactRow extends StatelessWidget {
 
   Widget _buildName(BuildContext context, bool isSelected) {
     if (ExternalTargetUtils.isExternalTarget(userInfo.userId)) {
-      return MeshUserName(userInfo, style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis);
+      return MeshUserName(userInfo,
+          style: PcTheme.cellTitle(context)
+              .copyWith(color: isSelected ? Colors.white : null),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis);
     }
     return OnlineStateBuilder(
       userId: userInfo.userId,
@@ -636,7 +714,10 @@ class _ContactRow extends StatelessWidget {
         if (statusText != null && statusText.isNotEmpty) {
           spans.add(TextSpan(
             text: '($statusText)',
-            style: TextStyle(fontSize: 12, color: isSelected ? Colors.white70 : context.colors.textSecondary),
+            style: TextStyle(
+                fontSize: 12,
+                color:
+                    isSelected ? Colors.white70 : context.colors.textSecondary),
           ));
         }
         if (showIndicator) {
@@ -647,7 +728,8 @@ class _ContactRow extends StatelessWidget {
               child: Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                    color: Colors.green, shape: BoxShape.circle),
               ),
             ),
           ));
@@ -700,7 +782,9 @@ class _FriendRequestRow extends StatelessWidget {
               color: getBgColor(hovered),
               child: Row(
                 children: [
-                  Portrait(userInfo?.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: _kIconBox, height: _kIconBox, borderRadius: 4),
+                  Portrait(userInfo?.portrait ?? Config.defaultUserPortrait,
+                      Config.defaultUserPortrait,
+                      width: _kIconBox, height: _kIconBox, borderRadius: 4),
                   const SizedBox(width: _kIconGap),
                   Expanded(
                     child: Column(
@@ -710,18 +794,25 @@ class _FriendRequestRow extends StatelessWidget {
                         userInfo != null
                             ? MeshUserName(
                                 userInfo!,
-                                style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null),
+                                style: PcTheme.cellTitle(context).copyWith(
+                                    color: isSelected ? Colors.white : null),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               )
                             : Text(
                                 '<${request.target}>',
-                                style: PcTheme.cellTitle(context).copyWith(color: isSelected ? Colors.white : null),
+                                style: PcTheme.cellTitle(context).copyWith(
+                                    color: isSelected ? Colors.white : null),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                        if (request.reason != null && request.reason!.isNotEmpty)
-                          Text(request.reason!, style: PcTheme.cellSubtitle(context).copyWith(color: isSelected ? Colors.white : null), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        if (request.reason != null &&
+                            request.reason!.isNotEmpty)
+                          Text(request.reason!,
+                              style: PcTheme.cellSubtitle(context).copyWith(
+                                  color: isSelected ? Colors.white : null),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
                       ],
                     ),
                   ),
@@ -742,7 +833,8 @@ class _FriendRequestRow extends StatelessWidget {
         height: 24,
         child: TextButton(
           onPressed: () {
-            Imclient.handleFriendRequest(request.target, true, "", onAccepted, (errorCode) {});
+            Imclient.handleFriendRequest(
+                request.target, true, "", onAccepted, (errorCode) {});
           },
           // 密集列表行内的小号文字动作,无边框;选中行(accent 底)上反白。
           style: TextButton.styleFrom(
@@ -758,7 +850,8 @@ class _FriendRequestRow extends StatelessWidget {
       request.status == FriendRequestStatus.Accepted
           ? AppLocalizations.of(context)!.friendRequestAccepted
           : AppLocalizations.of(context)!.friendRequestRejected,
-      style: PcTheme.cellSubtitle(context).copyWith(color: isSelected ? Colors.white : null),
+      style: PcTheme.cellSubtitle(context)
+          .copyWith(color: isSelected ? Colors.white : null),
     );
   }
 }
@@ -770,7 +863,11 @@ class _SectionLoadingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: _childRowHeight(context),
-      child: const Center(child: SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))),
+      child: const Center(
+          child: SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(strokeWidth: 2))),
     );
   }
 }

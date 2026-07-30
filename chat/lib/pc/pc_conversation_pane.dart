@@ -17,18 +17,20 @@ class PcConversationPane extends StatelessWidget {
   final Conversation conversation;
   final int? toFocusMessageId;
 
-  const PcConversationPane(this.conversation, {super.key, this.toFocusMessageId});
+  const PcConversationPane(this.conversation,
+      {super.key, this.toFocusMessageId});
 
   /// 会话详情以右侧抽屉呈现(微信 PC 形态),不占满右栏;
   /// 详情内的二级页(成员列表等)经 app_navigator 在右栏打开,抽屉路由随之被清掉。
   void _openConversationInfo(BuildContext context) {
     showPcSideSheet(
       context: context,
-      builder: (context) => conversation.conversationType == ConversationType.Single
-          ? SingleConversationInfoScreen(conversation)
-          : conversation.conversationType == ConversationType.Channel
-              ? ChannelConversationInfoScreen(conversation)
-              : GroupConversationInfoScreen(conversation),
+      builder: (context) =>
+          conversation.conversationType == ConversationType.Single
+              ? SingleConversationInfoScreen(conversation)
+              : conversation.conversationType == ConversationType.Channel
+                  ? ChannelConversationInfoScreen(conversation)
+                  : GroupConversationInfoScreen(conversation),
     );
   }
 
@@ -43,7 +45,8 @@ class PcConversationPane extends StatelessWidget {
             height: PcTheme.headerHeight,
             padding: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(width: 0.5, color: colors.hairline)),
+              border: Border(
+                  bottom: BorderSide(width: 0.5, color: colors.hairline)),
             ),
             child: Row(
               children: [
@@ -61,7 +64,8 @@ class PcConversationPane extends StatelessWidget {
                       child: Icon(
                         Icons.more_horiz_rounded,
                         size: 24,
-                        color: hovered ? colors.textPrimary : colors.textSecondary,
+                        color:
+                            hovered ? colors.textPrimary : colors.textSecondary,
                       ),
                     ),
                   ),
@@ -75,7 +79,8 @@ class PcConversationPane extends StatelessWidget {
                 conversation,
                 toFocusMessageId: toFocusMessageId,
                 inputBar: PcMessageInputBar(
-                  maxHeight: constraints.maxHeight * PcTheme.inputBarMaxHeightRatio,
+                  maxHeight:
+                      constraints.maxHeight * PcTheme.inputBarMaxHeightRatio,
                 ),
               ),
             ),

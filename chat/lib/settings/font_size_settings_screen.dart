@@ -38,7 +38,8 @@ class FontSizeSettingsScreen extends StatelessWidget {
           children: [
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                 children: [
                   _buildChatTime(context, '10:00'),
                   const SizedBox(height: 16),
@@ -66,7 +67,8 @@ class FontSizeSettingsScreen extends StatelessWidget {
               ),
             ),
             MediaQuery(
-              data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+              data: MediaQuery.of(context)
+                  .copyWith(textScaler: TextScaler.noScaling),
               child: const _FontSizeSlider(),
             ),
           ],
@@ -95,11 +97,13 @@ class FontSizeSettingsScreen extends StatelessWidget {
     return Container(
       width: 40,
       height: 40,
-      decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
+      decoration:
+          BoxDecoration(color: color, borderRadius: BorderRadius.circular(4)),
       alignment: Alignment.center,
       child: Text(
         text,
-        style: AppText.lg.copyWith(color: context.colors.onAccent, fontWeight: FontWeight.bold),
+        style: AppText.lg.copyWith(
+            color: context.colors.onAccent, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -119,13 +123,16 @@ class FontSizeSettingsScreen extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: AppText.lg.copyWith(color: sent ? colors.bubbleSentText : colors.bubbleReceivedText),
+        style: AppText.lg.copyWith(
+            color: sent ? colors.bubbleSentText : colors.bubbleReceivedText),
       ),
     );
   }
 
   Widget _buildLeftMessage(BuildContext context,
-      {required Color avatarColor, required String avatarText, required String text}) {
+      {required Color avatarColor,
+      required String avatarText,
+      required String text}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -138,7 +145,9 @@ class FontSizeSettingsScreen extends StatelessWidget {
   }
 
   Widget _buildRightMessage(BuildContext context,
-      {required Color avatarColor, required String avatarText, required String text}) {
+      {required Color avatarColor,
+      required String avatarText,
+      required String text}) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisAlignment: MainAxisAlignment.end,
@@ -169,7 +178,8 @@ class _FontSizeSlider extends StatelessWidget {
 
     return Consumer<FontSizeViewModel>(
       builder: (context, fontSizeViewModel, child) {
-        assert(labels.length == fontSizeViewModel.itemCount, '档位标签数量必须与 FontSizeViewModel 的档位数一致');
+        assert(labels.length == fontSizeViewModel.itemCount,
+            '档位标签数量必须与 FontSizeViewModel 的档位数一致');
         return Container(
           color: colors.surface,
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
@@ -178,7 +188,9 @@ class _FontSizeSlider extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text('A', style: AppText.base.copyWith(color: colors.textSecondary)),
+                  Text('A',
+                      style:
+                          AppText.base.copyWith(color: colors.textSecondary)),
                   Expanded(
                     child: SliderTheme(
                       data: SliderTheme.of(context).copyWith(
@@ -186,23 +198,28 @@ class _FontSizeSlider extends StatelessWidget {
                         activeTrackColor: colors.accent,
                         inactiveTrackColor: colors.inputBg,
                         thumbColor: colors.surface,
-                        thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10.0, elevation: 3.0),
+                        thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 10.0, elevation: 3.0),
                         overlayColor: colors.accent.withValues(alpha: 0.12),
                         activeTickMarkColor: colors.accent,
                         inactiveTickMarkColor: colors.textTertiary,
-                        tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 2.5),
+                        tickMarkShape:
+                            const RoundSliderTickMarkShape(tickMarkRadius: 2.5),
                       ),
                       child: Slider(
                         value: fontSizeViewModel.index.toDouble(),
                         min: 0,
                         max: (fontSizeViewModel.itemCount - 1).toDouble(),
                         divisions: fontSizeViewModel.itemCount - 1,
-                        onChanged: (value) => fontSizeViewModel.setFontSizeIndex(value.round()),
+                        onChanged: (value) =>
+                            fontSizeViewModel.setFontSizeIndex(value.round()),
                       ),
                     ),
                   ),
                   Text('A',
-                      style: AppText.xxl.copyWith(fontWeight: FontWeight.bold, color: colors.textPrimary)),
+                      style: AppText.xxl.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: colors.textPrimary)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -217,7 +234,8 @@ class _FontSizeSlider extends StatelessWidget {
                           textAlign: TextAlign.center,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppText.xs.copyWith(color: colors.textSecondary),
+                          style:
+                              AppText.xs.copyWith(color: colors.textSecondary),
                         ),
                       ),
                   ],

@@ -16,16 +16,18 @@ class ConversationInfo {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          other is ConversationInfo &&
-              runtimeType == other.runtimeType &&
-              conversation == other.conversation &&
-              lastMessage == other.lastMessage &&
-              (lastMessage != null ? lastMessage!.content == other.lastMessage!.content : other.lastMessage == null) &&
-              draft == other.draft &&
-              timestamp == other.timestamp &&
-              isTop == other.isTop &&
-              isSilent == other.isSilent &&
-              (isSilent ? true: unreadCount == other.unreadCount);
+      other is ConversationInfo &&
+          runtimeType == other.runtimeType &&
+          conversation == other.conversation &&
+          lastMessage == other.lastMessage &&
+          (lastMessage != null
+              ? lastMessage!.content == other.lastMessage!.content
+              : other.lastMessage == null) &&
+          draft == other.draft &&
+          timestamp == other.timestamp &&
+          isTop == other.isTop &&
+          isSilent == other.isSilent &&
+          (isSilent ? true : unreadCount == other.unreadCount);
 
   @override
   int get hashCode =>

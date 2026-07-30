@@ -9,7 +9,8 @@ import '../config.dart';
 import '../l10n/app_localizations.dart';
 
 class SearchPortalDelegate extends SearchDelegate<String> {
-  SearchPortalDelegate({required String searchFieldHint}) : super(searchFieldLabel: searchFieldHint);
+  SearchPortalDelegate({required String searchFieldHint})
+      : super(searchFieldLabel: searchFieldHint);
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -26,7 +27,8 @@ class SearchPortalDelegate extends SearchDelegate<String> {
   @override
   Widget buildLeading(BuildContext context) {
     return IconButton(
-      icon: AnimatedIcon(icon: AnimatedIcons.menu_arrow, progress: transitionAnimation),
+      icon: AnimatedIcon(
+          icon: AnimatedIcons.menu_arrow, progress: transitionAnimation),
       onPressed: () {
         close(context, '');
         // if (query.isEmpty) {
@@ -46,7 +48,8 @@ class SearchPortalDelegate extends SearchDelegate<String> {
 
     List<UserInfo> us = [];
     bool finish = false;
-    Imclient.searchUser(query, SearchUserType.SearchUserType_Name_Mobile.index, 0, (userInfos) {
+    Imclient.searchUser(
+        query, SearchUserType.SearchUserType_Name_Mobile.index, 0, (userInfos) {
       us = userInfos!;
       finish = true;
     }, (errorCode) {

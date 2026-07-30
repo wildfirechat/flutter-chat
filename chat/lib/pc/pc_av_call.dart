@@ -14,15 +14,18 @@ import 'package:chat/pc/pc_platform.dart';
 /// - 单聊:直接按 [audioOnly] 指定类型发起,不弹选择菜单;
 /// - 群聊:先弹选人对话框(自己默认选中且不可取消,最多 9 人),选完真正发起。
 /// 已有通话时提示;通话页面的打开由 AVEngineCallback.onStartCall 统一处理。
-void startAvCall(BuildContext context, Conversation conversation, {required bool audioOnly}) {
-  if (avEngineKit.currentSession != null && avEngineKit.currentSession!.status != CallState.STATUS_IDLE) {
+void startAvCall(BuildContext context, Conversation conversation,
+    {required bool audioOnly}) {
+  if (avEngineKit.currentSession != null &&
+      avEngineKit.currentSession!.status != CallState.STATUS_IDLE) {
     Fluttertoast.showToast(msg: AppLocalizations.of(context)!.callInProgress);
     return;
   }
   switch (conversation.conversationType) {
     case ConversationType.Single:
       if (isDesktopShell) {
-        MainAvEngineKitProxy.instance.startCall(conversation, [conversation.target], audioOnly);
+        MainAvEngineKitProxy.instance
+            .startCall(conversation, [conversation.target], audioOnly);
       } else {
         avEngineKit.startCall(conversation, [conversation.target], audioOnly);
       }
@@ -36,11 +39,15 @@ void startAvCall(BuildContext context, Conversation conversation, {required bool
 }
 
 /// 用户信息卡片的快捷形态:对指定用户发起单聊通话。
-void startSingleAvCall(BuildContext context, String userId, {required bool audioOnly}) {
-  startAvCall(context, Conversation(conversationType: ConversationType.Single, target: userId), audioOnly: audioOnly);
+void startSingleAvCall(BuildContext context, String userId,
+    {required bool audioOnly}) {
+  startAvCall(context,
+      Conversation(conversationType: ConversationType.Single, target: userId),
+      audioOnly: audioOnly);
 }
 
-Future<void> _pickGroupMembersAndStart(BuildContext context, Conversation conversation, bool audioOnly) async {
+Future<void> _pickGroupMembersAndStart(
+    BuildContext context, Conversation conversation, bool audioOnly) async {
   final groupMembers = await Imclient.getGroupMembers(conversation.target);
   final candidates = groupMembers.map((e) => e.memberId).toList();
   if (!context.mounted || candidates.isEmpty) {
@@ -51,14 +58,18 @@ Future<void> _pickGroupMembersAndStart(BuildContext context, Conversation conver
     title: AppLocalizations.of(context)!.pickGroupMember,
     (pickerContext, members) {
       // 排除自己(disabledCheckedUsers 预选项),得到真正的被邀请方
-      final participants = members.where((memberId) => memberId != Imclient.currentUserId).toList();
+      final participants = members
+          .where((memberId) => memberId != Imclient.currentUserId)
+          .toList();
       if (participants.isEmpty) {
-        Fluttertoast.showToast(msg: AppLocalizations.of(pickerContext)!.selectMemberToCall);
+        Fluttertoast.showToast(
+            msg: AppLocalizations.of(pickerContext)!.selectMemberToCall);
         return;
       }
       Navigator.pop(pickerContext);
       if (isDesktopShell) {
-        MainAvEngineKitProxy.instance.startCall(conversation, participants, audioOnly);
+        MainAvEngineKitProxy.instance
+            .startCall(conversation, participants, audioOnly);
       } else {
         avEngineKit.startCall(conversation, participants, audioOnly);
       }

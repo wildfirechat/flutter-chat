@@ -106,7 +106,8 @@ class _FeedListPageState extends State<FeedListPage> {
 
   void _loadFeeds({bool refresh = false}) {
     if (_loading) return;
-    final fromIndex = refresh ? 0 : (_feeds.isEmpty ? 0 : (_feeds.last.feedId ?? 0));
+    final fromIndex =
+        refresh ? 0 : (_feeds.isEmpty ? 0 : (_feeds.last.feedId ?? 0));
     setState(() => _loading = true);
     MomentClient.getFeeds(fromIndex, _pageSize, widget.userId, (feeds) {
       if (!mounted) return;
@@ -152,8 +153,8 @@ class _FeedListPageState extends State<FeedListPage> {
   }
 
   void _toast(String msg) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(msg), duration: const Duration(seconds: 1)));
+    ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), duration: const Duration(seconds: 1)));
   }
 
   // ------------------------------------------------------------------ 交互
@@ -220,7 +221,8 @@ class _FeedListPageState extends State<FeedListPage> {
         content: const Text('确定删除这条朋友圈吗？'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(ctx).pop(), child: const Text('取消')),
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('取消')),
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
@@ -319,7 +321,8 @@ class _FeedListPageState extends State<FeedListPage> {
       final url = await uploadMomentMedia(medias.first);
       MomentClient.updateMyProfile(
           WFMUpdateUserProfileType.WFMUpdateUserProfileType_BackgroudUrl,
-          url, null, () {
+          url,
+          null, () {
         _loadProfile();
       }, (code) => _toast('设置失败($code)'));
     } catch (e) {
@@ -375,40 +378,40 @@ class _FeedListPageState extends State<FeedListPage> {
                 context: context,
                 removeTop: true,
                 child: ListView.builder(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: (_isHome ? 1 : 0) + _feeds.length + 1,
-                itemBuilder: (context, index) {
-                  if (_isHome) {
-                    if (index == 0) return _buildHeader();
-                    index -= 1;
-                  }
-                  if (index == _feeds.length) {
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: (_isHome ? 1 : 0) + _feeds.length + 1,
+                  itemBuilder: (context, index) {
+                    if (_isHome) {
+                      if (index == 0) return _buildHeader();
+                      index -= 1;
+                    }
+                    if (index == _feeds.length) {
+                      return Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 640),
+                          child: _buildFooter(),
+                        ),
+                      );
+                    }
+                    final feed = _feeds[index];
                     return Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 640),
-                        child: _buildFooter(),
+                        child: FeedItemWidget(
+                          key: ValueKey(feed.feedId),
+                          feed: feed,
+                          selfUserId: _selfUserId,
+                          onTapMedia: _onTapMedia,
+                          onTapUser: _onTapUser,
+                          onToggleLike: _onToggleLike,
+                          onComment: _onComment,
+                          onDeleteComment: _onDeleteComment,
+                          onDeleteFeed: _onDeleteFeed,
+                        ),
                       ),
                     );
-                  }
-                  final feed = _feeds[index];
-                  return Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 640),
-                      child: FeedItemWidget(
-                        key: ValueKey(feed.feedId),
-                        feed: feed,
-                        selfUserId: _selfUserId,
-                        onTapMedia: _onTapMedia,
-                        onTapUser: _onTapUser,
-                        onToggleLike: _onToggleLike,
-                        onComment: _onComment,
-                        onDeleteComment: _onDeleteComment,
-                        onDeleteFeed: _onDeleteFeed,
-                      ),
-                    ),
-                  );
-                },
+                  },
                 ),
               ),
             ),
@@ -506,7 +509,8 @@ class _FeedListPageState extends State<FeedListPage> {
     return Column(
       children: [
         GestureDetector(
-          onTapDown: (details) => _backgroundTapPosition = details.globalPosition,
+          onTapDown: (details) =>
+              _backgroundTapPosition = details.globalPosition,
           onTap: _showBackgroundMenu,
           child: Stack(
             clipBehavior: Clip.none,
@@ -546,14 +550,18 @@ class _FeedListPageState extends State<FeedListPage> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 18, right: 8),
+                            padding:
+                                const EdgeInsets.only(bottom: 18, right: 8),
                             child: Text(
-                              MomentUserCache.instance.displayNameOf(_selfUserId),
+                              MomentUserCache.instance
+                                  .displayNameOf(_selfUserId),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 17,
                                 fontWeight: FontWeight.w600,
-                                shadows: [Shadow(color: Colors.black45, blurRadius: 4)],
+                                shadows: [
+                                  Shadow(color: Colors.black45, blurRadius: 4)
+                                ],
                               ),
                             ),
                           ),
@@ -562,7 +570,8 @@ class _FeedListPageState extends State<FeedListPage> {
                               border: Border.all(color: Colors.white, width: 2),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: MomentAvatar(_selfUserId, size: 64, borderRadius: 4),
+                            child: MomentAvatar(_selfUserId,
+                                size: 64, borderRadius: 4),
                           ),
                         ],
                       ),

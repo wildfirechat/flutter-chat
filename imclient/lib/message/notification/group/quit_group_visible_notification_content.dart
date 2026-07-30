@@ -23,8 +23,7 @@ const quitGroupVisibleNotificationContentMeta = MessageContentMeta(
 ///
 /// 群成员退出后，对所有成员可见的通知
 /// 消息类型: 121
-class QuitGroupVisibleNotificationContent
-    extends NotificationMessageContent {
+class QuitGroupVisibleNotificationContent extends NotificationMessageContent {
   late String groupId;
   late String operateUser;
 
@@ -51,8 +50,7 @@ class QuitGroupVisibleNotificationContent
       'o': operateUser,
       'g': groupId,
     };
-    payload.binaryContent =
-        Uint8List.fromList(utf8.encode(json.encode(map)));
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 

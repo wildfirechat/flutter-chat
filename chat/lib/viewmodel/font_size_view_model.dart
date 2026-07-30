@@ -64,6 +64,7 @@ class FontSizeViewModel extends ChangeNotifier {
     if (index < 0 || index >= _scaleFactors.length || index == _index) return;
     _index = index;
     notifyListeners();
-    SharedPreferences.getInstance().then((prefs) => prefs.setInt(_fontSizeKey, index));
+    SharedPreferences.getInstance()
+        .then((prefs) => prefs.setInt(_fontSizeKey, index));
   }
 }

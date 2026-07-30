@@ -68,7 +68,9 @@ class IpcCodec {
       'pushContent': payload.pushContent,
       'pushData': payload.pushData,
       'content': payload.content,
-      'binaryContent': payload.binaryContent != null ? base64Encode(payload.binaryContent!) : null,
+      'binaryContent': payload.binaryContent != null
+          ? base64Encode(payload.binaryContent!)
+          : null,
       'localContent': payload.localContent,
       'mentionedType': payload.mentionedType,
       'mentionedTargets': payload.mentionedTargets,
@@ -98,7 +100,8 @@ class IpcCodec {
     }
     payload.localContent = map['localContent'] as String?;
     payload.mentionedType = map['mentionedType'] as int? ?? 0;
-    payload.mentionedTargets = (map['mentionedTargets'] as List?)?.cast<String>();
+    payload.mentionedTargets =
+        (map['mentionedTargets'] as List?)?.cast<String>();
     payload.mediaType = MediaType.values[map['mediaType'] as int? ?? 0];
     payload.remoteMediaUrl = map['remoteMediaUrl'] as String?;
     payload.localMediaPath = map['localMediaPath'] as String?;

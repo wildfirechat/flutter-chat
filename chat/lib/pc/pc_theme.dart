@@ -58,14 +58,17 @@ class PcTheme {
   // 字号阶梯本身按大小命名(AppText.xs/base/lg…),刻意不带用途语义 ——「角色」这一层
   // 就落在这里:桌面 cell/栏标题该用哪一档,由下面这几个方法钉死,调用点不要再自己挑档。
   // 桌面比移动端密一号:cell 标题用 base(14),移动端同位置是 lg(16)。
-  static TextStyle cellTitle(BuildContext context) => AppText.base.copyWith(color: context.colors.textPrimary);
+  static TextStyle cellTitle(BuildContext context) =>
+      AppText.base.copyWith(color: context.colors.textPrimary);
 
-  static TextStyle cellSubtitle(BuildContext context) => AppText.xs.copyWith(color: context.colors.textSecondary);
+  static TextStyle cellSubtitle(BuildContext context) =>
+      AppText.xs.copyWith(color: context.colors.textSecondary);
 
-  static TextStyle cellTime(BuildContext context) => AppText.xs.copyWith(color: context.colors.textTertiary);
+  static TextStyle cellTime(BuildContext context) =>
+      AppText.xs.copyWith(color: context.colors.textTertiary);
 
-  static TextStyle paneTitle(BuildContext context) =>
-      AppText.lg.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary);
+  static TextStyle paneTitle(BuildContext context) => AppText.lg
+      .copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary);
 
   /// 桌面子树的 Theme 覆盖:去水波纹、桌面化的菜单/滚动条,
   /// 让复用的移动端二级页在右栏内也保持一致观感。
@@ -79,7 +82,9 @@ class PcTheme {
     // 暗色下 hover/highlight 要提白,浅色下压黑。
     final overlay = colors.hoverOverlay;
     return base.copyWith(
-      colorScheme: ColorScheme.fromSeed(seedColor: colors.accent, brightness: base.brightness).copyWith(
+      colorScheme: ColorScheme.fromSeed(
+              seedColor: colors.accent, brightness: base.brightness)
+          .copyWith(
         primary: colors.accent,
         onPrimary: colors.onAccent,
         surface: colors.surface,
@@ -111,7 +116,8 @@ class PcTheme {
       ),
       tooltipTheme: TooltipThemeData(
         waitDuration: const Duration(milliseconds: 500),
-        textStyle: AppText.xs.copyWith(color: isDark ? colors.textPrimary : Colors.white),
+        textStyle: AppText.xs
+            .copyWith(color: isDark ? colors.textPrimary : Colors.white),
         decoration: BoxDecoration(
           color: isDark ? colors.popupBg : const Color(0xCC000000),
           borderRadius: BorderRadius.circular(4),
@@ -122,8 +128,12 @@ class PcTheme {
         radius: const Radius.circular(3),
         thumbColor: WidgetStateProperty.resolveWith(
           (states) => isDark
-              ? (states.contains(WidgetState.hovered) ? Colors.white30 : Colors.white24)
-              : (states.contains(WidgetState.hovered) ? Colors.black26 : Colors.black12),
+              ? (states.contains(WidgetState.hovered)
+                  ? Colors.white30
+                  : Colors.white24)
+              : (states.contains(WidgetState.hovered)
+                  ? Colors.black26
+                  : Colors.black12),
         ),
       ),
       textSelectionTheme: TextSelectionThemeData(

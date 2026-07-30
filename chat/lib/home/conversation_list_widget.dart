@@ -42,11 +42,15 @@ import 'package:chat/utils/external_target_utils.dart';
 /// 否则 s < 1 时内容比 extent 高,debug 下会报 overflow。
 const double _kConversationRowHeightMobile = 64.0;
 const double _kConversationRowHeightDesktop = 70.0;
-double get kConversationRowHeight => isDesktopShell ? _kConversationRowHeightDesktop : _kConversationRowHeightMobile;
+double get kConversationRowHeight => isDesktopShell
+    ? _kConversationRowHeightDesktop
+    : _kConversationRowHeightMobile;
 const double _kDividerHeight = 0.5;
 
 double conversationItemExtent(BuildContext context) =>
-    LayoutScale.watchScale(context, kConversationRowHeight, cap: LayoutScale.rowCap) + _kDividerHeight;
+    LayoutScale.watchScale(context, kConversationRowHeight,
+        cap: LayoutScale.rowCap) +
+    _kDividerHeight;
 
 class ConversationListWidget extends StatelessWidget {
   /// 桌面端 Shell 注入:点击会话时回调(替代默认的全屏 push),并高亮选中会话。
@@ -66,7 +70,8 @@ class ConversationListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var conversationListViewModel = Provider.of<ConversationListViewModel>(context);
+    var conversationListViewModel =
+        Provider.of<ConversationListViewModel>(context);
     return ChangeNotifierProvider<StatusNotificationViewModel>(
       create: (_) => StatusNotificationViewModel(),
       child: Scaffold(
@@ -82,9 +87,14 @@ class ConversationListWidget extends StatelessWidget {
                       ? ValueListenableBuilder<double>(
                           valueListenable: scrollOffset!,
                           builder: (context, offset, child) {
-                            final list = conversationListViewModel.conversationList;
-                            final isFirstItemPinned = list.isNotEmpty && list[0].isTop > 0;
-                            final overscrollHeight = (offset < 0 && isFirstItemPinned) ? -offset : 0.0;
+                            final list =
+                                conversationListViewModel.conversationList;
+                            final isFirstItemPinned =
+                                list.isNotEmpty && list[0].isTop > 0;
+                            final overscrollHeight =
+                                (offset < 0 && isFirstItemPinned)
+                                    ? -offset
+                                    : 0.0;
                             return Stack(
                               children: [
                                 Positioned.fill(
@@ -107,43 +117,49 @@ class ConversationListWidget extends StatelessWidget {
                               ],
                             );
                           },
-                  child: ListView.builder(
+                          child: ListView.builder(
                             controller: scrollController,
-                            itemCount: conversationListViewModel.conversationList.length,
+                            itemCount: conversationListViewModel
+                                .conversationList.length,
                             itemExtent: conversationItemExtent(context),
                             cacheExtent: 200,
                             addRepaintBoundaries: true,
                             addAutomaticKeepAlives: false,
                             itemBuilder: (context, i) {
-                              ConversationInfo info = conversationListViewModel.conversationList[i];
+                              ConversationInfo info =
+                                  conversationListViewModel.conversationList[i];
                               var key =
                                   '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
                               return ConversationListItem(
                                 info,
                                 key: ValueKey(key),
                                 onTap: onConversationSelected,
-                                isSelected: info.conversation == selectedConversation,
+                                isSelected:
+                                    info.conversation == selectedConversation,
                               );
                             },
                           ),
                         )
                       : ListView.builder(
-                      controller: scrollController,
-                      itemCount: conversationListViewModel.conversationList.length,
+                          controller: scrollController,
+                          itemCount:
+                              conversationListViewModel.conversationList.length,
                           itemExtent: conversationItemExtent(context),
-                      cacheExtent: 200,
-                      addRepaintBoundaries: true,
-                      addAutomaticKeepAlives: false,
-                      itemBuilder: (context, i) {
-                        ConversationInfo info = conversationListViewModel.conversationList[i];
-                        var key =
-                            '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
-                        return ConversationListItem(
-                          info,
-                          key: ValueKey(key),
-                          onTap: onConversationSelected,
-                          isSelected: info.conversation == selectedConversation,
-                        );
+                          cacheExtent: 200,
+                          addRepaintBoundaries: true,
+                          addAutomaticKeepAlives: false,
+                          itemBuilder: (context, i) {
+                            ConversationInfo info =
+                                conversationListViewModel.conversationList[i];
+                            var key =
+                                '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
+                            return ConversationListItem(
+                              info,
+                              key: ValueKey(key),
+                              onTap: onConversationSelected,
+                              isSelected:
+                                  info.conversation == selectedConversation,
+                            );
                           },
                         ),
                 ),
@@ -167,22 +183,34 @@ class StatusNotificationHeader extends StatelessWidget {
 
         if (viewModel.connectionStatus == kConnectionStatusConnecting ||
             viewModel.connectionStatus == kConnectionStatusReceiving) {
-          headers.add(_buildStatusBanner(context, AppLocalizations.of(context)!.connecting));
+          headers.add(_buildStatusBanner(
+              context, AppLocalizations.of(context)!.connecting));
         } else if (viewModel.connectionStatus < 0) {
-          headers.add(_buildStatusBanner(context, AppLocalizations.of(context)!.connectionFailed));
+          headers.add(_buildStatusBanner(
+              context, AppLocalizations.of(context)!.connectionFailed));
         }
 
         // “PC 已登录”横幅只对手机端有意义,桌面端自身就是 PC
-        if (!isDesktopShell && viewModel.connectionStatus == kConnectionStatusConnected && viewModel.pcOnlineInfos.isNotEmpty) {
-          String pcStatus = viewModel.pcOnlineInfos.map((e) {
-            if (e.type == 0) return AppLocalizations.of(context)!.pcClient;
-            if (e.type == 1) return AppLocalizations.of(context)!.webClient;
-            if (e.type == 2) return AppLocalizations.of(context)!.miniProgram;
-            return AppLocalizations.of(context)!.pcClient;
-          }).toSet().join('/');
+        if (!isDesktopShell &&
+            viewModel.connectionStatus == kConnectionStatusConnected &&
+            viewModel.pcOnlineInfos.isNotEmpty) {
+          String pcStatus = viewModel.pcOnlineInfos
+              .map((e) {
+                if (e.type == 0) return AppLocalizations.of(context)!.pcClient;
+                if (e.type == 1) return AppLocalizations.of(context)!.webClient;
+                if (e.type == 2)
+                  return AppLocalizations.of(context)!.miniProgram;
+                return AppLocalizations.of(context)!.pcClient;
+              })
+              .toSet()
+              .join('/');
           headers.add(GestureDetector(
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const PCOnlineDevicesScreen())).then((_) {
+              Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const PCOnlineDevicesScreen()))
+                  .then((_) {
                 viewModel.refreshOnlineInfos();
               });
             },
@@ -192,12 +220,14 @@ class StatusNotificationHeader extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  Icon(Icons.computer, color: context.colors.textSecondary, size: 20),
+                  Icon(Icons.computer,
+                      color: context.colors.textSecondary, size: 20),
                   const SizedBox(width: 8),
                   Text(AppLocalizations.of(context)!.pcLoggedIn(pcStatus),
                       style: TextStyle(color: context.colors.textSecondary)),
                   const Spacer(),
-                  Icon(Icons.chevron_right, color: context.colors.textSecondary, size: 20),
+                  Icon(Icons.chevron_right,
+                      color: context.colors.textSecondary, size: 20),
                 ],
               ),
             ),
@@ -228,26 +258,37 @@ class ConversationListItem extends StatefulWidget {
   final ConversationInfo conversationInfo;
   final Function(Conversation conversation)? onTap;
   final bool isSelected;
+
   /// 如果提供，则替换默认右侧的时间/静音区域，用于选择会话等场景。
   final Widget? trailing;
+
   /// 是否显示最后一条消息摘要等副标题内容。
   final bool showSubtitle;
+
   /// 是否启用长按/右键菜单。
   final bool enableLongPress;
 
-  const ConversationListItem(this.conversationInfo, {super.key, this.onTap, this.isSelected = false, this.trailing, this.showSubtitle = true, this.enableLongPress = true});
+  const ConversationListItem(this.conversationInfo,
+      {super.key,
+      this.onTap,
+      this.isSelected = false,
+      this.trailing,
+      this.showSubtitle = true,
+      this.enableLongPress = true});
 
   @override
   State<ConversationListItem> createState() => _ConversationListItemState();
 }
 
-class _ConversationListItemState extends State<ConversationListItem> with AutomaticKeepAliveClientMixin {
+class _ConversationListItemState extends State<ConversationListItem>
+    with AutomaticKeepAliveClientMixin {
   String lastMsgDigest = '';
   bool isLoading = true;
   int _joinRequestCount = 0;
 
   StreamSubscription<UserInfoUpdatedEvent>? _userInfoUpdatedSubscription;
-  StreamSubscription<JoinGroupRequestUpdatedEvent>? _joinGroupRequestSubscription;
+  StreamSubscription<JoinGroupRequestUpdatedEvent>?
+      _joinGroupRequestSubscription;
 
   @override
   bool get wantKeepAlive => true;
@@ -260,14 +301,17 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       // FIXME
       // optimization
       // TODO 更细致的判断，仅包含用户信息的消息，比如加群等消息，需要重新加载 lastMessage
-      if (lastMessage != null && lastMessage.content is NotificationMessageContent) {
-        _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
+      if (lastMessage != null &&
+          lastMessage.content is NotificationMessageContent) {
+        _userInfoUpdatedSubscription =
+            Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
           _loadLastMessageDigest();
         });
       }
       _loadLastMessageDigest();
       _loadJoinRequestCount();
-      _joinGroupRequestSubscription = Imclient.IMEventBus.on<JoinGroupRequestUpdatedEvent>().listen((_) {
+      _joinGroupRequestSubscription =
+          Imclient.IMEventBus.on<JoinGroupRequestUpdatedEvent>().listen((_) {
         _loadJoinRequestCount();
       });
     } else {
@@ -283,7 +327,7 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   }
 
   @override
-  void didUpdateWidget(ConversationListItem oldWidget){
+  void didUpdateWidget(ConversationListItem oldWidget) {
     super.didUpdateWidget(oldWidget);
     // 只要会话信息对象改变了，就重新加载 digest
     if (oldWidget.conversationInfo != widget.conversationInfo) {
@@ -300,7 +344,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   }
 
   Future<void> _loadJoinRequestCount() async {
-    if (widget.conversationInfo.conversation.conversationType != ConversationType.Group) {
+    if (widget.conversationInfo.conversation.conversationType !=
+        ConversationType.Group) {
       if (_joinRequestCount != 0) {
         setState(() => _joinRequestCount = 0);
       }
@@ -322,7 +367,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     try {
       var digest = '';
       if (widget.conversationInfo.lastMessage != null) {
-        digest = await widget.conversationInfo.lastMessage!.content.digest(widget.conversationInfo.lastMessage!);
+        digest = await widget.conversationInfo.lastMessage!.content
+            .digest(widget.conversationInfo.lastMessage!);
       }
       if (mounted) {
         setState(() {
@@ -372,7 +418,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       final isTop = conversationInfo.isTop > 0;
       if (!hovered) return isTop ? colors.cellTopDesktop : Colors.transparent;
       // 蒙层要叠在实底上才有效:普通行的实底是 PCHome/本列表铺的中栏灰面
-      return Color.alphaBlend(colors.cellHoverDesktop, isTop ? colors.cellTopDesktop : colors.middleBgDesktop);
+      return Color.alphaBlend(colors.cellHoverDesktop,
+          isTop ? colors.cellTopDesktop : colors.middleBgDesktop);
     }
     if (widget.isSelected) return colors.cellSelected;
     return conversationInfo.isTop > 0 ? colors.cellTop : colors.surface;
@@ -380,7 +427,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
 
   Widget _buildCell(BuildContext context, bool hovered) {
     var conversationInfo = widget.conversationInfo;
-    bool hasDraft = conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
+    bool hasDraft =
+        conversationInfo.draft != null && conversationInfo.draft!.isNotEmpty;
 
     void onTap() {
       if (widget.onTap != null) {
@@ -393,23 +441,45 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     final cellChild = Column(
       children: <Widget>[
         Container(
-          height: LayoutScale.watchScale(context, kConversationRowHeight, cap: LayoutScale.rowCap),
+          height: LayoutScale.watchScale(context, kConversationRowHeight,
+              cap: LayoutScale.rowCap),
           margin: EdgeInsets.only(left: isDesktopShell ? 11 : 15),
-          child: Selector3<UserViewModel, GroupViewModel, ChannelViewModel,
-                  (UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? channelInfo, UserInfo? lastMessageSenderUserInfo)>(
-              selector: (context, userViewModel, groupViewModel, channelViewModel) => (
-                    conversationInfo.conversation.conversationType == ConversationType.Single
-                        ? userViewModel.getUserInfo(conversationInfo.conversation.target)
+          child: Selector3<
+                  UserViewModel,
+                  GroupViewModel,
+                  ChannelViewModel,
+                  (
+                    UserInfo? targetUserInfo,
+                    GroupInfo? targetGroupInfo,
+                    ChannelInfo? channelInfo,
+                    UserInfo? lastMessageSenderUserInfo
+                  )>(
+              selector: (context, userViewModel, groupViewModel,
+                      channelViewModel) =>
+                  (
+                    conversationInfo.conversation.conversationType ==
+                            ConversationType.Single
+                        ? userViewModel
+                            .getUserInfo(conversationInfo.conversation.target)
                         : null,
-                    conversationInfo.conversation.conversationType == ConversationType.Group
-                        ? groupViewModel.getGroupInfo(conversationInfo.conversation.target)
+                    conversationInfo.conversation.conversationType ==
+                            ConversationType.Group
+                        ? groupViewModel
+                            .getGroupInfo(conversationInfo.conversation.target)
                         : null,
-                    conversationInfo.conversation.conversationType == ConversationType.Channel
-                        ? channelViewModel.getChannelInfo(conversationInfo.conversation.target)
+                    conversationInfo.conversation.conversationType ==
+                            ConversationType.Channel
+                        ? channelViewModel.getChannelInfo(
+                            conversationInfo.conversation.target)
                         : null,
                     conversationInfo.lastMessage != null && widget.showSubtitle
-                        ? userViewModel.getUserInfo(conversationInfo.lastMessage!.fromUser,
-                            groupId: conversationInfo.conversation.conversationType == ConversationType.Group ? conversationInfo.conversation.target : null)
+                        ? userViewModel.getUserInfo(
+                            conversationInfo.lastMessage!.fromUser,
+                            groupId: conversationInfo
+                                        .conversation.conversationType ==
+                                    ConversationType.Group
+                                ? conversationInfo.conversation.target
+                                : null)
                         : null
                   ),
               builder: (context, value, child) => Row(
@@ -417,18 +487,28 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                       UnreadBadge(
                         count: conversationInfo.unreadCount.unread,
                         asDot: conversationInfo.isSilent,
-                        child: _buildPortraitImage(conversationInfo.conversation, value.$1, value.$2, value.$3),
+                        child: _buildPortraitImage(
+                            conversationInfo.conversation,
+                            value.$1,
+                            value.$2,
+                            value.$3),
                       ),
                       Expanded(
                           child: Container(
-                              height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
-                              alignment: widget.showSubtitle ? Alignment.topLeft : Alignment.centerLeft,
-                              margin: EdgeInsets.only(left: isDesktopShell ? 11 : 15),
+                              height: LayoutScale.watchScale(context, 48.0,
+                                  cap: LayoutScale.rowCap),
+                              alignment: widget.showSubtitle
+                                  ? Alignment.topLeft
+                                  : Alignment.centerLeft,
+                              margin: EdgeInsets.only(
+                                  left: isDesktopShell ? 11 : 15),
                               child: widget.showSubtitle
                                   ? Column(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
                                       children: <Widget>[
-                                        _buildConversationTitle(value.$1, value.$2, value.$3),
+                                        _buildConversationTitle(
+                                            value.$1, value.$2, value.$3),
                                         Container(
                                           height: 2,
                                         ),
@@ -437,14 +517,19 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                             _messageStatusIcon(),
                                             hasDraft
                                                 ? Text(
-                                                    AppLocalizations.of(context)!.draftTag,
-                                                    style: AppText.xs.copyWith(color: context.colors.danger),
+                                                    AppLocalizations.of(
+                                                            context)!
+                                                        .draftTag,
+                                                    style: AppText.xs.copyWith(
+                                                        color: context
+                                                            .colors.danger),
                                                   )
                                                 : Container(),
                                             if (_joinRequestCount > 0) ...[
                                               Text(
                                                 '[${AppLocalizations.of(context)!.newJoinGroupRequestCount(_joinRequestCount)}]',
-                                                style: AppText.xs.copyWith(color: Colors.red),
+                                                style: AppText.xs.copyWith(
+                                                    color: Colors.red),
                                               ),
                                               const SizedBox(width: 4),
                                             ],
@@ -452,7 +537,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                               // Selector 复用同一 UserInfo 实例不会因域名到达而重估，这里单独监听 MeshCache
                                               child: AnimatedBuilder(
                                                 animation: MeshCache.instance,
-                                                builder: (context, child) => _buildLastMessagePreview(
+                                                builder: (context, child) =>
+                                                    _buildLastMessagePreview(
                                                   context,
                                                   hasDraft,
                                                   conversationInfo,
@@ -465,11 +551,13 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                         ),
                                       ],
                                     )
-                                  : _buildConversationTitle(value.$1, value.$2, value.$3))),
+                                  : _buildConversationTitle(
+                                      value.$1, value.$2, value.$3))),
                       widget.trailing ??
                           Container(
                             // 与左侧标题所在的 48 高盒子同高、顶部对齐，使时间与会话标题水平对齐
-                            height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
+                            height: LayoutScale.watchScale(context, 48.0,
+                                cap: LayoutScale.rowCap),
                             alignment: Alignment.topRight,
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -478,13 +566,19 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
                                 Padding(
                                   padding: const EdgeInsets.only(right: 15.0),
                                   child: Text(
-                                    Utilities.formatTime(context, conversationInfo.timestamp),
-                                    style: AppText.xxs.copyWith(color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary),
+                                    Utilities.formatTime(
+                                        context, conversationInfo.timestamp),
+                                    style: AppText.xxs.copyWith(
+                                        color: (isDesktopShell &&
+                                                widget.isSelected)
+                                            ? Colors.white
+                                            : context.colors.textTertiary),
                                   ),
                                 ),
                                 if (conversationInfo.isSilent)
                                   Padding(
-                                    padding: const EdgeInsets.only(right: 15.0, top: 4.0),
+                                    padding: const EdgeInsets.only(
+                                        right: 15.0, top: 4.0),
                                     child: Image.asset(
                                       'assets/images/conversation_mute.png',
                                       width: 10,
@@ -502,13 +596,18 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
           margin: EdgeInsets.fromLTRB(
             isDesktopShell
                 ? 12.0
-                : 15.0 + LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap) + 15.0,
+                : 15.0 +
+                    LayoutScale.watchScale(context, 48.0,
+                        cap: LayoutScale.iconCap) +
+                    15.0,
             0.0,
             12.0,
             0.0,
           ),
           height: _kDividerHeight,
-          color: isDesktopShell ? context.colors.cellTopDesktop : context.colors.hairlineSoft,
+          color: isDesktopShell
+              ? context.colors.cellTopDesktop
+              : context.colors.hairlineSoft,
         ),
       ],
     );
@@ -518,8 +617,14 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
         color: _cellBackground(hovered),
         child: GestureDetector(
           onTap: onTap,
-          onLongPressStart: widget.enableLongPress ? (details) => _onLongPressed(context, conversationInfo, details.globalPosition) : null,
-          onSecondaryTapUp: widget.enableLongPress ? (details) => _onLongPressed(context, conversationInfo, details.globalPosition) : null,
+          onLongPressStart: widget.enableLongPress
+              ? (details) => _onLongPressed(
+                  context, conversationInfo, details.globalPosition)
+              : null,
+          onSecondaryTapUp: widget.enableLongPress
+              ? (details) => _onLongPressed(
+                  context, conversationInfo, details.globalPosition)
+              : null,
           behavior: HitTestBehavior.opaque,
           child: cellChild,
         ),
@@ -552,8 +657,14 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       child: InkWell(
         onTap: onTap,
         child: GestureDetector(
-          onLongPressStart: widget.enableLongPress ? (details) => _onLongPressed(context, conversationInfo, details.globalPosition) : null,
-          onSecondaryTapUp: widget.enableLongPress ? (details) => _onLongPressed(context, conversationInfo, details.globalPosition) : null,
+          onLongPressStart: widget.enableLongPress
+              ? (details) => _onLongPressed(
+                  context, conversationInfo, details.globalPosition)
+              : null,
+          onSecondaryTapUp: widget.enableLongPress
+              ? (details) => _onLongPressed(
+                  context, conversationInfo, details.globalPosition)
+              : null,
           behavior: HitTestBehavior.opaque,
           child: cellChild,
         ),
@@ -564,7 +675,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   }
 
   /// 会话标题：外部域用户显示带黄色、小字号域后缀的富文本。
-  Widget _buildConversationTitle(UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? targetChannelInfo) {
+  Widget _buildConversationTitle(UserInfo? targetUserInfo,
+      GroupInfo? targetGroupInfo, ChannelInfo? targetChannelInfo) {
     final conversation = widget.conversationInfo.conversation;
     final titleStyle = AppText.lg.copyWith(
       color: (isDesktopShell && widget.isSelected) ? Colors.white : null,
@@ -579,7 +691,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       );
     }
     return MiddleEllipsisText(
-      Utilities.conversationTitle(context, conversation, targetUserInfo, targetGroupInfo, targetChannelInfo),
+      Utilities.conversationTitle(context, conversation, targetUserInfo,
+          targetGroupInfo, targetChannelInfo),
       style: titleStyle,
     );
   }
@@ -593,7 +706,9 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     String lastMsgDigest,
   ) {
     final textStyle = AppText.xs.copyWith(
-      color: (isDesktopShell && widget.isSelected) ? Colors.white : context.colors.textTertiary,
+      color: (isDesktopShell && widget.isSelected)
+          ? Colors.white
+          : context.colors.textTertiary,
     );
     if (hasDraft) {
       return Text(
@@ -608,8 +723,9 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     }
     final message = conversationInfo.lastMessage!;
     // 自己发出去的消息，或者收到的通知类消息，摘要前不显示发送者名字
-    final showSender = message.direction == MessageDirection.MessageDirection_Receive &&
-        message.content is! NotificationMessageContent;
+    final showSender =
+        message.direction == MessageDirection.MessageDirection_Receive &&
+            message.content is! NotificationMessageContent;
     if (!showSender) {
       return Text(
         lastMsgDigest,
@@ -619,7 +735,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       );
     }
     final senderName = lastMessageSender != null
-        ? MeshUserDisplay.getReadableNameSpan(lastMessageSender, style: textStyle)
+        ? MeshUserDisplay.getReadableNameSpan(lastMessageSender,
+            style: textStyle)
         : TextSpan(text: '<${message.fromUser}>', style: textStyle);
     return Text.rich(
       TextSpan(
@@ -633,23 +750,30 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     );
   }
 
-  Widget _buildPortraitImage(Conversation conversation, UserInfo? userInfo, GroupInfo? groupInfo, ChannelInfo? channelInfo) {
+  Widget _buildPortraitImage(Conversation conversation, UserInfo? userInfo,
+      GroupInfo? groupInfo, ChannelInfo? channelInfo) {
     String portrait = switch (conversation.conversationType) {
-      ConversationType.Single => userInfo?.portrait ?? Config.defaultUserPortrait,
-      ConversationType.Group => groupInfo?.portrait ?? Config.defaultGroupPortrait,
-      ConversationType.Channel => channelInfo?.portrait ?? Config.defaultChannelPortrait,
+      ConversationType.Single =>
+        userInfo?.portrait ?? Config.defaultUserPortrait,
+      ConversationType.Group =>
+        groupInfo?.portrait ?? Config.defaultGroupPortrait,
+      ConversationType.Channel =>
+        channelInfo?.portrait ?? Config.defaultChannelPortrait,
       _ => ''
     };
-    var defaultPortrait = widget.conversationInfo.conversation.conversationType == ConversationType.Single
-        ? Config.defaultUserPortrait
-        : widget.conversationInfo.conversation.conversationType == ConversationType.Group
-            ? Config.defaultGroupPortrait
-            : Config.defaultChannelPortrait;
+    var defaultPortrait =
+        widget.conversationInfo.conversation.conversationType ==
+                ConversationType.Single
+            ? Config.defaultUserPortrait
+            : widget.conversationInfo.conversation.conversationType ==
+                    ConversationType.Group
+                ? Config.defaultGroupPortrait
+                : Config.defaultChannelPortrait;
     return isDesktopShell
-        ? Portrait(portrait, defaultPortrait, width: 44.0, height: 44.0, borderRadius: 6.0)
+        ? Portrait(portrait, defaultPortrait,
+            width: 44.0, height: 44.0, borderRadius: 6.0)
         : Portrait(portrait, defaultPortrait, borderRadius: 6.0);
   }
-
 
   void _toChatPage(BuildContext context, Conversation conversation) {
     Navigator.push(
@@ -658,8 +782,11 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     ).then((value) {});
   }
 
-  void _onLongPressed(BuildContext context, ConversationInfo conversationInfo, Offset position) {
-    final double itemHeight = isDesktopShell ? LayoutScale.scale(context, 34, cap: LayoutScale.rowCap) : kMinInteractiveDimension;
+  void _onLongPressed(BuildContext context, ConversationInfo conversationInfo,
+      Offset position) {
+    final double itemHeight = isDesktopShell
+        ? LayoutScale.scale(context, 34, cap: LayoutScale.rowCap)
+        : kMinInteractiveDimension;
     final List<Map<String, dynamic>> menuDefs = [];
 
     if (conversationInfo.isTop > 0) {
@@ -674,7 +801,10 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       });
     }
 
-    if (conversationInfo.unreadCount.unread + conversationInfo.unreadCount.unreadMention + conversationInfo.unreadCount.unreadMentionAll > 0) {
+    if (conversationInfo.unreadCount.unread +
+            conversationInfo.unreadCount.unreadMention +
+            conversationInfo.unreadCount.unreadMentionAll >
+        0) {
       menuDefs.add({
         'value': 'clear_unread',
         'label': AppLocalizations.of(context)!.clearUnread,
@@ -710,31 +840,39 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       }
     }).toList();
 
-    var conversationListViewModel = Provider.of<ConversationListViewModel>(context, listen: false);
+    var conversationListViewModel =
+        Provider.of<ConversationListViewModel>(context, listen: false);
     showMenu(
       context: context,
       // 桌面端菜单直接从鼠标位置展开;移动端保留左偏,避免长按时菜单出屏
       position: isDesktopShell
-          ? RelativeRect.fromLTRB(position.dx, position.dy, position.dx, position.dy)
-          : RelativeRect.fromLTRB(position.dx - 120, position.dy, position.dx, position.dy),
+          ? RelativeRect.fromLTRB(
+              position.dx, position.dy, position.dx, position.dy)
+          : RelativeRect.fromLTRB(
+              position.dx - 120, position.dy, position.dx, position.dy),
       items: items,
     ).then((selected) {
       if (selected != null) {
         switch (selected) {
           case "delete":
-            conversationListViewModel.removeConversation(conversationInfo.conversation);
+            conversationListViewModel
+                .removeConversation(conversationInfo.conversation);
             break;
           case "top":
-            conversationListViewModel.setConversationTop(conversationInfo.conversation, 1);
+            conversationListViewModel.setConversationTop(
+                conversationInfo.conversation, 1);
             break;
           case "untop":
-            conversationListViewModel.setConversationTop(conversationInfo.conversation, 0);
+            conversationListViewModel.setConversationTop(
+                conversationInfo.conversation, 0);
             break;
           case "clear_unread":
-            conversationListViewModel.clearConversationUnreadStatus(conversationInfo.conversation);
+            conversationListViewModel
+                .clearConversationUnreadStatus(conversationInfo.conversation);
             break;
           case "set_unread":
-            conversationListViewModel.markConversationAsUnRead(conversationInfo.conversation);
+            conversationListViewModel
+                .markConversationAsUnRead(conversationInfo.conversation);
             break;
         }
       }
@@ -744,7 +882,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
   Widget _messageStatusIcon() {
     var conversationInfo = widget.conversationInfo;
     if (conversationInfo.lastMessage != null) {
-      if (conversationInfo.lastMessage!.status == MessageStatus.Message_Status_Sending) {
+      if (conversationInfo.lastMessage!.status ==
+          MessageStatus.Message_Status_Sending) {
         return Padding(
           padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
           child: Image.asset(
@@ -753,7 +892,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
             height: 16,
           ),
         );
-      } else if (conversationInfo.lastMessage!.status == MessageStatus.Message_Status_Send_Failure) {
+      } else if (conversationInfo.lastMessage!.status ==
+          MessageStatus.Message_Status_Send_Failure) {
         return Padding(
           padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
           child: Image.asset(
@@ -768,12 +908,16 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     return Container();
   }
 
-  List<Widget> _buildSlidableActions(BuildContext context, ConversationInfo conversationInfo) {
+  List<Widget> _buildSlidableActions(
+      BuildContext context, ConversationInfo conversationInfo) {
     final List<Widget> actions = [];
-    final conversationListViewModel = Provider.of<ConversationListViewModel>(context, listen: false);
+    final conversationListViewModel =
+        Provider.of<ConversationListViewModel>(context, listen: false);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final Color topBgColor = isDark ? const Color(0xFF48484A) : const Color(0xFFC7C7CC);
-    final Color unreadBgColor = isDark ? const Color(0xFF0A84FF) : const Color(0xFF007AFF);
+    final Color topBgColor =
+        isDark ? const Color(0xFF48484A) : const Color(0xFFC7C7CC);
+    final Color unreadBgColor =
+        isDark ? const Color(0xFF0A84FF) : const Color(0xFF007AFF);
     final Color deleteBgColor = context.colors.danger;
 
     // 1. Top/Untop
@@ -781,12 +925,15 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     actions.add(
       SlidableAction(
         onPressed: (context) {
-          conversationListViewModel.setConversationTop(conversationInfo.conversation, isTop ? 0 : 1);
+          conversationListViewModel.setConversationTop(
+              conversationInfo.conversation, isTop ? 0 : 1);
         },
         backgroundColor: topBgColor,
         foregroundColor: Colors.white,
         padding: EdgeInsets.zero,
-        label: isTop ? AppLocalizations.of(context)!.untop : AppLocalizations.of(context)!.top,
+        label: isTop
+            ? AppLocalizations.of(context)!.untop
+            : AppLocalizations.of(context)!.top,
       ),
     );
 
@@ -799,15 +946,19 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
       SlidableAction(
         onPressed: (context) {
           if (hasUnread) {
-            conversationListViewModel.clearConversationUnreadStatus(conversationInfo.conversation);
+            conversationListViewModel
+                .clearConversationUnreadStatus(conversationInfo.conversation);
           } else {
-            conversationListViewModel.markConversationAsUnRead(conversationInfo.conversation);
+            conversationListViewModel
+                .markConversationAsUnRead(conversationInfo.conversation);
           }
         },
         backgroundColor: unreadBgColor,
         foregroundColor: Colors.white,
         padding: EdgeInsets.zero,
-        label: hasUnread ? AppLocalizations.of(context)!.clearUnread : AppLocalizations.of(context)!.setUnread,
+        label: hasUnread
+            ? AppLocalizations.of(context)!.clearUnread
+            : AppLocalizations.of(context)!.setUnread,
       ),
     );
 
@@ -815,7 +966,8 @@ class _ConversationListItemState extends State<ConversationListItem> with Automa
     actions.add(
       SlidableAction(
         onPressed: (context) {
-          conversationListViewModel.removeConversation(conversationInfo.conversation);
+          conversationListViewModel
+              .removeConversation(conversationInfo.conversation);
         },
         backgroundColor: deleteBgColor,
         foregroundColor: Colors.white,

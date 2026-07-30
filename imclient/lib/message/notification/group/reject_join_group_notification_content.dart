@@ -23,8 +23,7 @@ const rejectJoinGroupNotificationContentMeta = MessageContentMeta(
 ///
 /// 群管理拒绝用户的加群请求
 /// 消息类型: 125
-class RejectJoinGroupNotificationContent
-    extends NotificationMessageContent {
+class RejectJoinGroupNotificationContent extends NotificationMessageContent {
   late String groupId;
   late String operateUser;
   late String rejectedMember;
@@ -57,8 +56,7 @@ class RejectJoinGroupNotificationContent
       'm': rejectedMember,
       'r': reason,
     };
-    payload.binaryContent =
-        Uint8List.fromList(utf8.encode(json.encode(map)));
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 

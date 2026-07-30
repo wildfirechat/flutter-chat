@@ -99,11 +99,14 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           InkWell(
             onTap: atRoot ? null : () => Navigator.of(context).maybePop(),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
               child: Text(
                 AppLocalizations.of(context)!.organization,
                 style: AppText.base.copyWith(
-                  color: atRoot ? context.colors.textPrimary : Theme.of(context).colorScheme.primary,
+                  color: atRoot
+                      ? context.colors.textPrimary
+                      : Theme.of(context).colorScheme.primary,
                   fontWeight: atRoot ? FontWeight.bold : FontWeight.normal,
                 ),
               ),
@@ -113,7 +116,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
         if (!atRoot) {
           items.add(Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2.0),
-            child: Icon(Icons.chevron_right, size: 18.0, color: context.colors.textSecondary),
+            child: Icon(Icons.chevron_right,
+                size: 18.0, color: context.colors.textSecondary),
           ));
         }
 
@@ -122,16 +126,18 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           final isLast = i == path.length - 1;
           items.add(
             InkWell(
-              onTap: isLast
-                  ? null
-                  : () => viewModel.navigateToOrganization(org),
+              onTap:
+                  isLast ? null : () => viewModel.navigateToOrganization(org),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
                 child: Text(
                   org.name,
-                  style: AppText.base.copyWith(color: isLast
-                        ? Theme.of(context).textTheme.bodyLarge?.color
-                        : Theme.of(context).colorScheme.primary, fontWeight: isLast ? FontWeight.bold : FontWeight.normal),
+                  style: AppText.base.copyWith(
+                      color: isLast
+                          ? Theme.of(context).textTheme.bodyLarge?.color
+                          : Theme.of(context).colorScheme.primary,
+                      fontWeight: isLast ? FontWeight.bold : FontWeight.normal),
                 ),
               ),
             ),
@@ -139,7 +145,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           if (!isLast) {
             items.add(Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2.0),
-              child: Icon(Icons.chevron_right, size: 18.0, color: context.colors.textSecondary),
+              child: Icon(Icons.chevron_right,
+                  size: 18.0, color: context.colors.textSecondary),
             ));
           }
         }
@@ -149,7 +156,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
           controller: _breadcrumbScrollController,
           scrollDirection: Axis.horizontal,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: inHeader ? 0.0 : 8.0, vertical: 4.0),
+            padding: EdgeInsets.symmetric(
+                horizontal: inHeader ? 0.0 : 8.0, vertical: 4.0),
             child: Row(children: items),
           ),
         );
@@ -218,7 +226,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       color: context.colors.chatBg,
       child: Text(
         title,
-        style: AppText.sm.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.w500),
+        style: AppText.sm.copyWith(
+            color: context.colors.textSecondary, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -244,7 +253,9 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     if (_isDisabled(userId)) return;
 
     if (_selectedUserIds.length >= widget.maxSelected) {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxSelectCount(widget.maxSelected));
+      Fluttertoast.showToast(
+          msg:
+              AppLocalizations.of(context)!.maxSelectCount(widget.maxSelected));
       return;
     }
 
@@ -267,7 +278,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     // 用 minTileHeight 而不是外层 Container(minHeight):后者只会把容器撑高,
     // ListTile 的内容仍按自身高度锚在顶部,导致行内不垂直居中。
     return ListTile(
-      minTileHeight: LayoutScale.watchScale(context, baseHeight, cap: LayoutScale.rowCap),
+      minTileHeight:
+          LayoutScale.watchScale(context, baseHeight, cap: LayoutScale.rowCap),
       leading: Icon(
         Icons.corporate_fare,
         color: Theme.of(context).colorScheme.secondary,
@@ -285,14 +297,18 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
   /// 部门行之间的分割线,左端与标题文字对齐(16 内边距 + 图标宽 + 16 标题间距)。
   Widget _buildTileDivider() {
     return Divider(
-      indent: 16.0 + LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap) + 16.0,
+      indent: 16.0 +
+          LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap) +
+          16.0,
     );
   }
 
   /// 员工行之间的分割线,左端与姓名文字对齐(16 内边距 + 头像宽 + 16 姓名间距)。
   Widget _buildEmployeeDivider() {
     return Divider(
-      indent: 16.0 + LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap) + 16.0,
+      indent: 16.0 +
+          LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap) +
+          16.0,
     );
   }
 
@@ -305,9 +321,11 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     if (widget.selectMode) {
       trailing = Checkbox(
         value: isSelected,
-        onChanged: isDisabled ? null : (_) => _toggleEmployeeSelection(emp.employeeId),
+        onChanged:
+            isDisabled ? null : (_) => _toggleEmployeeSelection(emp.employeeId),
       );
-      onTap = isDisabled ? null : () => _toggleEmployeeSelection(emp.employeeId);
+      onTap =
+          isDisabled ? null : () => _toggleEmployeeSelection(emp.employeeId);
     } else {
       onTap = () {
         // 用 pushPage:桌面端在右栏 Navigator 里 push(组织架构还压在下面,可以返回),
@@ -324,13 +342,17 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     return Opacity(
       opacity: isDisabled ? 0.5 : 1.0,
       child: ListTile(
-        minTileHeight: LayoutScale.watchScale(context, baseHeight, cap: LayoutScale.rowCap),
+        minTileHeight: LayoutScale.watchScale(context, baseHeight,
+            cap: LayoutScale.rowCap),
         leading: Portrait(
-          emp.portraitUrl ?? WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()),
+          emp.portraitUrl ??
+              WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()),
           Config.defaultUserPortrait,
         ),
         title: Text(emp.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-        subtitle: hasSubtitle ? Text(emp.title!, maxLines: 1, overflow: TextOverflow.ellipsis) : null,
+        subtitle: hasSubtitle
+            ? Text(emp.title!, maxLines: 1, overflow: TextOverflow.ellipsis)
+            : null,
         trailing: trailing,
         onTap: onTap,
       ),
@@ -353,7 +375,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       return Expanded(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 32.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 32.0, vertical: 32.0),
             child: Text(
               l10n.orgNoSubOrgOrMembers,
               textAlign: TextAlign.center,
@@ -438,7 +461,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     return TextButton(
       onPressed: _onDone,
       // 栏标题右侧的确认位,比桌面按钮默认的 13 号大一号才压得住标题。
-      style: isDesktopShell ? TextButton.styleFrom(textStyle: AppText.base) : null,
+      style:
+          isDesktopShell ? TextButton.styleFrom(textStyle: AppText.base) : null,
       child: Text(label),
     );
   }
@@ -474,7 +498,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                       title: Text(AppLocalizations.of(context)!.organization),
                       actions: widget.selectMode ? [_buildDoneAction()] : null,
                     ),
-              backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
+              backgroundColor:
+                  isDesktopShell ? context.colors.chatBgDesktop : null,
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -485,8 +510,10 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                   ],
                   _buildSearchBar(),
                   if (viewModel.isLoading && viewModel.searchQuery.isEmpty)
-                    const Expanded(child: Center(child: CircularProgressIndicator()))
-                  else if (viewModel.error != null && viewModel.searchQuery.isEmpty)
+                    const Expanded(
+                        child: Center(child: CircularProgressIndicator()))
+                  else if (viewModel.error != null &&
+                      viewModel.searchQuery.isEmpty)
                     Expanded(
                       child: Center(
                         child: Padding(
@@ -494,13 +521,17 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.error_outline, color: context.colors.danger, size: 44),
+                              Icon(Icons.error_outline,
+                                  color: context.colors.danger, size: 44),
                               const SizedBox(height: 12),
-                              Text(viewModel.error!, textAlign: TextAlign.center, style: AppText.lg),
+                              Text(viewModel.error!,
+                                  textAlign: TextAlign.center,
+                                  style: AppText.lg),
                               const SizedBox(height: 16),
                               FilledButton.icon(
                                 icon: const Icon(Icons.refresh),
-                                label: Text(AppLocalizations.of(context)!.reload),
+                                label:
+                                    Text(AppLocalizations.of(context)!.reload),
                                 onPressed: () => viewModel.retryLoadData(),
                               )
                             ],

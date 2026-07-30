@@ -18,7 +18,8 @@ class PcFavoriteCategoriesList extends StatefulWidget {
   });
 
   @override
-  State<PcFavoriteCategoriesList> createState() => _PcFavoriteCategoriesListState();
+  State<PcFavoriteCategoriesList> createState() =>
+      _PcFavoriteCategoriesListState();
 }
 
 class _PcFavoriteCategoriesListState extends State<PcFavoriteCategoriesList> {
@@ -36,9 +37,17 @@ class _PcFavoriteCategoriesListState extends State<PcFavoriteCategoriesList> {
     final l10n = AppLocalizations.of(context)!;
     final categories = <(FavoriteCategory, String, IconData)>[
       (FavoriteCategory.all, l10n.favoritesAll, Icons.cloud_outlined),
-      (FavoriteCategory.file, l10n.favoritesFile, Icons.insert_drive_file_outlined),
+      (
+        FavoriteCategory.file,
+        l10n.favoritesFile,
+        Icons.insert_drive_file_outlined
+      ),
       (FavoriteCategory.media, l10n.favoritesMedia, Icons.image_outlined),
-      (FavoriteCategory.composite, l10n.favoritesComposite, Icons.chat_bubble_outline_rounded),
+      (
+        FavoriteCategory.composite,
+        l10n.favoritesComposite,
+        Icons.chat_bubble_outline_rounded
+      ),
     ];
 
     return SingleChildScrollView(

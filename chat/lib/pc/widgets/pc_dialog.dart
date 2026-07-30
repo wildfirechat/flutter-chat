@@ -73,14 +73,16 @@ class PcDialogFrame extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final hasFooter = primary != null || secondary != null || footerLeading != null;
+    final hasFooter =
+        primary != null || secondary != null || footerLeading != null;
     return Column(
       children: [
         Container(
           height: 52,
           padding: const EdgeInsets.only(left: 16, right: 10),
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(width: 0.5, color: colors.hairline)),
+            border:
+                Border(bottom: BorderSide(width: 0.5, color: colors.hairline)),
           ),
           child: Row(
             children: [
@@ -118,7 +120,8 @@ class PcDialogFrame extends StatelessWidget {
                       color: hovered ? colors.hoverOverlay : Colors.transparent,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Icon(Icons.close, size: 18, color: colors.textSecondary),
+                    child: Icon(Icons.close,
+                        size: 18, color: colors.textSecondary),
                   ),
                 ),
               ),
@@ -131,7 +134,8 @@ class PcDialogFrame extends StatelessWidget {
             height: 60,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              border: Border(top: BorderSide(width: 0.5, color: colors.hairline)),
+              border:
+                  Border(top: BorderSide(width: 0.5, color: colors.hairline)),
             ),
             child: Row(
               children: [

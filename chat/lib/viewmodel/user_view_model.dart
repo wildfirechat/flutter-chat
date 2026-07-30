@@ -14,7 +14,8 @@ class UserViewModel extends ChangeNotifier {
   late Listenable? _meshCacheListener;
 
   UserViewModel() {
-    _userInfoUpdateSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
+    _userInfoUpdateSubscription =
+        Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
       final List<UserInfo> updatedUsers = event.userInfos;
 
       debugPrint('userInfo updated ${updatedUsers.length}');
@@ -23,7 +24,8 @@ class UserViewModel extends ChangeNotifier {
     });
 
     // _groupMembersUpdateSubscription?.cancel();
-    _groupMembersUpdateSubscription = Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
+    _groupMembersUpdateSubscription =
+        Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
       debugPrint('groupMembers updated ${event.groupId} ${event.members}');
       final String groupId = event.groupId;
       final List<GroupMember> updatedMembers = event.members;
@@ -47,7 +49,7 @@ class UserViewModel extends ChangeNotifier {
   UserInfo getUserInfo(String userId, {String? groupId}) {
     // debugPrint('getUserInfo $userId groupId $groupId');
     var info = UserRepo.getUserInfo(userId, groupId: groupId);
-    if (info.updateDt == 0 ) {
+    if (info.updateDt == 0) {
       String key = groupId != null ? "$userId@$groupId" : userId;
       if (!_fetchingUserIds.contains(key)) {
         _fetchingUserIds.add(key);

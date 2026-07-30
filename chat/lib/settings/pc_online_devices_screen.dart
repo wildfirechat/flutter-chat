@@ -40,7 +40,8 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
       Fluttertoast.showToast(msg: AppLocalizations.of(context)!.kickedOffline);
       _loadData();
     }, (err) {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.operateFail(err.toString()));
+      Fluttertoast.showToast(
+          msg: AppLocalizations.of(context)!.operateFail(err.toString()));
     });
   }
 
@@ -50,7 +51,8 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
         _isMute = value;
       });
     }, (err) {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.setFail(err.toString()));
+      Fluttertoast.showToast(
+          msg: AppLocalizations.of(context)!.setFail(err.toString()));
       setState(() {
         _isMute = !_isMute;
       });
@@ -103,7 +105,8 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
                       const Icon(Icons.computer, size: 80, color: Colors.green),
                       const SizedBox(height: 16),
                       Text(
-                        AppLocalizations.of(context)!.pcOnlineDeviceCount(_onlineInfos.length.toString()),
+                        AppLocalizations.of(context)!.pcOnlineDeviceCount(
+                            _onlineInfos.length.toString()),
                         style: AppText.lg.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -124,7 +127,8 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
                         ),
                         subtitle: Text(
                           AppLocalizations.of(context)!.mobileMuteDesc,
-                          style: AppText.base.copyWith(color: context.colors.textSecondary),
+                          style: AppText.base
+                              .copyWith(color: context.colors.textSecondary),
                         ),
                         onTap: () => _toggleMute(!_isMute),
                         trailing: AppSwitch(
@@ -142,19 +146,23 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
                     itemBuilder: (context, index) {
                       var info = _onlineInfos[index];
                       return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: ListTile(
-                          leading: Icon(_getDeviceIcon(info), size: 36, color: Colors.grey),
+                          leading: Icon(_getDeviceIcon(info),
+                              size: 36, color: Colors.grey),
                           title: Text(_getDeviceName(info)),
-                          subtitle: Text("${AppLocalizations.of(context)!.loginTime}${DateTime.fromMillisecondsSinceEpoch(info.timestamp).toString().substring(0, 16)}"),
+                          subtitle: Text(
+                              "${AppLocalizations.of(context)!.loginTime}${DateTime.fromMillisecondsSinceEpoch(info.timestamp).toString().substring(0, 16)}"),
                           trailing: FilledButton.tonal(
                             onPressed: () => _kickClient(info),
                             // 危险次要:灰底无边框,只换前景色,形态走全局按钮主题。
-                            style: FilledButton.styleFrom(foregroundColor: context.colors.danger),
+                            style: FilledButton.styleFrom(
+                                foregroundColor: context.colors.danger),
                             child: Text(AppLocalizations.of(context)!.logout),
                           ),
                         ),

@@ -16,7 +16,8 @@ import 'package:chat/l10n/app_localizations.dart';
 class CompositeCellBuilder extends PortraitCellBuilder {
   late CompositeMessageContent compositeMessageContent;
 
-  CompositeCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  CompositeCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     compositeMessageContent = model.message.content as CompositeMessageContent;
   }
 
@@ -24,7 +25,8 @@ class CompositeCellBuilder extends PortraitCellBuilder {
   Widget buildMessageContent(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        pushPage(context, CompositeMessageDetailScreen(compositeMessageContent));
+        pushPage(
+            context, CompositeMessageDetailScreen(compositeMessageContent));
       },
       child: Container(
         width: 200,
@@ -40,14 +42,23 @@ class CompositeCellBuilder extends PortraitCellBuilder {
             ),
             // height 16:标题与预览之间要留呼吸空间,不只是画线。
             const Divider(height: 16),
-            Selector<UserViewModel, (UserInfo?, UserInfo?, UserInfo?, UserInfo?)>(
+            Selector<UserViewModel,
+                (UserInfo?, UserInfo?, UserInfo?, UserInfo?)>(
               selector: (context, userViewModel) {
                 var msgs = compositeMessageContent.messages;
                 return (
-                  msgs.isNotEmpty ? userViewModel.getUserInfo(msgs[0].fromUser) : null,
-                  msgs.length > 1 ? userViewModel.getUserInfo(msgs[1].fromUser) : null,
-                  msgs.length > 2 ? userViewModel.getUserInfo(msgs[2].fromUser) : null,
-                  msgs.length > 3 ? userViewModel.getUserInfo(msgs[3].fromUser) : null,
+                  msgs.isNotEmpty
+                      ? userViewModel.getUserInfo(msgs[0].fromUser)
+                      : null,
+                  msgs.length > 1
+                      ? userViewModel.getUserInfo(msgs[1].fromUser)
+                      : null,
+                  msgs.length > 2
+                      ? userViewModel.getUserInfo(msgs[2].fromUser)
+                      : null,
+                  msgs.length > 3
+                      ? userViewModel.getUserInfo(msgs[3].fromUser)
+                      : null,
                 );
               },
               builder: (context, data, child) {
@@ -66,12 +77,17 @@ class CompositeCellBuilder extends PortraitCellBuilder {
                     }
 
                     UserInfo? userInfo;
-                    if (index == 0) userInfo = data.$1;
-                    else if (index == 1) userInfo = data.$2;
-                    else if (index == 2) userInfo = data.$3;
+                    if (index == 0)
+                      userInfo = data.$1;
+                    else if (index == 1)
+                      userInfo = data.$2;
+                    else if (index == 2)
+                      userInfo = data.$3;
                     else if (index == 3) userInfo = data.$4;
 
-                    String senderName = userInfo != null ? "${MeshUserDisplay.getReadableName(userInfo)}: " : "";
+                    String senderName = userInfo != null
+                        ? "${MeshUserDisplay.getReadableName(userInfo)}: "
+                        : "";
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -79,8 +95,13 @@ class CompositeCellBuilder extends PortraitCellBuilder {
                           ? Text.rich(
                               TextSpan(
                                 children: [
-                                  MeshUserDisplay.getReadableNameSpan(userInfo, style: AppText.xs.copyWith(color: Colors.grey)),
-                                  TextSpan(text: ': $preview', style: AppText.xs.copyWith(color: Colors.grey)),
+                                  MeshUserDisplay.getReadableNameSpan(userInfo,
+                                      style: AppText.xs
+                                          .copyWith(color: Colors.grey)),
+                                  TextSpan(
+                                      text: ': $preview',
+                                      style: AppText.xs
+                                          .copyWith(color: Colors.grey)),
                                 ],
                               ),
                               maxLines: 1,

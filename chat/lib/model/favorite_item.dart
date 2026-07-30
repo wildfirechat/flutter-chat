@@ -61,15 +61,20 @@ class FavoriteItem {
     if (message.conversation.conversationType == ConversationType.Group) {
       var groupInfo = await Imclient.getGroupInfo(message.conversation.target);
       if (groupInfo != null) {
-        item.origin = (groupInfo.remark != null && groupInfo.remark!.isNotEmpty) ? groupInfo.remark! : (groupInfo.name ?? '');
+        item.origin = (groupInfo.remark != null && groupInfo.remark!.isNotEmpty)
+            ? groupInfo.remark!
+            : (groupInfo.name ?? '');
       }
-    } else if (message.conversation.conversationType == ConversationType.Single) {
+    } else if (message.conversation.conversationType ==
+        ConversationType.Single) {
       var userInfo = await Imclient.getUserInfo(message.fromUser);
       if (userInfo != null) {
         item.origin = userInfo.displayName ?? '';
       }
-    } else if (message.conversation.conversationType == ConversationType.Channel) {
-      var channelInfo = await Imclient.getChannelInfo(message.conversation.target);
+    } else if (message.conversation.conversationType ==
+        ConversationType.Channel) {
+      var channelInfo =
+          await Imclient.getChannelInfo(message.conversation.target);
       if (channelInfo != null) {
         item.origin = channelInfo.name ?? '';
       }
@@ -111,7 +116,8 @@ class FavoriteItem {
             String jsonStr = utf8.decode(payload.binaryContent!);
             Map<String, dynamic> obj = json.decode(jsonStr);
             obj['remote_url'] = content.remoteUrl;
-            payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(obj)));
+            payload.binaryContent =
+                Uint8List.fromList(utf8.encode(json.encode(obj)));
           }
         } catch (e) {
           print(e);
@@ -139,7 +145,10 @@ class FavoriteItem {
       messageUid: int.tryParse(json['messageUid']?.toString() ?? '0') ?? 0,
       favType: json['type'] ?? 0,
       timestamp: json['timestamp'] ?? 0,
-      conversation: Conversation(conversationType: ConversationType.values[json['convType'] ?? 0], target: json['convTarget'] ?? '', line: json['convLine'] ?? 0),
+      conversation: Conversation(
+          conversationType: ConversationType.values[json['convType'] ?? 0],
+          target: json['convTarget'] ?? '',
+          line: json['convLine'] ?? 0),
       origin: json['origin'] ?? '',
       sender: json['sender'] ?? '',
       title: json['title'] ?? '',

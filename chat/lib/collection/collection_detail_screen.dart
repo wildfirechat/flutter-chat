@@ -22,7 +22,8 @@ class CollectionDetailScreen extends StatefulWidget {
   final Message message;
   final bool asDialog;
 
-  const CollectionDetailScreen({super.key, required this.message, this.asDialog = false});
+  const CollectionDetailScreen(
+      {super.key, required this.message, this.asDialog = false});
 
   static Future<void> show(BuildContext context, Message message) {
     if (isDesktopShell) {
@@ -30,12 +31,14 @@ class CollectionDetailScreen extends StatefulWidget {
         context: context,
         width: 460,
         height: 620,
-        builder: (_) => CollectionDetailScreen(message: message, asDialog: true),
+        builder: (_) =>
+            CollectionDetailScreen(message: message, asDialog: true),
       );
     }
     return Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => CollectionDetailScreen(message: message)),
+      MaterialPageRoute(
+          builder: (_) => CollectionDetailScreen(message: message)),
     );
   }
 
@@ -83,7 +86,8 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
     }
 
     try {
-      final result = await CollectionService.getCollection(collectionId, groupId);
+      final result =
+          await CollectionService.getCollection(collectionId, groupId);
       if (!mounted) return;
       setState(() {
         collection = result;
@@ -147,7 +151,9 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
       if (content.isEmpty) {
         _confirmDeleteEntry();
       } else {
-        await _submitEntry(content, successMsg: _l10n.collectionUpdateSuccess, failedMsg: _l10n.collectionUpdateFailed);
+        await _submitEntry(content,
+            successMsg: _l10n.collectionUpdateSuccess,
+            failedMsg: _l10n.collectionUpdateFailed);
       }
       return;
     }
@@ -156,11 +162,14 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
       Fluttertoast.showToast(msg: _l10n.collectionJoinHint);
       return;
     }
-    await _submitEntry(content, successMsg: _l10n.collectionJoinSuccess, failedMsg: _l10n.collectionJoinFailed);
+    await _submitEntry(content,
+        successMsg: _l10n.collectionJoinSuccess,
+        failedMsg: _l10n.collectionJoinFailed);
   }
 
   /// 参与与修改是同一个接口,只有提示语不同。
-  Future<void> _submitEntry(String content, {required String successMsg, required String failedMsg}) async {
+  Future<void> _submitEntry(String content,
+      {required String successMsg, required String failedMsg}) async {
     try {
       await CollectionService.join(collectionId, groupId, content);
       if (mounted) {
@@ -188,7 +197,8 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
               Navigator.pop(dialogContext);
               _doDeleteEntry();
             },
-            child: Text(_l10n.delete, style: TextStyle(color: dialogContext.colors.danger)),
+            child: Text(_l10n.delete,
+                style: TextStyle(color: dialogContext.colors.danger)),
           ),
         ],
       ),
@@ -236,10 +246,12 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
       return PcDialogFrame(
         title: _l10n.collectionDetail,
         primary: (collection?.isJoinable ?? false)
-            ? PcDialogAction(label: _l10n.submit, onPressed: _canSubmit ? _onSubmit : null)
+            ? PcDialogAction(
+                label: _l10n.submit, onPressed: _canSubmit ? _onSubmit : null)
             : null,
         secondary: (collection?.isJoinable ?? false)
-            ? PcDialogAction(label: _l10n.cancel, onPressed: () => Navigator.pop(context))
+            ? PcDialogAction(
+                label: _l10n.cancel, onPressed: () => Navigator.pop(context))
             : null,
         child: Container(color: colors.primaryBackground, child: body),
       );
@@ -310,7 +322,8 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
         children: [
           Text(
             collection!.title,
-            style: AppText.xl.copyWith(fontWeight: FontWeight.w600, color: colors.textPrimary),
+            style: AppText.xl.copyWith(
+                fontWeight: FontWeight.w600, color: colors.textPrimary),
           ),
           if (collection!.desc.isNotEmpty) ...[
             const SizedBox(height: 6),
@@ -338,7 +351,9 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
             future: Imclient.getUserInfo(collection!.creatorId),
             builder: (context, snapshot) {
               final creatorInfo = snapshot.data;
-              final creatorName = creatorInfo?.displayName ?? creatorInfo?.name ?? collection!.creatorId;
+              final creatorName = creatorInfo?.displayName ??
+                  creatorInfo?.name ??
+                  collection!.creatorId;
               return Row(
                 children: [
                   Portrait(
@@ -412,8 +427,11 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
                     maxLines: 3,
                     minLines: 1,
                     decoration: InputDecoration(
-                      hintText: collection!.template.isNotEmpty ? collection!.template : _l10n.collectionJoinHint,
-                      hintStyle: AppText.base.copyWith(color: colors.textTertiary),
+                      hintText: collection!.template.isNotEmpty
+                          ? collection!.template
+                          : _l10n.collectionJoinHint,
+                      hintStyle:
+                          AppText.base.copyWith(color: colors.textTertiary),
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: EdgeInsets.zero,

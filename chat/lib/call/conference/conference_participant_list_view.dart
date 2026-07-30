@@ -46,7 +46,8 @@ class _ConferenceParticipantListViewState
 
   Future<void> _loadUserInfos() async {
     var profiles = widget.session.getParticipantProfiles();
-    profiles.add(widget.session.getSelfProfile() ?? ParticipantProfile(Imclient.currentUserId));
+    profiles.add(widget.session.getSelfProfile() ??
+        ParticipantProfile(Imclient.currentUserId));
     for (var profile in profiles) {
       if (!_userInfoCache.containsKey(profile.userId)) {
         var info = await Imclient.getUserInfo(profile.userId);
@@ -78,7 +79,8 @@ class _ConferenceParticipantListViewState
           children: [
             ListTile(
               title: Text(_name(_userInfoCache[profile.userId]),
-                  style: AppText.base.copyWith(color: context.colors.textPrimary)),
+                  style:
+                      AppText.base.copyWith(color: context.colors.textPrimary)),
               leading: Portrait(
                 _userInfoCache[profile.userId]?.portrait ?? '',
                 Config.defaultUserPortrait,
@@ -91,7 +93,10 @@ class _ConferenceParticipantListViewState
             if (isSelf) ...[
               ListTile(
                 leading: Icon(Icons.mic, color: context.colors.iconSecondary),
-                title: Text(profile.audioMuted ? l10n.conferenceUnmuteSelf : l10n.callMute,
+                title: Text(
+                    profile.audioMuted
+                        ? l10n.conferenceUnmuteSelf
+                        : l10n.callMute,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -99,8 +104,10 @@ class _ConferenceParticipantListViewState
                 },
               ),
               ListTile(
-                leading: Icon(Icons.videocam, color: context.colors.iconSecondary),
-                title: Text(profile.videoMuted ? l10n.callCameraOn : l10n.callCameraOff,
+                leading:
+                    Icon(Icons.videocam, color: context.colors.iconSecondary),
+                title: Text(
+                    profile.videoMuted ? l10n.callCameraOn : l10n.callCameraOff,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -108,8 +115,12 @@ class _ConferenceParticipantListViewState
                 },
               ),
               ListTile(
-                leading: Icon(Icons.swap_horiz, color: context.colors.iconSecondary),
-                title: Text(profile.audience ? l10n.conferenceSwitchToStage : l10n.conferenceSwitchToAudience,
+                leading:
+                    Icon(Icons.swap_horiz, color: context.colors.iconSecondary),
+                title: Text(
+                    profile.audience
+                        ? l10n.conferenceSwitchToStage
+                        : l10n.conferenceSwitchToAudience,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -119,43 +130,64 @@ class _ConferenceParticipantListViewState
             ],
             if (isOwner && !isSelf) ...[
               ListTile(
-                leading: Icon(Icons.record_voice_over, color: context.colors.iconSecondary),
-                title: Text(profile.audioMuted ? l10n.conferenceAllowUnmuteAudio : l10n.callMute,
+                leading: Icon(Icons.record_voice_over,
+                    color: context.colors.iconSecondary),
+                title: Text(
+                    profile.audioMuted
+                        ? l10n.conferenceAllowUnmuteAudio
+                        : l10n.callMute,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
                   if (profile.audioMuted) {
-                    widget.conferenceManager.approveUnmute(profile.userId, true, true);
+                    widget.conferenceManager
+                        .approveUnmute(profile.userId, true, true);
                   } else {
-                    widget.conferenceManager.requestMemberMute(profile.userId, true, true);
+                    widget.conferenceManager
+                        .requestMemberMute(profile.userId, true, true);
                   }
                 },
               ),
               ListTile(
-                leading: Icon(Icons.videocam, color: context.colors.iconSecondary),
-                title: Text(profile.videoMuted ? l10n.conferenceAllowUnmuteVideo : l10n.conferenceCloseVideo,
+                leading:
+                    Icon(Icons.videocam, color: context.colors.iconSecondary),
+                title: Text(
+                    profile.videoMuted
+                        ? l10n.conferenceAllowUnmuteVideo
+                        : l10n.conferenceCloseVideo,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
                   if (profile.videoMuted) {
-                    widget.conferenceManager.approveUnmute(profile.userId, false, true);
+                    widget.conferenceManager
+                        .approveUnmute(profile.userId, false, true);
                   } else {
-                    widget.conferenceManager.requestMemberMute(profile.userId, false, true);
+                    widget.conferenceManager
+                        .requestMemberMute(profile.userId, false, true);
                   }
                 },
               ),
               ListTile(
-                leading: Icon(Icons.person_outline, color: context.colors.iconSecondary),
-                title: Text(profile.audience ? l10n.conferenceInviteStage : l10n.conferenceSetAudience,
+                leading: Icon(Icons.person_outline,
+                    color: context.colors.iconSecondary),
+                title: Text(
+                    profile.audience
+                        ? l10n.conferenceInviteStage
+                        : l10n.conferenceSetAudience,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
-                  widget.session.requestChangeMode(profile.userId, !profile.audience);
+                  widget.session
+                      .requestChangeMode(profile.userId, !profile.audience);
                 },
               ),
               ListTile(
-                leading: Icon(Icons.highlight, color: context.colors.iconSecondary),
-                title: Text(focusUserId == profile.userId ? l10n.conferenceCancelFocus : l10n.conferenceSetFocus,
+                leading:
+                    Icon(Icons.highlight, color: context.colors.iconSecondary),
+                title: Text(
+                    focusUserId == profile.userId
+                        ? l10n.conferenceCancelFocus
+                        : l10n.conferenceSetFocus,
                     style: TextStyle(color: context.colors.textPrimary)),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -168,7 +200,8 @@ class _ConferenceParticipantListViewState
               ),
               ListTile(
                 leading: Icon(Icons.logout, color: context.colors.danger),
-                title: Text(l10n.conferenceKick, style: TextStyle(color: context.colors.danger)),
+                title: Text(l10n.conferenceKick,
+                    style: TextStyle(color: context.colors.danger)),
                 onTap: () {
                   Navigator.of(context).pop();
                   widget.session.kickoffParticipant(profile.userId);
@@ -210,8 +243,10 @@ class _ConferenceParticipantListViewState
     var isOwner = widget.conferenceManager.isOwner;
     var focusUserId = widget.conferenceManager.currentFocusUser;
     var handUpCount = widget.conferenceManager.handUpMembers.length;
-    var applyAudioCount = widget.conferenceManager.applyingUnmuteAudioMembers.length;
-    var applyVideoCount = widget.conferenceManager.applyingUnmuteVideoMembers.length;
+    var applyAudioCount =
+        widget.conferenceManager.applyingUnmuteAudioMembers.length;
+    var applyVideoCount =
+        widget.conferenceManager.applyingUnmuteVideoMembers.length;
 
     return Column(
       children: [
@@ -257,7 +292,8 @@ class _ConferenceParticipantListViewState
               var profile = profiles[index];
               var info = _userInfoCache[profile.userId];
               bool isSelf = profile.userId == Imclient.currentUserId;
-              bool isHandUp = widget.conferenceManager.handUpMembers.contains(profile.userId);
+              bool isHandUp = widget.conferenceManager.handUpMembers
+                  .contains(profile.userId);
 
               return ListTile(
                 leading: Portrait(
@@ -274,18 +310,25 @@ class _ConferenceParticipantListViewState
                 subtitle: Row(
                   children: [
                     if (profile.audioMuted)
-                      Icon(Icons.mic_off, color: context.colors.textSecondary, size: 14)
+                      Icon(Icons.mic_off,
+                          color: context.colors.textSecondary, size: 14)
                     else
-                      Icon(Icons.mic, color: context.colors.textSecondary, size: 14),
+                      Icon(Icons.mic,
+                          color: context.colors.textSecondary, size: 14),
                     const SizedBox(width: 4),
                     if (profile.videoMuted)
-                      Icon(Icons.videocam_off, color: context.colors.textSecondary, size: 14)
+                      Icon(Icons.videocam_off,
+                          color: context.colors.textSecondary, size: 14)
                     else
-                      Icon(Icons.videocam, color: context.colors.textSecondary, size: 14),
+                      Icon(Icons.videocam,
+                          color: context.colors.textSecondary, size: 14),
                     if (profile.audience)
                       Padding(
                         padding: EdgeInsets.only(left: 6),
-                        child: Text(l10n.conferenceAudience, style: TextStyle(color: context.colors.textSecondary, fontSize: 12)),
+                        child: Text(l10n.conferenceAudience,
+                            style: TextStyle(
+                                color: context.colors.textSecondary,
+                                fontSize: 12)),
                       ),
                   ],
                 ),
@@ -295,14 +338,18 @@ class _ConferenceParticipantListViewState
                     if (focusUserId == profile.userId)
                       Padding(
                         padding: EdgeInsets.only(right: 8),
-                        child: Icon(Icons.highlight, color: context.colors.success, size: 18),
+                        child: Icon(Icons.highlight,
+                            color: context.colors.success, size: 18),
                       ),
                     if (isHandUp)
                       Padding(
                         padding: EdgeInsets.only(right: 8),
-                        child: Icon(Icons.pan_tool, color: context.colors.success, size: 18),
+                        child: Icon(Icons.pan_tool,
+                            color: context.colors.success, size: 18),
                       ),
-                    if (!isSelf) Icon(Icons.more_vert, color: context.colors.textSecondary),
+                    if (!isSelf)
+                      Icon(Icons.more_vert,
+                          color: context.colors.textSecondary),
                   ],
                 ),
                 onTap: () => _showContextMenu(profile),
@@ -350,7 +397,8 @@ class _ConferenceParticipantListViewState
               children: [
                 if (_currentPanel != _PanelType.members)
                   IconButton(
-                    icon: Icon(Icons.arrow_back, color: context.colors.iconSecondary),
+                    icon: Icon(Icons.arrow_back,
+                        color: context.colors.iconSecondary),
                     onPressed: () =>
                         setState(() => _currentPanel = _PanelType.members),
                   ),
@@ -358,7 +406,8 @@ class _ConferenceParticipantListViewState
                   child: Text(
                     title,
                     style: AppText.base.copyWith(
-                        color: context.colors.textPrimary, fontWeight: FontWeight.w600),
+                        color: context.colors.textPrimary,
+                        fontWeight: FontWeight.w600),
                   ),
                 ),
                 IconButton(

@@ -42,7 +42,8 @@ class PcBackupServer {
   void Function(int count, String path)? onBackupComplete;
   void Function(String error)? onError;
 
-  final StreamController<void> _backupCompletedController = StreamController<void>.broadcast();
+  final StreamController<void> _backupCompletedController =
+      StreamController<void>.broadcast();
 
   /// Stream that fires whenever a mobile backup has been fully received.
   Stream<void> get backupCompleted => _backupCompletedController.stream;
@@ -87,7 +88,8 @@ class PcBackupServer {
           tryStartServer(_randomPort());
         } else {
           if (!completer.isCompleted) {
-            completer.completeError(Exception('Failed to start backup server after $maxRetries attempts'));
+            completer.completeError(Exception(
+                'Failed to start backup server after $maxRetries attempts'));
           }
         }
       }
@@ -104,7 +106,8 @@ class PcBackupServer {
         await _saveBackupFile(buffer);
         request.response.statusCode = 200;
         request.response.write('OK');
-      } else if (request.method == 'POST' && request.uri.path == '/backup_complete') {
+      } else if (request.method == 'POST' &&
+          request.uri.path == '/backup_complete') {
         final buffer = await _readRequestBody(request);
         if (buffer.length >= 4) {
           final byteData = ByteData.sublistView(buffer);
@@ -150,7 +153,8 @@ class PcBackupServer {
     offset += 4;
 
     // Read path
-    final relativePath = utf8.decode(buffer.sublist(offset, offset + pathLength));
+    final relativePath =
+        utf8.decode(buffer.sublist(offset, offset + pathLength));
     offset += pathLength;
 
     // Read file length (8 bytes LE)
@@ -247,7 +251,8 @@ class PcBackupServer {
           tryStartServer(_randomPort());
         } else {
           if (!completer.isCompleted) {
-            completer.completeError(Exception('Failed to start restore server after $maxRetries attempts'));
+            completer.completeError(Exception(
+                'Failed to start restore server after $maxRetries attempts'));
           }
         }
       }
@@ -264,7 +269,8 @@ class PcBackupServer {
         final jsonBytes = utf8.encode(jsonEncode(list));
         request.response.headers.contentType = ContentType.json;
         request.response.add(jsonBytes);
-      } else if (request.method == 'GET' && request.uri.path == '/restore_metadata') {
+      } else if (request.method == 'GET' &&
+          request.uri.path == '/restore_metadata') {
         final backupPath = request.uri.queryParameters['path'];
         if (backupPath == null || backupPath.isEmpty) {
           request.response.statusCode = 400;
@@ -281,7 +287,8 @@ class PcBackupServer {
             request.response.write('Metadata file not found');
           }
         }
-      } else if (request.method == 'GET' && request.uri.path == '/restore_file') {
+      } else if (request.method == 'GET' &&
+          request.uri.path == '/restore_file') {
         final filePath = request.uri.queryParameters['path'];
         if (filePath == null || filePath.isEmpty) {
           request.response.statusCode = 400;
@@ -369,8 +376,10 @@ class PcBackupServer {
     }
 
     backups.sort((a, b) {
-      final timeA = DateTime.tryParse(a['time'] ?? '')?.millisecondsSinceEpoch ?? 0;
-      final timeB = DateTime.tryParse(b['time'] ?? '')?.millisecondsSinceEpoch ?? 0;
+      final timeA =
+          DateTime.tryParse(a['time'] ?? '')?.millisecondsSinceEpoch ?? 0;
+      final timeB =
+          DateTime.tryParse(b['time'] ?? '')?.millisecondsSinceEpoch ?? 0;
       return timeB - timeA;
     });
 

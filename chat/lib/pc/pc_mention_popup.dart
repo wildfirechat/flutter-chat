@@ -27,7 +27,8 @@ import 'package:chat/theme/app_typography.dart';
 /// @ 会话状态(开启/查询串/结束)由 [MessageInputBarController] 维护,
 /// 本类只负责候选加载、过滤与浮层展示,通过 [handleKeyEvent] 消费导航按键。
 class PcMentionOverlay {
-  PcMentionOverlay({required this.inputBarController, required this.textFieldKey});
+  PcMentionOverlay(
+      {required this.inputBarController, required this.textFieldKey});
 
   final MessageInputBarController inputBarController;
 
@@ -78,7 +79,9 @@ class PcMentionOverlay {
     _scrollController.dispose();
   }
 
-  bool get _sessionActive => inputBarController.hasMentionSession && inputBarController.focusNode.hasFocus;
+  bool get _sessionActive =>
+      inputBarController.hasMentionSession &&
+      inputBarController.focusNode.hasFocus;
 
   void _sync() {
     if (!inputBarController.hasMentionSession) {
@@ -115,17 +118,26 @@ class PcMentionOverlay {
     bool withMentionAll = false;
 
     if (conversation.conversationType == ConversationType.Group) {
-      final List<GroupMember> members = await Imclient.getGroupMembers(conversation.target);
-      final GroupMember me = members.firstWhere((m) => m.memberId == Imclient.currentUserId, orElse: () => GroupMember());
-      withMentionAll = me.type == GroupMemberType.Owner || me.type == GroupMemberType.Manager;
+      final List<GroupMember> members =
+          await Imclient.getGroupMembers(conversation.target);
+      final GroupMember me = members.firstWhere(
+          (m) => m.memberId == Imclient.currentUserId,
+          orElse: () => GroupMember());
+      withMentionAll = me.type == GroupMemberType.Owner ||
+          me.type == GroupMemberType.Manager;
 
-      final List<String> memberIds = members.map((m) => m.memberId).where((id) => id != Imclient.currentUserId).toList();
+      final List<String> memberIds = members
+          .map((m) => m.memberId)
+          .where((id) => id != Imclient.currentUserId)
+          .toList();
       if (memberIds.isNotEmpty) {
-        users.addAll(await Imclient.getUserInfos(memberIds, groupId: conversation.target));
+        users.addAll(await Imclient.getUserInfos(memberIds,
+            groupId: conversation.target));
       }
       // 配置的 AI 机器人即使不在群里也可以 @(沿用原选人页逻辑)
       for (final String robotId in Config.AI_ROBOTS) {
-        if (robotId == Imclient.currentUserId || users.any((u) => u.userId == robotId)) {
+        if (robotId == Imclient.currentUserId ||
+            users.any((u) => u.userId == robotId)) {
           continue;
         }
         final UserInfo? robot = await Imclient.getUserInfo(robotId);
@@ -153,7 +165,8 @@ class PcMentionOverlay {
       }
     }
 
-    final List<_MentionCandidate> candidates = users.map(_MentionCandidate.fromUser).toList();
+    final List<_MentionCandidate> candidates =
+        users.map(_MentionCandidate.fromUser).toList();
     if (withMentionAll) {
       candidates.insert(0, _MentionCandidate.allMembers(_allMembersLabel));
     }
@@ -163,7 +176,9 @@ class PcMentionOverlay {
   void _applyFilter({required bool resetHighlight}) {
     final String query = inputBarController.mentionQuery;
     _lastQuery = query;
-    _filtered = query.isEmpty ? List.of(_candidates) : _candidates.where((c) => c.matches(query)).toList();
+    _filtered = query.isEmpty
+        ? List.of(_candidates)
+        : _candidates.where((c) => c.matches(query)).toList();
     if (_filtered.isEmpty) {
       _hide();
       return;
@@ -195,7 +210,9 @@ class PcMentionOverlay {
       _moveHighlight(-1);
       return KeyEventResult.handled;
     }
-    if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter || key == LogicalKeyboardKey.tab) {
+    if (key == LogicalKeyboardKey.enter ||
+        key == LogicalKeyboardKey.numpadEnter ||
+        key == LogicalKeyboardKey.tab) {
       if (event is KeyDownEvent) {
         _select(_filtered[_highlight]);
       }
@@ -245,9 +262,13 @@ class PcMentionOverlay {
   /// 反查 '@' 在屏幕上的位置。必须在 build 之外调用(这里是控制器回调里),
   /// 读到的是上一帧的排版:'@' 之后的键入只改查询串、不移动 '@',所以够用。
   void _updateAnchor() {
-    final RenderObject? overlayObject = _overlayState?.context.findRenderObject();
-    final RenderObject? fieldObject = textFieldKey.currentContext?.findRenderObject();
-    if (overlayObject is! RenderBox || fieldObject is! RenderBox || !fieldObject.hasSize) {
+    final RenderObject? overlayObject =
+        _overlayState?.context.findRenderObject();
+    final RenderObject? fieldObject =
+        textFieldKey.currentContext?.findRenderObject();
+    if (overlayObject is! RenderBox ||
+        fieldObject is! RenderBox ||
+        !fieldObject.hasSize) {
       return;
     }
     _overlaySize = overlayObject.size;
@@ -256,12 +277,15 @@ class PcMentionOverlay {
     final int index = inputBarController.mentionAtIndex;
     if (editable == null || !editable.hasSize || index < 0) {
       // 退回输入框左上角:位置不精确但浮层仍在输入框附近,不会飞到窗口角上
-      _anchor = overlayObject.globalToLocal(fieldObject.localToGlobal(Offset.zero));
+      _anchor =
+          overlayObject.globalToLocal(fieldObject.localToGlobal(Offset.zero));
       return;
     }
     // getLocalRectForCaret 已含输入框自身的滚动位移,localToGlobal 即得屏幕位置
-    final Rect caret = editable.getLocalRectForCaret(TextPosition(offset: index));
-    _anchor = overlayObject.globalToLocal(editable.localToGlobal(caret.topLeft));
+    final Rect caret =
+        editable.getLocalRectForCaret(TextPosition(offset: index));
+    _anchor =
+        overlayObject.globalToLocal(editable.localToGlobal(caret.topLeft));
   }
 
   static RenderEditable? _findRenderEditable(RenderObject root) {
@@ -286,16 +310,21 @@ class PcMentionOverlay {
       // 拿不到锚点(渲染树未就绪)就先不画,免得浮层跑到窗口角上
       return const SizedBox.shrink();
     }
-    final double listHeight = math.min(_filtered.length, _maxVisibleRows) * _rowHeight + 8;
+    final double listHeight =
+        math.min(_filtered.length, _maxVisibleRows) * _rowHeight + 8;
 
     // 水平居中对齐 '@',贴窗口边时整体推回窗口内(箭头仍留在 '@' 上方)
-    final double maxLeft = math.max(_windowMargin, _overlaySize.width - _panelWidth - _windowMargin);
-    final double left = (anchor.dx - _panelWidth / 2).clamp(_windowMargin, maxLeft).toDouble();
+    final double maxLeft = math.max(
+        _windowMargin, _overlaySize.width - _panelWidth - _windowMargin);
+    final double left =
+        (anchor.dx - _panelWidth / 2).clamp(_windowMargin, maxLeft).toDouble();
     // 箭头尖顶在 '@' 行上方,浮层整体再往上叠;顶部超出窗口时下压(极窄窗口才会发生)
-    final double top = math.max(_windowMargin, anchor.dy - _anchorGap - _arrowHeight - listHeight);
+    final double top = math.max(
+        _windowMargin, anchor.dy - _anchorGap - _arrowHeight - listHeight);
     // 浮层被推回窗口内后箭头相对面板的位置随之改变,但不能顶到面板圆角上
-    final double arrowCenter =
-        (anchor.dx - left).clamp(_arrowWidth / 2 + 6, _panelWidth - _arrowWidth / 2 - 6).toDouble();
+    final double arrowCenter = (anchor.dx - left)
+        .clamp(_arrowWidth / 2 + 6, _panelWidth - _arrowWidth / 2 - 6)
+        .toDouble();
 
     return Positioned(
       left: left,
@@ -365,18 +394,23 @@ class _MentionArrowPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_MentionArrowPainter oldDelegate) => oldDelegate.color != color;
+  bool shouldRepaint(_MentionArrowPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 /// @ 候选项:预计算显示名的拼音检索串,避免每次键入重复转换。
 class _MentionCandidate {
   _MentionCandidate._(this.user, this.display, this.isAllMembers)
-      : _searchKey = '$display\n${PinyinHelper.getPinyinE(display, separator: '')}\n${PinyinHelper.getShortPinyin(display)}'.toLowerCase();
+      : _searchKey =
+            '$display\n${PinyinHelper.getPinyinE(display, separator: '')}\n${PinyinHelper.getShortPinyin(display)}'
+                .toLowerCase();
 
-  factory _MentionCandidate.fromUser(UserInfo user) => _MentionCandidate._(user, MeshUserDisplay.getReadableName(user), false);
+  factory _MentionCandidate.fromUser(UserInfo user) =>
+      _MentionCandidate._(user, MeshUserDisplay.getReadableName(user), false);
 
   /// "@所有人" 伪候选:userId 固定 '@all',发送时转成 mentionedType 2
-  factory _MentionCandidate.allMembers(String label) => _MentionCandidate._(UserInfo('@all')..displayName = label, label, true);
+  factory _MentionCandidate.allMembers(String label) =>
+      _MentionCandidate._(UserInfo('@all')..displayName = label, label, true);
 
   final UserInfo user;
   final String display;
@@ -392,7 +426,11 @@ class _MentionRow extends StatelessWidget {
   final VoidCallback onHover;
   final VoidCallback onTap;
 
-  const _MentionRow({required this.candidate, required this.highlighted, required this.onHover, required this.onTap});
+  const _MentionRow(
+      {required this.candidate,
+      required this.highlighted,
+      required this.onHover,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -407,7 +445,9 @@ class _MentionRow extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: 6),
           padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
-            color: highlighted ? context.colors.cellHoverDesktop : Colors.transparent,
+            color: highlighted
+                ? context.colors.cellHoverDesktop
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
@@ -420,7 +460,8 @@ class _MentionRow extends StatelessWidget {
                     color: context.colors.accent.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Icon(Icons.campaign_outlined, size: 16, color: context.colors.accent),
+                  child: Icon(Icons.campaign_outlined,
+                      size: 16, color: context.colors.accent),
                 )
               else
                 Portrait(

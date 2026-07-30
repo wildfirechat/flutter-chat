@@ -32,7 +32,8 @@ class SearchPortalResultView extends StatefulWidget {
 
   /// 桌面端 Shell 注入:点击结果时回调(替代默认的全屏 push)。移动端不传,保持原有行为。
   final void Function(String userId)? onUserSelected;
-  final void Function(Conversation conversation, {int? focusMessageId})? onConversationSelected;
+  final void Function(Conversation conversation, {int? focusMessageId})?
+      onConversationSelected;
 
   final bool shrinkWrap;
 
@@ -66,11 +67,12 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
           var groupedSearchResults = vm.groupedSearchResult;
           groupedSearchResults.removeWhere((key, value) => value.isEmpty);
           // 排序
-          groupedSearchResults = Map.fromEntries(groupedSearchResults.entries.toList()
-            ..sort((a, b) {
-              // searchType 的自然顺序
-              return a.key.index.compareTo(b.key.index);
-            }));
+          groupedSearchResults =
+              Map.fromEntries(groupedSearchResults.entries.toList()
+                ..sort((a, b) {
+                  // searchType 的自然顺序
+                  return a.key.index.compareTo(b.key.index);
+                }));
 
           return groupedSearchResults.isEmpty
               ? Container(
@@ -83,35 +85,53 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                 )
               : GroupListView(
                   shrinkWrap: widget.shrinkWrap,
-                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: const EdgeInsets.all(0),
                   sectionsCount: groupedSearchResults.keys.toList().length,
                   countOfItemInSection: (int section) {
                     return groupedSearchResults.values.toList()[section].length;
                   },
                   itemBuilder: (BuildContext context, IndexPath index) {
-                    return switch (groupedSearchResults.keys.toList()[index.section]) {
-                      SearchType.User => _buildUserSearchResultItem(groupedSearchResults.values.toList()[index.section][index.index] as UserInfo),
-                      SearchType.Friend => _buildFriendSearchResultItem(groupedSearchResults.values.toList()[index.section][index.index] as UserInfo),
-                      SearchType.Group => _buildGroupSearchResultItem(groupedSearchResults.values.toList()[index.section][index.index] as GroupSearchInfo),
-                      SearchType.Channel => _buildChannelSearchResultItem(groupedSearchResults.values.toList()[index.section][index.index] as ChannelInfo),
+                    return switch (
+                        groupedSearchResults.keys.toList()[index.section]) {
+                      SearchType.User => _buildUserSearchResultItem(
+                          groupedSearchResults.values.toList()[index.section]
+                              [index.index] as UserInfo),
+                      SearchType.Friend => _buildFriendSearchResultItem(
+                          groupedSearchResults.values.toList()[index.section]
+                              [index.index] as UserInfo),
+                      SearchType.Group => _buildGroupSearchResultItem(
+                          groupedSearchResults.values.toList()[index.section]
+                              [index.index] as GroupSearchInfo),
+                      SearchType.Channel => _buildChannelSearchResultItem(
+                          groupedSearchResults.values.toList()[index.section]
+                              [index.index] as ChannelInfo),
                       SearchType.Conversation =>
-                        _buildConversationSearchResultItem(groupedSearchResults.values.toList()[index.section][index.index] as ConversationSearchInfo)
+                        _buildConversationSearchResultItem(
+                            groupedSearchResults.values.toList()[index.section]
+                                [index.index] as ConversationSearchInfo)
                     };
                   },
                   groupHeaderBuilder: (BuildContext context, int section) {
-                    var sectionTitle = switch (groupedSearchResults.keys.toList()[section]) {
+                    var sectionTitle =
+                        switch (groupedSearchResults.keys.toList()[section]) {
                       SearchType.User => AppLocalizations.of(context)!.user,
-                      SearchType.Friend => AppLocalizations.of(context)!.contact,
-                      SearchType.Conversation => AppLocalizations.of(context)!.chatHistory,
+                      SearchType.Friend =>
+                        AppLocalizations.of(context)!.contact,
+                      SearchType.Conversation =>
+                        AppLocalizations.of(context)!.chatHistory,
                       SearchType.Group => AppLocalizations.of(context)!.group,
-                      SearchType.Channel => AppLocalizations.of(context)!.channel
+                      SearchType.Channel =>
+                        AppLocalizations.of(context)!.channel
                     };
                     return Container(
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
                       child: Text(
                         sectionTitle,
-                        style: AppText.xs.copyWith(fontWeight: FontWeight.w600, color: context.colors.textSecondary),
+                        style: AppText.xs.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: context.colors.textSecondary),
                       ),
                     );
                   },
@@ -125,13 +145,16 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
 //                       indent: 16.0 + LayoutScale.watchScale(context, 36.0, cap: LayoutScale.iconCap) + 12.0,
 //                     );
 //                   },
-                  separatorBuilder: (context, index) => const SizedBox(height: 0),
-                  sectionSeparatorBuilder: (context, section) => section == groupedSearchResults.length - 1
-                      ? const SizedBox(height: 0)
-                      : Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                          child: const Divider(),
-                        ),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 0),
+                  sectionSeparatorBuilder: (context, section) =>
+                      section == groupedSearchResults.length - 1
+                          ? const SizedBox(height: 0)
+                          : Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 4),
+                              child: const Divider(),
+                            ),
                 );
         },
       ),
@@ -151,18 +174,23 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
 
   void _openConversation(Conversation conversation, {int? focusMessageId}) {
     if (widget.onConversationSelected != null) {
-      widget.onConversationSelected!(conversation, focusMessageId: focusMessageId);
+      widget.onConversationSelected!(conversation,
+          focusMessageId: focusMessageId);
       return;
     }
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ConversationScreen(conversation, toFocusMessageId: focusMessageId)),
+      MaterialPageRoute(
+          builder: (context) => ConversationScreen(conversation,
+              toFocusMessageId: focusMessageId)),
     );
   }
 
-  Widget _buildHighlightedText(String text, String query, TextStyle baseStyle, TextStyle highlightStyle) {
+  Widget _buildHighlightedText(String text, String query, TextStyle baseStyle,
+      TextStyle highlightStyle) {
     if (query.isEmpty) {
-      return Text(text, style: baseStyle, maxLines: 1, overflow: TextOverflow.ellipsis);
+      return Text(text,
+          style: baseStyle, maxLines: 1, overflow: TextOverflow.ellipsis);
     }
     final lowerText = text.toLowerCase();
     final lowerQuery = query.toLowerCase();
@@ -175,15 +203,19 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
       start = index + lowerQuery.length;
     }
     if (matches.isEmpty) {
-      return Text(text, style: baseStyle, maxLines: 1, overflow: TextOverflow.ellipsis);
+      return Text(text,
+          style: baseStyle, maxLines: 1, overflow: TextOverflow.ellipsis);
     }
     final spans = <TextSpan>[];
     int lastIndex = 0;
     for (final index in matches) {
       if (index > lastIndex) {
-        spans.add(TextSpan(text: text.substring(lastIndex, index), style: baseStyle));
+        spans.add(
+            TextSpan(text: text.substring(lastIndex, index), style: baseStyle));
       }
-      spans.add(TextSpan(text: text.substring(index, index + query.length), style: highlightStyle));
+      spans.add(TextSpan(
+          text: text.substring(index, index + query.length),
+          style: highlightStyle));
       lastIndex = index + query.length;
     }
     if (lastIndex < text.length) {
@@ -198,12 +230,16 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
 
   Widget _buildUserSearchResultItem(UserInfo userInfo) {
     return _SearchItem(
-      leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 36, height: 36, borderRadius: 4.0),
+      leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait,
+          Config.defaultUserPortrait,
+          width: 36, height: 36, borderRadius: 4.0),
       title: _buildHighlightedText(
         MeshUserDisplay.getReadableName(userInfo),
         widget.query,
-        AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary),
-        AppText.base.copyWith(fontWeight: FontWeight.bold, color: context.colors.accent),
+        AppText.base.copyWith(
+            fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+        AppText.base.copyWith(
+            fontWeight: FontWeight.bold, color: context.colors.accent),
       ),
       onTap: () => _openUser(userInfo.userId),
     );
@@ -211,12 +247,16 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
 
   Widget _buildFriendSearchResultItem(UserInfo userInfo) {
     return _SearchItem(
-      leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 36, height: 36, borderRadius: 4.0),
+      leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait,
+          Config.defaultUserPortrait,
+          width: 36, height: 36, borderRadius: 4.0),
       title: _buildHighlightedText(
         MeshUserDisplay.getReadableName(userInfo),
         widget.query,
-        AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary),
-        AppText.base.copyWith(fontWeight: FontWeight.bold, color: context.colors.accent),
+        AppText.base.copyWith(
+            fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+        AppText.base.copyWith(
+            fontWeight: FontWeight.bold, color: context.colors.accent),
       ),
       onTap: () => _openUser(userInfo.userId),
     );
@@ -228,65 +268,103 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
     }
     final groupName = info.groupInfo!.name ?? 'Group';
     return _SearchItem(
-      leading: Portrait(info.groupInfo!.portrait ?? Config.defaultGroupPortrait, Config.defaultGroupPortrait, width: 36, height: 36, borderRadius: 4.0),
+      leading: Portrait(info.groupInfo!.portrait ?? Config.defaultGroupPortrait,
+          Config.defaultGroupPortrait,
+          width: 36, height: 36, borderRadius: 4.0),
       title: _buildHighlightedText(
         groupName,
         widget.query,
-        AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary),
-        AppText.base.copyWith(fontWeight: FontWeight.bold, color: context.colors.accent),
+        AppText.base.copyWith(
+            fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+        AppText.base.copyWith(
+            fontWeight: FontWeight.bold, color: context.colors.accent),
       ),
-      subtitle: (info.marchType & 2 != 0 && info.marchedMemberNames != null && info.marchedMemberNames!.isNotEmpty)
+      subtitle: (info.marchType & 2 != 0 &&
+              info.marchedMemberNames != null &&
+              info.marchedMemberNames!.isNotEmpty)
           ? Text(
-              AppLocalizations.of(context)!.containsMatchedMembers(info.marchedMemberNames!.join(" ")),
+              AppLocalizations.of(context)!
+                  .containsMatchedMembers(info.marchedMemberNames!.join(" ")),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppText.xs.copyWith(color: context.colors.textSecondary),
             )
           : null,
-      onTap: () => _openConversation(Conversation(conversationType: ConversationType.Group, target: info.groupInfo!.target, line: 0)),
+      onTap: () => _openConversation(Conversation(
+          conversationType: ConversationType.Group,
+          target: info.groupInfo!.target,
+          line: 0)),
     );
   }
 
   Widget _buildChannelSearchResultItem(ChannelInfo info) {
     return _SearchItem(
-      leading: Portrait(info.portrait ?? Config.defaultChannelPortrait, Config.defaultChannelPortrait, width: 36, height: 36, borderRadius: 4.0),
+      leading: Portrait(info.portrait ?? Config.defaultChannelPortrait,
+          Config.defaultChannelPortrait,
+          width: 36, height: 36, borderRadius: 4.0),
       title: _buildHighlightedText(
         info.name ?? 'Channel',
         widget.query,
-        AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary),
-        AppText.base.copyWith(fontWeight: FontWeight.bold, color: context.colors.accent),
+        AppText.base.copyWith(
+            fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+        AppText.base.copyWith(
+            fontWeight: FontWeight.bold, color: context.colors.accent),
       ),
-      onTap: () => _openConversation(Conversation(conversationType: ConversationType.Channel, target: info.channelId, line: 0)),
+      onTap: () => _openConversation(Conversation(
+          conversationType: ConversationType.Channel,
+          target: info.channelId,
+          line: 0)),
     );
   }
 
   Widget _buildConversationSearchResultItem(ConversationSearchInfo info) {
     var conversation = info.conversation;
-    return Selector3<UserViewModel, GroupViewModel, ChannelViewModel, (UserInfo? targetUserInfo, GroupInfo? targetGroupInfo, ChannelInfo? channelInfo)>(
-        selector: (context, userViewModel, groupViewModel, channelViewModel) => (
-              conversation.conversationType == ConversationType.Single ? userViewModel.getUserInfo(conversation.target) : null,
-              conversation.conversationType == ConversationType.Group ? groupViewModel.getGroupInfo(conversation.target) : null,
-              conversation.conversationType == ConversationType.Channel ? channelViewModel.getChannelInfo(conversation.target) : null,
+    return Selector3<
+            UserViewModel,
+            GroupViewModel,
+            ChannelViewModel,
+            (
+              UserInfo? targetUserInfo,
+              GroupInfo? targetGroupInfo,
+              ChannelInfo? channelInfo
+            )>(
+        selector: (context, userViewModel, groupViewModel, channelViewModel) =>
+            (
+              conversation.conversationType == ConversationType.Single
+                  ? userViewModel.getUserInfo(conversation.target)
+                  : null,
+              conversation.conversationType == ConversationType.Group
+                  ? groupViewModel.getGroupInfo(conversation.target)
+                  : null,
+              conversation.conversationType == ConversationType.Channel
+                  ? channelViewModel.getChannelInfo(conversation.target)
+                  : null,
             ),
         builder: (context, rec, child) {
-          final titleText = Utilities.conversationTitle(context, conversation, rec.$1, rec.$2, rec.$3);
-          
+          final titleText = Utilities.conversationTitle(
+              context, conversation, rec.$1, rec.$2, rec.$3);
+
           Widget? subtitleWidget;
           if (info.marchedCount > 1) {
             subtitleWidget = Text(
-              AppLocalizations.of(context)!.matchedMessageCount(info.marchedCount.toString()),
+              AppLocalizations.of(context)!
+                  .matchedMessageCount(info.marchedCount.toString()),
               style: AppText.xs.copyWith(color: context.colors.textSecondary),
             );
           } else if (info.marchedMessage != null) {
             subtitleWidget = FutureBuilder<String>(
-                future: info.marchedMessage!.content.digest(info.marchedMessage!),
+                future:
+                    info.marchedMessage!.content.digest(info.marchedMessage!),
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                  if (snapshot.connectionState == ConnectionState.done &&
+                      snapshot.hasData) {
                     return _buildHighlightedText(
                       snapshot.data!,
                       widget.query,
                       AppText.xs.copyWith(color: context.colors.textSecondary),
-                      AppText.xs.copyWith(fontWeight: FontWeight.bold, color: context.colors.accent),
+                      AppText.xs.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: context.colors.accent),
                     );
                   } else {
                     return Container(
@@ -302,17 +380,22 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
           }
 
           return _SearchItem(
-            leading: _buildConversationPortraitImage(conversation, rec.$1, rec.$2, rec.$3),
+            leading: _buildConversationPortraitImage(
+                conversation, rec.$1, rec.$2, rec.$3),
             title: _buildHighlightedText(
               titleText,
               widget.query,
-              AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary),
-              AppText.base.copyWith(fontWeight: FontWeight.bold, color: context.colors.accent),
+              AppText.base.copyWith(
+                  fontWeight: FontWeight.w500,
+                  color: context.colors.textPrimary),
+              AppText.base.copyWith(
+                  fontWeight: FontWeight.bold, color: context.colors.accent),
             ),
             subtitle: subtitleWidget,
             onTap: () {
               if (info.marchedCount == 1) {
-                _openConversation(conversation, focusMessageId: info.marchedMessage?.messageId);
+                _openConversation(conversation,
+                    focusMessageId: info.marchedMessage?.messageId);
               } else if (info.marchedCount > 1) {
                 if (widget.onConversationSelected != null) {
                   widget.onConversationSelected!(conversation);
@@ -333,19 +416,25 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
         });
   }
 
-  Widget _buildConversationPortraitImage(Conversation conversation, UserInfo? userInfo, GroupInfo? groupInfo, ChannelInfo? channelInfo) {
+  Widget _buildConversationPortraitImage(Conversation conversation,
+      UserInfo? userInfo, GroupInfo? groupInfo, ChannelInfo? channelInfo) {
     String portrait = switch (conversation.conversationType) {
-      ConversationType.Single => userInfo?.portrait ?? Config.defaultUserPortrait,
-      ConversationType.Group => groupInfo?.portrait ?? Config.defaultGroupPortrait,
-      ConversationType.Channel => channelInfo?.portrait ?? Config.defaultChannelPortrait,
+      ConversationType.Single =>
+        userInfo?.portrait ?? Config.defaultUserPortrait,
+      ConversationType.Group =>
+        groupInfo?.portrait ?? Config.defaultGroupPortrait,
+      ConversationType.Channel =>
+        channelInfo?.portrait ?? Config.defaultChannelPortrait,
       _ => ''
     };
-    var defaultPortrait = conversation.conversationType == ConversationType.Single
-        ? Config.defaultUserPortrait
-        : conversation.conversationType == ConversationType.Group
-            ? Config.defaultGroupPortrait
-            : Config.defaultChannelPortrait;
-    return Portrait(portrait, defaultPortrait, width: 36, height: 36, borderRadius: 4.0);
+    var defaultPortrait =
+        conversation.conversationType == ConversationType.Single
+            ? Config.defaultUserPortrait
+            : conversation.conversationType == ConversationType.Group
+                ? Config.defaultGroupPortrait
+                : Config.defaultChannelPortrait;
+    return Portrait(portrait, defaultPortrait,
+        width: 36, height: 36, borderRadius: 4.0);
   }
 }
 

@@ -94,13 +94,18 @@ class Config {
   static String? MAIN_MEDIA_URL_PREFIX = null;
   static String? BACKUP_MEDIA_URL_PREFIX = null;
 
-  static const String defaultUserPortrait = 'assets/images/user_avatar_default.png';
-  static const String defaultGroupPortrait = 'assets/images/group_avatar_default.png';
-  static const String defaultChannelPortrait = 'assets/images/channel_avatar_default.png';
+  static const String defaultUserPortrait =
+      'assets/images/user_avatar_default.png';
+  static const String defaultGroupPortrait =
+      'assets/images/group_avatar_default.png';
+  static const String defaultChannelPortrait =
+      'assets/images/channel_avatar_default.png';
 
   //用户协议和隐私政策，上线前请替换成您自己的内容
-  static const String USER_AGREEMENT_URL = "https://example.com/user_agreement.html";
-  static const String PRIVACY_AGREEMENT_URL = "https://example.com/user_privacy.html";
+  static const String USER_AGREEMENT_URL =
+      "https://example.com/user_agreement.html";
+  static const String PRIVACY_AGREEMENT_URL =
+      "https://example.com/user_privacy.html";
 
   /// 根据主备地址选择服务地址。
   /// 当前 Flutter 版本暂不判断实际网络主备，未配置备选时返回主地址。
@@ -118,13 +123,23 @@ class Config {
     return main;
   }
 
-  static String get appServerAddress => selectServer(APP_Server_Address, APP_Server_Backup_Address) ?? APP_Server_Address;
-  static String? get orgServerAddress => selectServer(ORG_SERVER_ADDRESS, ORG_SERVER_BACKUP_ADDRESS);
-  static String? get collectionServerAddress => selectServer(COLLECTION_SERVER_ADDRESS, COLLECTION_SERVER_BACKUP_ADDRESS);
-  static String? get pollServerAddress => selectServer(POLL_SERVER_ADDRESS, POLL_SERVER_BACKUP_ADDRESS);
-  static String? get panServerAddress => selectServer(PAN_SERVER_ADDRESS, PAN_SERVER_BACKUP_ADDRESS);
-  static String? get archiveServerAddress => selectServer(ARCHIVE_SERVER_ADDRESS, ARCHIVE_SERVER_BACKUP_ADDRESS);
-  static String? get workspaceUrl => selectServer(WORKSPACE_URL, WORKSPACE_BACKUP_URL);
-  static String? get asrServerUrl => selectServer(ASR_SERVER, ASR_SERVER_BACKUP);
-  static String? get minutesUrl => selectServer(MINUTES_URL, MINUTES_BACKUP_URL);
+  static String get appServerAddress =>
+      selectServer(APP_Server_Address, APP_Server_Backup_Address) ??
+      APP_Server_Address;
+  static String? get orgServerAddress =>
+      selectServer(ORG_SERVER_ADDRESS, ORG_SERVER_BACKUP_ADDRESS);
+  static String? get collectionServerAddress =>
+      selectServer(COLLECTION_SERVER_ADDRESS, COLLECTION_SERVER_BACKUP_ADDRESS);
+  static String? get pollServerAddress =>
+      selectServer(POLL_SERVER_ADDRESS, POLL_SERVER_BACKUP_ADDRESS);
+  static String? get panServerAddress =>
+      selectServer(PAN_SERVER_ADDRESS, PAN_SERVER_BACKUP_ADDRESS);
+  static String? get archiveServerAddress =>
+      selectServer(ARCHIVE_SERVER_ADDRESS, ARCHIVE_SERVER_BACKUP_ADDRESS);
+  static String? get workspaceUrl =>
+      selectServer(WORKSPACE_URL, WORKSPACE_BACKUP_URL);
+  static String? get asrServerUrl =>
+      selectServer(ASR_SERVER, ASR_SERVER_BACKUP);
+  static String? get minutesUrl =>
+      selectServer(MINUTES_URL, MINUTES_BACKUP_URL);
 }

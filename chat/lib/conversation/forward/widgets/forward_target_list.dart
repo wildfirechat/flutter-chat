@@ -24,7 +24,10 @@ class ForwardTargetList extends StatelessWidget {
   ///
   /// 不搜 [SearchType.User]:那是服务端全网用户搜索,会把陌生人混进转发目标,
   /// 且好友本身也在用户表里,同一个人会在“好友”之外再出现一次。
-  static const List<SearchType> searchTypes = [SearchType.Friend, SearchType.Group];
+  static const List<SearchType> searchTypes = [
+    SearchType.Friend,
+    SearchType.Group
+  ];
 
   final ForwardTargetController controller;
   final SearchViewModel searchViewModel;
@@ -55,7 +58,8 @@ class ForwardTargetList extends StatelessWidget {
   }
 
   Widget _buildRecentConversations(BuildContext context) {
-    final conversationList = context.watch<ConversationListViewModel>().conversationList;
+    final conversationList =
+        context.watch<ConversationListViewModel>().conversationList;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -65,7 +69,10 @@ class ForwardTargetList extends StatelessWidget {
           child: ListView.separated(
             itemCount: conversationList.length,
             separatorBuilder: (context, __) => Divider(
-              indent: 16.0 + LayoutScale.watchScale(context, 48.0, cap: LayoutScale.iconCap) + 12.0,
+              indent: 16.0 +
+                  LayoutScale.watchScale(context, 48.0,
+                      cap: LayoutScale.iconCap) +
+                  12.0,
             ),
             itemBuilder: (context, i) {
               ConversationInfo info = conversationList[i];
@@ -83,21 +90,27 @@ class ForwardTargetList extends StatelessWidget {
 
     if (searchViewModel.searchedFriends.isNotEmpty) {
       results.add(_SectionHeader(l10n.friends));
-      results.addAll(searchViewModel.searchedFriends.map((u) => _buildUserTile(context, u)));
+      results.addAll(searchViewModel.searchedFriends
+          .map((u) => _buildUserTile(context, u)));
     }
     if (searchViewModel.searchedGroupInfos.isNotEmpty) {
       results.add(_SectionHeader(l10n.group));
-      results.addAll(List<GroupSearchInfo>.from(searchViewModel.searchedGroupInfos).map((g) => _buildGroupTile(context, g)));
+      results.addAll(
+          List<GroupSearchInfo>.from(searchViewModel.searchedGroupInfos)
+              .map((g) => _buildGroupTile(context, g)));
     }
 
     if (results.isEmpty) {
-      return Center(child: Text(l10n.noSearchResult, style: TextStyle(color: context.colors.textSecondary)));
+      return Center(
+          child: Text(l10n.noSearchResult,
+              style: TextStyle(color: context.colors.textSecondary)));
     }
     return ListView(children: results);
   }
 
   /// 最近聊天:标题/头像随 ViewModel 异步刷新。
-  Widget _buildLiveTile(Conversation conversation, {required bool showCheckbox}) {
+  Widget _buildLiveTile(Conversation conversation,
+      {required bool showCheckbox}) {
     return ConversationDisplay(
       conversation: conversation,
       builder: (context, info) => _ConversationTile(
@@ -118,7 +131,10 @@ class ForwardTargetList extends StatelessWidget {
 
   /// 搜索结果:标题/头像已随结果返回,不必再订阅 ViewModel,也不显示勾选框。
   Widget _buildUserTile(BuildContext context, UserInfo user) {
-    final conversation = Conversation(conversationType: ConversationType.Single, target: user.userId, line: 0);
+    final conversation = Conversation(
+        conversationType: ConversationType.Single,
+        target: user.userId,
+        line: 0);
     return _ConversationTile(
       title: Text.rich(
         MeshUserDisplay.getReadableNameSpan(
@@ -136,10 +152,14 @@ class ForwardTargetList extends StatelessWidget {
     );
   }
 
-  Widget _buildGroupTile(BuildContext context, GroupSearchInfo groupSearchInfo) {
+  Widget _buildGroupTile(
+      BuildContext context, GroupSearchInfo groupSearchInfo) {
     final groupInfo = groupSearchInfo.groupInfo;
     if (groupInfo == null) return const SizedBox.shrink();
-    final conversation = Conversation(conversationType: ConversationType.Group, target: groupInfo.target, line: 0);
+    final conversation = Conversation(
+        conversationType: ConversationType.Group,
+        target: groupInfo.target,
+        line: 0);
     return _ConversationTile(
       title: Text(
         groupInfo.name ?? 'Group',
@@ -175,7 +195,8 @@ class _ConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double rowHeight = LayoutScale.watchScale(context, 64.0, cap: LayoutScale.rowCap);
+    final double rowHeight =
+        LayoutScale.watchScale(context, 64.0, cap: LayoutScale.rowCap);
 
     return Material(
       color: Colors.transparent,
@@ -214,7 +235,8 @@ class _SectionHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       color: context.colors.sectionGap,
-      child: Text(title, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
+      child: Text(title,
+          style: AppText.xs.copyWith(color: context.colors.textSecondary)),
     );
   }
 }
@@ -226,8 +248,10 @@ class _CreateGroupEntry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double iconBoxSize = LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap);
-    final double iconSize = LayoutScale.watchScale(context, 22.0, cap: LayoutScale.iconCap);
+    final double iconBoxSize =
+        LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap);
+    final double iconSize =
+        LayoutScale.watchScale(context, 22.0, cap: LayoutScale.iconCap);
 
     return Material(
       color: Colors.transparent,
@@ -245,12 +269,15 @@ class _CreateGroupEntry extends StatelessWidget {
                   color: context.colors.accent,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Icon(Icons.group_add_rounded, color: Colors.white, size: iconSize),
+                child: Icon(Icons.group_add_rounded,
+                    color: Colors.white, size: iconSize),
               ),
               const SizedBox(width: 12),
               Text(
                 AppLocalizations.of(context)!.createGroupChat,
-                style: AppText.lg.copyWith(color: context.colors.textPrimary, decoration: TextDecoration.none),
+                style: AppText.lg.copyWith(
+                    color: context.colors.textPrimary,
+                    decoration: TextDecoration.none),
               ),
             ],
           ),

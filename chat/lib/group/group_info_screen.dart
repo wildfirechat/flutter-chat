@@ -72,7 +72,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Selector<GroupViewModel, GroupInfo?>(
-      selector: (context, groupViewModel) => groupViewModel.getGroupInfo(widget.groupId),
+      selector: (context, groupViewModel) =>
+          groupViewModel.getGroupInfo(widget.groupId),
       shouldRebuild: (prev, next) {
         if (prev != next) return true;
         if (prev == null || next == null) return true;
@@ -101,7 +102,9 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
   }
 
   Widget _buildBody(BuildContext context, GroupInfo groupInfo) {
-    String name = groupInfo.remark != null && groupInfo.remark!.isNotEmpty ? groupInfo.remark! : groupInfo.name ?? AppLocalizations.of(context)!.groupChat;
+    String name = groupInfo.remark != null && groupInfo.remark!.isNotEmpty
+        ? groupInfo.remark!
+        : groupInfo.name ?? AppLocalizations.of(context)!.groupChat;
 
     // 优先使用本地 GroupInfo 的 portrait，如果本地没有且未加入群组，则尝试使用远程 portrait
     String portrait = '';
@@ -119,7 +122,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 40.0, vertical: 24.0),
               // 滚动视图横向是松约束,Column 会收缩到最宽子项再被靠左放置,
               // 撑满宽度后其居中对齐才真正水平居中。
               child: SizedBox(
@@ -130,25 +134,42 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(6.0),
                       child: CachedNetworkImage(
-                        imageUrl: portrait.isNotEmpty ? portrait : Config.defaultGroupPortrait,
+                        imageUrl: portrait.isNotEmpty
+                            ? portrait
+                            : Config.defaultGroupPortrait,
                         width: 80,
                         height: 80,
-                        memCacheWidth: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
-                        memCacheHeight: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+                        memCacheWidth:
+                            (80 * MediaQuery.devicePixelRatioOf(context))
+                                .ceil(),
+                        memCacheHeight:
+                            (80 * MediaQuery.devicePixelRatioOf(context))
+                                .ceil(),
                         fit: BoxFit.cover,
-                        placeholder: (context, url) => Image.asset(Config.defaultGroupPortrait, width: 80, height: 80, color: Colors.grey),
-                        errorWidget: (context, url, error) => Image.asset(Config.defaultGroupPortrait, width: 80, height: 80, color: Colors.grey),
+                        placeholder: (context, url) => Image.asset(
+                            Config.defaultGroupPortrait,
+                            width: 80,
+                            height: 80,
+                            color: Colors.grey),
+                        errorWidget: (context, url, error) => Image.asset(
+                            Config.defaultGroupPortrait,
+                            width: 80,
+                            height: 80,
+                            color: Colors.grey),
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       name,
-                      style: AppText.xl.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+                      style: AppText.xl.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: context.colors.textPrimary),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       '${l10n.groupIdLabel}: ${widget.groupId}',
-                      style: AppText.sm.copyWith(color: context.colors.textSecondary),
+                      style: AppText.sm
+                          .copyWith(color: context.colors.textSecondary),
                     ),
                     const SizedBox(height: 40),
                     _buildActionButton(groupInfo),
@@ -170,14 +191,26 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
           ClipRRect(
               borderRadius: BorderRadius.circular(8.0),
               child: CachedNetworkImage(
-                imageUrl: portrait.isNotEmpty ? portrait : Config.defaultGroupPortrait,
+                imageUrl: portrait.isNotEmpty
+                    ? portrait
+                    : Config.defaultGroupPortrait,
                 width: 80,
                 height: 80,
-                memCacheWidth: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
-                memCacheHeight: (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+                memCacheWidth:
+                    (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
+                memCacheHeight:
+                    (80 * MediaQuery.devicePixelRatioOf(context)).ceil(),
                 fit: BoxFit.cover,
-                placeholder: (context, url) => Image.asset(Config.defaultGroupPortrait, width: 80, height: 80, color: Colors.grey),
-                errorWidget: (context, url, error) => Image.asset(Config.defaultGroupPortrait, width: 80, height: 80, color: Colors.grey),
+                placeholder: (context, url) => Image.asset(
+                    Config.defaultGroupPortrait,
+                    width: 80,
+                    height: 80,
+                    color: Colors.grey),
+                errorWidget: (context, url, error) => Image.asset(
+                    Config.defaultGroupPortrait,
+                    width: 80,
+                    height: 80,
+                    color: Colors.grey),
               )),
           const SizedBox(height: 16),
           Text(
@@ -217,7 +250,10 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
         style: isDesktopShell ? null : AppTheme.largeButtonStyle(),
         // 加载中按钮已禁用(灰底),spinner 用默认主色。
         child: _isLoading
-            ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2))
             : Text(buttonText),
       ),
     );
@@ -253,7 +289,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
               Navigator.pop(ctx);
               _removeFromContacts();
             },
-            child: Text(l10n.remove, style: TextStyle(color: context.colors.danger)),
+            child: Text(l10n.remove,
+                style: TextStyle(color: context.colors.danger)),
           ),
         ],
       ),
@@ -271,7 +308,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       closePage(context);
     }, (errorCode) {
       if (mounted) {
-        Fluttertoast.showToast(msg: "${AppLocalizations.of(context)!.failed}: $errorCode");
+        Fluttertoast.showToast(
+            msg: "${AppLocalizations.of(context)!.failed}: $errorCode");
       }
     });
   }
@@ -286,13 +324,19 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
 
   void _enterGroupChat() {
     if (isDesktopShell) {
-      openConversation(context, Conversation(conversationType: ConversationType.Group, target: widget.groupId));
+      openConversation(
+          context,
+          Conversation(
+              conversationType: ConversationType.Group,
+              target: widget.groupId));
     } else {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => ConversationScreen(
-            Conversation(conversationType: ConversationType.Group, target: widget.groupId),
+            Conversation(
+                conversationType: ConversationType.Group,
+                target: widget.groupId),
           ),
         ),
       );
@@ -352,7 +396,8 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: InputDecoration(hintText: l10n.pleaseInputJoinGroupReason),
+          decoration:
+              InputDecoration(hintText: l10n.pleaseInputJoinGroupReason),
         ),
         actions: [
           TextButton(

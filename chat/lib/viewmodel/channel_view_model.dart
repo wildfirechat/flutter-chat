@@ -6,10 +6,12 @@ import 'package:imclient/model/channel_info.dart';
 import 'package:chat/repo/channel_repo.dart';
 
 class ChannelViewModel extends ChangeNotifier {
-  late StreamSubscription<ChannelInfoUpdateEvent> _channelInfoUpdatedSubscription;
+  late StreamSubscription<ChannelInfoUpdateEvent>
+      _channelInfoUpdatedSubscription;
 
   ChannelViewModel() {
-    _channelInfoUpdatedSubscription = Imclient.IMEventBus.on<ChannelInfoUpdateEvent>().listen((event) {
+    _channelInfoUpdatedSubscription =
+        Imclient.IMEventBus.on<ChannelInfoUpdateEvent>().listen((event) {
       ChannelRepo.updateChannelInfos(event.channelInfos);
       notifyListeners();
     });

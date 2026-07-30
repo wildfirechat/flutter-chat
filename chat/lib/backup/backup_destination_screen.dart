@@ -20,7 +20,8 @@ class BackupDestinationScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _BackupDestinationScreenState createState() => _BackupDestinationScreenState();
+  _BackupDestinationScreenState createState() =>
+      _BackupDestinationScreenState();
 }
 
 class _BackupDestinationScreenState extends State<BackupDestinationScreen> {
@@ -105,7 +106,8 @@ class _BackupDestinationScreenState extends State<BackupDestinationScreen> {
                   opacity: isPCOnline ? 1.0 : 0.5,
                   child: _BackupOptionCard(
                     icon: Icons.computer,
-                    title: isPCOnline ? l10n.backupToPC : l10n.backupToPCOffline,
+                    title:
+                        isPCOnline ? l10n.backupToPC : l10n.backupToPCOffline,
                     subtitle: isPCOnline
                         ? l10n.backupToPCOnline
                         : l10n.backupToPCOfflineDesc,
@@ -147,7 +149,9 @@ class _BackupOptionCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: AppText.lg.copyWith(fontWeight: FontWeight.bold)),
+                    Text(title,
+                        style:
+                            AppText.lg.copyWith(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
                     Text(subtitle, style: const TextStyle(color: Colors.grey)),
                   ],
@@ -172,10 +176,12 @@ class _LocalBackupProgressDialog extends StatefulWidget {
   });
 
   @override
-  _LocalBackupProgressDialogState createState() => _LocalBackupProgressDialogState();
+  _LocalBackupProgressDialogState createState() =>
+      _LocalBackupProgressDialogState();
 }
 
-class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> {
+class _LocalBackupProgressDialogState
+    extends State<_LocalBackupProgressDialog> {
   AppLocalizations get l10n => AppLocalizations.of(context)!;
   String _status = "";
   double _progress = 0.0;
@@ -206,7 +212,8 @@ class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> 
       onProgress: (p) {
         if (mounted) {
           setState(() {
-            _status = "${localizeBackupPhase(l10n, p.phase)} (${p.current}/${p.total})";
+            _status =
+                "${localizeBackupPhase(l10n, p.phase)} (${p.current}/${p.total})";
             if (p.total > 0) {
               _progress = p.current / p.total;
             }
@@ -241,7 +248,8 @@ class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> 
         mainAxisSize: MainAxisSize.min,
         children: [
           if (_error != null)
-            Text(l10n.backupFailed(_error!), style: const TextStyle(color: Colors.red))
+            Text(l10n.backupFailed(_error!),
+                style: const TextStyle(color: Colors.red))
           else ...[
             Text(_status),
             const SizedBox(height: 10),
@@ -253,9 +261,9 @@ class _LocalBackupProgressDialogState extends State<_LocalBackupProgressDialog> 
         if (_finished)
           TextButton(
             onPressed: () {
-               Navigator.pop(context); // Close dialog
-               Navigator.pop(context); // Close Destination Screen
-               Navigator.pop(context); // Close Picker Screen (Back to List)
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Close Destination Screen
+              Navigator.pop(context); // Close Picker Screen (Back to List)
             },
             child: Text(l10n.done),
           )

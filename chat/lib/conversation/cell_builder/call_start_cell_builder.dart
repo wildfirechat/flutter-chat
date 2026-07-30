@@ -12,7 +12,8 @@ import 'call_start_display.dart';
 class CallStartCellBuilder extends PortraitCellBuilder {
   late CallStartMessageContent callStartMessageContent;
 
-  CallStartCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  CallStartCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     callStartMessageContent = model.message.content as CallStartMessageContent;
   }
 
@@ -26,11 +27,13 @@ class CallStartCellBuilder extends PortraitCellBuilder {
         status: content.status,
         connectTime: content.connectTime,
         endTime: content.endTime,
-        isSend: model.message.direction == MessageDirection.MessageDirection_Send,
+        isSend:
+            model.message.direction == MessageDirection.MessageDirection_Send,
         audioOnly: content.audioOnly,
       ),
       audioOnly: content.audioOnly,
-      onTap: () => startAvCall(context, model.message.conversation, audioOnly: content.audioOnly),
+      onTap: () => startAvCall(context, model.message.conversation,
+          audioOnly: content.audioOnly),
     );
   }
 }

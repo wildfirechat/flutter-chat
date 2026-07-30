@@ -1,4 +1,3 @@
-
 /*
  * 说明：1000以下为系统保留类型，自定义消息请使用1000以上数值。
  * 系统消息类型中100以下为常用基本类型消息。100-199位群组消息类型。400-499为VoIP消息类型.
@@ -203,7 +202,6 @@ enum MediaType {
 
 typedef MessageContentCreator = MessageContent Function();
 
-
 class MessageContentMeta {
   const MessageContentMeta(this.type, this.flag, this.creator);
 
@@ -236,9 +234,9 @@ abstract class MessageContent {
     return payload;
   }
 
-   Future<String> digest(Message message) async {
+  Future<String> digest(Message message) async {
     return '未知消息';
   }
 
- MessageContentMeta get meta ;
+  MessageContentMeta get meta;
 }

@@ -13,7 +13,6 @@ MessageContent SoundMessageContentCreator() {
 const soundContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_SOUND,
     MessageFlag.PERSIST_AND_COUNT, SoundMessageContentCreator);
 
-
 class SoundMessageContent extends MediaMessageContent {
   late int duration;
 
@@ -46,7 +45,7 @@ class SoundMessageContent extends MediaMessageContent {
   MessagePayload encode() {
     MessagePayload payload = super.encode();
     payload.searchableContent = '[语音]';
-    payload.content = json.encode({'duration':duration});
+    payload.content = json.encode({'duration': duration});
     return payload;
   }
 

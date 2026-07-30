@@ -21,7 +21,8 @@ class ReadReceiptDetailScreen extends StatefulWidget {
   final Message message;
   final bool asDialog;
 
-  const ReadReceiptDetailScreen(this.message, {super.key, this.asDialog = false});
+  const ReadReceiptDetailScreen(this.message,
+      {super.key, this.asDialog = false});
 
   static Future<void> show(BuildContext context, Message message) {
     if (isDesktopShell) {
@@ -39,10 +40,12 @@ class ReadReceiptDetailScreen extends StatefulWidget {
   }
 
   @override
-  State<ReadReceiptDetailScreen> createState() => _ReadReceiptDetailScreenState();
+  State<ReadReceiptDetailScreen> createState() =>
+      _ReadReceiptDetailScreenState();
 }
 
-class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with SingleTickerProviderStateMixin {
+class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<UserInfo> _readMembers = [];
   List<UserInfo> _unreadMembers = [];
@@ -56,7 +59,8 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
   }
 
   void _loadData() async {
-    if (widget.message.conversation.conversationType != ConversationType.Group) {
+    if (widget.message.conversation.conversationType !=
+        ConversationType.Group) {
       return;
     }
 
@@ -71,12 +75,14 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
 
     // Filter members who joined before the message was sent
     int messageTime = widget.message.serverTime;
-    List<GroupMember> validMembers = members.where((m) => m.createDt <= messageTime).toList();
-    
+    List<GroupMember> validMembers =
+        members.where((m) => m.createDt <= messageTime).toList();
+
     // Remove self
     validMembers.removeWhere((m) => m.memberId == Imclient.currentUserId);
 
-    Map<String, int> readMap = await Imclient.getConversationRead(widget.message.conversation);
+    Map<String, int> readMap =
+        await Imclient.getConversationRead(widget.message.conversation);
 
     List<String> readUserIds = [];
     List<String> unreadUserIds = [];
@@ -90,8 +96,10 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
       }
     }
 
-    List<UserInfo> readUserInfos = await Imclient.getUserInfos(readUserIds, groupId: groupId);
-    List<UserInfo> unreadUserInfos = await Imclient.getUserInfos(unreadUserIds, groupId: groupId);
+    List<UserInfo> readUserInfos =
+        await Imclient.getUserInfos(readUserIds, groupId: groupId);
+    List<UserInfo> unreadUserInfos =
+        await Imclient.getUserInfos(unreadUserIds, groupId: groupId);
 
     if (mounted) {
       setState(() {
@@ -122,8 +130,12 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
               unselectedLabelColor: colors.textSecondary,
               indicatorColor: colors.accent,
               tabs: [
-                Tab(text: AppLocalizations.of(context)!.readCount(_readMembers.length.toString())),
-                Tab(text: AppLocalizations.of(context)!.unreadCount(_unreadMembers.length.toString())),
+                Tab(
+                    text: AppLocalizations.of(context)!
+                        .readCount(_readMembers.length.toString())),
+                Tab(
+                    text: AppLocalizations.of(context)!
+                        .unreadCount(_unreadMembers.length.toString())),
               ],
             ),
             Expanded(
@@ -148,8 +160,12 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: AppLocalizations.of(context)!.readCount(_readMembers.length.toString())),
-            Tab(text: AppLocalizations.of(context)!.unreadCount(_unreadMembers.length.toString())),
+            Tab(
+                text: AppLocalizations.of(context)!
+                    .readCount(_readMembers.length.toString())),
+            Tab(
+                text: AppLocalizations.of(context)!
+                    .unreadCount(_unreadMembers.length.toString())),
           ],
         ),
       ),
@@ -169,7 +185,9 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
     return ListView.separated(
       itemCount: users.length,
       separatorBuilder: (context, __) => Divider(
-        indent: 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
+        indent: 16.0 +
+            LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) +
+            16.0,
       ),
       itemBuilder: (context, index) {
         var user = users[index];
@@ -184,7 +202,9 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen> with 
             },
             hoverColor: context.colors.hoverOverlay,
             child: Container(
-              height: LayoutScale.watchScale(context, isDesktopShell ? 52.0 : 56.0, cap: LayoutScale.rowCap),
+              height: LayoutScale.watchScale(
+                  context, isDesktopShell ? 52.0 : 56.0,
+                  cap: LayoutScale.rowCap),
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [

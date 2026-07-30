@@ -58,7 +58,8 @@ class FeedItemWidget extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                MomentAvatar(feed.sender, onTap: () => onTapUser?.call(feed.sender)),
+                MomentAvatar(feed.sender,
+                    onTap: () => onTapUser?.call(feed.sender)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -70,7 +71,9 @@ class FeedItemWidget extends StatelessWidget {
                         const SizedBox(height: 3),
                         Text(feed.text!,
                             style: const TextStyle(
-                                fontSize: 15, color: Colors.black87, height: 1.25)),
+                                fontSize: 15,
+                                color: Colors.black87,
+                                height: 1.25)),
                       ],
                       if ((feed.medias ?? []).isNotEmpty) ...[
                         const SizedBox(height: 6),

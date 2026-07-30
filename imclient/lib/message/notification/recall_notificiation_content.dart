@@ -9,7 +9,6 @@ import '../message.dart';
 import '../message_content.dart';
 import 'notification_message_content.dart';
 
-
 // ignore: non_constant_identifier_names
 MessageContent RecallNotificationContentCreator() {
   return RecallNotificationContent();
@@ -33,12 +32,12 @@ class RecallNotificationContent extends NotificationMessageContent {
   @override
   Future<void> decode(MessagePayload payload) async {
     super.decode(payload);
-    if(payload.content != null) {
+    if (payload.content != null) {
       operatorId = payload.content!;
     } else {
       operatorId = "";
     }
-    if(payload.binaryContent != null) {
+    if (payload.binaryContent != null) {
       messageUid = int.parse(utf8.decode(payload.binaryContent!));
     } else {
       messageUid = 0;
@@ -66,7 +65,8 @@ class RecallNotificationContent extends NotificationMessageContent {
   MessagePayload encode() {
     MessagePayload payload = super.encode();
     payload.content = operatorId;
-    payload.binaryContent = Uint8List.fromList(utf8.encode(messageUid.toString()));
+    payload.binaryContent =
+        Uint8List.fromList(utf8.encode(messageUid.toString()));
     return payload;
   }
 

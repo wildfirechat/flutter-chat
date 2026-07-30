@@ -39,7 +39,8 @@ class _PcFileRecordsListState extends State<PcFileRecordsList> {
     open();
   }
 
-  void _openList(String title, FileListType type, {Conversation? conversation, String? userId}) {
+  void _openList(String title, FileListType type,
+      {Conversation? conversation, String? userId}) {
     widget.onOpenFileList(FileListScreen(
       title: title,
       type: type,

@@ -1,4 +1,3 @@
-
 import '../model/message_payload.dart';
 import 'message_content.dart';
 

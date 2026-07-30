@@ -92,36 +92,37 @@ class _PCLoginScreenState extends State<PCLoginScreen> {
               title: Text(AppLocalizations.of(context)!.loginConfirm),
             ),
             body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.computer, size: 100, color: Colors.grey),
-            const SizedBox(height: 20),
-             Text(
-              AppLocalizations.of(context)!.pcLoginConfirmDesc,
-              style: AppText.lg,
-            ),
-            const SizedBox(height: 40),
-            if (_isLoading)
-              const CircularProgressIndicator()
-            else if (_canConfirm)
-              Column(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  FilledButton(
-                    onPressed: _confirmPCLogin,
-                    // 登录确认是整页唯一主行动,叠大档。
-                    style: AppTheme.largeButtonStyle(),
-                    child: Text(AppLocalizations.of(context)!.login),
+                  const Icon(Icons.computer, size: 100, color: Colors.grey),
+                  const SizedBox(height: 20),
+                  Text(
+                    AppLocalizations.of(context)!.pcLoginConfirmDesc,
+                    style: AppText.lg,
                   ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: _cancelPCLogin,
-                    child: Text(AppLocalizations.of(context)!.cancelLogin),
-                  ),
+                  const SizedBox(height: 40),
+                  if (_isLoading)
+                    const CircularProgressIndicator()
+                  else if (_canConfirm)
+                    Column(
+                      children: [
+                        FilledButton(
+                          onPressed: _confirmPCLogin,
+                          // 登录确认是整页唯一主行动,叠大档。
+                          style: AppTheme.largeButtonStyle(),
+                          child: Text(AppLocalizations.of(context)!.login),
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton(
+                          onPressed: _cancelPCLogin,
+                          child:
+                              Text(AppLocalizations.of(context)!.cancelLogin),
+                        ),
+                      ],
+                    ),
                 ],
               ),
-          ],
-        ),
             ),
           ),
         ),

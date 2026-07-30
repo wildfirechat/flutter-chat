@@ -159,7 +159,10 @@ class HomeTabBarState extends State<HomeTabBar> {
   }
 
   void _onTapSearchButton(BuildContext context) {
-    showSearch(context: context, delegate: SearchPortalDelegate(searchFieldHint: AppLocalizations.of(context)!.pleaseInput));
+    showSearch(
+        context: context,
+        delegate: SearchPortalDelegate(
+            searchFieldHint: AppLocalizations.of(context)!.pleaseInput));
   }
 
   /// 双击消息 tab：把第一个有未读的会话滚动到列表顶部
@@ -214,7 +217,9 @@ class HomeTabBarState extends State<HomeTabBar> {
               PickUserScreen(title: AppLocalizations.of(context)!.startChat,
                   (context, members) async {
                 if (members.isEmpty) {
-                  showToast(msg: AppLocalizations.of(context)!.pickFriendsToStartChat);
+                  showToast(
+                      msg:
+                          AppLocalizations.of(context)!.pickFriendsToStartChat);
                 } else if (members.length == 1) {
                   Conversation conversation = Conversation(
                       conversationType: ConversationType.Single,
@@ -225,7 +230,8 @@ class HomeTabBarState extends State<HomeTabBar> {
                         builder: (context) => ConversationScreen(conversation)),
                   );
                 } else {
-                  _showProcessingDialog(context, AppLocalizations.of(context)!.creatingGroup);
+                  _showProcessingDialog(
+                      context, AppLocalizations.of(context)!.creatingGroup);
 
                   List<UserInfo> userInfos =
                       await Imclient.getUserInfos(members);
@@ -235,7 +241,8 @@ class HomeTabBarState extends State<HomeTabBar> {
                   for (var user in userInfos) {
                     if (user.displayName != null) {
                       if ('$groupName,${user.displayName}'.length > 24) {
-                        groupName = AppLocalizations.of(context)!.groupNameTruncatedSuffix(groupName);
+                        groupName = AppLocalizations.of(context)!
+                            .groupNameTruncatedSuffix(groupName);
                         break;
                       } else {
                         groupName = '$groupName,${user.displayName}';
@@ -257,7 +264,9 @@ class HomeTabBarState extends State<HomeTabBar> {
                     );
                   }, (errorCode) {
                     _dismissProcessingDialog(context);
-                    showToast(msg: AppLocalizations.of(context)!.createGroupFail(errorCode));
+                    showToast(
+                        msg: AppLocalizations.of(context)!
+                            .createGroupFail(errorCode));
                   });
                 }
               })),
@@ -265,7 +274,11 @@ class HomeTabBarState extends State<HomeTabBar> {
   }
 
   void _addFriend() {
-    showSearch(context: context, delegate: SearchUserDelegate(searchFieldHint: AppLocalizations.of(context)!.searchUserFieldHint));
+    showSearch(
+        context: context,
+        delegate: SearchUserDelegate(
+            searchFieldHint:
+                AppLocalizations.of(context)!.searchUserFieldHint));
   }
 
   void _showPlusMenu(BuildContext context) {
@@ -393,7 +406,8 @@ class HomeTabBarState extends State<HomeTabBar> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => JoinConferenceView(initialConferenceId: value)));
+                  builder: (context) =>
+                      JoinConferenceView(initialConferenceId: value)));
         } else {
           showToast(msg: AppLocalizations.of(context)!.conferenceNotSupport);
         }
@@ -539,7 +553,8 @@ class _KeepAliveWrapper extends StatefulWidget {
   State<_KeepAliveWrapper> createState() => _KeepAliveWrapperState();
 }
 
-class _KeepAliveWrapperState extends State<_KeepAliveWrapper> with AutomaticKeepAliveClientMixin {
+class _KeepAliveWrapperState extends State<_KeepAliveWrapper>
+    with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
 

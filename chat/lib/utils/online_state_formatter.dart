@@ -24,7 +24,9 @@ class OnlineStateFormatter {
 
   /// 判断是否有设备在线（customState 不是隐身 4）。
   static bool isOnline(UserOnlineState? state) {
-    if (state == null || state.clientStates == null || state.clientStates!.isEmpty) {
+    if (state == null ||
+        state.clientStates == null ||
+        state.clientStates!.isEmpty) {
       return false;
     }
     if (state.customState != null && state.customState!.state == 4) {
@@ -37,7 +39,11 @@ class OnlineStateFormatter {
   static bool _hasMobileSession(UserOnlineState? state) {
     if (state?.clientStates == null) return false;
     return state!.clientStates!.any(
-      (cs) => (cs.platform == _OnlinePlatform.iOS || cs.platform == _OnlinePlatform.android || cs.platform == _OnlinePlatform.harmony) && cs.state == 1,
+      (cs) =>
+          (cs.platform == _OnlinePlatform.iOS ||
+              cs.platform == _OnlinePlatform.android ||
+              cs.platform == _OnlinePlatform.harmony) &&
+          cs.state == 1,
     );
   }
 
@@ -46,7 +52,9 @@ class OnlineStateFormatter {
     if (state?.clientStates == null) return 0;
     var lastSeen = 0;
     for (final cs in state!.clientStates!) {
-      if ((cs.platform == _OnlinePlatform.iOS || cs.platform == _OnlinePlatform.android || cs.platform == _OnlinePlatform.harmony) &&
+      if ((cs.platform == _OnlinePlatform.iOS ||
+              cs.platform == _OnlinePlatform.android ||
+              cs.platform == _OnlinePlatform.harmony) &&
           cs.state == 1 &&
           cs.lastSeen > lastSeen) {
         lastSeen = cs.lastSeen;
@@ -56,8 +64,10 @@ class OnlineStateFormatter {
   }
 
   /// 返回会话标题应追加的在线状态文本，null 表示不需要追加。
-  static String? conversationStatusText(UserOnlineState? state, AppLocalizations l10n) {
-    if (state?.clientStates == null || state!.clientStates!.isEmpty) return null;
+  static String? conversationStatusText(
+      UserOnlineState? state, AppLocalizations l10n) {
+    if (state?.clientStates == null || state!.clientStates!.isEmpty)
+      return null;
     if (state.customState != null && state.customState!.state == 4) return null;
 
     var pcState = -1;
@@ -68,10 +78,14 @@ class OnlineStateFormatter {
     var hasOnline = false;
 
     for (final cs in state.clientStates!) {
-      if (cs.platform >= _OnlinePlatform.unset && cs.platform <= _OnlinePlatform.harmonyPC && cs.state == 0) {
+      if (cs.platform >= _OnlinePlatform.unset &&
+          cs.platform <= _OnlinePlatform.harmonyPC &&
+          cs.state == 0) {
         hasOnline = true;
       }
-      if (cs.platform == _OnlinePlatform.iOS || cs.platform == _OnlinePlatform.android || cs.platform == _OnlinePlatform.harmony) {
+      if (cs.platform == _OnlinePlatform.iOS ||
+          cs.platform == _OnlinePlatform.android ||
+          cs.platform == _OnlinePlatform.harmony) {
         mobileState = cs.state;
       } else if (cs.platform == _OnlinePlatform.windows ||
           cs.platform == _OnlinePlatform.osx ||
@@ -110,8 +124,10 @@ class OnlineStateFormatter {
   }
 
   /// 联系人列表中显示的在线/最近在线文本。
-  static String? contactStatusText(UserOnlineState? state, AppLocalizations l10n) {
-    if (state?.clientStates == null || state!.clientStates!.isEmpty) return null;
+  static String? contactStatusText(
+      UserOnlineState? state, AppLocalizations l10n) {
+    if (state?.clientStates == null || state!.clientStates!.isEmpty)
+      return null;
     if (state.customState != null && state.customState!.state == 4) return null;
 
     final online = isOnline(state);
@@ -121,8 +137,10 @@ class OnlineStateFormatter {
 
   /// 是否应该在联系人列表显示在线指示器（绿点）。
   static bool showIndicator(UserOnlineState? state) {
-    if (state?.clientStates == null || state!.clientStates!.isEmpty) return false;
-    if (state.customState != null && state.customState!.state == 4) return false;
+    if (state?.clientStates == null || state!.clientStates!.isEmpty)
+      return false;
+    if (state.customState != null && state.customState!.state == 4)
+      return false;
     return isOnline(state) || _hasMobileSession(state);
   }
 

@@ -95,7 +95,10 @@ class FileRecordsScreen extends StatelessWidget {
                   (context, users) {
                     if (users.isNotEmpty) {
                       var userId = users[0];
-                      var conversation = Conversation(conversationType: ConversationType.Single, target: userId, line: 0);
+                      var conversation = Conversation(
+                          conversationType: ConversationType.Single,
+                          target: userId,
+                          line: 0);
                       pushReplacementPage(
                         context,
                         FileListScreen(
@@ -255,7 +258,8 @@ class FileListWidget extends StatefulWidget {
   State<FileListWidget> createState() => _FileListWidgetState();
 }
 
-class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAliveClientMixin {
+class _FileListWidgetState extends State<FileListWidget>
+    with AutomaticKeepAliveClientMixin {
   List<FileRecord> _files = [];
   bool _isLoading = false;
   bool _hasMore = true;
@@ -322,9 +326,11 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
 
     if (widget.type == FileListType.my) {
       if (widget.keyword != null && widget.keyword!.isNotEmpty) {
-        Imclient.searchMyFiles(widget.keyword!, _beforeMessageUid, FileRecordOrder.TIME_DESC, 20, onSuccess, onError);
+        Imclient.searchMyFiles(widget.keyword!, _beforeMessageUid,
+            FileRecordOrder.TIME_DESC, 20, onSuccess, onError);
       } else {
-        Imclient.getMyFiles(_beforeMessageUid, FileRecordOrder.TIME_DESC, 20, onSuccess, onError);
+        Imclient.getMyFiles(_beforeMessageUid, FileRecordOrder.TIME_DESC, 20,
+            onSuccess, onError);
       }
     } else {
       if (widget.keyword != null && widget.keyword!.isNotEmpty) {
@@ -421,9 +427,11 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
     );
   }
 
-  void _sendForwardMessages(BuildContext context, List<Conversation> targets, List<Message> messages, String? comment) {
+  void _sendForwardMessages(BuildContext context, List<Conversation> targets,
+      List<Message> messages, String? comment) {
     final l10n = AppLocalizations.of(context)!;
-    final total = targets.length * messages.length + (comment != null && comment.isNotEmpty ? targets.length : 0);
+    final total = targets.length * messages.length +
+        (comment != null && comment.isNotEmpty ? targets.length : 0);
     int successCount = 0;
     int failCount = 0;
 
@@ -432,7 +440,9 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
         if (failCount == 0) {
           Fluttertoast.showToast(msg: '${l10n.forward}${l10n.success}');
         } else {
-          Fluttertoast.showToast(msg: '${l10n.send}${l10n.success}: $successCount, ${l10n.setFail}$failCount');
+          Fluttertoast.showToast(
+              msg:
+                  '${l10n.send}${l10n.success}: $successCount, ${l10n.setFail}$failCount');
         }
       }
     }
@@ -494,9 +504,11 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
         (authorizedUrl) async {
           try {
             final client = HttpClient();
-            final request = await client.getUrl(Uri.parse(MediaUrlRedirector.redirect(authorizedUrl)));
+            final request = await client
+                .getUrl(Uri.parse(MediaUrlRedirector.redirect(authorizedUrl)));
             final response = await request.close();
-            final bytes = await response.fold<List<int>>([], (prev, element) => prev..addAll(element));
+            final bytes = await response
+                .fold<List<int>>([], (prev, element) => prev..addAll(element));
             await File(outputFile).writeAsBytes(bytes);
             Fluttertoast.showToast(msg: l10n.saveSuccess);
           } catch (e) {
@@ -538,12 +550,14 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
           setState(() {
             _files.removeWhere((f) => f.messageUid == file.messageUid);
           });
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.fileRecordDeleted);
+          Fluttertoast.showToast(
+              msg: AppLocalizations.of(context)!.fileRecordDeleted);
         }
       },
       (errorCode) {
         if (mounted) {
-          Fluttertoast.showToast(msg: AppLocalizations.of(context)!.deleteFileRecordFailed);
+          Fluttertoast.showToast(
+              msg: AppLocalizations.of(context)!.deleteFileRecordFailed);
         }
       },
     );
@@ -577,7 +591,8 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
             onNotification: (ScrollNotification scrollInfo) {
               if (!_isLoading &&
                   _hasMore &&
-                  scrollInfo.metrics.pixels == scrollInfo.metrics.maxScrollExtent) {
+                  scrollInfo.metrics.pixels ==
+                      scrollInfo.metrics.maxScrollExtent) {
                 _loadFiles();
               }
               return false;
@@ -610,11 +625,13 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
                   ),
                   subtitle: Text(
                     subtitleParts.join('  '),
-                    style: AppText.xs.copyWith(color: context.colors.textSecondary),
+                    style: AppText.xs
+                        .copyWith(color: context.colors.textSecondary),
                   ),
                   trailing: _canDelete(file)
                       ? IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          icon: const Icon(Icons.delete_outline,
+                              color: Colors.red),
                           onPressed: () => _deleteFile(file),
                         )
                       : null,
@@ -628,5 +645,3 @@ class _FileListWidgetState extends State<FileListWidget> with AutomaticKeepAlive
     );
   }
 }
-
-

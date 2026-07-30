@@ -18,8 +18,7 @@ class ProxyCompleter {
     void Function(
       void Function(String value) onSuccess,
       void Function(int errorCode) onFailure,
-    )
-        invoke,
+    ) invoke,
   ) {
     final completer = Completer<dynamic>();
     invoke(
@@ -37,8 +36,7 @@ class ProxyCompleter {
     void Function(
       void Function(List<FileRecord> files) onSuccess,
       void Function(int errorCode) onFailure,
-    )
-        invoke,
+    ) invoke,
     Map<String, dynamic> Function(FileRecord record) encodeRecord,
   ) {
     final completer = Completer<dynamic>();
@@ -58,8 +56,7 @@ class ProxyCompleter {
     void Function(
       void Function() onSuccess,
       void Function(int errorCode) onFailure,
-    )
-        invoke,
+    ) invoke,
   ) {
     final completer = Completer<dynamic>();
     invoke(

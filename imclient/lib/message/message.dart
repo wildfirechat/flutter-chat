@@ -1,4 +1,3 @@
-
 import '../model/conversation.dart';
 import 'message_content.dart';
 

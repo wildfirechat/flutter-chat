@@ -42,10 +42,15 @@ class ChannelMenuWidget extends StatelessWidget {
       child: Row(
         children: [
           for (int i = 0; i < menus.length; i++)
-            Expanded(child: _MenuItem(menu: menus[i], isLast: i == menus.length - 1, onSelected: (m) => _handleMenuSelected(context, m))),
+            Expanded(
+                child: _MenuItem(
+                    menu: menus[i],
+                    isLast: i == menus.length - 1,
+                    onSelected: (m) => _handleMenuSelected(context, m))),
           if (onToggleInput != null)
             IconButton(
-              icon: Icon(Icons.keyboard_alt_outlined, size: 22, color: context.colors.iconSecondary),
+              icon: Icon(Icons.keyboard_alt_outlined,
+                  size: 22, color: context.colors.iconSecondary),
               tooltip: AppLocalizations.of(context)!.switchToTextInput,
               onPressed: onToggleInput,
             ),
@@ -84,7 +89,8 @@ class _MenuItem extends StatelessWidget {
   final bool isLast;
   final ValueChanged<ChannelMenu> onSelected;
 
-  const _MenuItem({required this.menu, required this.isLast, required this.onSelected});
+  const _MenuItem(
+      {required this.menu, required this.isLast, required this.onSelected});
 
   /// 子菜单项高度,同时用于计算向上弹出的偏移量
   static const double _subMenuItemHeight = 40;
@@ -96,7 +102,9 @@ class _MenuItem extends StatelessWidget {
     final label = Container(
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        border: isLast ? null : Border(right: BorderSide(color: context.colors.hairline)),
+        border: isLast
+            ? null
+            : Border(right: BorderSide(color: context.colors.hairline)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 6),
       child: Row(

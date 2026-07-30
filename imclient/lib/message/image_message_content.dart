@@ -15,7 +15,8 @@ MessageContent ImageMessageContentCreator() {
   return ImageMessageContent();
 }
 
-const imageContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_IMAGE, MessageFlag.PERSIST_AND_COUNT, ImageMessageContentCreator);
+const imageContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_IMAGE,
+    MessageFlag.PERSIST_AND_COUNT, ImageMessageContentCreator);
 
 // 读取图片文件，解码并生成缩略图。
 // 该方法为顶层函数，可通过 compute 放到后台 isolate 执行，避免阻塞主 isolate。
@@ -46,10 +47,9 @@ Map<String, dynamic> _decodeImageAndGenThumbnail(String localPath) {
       Size size = Tools.getImageSizeByOrgSizeToWeChat(width, height);
 
       img.Image thumbnailImg = img.copyResize(originalImage,
-        width: size.width.toInt(),
-        height: size.height.toInt(),
-        interpolation: img.Interpolation.linear
-      );
+          width: size.width.toInt(),
+          height: size.height.toInt(),
+          interpolation: img.Interpolation.linear);
       thumbnail = img.encodeJpg(thumbnailImg, quality: 35);
     } catch (e) {
       // 缩略图生成失败
@@ -91,7 +91,8 @@ class ImageMessageContent extends MediaMessageContent {
     if (localPath == null || localPath!.isEmpty || width != 0 || height != 0) {
       return;
     }
-    Map<String, dynamic> result = await compute(_decodeImageAndGenThumbnail, localPath!);
+    Map<String, dynamic> result =
+        await compute(_decodeImageAndGenThumbnail, localPath!);
     width = result['w'];
     height = result['h'];
     if (thumbnail == null && width > 0 && height > 0) {
@@ -107,7 +108,10 @@ class ImageMessageContent extends MediaMessageContent {
     // 从 localPath 读取图片，解析宽和高。
     // 正常发送流程已在 prepareEncode() 中通过后台 isolate 完成预处理，
     // 此处仅作为未经过发送流程时的兜底逻辑
-    if (localPath != null && localPath!.isNotEmpty && width == 0 && height == 0) {
+    if (localPath != null &&
+        localPath!.isNotEmpty &&
+        width == 0 &&
+        height == 0) {
       Map<String, dynamic> result = _decodeImageAndGenThumbnail(localPath!);
       width = result['w'];
       height = result['h'];

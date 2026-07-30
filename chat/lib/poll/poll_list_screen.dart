@@ -89,7 +89,8 @@ class _PollListScreenState extends State<PollListScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(_l10n.delete, style: TextStyle(color: dialogContext.colors.danger)),
+            child: Text(_l10n.delete,
+                style: TextStyle(color: dialogContext.colors.danger)),
           ),
         ],
       ),
@@ -109,7 +110,8 @@ class _PollListScreenState extends State<PollListScreen> {
   }
 
   void _openDetail(Poll poll) {
-    PollDetailScreen.showFromList(context, poll.pollId).then((_) => _loadPolls(showSpinner: false));
+    PollDetailScreen.showFromList(context, poll.pollId)
+        .then((_) => _loadPolls(showSpinner: false));
   }
 
   @override
@@ -177,7 +179,8 @@ class _PollListScreenState extends State<PollListScreen> {
 
     // 桌面端的删除入口在卡片内(hover 显形),不再包一层左滑
     if (isDesktopShell || !poll.isCreator) {
-      return Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: card);
+      return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12), child: card);
     }
 
     return Padding(
@@ -226,7 +229,8 @@ class _PollListScreenState extends State<PollListScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
+      decoration:
+          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
       child: Text(label, style: AppText.xxs.copyWith(color: fg)),
     );
   }
@@ -271,7 +275,9 @@ class _PollCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       poll.title,
-                      style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: colors.textPrimary),
+                      style: AppText.base.copyWith(
+                          fontWeight: FontWeight.w500,
+                          color: colors.textPrimary),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -288,7 +294,9 @@ class _PollCard extends StatelessWidget {
                           child: Icon(
                             Icons.delete_outline,
                             size: 18,
-                            color: deleteHovered ? colors.danger : colors.textTertiary,
+                            color: deleteHovered
+                                ? colors.danger
+                                : colors.textTertiary,
                           ),
                         ),
                       ),
@@ -309,14 +317,16 @@ class _PollCard extends StatelessWidget {
               const SizedBox(height: 10),
               Row(
                 children: [
-                  Icon(Icons.people_outline, size: 14, color: colors.textTertiary),
+                  Icon(Icons.people_outline,
+                      size: 14, color: colors.textTertiary),
                   const SizedBox(width: 4),
                   Text(
                     '${poll.voterCount}${l10n.pollPeopleCount}',
                     style: AppText.xs.copyWith(color: colors.textTertiary),
                   ),
                   const SizedBox(width: 14),
-                  Icon(Icons.how_to_vote_outlined, size: 14, color: colors.textTertiary),
+                  Icon(Icons.how_to_vote_outlined,
+                      size: 14, color: colors.textTertiary),
                   const SizedBox(width: 4),
                   Text(
                     '${poll.totalVotes}${l10n.pollVotes}',
@@ -326,7 +336,10 @@ class _PollCard extends StatelessWidget {
                   if (remainingText != null && remainingText!.isNotEmpty)
                     Text(
                       remainingText!,
-                      style: AppText.xs.copyWith(color: poll.isEnded ? colors.textTertiary : colors.warning),
+                      style: AppText.xs.copyWith(
+                          color: poll.isEnded
+                              ? colors.textTertiary
+                              : colors.warning),
                     ),
                 ],
               ),

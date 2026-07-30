@@ -401,8 +401,8 @@ class _SlideVerifyDialogState extends State<SlideVerifyDialog>
                     if (_isLoading || _isVerifying) return;
 
                     final delta = details.globalPosition.dx - _dragStartX;
-                    final newPosition =
-                        (_sliderStartPosition + delta).clamp(0.0, _maxSliderPosition);
+                    final newPosition = (_sliderStartPosition + delta)
+                        .clamp(0.0, _maxSliderPosition);
 
                     setState(() {
                       _sliderPosition = newPosition;

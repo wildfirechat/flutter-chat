@@ -52,7 +52,13 @@ class SearchViewModel extends ChangeNotifier {
   }
 
   search(String keyword,
-      {List<SearchType> searchTypes = const [SearchType.User, SearchType.Friend, SearchType.Channel, SearchType.Group, SearchType.Conversation]}) async {
+      {List<SearchType> searchTypes = const [
+        SearchType.User,
+        SearchType.Friend,
+        SearchType.Channel,
+        SearchType.Group,
+        SearchType.Conversation
+      ]}) async {
     if (keyword == _keyword) {
       return;
     }
@@ -74,10 +80,13 @@ class SearchViewModel extends ChangeNotifier {
     }
   }
 
-  searchUser(String keyword, {SearchUserType searchType = SearchUserType.SearchUserType_General, int page = 0}) async {
+  searchUser(String keyword,
+      {SearchUserType searchType = SearchUserType.SearchUserType_General,
+      int page = 0}) async {
     _keyword = keyword;
     Completer<List<UserInfo>> completer = Completer();
-    Imclient.searchUser(keyword, searchType.index, page, (List<UserInfo>? userInfos) {
+    Imclient.searchUser(keyword, searchType.index, page,
+        (List<UserInfo>? userInfos) {
       if (keyword == _keyword) {
         _searchedUsers = userInfos ?? [];
         _groupedSearchResult[SearchType.User] = _searchedUsers;
@@ -107,7 +116,13 @@ class SearchViewModel extends ChangeNotifier {
   }
 
   searchConversation(String keyword) async {
-    _searchedConversationInfos = await Imclient.searchConversation(keyword, [ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+    _searchedConversationInfos = await Imclient.searchConversation(keyword, [
+      ConversationType.Single,
+      ConversationType.Group,
+      ConversationType.Channel
+    ], [
+      0
+    ]);
     _groupedSearchResult[SearchType.Conversation] = _searchedConversationInfos;
     notifyListeners();
   }

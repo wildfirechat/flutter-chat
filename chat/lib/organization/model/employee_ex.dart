@@ -15,9 +15,8 @@ class EmployeeEx {
   factory EmployeeEx.fromJson(Map<String, dynamic> json) {
     return EmployeeEx(
       employeeId: json['employeeId'] as String?,
-      employee: json['employee'] != null
-          ? Employee.fromJson(json['employee'])
-          : null,
+      employee:
+          json['employee'] != null ? Employee.fromJson(json['employee']) : null,
       relationships: json['relationships'] != null
           ? (json['relationships'] as List)
               .map((i) => OrganizationRelationship.fromJson(i))

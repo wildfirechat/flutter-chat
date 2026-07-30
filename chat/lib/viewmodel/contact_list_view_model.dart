@@ -15,24 +15,31 @@ class ContactListViewModel extends ChangeNotifier {
   int _unreadFriendRequestCount = 0;
   Timer? _debounceTimer;
 
-  late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
+  late StreamSubscription<ConnectionStatusChangedEvent>
+      _connectionStatusSubscription;
   late StreamSubscription<FriendUpdateEvent> _friendUpdatedSubscription;
-  late StreamSubscription<FriendRequestUpdateEvent> _friendRequestUpdatedSubscription;
+  late StreamSubscription<FriendRequestUpdateEvent>
+      _friendRequestUpdatedSubscription;
   late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
-  late StreamSubscription<ClearFriendRequestUnreadEvent> _clearFriendRequestSubscription;
+  late StreamSubscription<ClearFriendRequestUnreadEvent>
+      _clearFriendRequestSubscription;
 
   // TODO 星标联系人
-  late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
+  late StreamSubscription<UserSettingUpdatedEvent>
+      _userSettingUpdatedSubscription;
 
   ContactListViewModel() {
-    _friendUpdatedSubscription = Imclient.IMEventBus.on<FriendUpdateEvent>().listen((event) {
+    _friendUpdatedSubscription =
+        Imclient.IMEventBus.on<FriendUpdateEvent>().listen((event) {
       _loadContactList(false);
       notifyListeners();
     });
-    _friendRequestUpdatedSubscription = Imclient.IMEventBus.on<FriendRequestUpdateEvent>().listen((event) {
+    _friendRequestUpdatedSubscription =
+        Imclient.IMEventBus.on<FriendRequestUpdateEvent>().listen((event) {
       _loadFriendRequestListAndNotify();
     });
-    _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
+    _userInfoUpdatedSubscription =
+        Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
       debugPrint('userInfo updated to load contactViewModel');
       // UserInfoUpdatedEvent 常批量触发，防抖合并为一次全量加载（拼音+排序开销大）。
       // _loadContactList 完成时会自行 notifyListeners，此处不再重复通知。
@@ -41,19 +48,22 @@ class ContactListViewModel extends ChangeNotifier {
         _loadContactList();
       });
     });
-    _clearFriendRequestSubscription = Imclient.IMEventBus.on<ClearFriendRequestUnreadEvent>().listen((event) {
+    _clearFriendRequestSubscription =
+        Imclient.IMEventBus.on<ClearFriendRequestUnreadEvent>().listen((event) {
       _loadFriendRequestListAndNotify();
     });
 
-    _connectionStatusSubscription = Imclient.IMEventBus.on<ConnectionStatusChangedEvent>().listen((event) {
-      if(event.connectionStatus == kConnectionStatusConnected) {
+    _connectionStatusSubscription =
+        Imclient.IMEventBus.on<ConnectionStatusChangedEvent>().listen((event) {
+      if (event.connectionStatus == kConnectionStatusConnected) {
         _loadContactList(true);
         notifyListeners();
         _loadFriendRequestListAndNotify();
       }
     });
 
-    _userSettingUpdatedSubscription = Imclient.IMEventBus.on<UserSettingUpdatedEvent>().listen((event) {
+    _userSettingUpdatedSubscription =
+        Imclient.IMEventBus.on<UserSettingUpdatedEvent>().listen((event) {
       Imclient.getFavUsers().then((favUserIds) {
         favUserIds ??= [];
         bool changed = false;
@@ -130,7 +140,7 @@ class ContactListViewModel extends ChangeNotifier {
         }
       }
 
-      if(changed) {
+      if (changed) {
         _loadContactList();
         notifyListeners();
       }
@@ -139,8 +149,8 @@ class ContactListViewModel extends ChangeNotifier {
 
   void _loadContactList([bool refresh = false]) async {
     List<UIContactInfo> contactList = [];
-    var userInfos = await UserRepo.getFriendUserInfos(refresh : refresh);
-    if(_favUserIds.isEmpty){
+    var userInfos = await UserRepo.getFriendUserInfos(refresh: refresh);
+    if (_favUserIds.isEmpty) {
       List<String>? favUserIds = await Imclient.getFavUsers();
       _favUserIds = favUserIds ?? [];
     }
@@ -152,7 +162,9 @@ class ContactListViewModel extends ChangeNotifier {
         continue;
       }
 
-      var displayName = userInfo.friendAlias ?? userInfo.displayName ?? '<${userInfo.userId}>';
+      var displayName = userInfo.friendAlias ??
+          userInfo.displayName ??
+          '<${userInfo.userId}>';
       var runes = displayName.runes.toList();
       var firstWordPinyinLetter = '{';
       if (runes.isNotEmpty) {
@@ -160,7 +172,9 @@ class ContactListViewModel extends ChangeNotifier {
         if (ChineseHelper.isChinese(firstChar)) {
           // 中文字符，使用拼音首字母
           var firstWordPinyin = PinyinHelper.getFirstWordPinyin(displayName);
-          firstWordPinyinLetter = firstWordPinyin.isNotEmpty ? firstWordPinyin.substring(0, 1).toUpperCase() : '#';
+          firstWordPinyinLetter = firstWordPinyin.isNotEmpty
+              ? firstWordPinyin.substring(0, 1).toUpperCase()
+              : '#';
         } else if (RegExp(r'^[a-zA-Z]$').hasMatch(firstChar)) {
           // 英文字母，使用大写
           firstWordPinyinLetter = firstChar.toUpperCase();
@@ -184,7 +198,8 @@ class ContactListViewModel extends ChangeNotifier {
     }
 
     if (Config.FILE_TRANSFER_ID.isNotEmpty) {
-      var userInfo = await Imclient.getUserInfo(Config.FILE_TRANSFER_ID, refresh: refresh);
+      var userInfo =
+          await Imclient.getUserInfo(Config.FILE_TRANSFER_ID, refresh: refresh);
       if (userInfo != null) {
         userInfo.displayName = userInfo.displayName ?? '<${userInfo.userId}>';
         var displayName = userInfo.displayName!;
@@ -194,7 +209,9 @@ class ContactListViewModel extends ChangeNotifier {
           var firstChar = String.fromCharCode(runes[0]);
           if (ChineseHelper.isChinese(firstChar)) {
             var firstWordPinyin = PinyinHelper.getFirstWordPinyin(displayName);
-            firstWordPinyinLetter = firstWordPinyin.isNotEmpty ? firstWordPinyin.substring(0, 1).toUpperCase() : '#';
+            firstWordPinyinLetter = firstWordPinyin.isNotEmpty
+                ? firstWordPinyin.substring(0, 1).toUpperCase()
+                : '#';
           } else if (RegExp(r'^[a-zA-Z]$').hasMatch(firstChar)) {
             firstWordPinyinLetter = firstChar.toUpperCase();
           } else {

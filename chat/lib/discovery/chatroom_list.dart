@@ -45,7 +45,6 @@ class ChatroomItem extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() => ChatroomItemState();
-
 }
 
 class ChatroomItemState extends State<ChatroomItem> {
@@ -58,28 +57,44 @@ class ChatroomItemState extends State<ChatroomItem> {
       setState(() {
         chatroomInfo = ci;
       });
-    }, (errorCode) {
-
-    });
+    }, (errorCode) {});
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      child: Padding(padding: const EdgeInsets.all(8), child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [Expanded(child: Container(child: Text((chatroomInfo == null || chatroomInfo!.title == null)?AppLocalizations.of(context)!.chatroom:chatroomInfo!.title!, style: AppText.lg,),))],),
-          // height 9 保留原 4+1+4 的行间留白。
-          const Divider(height: 9, indent: 12, endIndent: 12),
-        ],),),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                    child: Container(
+                  child: Text(
+                    (chatroomInfo == null || chatroomInfo!.title == null)
+                        ? AppLocalizations.of(context)!.chatroom
+                        : chatroomInfo!.title!,
+                    style: AppText.lg,
+                  ),
+                ))
+              ],
+            ),
+            // height 9 保留原 4+1+4 的行间留白。
+            const Divider(height: 9, indent: 12, endIndent: 12),
+          ],
+        ),
+      ),
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Chatroom, target: widget.chatroomId))),
+          MaterialPageRoute(
+              builder: (context) => ConversationScreen(Conversation(
+                  conversationType: ConversationType.Chatroom,
+                  target: widget.chatroomId))),
         );
       },
     );
   }
-
 }

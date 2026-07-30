@@ -42,7 +42,8 @@ class _JoinGroupRequestScreenState extends State<JoinGroupRequestScreen> {
     _checkAdmin();
     _loadRequests();
     _clearUnread();
-    _eventSubscription = Imclient.IMEventBus.on<JoinGroupRequestUpdatedEvent>().listen((_) {
+    _eventSubscription =
+        Imclient.IMEventBus.on<JoinGroupRequestUpdatedEvent>().listen((_) {
       _loadRequests();
     });
   }
@@ -68,7 +69,8 @@ class _JoinGroupRequestScreenState extends State<JoinGroupRequestScreen> {
       );
       if (mounted) {
         setState(() {
-          _isAdmin = me.type == GroupMemberType.Owner || me.type == GroupMemberType.Manager;
+          _isAdmin = me.type == GroupMemberType.Owner ||
+              me.type == GroupMemberType.Manager;
         });
       }
     } catch (e) {
@@ -119,7 +121,9 @@ class _JoinGroupRequestScreenState extends State<JoinGroupRequestScreen> {
     });
     // iOS 侧对于主动申请（self-request）会把 requestUserId 填成 memberId，
     // 原生 SDK 在 inviter 为空时可能不会回调，因此 fallback 到 memberId。
-    final inviterId = request.requestUserId?.isNotEmpty == true ? request.requestUserId! : request.memberId;
+    final inviterId = request.requestUserId?.isNotEmpty == true
+        ? request.requestUserId!
+        : request.memberId;
     Imclient.handleJoinGroupRequest(
       request.groupId,
       request.memberId,
@@ -147,7 +151,9 @@ class _JoinGroupRequestScreenState extends State<JoinGroupRequestScreen> {
 
   void _deleteRequest(JoinGroupRequest request) {
     final l10n = AppLocalizations.of(context)!;
-    final inviterId = request.requestUserId?.isNotEmpty == true ? request.requestUserId! : request.memberId;
+    final inviterId = request.requestUserId?.isNotEmpty == true
+        ? request.requestUserId!
+        : request.memberId;
     Imclient.clearJoinGroupRequest(
       request.groupId,
       request.memberId,
@@ -202,14 +208,18 @@ class _JoinGroupRequestScreenState extends State<JoinGroupRequestScreen> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     itemCount: _requests.length,
                     separatorBuilder: (context, __) => Divider(
-                      indent: 16.0 + LayoutScale.watchScale(context, 44.0, cap: LayoutScale.iconCap) + 16.0,
+                      indent: 16.0 +
+                          LayoutScale.watchScale(context, 44.0,
+                              cap: LayoutScale.iconCap) +
+                          16.0,
                     ),
                     itemBuilder: (context, index) {
                       final request = _requests[index];
                       return _JoinGroupRequestItem(
                         request: request,
                         isAdmin: _isAdmin,
-                        isProcessing: _processingMemberIds.contains(request.memberId),
+                        isProcessing:
+                            _processingMemberIds.contains(request.memberId),
                         onAgree: () => _handleRequest(request, true),
                         onReject: () => _handleRequest(request, false),
                         onDelete: () => _deleteRequest(request),
@@ -240,7 +250,8 @@ class _JoinGroupRequestItem extends StatelessWidget {
 
   bool get _isExpired {
     if (request.status != JoinGroupRequestStatus.pending) return false;
-    return DateTime.now().millisecondsSinceEpoch - request.timestamp > 7 * 24 * 60 * 60 * 1000;
+    return DateTime.now().millisecondsSinceEpoch - request.timestamp >
+        7 * 24 * 60 * 60 * 1000;
   }
 
   String _userName(UserViewModel vm, String userId) {
@@ -256,20 +267,24 @@ class _JoinGroupRequestItem extends StatelessWidget {
     return Consumer<UserViewModel>(
       builder: (context, userViewModel, child) {
         final memberName = _userName(userViewModel, request.memberId);
-        final requestUserName = request.requestUserId != null && request.requestUserId!.isNotEmpty
-            ? _userName(userViewModel, request.requestUserId!)
-            : memberName;
+        final requestUserName =
+            request.requestUserId != null && request.requestUserId!.isNotEmpty
+                ? _userName(userViewModel, request.requestUserId!)
+                : memberName;
         final memberUserInfo = userViewModel.getUserInfo(request.memberId);
-        final requestUserInfo = request.requestUserId != null && request.requestUserId!.isNotEmpty
-            ? userViewModel.getUserInfo(request.requestUserId!)
-            : memberUserInfo;
+        final requestUserInfo =
+            request.requestUserId != null && request.requestUserId!.isNotEmpty
+                ? userViewModel.getUserInfo(request.requestUserId!)
+                : memberUserInfo;
 
         return ListTile(
           leading: GestureDetector(
             onTap: () => openPage(context, UserInfoWidget(request.memberId)),
-            child: Portrait(memberUserInfo.portrait ?? '', '', width: 44, height: 44, borderRadius: 6),
+            child: Portrait(memberUserInfo.portrait ?? '', '',
+                width: 44, height: 44, borderRadius: 6),
           ),
-          title: _buildTitle(context, requestUserName, memberName, requestUserInfo.userId, request.memberId),
+          title: _buildTitle(context, requestUserName, memberName,
+              requestUserInfo.userId, request.memberId),
           subtitle: request.reason != null && request.reason!.isNotEmpty
               ? Text(
                   '${l10n.joinGroupReason}: ${request.reason}',
@@ -284,22 +299,25 @@ class _JoinGroupRequestItem extends StatelessWidget {
     );
   }
 
-  Widget _buildTitle(BuildContext context, String requestUserName, String memberName,
-      String requestUserId, String memberId) {
+  Widget _buildTitle(BuildContext context, String requestUserName,
+      String memberName, String requestUserId, String memberId) {
     final spans = <InlineSpan>[];
-    final isSelfRequest = request.requestUserId == null || request.requestUserId == memberId;
+    final isSelfRequest =
+        request.requestUserId == null || request.requestUserId == memberId;
 
     if (isSelfRequest) {
       final raw = AppLocalizations.of(context)!.requestJoinGroup(memberName);
       spans.add(_tapSpan(context, memberName, memberId));
       spans.add(TextSpan(text: raw.substring(memberName.length)));
     } else {
-      final raw = AppLocalizations.of(context)!.inviteJoinGroup(requestUserName, memberName);
+      final raw = AppLocalizations.of(context)!
+          .inviteJoinGroup(requestUserName, memberName);
       int pos1 = raw.indexOf(requestUserName);
       int pos2 = raw.indexOf(memberName, pos1 + requestUserName.length);
       spans.add(TextSpan(text: raw.substring(0, pos1)));
       spans.add(_tapSpan(context, requestUserName, requestUserId));
-      spans.add(TextSpan(text: raw.substring(pos1 + requestUserName.length, pos2)));
+      spans.add(
+          TextSpan(text: raw.substring(pos1 + requestUserName.length, pos2)));
       spans.add(_tapSpan(context, memberName, memberId));
       spans.add(TextSpan(text: raw.substring(pos2 + memberName.length)));
     }
@@ -328,10 +346,15 @@ class _JoinGroupRequestItem extends StatelessWidget {
     if (isProcessing) {
       return const Padding(
         padding: EdgeInsets.all(12.0),
-        child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+        child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
-    if (request.status == JoinGroupRequestStatus.pending && !_isExpired && isAdmin) {
+    if (request.status == JoinGroupRequestStatus.pending &&
+        !_isExpired &&
+        isAdmin) {
       return Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -348,7 +371,8 @@ class _JoinGroupRequestItem extends StatelessWidget {
               if (value == 'delete') onDelete();
             },
             itemBuilder: (_) => [
-              PopupMenuItem(value: 'delete', child: Text(l10n.deleteJoinGroupRequest)),
+              PopupMenuItem(
+                  value: 'delete', child: Text(l10n.deleteJoinGroupRequest)),
             ],
           ),
         ],
@@ -376,7 +400,8 @@ class _JoinGroupRequestItem extends StatelessWidget {
             if (value == 'delete') onDelete();
           },
           itemBuilder: (_) => [
-            PopupMenuItem(value: 'delete', child: Text(l10n.deleteJoinGroupRequest)),
+            PopupMenuItem(
+                value: 'delete', child: Text(l10n.deleteJoinGroupRequest)),
           ],
         ),
       ],

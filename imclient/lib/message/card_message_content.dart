@@ -6,7 +6,6 @@ import 'media_message_content.dart';
 import 'message.dart';
 import 'message_content.dart';
 
-
 // ignore: non_constant_identifier_names
 MessageContent CardMessageContentCreator() {
   return CardMessageContent();
@@ -35,18 +34,18 @@ class CardMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.content != null) {
+    if (payload.content != null) {
       targetId = payload.content!;
     } else {
       targetId = "";
     }
-    if(payload.binaryContent != null) {
-      Map<dynamic, dynamic> map = json.decode(
-          utf8.decode(payload.binaryContent!));
+    if (payload.binaryContent != null) {
+      Map<dynamic, dynamic> map =
+          json.decode(utf8.decode(payload.binaryContent!));
       name = map['n'];
       displayName = map['d'];
       portrait = map['p'];
-      if(map['t'] == null) {
+      if (map['t'] == null) {
         type = CardType.CardType_User;
       } else {
         type = CardType.values[map['t']];

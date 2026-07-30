@@ -46,7 +46,8 @@ class PcClipboardPasteHandler {
       final reader = clipboard == null ? null : await clipboard.read();
       // 文件路径优先于图片数据:复制的图片文件也带合成的图片数据格式,
       // 走文件路径可直接用原文件,免去重新编码/落临时文件
-      if (reader != null && await _tryPasteFiles(reader, controller, isMounted: isMounted)) {
+      if (reader != null &&
+          await _tryPasteFiles(reader, controller, isMounted: isMounted)) {
         return;
       }
       if (reader == null) {
@@ -55,7 +56,8 @@ class PcClipboardPasteHandler {
       }
       final normalized = await _readClipboardImageForPaste(reader);
       if (normalized == null || normalized.bytes.isEmpty) {
-        if (await _tryPasteHtmlImage(reader, controller, isMounted: isMounted)) {
+        if (await _tryPasteHtmlImage(reader, controller,
+            isMounted: isMounted)) {
           return;
         }
         // 图片读取失败时回退到文本粘贴,避免 Ctrl/Cmd+V 被吞掉后无反馈。
@@ -65,7 +67,8 @@ class PcClipboardPasteHandler {
       if (!isMounted()) {
         return;
       }
-      final path = await _writeTempImage(normalized.bytes, normalized.extension);
+      final path =
+          await _writeTempImage(normalized.bytes, normalized.extension);
       if (!isMounted()) {
         return;
       }
@@ -85,12 +88,14 @@ class PcClipboardPasteHandler {
 
   Future<String> _writeTempImage(List<int> bytes, String extension) async {
     final tempDir = await getTemporaryDirectory();
-    final path = '${tempDir.path}/paste_${DateTime.now().millisecondsSinceEpoch}.$extension';
+    final path =
+        '${tempDir.path}/paste_${DateTime.now().millisecondsSinceEpoch}.$extension';
     await File(path).writeAsBytes(bytes);
     return path;
   }
 
-  Future<_NormalizedImage?> _readClipboardImageForPaste(ClipboardReader reader) async {
+  Future<_NormalizedImage?> _readClipboardImageForPaste(
+      ClipboardReader reader) async {
     final availableFormats = <SimpleFileFormat>[];
     for (final format in _clipboardImageFormats) {
       if (reader.canProvide(format)) {
@@ -114,11 +119,13 @@ class PcClipboardPasteHandler {
         debugPrint('paste image read failed for $format: $e');
       }
     }
-    debugPrint('paste image failed, available formats: ${availableFormats.join(', ')}');
+    debugPrint(
+        'paste image failed, available formats: ${availableFormats.join(', ')}');
     return null;
   }
 
-  Future<List<int>?> _readClipboardImage(ClipboardReader reader, SimpleFileFormat format) async {
+  Future<List<int>?> _readClipboardImage(
+      ClipboardReader reader, SimpleFileFormat format) async {
     final completer = Completer<List<int>?>();
     final progress = reader.getFile(
       format,
@@ -143,10 +150,12 @@ class PcClipboardPasteHandler {
     if (progress == null) {
       return null;
     }
-    return completer.future.timeout(const Duration(seconds: 2), onTimeout: () => null);
+    return completer.future
+        .timeout(const Duration(seconds: 2), onTimeout: () => null);
   }
 
-  _NormalizedImage? _normalizeClipboardImageBytes(SimpleFileFormat format, List<int> bytes) {
+  _NormalizedImage? _normalizeClipboardImageBytes(
+      SimpleFileFormat format, List<int> bytes) {
     if (format == Formats.png) return _NormalizedImage(bytes, 'png');
     if (format == Formats.jpeg) return _NormalizedImage(bytes, 'jpg');
     if (format == Formats.gif) return _NormalizedImage(bytes, 'gif');
@@ -175,7 +184,8 @@ class PcClipboardPasteHandler {
       return false;
     }
 
-    final fileSrcPattern = RegExp("src=[\"'](file:[^\"']+)[\"']", caseSensitive: false);
+    final fileSrcPattern =
+        RegExp("src=[\"'](file:[^\"']+)[\"']", caseSensitive: false);
     for (final match in fileSrcPattern.allMatches(html)) {
       final raw = match.group(1);
       if (raw == null || raw.isEmpty) continue;
@@ -191,7 +201,8 @@ class PcClipboardPasteHandler {
       }
     }
 
-    final dataSrcPattern = RegExp("src=[\"'](data:image/[^\"']+)[\"']", caseSensitive: false);
+    final dataSrcPattern =
+        RegExp("src=[\"'](data:image/[^\"']+)[\"']", caseSensitive: false);
     final dataMatch = dataSrcPattern.firstMatch(html);
     final dataSrc = dataMatch?.group(1);
     if (dataSrc == null || dataSrc.isEmpty) {
@@ -233,7 +244,10 @@ class PcClipboardPasteHandler {
       return null;
     }
     // macOS/Linux 上 file://localhost/... 常见于外部应用剪贴板,需手动兼容 authority。
-    if (!Platform.isWindows && uri.hasAuthority && uri.host.isNotEmpty && uri.host != 'localhost') {
+    if (!Platform.isWindows &&
+        uri.hasAuthority &&
+        uri.host.isNotEmpty &&
+        uri.host != 'localhost') {
       return null;
     }
     try {
@@ -289,7 +303,8 @@ class PcClipboardPasteHandler {
     return inserted;
   }
 
-  bool _isImageFile(String path) => _inlineImageExtensions.contains(p.extension(path).toLowerCase());
+  bool _isImageFile(String path) =>
+      _inlineImageExtensions.contains(p.extension(path).toLowerCase());
 }
 
 class _NormalizedImage {

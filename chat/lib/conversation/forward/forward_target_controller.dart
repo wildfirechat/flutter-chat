@@ -28,7 +28,8 @@ class CreateGroupResult {
 /// - 选成员建群:从好友列表挑人建群。建完之后做什么由界面决定——
 ///   移动端退回选会话流程走确认弹窗(与微信一致),桌面端直接创建并发送。
 class ForwardTargetController extends ChangeNotifier {
-  ForwardTargetController({bool multiSelect = false}) : _isMultiSelect = multiSelect;
+  ForwardTargetController({bool multiSelect = false})
+      : _isMultiSelect = multiSelect;
 
   static const int _maxGroupMembers = 1024;
   static const int _maxGroupNameLength = 24;
@@ -40,7 +41,8 @@ class ForwardTargetController extends ChangeNotifier {
   bool _disposed = false;
   PickUserViewModel? _pickUserViewModel;
 
-  List<Conversation> get selectedConversations => List.unmodifiable(_selectedConversations);
+  List<Conversation> get selectedConversations =>
+      List.unmodifiable(_selectedConversations);
 
   bool get hasSelection => _selectedConversations.isNotEmpty;
 
@@ -53,11 +55,13 @@ class ForwardTargetController extends ChangeNotifier {
   /// 好友列表加载完成前为 null,界面据此显示 loading。
   PickUserViewModel? get pickUserViewModel => _pickUserViewModel;
 
-  bool isSelected(Conversation conversation) => _selectedConversations.any((c) => _isSameConversation(c, conversation));
+  bool isSelected(Conversation conversation) =>
+      _selectedConversations.any((c) => _isSameConversation(c, conversation));
 
   void toggleSelection(Conversation conversation) {
     if (isSelected(conversation)) {
-      _selectedConversations.removeWhere((c) => _isSameConversation(c, conversation));
+      _selectedConversations
+          .removeWhere((c) => _isSameConversation(c, conversation));
     } else {
       _selectedConversations.add(conversation);
     }
@@ -135,7 +139,8 @@ class ForwardTargetController extends ChangeNotifier {
     return result;
   }
 
-  Future<String> _buildGroupName(List<UserInfo> members, String Function(String) etcNameBuilder) async {
+  Future<String> _buildGroupName(
+      List<UserInfo> members, String Function(String) etcNameBuilder) async {
     final creator = await Imclient.getUserInfo(Imclient.currentUserId);
     var groupName = creator?.displayName ?? '';
     for (var member in members) {
@@ -157,5 +162,7 @@ class ForwardTargetController extends ChangeNotifier {
   }
 
   static bool _isSameConversation(Conversation a, Conversation b) =>
-      a.target == b.target && a.conversationType == b.conversationType && a.line == b.line;
+      a.target == b.target &&
+      a.conversationType == b.conversationType &&
+      a.line == b.line;
 }

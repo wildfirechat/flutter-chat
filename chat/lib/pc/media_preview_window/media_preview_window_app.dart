@@ -155,7 +155,8 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
   // -------------------------------------------------------------- 业务
 
   void _applyPayload(Map<String, dynamic> args) {
-    final items = MediaPreviewCodec.decodeMessages(args['items'] as List? ?? const []);
+    final items =
+        MediaPreviewCodec.decodeMessages(args['items'] as List? ?? const []);
     int index = args['defaultIndex'] as int? ?? 0;
     if (index < 0 || index >= items.length) {
       index = 0;
@@ -163,7 +164,9 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
     final conversationMap = args['conversation'] as Map<String, dynamic>?;
     _mediaItems = items;
     _defaultIndex = index;
-    _conversation = conversationMap != null ? IpcCodec.decodeConversation(conversationMap) : null;
+    _conversation = conversationMap != null
+        ? IpcCodec.decodeConversation(conversationMap)
+        : null;
   }
 
   /// 窗口已打开时,主窗口推来新的预览内容:整体替换并重建预览状态。
@@ -188,7 +191,8 @@ class _MediaPreviewWindowAppState extends State<MediaPreviewWindowApp>
   /// [MediaPreviewWindowSize])。[naturalSize] 是播放器解析出的视频真实尺寸,
   /// 为空则取消息自带的宽高(图片);都拿不到就维持当前窗口大小不动。
   void _onCurrentMediaChanged(Message? message, Size? naturalSize) {
-    final Size? media = naturalSize ?? MediaPreviewWindowSize.mediaSize(message);
+    final Size? media =
+        naturalSize ?? MediaPreviewWindowSize.mediaSize(message);
     if (media == null) {
       // 视频要等播放器初始化,期间别把窗口先弹成默认大小(会多跳一次)
       _resizeTimer?.cancel();

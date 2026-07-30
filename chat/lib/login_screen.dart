@@ -50,7 +50,9 @@ class _LoginScreenState extends State<LoginScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 40, 8, 10),
               child: Text(
-                _form.isPasswordLogin ? l10n.loginWithPassword : l10n.loginWithPhone,
+                _form.isPasswordLogin
+                    ? l10n.loginWithPassword
+                    : l10n.loginWithPhone,
                 style: AppText.xl.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
@@ -70,7 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   Expanded(
                     child: CupertinoTextField(
-                      placeholder: _form.isPasswordLogin ? l10n.inputPassword : l10n.inputVerificationCode,
+                      placeholder: _form.isPasswordLogin
+                          ? l10n.inputPassword
+                          : l10n.inputVerificationCode,
                       controller: _form.codeOrPwdController,
                       clearButtonMode: OverlayVisibilityMode.editing,
                       autocorrect: false,
@@ -82,8 +86,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 8,
                     ),
                     FilledButton(
-                      onPressed: _form.canSendCode ? () => _form.sendCode(context) : null,
-                      child: _form.isSentCode ? Text('${_form.waitResendCount} s') : Text(l10n.sendCode),
+                      onPressed: _form.canSendCode
+                          ? () => _form.sendCode(context)
+                          : null,
+                      child: _form.isSentCode
+                          ? Text('${_form.waitResendCount} s')
+                          : Text(l10n.sendCode),
                     ),
                   ],
                 ],
@@ -108,7 +116,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: const TextStyle(color: Colors.blue),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
-                              Utilities.openLink(context, Config.USER_AGREEMENT_URL);
+                              Utilities.openLink(
+                                  context, Config.USER_AGREEMENT_URL);
                             },
                         ),
                         TextSpan(text: l10n.and),
@@ -117,7 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: const TextStyle(color: Colors.blue),
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
-                              Utilities.openLink(context, Config.PRIVACY_AGREEMENT_URL);
+                              Utilities.openLink(
+                                  context, Config.PRIVACY_AGREEMENT_URL);
                             },
                         ),
                       ],
@@ -134,7 +144,9 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             TextButton(
               onPressed: _form.toggleLoginMode,
-              child: Text(_form.isPasswordLogin ? l10n.loginWithPhoneCode : l10n.loginWithPassword),
+              child: Text(_form.isPasswordLogin
+                  ? l10n.loginWithPhoneCode
+                  : l10n.loginWithPassword),
             ),
           ],
         ),

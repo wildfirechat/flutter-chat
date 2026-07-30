@@ -37,8 +37,8 @@ class LaunchAtLoginService {
         return await _channel.invokeMethod<bool>('isEnabled') ?? false;
       }
       if (Platform.isWindows) {
-        final key = Registry.openPath(RegistryHive.currentUser,
-            path: _runKeyPath);
+        final key =
+            Registry.openPath(RegistryHive.currentUser, path: _runKeyPath);
         try {
           return key.getStringValue(_registryValueName) != null;
         } finally {
@@ -62,8 +62,7 @@ class LaunchAtLoginService {
       }
       if (Platform.isWindows) {
         final key = Registry.openPath(RegistryHive.currentUser,
-            path: _runKeyPath,
-            desiredAccessRights: AccessRights.allAccess);
+            path: _runKeyPath, desiredAccessRights: AccessRights.allAccess);
         try {
           if (enabled) {
             key.createValue(RegistryValue.string(

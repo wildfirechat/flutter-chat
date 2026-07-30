@@ -16,12 +16,14 @@ import 'package:chat/theme/app_typography.dart';
 class PollCellBuilder extends PortraitCellBuilder {
   late PollMessageContent content;
 
-  PollCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  PollCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     content = model.message.content as PollMessageContent;
   }
 
-  Color _onBubble(BuildContext context) =>
-      isSendMessage ? context.colors.bubbleSentText : context.colors.bubbleReceivedText;
+  Color _onBubble(BuildContext context) => isSendMessage
+      ? context.colors.bubbleSentText
+      : context.colors.bubbleReceivedText;
 
   void _onTap(BuildContext context) {
     if (!PollService.isAvailable) return;
@@ -57,7 +59,8 @@ class PollCellBuilder extends PortraitCellBuilder {
                 Expanded(
                   child: Text(
                     content.title,
-                    style: AppText.base.copyWith(fontWeight: FontWeight.w600, color: onBubble),
+                    style: AppText.base
+                        .copyWith(fontWeight: FontWeight.w600, color: onBubble),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -86,7 +89,8 @@ class PollCellBuilder extends PortraitCellBuilder {
             const SizedBox(height: 8),
             Text(
               content.isEnded ? l10n.pollViewResult : l10n.pollJoinAction,
-              style: AppText.xs.copyWith(fontWeight: FontWeight.w500, color: onBubble),
+              style: AppText.xs
+                  .copyWith(fontWeight: FontWeight.w500, color: onBubble),
             ),
           ],
         ),

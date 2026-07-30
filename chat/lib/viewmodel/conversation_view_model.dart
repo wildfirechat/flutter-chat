@@ -20,10 +20,13 @@ class ConversationViewModel extends ChangeNotifier {
   late StreamSubscription<MessageUpdatedEvent> _messageUpdatedSubscription;
   late StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
   late StreamSubscription<SendMessageStartEvent> _sendMessageStartSubscription;
-  late StreamSubscription<SendMessageSuccessEvent> _sendMessageSuccessSubscription;
-  late StreamSubscription<SendMessageFailureEvent> _sendMessageFailureSubscription;
+  late StreamSubscription<SendMessageSuccessEvent>
+      _sendMessageSuccessSubscription;
+  late StreamSubscription<SendMessageFailureEvent>
+      _sendMessageFailureSubscription;
   late StreamSubscription<ClearMessagesEvent> _clearMessagesSubscription;
-  late StreamSubscription<ConversationDraftUpdatedEvent> _draftUpdatedSubscription;
+  late StreamSubscription<ConversationDraftUpdatedEvent>
+      _draftUpdatedSubscription;
 
   //  消息倒序，第 0 条是最新消息，但UI 层list 进行了 reverse
   List<UIMessage> _conversationMessageList = [];
@@ -74,7 +77,8 @@ class ConversationViewModel extends ChangeNotifier {
   bool get noMoreNewerMsg => _noMoreNewerMsg;
 
   /// 本地与远端历史消息都已取尽。桌面端滚动到顶自动加载时用它终止请求。
-  bool get noMoreHistoryMsg => _noMoreLocalHistoryMsg && _noMoreRemoteHistoryMsg;
+  bool get noMoreHistoryMsg =>
+      _noMoreLocalHistoryMsg && _noMoreRemoteHistoryMsg;
 
   String get draft => _draft;
 
@@ -141,7 +145,8 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   ConversationViewModel() {
-    _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
+    _receiveMessageSubscription =
+        _eventBus.on<ReceiveMessagesEvent>().listen((event) {
       // 定位到某条消息时，如果还没加载到最后，就不将新收到的消息加入到列表，
       // 只统计数量用于「回到最新」按钮角标（消息本身已入本地库，回到最新时会带出）
       if (_currentConversation != null && !_noMoreNewerMsg) {
@@ -165,21 +170,27 @@ class ConversationViewModel extends ChangeNotifier {
       }
       var newMsg = false;
       var messages = event.messages;
-      if(_currentConversation!.conversationType == ConversationType.Chatroom) {
+      if (_currentConversation!.conversationType == ConversationType.Chatroom) {
         messages = event.messages.reversed.toList();
       }
       for (Message msg in messages) {
         if (msg.conversation == _currentConversation) {
           if (msg.messageId == 0) {
             if (msg.content is TypingMessageContent) {
-              _typingUserTime[msg.fromUser] = DateTime.now().millisecondsSinceEpoch;
+              _typingUserTime[msg.fromUser] =
+                  DateTime.now().millisecondsSinceEpoch;
               _startTypingTimer();
               debugPrint('typing');
             } else if (msg.content is StreamingTextGeneratingMessageContent) {
-              var content = msg.content as StreamingTextGeneratingMessageContent;
+              var content =
+                  msg.content as StreamingTextGeneratingMessageContent;
               var index = _conversationMessageList.indexWhere((element) {
-                if (element.message.content is StreamingTextGeneratingMessageContent) {
-                  return (element.message.content as StreamingTextGeneratingMessageContent).streamId == content.streamId;
+                if (element.message.content
+                    is StreamingTextGeneratingMessageContent) {
+                  return (element.message.content
+                              as StreamingTextGeneratingMessageContent)
+                          .streamId ==
+                      content.streamId;
                 }
                 return false;
               });
@@ -192,7 +203,7 @@ class ConversationViewModel extends ChangeNotifier {
               }
             }
           } else {
-            if(msg.content.meta.type == 80){
+            if (msg.content.meta.type == 80) {
               // recall
               // do nothing
               return;
@@ -201,8 +212,12 @@ class ConversationViewModel extends ChangeNotifier {
             if (msg.content is StreamingTextGeneratedMessageContent) {
               var content = msg.content as StreamingTextGeneratedMessageContent;
               var index = _conversationMessageList.indexWhere((element) {
-                if (element.message.content is StreamingTextGeneratingMessageContent) {
-                  return (element.message.content as StreamingTextGeneratingMessageContent).streamId == content.streamId;
+                if (element.message.content
+                    is StreamingTextGeneratingMessageContent) {
+                  return (element.message.content
+                              as StreamingTextGeneratingMessageContent)
+                          .streamId ==
+                      content.streamId;
                 }
                 return false;
               });
@@ -223,7 +238,8 @@ class ConversationViewModel extends ChangeNotifier {
         notifyListeners();
       }
     });
-    _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) async {
+    _recallMessageSubscription =
+        _eventBus.on<RecallMessageEvent>().listen((event) async {
       var msgUid = event.messageUid;
       for (var index = 0; index < _conversationMessageList.length; index++) {
         if (_conversationMessageList[index].message.messageUid == msgUid) {
@@ -236,7 +252,8 @@ class ConversationViewModel extends ChangeNotifier {
         }
       }
     });
-    _messageUpdatedSubscription = _eventBus.on<MessageUpdatedEvent>().listen((event) async {
+    _messageUpdatedSubscription =
+        _eventBus.on<MessageUpdatedEvent>().listen((event) async {
       var msgId = event.messageId;
       for (var index = 0; index < _conversationMessageList.length; index++) {
         if (_conversationMessageList[index].message.messageId == msgId) {
@@ -249,7 +266,8 @@ class ConversationViewModel extends ChangeNotifier {
         }
       }
     });
-    _deleteMessageSubscription = _eventBus.on<DeleteMessageEvent>().listen((event) {
+    _deleteMessageSubscription =
+        _eventBus.on<DeleteMessageEvent>().listen((event) {
       var msgUid = event.messageUid;
       var msgId = event.messageId;
       if (msgUid != null) {
@@ -271,34 +289,41 @@ class ConversationViewModel extends ChangeNotifier {
         }
       }
     });
-    _sendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
+    _sendMessageStartSubscription =
+        _eventBus.on<SendMessageStartEvent>().listen((event) {
       var msg = event.message;
-      if(msg.messageId == 0) {
+      if (msg.messageId == 0) {
         return;
       }
       if (_currentConversation == msg.conversation) {
         // 使用 message.messageId 作为 key 去重,防止重复插入
-        final existingIndex = _conversationMessageList.indexWhere(
-            (uiMsg) => uiMsg.message.messageId == msg.messageId);
+        final existingIndex = _conversationMessageList
+            .indexWhere((uiMsg) => uiMsg.message.messageId == msg.messageId);
         if (existingIndex == -1) {
           _conversationMessageList.insert(0, UIMessage(msg));
           notifyListeners();
         }
       }
     });
-    _sendMessageSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
-      _updateMessageSendStatusAndNotify(event.messageId, MessageStatus.Message_Status_Sent, event.messageUid, event.timestamp);
+    _sendMessageSuccessSubscription =
+        _eventBus.on<SendMessageSuccessEvent>().listen((event) {
+      _updateMessageSendStatusAndNotify(event.messageId,
+          MessageStatus.Message_Status_Sent, event.messageUid, event.timestamp);
     });
-    _sendMessageFailureSubscription = _eventBus.on<SendMessageFailureEvent>().listen((event) {
-      _updateMessageSendStatusAndNotify(event.messageId, MessageStatus.Message_Status_Send_Failure);
+    _sendMessageFailureSubscription =
+        _eventBus.on<SendMessageFailureEvent>().listen((event) {
+      _updateMessageSendStatusAndNotify(
+          event.messageId, MessageStatus.Message_Status_Send_Failure);
     });
-    _clearMessagesSubscription = _eventBus.on<ClearMessagesEvent>().listen((event) {
+    _clearMessagesSubscription =
+        _eventBus.on<ClearMessagesEvent>().listen((event) {
       if (event.conversation == _currentConversation) {
         _conversationMessageList.clear();
         notifyListeners();
       }
     });
-    _draftUpdatedSubscription = _eventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
+    _draftUpdatedSubscription =
+        _eventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
       _draft = event.draft;
       notifyListeners();
     });
@@ -310,7 +335,9 @@ class ConversationViewModel extends ChangeNotifier {
   int _session = 0;
   int get conversationSession => _session;
 
-  void setConversation(Conversation? conversation, {int? toFocusMessageId, Function(int err)? joinChatroomErrorCallback}) async {
+  void setConversation(Conversation? conversation,
+      {int? toFocusMessageId,
+      Function(int err)? joinChatroomErrorCallback}) async {
     _session++;
     _noMoreRemoteHistoryMsg = false;
     _conversationMessageList = [];
@@ -346,7 +373,8 @@ class ConversationViewModel extends ChangeNotifier {
       });
     } else {
       if (conversation.conversationType == ConversationType.Group) {
-        _isHiddenConversationMemberName = await Imclient.isHiddenGroupMemberName(conversation.target);
+        _isHiddenConversationMemberName =
+            await Imclient.isHiddenGroupMemberName(conversation.target);
       } else {
         _isHiddenConversationMemberName = true;
       }
@@ -358,7 +386,8 @@ class ConversationViewModel extends ChangeNotifier {
       } else {
         _noMoreNewerMsg = true;
         Imclient.getMessages(conversation, 0, 20).then((messages) {
-          _conversationMessageList = messages.map((message) => UIMessage(message)).toList();
+          _conversationMessageList =
+              messages.map((message) => UIMessage(message)).toList();
           if (messages.length < 20) {
             _noMoreLocalHistoryMsg = true;
           }
@@ -460,7 +489,9 @@ class ConversationViewModel extends ChangeNotifier {
     Completer<void> completer = Completer();
 
     _isLoading = true;
-    int fromIndex = _conversationMessageList.isEmpty ? 0 : _conversationMessageList.first.message.messageId;
+    int fromIndex = _conversationMessageList.isEmpty
+        ? 0
+        : _conversationMessageList.first.message.messageId;
 
     final loadingConv = _currentConversation;
     if (loadingConv == null) {
@@ -480,7 +511,10 @@ class ConversationViewModel extends ChangeNotifier {
         completer.complete();
         return;
       }
-      var newMsgs = messages.where((msg) => msg.messageId != 0).map((msg) => UIMessage(msg)).toList();
+      var newMsgs = messages
+          .where((msg) => msg.messageId != 0)
+          .map((msg) => UIMessage(msg))
+          .toList();
       if (newMsgs.isEmpty) {
         _noMoreNewerMsg = true;
         notifyListeners();
@@ -527,7 +561,8 @@ class ConversationViewModel extends ChangeNotifier {
     }, (errorCode) {});
   }
 
-  _updateMessageSendStatusAndNotify(int msgId, MessageStatus status, [int msgUid = 0, int timestamp = 0]) {
+  _updateMessageSendStatusAndNotify(int msgId, MessageStatus status,
+      [int msgUid = 0, int timestamp = 0]) {
     for (UIMessage msg in _conversationMessageList) {
       if (msg.message.messageId == msgId) {
         msg.message.messageUid = msgUid;
@@ -563,7 +598,8 @@ class ConversationViewModel extends ChangeNotifier {
       if (timeCompare != 0) return timeCompare;
       return b.messageId.compareTo(a.messageId);
     });
-    _conversationMessageList.insertAll(index, newMsgs.map((msg) => UIMessage(msg)));
+    _conversationMessageList.insertAll(
+        index, newMsgs.map((msg) => UIMessage(msg)));
     notifyListeners();
   }
 
@@ -588,7 +624,9 @@ class ConversationViewModel extends ChangeNotifier {
         completer.complete();
         return completer.future;
       } else {
-        fromIndex = _conversationMessageList.isEmpty ? 0 : _conversationMessageList.last.message.messageUid;
+        fromIndex = _conversationMessageList.isEmpty
+            ? 0
+            : _conversationMessageList.last.message.messageUid;
         Imclient.getRemoteMessages(loadingConv, fromIndex!, 20, (messages) {
           if (loadingConv != _currentConversation) {
             completer.complete();
@@ -612,7 +650,9 @@ class ConversationViewModel extends ChangeNotifier {
         });
       }
     } else {
-      fromIndex = _conversationMessageList.isEmpty ? 0 : _conversationMessageList.last.message.messageId;
+      fromIndex = _conversationMessageList.isEmpty
+          ? 0
+          : _conversationMessageList.last.message.messageId;
       Imclient.getMessages(loadingConv, fromIndex, 20).then((messages) {
         if (loadingConv != _currentConversation) {
           completer.complete();
@@ -632,7 +672,8 @@ class ConversationViewModel extends ChangeNotifier {
     return completer.future;
   }
 
-  void sendMediaMessage(MessageContent messageContent, {Function(String remoteUrl)? uploadedCallback}) {
+  void sendMediaMessage(MessageContent messageContent,
+      {Function(String remoteUrl)? uploadedCallback}) {
     if (_currentConversation == null) {
       return;
     }
@@ -640,12 +681,11 @@ class ConversationViewModel extends ChangeNotifier {
         successCallback: (int messageUid, int timestamp) {},
         errorCallback: (int errorCode) {},
         progressCallback: (int uploaded, int total) {
-          debugPrint("progressCallback:$uploaded,$total");
-        },
-        uploadedCallback: (String remoteUrl) {
-          debugPrint("uploadedCallback:$remoteUrl");
-          uploadedCallback?.call(remoteUrl);
-        });
+      debugPrint("progressCallback:$uploaded,$total");
+    }, uploadedCallback: (String remoteUrl) {
+      debugPrint("uploadedCallback:$remoteUrl");
+      uploadedCallback?.call(remoteUrl);
+    });
   }
 
   void sendMessage(MessageContent messageContent) {
@@ -697,7 +737,9 @@ class ConversationViewModel extends ChangeNotifier {
         _typingDots = _getTypingDot(now);
         return true;
       } else if (typingUserCount == 1) {
-        Imclient.getUserInfo(lastTypingUser!, groupId: _currentConversation!.target).then((value) {
+        Imclient.getUserInfo(lastTypingUser!,
+                groupId: _currentConversation!.target)
+            .then((value) {
           if (value != null) {
             _typingKind = 3;
             _typingUserName = value.displayName;

@@ -28,7 +28,8 @@ Future<void> showPcUserCard({
     context: context,
     anchor: anchor,
     width: 288,
-    builder: (_) => _PcUserCard(userId: userId, groupId: groupId, isSelf: isSelf),
+    builder: (_) =>
+        _PcUserCard(userId: userId, groupId: groupId, isSelf: isSelf),
   );
 }
 
@@ -63,7 +64,9 @@ class _PcUserCard extends StatelessWidget {
                             cursor: SystemMouseCursors.click,
                             child: MeshUserName(
                               userInfo,
-                              style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+                              style: AppText.lg.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: context.colors.textPrimary),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -72,7 +75,8 @@ class _PcUserCard extends StatelessWidget {
                         const SizedBox(height: 6),
                         Text(
                           '${AppLocalizations.of(context)!.accountLabel}${userInfo.name}',
-                          style: AppText.xs.copyWith(color: context.colors.textSecondary),
+                          style: AppText.xs
+                              .copyWith(color: context.colors.textSecondary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -111,7 +115,11 @@ class _PcUserCard extends StatelessWidget {
                     label: AppLocalizations.of(context)!.sendMsg,
                     onTap: () {
                       // 先经当前 context 完成查找与跳转,再关卡片
-                      openConversation(context, Conversation(conversationType: ConversationType.Single, target: userId));
+                      openConversation(
+                          context,
+                          Conversation(
+                              conversationType: ConversationType.Single,
+                              target: userId));
                       Navigator.of(context).pop();
                     },
                   ),

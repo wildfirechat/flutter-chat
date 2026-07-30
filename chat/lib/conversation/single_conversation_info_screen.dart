@@ -1,4 +1,3 @@
-
 import 'package:chat/conversation/single_conversation_member_view.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -53,21 +52,26 @@ class _SingleConversationInfoScreenState
     return Selector<UserViewModel, UserInfo?>(
         builder: (context, userInfo, child) {
           return Scaffold(
-            backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
+            backgroundColor: isDesktopShell
+                ? context.colors.surface
+                : context.colors.primaryBackground,
             appBar: isDesktopShell
                 ? null
                 : AppBar(
-                    title: Text(AppLocalizations.of(context)!.singleConversationDetails),
+                    title: Text(AppLocalizations.of(context)!
+                        .singleConversationDetails),
                   ),
             body: SafeArea(
               child: _buildSingleConversationInfoView(context, userInfo),
             ),
           );
         },
-        selector: (context, userViewModel) => userViewModel.getUserInfo(conversation.target));
+        selector: (context, userViewModel) =>
+            userViewModel.getUserInfo(conversation.target));
   }
 
-  Widget _buildSingleConversationInfoView(BuildContext context, UserInfo? userInfo) {
+  Widget _buildSingleConversationInfoView(
+      BuildContext context, UserInfo? userInfo) {
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationInfo = conversationViewModel.conversationInfo!;
     final l10n = AppLocalizations.of(context)!;
@@ -83,7 +87,10 @@ class _SingleConversationInfoScreenState
                 onUserTap: (userInfo, anchor) {
                   // 桌面端点成员弹用户信息卡片(与会话内点头像一致),移动端仍整页打开
                   if (isDesktopShell) {
-                    showPcUserCard(context: context, anchor: anchor, userId: userInfo.userId);
+                    showPcUserCard(
+                        context: context,
+                        anchor: anchor,
+                        userId: userInfo.userId);
                   } else {
                     openPage(context, UserInfoWidget(userInfo.userId));
                   }
@@ -131,11 +138,15 @@ class _SingleConversationInfoScreenState
         color: context.colors.surface,
         child: Column(
           children: [
-            OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
-              conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
+            OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent,
+                (enable) {
+              conversationViewModel.setConversationSilent(
+                  conversationInfo.conversation, enable);
             }),
-            OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0, showBottomDivider: false, (enable) {
-              conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
+            OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0,
+                showBottomDivider: false, (enable) {
+              conversationViewModel.setConversationTop(
+                  conversationInfo.conversation, enable ? 1 : 0);
             }),
           ],
         ),
@@ -151,7 +162,8 @@ class _SingleConversationInfoScreenState
     ]));
   }
 
-  void _showClearMessageDialog(BuildContext context, Conversation conversation) {
+  void _showClearMessageDialog(
+      BuildContext context, Conversation conversation) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
@@ -177,7 +189,9 @@ class _SingleConversationInfoScreenState
                 Imclient.clearRemoteConversationMessage(conversation, () {
                   Fluttertoast.showToast(msg: l10n.clearRemoteMessagesSuccess);
                 }, (errorCode) {
-                  Fluttertoast.showToast(msg: l10n.clearRemoteMessagesFailed(errorCode.toString()));
+                  Fluttertoast.showToast(
+                      msg:
+                          l10n.clearRemoteMessagesFailed(errorCode.toString()));
                 });
               },
               child: Padding(
@@ -202,7 +216,11 @@ class _SingleConversationInfoScreenState
         if (members.isNotEmpty) {
           Imclient.createGroup(null, null, null, 2, members, (strValue) {
             // 用外层 context(详情页仍挂载):桌面右栏打开新群会话,移动端 push
-            openConversation(context, Conversation(conversationType: ConversationType.Group, target: strValue));
+            openConversation(
+                context,
+                Conversation(
+                    conversationType: ConversationType.Group,
+                    target: strValue));
           }, (errorCode) {
             Fluttertoast.showToast(msg: l10n.networkError);
           });

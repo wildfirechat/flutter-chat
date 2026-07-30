@@ -16,7 +16,8 @@ class PollHomeScreen extends StatelessWidget {
   final String groupId;
   final bool asDialog;
 
-  const PollHomeScreen({super.key, required this.groupId, this.asDialog = false});
+  const PollHomeScreen(
+      {super.key, required this.groupId, this.asDialog = false});
 
   static Future<void> show(BuildContext context, String groupId) {
     if (isDesktopShell) {
@@ -106,7 +107,8 @@ class _MenuItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: colors.surface,
-          border: Border(bottom: BorderSide(width: 0.5, color: colors.hairlineSoft)),
+          border: Border(
+              bottom: BorderSide(width: 0.5, color: colors.hairlineSoft)),
         ),
         child: Row(
           children: [
@@ -126,7 +128,8 @@ class _MenuItem extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: colors.textPrimary),
+                    style: AppText.base.copyWith(
+                        fontWeight: FontWeight.w500, color: colors.textPrimary),
                   ),
                   const SizedBox(height: 2),
                   Text(

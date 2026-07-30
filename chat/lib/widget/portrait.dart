@@ -13,12 +13,19 @@ class Portrait extends StatelessWidget {
   final double borderRadius;
   final GestureTapCallback? onTap;
 
-  const Portrait(this.portrait, this.assetPlaceHolder, {super.key, this.width = 48.0, this.height = 48.0, this.borderRadius = 4.0, this.onTap});
+  const Portrait(this.portrait, this.assetPlaceHolder,
+      {super.key,
+      this.width = 48.0,
+      this.height = 48.0,
+      this.borderRadius = 4.0,
+      this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    final scaledWidth = LayoutScale.watchScale(context, width, cap: LayoutScale.iconCap);
-    final scaledHeight = LayoutScale.watchScale(context, height, cap: LayoutScale.iconCap);
+    final scaledWidth =
+        LayoutScale.watchScale(context, width, cap: LayoutScale.iconCap);
+    final scaledHeight =
+        LayoutScale.watchScale(context, height, cap: LayoutScale.iconCap);
     Widget image;
     if (portrait.isEmpty || portrait.startsWith('assets/')) {
       image = Image.asset(
@@ -26,7 +33,10 @@ class Portrait extends StatelessWidget {
         width: scaledWidth,
         height: scaledHeight,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Image.asset(assetPlaceHolder, width: scaledWidth, height: scaledHeight),
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+            assetPlaceHolder,
+            width: scaledWidth,
+            height: scaledHeight),
       );
     } else {
       final redirectedUrl = MediaUrlRedirector.redirect(portrait);
@@ -41,7 +51,8 @@ class Portrait extends StatelessWidget {
         placeholder: (context, url) => Container(
           color: Colors.grey[200],
         ),
-        errorWidget: (context, url, err) => Image.asset(assetPlaceHolder, width: scaledWidth, height: scaledHeight),
+        errorWidget: (context, url, err) => Image.asset(assetPlaceHolder,
+            width: scaledWidth, height: scaledHeight),
       );
     }
 

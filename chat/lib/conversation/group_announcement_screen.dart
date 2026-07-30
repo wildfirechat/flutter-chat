@@ -18,7 +18,8 @@ class GroupAnnouncementScreen extends StatefulWidget {
   });
 
   @override
-  State<GroupAnnouncementScreen> createState() => _GroupAnnouncementScreenState();
+  State<GroupAnnouncementScreen> createState() =>
+      _GroupAnnouncementScreenState();
 }
 
 class _GroupAnnouncementScreenState extends State<GroupAnnouncementScreen> {
@@ -45,7 +46,8 @@ class _GroupAnnouncementScreenState extends State<GroupAnnouncementScreen> {
         setState(() {
           _isLoading = false;
         });
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.getGroupAnnouncementFailed(msg));
+        Fluttertoast.showToast(
+            msg: AppLocalizations.of(context)!.getGroupAnnouncementFailed(msg));
       }
     });
   }

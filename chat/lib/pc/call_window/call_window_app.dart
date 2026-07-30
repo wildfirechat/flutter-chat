@@ -164,7 +164,8 @@ class _CallWindowAppState extends State<CallWindowApp>
     Widget screen;
     if (session.conference) {
       screen = ConferenceCallScreen(session: session);
-    } else if (session.conversation?.conversationType == ConversationType.Group) {
+    } else if (session.conversation?.conversationType ==
+        ConversationType.Group) {
       screen = MultiCallScreen(session: session);
     } else {
       screen = VoipCallScreen(session: session);
@@ -198,12 +199,14 @@ class _CallWindowAppState extends State<CallWindowApp>
   }
 
   Future<dynamic> _handleStartCall(dynamic args) async {
-    final conversation = IpcCodec.decodeConversation(args['conversation'] as Map<String, dynamic>);
+    final conversation = IpcCodec.decodeConversation(
+        args['conversation'] as Map<String, dynamic>);
     final participants = (args['participants'] as List).cast<String>();
     final audioOnly = args['audioOnly'] as bool;
     final callExtra = args['callExtra'] as String? ?? '';
 
-    avEngineKit.startCall(conversation, participants, audioOnly, callExtra: callExtra);
+    avEngineKit.startCall(conversation, participants, audioOnly,
+        callExtra: callExtra);
     return null;
   }
 
@@ -249,7 +252,8 @@ class _CallWindowAppState extends State<CallWindowApp>
   @override
   void onWindowClose() async {
     // 先结束通话，再通知主窗口关闭。
-    if (avEngineKit.currentSession != null && avEngineKit.currentSession!.status != CallState.STATUS_IDLE) {
+    if (avEngineKit.currentSession != null &&
+        avEngineKit.currentSession!.status != CallState.STATUS_IDLE) {
       avEngineKit.currentSession!.hangup();
     }
     await WindowEventChannel.invoke(0, MainWindowEvents.windowClosed, {
@@ -284,7 +288,8 @@ class _CallWindowAppState extends State<CallWindowApp>
   @override
   void didCallEnded(CallEndReason reason, int duration) {
     _shellViewModel.endCallSession();
-    _notifyStatusChanged('ended', {'reason': reason.index, 'duration': duration});
+    _notifyStatusChanged(
+        'ended', {'reason': reason.index, 'duration': duration});
     Future.delayed(const Duration(milliseconds: 500), () {
       _closeWindow();
     });

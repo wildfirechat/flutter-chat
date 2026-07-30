@@ -92,7 +92,9 @@ class _PcPickUserViewState extends State<PcPickUserView> {
   }
 
   void _initData() async {
-    var userInfos = widget.candidates != null ? await Imclient.getUserInfos(widget.candidates!) : await UserRepo.getFriendUserInfos();
+    var userInfos = widget.candidates != null
+        ? await Imclient.getUserInfos(widget.candidates!)
+        : await UserRepo.getFriendUserInfos();
     _viewModel.setup(
       userInfos,
       maxPickCount: widget.maxSelected,
@@ -159,9 +161,17 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(child: _orgMode ? _buildOrgColumn(context, viewModel) : _buildContactsColumn(context, viewModel)),
-                    VerticalDivider(width: 0.5, thickness: 0.5, color: context.colors.hairline),
-                    SizedBox(width: 240, child: _buildRightColumn(context, viewModel)),
+                    Expanded(
+                        child: _orgMode
+                            ? _buildOrgColumn(context, viewModel)
+                            : _buildContactsColumn(context, viewModel)),
+                    VerticalDivider(
+                        width: 0.5,
+                        thickness: 0.5,
+                        color: context.colors.hairline),
+                    SizedBox(
+                        width: 240,
+                        child: _buildRightColumn(context, viewModel)),
                   ],
                 ),
               ),
@@ -178,7 +188,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       height: 52,
       padding: const EdgeInsets.only(left: 16, right: 10),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(width: 0.5, color: context.colors.hairline)),
+        border: Border(
+            bottom: BorderSide(width: 0.5, color: context.colors.hairline)),
       ),
       child: Row(
         children: [
@@ -198,10 +209,13 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                 width: 30,
                 height: 30,
                 decoration: BoxDecoration(
-                  color: hovered ? context.colors.hoverOverlay : Colors.transparent,
+                  color: hovered
+                      ? context.colors.hoverOverlay
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Icon(Icons.close, size: 18, color: context.colors.textSecondary),
+                child: Icon(Icons.close,
+                    size: 18, color: context.colors.textSecondary),
               ),
             ),
           ),
@@ -212,7 +226,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
 
   // ---- 左栏:联系人模式 ----
 
-  Widget _buildContactsColumn(BuildContext context, PickUserViewModel viewModel) {
+  Widget _buildContactsColumn(
+      BuildContext context, PickUserViewModel viewModel) {
     return Column(
       children: [
         _buildSearchField(
@@ -220,7 +235,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
           hint: AppLocalizations.of(context)!.search,
           onChanged: viewModel.search,
         ),
-        if (widget.showOrganizationEntry && !viewModel.isSearching) _buildOrganizationEntry(context),
+        if (widget.showOrganizationEntry && !viewModel.isSearching)
+          _buildOrganizationEntry(context),
         const Divider(),
         Expanded(child: _buildContactList(context, viewModel)),
       ],
@@ -255,7 +271,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                   hintText: hint,
-                  hintStyle: AppText.sm.copyWith(color: context.colors.textTertiary),
+                  hintStyle:
+                      AppText.sm.copyWith(color: context.colors.textTertiary),
                 ),
                 onChanged: onChanged,
               ),
@@ -272,12 +289,16 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       builder: (context, hovered) => GestureDetector(
         onTap: _enterOrgMode,
         child: Container(
-          height: LayoutScale.watchScale(context, 44.0, cap: LayoutScale.rowCap),
+          height:
+              LayoutScale.watchScale(context, 44.0, cap: LayoutScale.rowCap),
           color: hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Icon(Icons.corporate_fare, size: LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap), color: context.colors.accent),
+              Icon(Icons.corporate_fare,
+                  size: LayoutScale.watchScale(context, 20.0,
+                      cap: LayoutScale.iconCap),
+                  color: context.colors.accent),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -285,7 +306,10 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                   style: AppText.sm.copyWith(color: context.colors.textPrimary),
                 ),
               ),
-              Icon(Icons.chevron_right, size: LayoutScale.watchScale(context, 18.0, cap: LayoutScale.iconCap), color: context.colors.textTertiary),
+              Icon(Icons.chevron_right,
+                  size: LayoutScale.watchScale(context, 18.0,
+                      cap: LayoutScale.iconCap),
+                  color: context.colors.textTertiary),
             ],
           ),
         ),
@@ -299,18 +323,21 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       controller: _listController,
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       itemCount: users.length,
-      itemBuilder: (context, i) => _buildContactTile(context, viewModel, users[i]),
+      itemBuilder: (context, i) =>
+          _buildContactTile(context, viewModel, users[i]),
     );
   }
 
-  Widget _buildContactTile(BuildContext context, PickUserViewModel viewModel, UIPickUserInfo item) {
+  Widget _buildContactTile(
+      BuildContext context, PickUserViewModel viewModel, UIPickUserInfo item) {
     final l10n = AppLocalizations.of(context)!;
     final userInfo = item.userInfo;
     final userId = userInfo.userId;
     final bool showCategory = item.showCategory && !viewModel.isSearching;
     final bool checkable = viewModel.isCheckable(userId);
     // 预置的既有成员(disabledChecked)呈现为选中+置灰,不可取消;disabledUnchecked 呈现为置灰未选。
-    final bool checked = viewModel.isChecked(userId) || viewModel.disabledAndCheckedUserIds.contains(userId);
+    final bool checked = viewModel.isChecked(userId) ||
+        viewModel.disabledAndCheckedUserIds.contains(userId);
 
     final row = _buildCheckableRow(
       checkable: checkable,
@@ -318,10 +345,16 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       onToggle: (value) => _togglePick(context, userInfo, value),
       avatar: userId == '@all'
           ? Image.asset(Config.defaultGroupPortrait,
-              width: LayoutScale.watchScale(context, 34.0, cap: LayoutScale.iconCap),
-              height: LayoutScale.watchScale(context, 34.0, cap: LayoutScale.iconCap))
-          : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 34, height: 34),
-      title: userId == '@all' ? l10n.allMembers : MeshUserDisplay.getReadableName(userInfo),
+              width: LayoutScale.watchScale(context, 34.0,
+                  cap: LayoutScale.iconCap),
+              height: LayoutScale.watchScale(context, 34.0,
+                  cap: LayoutScale.iconCap))
+          : Portrait(userInfo.portrait ?? Config.defaultUserPortrait,
+              Config.defaultUserPortrait,
+              width: 34, height: 34),
+      title: userId == '@all'
+          ? l10n.allMembers
+          : MeshUserDisplay.getReadableName(userInfo),
     );
 
     if (!showCategory) return row;
@@ -329,7 +362,9 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildSectionHeader(item.category == '{' ? '#' : (item.category == 'AI' ? l10n.aiRobot : item.category)),
+        _buildSectionHeader(item.category == '{'
+            ? '#'
+            : (item.category == 'AI' ? l10n.aiRobot : item.category)),
         row,
       ],
     );
@@ -349,8 +384,11 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       builder: (context, hovered) => GestureDetector(
         onTap: checkable ? () => onToggle(!checked) : null,
         child: Container(
-          height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
-          color: checkable && hovered ? context.colors.hoverOverlay : Colors.transparent,
+          height:
+              LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
+          color: checkable && hovered
+              ? context.colors.hoverOverlay
+              : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
@@ -370,14 +408,16 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                     children: [
                       Text(
                         title,
-                        style: AppText.sm.copyWith(color: context.colors.textPrimary),
+                        style: AppText.sm
+                            .copyWith(color: context.colors.textPrimary),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (subtitle != null && subtitle.isNotEmpty)
                         Text(
                           subtitle,
-                          style: AppText.xs.copyWith(color: context.colors.textTertiary),
+                          style: AppText.xs
+                              .copyWith(color: context.colors.textTertiary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -406,7 +446,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
 
   // ---- 左栏:组织架构模式 ----
 
-  Widget _buildOrgColumn(BuildContext context, PickUserViewModel pickViewModel) {
+  Widget _buildOrgColumn(
+      BuildContext context, PickUserViewModel pickViewModel) {
     return ListenableBuilder(
       listenable: _orgViewModel!,
       builder: (context, _) {
@@ -427,7 +468,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     );
   }
 
-  Widget _buildOrgBreadcrumb(BuildContext context, OrganizationViewModel orgVm) {
+  Widget _buildOrgBreadcrumb(
+      BuildContext context, OrganizationViewModel orgVm) {
     final path = orgVm.breadcrumbPath;
     final List<Widget> items = [
       // 返回联系人列表
@@ -442,7 +484,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               color: hovered ? context.colors.hoverOverlay : Colors.transparent,
               borderRadius: BorderRadius.circular(4),
             ),
-            child: Icon(Icons.arrow_back, size: 16, color: context.colors.textPrimary),
+            child: Icon(Icons.arrow_back,
+                size: 16, color: context.colors.textPrimary),
           ),
         ),
       ),
@@ -451,7 +494,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     for (int i = 0; i < path.length; i++) {
       final org = path[i];
       final isLast = i == path.length - 1;
-      items.add(Icon(Icons.chevron_right, size: 16, color: context.colors.textTertiary));
+      items.add(Icon(Icons.chevron_right,
+          size: 16, color: context.colors.textTertiary));
       items.add(
         HoverBuilder(
           cursor: isLast ? SystemMouseCursors.basic : SystemMouseCursors.click,
@@ -461,7 +505,11 @@ class _PcPickUserViewState extends State<PcPickUserView> {
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
               child: Text(
                 org.name,
-                style: AppText.sm.copyWith(color: isLast ? context.colors.textPrimary : context.colors.accent, fontWeight: isLast ? FontWeight.w500 : FontWeight.normal),
+                style: AppText.sm.copyWith(
+                    color: isLast
+                        ? context.colors.textPrimary
+                        : context.colors.accent,
+                    fontWeight: isLast ? FontWeight.w500 : FontWeight.normal),
               ),
             ),
           ),
@@ -480,12 +528,14 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     );
   }
 
-  Widget _buildOrgBody(BuildContext context, OrganizationViewModel orgVm, PickUserViewModel pickViewModel) {
+  Widget _buildOrgBody(BuildContext context, OrganizationViewModel orgVm,
+      PickUserViewModel pickViewModel) {
     if (orgVm.isLoading && orgVm.searchQuery.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
     if (orgVm.error != null && orgVm.searchQuery.isEmpty) {
-      return _buildOrgMessage(orgVm.error!, onRetry: () => orgVm.retryLoadData());
+      return _buildOrgMessage(orgVm.error!,
+          onRetry: () => orgVm.retryLoadData());
     }
     if (orgVm.searchQuery.isNotEmpty) {
       return _buildOrgSearchResults(context, orgVm, pickViewModel);
@@ -495,7 +545,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     final subOrgs = details?.subOrganizations ?? [];
     final employees = details?.employees ?? [];
     if (subOrgs.isEmpty && employees.isEmpty) {
-      return _buildOrgMessage(AppLocalizations.of(context)!.orgNoSubOrgOrMembers);
+      return _buildOrgMessage(
+          AppLocalizations.of(context)!.orgNoSubOrgOrMembers);
     }
 
     return ListView(
@@ -507,13 +558,15 @@ class _PcPickUserViewState extends State<PcPickUserView> {
         ],
         if (employees.isNotEmpty) ...[
           _buildSectionHeader(AppLocalizations.of(context)!.members),
-          ...employees.map((e) => _buildOrgEmployeeTile(context, pickViewModel, e)),
+          ...employees
+              .map((e) => _buildOrgEmployeeTile(context, pickViewModel, e)),
         ],
       ],
     );
   }
 
-  Widget _buildOrgSearchResults(BuildContext context, OrganizationViewModel orgVm, PickUserViewModel pickViewModel) {
+  Widget _buildOrgSearchResults(BuildContext context,
+      OrganizationViewModel orgVm, PickUserViewModel pickViewModel) {
     if (orgVm.isSearching) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -525,7 +578,9 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     }
     return ListView(
       controller: _orgListController,
-      children: orgVm.searchResults.map((e) => _buildOrgEmployeeTile(context, pickViewModel, e)).toList(),
+      children: orgVm.searchResults
+          .map((e) => _buildOrgEmployeeTile(context, pickViewModel, e))
+          .toList(),
     );
   }
 
@@ -555,18 +610,23 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     );
   }
 
-  Widget _buildSubOrgTile(BuildContext context, OrganizationViewModel orgVm, Organization org) {
+  Widget _buildSubOrgTile(
+      BuildContext context, OrganizationViewModel orgVm, Organization org) {
     return HoverBuilder(
       cursor: SystemMouseCursors.click,
       builder: (context, hovered) => GestureDetector(
         onTap: () => orgVm.navigateToOrganization(org),
         child: Container(
-          height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
+          height:
+              LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
           color: hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Icon(Icons.folder_outlined, size: LayoutScale.watchScale(context, 22.0, cap: LayoutScale.iconCap), color: context.colors.accent),
+              Icon(Icons.folder_outlined,
+                  size: LayoutScale.watchScale(context, 22.0,
+                      cap: LayoutScale.iconCap),
+                  color: context.colors.accent),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -576,7 +636,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Icon(Icons.chevron_right, size: 18, color: context.colors.textTertiary),
+              Icon(Icons.chevron_right,
+                  size: 18, color: context.colors.textTertiary),
             ],
           ),
         ),
@@ -584,15 +645,19 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     );
   }
 
-  Widget _buildOrgEmployeeTile(BuildContext context, PickUserViewModel pickViewModel, Employee emp) {
+  Widget _buildOrgEmployeeTile(
+      BuildContext context, PickUserViewModel pickViewModel, Employee emp) {
     final id = emp.employeeId;
     final bool checkable = pickViewModel.isCheckable(id);
-    final bool checked = pickViewModel.isChecked(id) || pickViewModel.disabledAndCheckedUserIds.contains(id);
+    final bool checked = pickViewModel.isChecked(id) ||
+        pickViewModel.disabledAndCheckedUserIds.contains(id);
     return _buildCheckableRow(
       checkable: checkable,
       checked: checked,
       onToggle: (_) => _toggleOrgEmployee(emp),
-      avatar: Portrait(emp.portraitUrl ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 34, height: 34),
+      avatar: Portrait(emp.portraitUrl ?? Config.defaultUserPortrait,
+          Config.defaultUserPortrait,
+          width: 34, height: 34),
       title: emp.name,
       subtitle: emp.title,
     );
@@ -624,57 +689,70 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                     child: Text(
                       l10n.pickContactHint,
                       textAlign: TextAlign.center,
-                      style: AppText.sm.copyWith(color: context.colors.textTertiary),
+                      style: AppText.sm
+                          .copyWith(color: context.colors.textTertiary),
                     ),
                   ),
                 )
               : ListView.builder(
                   controller: _selectedController,
                   itemCount: picked.length,
-                  itemBuilder: (context, i) => _buildSelectedTile(context, viewModel, picked[i]),
+                  itemBuilder: (context, i) =>
+                      _buildSelectedTile(context, viewModel, picked[i]),
                 ),
         ),
       ],
     );
   }
 
-  Widget _buildSelectedTile(BuildContext context, PickUserViewModel viewModel, UserInfo userInfo) {
+  Widget _buildSelectedTile(
+      BuildContext context, PickUserViewModel viewModel, UserInfo userInfo) {
     final l10n = AppLocalizations.of(context)!;
     return HoverBuilder(
       cursor: SystemMouseCursors.click,
       builder: (context, hovered) => GestureDetector(
         onTap: () => viewModel.pickUser(userInfo, false),
         child: Container(
-          height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
+          height:
+              LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
           color: hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
               userInfo.userId == '@all'
                   ? Image.asset(Config.defaultGroupPortrait,
-                      width: LayoutScale.watchScale(context, 30.0, cap: LayoutScale.iconCap),
-                      height: LayoutScale.watchScale(context, 30.0, cap: LayoutScale.iconCap))
-                  : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 30, height: 30),
+                      width: LayoutScale.watchScale(context, 30.0,
+                          cap: LayoutScale.iconCap),
+                      height: LayoutScale.watchScale(context, 30.0,
+                          cap: LayoutScale.iconCap))
+                  : Portrait(userInfo.portrait ?? Config.defaultUserPortrait,
+                      Config.defaultUserPortrait,
+                      width: 30, height: 30),
               const SizedBox(width: 10),
-                Expanded(
-                  child: userInfo.userId == '@all'
-                      ? Text(
-                          l10n.allMembers,
-                          style: AppText.sm.copyWith(color: context.colors.textPrimary),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        )
-                      : MeshUserName(
-                          userInfo,
-                          style: AppText.sm.copyWith(color: context.colors.textPrimary),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                ),
+              Expanded(
+                child: userInfo.userId == '@all'
+                    ? Text(
+                        l10n.allMembers,
+                        style: AppText.sm
+                            .copyWith(color: context.colors.textPrimary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    : MeshUserName(
+                        userInfo,
+                        style: AppText.sm
+                            .copyWith(color: context.colors.textPrimary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+              ),
               Icon(
                 Icons.remove_circle_outline,
-                size: LayoutScale.watchScale(context, 18.0, cap: LayoutScale.iconCap),
-                color: hovered ? context.colors.badge : context.colors.textTertiary,
+                size: LayoutScale.watchScale(context, 18.0,
+                    cap: LayoutScale.iconCap),
+                color: hovered
+                    ? context.colors.badge
+                    : context.colors.textTertiary,
               ),
             ],
           ),
@@ -690,7 +768,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        border: Border(top: BorderSide(width: 0.5, color: context.colors.hairline)),
+        border:
+            Border(top: BorderSide(width: 0.5, color: context.colors.hairline)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -701,8 +780,12 @@ class _PcPickUserViewState extends State<PcPickUserView> {
           ),
           const SizedBox(width: 12),
           FilledButton(
-            onPressed: viewModel.pickedUsers.isNotEmpty ? () => widget.callback(context, viewModel.pickedUsers.map((u) => u.userId).toList()) : null,
-            child: Text(count > 0 ? l10n.doneWithCount(count.toString()) : l10n.done),
+            onPressed: viewModel.pickedUsers.isNotEmpty
+                ? () => widget.callback(context,
+                    viewModel.pickedUsers.map((u) => u.userId).toList())
+                : null,
+            child: Text(
+                count > 0 ? l10n.doneWithCount(count.toString()) : l10n.done),
           ),
         ],
       ),

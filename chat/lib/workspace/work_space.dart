@@ -247,7 +247,6 @@ void _bindTabHost(
   unawaited(_loadTab(controller, tab, vm, brightness));
 }
 
-
 Future<void> _loadTab(
   DWebViewController controller,
   WorkspaceTab tab,

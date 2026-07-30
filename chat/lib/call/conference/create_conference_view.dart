@@ -55,7 +55,8 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
     );
     if (time == null) return;
     setState(() {
-      _endTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+      _endTime =
+          DateTime(date.year, date.month, date.day, time.hour, time.minute);
     });
   }
 
@@ -190,48 +191,55 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
             ),
             const SizedBox(height: 12),
             ListTile(
-              title: Text(l10n.conferenceEndTime, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceEndTime,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: Text(_formatTime(_endTime),
                   style: AppText.base.copyWith(color: context.colors.success)),
               onTap: _pickEndTime,
             ),
             ListTile(
-              title: Text(l10n.conferenceAudioOnly, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAudioOnly,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _audioOnly,
                 onChanged: (v) => setState(() => _audioOnly = v),
               ),
             ),
             ListTile(
-              title: Text(l10n.conferenceDefaultAudience, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceDefaultAudience,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _audience,
                 onChanged: (v) => setState(() => _audience = v),
               ),
             ),
             ListTile(
-              title: Text(l10n.conferenceAdvanced, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAdvanced,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _advance,
                 onChanged: (v) => setState(() => _advance = v),
               ),
             ),
             ListTile(
-              title: Text(l10n.conferenceRecord, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceRecord,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _record,
                 onChanged: (v) => setState(() => _record = v),
               ),
             ),
             ListTile(
-              title: Text(l10n.conferenceAllowTurnOnMic, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAllowTurnOnMic,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _allowTurnOnMic,
                 onChanged: (v) => setState(() => _allowTurnOnMic = v),
               ),
             ),
             ListTile(
-              title: Text(l10n.conferenceEnablePassword, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceEnablePassword,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _enablePassword,
                 onChanged: (v) => setState(() => _enablePassword = v),
@@ -247,7 +255,8 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _loading ? null : () => _createConference(join: true),
+                onPressed:
+                    _loading ? null : () => _createConference(join: true),
                 child: _loading
                     ? const SizedBox(
                         width: 20,
@@ -260,7 +269,8 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: _loading ? null : () => _createConference(join: false),
+                onPressed:
+                    _loading ? null : () => _createConference(join: false),
                 child: Text(l10n.conferenceOnlyCreate),
               ),
             ),

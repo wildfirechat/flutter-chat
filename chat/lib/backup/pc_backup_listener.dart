@@ -35,7 +35,8 @@ class _PcBackupListenerState extends State<PcBackupListener> {
   @override
   void initState() {
     super.initState();
-    _msgSubscription = Imclient.IMEventBus.on<ReceiveMessagesEvent>().listen(_onReceiveMessage);
+    _msgSubscription = Imclient.IMEventBus.on<ReceiveMessagesEvent>()
+        .listen(_onReceiveMessage);
   }
 
   @override
@@ -82,11 +83,13 @@ class _PcBackupListenerState extends State<PcBackupListener> {
     return currentUserId.isNotEmpty && msg.fromUser == currentUserId;
   }
 
-  void _handleBackupRequest(Message msg, BackupRequestNotificationContent content) {
+  void _handleBackupRequest(
+      Message msg, BackupRequestNotificationContent content) {
     if (_isProcessingBackup || _isProcessingRestore) return;
     _isProcessingBackup = true;
 
-    final includeMediaText = content.includeMedia ? l10n.pcIncludeMedia : l10n.pcExcludeMedia;
+    final includeMediaText =
+        content.includeMedia ? l10n.pcIncludeMedia : l10n.pcExcludeMedia;
     final message = l10n.pcBackupRequestContent(
       content.conversationCount.toString(),
       content.messageCount.toString(),
@@ -151,7 +154,8 @@ class _PcBackupListenerState extends State<PcBackupListener> {
             setState(() {
               _showBackupProgress = false;
             });
-            _showNotification(l10n.pcBackupReceivedTitle, l10n.pcBackupReceivedContent(count.toString(), path));
+            _showNotification(l10n.pcBackupReceivedTitle,
+                l10n.pcBackupReceivedContent(count.toString(), path));
           }
           _isProcessingBackup = false;
         }
@@ -172,12 +176,14 @@ class _PcBackupListenerState extends State<PcBackupListener> {
         ..serverPort = serverInfo['port'];
       _sendResponse(msg, response);
     } catch (e) {
-      _showNotification(l10n.failed, l10n.pcStartBackupServerFailed(e.toString()));
+      _showNotification(
+          l10n.failed, l10n.pcStartBackupServerFailed(e.toString()));
       _isProcessingBackup = false;
     }
   }
 
-  void _handleRestoreRequest(Message msg, RestoreRequestNotificationContent content) {
+  void _handleRestoreRequest(
+      Message msg, RestoreRequestNotificationContent content) {
     if (_isProcessingBackup || _isProcessingRestore) return;
     _isProcessingRestore = true;
 
@@ -222,7 +228,8 @@ class _PcBackupListenerState extends State<PcBackupListener> {
       _sendResponse(msg, response);
       _showNotification(l10n.pcRestoreRequestTitle, l10n.pcRestoreAllowed);
     } catch (e) {
-      _showNotification(l10n.failed, l10n.pcStartRestoreServerFailed(e.toString()));
+      _showNotification(
+          l10n.failed, l10n.pcStartRestoreServerFailed(e.toString()));
     }
     _isProcessingRestore = false;
   }
@@ -283,7 +290,8 @@ class _PcBackupListenerState extends State<PcBackupListener> {
                 ),
                 const SizedBox(height: 20),
                 _buildProgressItem(l10n.pcReceivedFiles, '$_receivedFileCount'),
-                _buildProgressItem(l10n.pcCurrentFile, _currentFileName ?? l10n.pcPreparing),
+                _buildProgressItem(
+                    l10n.pcCurrentFile, _currentFileName ?? l10n.pcPreparing),
                 _buildProgressItem(l10n.pcSaveLocation, _backupPath ?? ''),
                 const SizedBox(height: 20),
                 const Center(child: CircularProgressIndicator()),

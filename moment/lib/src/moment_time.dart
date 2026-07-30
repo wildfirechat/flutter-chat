@@ -19,10 +19,13 @@ class MomentTime {
       return '${diff.inHours}小时前';
     }
     final yesterday = DateTime(now.year, now.month, now.day - 1);
-    if (dt.year == yesterday.year && dt.month == yesterday.month && dt.day == yesterday.day) {
+    if (dt.year == yesterday.year &&
+        dt.month == yesterday.month &&
+        dt.day == yesterday.day) {
       return '昨天';
     }
-    if (diff.inDays < 7 && dt.isAfter(DateTime(now.year, now.month, now.day - 7))) {
+    if (diff.inDays < 7 &&
+        dt.isAfter(DateTime(now.year, now.month, now.day - 7))) {
       return '${diff.inDays}天前';
     }
     if (dt.year == now.year) {
@@ -37,7 +40,8 @@ class MomentTime {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final thatDay = DateTime(dt.year, dt.month, dt.day);
-    final hm = '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    final hm =
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
     if (thatDay == today) return hm;
     if (thatDay == today.subtract(const Duration(days: 1))) return '昨天 $hm';
     if (dt.year == now.year) return '${dt.month}月${dt.day}日 $hm';

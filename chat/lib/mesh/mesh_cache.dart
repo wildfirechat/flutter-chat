@@ -10,7 +10,8 @@ import 'package:imclient/model/domain_info.dart';
 /// 并通过 [DomainInfoUpdatedEvent] 保持同步。
 class MeshCache extends ChangeNotifier {
   MeshCache._() {
-    _subscription = Imclient.IMEventBus.on<DomainInfoUpdatedEvent>().listen((event) {
+    _subscription =
+        Imclient.IMEventBus.on<DomainInfoUpdatedEvent>().listen((event) {
       final info = event.domainInfo;
       if (info != null && info.domainId.isNotEmpty) {
         _domains[info.domainId] = info;

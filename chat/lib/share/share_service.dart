@@ -66,11 +66,16 @@ class ShareService {
 
     try {
       final conversations = await Imclient.getConversationInfos(
-        [ConversationType.Single, ConversationType.Group, ConversationType.Channel],
+        [
+          ConversationType.Single,
+          ConversationType.Group,
+          ConversationType.Channel
+        ],
         [0],
       );
 
-      final sharedConversations = await _buildSharedConversations(conversations);
+      final sharedConversations =
+          await _buildSharedConversations(conversations);
       final prefs = await SharedPreferences.getInstance();
       final authToken = prefs.getString('app_server_auth_token');
 
@@ -97,17 +102,20 @@ class ShareService {
       try {
         switch (conv.conversationType) {
           case ConversationType.Single:
-            final user = await Imclient.getUserInfo(conv.target, refresh: false);
+            final user =
+                await Imclient.getUserInfo(conv.target, refresh: false);
             title = user?.getReadableName() ?? conv.target;
             portraitUrl = user?.portrait;
             break;
           case ConversationType.Group:
-            final group = await Imclient.getGroupInfo(conv.target, refresh: false);
+            final group =
+                await Imclient.getGroupInfo(conv.target, refresh: false);
             title = group?.name ?? '';
             portraitUrl = group?.portrait;
             break;
           case ConversationType.Channel:
-            final channel = await Imclient.getChannelInfo(conv.target, refresh: false);
+            final channel =
+                await Imclient.getChannelInfo(conv.target, refresh: false);
             title = channel?.name ?? '';
             portraitUrl = channel?.portrait;
             break;
@@ -165,10 +173,10 @@ class SharedConversation {
   });
 
   Map<String, dynamic> toJson() => {
-    'type': type,
-    'target': target,
-    'line': line,
-    'title': title,
-    'portraitUrl': portraitUrl,
-  };
+        'type': type,
+        'target': target,
+        'line': line,
+        'title': title,
+        'portraitUrl': portraitUrl,
+      };
 }

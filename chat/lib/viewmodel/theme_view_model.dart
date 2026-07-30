@@ -16,7 +16,8 @@ class ThemeViewModel extends ChangeNotifier {
   /// 在 runApp 之前 await,否则暗色用户开屏会先闪一帧浅色。
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
-    final stored = prefs.getString(_themeModeKey) ?? prefs.getString(_legacyPcThemeModeKey);
+    final stored = prefs.getString(_themeModeKey) ??
+        prefs.getString(_legacyPcThemeModeKey);
     final loaded = _parse(stored);
     if (loaded != _themeMode) {
       _themeMode = loaded;
@@ -29,7 +30,8 @@ class ThemeViewModel extends ChangeNotifier {
     if (mode == _themeMode) return;
     _themeMode = mode;
     notifyListeners();
-    SharedPreferences.getInstance().then((prefs) => prefs.setString(_themeModeKey, _serialize(mode)));
+    SharedPreferences.getInstance()
+        .then((prefs) => prefs.setString(_themeModeKey, _serialize(mode)));
   }
 
   /// 兼容旧的 'follow_system';认不出来的一律回落到跟随系统。

@@ -45,7 +45,9 @@ class SubscribedChannelsPageState extends State<SubscribedChannelsPage> {
       body: ListView.separated(
         itemCount: channelIds.length,
         separatorBuilder: (context, __) => Divider(
-          indent: 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 12.0,
+          indent: 16.0 +
+              LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) +
+              12.0,
         ),
         itemBuilder: (context, index) {
           return _buildChannelItem(channelIds[index]);
@@ -67,7 +69,10 @@ class SubscribedChannelsPageState extends State<SubscribedChannelsPage> {
               context,
               MaterialPageRoute(
                 builder: (context) => ConversationScreen(
-                  Conversation(conversationType: ConversationType.Channel, target: channelId, line: 0),
+                  Conversation(
+                      conversationType: ConversationType.Channel,
+                      target: channelId,
+                      line: 0),
                 ),
               ),
             );
@@ -76,11 +81,14 @@ class SubscribedChannelsPageState extends State<SubscribedChannelsPage> {
           child: Container(
             // 行高随字号档位缩放(封顶 rowCap),标题单行省略:
             // 二者配套才能保证最大字号下行与行不重叠。
-            height: LayoutScale.watchScale(context, 56.0, cap: LayoutScale.rowCap),
+            height:
+                LayoutScale.watchScale(context, 56.0, cap: LayoutScale.rowCap),
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Row(
               children: [
-                Portrait(channelInfo.portrait ?? Config.defaultChannelPortrait, Config.defaultChannelPortrait, width: 40, height: 40),
+                Portrait(channelInfo.portrait ?? Config.defaultChannelPortrait,
+                    Config.defaultChannelPortrait,
+                    width: 40, height: 40),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(

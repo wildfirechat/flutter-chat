@@ -11,22 +11,31 @@ import 'package:chat/repo/group_repo.dart';
 
 class ConversationListViewModel extends ChangeNotifier {
   final EventBus _eventBus = Imclient.IMEventBus;
-  late StreamSubscription<ConnectionStatusChangedEvent> _connectionStatusSubscription;
+  late StreamSubscription<ConnectionStatusChangedEvent>
+      _connectionStatusSubscription;
   late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
-  late StreamSubscription<UserSettingUpdatedEvent> _userSettingUpdatedSubscription;
+  late StreamSubscription<UserSettingUpdatedEvent>
+      _userSettingUpdatedSubscription;
   late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
   late StreamSubscription<GroupInfoUpdatedEvent> _groupInfoUpdatedSubscription;
-  late StreamSubscription<GroupMembersUpdatedEvent> _groupMembersUpdatedSubscription;
+  late StreamSubscription<GroupMembersUpdatedEvent>
+      _groupMembersUpdatedSubscription;
   late StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
   late StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
-  late StreamSubscription<ClearConversationUnreadEvent> _clearConversationUnreadSubscription;
-  late StreamSubscription<ClearConversationsUnreadEvent> _clearConversationsUnreadSubscription;
+  late StreamSubscription<ClearConversationUnreadEvent>
+      _clearConversationUnreadSubscription;
+  late StreamSubscription<ClearConversationsUnreadEvent>
+      _clearConversationsUnreadSubscription;
   late StreamSubscription<SendMessageStartEvent> _sendMessageStartSubscription;
-  late StreamSubscription<SendMessageSuccessEvent> _sendMessageSuccessSubscription;
-  late StreamSubscription<SendMessageFailureEvent> _sendMessageFailureSubscription;
+  late StreamSubscription<SendMessageSuccessEvent>
+      _sendMessageSuccessSubscription;
+  late StreamSubscription<SendMessageFailureEvent>
+      _sendMessageFailureSubscription;
   late StreamSubscription<ClearMessagesEvent> _clearMessagesSubscription;
-  late StreamSubscription<ConversationDraftUpdatedEvent> _draftUpdatedSubscription;
-  late StreamSubscription<ConversationSilentUpdatedEvent> _silentUpdatedSubscription;
+  late StreamSubscription<ConversationDraftUpdatedEvent>
+      _draftUpdatedSubscription;
+  late StreamSubscription<ConversationSilentUpdatedEvent>
+      _silentUpdatedSubscription;
   late StreamSubscription<ConversationTopUpdatedEvent> _topUpdatedSubscription;
 
   List<ConversationInfo> _conversationList = [];
@@ -54,7 +63,8 @@ class ConversationListViewModel extends ChangeNotifier {
         _loadConversationList();
       }
     });
-    _connectionStatusSubscription = _eventBus.on<ConnectionStatusChangedEvent>().listen((event) {
+    _connectionStatusSubscription =
+        _eventBus.on<ConnectionStatusChangedEvent>().listen((event) {
       _connectionStatus = event.connectionStatus;
       debugPrint('connection status changed: ${event.connectionStatus}');
       if (event.connectionStatus == kConnectionStatusConnected) {
@@ -62,7 +72,8 @@ class ConversationListViewModel extends ChangeNotifier {
       }
     });
 
-    _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
+    _receiveMessageSubscription =
+        _eventBus.on<ReceiveMessagesEvent>().listen((event) {
       if (!event.hasMore && _connectionStatus == kConnectionStatusConnected) {
         for (Message msg in event.messages) {
           if (msg.messageId > 0) {
@@ -72,55 +83,73 @@ class ConversationListViewModel extends ChangeNotifier {
         }
       }
     });
-    _userSettingUpdatedSubscription = _eventBus.on<UserSettingUpdatedEvent>().listen((event) {
+    _userSettingUpdatedSubscription =
+        _eventBus.on<UserSettingUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
-    _userInfoUpdatedSubscription = _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
+    _userInfoUpdatedSubscription =
+        _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
-    _groupInfoUpdatedSubscription = _eventBus.on<GroupInfoUpdatedEvent>().listen((event) {
+    _groupInfoUpdatedSubscription =
+        _eventBus.on<GroupInfoUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
-    _groupMembersUpdatedSubscription = _eventBus.on<GroupMembersUpdatedEvent>().listen((event) {
+    _groupMembersUpdatedSubscription =
+        _eventBus.on<GroupMembersUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
-    _recallMessageSubscription = _eventBus.on<RecallMessageEvent>().listen((event) {
+    _recallMessageSubscription =
+        _eventBus.on<RecallMessageEvent>().listen((event) {
       _reloadConversation(event.conversation!);
     });
-    _deleteMessageSubscription = _eventBus.on<DeleteMessageEvent>().listen((event) {
+    _deleteMessageSubscription =
+        _eventBus.on<DeleteMessageEvent>().listen((event) {
       _reloadConversation(event.conversation!);
     });
-    _clearConversationUnreadSubscription = _eventBus.on<ClearConversationUnreadEvent>().listen((event) {
+    _clearConversationUnreadSubscription =
+        _eventBus.on<ClearConversationUnreadEvent>().listen((event) {
       _reloadConversation(event.conversation);
     });
-    _clearConversationsUnreadSubscription = _eventBus.on<ClearConversationsUnreadEvent>().listen((event) {
+    _clearConversationsUnreadSubscription =
+        _eventBus.on<ClearConversationsUnreadEvent>().listen((event) {
       _loadConversationList();
     });
-    _sendMessageStartSubscription = _eventBus.on<SendMessageStartEvent>().listen((event) {
+    _sendMessageStartSubscription =
+        _eventBus.on<SendMessageStartEvent>().listen((event) {
       if (event.message.messageId != 0) {
-        _reloadConversation(event.message.conversation, insertWhenNotFound: true);
+        _reloadConversation(event.message.conversation,
+            insertWhenNotFound: true);
       }
     });
-    _sendMessageSuccessSubscription = _eventBus.on<SendMessageSuccessEvent>().listen((event) {
+    _sendMessageSuccessSubscription =
+        _eventBus.on<SendMessageSuccessEvent>().listen((event) {
       if (event.message.messageId != 0) {
-        _reloadConversation(event.message.conversation, insertWhenNotFound: true);
+        _reloadConversation(event.message.conversation,
+            insertWhenNotFound: true);
       }
     });
-    _sendMessageFailureSubscription = _eventBus.on<SendMessageFailureEvent>().listen((event) {
+    _sendMessageFailureSubscription =
+        _eventBus.on<SendMessageFailureEvent>().listen((event) {
       if (event.message.messageId != 0) {
-        _reloadConversation(event.message.conversation, insertWhenNotFound: true);
+        _reloadConversation(event.message.conversation,
+            insertWhenNotFound: true);
       }
     });
-    _clearMessagesSubscription = _eventBus.on<ClearMessagesEvent>().listen((event) {
+    _clearMessagesSubscription =
+        _eventBus.on<ClearMessagesEvent>().listen((event) {
       _reloadConversation(event.conversation);
     });
-    _draftUpdatedSubscription = _eventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
+    _draftUpdatedSubscription =
+        _eventBus.on<ConversationDraftUpdatedEvent>().listen((event) {
       _reloadConversation(event.conversation);
     });
-    _silentUpdatedSubscription = _eventBus.on<ConversationSilentUpdatedEvent>().listen((event) {
+    _silentUpdatedSubscription =
+        _eventBus.on<ConversationSilentUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
-    _topUpdatedSubscription = _eventBus.on<ConversationTopUpdatedEvent>().listen((event) {
+    _topUpdatedSubscription =
+        _eventBus.on<ConversationTopUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
 
@@ -136,7 +165,8 @@ class ConversationListViewModel extends ChangeNotifier {
       if (info.conversation.conversationType == ConversationType.Single) {
       } else if (info.conversation.conversationType == ConversationType.Group) {
         targetGroups.add(info.conversation.target);
-      } else if (info.conversation.conversationType == ConversationType.Channel) {
+      } else if (info.conversation.conversationType ==
+          ConversationType.Channel) {
         targetChannels.add(info.conversation.target);
       }
     }
@@ -148,7 +178,8 @@ class ConversationListViewModel extends ChangeNotifier {
     // }
   }
 
-  _reloadConversation(Conversation conversation, {bool insertWhenNotFound = false}) async {
+  _reloadConversation(Conversation conversation,
+      {bool insertWhenNotFound = false}) async {
     var info = await Imclient.getConversationInfo(conversation);
     if (info != null) {
       bool found = false;
@@ -176,13 +207,19 @@ class ConversationListViewModel extends ChangeNotifier {
 
     if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 100), () async {
-        var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
-        // var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single], [0]);
-        _conversationList = conversationInfos;
-        if (force) {
-          _preloadConversationGroupAndChannel(conversationInfos);
-        }
-        notifyListeners();
+      var conversationInfos = await Imclient.getConversationInfos([
+        ConversationType.Single,
+        ConversationType.Group,
+        ConversationType.Channel
+      ], [
+        0
+      ]);
+      // var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single], [0]);
+      _conversationList = conversationInfos;
+      if (force) {
+        _preloadConversationGroupAndChannel(conversationInfos);
+      }
+      notifyListeners();
     });
   }
 

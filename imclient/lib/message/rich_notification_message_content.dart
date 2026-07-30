@@ -84,7 +84,8 @@ class RichNotificationMessageContent extends NotificationMessageContent {
 
     if (payload.binaryContent != null) {
       try {
-        Map<dynamic, dynamic> json = jsonDecode(utf8.decode(payload.binaryContent!));
+        Map<dynamic, dynamic> json =
+            jsonDecode(utf8.decode(payload.binaryContent!));
         remark = json['remark'];
         exName = json['exName'];
         exPortrait = json['exPortrait'];
@@ -92,7 +93,8 @@ class RichNotificationMessageContent extends NotificationMessageContent {
         appId = json['appId'];
         List<dynamic>? rawDatas = json['datas'];
         if (rawDatas != null && rawDatas.isNotEmpty) {
-          datas = rawDatas.map((e) => RichNotificationData.fromJson(e)).toList();
+          datas =
+              rawDatas.map((e) => RichNotificationData.fromJson(e)).toList();
         }
       } catch (e) {
         // binaryContent 解析失败时保留 title/desc,忽略附加信息
@@ -114,7 +116,8 @@ class RichNotificationMessageContent extends NotificationMessageContent {
       'appId': appId,
       'datas': datas?.map((e) => e.toJson()).toList(),
     };
-    payload.binaryContent = Uint8List.fromList(utf8.encode(jsonEncode(jsonObject)));
+    payload.binaryContent =
+        Uint8List.fromList(utf8.encode(jsonEncode(jsonObject)));
     return payload;
   }
 

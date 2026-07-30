@@ -31,7 +31,8 @@ class SelectedAvatarTile extends StatelessWidget {
           Stack(
             clipBehavior: Clip.none,
             children: [
-              Portrait(portrait, defaultPortrait, width: 42, height: 42, borderRadius: 4.0),
+              Portrait(portrait, defaultPortrait,
+                  width: 42, height: 42, borderRadius: 4.0),
               Positioned(
                 top: -6,
                 right: -6,
@@ -42,12 +43,16 @@ class SelectedAvatarTile extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: context.colors.popupBg,
                       shape: BoxShape.circle,
-                      border: Border.all(color: context.colors.hairline, width: 0.5),
+                      border: Border.all(
+                          color: context.colors.hairline, width: 0.5),
                       boxShadow: [
-                        BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 2),
+                        BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 2),
                       ],
                     ),
-                    child: Icon(Icons.close, size: 10, color: context.colors.textSecondary),
+                    child: Icon(Icons.close,
+                        size: 10, color: context.colors.textSecondary),
                   ),
                 ),
               ),
@@ -56,7 +61,9 @@ class SelectedAvatarTile extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             name,
-            style: AppText.xs.copyWith(color: context.colors.textPrimary, decoration: TextDecoration.none),
+            style: AppText.xs.copyWith(
+                color: context.colors.textPrimary,
+                decoration: TextDecoration.none),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
@@ -86,7 +93,8 @@ class PortraitChip extends StatelessWidget {
       padding: const EdgeInsets.only(right: 4),
       child: GestureDetector(
         onTap: onTap,
-        child: Portrait(portrait, defaultPortrait, width: 30, height: 30, borderRadius: 4.0),
+        child: Portrait(portrait, defaultPortrait,
+            width: 30, height: 30, borderRadius: 4.0),
       ),
     );
   }
@@ -114,25 +122,32 @@ class SelectedListTile extends StatelessWidget {
       builder: (context, hovered) => GestureDetector(
         onTap: onRemove,
         child: Container(
-          height: LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
+          height:
+              LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
           color: hovered ? context.colors.hoverOverlay : Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Portrait(portrait, defaultPortrait, width: 30, height: 30, borderRadius: 4.0),
+              Portrait(portrait, defaultPortrait,
+                  width: 30, height: 30, borderRadius: 4.0),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   name,
-                  style: AppText.sm.copyWith(color: context.colors.textPrimary, decoration: TextDecoration.none),
+                  style: AppText.sm.copyWith(
+                      color: context.colors.textPrimary,
+                      decoration: TextDecoration.none),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               Icon(
                 Icons.remove_circle_outline,
-                size: LayoutScale.watchScale(context, 18.0, cap: LayoutScale.iconCap),
-                color: hovered ? context.colors.badge : context.colors.textTertiary,
+                size: LayoutScale.watchScale(context, 18.0,
+                    cap: LayoutScale.iconCap),
+                color: hovered
+                    ? context.colors.badge
+                    : context.colors.textTertiary,
               ),
             ],
           ),
@@ -141,4 +156,3 @@ class SelectedListTile extends StatelessWidget {
     );
   }
 }
-

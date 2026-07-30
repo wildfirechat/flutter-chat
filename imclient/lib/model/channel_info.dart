@@ -77,7 +77,7 @@ class ChannelInfo {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-          (other is ChannelInfo &&
+      (other is ChannelInfo &&
           runtimeType == other.runtimeType &&
           channelId == other.channelId &&
           updateDt == other.updateDt);

@@ -5,6 +5,7 @@ import '../model/message_payload.dart';
 import 'media_message_content.dart';
 import 'message.dart';
 import 'message_content.dart';
+
 // ignore: non_constant_identifier_names
 MessageContent StickerMessageContentCreator() {
   return StickerMessageContent();
@@ -23,9 +24,9 @@ class StickerMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.binaryContent != null) {
-      Map<dynamic, dynamic> map = json.decode(
-          utf8.decode(payload.binaryContent!));
+    if (payload.binaryContent != null) {
+      Map<dynamic, dynamic> map =
+          json.decode(utf8.decode(payload.binaryContent!));
       width = map['x'];
       height = map['y'];
     } else {
@@ -38,7 +39,8 @@ class StickerMessageContent extends MediaMessageContent {
   MessagePayload encode() {
     MessagePayload payload = super.encode();
     payload.searchableContent = '[动态表情]';
-    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode({'x': width, 'y': height})));
+    payload.binaryContent =
+        Uint8List.fromList(utf8.encode(json.encode({'x': width, 'y': height})));
     return payload;
   }
 

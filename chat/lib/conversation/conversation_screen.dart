@@ -13,7 +13,8 @@ class ConversationScreen extends StatelessWidget {
   final Conversation conversation;
   final int? toFocusMessageId;
 
-  const ConversationScreen(this.conversation, {super.key, this.toFocusMessageId});
+  const ConversationScreen(this.conversation,
+      {super.key, this.toFocusMessageId});
 
   @override
   Widget build(BuildContext context) {
@@ -25,11 +26,13 @@ class ConversationScreen extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => conversation.conversationType == ConversationType.Single
-                      ? SingleConversationInfoScreen(conversation)
-                      : conversation.conversationType == ConversationType.Channel
-                          ? ChannelConversationInfoScreen(conversation)
-                          : GroupConversationInfoScreen(conversation)),
+                  builder: (context) =>
+                      conversation.conversationType == ConversationType.Single
+                          ? SingleConversationInfoScreen(conversation)
+                          : conversation.conversationType ==
+                                  ConversationType.Channel
+                              ? ChannelConversationInfoScreen(conversation)
+                              : GroupConversationInfoScreen(conversation)),
             );
           },
           icon: const Icon(Icons.more_horiz_rounded),
@@ -46,7 +49,8 @@ class ConversationScreen extends StatelessWidget {
       ),
       body: SafeArea(
         bottom: false,
-        child: ConversationPane(conversation, toFocusMessageId: toFocusMessageId),
+        child:
+            ConversationPane(conversation, toFocusMessageId: toFocusMessageId),
       ),
     );
   }

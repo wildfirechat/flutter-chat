@@ -22,7 +22,8 @@ class CollectionIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomPaint(
       size: Size(size, size),
-      painter: _CollectionIconPainter(color: color ?? context.colors.iconSecondary),
+      painter:
+          _CollectionIconPainter(color: color ?? context.colors.iconSecondary),
     );
   }
 }
@@ -45,40 +46,41 @@ class _CollectionIconPainter extends CustomPainter {
     // M17,9H7V7h10V9z -> Android pathData
     // 在 24x24 的 viewport 中，对应 Flutter 坐标
     final line1Rect = Rect.fromLTWH(
-      width * 7 / 24,   // x = 7
-      height * 7 / 24,  // y = 7
-      width * 10 / 24,  // width = 10
-      height * 2 / 24,  // height = 2
+      width * 7 / 24, // x = 7
+      height * 7 / 24, // y = 7
+      width * 10 / 24, // width = 10
+      height * 2 / 24, // height = 2
     );
     canvas.drawRect(line1Rect, paint);
 
     // 第二条线 (中间)
     // M17,13H7v-2h10V13z
     final line2Rect = Rect.fromLTWH(
-      width * 7 / 24,   // x = 7
+      width * 7 / 24, // x = 7
       height * 11 / 24, // y = 11 (13-2)
-      width * 10 / 24,  // width = 10
-      height * 2 / 24,  // height = 2
+      width * 10 / 24, // width = 10
+      height * 2 / 24, // height = 2
     );
     canvas.drawRect(line2Rect, paint);
 
     // 第三条线 (最下面，最短)
     // M12,17H7v-2h5V17z
     final line3Rect = Rect.fromLTWH(
-      width * 7 / 24,   // x = 7
+      width * 7 / 24, // x = 7
       height * 15 / 24, // y = 15 (17-2)
-      width * 5 / 24,   // width = 5 (12-7)
-      height * 2 / 24,  // height = 2
+      width * 5 / 24, // width = 5 (12-7)
+      height * 2 / 24, // height = 2
     );
     canvas.drawRect(line3Rect, paint);
   }
 
   @override
-  bool shouldRepaint(covariant _CollectionIconPainter oldDelegate) => oldDelegate.color != color;
+  bool shouldRepaint(covariant _CollectionIconPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
 
 /// 接龙图标 Widget，用于插件面板
-/// 
+///
 /// 显示为圆形背景 + 图标样式
 class CollectionIconWidget extends StatelessWidget {
   final double size;

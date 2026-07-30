@@ -38,8 +38,7 @@ class CommentWidget extends StatelessWidget {
       .toList();
 
   /// 自己是否已赞。
-  bool get likedBySelf =>
-      _praises.any((c) => c.sender == selfUserId);
+  bool get likedBySelf => _praises.any((c) => c.sender == selfUserId);
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +80,8 @@ class CommentWidget extends StatelessWidget {
               for (var i = 0; i < praises.length; i++) ...[
                 _userLink(praises[i].sender, fontSize: 14),
                 if (i < praises.length - 1)
-                  const Text('，', style: TextStyle(fontSize: 14, color: Colors.black87)),
+                  const Text('，',
+                      style: TextStyle(fontSize: 14, color: Colors.black87)),
               ],
             ],
           ),
@@ -109,10 +109,12 @@ class CommentWidget extends StatelessWidget {
           children: [
             _userLink(comment.sender, fontSize: 14),
             if ((comment.replyTo ?? '').isNotEmpty) ...[
-              const Text('回复', style: TextStyle(fontSize: 14, color: Colors.black87)),
+              const Text('回复',
+                  style: TextStyle(fontSize: 14, color: Colors.black87)),
               _userLink(comment.replyTo!, fontSize: 14),
             ],
-            const Text('：', style: TextStyle(fontSize: 14, color: Colors.black87)),
+            const Text('：',
+                style: TextStyle(fontSize: 14, color: Colors.black87)),
             Text(comment.text ?? '',
                 style: const TextStyle(fontSize: 14, color: Colors.black87)),
           ],

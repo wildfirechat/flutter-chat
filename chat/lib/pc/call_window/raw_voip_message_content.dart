@@ -54,7 +54,8 @@ class RawVoipMessageContent extends MessageContent {
   Future<String> digest(Message message) async {
     if (_type == VOIP_CONTENT_TYPE_START && _payload?.binaryContent != null) {
       try {
-        final map = json.decode(utf8.decode(_payload!.binaryContent!)) as Map<String, dynamic>;
+        final map = json.decode(utf8.decode(_payload!.binaryContent!))
+            as Map<String, dynamic>;
         final audioOnly = (map['a'] as int? ?? 0) > 0;
         return audioOnly ? '[语音通话]' : '[视频通话]';
       } catch (e) {

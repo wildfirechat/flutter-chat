@@ -14,7 +14,8 @@ class PCRestoreProgressScreen extends StatefulWidget {
   const PCRestoreProgressScreen({Key? key}) : super(key: key);
 
   @override
-  _PCRestoreProgressScreenState createState() => _PCRestoreProgressScreenState();
+  _PCRestoreProgressScreenState createState() =>
+      _PCRestoreProgressScreenState();
 }
 
 class _PCRestoreProgressScreenState extends State<PCRestoreProgressScreen> {
@@ -232,7 +233,9 @@ class _PCRestoreProgressScreenState extends State<PCRestoreProgressScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.pcRestoreProgressTitle), automaticallyImplyLeading: false),
+      appBar: AppBar(
+          title: Text(l10n.pcRestoreProgressTitle),
+          automaticallyImplyLeading: false),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -242,7 +245,8 @@ class _PCRestoreProgressScreenState extends State<PCRestoreProgressScreen> {
               if (_isError)
                 const Icon(Icons.error_outline, size: 80, color: Colors.red)
               else if (_isFinished)
-                const Icon(Icons.check_circle_outline, size: 80, color: Colors.green)
+                const Icon(Icons.check_circle_outline,
+                    size: 80, color: Colors.green)
               else
                 const SizedBox(
                   width: 80,
@@ -262,7 +266,8 @@ class _PCRestoreProgressScreenState extends State<PCRestoreProgressScreen> {
                 style: const TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 32),
-              if (!_isFinished && !_isError) LinearProgressIndicator(value: _progress),
+              if (!_isFinished && !_isError)
+                LinearProgressIndicator(value: _progress),
               if (_isFinished)
                 Padding(
                   padding: const EdgeInsets.only(top: 40),
@@ -281,7 +286,8 @@ class _PCRestoreProgressScreenState extends State<PCRestoreProgressScreen> {
                       BackupManager().cancelCurrentOperation();
                       Navigator.pop(context);
                     },
-                    child: Text(l10n.cancel, style: TextStyle(color: context.colors.danger)),
+                    child: Text(l10n.cancel,
+                        style: TextStyle(color: context.colors.danger)),
                   ),
                 ),
             ],

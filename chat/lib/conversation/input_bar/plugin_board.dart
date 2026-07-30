@@ -38,12 +38,14 @@ class PluginBoard extends StatelessWidget {
 
   List<_PluginItem> _getPluginItems() {
     final items = [
-      _PluginItem('assets/images/input/album.png',  "album"),
+      _PluginItem('assets/images/input/album.png', "album"),
       // 截图依赖 flameshot,仅原生桌面可用(鸿蒙电脑无此能力)
       if (WfcPlatform.isNativeDesktop) _PluginItem('', "screenshot"),
-      if (!isDesktopShell) _PluginItem('assets/images/input/camera.png', "camera"),
+      if (!isDesktopShell)
+        _PluginItem('assets/images/input/camera.png', "camera"),
       if (!isDesktopShell) _PluginItem('assets/images/input/call.png', "call"),
-      if (!isDesktopShell) _PluginItem('assets/images/input/location.png', "location"),
+      if (!isDesktopShell)
+        _PluginItem('assets/images/input/location.png', "location"),
       _PluginItem('assets/images/input/file.png', "file"),
       _PluginItem('assets/images/input/card.png', "card"),
     ];
@@ -52,7 +54,8 @@ class PluginBoard extends StatelessWidget {
     if (conversation.conversationType == ConversationType.Group &&
         Config.collectionServerAddress != null &&
         Config.collectionServerAddress!.isNotEmpty) {
-      items.add(_PluginItem('assets/images/input/collection.png', "collection"));
+      items
+          .add(_PluginItem('assets/images/input/collection.png', "collection"));
     }
 
     // 群投票仅在群组中且配置了服务地址时显示
@@ -92,7 +95,8 @@ class PluginBoard extends StatelessWidget {
   }
 
   Widget _pluginItemWidget(BuildContext context, _PluginItem item) {
-    final double itemWidth = LayoutScale.watchScale(context, 64, cap: LayoutScale.iconCap);
+    final double itemWidth =
+        LayoutScale.watchScale(context, 64, cap: LayoutScale.iconCap);
     return GestureDetector(
       onTap: () => _onClickItem(context, item.key),
       child: Column(
@@ -165,7 +169,8 @@ class PluginBoard extends StatelessWidget {
   }
 
   Future<void> _onClickItem(BuildContext context, String key) async {
-    var conversationController = Provider.of<ConversationController>(context, listen: false);
+    var conversationController =
+        Provider.of<ConversationController>(context, listen: false);
     final l10n = AppLocalizations.of(context)!;
     switch (key) {
       case "album":
@@ -173,7 +178,8 @@ class PluginBoard extends StatelessWidget {
           if (isDesktopShell) {
             FilePicker.platform.pickFiles(type: FileType.image).then((value) {
               if (value != null && value.files.isNotEmpty) {
-                conversationController.onPickImage(conversation, value.files.first.path!);
+                conversationController.onPickImage(
+                    conversation, value.files.first.path!);
               }
             });
           } else if (WfcPlatform.isAndroid || WfcPlatform.isIOS) {
@@ -205,18 +211,25 @@ class PluginBoard extends StatelessWidget {
           showToast(msg: l10n.notSupportedOnCurrentPlatform);
           return;
         }
-        CameraPicker.pickFromCamera(context, pickerConfig: const CameraPickerConfig(enableRecording: true, resolutionPreset: ResolutionPreset.high)).then((entity) {
+        CameraPicker.pickFromCamera(context,
+                pickerConfig: const CameraPickerConfig(
+                    enableRecording: true,
+                    resolutionPreset: ResolutionPreset.high))
+            .then((entity) {
           if (entity != null) {
             if (entity.type == AssetType.image) {
               entity.file.then((file) {
                 if (file != null) {
-                  conversationController.cameraCaptureImage(conversation, file.path);
+                  conversationController.cameraCaptureImage(
+                      conversation, file.path);
                 }
               });
             } else if (entity.type == AssetType.video) {
               entity.file.then((file) async {
                 if (file != null) {
-                  Uint8List? thumbData = await entity.thumbnailDataWithSize(const ThumbnailSize.square(120), quality: 30);
+                  Uint8List? thumbData = await entity.thumbnailDataWithSize(
+                      const ThumbnailSize.square(120),
+                      quality: 30);
                   img.Image? thumb;
                   if (thumbData != null) {
                     thumb = img.decodeJpg((await entity.thumbnailData)!);
@@ -277,10 +290,10 @@ class PluginBoard extends StatelessWidget {
   }
 
   /// 微信式应用内相册多选(Android/iOS),最多 [_maxImagePickCount] 张
-  Future<void> _pickImagesWithAssetPicker(
-      BuildContext context, ConversationController conversationController) async {
-    final List<File> files =
-        await pickImagesWithWfAssetPicker(context, maxAssets: _maxImagePickCount);
+  Future<void> _pickImagesWithAssetPicker(BuildContext context,
+      ConversationController conversationController) async {
+    final List<File> files = await pickImagesWithWfAssetPicker(context,
+        maxAssets: _maxImagePickCount);
     for (final File file in files) {
       conversationController.onPickImage(conversation, file.path);
     }
@@ -290,7 +303,8 @@ class PluginBoard extends StatelessWidget {
   Widget build(BuildContext context) {
     double boardHeight = height ?? 250;
     final pluginItems = _getPluginItems();
-    final double extent = LayoutScale.watchScale(context, 120, cap: LayoutScale.rowCap);
+    final double extent =
+        LayoutScale.watchScale(context, 120, cap: LayoutScale.rowCap);
     return SizedBox(
         height: boardHeight,
         child: GridView.builder(

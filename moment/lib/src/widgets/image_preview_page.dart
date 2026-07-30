@@ -110,8 +110,7 @@ class _VideoPlayPageState extends State<VideoPlayPage> {
       ),
       body: Center(
         child: _error
-            ? const Text('视频播放失败',
-                style: TextStyle(color: Colors.white70))
+            ? const Text('视频播放失败', style: TextStyle(color: Colors.white70))
             : controller == null
                 ? const CircularProgressIndicator(color: Colors.white)
                 : GestureDetector(

@@ -50,7 +50,8 @@ class MessageCell extends StatefulWidget {
   static Key cellKeyOf(UIMessage model) {
     final content = model.message.content;
     // 流式消息生成期间还没落库,messageId 恒为 0,用 streamId 区分
-    if (content is StreamingTextGeneratingMessageContent && content.streamId.isNotEmpty) {
+    if (content is StreamingTextGeneratingMessageContent &&
+        content.streamId.isNotEmpty) {
       return ValueKey('stream-${content.streamId}');
     }
     if (model.message.messageId != 0) {
@@ -64,7 +65,8 @@ class MessageCell extends StatefulWidget {
   State<MessageCell> createState() => _MessageCellState();
 }
 
-class _MessageCellState extends State<MessageCell> with AutomaticKeepAliveClientMixin {
+class _MessageCellState extends State<MessageCell>
+    with AutomaticKeepAliveClientMixin {
   late MessageCellBuilder _cellBuilder;
 
   @override
@@ -102,7 +104,8 @@ class _MessageCellState extends State<MessageCell> with AutomaticKeepAliveClient
     } else if (widget.model.message.content is CallStartMessageContent) {
       _cellBuilder = CallStartCellBuilder(context, widget.model);
     } else if (widget.model.message.content is RawVoipMessageContent &&
-               (widget.model.message.content as RawVoipMessageContent).meta.type == VOIP_CONTENT_TYPE_START) {
+        (widget.model.message.content as RawVoipMessageContent).meta.type ==
+            VOIP_CONTENT_TYPE_START) {
       _cellBuilder = RawCallStartCellBuilder(context, widget.model);
     } else if (widget.model.message.content is SoundMessageContent) {
       _cellBuilder = VoiceCellBuilder(context, widget.model);
@@ -112,7 +115,9 @@ class _MessageCellState extends State<MessageCell> with AutomaticKeepAliveClient
       _cellBuilder = CardCellBuilder(context, widget.model);
     } else if (widget.model.message.content is VideoMessageContent) {
       _cellBuilder = VideoCellBuilder(context, widget.model);
-    } else if (widget.model.message.content is StreamingTextGeneratingMessageContent || widget.model.message.content is StreamingTextGeneratedMessageContent) {
+    } else if (widget.model.message.content
+            is StreamingTextGeneratingMessageContent ||
+        widget.model.message.content is StreamingTextGeneratedMessageContent) {
       _cellBuilder = StreamingTextCellBuilder(context, widget.model);
     } else if (widget.model.message.content is CompositeMessageContent) {
       _cellBuilder = CompositeCellBuilder(context, widget.model);

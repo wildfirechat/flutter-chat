@@ -1,4 +1,3 @@
-
 import '../model/message_payload.dart';
 import 'media_message_content.dart';
 import 'message.dart';
@@ -12,7 +11,6 @@ MessageContent FileMessageContentCreator() {
 const fileContentMeta = MessageContentMeta(MESSAGE_CONTENT_TYPE_FILE,
     MessageFlag.PERSIST_AND_COUNT, FileMessageContentCreator);
 
-
 class FileMessageContent extends MediaMessageContent {
   late String name;
   late int size;
@@ -23,12 +21,12 @@ class FileMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.searchableContent != null) {
+    if (payload.searchableContent != null) {
       name = payload.searchableContent!;
     } else {
       name = "";
     }
-    if(payload.content != null) {
+    if (payload.content != null) {
       size = int.parse(payload.content!);
     } else {
       size = 0;
@@ -45,7 +43,7 @@ class FileMessageContent extends MediaMessageContent {
 
   @override
   Future<String> digest(Message message) async {
-    if(name.isNotEmpty) {
+    if (name.isNotEmpty) {
       return '[文件]:$name';
     }
     return '[文件]';

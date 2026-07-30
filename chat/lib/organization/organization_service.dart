@@ -21,7 +21,8 @@ class OrganizationService {
   // Singleton pattern
   OrganizationService._privateConstructor();
 
-  static final OrganizationService _instance = OrganizationService._privateConstructor();
+  static final OrganizationService _instance =
+      OrganizationService._privateConstructor();
 
   static OrganizationService get instance => _instance;
 
@@ -85,7 +86,8 @@ class OrganizationService {
 
       if (response.statusCode == 200) {
         // The login endpoint returns the token in the response header.
-        final token = response.headers['authToken'] ?? response.headers['authtoken'];
+        final token =
+            response.headers['authToken'] ?? response.headers['authtoken'];
         if (token != null && token.isNotEmpty) {
           _orgAuthToken = token;
           final prefs = await SharedPreferences.getInstance();
@@ -94,8 +96,10 @@ class OrganizationService {
         _isServiceAvailable = true;
         print('OrganizationService login successful');
       } else {
-        print('OrganizationService login failed: ${response.statusCode} ${response.body}');
-        throw Exception('Failed to login to organization service: ${response.statusCode}');
+        print(
+            'OrganizationService login failed: ${response.statusCode} ${response.body}');
+        throw Exception(
+            'Failed to login to organization service: ${response.statusCode}');
       }
     } catch (e) {
       print('Error during organization service login: $e');
@@ -108,7 +112,8 @@ class OrganizationService {
     return _isServiceAvailable;
   }
 
-  Future<T> _handleResponse<T>(http.Response response, T Function(dynamic json) fromJson) async {
+  Future<T> _handleResponse<T>(
+      http.Response response, T Function(dynamic json) fromJson) async {
     if (response.statusCode == 200) {
       try {
         // Check if the body is empty or not JSON
@@ -138,7 +143,8 @@ class OrganizationService {
             }
             return fromJson(jsonData['result']);
           } else {
-            throw Exception('API Error: ${jsonData['code']} - ${jsonData['message'] ?? jsonData['msg']}');
+            throw Exception(
+                'API Error: ${jsonData['code']} - ${jsonData['message'] ?? jsonData['msg']}');
           }
         } else {
           // Fallback if the structure is not as expected, try to parse directly
@@ -154,19 +160,24 @@ class OrganizationService {
     }
   }
 
-  Future<List<OrganizationRelationship>> getRelationship(String employeeId) async {
-    if (!_isServiceAvailable) throw Exception('Service not available. Call login() first.');
+  Future<List<OrganizationRelationship>> getRelationship(
+      String employeeId) async {
+    if (!_isServiceAvailable)
+      throw Exception('Service not available. Call login() first.');
     final response = await _post(
       '$_orgServerBaseUrl/api/relationship/employee',
       {'employeeId': employeeId},
     );
     return _handleResponse<List<OrganizationRelationship>>(response, (json) {
-      return (json as List).map((item) => OrganizationRelationship.fromJson(item)).toList();
+      return (json as List)
+          .map((item) => OrganizationRelationship.fromJson(item))
+          .toList();
     });
   }
 
   Future<List<Organization>> getRootOrganization() async {
-    if (!_isServiceAvailable) throw Exception('Service not available. Call login() first.');
+    if (!_isServiceAvailable)
+      throw Exception('Service not available. Call login() first.');
     final response = await _post(
       '$_orgServerBaseUrl/api/organization/root',
       null,
@@ -177,16 +188,19 @@ class OrganizationService {
   }
 
   Future<OrganizationEx> getOrganizationEx(int orgId) async {
-    if (!_isServiceAvailable) throw Exception('Service not available. Call login() first.');
+    if (!_isServiceAvailable)
+      throw Exception('Service not available. Call login() first.');
     final response = await _post(
       '$_orgServerBaseUrl/api/organization/query_ex',
       {'id': orgId},
     );
-    return _handleResponse<OrganizationEx>(response, (json) => OrganizationEx.fromJson(json));
+    return _handleResponse<OrganizationEx>(
+        response, (json) => OrganizationEx.fromJson(json));
   }
 
   Future<List<Organization>> getOrganizations(List<int> orgIds) async {
-    if (!_isServiceAvailable) throw Exception('Service not available. Call login() first.');
+    if (!_isServiceAvailable)
+      throw Exception('Service not available. Call login() first.');
     final response = await _post(
       '$_orgServerBaseUrl/api/organization/query_list',
       {'ids': orgIds},
@@ -197,7 +211,8 @@ class OrganizationService {
   }
 
   Future<List<String>> getOrgEmployees(int orgId) async {
-    if (!_isServiceAvailable) throw Exception('Service not available. Call login() first.');
+    if (!_isServiceAvailable)
+      throw Exception('Service not available. Call login() first.');
     final response = await _post(
       '$_orgServerBaseUrl/api/organization/employees',
       {'id': orgId},
@@ -209,7 +224,8 @@ class OrganizationService {
 
   // Overloaded method for batch fetching employees - getOrgEmployees(List<int> orgIds, ...)
   Future<List<String>> getOrgEmployeesByOrgIds(List<int> orgIds) async {
-    if (!_isServiceAvailable) throw Exception('Service not available. Call login() first.');
+    if (!_isServiceAvailable)
+      throw Exception('Service not available. Call login() first.');
     final response = await _post(
       '$_orgServerBaseUrl/api/organization/batch_employees',
       {'ids': orgIds},
@@ -220,16 +236,19 @@ class OrganizationService {
   }
 
   Future<Employee> getEmployee(String employeeId) async {
-    if (!_isServiceAvailable) throw Exception('Service not available. Call login() first.');
+    if (!_isServiceAvailable)
+      throw Exception('Service not available. Call login() first.');
     final response = await _post(
       '$_orgServerBaseUrl/api/employee/query',
       {'employeeId': employeeId},
     );
-    return _handleResponse<Employee>(response, (json) => Employee.fromJson(json));
+    return _handleResponse<Employee>(
+        response, (json) => Employee.fromJson(json));
   }
 
   Future<EmployeeEx> getEmployeeEx(String employeeId) async {
-    if (!_isServiceAvailable) throw Exception('Service not available. Call login() first.');
+    if (!_isServiceAvailable)
+      throw Exception('Service not available. Call login() first.');
     final response = await _post(
       '$_orgServerBaseUrl/api/employee/query_ex',
       {'employeeId': employeeId},
@@ -245,7 +264,8 @@ class OrganizationService {
   }
 
   Future<List<Employee>> searchEmployee(int orgId, String keyword) async {
-    if (!_isServiceAvailable) throw Exception('Service not available. Call login() first.');
+    if (!_isServiceAvailable)
+      throw Exception('Service not available. Call login() first.');
     final response = await _post(
       '$_orgServerBaseUrl/api/employee/search',
       {'organizationId': orgId, 'keyword': keyword, 'count': 50, 'page': 0},
@@ -262,7 +282,10 @@ class OrganizationService {
   Future<http.Response> _post(String url, Map<String, dynamic>? body) async {
     var response = await http.post(
       Uri.parse(url),
-      headers: {'Content-Type': 'application/json', 'authToken': _orgAuthToken!},
+      headers: {
+        'Content-Type': 'application/json',
+        'authToken': _orgAuthToken!
+      },
       body: body == null ? null : jsonEncode(body),
     );
     // 本地恢复的 token 可能已在服务端失效，且 login() 见到缓存 token 会短路，
@@ -271,7 +294,10 @@ class OrganizationService {
       await _relogin();
       response = await http.post(
         Uri.parse(url),
-        headers: {'Content-Type': 'application/json', 'authToken': _orgAuthToken!},
+        headers: {
+          'Content-Type': 'application/json',
+          'authToken': _orgAuthToken!
+        },
         body: body == null ? null : jsonEncode(body),
       );
     }

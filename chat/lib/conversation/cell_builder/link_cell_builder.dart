@@ -13,7 +13,8 @@ import 'package:chat/theme/app_typography.dart';
 class LinkCellBuilder extends PortraitCellBuilder {
   late LinkMessageContent linkContent;
 
-  LinkCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  LinkCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     linkContent = model.message.content as LinkMessageContent;
   }
 
@@ -22,7 +23,8 @@ class LinkCellBuilder extends PortraitCellBuilder {
     final screenWidth = MediaQuery.of(context).size.width;
     final dpr = MediaQuery.of(context).devicePixelRatio;
     final cardWidth = (screenWidth * 0.75).clamp(240.0, 320.0);
-    final hasThumbnail = linkContent.thumbnailUrl != null && linkContent.thumbnailUrl!.isNotEmpty;
+    final hasThumbnail = linkContent.thumbnailUrl != null &&
+        linkContent.thumbnailUrl!.isNotEmpty;
 
     return GestureDetector(
       onTap: () => Utilities.openLink(context, linkContent.url),
@@ -39,7 +41,8 @@ class LinkCellBuilder extends PortraitCellBuilder {
           children: [
             if (hasThumbnail)
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(8)),
                 child: Image.network(
                   MediaUrlRedirector.redirect(linkContent.thumbnailUrl!),
                   width: double.infinity,
@@ -64,7 +67,9 @@ class LinkCellBuilder extends PortraitCellBuilder {
                   if (linkContent.title.isNotEmpty)
                     Text(
                       linkContent.title,
-                      style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: Color(0xFF576b95)),
+                      style: AppText.lg.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF576b95)),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -81,12 +86,14 @@ class LinkCellBuilder extends PortraitCellBuilder {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.link, size: 12, color: Color(0xFFAAAAAA)),
+                        const Icon(Icons.link,
+                            size: 12, color: Color(0xFFAAAAAA)),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             linkContent.url,
-                            style: AppText.xs.copyWith(color: Color(0xFFAAAAAA)),
+                            style:
+                                AppText.xs.copyWith(color: Color(0xFFAAAAAA)),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

@@ -29,7 +29,12 @@ Future<T?> showPcPopover<T>({
   required WidgetBuilder builder,
 }) {
   return Navigator.of(context, rootNavigator: true).push<T>(
-    _PcPopoverRoute<T>(anchor: anchor, width: width, maxHeight: maxHeight, align: align, builder: builder),
+    _PcPopoverRoute<T>(
+        anchor: anchor,
+        width: width,
+        maxHeight: maxHeight,
+        align: align,
+        builder: builder),
   );
 }
 
@@ -61,9 +66,11 @@ class _PcPopoverRoute<T> extends PopupRoute<T> {
   Duration get transitionDuration => const Duration(milliseconds: 120);
 
   @override
-  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+  Widget buildPage(BuildContext context, Animation<double> animation,
+      Animation<double> secondaryAnimation) {
     return CustomSingleChildLayout(
-      delegate: _PcPopoverLayoutDelegate(anchor: anchor, width: width, maxHeight: maxHeight, align: align),
+      delegate: _PcPopoverLayoutDelegate(
+          anchor: anchor, width: width, maxHeight: maxHeight, align: align),
       child: FadeTransition(
         opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
         // 弹层挂在 root navigator 上,不在 PC 子树内,主题要在这里补回来。
@@ -95,14 +102,19 @@ class _PcPopoverLayoutDelegate extends SingleChildLayoutDelegate {
 
   static const double _margin = 8;
 
-  _PcPopoverLayoutDelegate({required this.anchor, required this.width, this.maxHeight, required this.align});
+  _PcPopoverLayoutDelegate(
+      {required this.anchor,
+      required this.width,
+      this.maxHeight,
+      required this.align});
 
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
     return BoxConstraints(
       minWidth: width,
       maxWidth: width,
-      maxHeight: math.min(maxHeight ?? double.infinity, constraints.maxHeight - _margin * 2),
+      maxHeight: math.min(
+          maxHeight ?? double.infinity, constraints.maxHeight - _margin * 2),
     );
   }
 

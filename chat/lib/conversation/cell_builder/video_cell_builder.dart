@@ -34,7 +34,8 @@ class VideoCellBuilder extends PortraitCellBuilder {
         _thumbHeight = img.height;
       }
     }
-    if (videoMessageContent.localPath != null && videoMessageContent.localPath!.isNotEmpty) {
+    if (videoMessageContent.localPath != null &&
+        videoMessageContent.localPath!.isNotEmpty) {
       _localFileExists = File(videoMessageContent.localPath!).existsSync();
     }
   }
@@ -51,7 +52,8 @@ class VideoCellBuilder extends PortraitCellBuilder {
   Widget _buildThumbnail(BuildContext context) {
     // 缩略图宽高已在构造时解码并缓存，直接使用
     // 计算显示大小
-    Size displaySize = Tools.getImageSizeByOrgSizeToWeChat(_thumbWidth, _thumbHeight);
+    Size displaySize =
+        Tools.getImageSizeByOrgSizeToWeChat(_thumbWidth, _thumbHeight);
     double width = displaySize.width > 0 ? displaySize.width : 200;
     double height = displaySize.height > 0 ? displaySize.height : 200;
 
@@ -61,36 +63,46 @@ class VideoCellBuilder extends PortraitCellBuilder {
     if (_localFileExists) {
       // 如果有本地文件，直接使用缩略图显示
       if (thumbnail != null) {
-          return SizedBox(
-            width: width / dpr,
-            height: height / dpr,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Stack(
-                children: [
-                  Image.memory(
-                    thumbnail!,
-                    width: width,
-                    height: height,
-                    fit: BoxFit.cover,
+        return SizedBox(
+          width: width / dpr,
+          height: height / dpr,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Stack(
+              children: [
+                Image.memory(
+                  thumbnail!,
+                  width: width,
+                  height: height,
+                  fit: BoxFit.cover,
+                ),
+                Center(
+                  child: Image.asset(
+                    "assets/images/video_msg_cover.png",
+                    width: 40,
+                    height: 40,
                   ),
-                  Center(child: Image.asset("assets/images/video_msg_cover.png", width: 40, height: 40,),),
-                  Positioned(
-                    bottom: 4,
-                    right: 4,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                      child: Text(formatMediaDuration(videoMessageContent.duration), style: AppText.xs.copyWith(color: Colors.white),),
+                ),
+                Positioned(
+                  bottom: 4,
+                  right: 4,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(3),
                     ),
-                  )
-                ],
-              ),
+                    child: Text(
+                      formatMediaDuration(videoMessageContent.duration),
+                      style: AppText.xs.copyWith(color: Colors.white),
+                    ),
+                  ),
+                )
+              ],
             ),
-          );
+          ),
+        );
       }
     }
 
@@ -119,7 +131,8 @@ class VideoCellBuilder extends PortraitCellBuilder {
                 bottom: 4,
                 right: 4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(3),
@@ -152,7 +165,8 @@ class VideoCellBuilder extends PortraitCellBuilder {
                 bottom: 4,
                 right: 4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.black54,
                     borderRadius: BorderRadius.circular(3),

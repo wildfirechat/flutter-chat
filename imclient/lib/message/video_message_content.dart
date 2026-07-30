@@ -6,7 +6,6 @@ import 'media_message_content.dart';
 import 'message.dart';
 import 'message_content.dart';
 
-
 // ignore: non_constant_identifier_names
 MessageContent VideoMessageContentCreator() {
   return VideoMessageContent();
@@ -40,7 +39,7 @@ class VideoMessageContent extends MediaMessageContent {
   MessagePayload encode() {
     MessagePayload payload = super.encode();
     payload.searchableContent = '[视频]';
-    if(thumbnail != null) {
+    if (thumbnail != null) {
       payload.binaryContent = thumbnail;
     }
     payload.content = json.encode({'duration': duration, 'd': duration});

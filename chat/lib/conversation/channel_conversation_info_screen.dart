@@ -50,7 +50,9 @@ class _ChannelConversationInfoScreenState
     return Selector<ChannelViewModel, ChannelInfo?>(
         builder: (context, channelInfo, child) {
           return Scaffold(
-            backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
+            backgroundColor: isDesktopShell
+                ? context.colors.surface
+                : context.colors.primaryBackground,
             appBar: isDesktopShell
                 ? null
                 : AppBar(
@@ -61,10 +63,12 @@ class _ChannelConversationInfoScreenState
             ),
           );
         },
-        selector: (context, channelViewModel) => channelViewModel.getChannelInfo(conversation.target));
+        selector: (context, channelViewModel) =>
+            channelViewModel.getChannelInfo(conversation.target));
   }
 
-  Widget _buildSingleConversationInfoView(BuildContext context, ChannelInfo? channelInfo) {
+  Widget _buildSingleConversationInfoView(
+      BuildContext context, ChannelInfo? channelInfo) {
     var conversationViewModel = Provider.of<ConversationViewModel>(context);
     var conversationInfo = conversationViewModel.conversationInfo!;
     final l10n = AppLocalizations.of(context)!;
@@ -86,7 +90,9 @@ class _ChannelConversationInfoScreenState
                     width: 80,
                     height: 80,
                   ),
-                  Container(margin: const EdgeInsets.only(top: 10.0, bottom: 10), child: Text(channelInfo.name!))
+                  Container(
+                      margin: const EdgeInsets.only(top: 10.0, bottom: 10),
+                      child: Text(channelInfo.name!))
                 ],
               ),
             )
@@ -130,11 +136,15 @@ class _ChannelConversationInfoScreenState
         color: context.colors.surface,
         child: Column(
           children: [
-            OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent, (enable) {
-              conversationViewModel.setConversationSilent(conversationInfo.conversation, enable);
+            OptionSwitchItem(l10n.muteNotification, conversationInfo.isSilent,
+                (enable) {
+              conversationViewModel.setConversationSilent(
+                  conversationInfo.conversation, enable);
             }),
-            OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0, showBottomDivider: false, (enable) {
-              conversationViewModel.setConversationTop(conversationInfo.conversation, enable ? 1 : 0);
+            OptionSwitchItem(l10n.stickTop, conversationInfo.isTop > 0,
+                showBottomDivider: false, (enable) {
+              conversationViewModel.setConversationTop(
+                  conversationInfo.conversation, enable ? 1 : 0);
             }),
           ],
         ),
@@ -157,7 +167,8 @@ class _ChannelConversationInfoScreenState
     ]));
   }
 
-  void _showClearMessageDialog(BuildContext context, Conversation conversation) {
+  void _showClearMessageDialog(
+      BuildContext context, Conversation conversation) {
     final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
@@ -183,7 +194,9 @@ class _ChannelConversationInfoScreenState
                 Imclient.clearRemoteConversationMessage(conversation, () {
                   Fluttertoast.showToast(msg: l10n.clearRemoteMessagesSuccess);
                 }, (errorCode) {
-                  Fluttertoast.showToast(msg: l10n.clearRemoteMessagesFailed(errorCode.toString()));
+                  Fluttertoast.showToast(
+                      msg:
+                          l10n.clearRemoteMessagesFailed(errorCode.toString()));
                 });
               },
               child: Padding(
@@ -217,7 +230,8 @@ class _ChannelConversationInfoScreenState
                 Navigator.pop(context);
                 _handleUnsubscribeChannel(context);
               },
-              child: Text(l10n.confirm, style: const TextStyle(color: Colors.red)),
+              child:
+                  Text(l10n.confirm, style: const TextStyle(color: Colors.red)),
             ),
           ],
         );

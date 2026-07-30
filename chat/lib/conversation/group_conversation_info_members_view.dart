@@ -24,13 +24,19 @@ class GroupConversationInfoMembersView extends StatefulWidget {
   final void Function()? onShowMoreGroupMemberTap;
 
   const GroupConversationInfoMembersView(this.conversation,
-      {required this.onGroupMemberTap, required this.onAddActionTap, required this.onRemoveActionTap, this.onShowMoreGroupMemberTap, super.key});
+      {required this.onGroupMemberTap,
+      required this.onAddActionTap,
+      required this.onRemoveActionTap,
+      this.onShowMoreGroupMemberTap,
+      super.key});
 
   @override
-  State<GroupConversationInfoMembersView> createState() => _GroupConversationInfoMembersViewState();
+  State<GroupConversationInfoMembersView> createState() =>
+      _GroupConversationInfoMembersViewState();
 }
 
-class _GroupConversationInfoMembersViewState extends State<GroupConversationInfoMembersView> {
+class _GroupConversationInfoMembersViewState
+    extends State<GroupConversationInfoMembersView> {
   bool _isExpanded = false;
 
   // 展开状态下成员数超过该阈值时,GridView 改为固定高度内部滚动,
@@ -44,7 +50,8 @@ class _GroupConversationInfoMembersViewState extends State<GroupConversationInfo
 
     List<UserInfo>? groupMemberUserInfos;
     GroupInfo? groupInfo;
-    groupMemberUserInfos = groupViewModel.getGroupMemberUserInfos(widget.conversation.target);
+    groupMemberUserInfos =
+        groupViewModel.getGroupMemberUserInfos(widget.conversation.target);
     groupInfo = groupViewModel.getGroupInfo(widget.conversation.target);
     if (groupInfo == null || groupMemberUserInfos == null) {
       return Container();
@@ -79,14 +86,16 @@ class _GroupConversationInfoMembersViewState extends State<GroupConversationInfo
     if (memberCount > columnCount * showLines) {
       hasMore = true;
       if (!_isExpanded) {
-        showGroupMemberUserInfos = groupMemberUserInfos.sublist(0, columnCount * showLines - moreItemCount);
+        showGroupMemberUserInfos = groupMemberUserInfos.sublist(
+            0, columnCount * showLines - moreItemCount);
         memberCount = columnCount * showLines;
       }
     }
 
     // 头像(iconCap)+ 名字(完整跟随字号),格子高度按行高上限放大才装得下。
     // 在 LayoutBuilder 外取值:builder 在 layout 阶段执行,不适合注册 Provider 依赖。
-    final double cellHeight = LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap);
+    final double cellHeight =
+        LayoutScale.watchScale(context, 80.0, cap: LayoutScale.rowCap);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -94,15 +103,20 @@ class _GroupConversationInfoMembersViewState extends State<GroupConversationInfo
         double crossAxisSpacing = 8.0;
         double mainAxisSpacing = 12.0;
         double width = constraints.maxWidth - horizontalPadding * 2;
-        double cellWidth = (width - (columnCount - 1) * crossAxisSpacing) / columnCount;
+        double cellWidth =
+            (width - (columnCount - 1) * crossAxisSpacing) / columnCount;
         double childAspectRatio = cellWidth / cellHeight;
-        bool scrollableExpanded = _isExpanded && memberCount > _expandedScrollThreshold;
+        bool scrollableExpanded =
+            _isExpanded && memberCount > _expandedScrollThreshold;
 
         Widget gridView = GridView.builder(
           shrinkWrap: !scrollableExpanded,
-          padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 12.0),
+          padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding, vertical: 12.0),
           itemCount: memberCount,
-          physics: scrollableExpanded ? const AlwaysScrollableScrollPhysics() : const NeverScrollableScrollPhysics(),
+          physics: scrollableExpanded
+              ? const AlwaysScrollableScrollPhysics()
+              : const NeverScrollableScrollPhysics(),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: columnCount,
             childAspectRatio: childAspectRatio,
@@ -114,7 +128,8 @@ class _GroupConversationInfoMembersViewState extends State<GroupConversationInfo
               final memberInfo = showGroupMemberUserInfos[index];
               return Builder(
                 builder: (itemContext) => GestureDetector(
-                  onTap: () => widget.onGroupMemberTap(memberInfo, memberCellAnchor(itemContext)),
+                  onTap: () => widget.onGroupMemberTap(
+                      memberInfo, memberCellAnchor(itemContext)),
                   child: ConversationInfoMemberItem(memberInfo),
                 ),
               );
@@ -145,7 +160,9 @@ class _GroupConversationInfoMembersViewState extends State<GroupConversationInfo
             scrollableExpanded
                 ? SizedBox(
                     // 高度固定为若干行,成员格子在内部按需构建并滚动
-                    height: _expandedScrollLines * cellHeight + (_expandedScrollLines - 1) * mainAxisSpacing + 24.0,
+                    height: _expandedScrollLines * cellHeight +
+                        (_expandedScrollLines - 1) * mainAxisSpacing +
+                        24.0,
                     child: gridView,
                   )
                 : gridView,
@@ -159,8 +176,13 @@ class _GroupConversationInfoMembersViewState extends State<GroupConversationInfo
                         widget.onShowMoreGroupMemberTap?.call();
                       },
                       child: Text(
-                        _isExpanded ? AppLocalizations.of(context)!.collapseGroupMembers : AppLocalizations.of(context)!.viewMoreGroupMembers,
-                        style: AppText.base.copyWith(color: context.colors.accent, fontWeight: FontWeight.w500),
+                        _isExpanded
+                            ? AppLocalizations.of(context)!.collapseGroupMembers
+                            : AppLocalizations.of(context)!
+                                .viewMoreGroupMembers,
+                        style: AppText.base.copyWith(
+                            color: context.colors.accent,
+                            fontWeight: FontWeight.w500),
                       ),
                     ),
                   )

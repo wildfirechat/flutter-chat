@@ -31,12 +31,15 @@ class ConversationInfoMemberItem extends StatelessWidget {
             const SizedBox(height: 6.0),
             SizedBox(
               // 纯文本行:完整跟随字号,否则最大档位下 12sp 的名字会被 16px 的盒子裁掉。
-              height: LayoutScale.watchScale(context, 16.0, cap: LayoutScale.textCap),
+              height: LayoutScale.watchScale(context, 16.0,
+                  cap: LayoutScale.textCap),
               child: MeshUserName(
                 userInfo,
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,
-                style: AppText.xs.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.w400),
+                style: AppText.xs.copyWith(
+                    color: context.colors.textSecondary,
+                    fontWeight: FontWeight.w400),
               ),
             ),
           ],

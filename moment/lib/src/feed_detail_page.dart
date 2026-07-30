@@ -59,8 +59,8 @@ class _FeedDetailPageState extends State<FeedDetailPage> {
             c.sender == _selfUserId);
         final commentId = mine.commentId;
         if (commentId == null) return;
-        MomentClient.deleteComment(commentId, feedId, _load,
-            (code) => _toast('操作失败($code)'));
+        MomentClient.deleteComment(
+            commentId, feedId, _load, (code) => _toast('操作失败($code)'));
       } catch (_) {}
     } else {
       MomentClient.postComment(WFMCommentType.WFMComment_Thumbup_Type, feedId)

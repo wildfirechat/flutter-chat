@@ -61,7 +61,8 @@ class RecordState extends State<RecordWidget> {
 
   @override
   Widget build(BuildContext context) {
-    conversationController = Provider.of<ConversationController>(context, listen: false);
+    conversationController =
+        Provider.of<ConversationController>(context, listen: false);
     final colors = context.colors;
     final l10n = AppLocalizations.of(context)!;
 
@@ -93,7 +94,8 @@ class RecordState extends State<RecordWidget> {
       onLongPressStart: (details) => _onVoiceLongPressStart(context),
       onLongPressUp: () => _onVoiceLongPressUp(),
       onLongPressCancel: () => _onVoiceLongPressCancel(),
-      onLongPressMoveUpdate: (LongPressMoveUpdateDetails details) => _onVoicePressMove(details),
+      onLongPressMoveUpdate: (LongPressMoveUpdateDetails details) =>
+          _onVoicePressMove(details),
       child: Container(
         height: 40,
         margin: const EdgeInsets.fromLTRB(0, 5, 5, 5),
@@ -103,7 +105,9 @@ class RecordState extends State<RecordWidget> {
           border: border,
           borderRadius: BorderRadius.circular(4),
         ),
-        child: Text(label, style: AppText.lg.copyWith(fontWeight: FontWeight.w500, color: foreground)),
+        child: Text(label,
+            style: AppText.lg
+                .copyWith(fontWeight: FontWeight.w500, color: foreground)),
       ),
     );
   }
@@ -113,7 +117,8 @@ class RecordState extends State<RecordWidget> {
   void _startRecord(BuildContext context) async {
     var status = await Permission.microphone.request();
     if (!status.isGranted) {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.noMicrophonePermission);
+      Fluttertoast.showToast(
+          msg: AppLocalizations.of(context)!.noMicrophonePermission);
       return;
     }
 
@@ -122,40 +127,43 @@ class RecordState extends State<RecordWidget> {
     }
 
     if (_recorder == null) {
-        return;
+      return;
     }
 
     var direction = await getTemporaryDirectory();
-    _recordPath = '${direction.path}/record-${DateTime.now().millisecondsSinceEpoch}.aac';
+    _recordPath =
+        '${direction.path}/record-${DateTime.now().millisecondsSinceEpoch}.aac';
     setState(() {
       _isRecording = true;
     });
 
     try {
-        await _recorder!.startRecorder(
+      await _recorder!.startRecorder(
         codec: Codec.aacADTS,
         sampleRate: 16000,
         numChannels: 1,
         toFile: _recordPath,
-        );
-        _recordStartTime = DateTime.now().millisecondsSinceEpoch;
-        _recorder?.setSubscriptionDuration(const Duration(milliseconds: 100));
-        _recorderSubscription = _recorder!.onProgress?.listen((RecordingDisposition event) {
+      );
+      _recordStartTime = DateTime.now().millisecondsSinceEpoch;
+      _recorder?.setSubscriptionDuration(const Duration(milliseconds: 100));
+      _recorderSubscription =
+          _recorder!.onProgress?.listen((RecordingDisposition event) {
         if (event.decibels != null) {
-            _audioLevel = event.decibels! ~/ 16;
-            if (_audioLevel > 6) {
+          _audioLevel = event.decibels! ~/ 16;
+          if (_audioLevel > 6) {
             _audioLevel = 6;
-            }
-            if (overlayEntry != null) {
+          }
+          if (overlayEntry != null) {
             overlayEntry!.markNeedsBuild();
-            }
+          }
         }
-        });
-        buildOverLayView(context);
+      });
+      buildOverLayView(context);
     } catch (e) {
-        _isRecording = false;
-        if (mounted) setState(() {});
-        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.recordFailed(e.toString()));
+      _isRecording = false;
+      if (mounted) setState(() {});
+      Fluttertoast.showToast(
+          msg: AppLocalizations.of(context)!.recordFailed(e.toString()));
     }
   }
 
@@ -173,22 +181,26 @@ class RecordState extends State<RecordWidget> {
     }
 
     try {
-        if (_recorder!.isRecording) {
-            await _recorder!.stopRecorder();
-        }
-        _recorderSubscription?.cancel();
-        _recorderSubscription = null;
+      if (_recorder!.isRecording) {
+        await _recorder!.stopRecorder();
+      }
+      _recorderSubscription?.cancel();
+      _recorderSubscription = null;
 
-        if (send && !_isReleaseCancel) {
-        int duration = (DateTime.now().millisecondsSinceEpoch - _recordStartTime + 500) ~/ 1000;
+      if (send && !_isReleaseCancel) {
+        int duration =
+            (DateTime.now().millisecondsSinceEpoch - _recordStartTime + 500) ~/
+                1000;
         if (duration < 1) {
-            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.recordTooShort);
+          Fluttertoast.showToast(
+              msg: AppLocalizations.of(context)!.recordTooShort);
         } else {
-            conversationController.onSoundRecorded(widget.conversation, _recordPath!, duration);
+          conversationController.onSoundRecorded(
+              widget.conversation, _recordPath!, duration);
         }
-        }
+      }
     } catch (e) {
-        debugPrint("stop record error: $e");
+      debugPrint("stop record error: $e");
     }
 
     if (overlayEntry != null) {
@@ -248,7 +260,8 @@ class RecordState extends State<RecordWidget> {
                       ),
                       Text(
                         soundTipsText,
-                        style: AppText.base.copyWith(fontStyle: FontStyle.normal, color: Colors.white),
+                        style: AppText.base.copyWith(
+                            fontStyle: FontStyle.normal, color: Colors.white),
                       )
                     ],
                   ),

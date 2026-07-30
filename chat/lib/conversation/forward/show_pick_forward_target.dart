@@ -6,7 +6,8 @@ import 'package:chat/pc/pc_pick_forward_dialog.dart';
 import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 
-export 'package:chat/conversation/forward/pick_forward_page.dart' show OnForwardTargetsSelected;
+export 'package:chat/conversation/forward/pick_forward_page.dart'
+    show OnForwardTargetsSelected;
 
 /// 按平台形态呈现“转发给…”界面:桌面居中 Dialog(680x540),移动端整页 push。
 ///

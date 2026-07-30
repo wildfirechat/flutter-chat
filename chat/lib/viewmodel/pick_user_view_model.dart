@@ -13,7 +13,8 @@ class UIPickUserInfo {
   String pinyin;
   String shortPinyin;
 
-  UIPickUserInfo(this.category, this.showCategory, this.userInfo, {this.pinyin = '', this.shortPinyin = ''});
+  UIPickUserInfo(this.category, this.showCategory, this.userInfo,
+      {this.pinyin = '', this.shortPinyin = ''});
 }
 
 class PickUserViewModel extends ChangeNotifier {
@@ -59,7 +60,11 @@ class PickUserViewModel extends ChangeNotifier {
     });
   }
 
-  void setup(List<UserInfo> users, {int maxPickCount = 1024, List<String>? uncheckableUserIds, List<String>? disabledUserIds, bool showMentionAll = false}) {
+  void setup(List<UserInfo> users,
+      {int maxPickCount = 1024,
+      List<String>? uncheckableUserIds,
+      List<String>? disabledUserIds,
+      bool showMentionAll = false}) {
     _maxPickCount = maxPickCount;
     _uncheckableUserIds = uncheckableUserIds ?? [];
     _disabledAndCheckedUserIds = disabledUserIds ?? [];
@@ -79,17 +84,23 @@ class PickUserViewModel extends ChangeNotifier {
         category = "AI";
       } else {
         var runes = userInfo.displayName!.runes.toList();
-        if (runes.isNotEmpty && ChineseHelper.isChinese(String.fromCharCode(runes[0]))) {
-          var firstWordPinyin = PinyinHelper.getFirstWordPinyin(userInfo.displayName!);
-          category = firstWordPinyin.isNotEmpty ? firstWordPinyin.substring(0, 1).toUpperCase() : '{';
+        if (runes.isNotEmpty &&
+            ChineseHelper.isChinese(String.fromCharCode(runes[0]))) {
+          var firstWordPinyin =
+              PinyinHelper.getFirstWordPinyin(userInfo.displayName!);
+          category = firstWordPinyin.isNotEmpty
+              ? firstWordPinyin.substring(0, 1).toUpperCase()
+              : '{';
         }
       }
 
       // 预算拼音检索串并缓存，搜索时只做 contains 匹配
       var name = userInfo.displayName!;
-      var pinyin = PinyinHelper.getPinyinE(name, separator: "", defPinyin: '#', format: PinyinFormat.WITHOUT_TONE);
+      var pinyin = PinyinHelper.getPinyinE(name,
+          separator: "", defPinyin: '#', format: PinyinFormat.WITHOUT_TONE);
       var shortPinyin = PinyinHelper.getShortPinyin(name);
-      _users.add(UIPickUserInfo(category, false, userInfo, pinyin: pinyin, shortPinyin: shortPinyin));
+      _users.add(UIPickUserInfo(category, false, userInfo,
+          pinyin: pinyin, shortPinyin: shortPinyin));
     }
 
     _users.sort((a, b) {
@@ -123,7 +134,8 @@ class PickUserViewModel extends ChangeNotifier {
   }
 
   bool isCheckable(String userId) {
-    return !_uncheckableUserIds.contains(userId) && !_disabledAndCheckedUserIds.contains(userId);
+    return !_uncheckableUserIds.contains(userId) &&
+        !_disabledAndCheckedUserIds.contains(userId);
   }
 
   bool isChecked(String userId) {
@@ -131,7 +143,8 @@ class PickUserViewModel extends ChangeNotifier {
   }
 
   bool pickUser(UserInfo userInfo, bool pick) {
-    if (_uncheckableUserIds.any((u) => u == userInfo.userId) || _disabledAndCheckedUserIds.any((u) => u == userInfo.userId)) {
+    if (_uncheckableUserIds.any((u) => u == userInfo.userId) ||
+        _disabledAndCheckedUserIds.any((u) => u == userInfo.userId)) {
       return false;
     }
     // 按 userId 判定是否已选:同一用户在好友列表与组织架构里可能是不同的 UserInfo 实例

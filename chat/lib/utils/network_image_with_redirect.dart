@@ -30,9 +30,7 @@ class RedirectNetworkImage extends ImageProvider<RedirectNetworkImage> {
 
   @override
   bool operator ==(Object other) =>
-      other is RedirectNetworkImage &&
-      other.url == url &&
-      other.scale == scale;
+      other is RedirectNetworkImage && other.url == url && other.scale == scale;
 
   @override
   int get hashCode => Object.hash(url, scale);

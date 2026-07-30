@@ -30,14 +30,16 @@ class _GroupManagerScreenState extends State<GroupManagerScreen> {
   List<GroupMember> _members = [];
   Map<String, UserInfo> _userInfoMap = {};
   bool _loading = true;
-  late StreamSubscription<GroupMembersUpdatedEvent> _groupMembersUpdatedSubscription;
+  late StreamSubscription<GroupMembersUpdatedEvent>
+      _groupMembersUpdatedSubscription;
 
   @override
   void initState() {
     super.initState();
     _groupInfo = widget.groupInfo;
     _loadMembers();
-    _groupMembersUpdatedSubscription = Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
+    _groupMembersUpdatedSubscription =
+        Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
       if (event.groupId == _groupInfo.target) {
         _loadMembers();
       }
@@ -55,7 +57,8 @@ class _GroupManagerScreenState extends State<GroupManagerScreen> {
     var memberIds = members.map((e) => e.memberId).toList();
     Map<String, UserInfo> userInfoMap = {};
     if (memberIds.isNotEmpty) {
-      var userInfos = await Imclient.getUserInfos(memberIds, groupId: _groupInfo.target);
+      var userInfos =
+          await Imclient.getUserInfos(memberIds, groupId: _groupInfo.target);
       for (var userInfo in userInfos) {
         userInfoMap[userInfo.userId] = userInfo;
       }
@@ -95,8 +98,12 @@ class _GroupManagerScreenState extends State<GroupManagerScreen> {
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               children: [
-                if (_ownerMember != null) _buildMemberTile(context, _ownerMember!, l10n.groupOwner, showRemove: false),
-                ..._managerMembers.map((member) => _buildMemberTile(context, member, l10n.groupManager, showRemove: true)),
+                if (_ownerMember != null)
+                  _buildMemberTile(context, _ownerMember!, l10n.groupOwner,
+                      showRemove: false),
+                ..._managerMembers.map((member) => _buildMemberTile(
+                    context, member, l10n.groupManager,
+                    showRemove: true)),
               ],
             ),
       floatingActionButton: FloatingActionButton(
@@ -106,14 +113,19 @@ class _GroupManagerScreenState extends State<GroupManagerScreen> {
     );
   }
 
-  Widget _buildMemberTile(BuildContext context, GroupMember member, String roleLabel, {required bool showRemove}) {
+  Widget _buildMemberTile(
+      BuildContext context, GroupMember member, String roleLabel,
+      {required bool showRemove}) {
     return AnimatedBuilder(
       animation: MeshCache.instance,
       builder: (context, child) {
         UserInfo? userInfo = _userInfoMap[member.memberId];
         return ListTile(
-          leading: Portrait(userInfo?.portrait ?? '', Config.defaultUserPortrait, width: 44, height: 44, borderRadius: 6),
-          title: userInfo != null ? MeshUserName(userInfo) : Text(member.memberId),
+          leading: Portrait(
+              userInfo?.portrait ?? '', Config.defaultUserPortrait,
+              width: 44, height: 44, borderRadius: 6),
+          title:
+              userInfo != null ? MeshUserName(userInfo) : Text(member.memberId),
           subtitle: Text(roleLabel),
           trailing: showRemove
               ? TextButton(

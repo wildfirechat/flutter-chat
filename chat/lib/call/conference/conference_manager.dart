@@ -6,7 +6,8 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/app_server.dart';
-import 'package:avenginekit/messages/conference_command_message_content.dart' as av_command;
+import 'package:avenginekit/messages/conference_command_message_content.dart'
+    as av_command;
 
 /// 会议管理命令类型，与 Vue / web SDK 保持一致
 class ConferenceCommandType {
@@ -86,7 +87,8 @@ class ConferenceManager {
   }
 
   void _registerMessageListener() {
-    _messageSubscription = Imclient.IMEventBus.on<ReceiveMessagesEvent>().listen((event) {
+    _messageSubscription =
+        Imclient.IMEventBus.on<ReceiveMessagesEvent>().listen((event) {
       for (var msg in event.messages) {
         _handleMessage(msg);
       }
@@ -255,7 +257,11 @@ class ConferenceManager {
   }
 
   /// 发送会议命令消息（会议聊天室广播）
-  void _sendCommand(int command, {String targetUserId = '', bool boolValue = false, Function? successCallback, Function(String)? errorCallback}) {
+  void _sendCommand(int command,
+      {String targetUserId = '',
+      bool boolValue = false,
+      Function? successCallback,
+      Function(String)? errorCallback}) {
     if (_conferenceId == null) return;
     var content = av_command.ConferenceCommandMessageContent();
     content.callId = _conferenceId!;
@@ -275,7 +281,8 @@ class ConferenceManager {
         if (successCallback != null) successCallback();
       },
       errorCallback: (errorCode) {
-        if (errorCallback != null) errorCallback('send command error $errorCode');
+        if (errorCallback != null)
+          errorCallback('send command error $errorCode');
       },
     );
   }
@@ -332,12 +339,16 @@ class ConferenceManager {
     if (!isOwner) return;
     if (mute) {
       _sendCommand(
-        audio ? ConferenceCommandType.REQUEST_MUTE_AUDIO : ConferenceCommandType.REQUEST_MUTE_VIDEO,
+        audio
+            ? ConferenceCommandType.REQUEST_MUTE_AUDIO
+            : ConferenceCommandType.REQUEST_MUTE_VIDEO,
         targetUserId: userId,
       );
     } else {
       _sendCommand(
-        audio ? ConferenceCommandType.APPROVE_UNMUTE_AUDIO : ConferenceCommandType.APPROVE_UNMUTE_VIDEO,
+        audio
+            ? ConferenceCommandType.APPROVE_UNMUTE_AUDIO
+            : ConferenceCommandType.APPROVE_UNMUTE_VIDEO,
         targetUserId: userId,
       );
     }
@@ -346,7 +357,9 @@ class ConferenceManager {
   /// 成员申请开麦/开视频
   void applyUnmute(bool audio, bool isCancel) {
     _sendCommand(
-      audio ? ConferenceCommandType.APPLY_UNMUTE_AUDIO : ConferenceCommandType.APPLY_UNMUTE_VIDEO,
+      audio
+          ? ConferenceCommandType.APPLY_UNMUTE_AUDIO
+          : ConferenceCommandType.APPLY_UNMUTE_VIDEO,
       boolValue: isCancel,
     );
     if (audio) {
@@ -362,7 +375,9 @@ class ConferenceManager {
     if (!isOwner) return;
     if (isAllow) {
       _sendCommand(
-        audio ? ConferenceCommandType.APPROVE_UNMUTE_AUDIO : ConferenceCommandType.APPROVE_UNMUTE_VIDEO,
+        audio
+            ? ConferenceCommandType.APPROVE_UNMUTE_AUDIO
+            : ConferenceCommandType.APPROVE_UNMUTE_VIDEO,
         targetUserId: userId,
       );
       if (audio) {
@@ -372,7 +387,9 @@ class ConferenceManager {
       }
     } else {
       _sendCommand(
-        audio ? ConferenceCommandType.REJECT_UNMUTE_REQUEST_AUDIO : ConferenceCommandType.REJECT_UNMUTE_REQUEST_VIDEO,
+        audio
+            ? ConferenceCommandType.REJECT_UNMUTE_REQUEST_AUDIO
+            : ConferenceCommandType.REJECT_UNMUTE_REQUEST_VIDEO,
         targetUserId: userId,
       );
     }
@@ -384,7 +401,9 @@ class ConferenceManager {
     if (!isOwner) return;
     if (isAllow) {
       _sendCommand(
-        audio ? ConferenceCommandType.APPROVE_ALL_UNMUTE_AUDIO : ConferenceCommandType.APPROVE_ALL_UNMUTE_VIDEO,
+        audio
+            ? ConferenceCommandType.APPROVE_ALL_UNMUTE_AUDIO
+            : ConferenceCommandType.APPROVE_ALL_UNMUTE_VIDEO,
       );
       if (audio) {
         applyingUnmuteAudioMembers.clear();
@@ -392,10 +411,13 @@ class ConferenceManager {
         applyingUnmuteVideoMembers.clear();
       }
     } else {
-      var list = audio ? applyingUnmuteAudioMembers : applyingUnmuteVideoMembers;
+      var list =
+          audio ? applyingUnmuteAudioMembers : applyingUnmuteVideoMembers;
       for (var userId in list) {
         _sendCommand(
-          audio ? ConferenceCommandType.REJECT_UNMUTE_REQUEST_AUDIO : ConferenceCommandType.REJECT_UNMUTE_REQUEST_VIDEO,
+          audio
+              ? ConferenceCommandType.REJECT_UNMUTE_REQUEST_AUDIO
+              : ConferenceCommandType.REJECT_UNMUTE_REQUEST_VIDEO,
           targetUserId: userId,
         );
       }
@@ -472,7 +494,8 @@ class ConferenceManager {
   }
 
   /// 销毁会议
-  void destroyConference(Function successCallback, Function(String) errorCallback) {
+  void destroyConference(
+      Function successCallback, Function(String) errorCallback) {
     if (_conferenceId == null) return;
     AppServer.destroyConference(_conferenceId!, successCallback, errorCallback);
   }
@@ -482,7 +505,8 @@ class ConferenceManager {
   static const String _historyKey = 'historyConfList';
   static const int _maxHistoryCount = 50;
 
-  static Future<void> addHistory(Map<String, dynamic> info, int durationMs) async {
+  static Future<void> addHistory(
+      Map<String, dynamic> info, int durationMs) async {
     var list = await getHistoryConferences();
     var conferenceId = info['conferenceId'] as String?;
     if (conferenceId == null || conferenceId.isEmpty) return;

@@ -229,7 +229,8 @@ class PCWindowManager {
       return;
     }
     _saveStateTimer?.cancel();
-    _saveStateTimer = Timer(const Duration(milliseconds: 500), _saveWindowState);
+    _saveStateTimer =
+        Timer(const Duration(milliseconds: 500), _saveWindowState);
   }
 
   Future<void> _saveWindowState() async {
@@ -295,7 +296,8 @@ class _WindowState {
         (json['height'] as num?)?.toDouble() ?? 720,
       ),
       position: json['left'] != null && json['top'] != null
-          ? Offset((json['left'] as num).toDouble(), (json['top'] as num).toDouble())
+          ? Offset(
+              (json['left'] as num).toDouble(), (json['top'] as num).toDouble())
           : null,
       isMaximized: json['maximized'] as bool? ?? false,
     );

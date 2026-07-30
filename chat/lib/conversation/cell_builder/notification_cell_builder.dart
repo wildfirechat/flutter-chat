@@ -30,7 +30,8 @@ class NotificationCellBuilder extends MessageCellBuilder {
     // optimization
     // TODO 更细致的判断，仅包含用户信息的消息，比如加群等消息，需要重新加载 lastMessage
     if (model.message.content is NotificationMessageContent) {
-      _userInfoUpdatedSubscription = Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
+      _userInfoUpdatedSubscription =
+          Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
         _loadLastMessageDigest();
       });
     }
@@ -54,13 +55,13 @@ class NotificationCellBuilder extends MessageCellBuilder {
 
     final reeditWidget = showReedit
         ? GestureDetector(
-      onTap: () => _onReeditTapped(context, recallContent!),
-      child: Text(
-        AppLocalizations.of(context)?.reedit ?? '重新编辑',
-        textAlign: TextAlign.center,
-        style: AppText.xs.copyWith(color: context.colors.link),
-      ),
-    )
+            onTap: () => _onReeditTapped(context, recallContent!),
+            child: Text(
+              AppLocalizations.of(context)?.reedit ?? '重新编辑',
+              textAlign: TextAlign.center,
+              style: AppText.xs.copyWith(color: context.colors.link),
+            ),
+          )
         : null;
 
     return Container(
@@ -69,35 +70,37 @@ class NotificationCellBuilder extends MessageCellBuilder {
             : const EdgeInsets.fromLTRB(60, 0, 60, 0),
         child: notificaitonMsgDigest.isEmpty
             ? Container(
-          width: 200,
-          height: 12,
-          decoration: BoxDecoration(
-            color: context.colors.hoverOverlay,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        )
+                width: 200,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: context.colors.hoverOverlay,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              )
             : Wrap(
-          alignment: WrapAlignment.center,
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text(
-              notificaitonMsgDigest,
-              textAlign: TextAlign.center,
-              style: isDesktopShell
-                  ? AppText.sm.copyWith(color: Color(0xFFA0A0A4))
-                  : AppText.xs,
-            ),
-            if (reeditWidget != null) ...[
-              const SizedBox(width: 6),
-              reeditWidget,
-            ],
-          ],
-        ));
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    notificaitonMsgDigest,
+                    textAlign: TextAlign.center,
+                    style: isDesktopShell
+                        ? AppText.sm.copyWith(color: Color(0xFFA0A0A4))
+                        : AppText.xs,
+                  ),
+                  if (reeditWidget != null) ...[
+                    const SizedBox(width: 6),
+                    reeditWidget,
+                  ],
+                ],
+              ));
   }
 
-  void _onReeditTapped(BuildContext context, RecallNotificationContent recallContent) {
+  void _onReeditTapped(
+      BuildContext context, RecallNotificationContent recallContent) {
     String? text;
-    if (recallContent.originalContent != null && recallContent.originalContent!.isNotEmpty) {
+    if (recallContent.originalContent != null &&
+        recallContent.originalContent!.isNotEmpty) {
       text = recallContent.originalContent;
     } else if (recallContent.originalSearchableContent != null &&
         recallContent.originalSearchableContent!.isNotEmpty) {
@@ -107,7 +110,8 @@ class NotificationCellBuilder extends MessageCellBuilder {
       return;
     }
     try {
-      final controller = Provider.of<MessageInputBarController>(context, listen: false);
+      final controller =
+          Provider.of<MessageInputBarController>(context, listen: false);
       controller.setDraft(text);
     } catch (e) {
       debugPrint('reedit: unable to find MessageInputBarController: $e');

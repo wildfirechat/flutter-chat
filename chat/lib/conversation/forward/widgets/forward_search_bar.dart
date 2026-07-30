@@ -43,20 +43,24 @@ class ForwardSearchBar extends StatelessWidget {
                 children: [
                   if (chips.isNotEmpty)
                     ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: maxChipsWidth ?? double.infinity),
+                      constraints: BoxConstraints(
+                          maxWidth: maxChipsWidth ?? double.infinity),
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
-                        child: Row(mainAxisSize: MainAxisSize.min, children: chips),
+                        child: Row(
+                            mainAxisSize: MainAxisSize.min, children: chips),
                       ),
                     ),
                   Expanded(
                     child: TextField(
                       controller: controller,
                       focusNode: focusNode,
-                      style: AppText.base.copyWith(color: context.colors.textPrimary),
+                      style: AppText.base
+                          .copyWith(color: context.colors.textPrimary),
                       decoration: InputDecoration(
                         hintText: AppLocalizations.of(context)!.search,
-                        hintStyle: AppText.base.copyWith(color: context.colors.textSecondary),
+                        hintStyle: AppText.base
+                            .copyWith(color: context.colors.textSecondary),
                         isDense: true,
                         border: InputBorder.none,
                         contentPadding: EdgeInsets.zero,

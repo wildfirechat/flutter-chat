@@ -48,16 +48,19 @@ class _OrderConferenceViewState extends State<OrderConferenceView> {
     if (date == null) return;
     var time = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.fromDateTime(DateTime.now().add(const Duration(minutes: 5))),
+      initialTime: TimeOfDay.fromDateTime(
+          DateTime.now().add(const Duration(minutes: 5))),
     );
     if (time == null) return;
     setState(() {
-      _startTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+      _startTime =
+          DateTime(date.year, date.month, date.day, time.hour, time.minute);
     });
   }
 
   Future<void> _pickEndTime() async {
-    var initial = _startTime?.add(const Duration(hours: 1)) ?? DateTime.now().add(const Duration(hours: 1));
+    var initial = _startTime?.add(const Duration(hours: 1)) ??
+        DateTime.now().add(const Duration(hours: 1));
     var date = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -71,7 +74,8 @@ class _OrderConferenceViewState extends State<OrderConferenceView> {
     );
     if (time == null) return;
     setState(() {
-      _endTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+      _endTime =
+          DateTime(date.year, date.month, date.day, time.hour, time.minute);
     });
   }
 
@@ -163,47 +167,54 @@ class _OrderConferenceViewState extends State<OrderConferenceView> {
             ),
             const SizedBox(height: 12),
             ListTile(
-              title: Text(l10n.conferenceStartTime, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceStartTime,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: Text(_formatTime(context, _startTime),
                   style: AppText.base.copyWith(color: context.colors.success)),
               onTap: _pickStartTime,
             ),
             ListTile(
-              title: Text(l10n.conferenceEndTime, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceEndTime,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: Text(_formatTime(context, _endTime),
                   style: AppText.base.copyWith(color: context.colors.success)),
               onTap: _pickEndTime,
             ),
             ListTile(
-              title: Text(l10n.conferenceAudioOnly, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAudioOnly,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _audioOnly,
                 onChanged: (v) => setState(() => _audioOnly = v),
               ),
             ),
             ListTile(
-              title: Text(l10n.conferenceDefaultAudience, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceDefaultAudience,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _audience,
                 onChanged: (v) => setState(() => _audience = v),
               ),
             ),
             ListTile(
-              title: Text(l10n.conferenceAdvanced, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAdvanced,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _advance,
                 onChanged: (v) => setState(() => _advance = v),
               ),
             ),
             ListTile(
-              title: Text(l10n.conferenceAllowTurnOnMic, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceAllowTurnOnMic,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _allowTurnOnMic,
                 onChanged: (v) => setState(() => _allowTurnOnMic = v),
               ),
             ),
             ListTile(
-              title: Text(l10n.conferenceEnablePassword, style: TextStyle(color: context.colors.textPrimary)),
+              title: Text(l10n.conferenceEnablePassword,
+                  style: TextStyle(color: context.colors.textPrimary)),
               trailing: AppSwitch(
                 value: _enablePassword,
                 onChanged: (v) => setState(() => _enablePassword = v),

@@ -19,9 +19,11 @@ class ScreenshotResult {
 
   ScreenshotResult._({this.path, this.error});
 
-  factory ScreenshotResult.success(String path) => ScreenshotResult._(path: path);
+  factory ScreenshotResult.success(String path) =>
+      ScreenshotResult._(path: path);
 
-  factory ScreenshotResult.failure(String error) => ScreenshotResult._(error: error);
+  factory ScreenshotResult.failure(String error) =>
+      ScreenshotResult._(error: error);
 }
 
 /// 桌面端截图。macOS 走原生 ScreenCaptureKit(见 Runner/Screenshot/),
@@ -81,7 +83,8 @@ class ScreenshotService {
       // cancelled
       return ScreenshotResult._();
     } on PlatformException catch (e) {
-      return ScreenshotResult.failure(l10n.screenshotException(e.message ?? '$e'));
+      return ScreenshotResult.failure(
+          l10n.screenshotException(e.message ?? '$e'));
     } on MissingPluginException {
       // 原生通道未注册(异常情况),回退 flameshot
       return _captureViaFlameshot(l10n, hideWindow: excludeSelf);

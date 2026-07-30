@@ -42,7 +42,8 @@ class ConferenceParticipantTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool isSelf = item.userId == Imclient.currentUserId;
-    bool showVideo = !audioOnly && !item.videoMuted && item.renderer.srcObject != null;
+    bool showVideo =
+        !audioOnly && !item.videoMuted && item.renderer.srcObject != null;
 
     // 说话指示(绿框/角标)由 item.speakingNotifier 驱动局部刷新,
     // 音量高频上报时不再随整页 setState 重建 RTCVideoView。
@@ -57,7 +58,9 @@ class ConferenceParticipantTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: isSpeaking || isFocusUser
                   ? Border.all(
-                      color: isFocusUser ? context.colors.warning : context.colors.success,
+                      color: isFocusUser
+                          ? context.colors.warning
+                          : context.colors.success,
                       width: 2)
                   : null,
             ),
@@ -79,7 +82,10 @@ class ConferenceParticipantTile extends StatelessWidget {
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [context.colors.surface, context.colors.primaryBackground],
+                          colors: [
+                            context.colors.surface,
+                            context.colors.primaryBackground
+                          ],
                         ),
                       ),
                       child: Center(
@@ -100,18 +106,26 @@ class ConferenceParticipantTile extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         if (item.audioMuted)
-                          Icon(Icons.mic_off, color: context.colors.textSecondary, size: 16),
+                          Icon(Icons.mic_off,
+                              color: context.colors.textSecondary, size: 16),
                         if (item.isAudience)
                           Padding(
                             padding: const EdgeInsets.only(left: 4),
-                            child: Text(AppLocalizations.of(context)!.conferenceAudience,
-                                style: TextStyle(color: context.colors.textSecondary, fontSize: 12)),
+                            child: Text(
+                                AppLocalizations.of(context)!
+                                    .conferenceAudience,
+                                style: TextStyle(
+                                    color: context.colors.textSecondary,
+                                    fontSize: 12)),
                           ),
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
-                            isSelf ? AppLocalizations.of(context)!.meLabel : (item.userInfo?.getReadableName() ?? ''),
-                            style: AppText.sm.copyWith(color: context.colors.textPrimary),
+                            isSelf
+                                ? AppLocalizations.of(context)!.meLabel
+                                : (item.userInfo?.getReadableName() ?? ''),
+                            style: AppText.sm
+                                .copyWith(color: context.colors.textPrimary),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -122,7 +136,8 @@ class ConferenceParticipantTile extends StatelessWidget {
                     Positioned(
                       top: 8,
                       left: 8,
-                      child: Icon(Icons.highlight, color: context.colors.warning, size: 20),
+                      child: Icon(Icons.highlight,
+                          color: context.colors.warning, size: 20),
                     ),
                   if (isSpeaking)
                     Positioned(
@@ -134,7 +149,8 @@ class ConferenceParticipantTile extends StatelessWidget {
                           color: context.colors.success.withValues(alpha: 0.8),
                           shape: BoxShape.circle,
                         ),
-                        child: Icon(Icons.volume_up, color: context.colors.textPrimary, size: 14),
+                        child: Icon(Icons.volume_up,
+                            color: context.colors.textPrimary, size: 14),
                       ),
                     ),
                 ],

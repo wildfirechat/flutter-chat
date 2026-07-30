@@ -57,8 +57,7 @@ class ModifyGroupMemberExtraNotificationContent
       'g': groupId,
       'm': memberId,
     };
-    payload.binaryContent =
-        Uint8List.fromList(utf8.encode(json.encode(map)));
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 
@@ -78,6 +77,5 @@ class ModifyGroupMemberExtraNotificationContent
   }
 
   @override
-  MessageContentMeta get meta =>
-      modifyGroupMemberExtraNotificationContentMeta;
+  MessageContentMeta get meta => modifyGroupMemberExtraNotificationContentMeta;
 }

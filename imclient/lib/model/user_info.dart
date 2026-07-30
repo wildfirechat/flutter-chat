@@ -1,5 +1,6 @@
 class UserInfo {
-  UserInfo(this.userId, {this.gender = 0, this.updateDt = 0, this.type = 0, this.deleted = 0});
+  UserInfo(this.userId,
+      {this.gender = 0, this.updateDt = 0, this.type = 0, this.deleted = 0});
 
   //用户ID
   late String userId;
@@ -65,15 +66,15 @@ class UserInfo {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other)
-          || (other is UserInfo
-          && runtimeType == other.runtimeType
-          && userId == other.userId
-          && updateDt == other.updateDt
+      identical(this, other) ||
+      (other is UserInfo &&
+          runtimeType == other.runtimeType &&
+          userId == other.userId &&
+          updateDt == other.updateDt
           // friendAlis 更新时，不会触发 updateDt 更新
-          && friendAlias == other.friendAlias
-          && groupAlias == other.groupAlias
-      );
+          &&
+          friendAlias == other.friendAlias &&
+          groupAlias == other.groupAlias);
 
   @override
   int get hashCode =>

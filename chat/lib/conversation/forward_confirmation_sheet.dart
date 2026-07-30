@@ -30,7 +30,8 @@ class ForwardConfirmationSheet extends StatefulWidget {
   });
 
   @override
-  State<ForwardConfirmationSheet> createState() => _ForwardConfirmationSheetState();
+  State<ForwardConfirmationSheet> createState() =>
+      _ForwardConfirmationSheetState();
 }
 
 class _MessagePreviewData {
@@ -58,7 +59,9 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
     super.didChangeDependencies();
     // _loadPreviewData 依赖 AppLocalizations(inherited widget),不能在 initState 中调用,故在这里创建
     _previewDataFuture ??=
-        widget.messages != null && widget.messages!.isNotEmpty ? _loadPreviewData() : null;
+        widget.messages != null && widget.messages!.isNotEmpty
+            ? _loadPreviewData()
+            : null;
   }
 
   @override
@@ -100,26 +103,33 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                         padding: const EdgeInsets.all(16.0),
                         child: Text(
                           AppLocalizations.of(context)!.sendTo,
-                          style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+                          style: AppText.lg.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: context.colors.textPrimary),
                         ),
                       ),
                       _buildTargetsList(),
                       _buildMessagePreview(),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         child: TextField(
                           controller: _commentController,
-                          style: AppText.base.copyWith(color: context.colors.textPrimary),
+                          style: AppText.base
+                              .copyWith(color: context.colors.textPrimary),
                           decoration: InputDecoration(
-                            hintText: AppLocalizations.of(context)!.leaveMessage,
-                            hintStyle: AppText.base.copyWith(color: context.colors.textSecondary),
+                            hintText:
+                                AppLocalizations.of(context)!.leaveMessage,
+                            hintStyle: AppText.base
+                                .copyWith(color: context.colors.textSecondary),
                             filled: true,
                             fillColor: context.colors.inputBg,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide.none,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
                           ),
                         ),
                       ),
@@ -134,7 +144,8 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                               child: FilledButton.tonal(
                                 onPressed: () => Navigator.pop(context),
                                 style: AppTheme.largeButtonStyle(),
-                                child: Text(AppLocalizations.of(context)!.cancel),
+                                child:
+                                    Text(AppLocalizations.of(context)!.cancel),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -142,7 +153,10 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
                               child: FilledButton(
                                 onPressed: () {
                                   Navigator.pop(context);
-                                  widget.onConfirm(_commentController.text.isEmpty ? null : _commentController.text);
+                                  widget.onConfirm(
+                                      _commentController.text.isEmpty
+                                          ? null
+                                          : _commentController.text);
                                 },
                                 style: AppTheme.largeButtonStyle(),
                                 child: Text(AppLocalizations.of(context)!.send),
@@ -186,12 +200,15 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
         conversation: conversation,
         builder: (context, info) => Row(
           children: [
-            Portrait(info.portrait, info.defaultPortrait, width: 40, height: 40, borderRadius: 4.0),
+            Portrait(info.portrait, info.defaultPortrait,
+                width: 40, height: 40, borderRadius: 4.0),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 info.title,
-                style: AppText.lg.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+                style: AppText.lg.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: context.colors.textPrimary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -209,7 +226,9 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
       return FutureBuilder<_MessagePreviewData>(
         future: _previewDataFuture,
         builder: (context, snap) {
-          final preview = snap.data ?? _MessagePreviewData(text: AppLocalizations.of(context)!.messageTag);
+          final preview = snap.data ??
+              _MessagePreviewData(
+                  text: AppLocalizations.of(context)!.messageTag);
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             padding: const EdgeInsets.all(12),
@@ -221,14 +240,17 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (preview.thumbnail != null || preview.remoteImageUrl != null) _buildThumbnailWidget(preview),
-                if (preview.thumbnail != null || preview.remoteImageUrl != null) const SizedBox(width: 12),
+                if (preview.thumbnail != null || preview.remoteImageUrl != null)
+                  _buildThumbnailWidget(preview),
+                if (preview.thumbnail != null || preview.remoteImageUrl != null)
+                  const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     preview.text,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
-                    style: AppText.base.copyWith(color: context.colors.textSecondary),
+                    style: AppText.base
+                        .copyWith(color: context.colors.textSecondary),
                   ),
                 ),
               ],
@@ -252,7 +274,8 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
       );
     }
 
-    String previewText = '${widget.oneByOne? '[${AppLocalizations.of(context)!.forwardOneByOne}]' : '[${AppLocalizations.of(context)!.forwardCombined}]'} ${AppLocalizations.of(context)!.totalMessages(messages.length.toString())}';
+    String previewText =
+        '${widget.oneByOne ? '[${AppLocalizations.of(context)!.forwardOneByOne}]' : '[${AppLocalizations.of(context)!.forwardCombined}]'} ${AppLocalizations.of(context)!.totalMessages(messages.length.toString())}';
     if (messages.first.content is CompositeMessageContent) {
       previewText = '[${AppLocalizations.of(context)!.chatHistory}]';
     }
@@ -318,7 +341,8 @@ class _ForwardConfirmationSheetState extends State<ForwardConfirmationSheet> {
               Container(
                 color: Colors.black26,
                 child: const Center(
-                  child: Icon(Icons.play_circle_outline, color: Colors.white, size: 28),
+                  child: Icon(Icons.play_circle_outline,
+                      color: Colors.white, size: 28),
                 ),
               ),
           ],

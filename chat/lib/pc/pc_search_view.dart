@@ -14,7 +14,8 @@ import 'package:chat/theme/app_typography.dart';
 class PcSearchView extends StatefulWidget {
   final VoidCallback onClose;
   final void Function(String userId) onUserSelected;
-  final void Function(Conversation conversation, {int? focusMessageId}) onConversationSelected;
+  final void Function(Conversation conversation, {int? focusMessageId})
+      onConversationSelected;
 
   /// 头部要与它盖住的中栏头部同宽(中栏宽度用户可拖拽调整),由 PCHome 传入。
   final double middleColumnWidth;
@@ -69,7 +70,8 @@ class _PcSearchViewState extends State<PcSearchView> {
     final l10n = AppLocalizations.of(context)!;
     return Focus(
       onKeyEvent: (node, event) {
-        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+        if (event is KeyDownEvent &&
+            event.logicalKey == LogicalKeyboardKey.escape) {
           widget.onClose();
           return KeyEventResult.handled;
         }
@@ -98,25 +100,30 @@ class _PcSearchViewState extends State<PcSearchView> {
                       decoration: BoxDecoration(
                         color: context.colors.surface,
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: context.colors.accent, width: 1.2),
+                        border: Border.all(
+                            color: context.colors.accent, width: 1.2),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.search_rounded, size: 15, color: context.colors.textSecondary),
+                          Icon(Icons.search_rounded,
+                              size: 15, color: context.colors.textSecondary),
                           const SizedBox(width: 4),
                           Expanded(
                             child: TextField(
                               controller: _controller,
                               focusNode: _focusNode,
                               autofocus: true,
-                              style: AppText.sm.copyWith(color: context.colors.textPrimary),
+                              style: AppText.sm
+                                  .copyWith(color: context.colors.textPrimary),
                               decoration: InputDecoration(
                                 isCollapsed: true,
                                 border: InputBorder.none,
                                 hintText: l10n.search,
-                                hintStyle: AppText.sm.copyWith(color: context.colors.textSecondary),
+                                hintStyle: AppText.sm.copyWith(
+                                    color: context.colors.textSecondary),
                               ),
-                              onChanged: (text) => setState(() => _query = text.trim()),
+                              onChanged: (text) =>
+                                  setState(() => _query = text.trim()),
                             ),
                           ),
                           if (_query.isNotEmpty)
@@ -127,7 +134,9 @@ class _PcSearchViewState extends State<PcSearchView> {
                                   _controller.clear();
                                   setState(() => _query = '');
                                 },
-                                child: Icon(Icons.cancel, size: 14, color: context.colors.textTertiary),
+                                child: Icon(Icons.cancel,
+                                    size: 14,
+                                    color: context.colors.textTertiary),
                               ),
                             ),
                         ],
@@ -142,14 +151,16 @@ class _PcSearchViewState extends State<PcSearchView> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: context.colors.iconPrimary.withValues(alpha: 0.4),
+                        color:
+                            context.colors.iconPrimary.withValues(alpha: 0.4),
                         width: 1,
                       ),
                     ),
                     child: Icon(
                       Icons.add,
                       size: 14,
-                      color: context.colors.iconSecondary.withValues(alpha: 0.4),
+                      color:
+                          context.colors.iconSecondary.withValues(alpha: 0.4),
                     ),
                   ),
                 ],
@@ -171,7 +182,8 @@ class _PcSearchViewState extends State<PcSearchView> {
       if (!_isFocused) {
         return const SizedBox.shrink();
       }
-      return _buildCard(context,
+      return _buildCard(
+        context,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           child: Center(
@@ -185,10 +197,14 @@ class _PcSearchViewState extends State<PcSearchView> {
     }
 
     final screenHeight = MediaQuery.of(context).size.height;
-    final maxContentHeight =
-        screenHeight - PcTheme.headerHeight + _resultOverlap - _cardTopGap - _cardBottomMargin;
+    final maxContentHeight = screenHeight -
+        PcTheme.headerHeight +
+        _resultOverlap -
+        _cardTopGap -
+        _cardBottomMargin;
 
-    return _buildCard(context,
+    return _buildCard(
+      context,
       constraints: BoxConstraints(maxHeight: maxContentHeight),
       child: SearchPortalResultView(
         _query,
@@ -200,7 +216,8 @@ class _PcSearchViewState extends State<PcSearchView> {
     );
   }
 
-  Widget _buildCard(BuildContext context, {required Widget child, BoxConstraints? constraints}) {
+  Widget _buildCard(BuildContext context,
+      {required Widget child, BoxConstraints? constraints}) {
     return Container(
       margin: const EdgeInsets.fromLTRB(8, _cardTopGap, 8, _cardBottomMargin),
       constraints: constraints,

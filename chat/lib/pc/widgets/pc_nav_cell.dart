@@ -46,7 +46,8 @@ class PcNavCell extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Container(
-          height: LayoutScale.watchScale(context, _rowHeight, cap: LayoutScale.rowCap),
+          height: LayoutScale.watchScale(context, _rowHeight,
+              cap: LayoutScale.rowCap),
           color: background(hovered),
           padding: const EdgeInsets.only(left: 16, right: 14),
           child: Row(
@@ -54,7 +55,8 @@ class PcNavCell extends StatelessWidget {
               if (icon != null) ...[
                 Icon(
                   icon,
-                  size: LayoutScale.watchScale(context, 20, cap: LayoutScale.iconCap),
+                  size: LayoutScale.watchScale(context, 20,
+                      cap: LayoutScale.iconCap),
                   // 选中态是灰底,图标染主题色、文字加粗来点明当前项(与设置菜单同一处理)。
                   color: selected ? colors.accent : colors.iconSecondary,
                 ),
@@ -65,7 +67,8 @@ class PcNavCell extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: PcTheme.cellTitle(context).copyWith(fontWeight: selected ? FontWeight.w500 : null),
+                  style: PcTheme.cellTitle(context)
+                      .copyWith(fontWeight: selected ? FontWeight.w500 : null),
                 ),
               ),
             ],

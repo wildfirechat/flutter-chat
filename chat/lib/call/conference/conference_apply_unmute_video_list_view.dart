@@ -75,7 +75,8 @@ class _ConferenceApplyUnmuteVideoListViewState
                 Text(
                   l10n.conferenceApplyVideoCount(members.length),
                   style: AppText.base.copyWith(
-                      color: context.colors.textPrimary, fontWeight: FontWeight.w600),
+                      color: context.colors.textPrimary,
+                      fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -101,22 +102,23 @@ class _ConferenceApplyUnmuteVideoListViewState
                         ),
                         title: Text(
                           _name(info),
-                          style: AppText.sm.copyWith(color: context.colors.textPrimary),
+                          style: AppText.sm
+                              .copyWith(color: context.colors.textPrimary),
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             TextButton(
                               onPressed: () {
-                                widget.conferenceManager.approveUnmute(
-                                    userId, false, false);
+                                widget.conferenceManager
+                                    .approveUnmute(userId, false, false);
                               },
                               child: Text(l10n.conferenceReject),
                             ),
                             ElevatedButton(
                               onPressed: () {
-                                widget.conferenceManager.approveUnmute(
-                                    userId, false, true);
+                                widget.conferenceManager
+                                    .approveUnmute(userId, false, true);
                               },
                               child: Text(l10n.conferenceApprove),
                             ),

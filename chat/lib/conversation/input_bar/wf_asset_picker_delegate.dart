@@ -96,8 +96,8 @@ Widget? _buildTakePhotoItem(
       onTap: () async {
         final AssetEntity? entity = await CameraPicker.pickFromCamera(
           context,
-          pickerConfig: const CameraPickerConfig(
-              resolutionPreset: ResolutionPreset.high),
+          pickerConfig:
+              const CameraPickerConfig(resolutionPreset: ResolutionPreset.high),
         );
         if (entity == null || !context.mounted) {
           return;

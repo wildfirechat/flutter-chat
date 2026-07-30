@@ -1,8 +1,7 @@
 enum GroupType { Normal, Free, Restricted, Organization }
 
 class GroupInfo {
-  GroupInfo(
-      this.target,
+  GroupInfo(this.target,
       {this.type = GroupType.Restricted,
       this.memberCount = 0,
       this.mute = 0,
@@ -36,11 +35,11 @@ class GroupInfo {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other)
-          || (other is GroupInfo &&
-              runtimeType == other.runtimeType &&
-              target == other.target &&
-              updateDt == other.updateDt);
+      identical(this, other) ||
+      (other is GroupInfo &&
+          runtimeType == other.runtimeType &&
+          target == other.target &&
+          updateDt == other.updateDt);
 
   @override
   int get hashCode =>

@@ -122,7 +122,7 @@ class JsApi extends JavaScriptNamespaceInterface {
     String nonce = obj["nonceStr"];
     String signature = obj["signature"];
     Imclient.configApplication(appId, type, timestamp, nonce, signature, () {
-    debugPrint('config success');
+      debugPrint('config success');
       webViewController.callHandler('ready', args: null);
     }, (err) {
       debugPrint('config err $err');
@@ -141,9 +141,12 @@ class JsApi extends JavaScriptNamespaceInterface {
       _callbackJs(handler, -2);
       return;
     }
-    unawaited(pushOverlay((context) => PickUserScreen(title: AppLocalizations.of(context)!.selectContacts, (_, members) async {
+    unawaited(pushOverlay((context) =>
+        PickUserScreen(title: AppLocalizations.of(context)!.selectContacts,
+            (_, members) async {
           if (members.isEmpty) {
-            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.pickFriendsToSubmitReport);
+            Fluttertoast.showToast(
+                msg: AppLocalizations.of(context)!.pickFriendsToSubmitReport);
           } else {
             //callbackJs(handler, 0, userInfos);
 

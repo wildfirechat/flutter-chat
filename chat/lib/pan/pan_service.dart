@@ -56,7 +56,9 @@ class PanService {
     final data = await _post('/api/v1/spaces/list', {});
     final list = data['data'] as List?;
     if (list == null) return [];
-    return list.map((e) => PanSpace.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map((e) => PanSpace.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   /// 获取我的空间（公共 + 私有）
@@ -64,30 +66,37 @@ class PanService {
     final data = await _post('/api/v1/spaces/my', {});
     final list = data['data'] as List?;
     if (list == null) return [];
-    return list.map((e) => PanSpace.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map((e) => PanSpace.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   /// 获取指定用户的公共空间
   static Future<PanSpace?> getUserPublicSpace(String userId) async {
-    final data = await _post('/api/v1/spaces/user/public', {'targetUserId': userId});
+    final data =
+        await _post('/api/v1/spaces/user/public', {'targetUserId': userId});
     final result = data['data'];
     if (result is! Map<String, dynamic>) return null;
     return PanSpace.fromJson(result);
   }
 
   /// 获取空间内文件列表
-  static Future<List<PanFile>> getSpaceFiles(int spaceId, {int parentId = 0}) async {
+  static Future<List<PanFile>> getSpaceFiles(int spaceId,
+      {int parentId = 0}) async {
     final data = await _post('/api/v1/spaces/files', {
       'spaceId': spaceId,
       'parentId': parentId,
     });
     final list = data['data'] as List?;
     if (list == null) return [];
-    return list.map((e) => PanFile.fromJson(e as Map<String, dynamic>)).toList();
+    return list
+        .map((e) => PanFile.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   /// 创建文件夹
-  static Future<PanFile> createFolder(int spaceId, String name, {int parentId = 0}) async {
+  static Future<PanFile> createFolder(int spaceId, String name,
+      {int parentId = 0}) async {
     final data = await _post('/api/v1/files/folder', {
       'spaceId': spaceId,
       'parentId': parentId > 0 ? parentId : null,
@@ -135,7 +144,8 @@ class PanService {
     PanUploadCancelToken? cancelToken,
   }) async {
     final originalName = path.basename(localPath);
-    final existingFiles = await getSpaceFiles(space.spaceId, parentId: parentId);
+    final existingFiles =
+        await getSpaceFiles(space.spaceId, parentId: parentId);
     final uniqueName = _uniqueFileName(existingFiles, originalName);
 
     return uploadFile(
@@ -148,14 +158,16 @@ class PanService {
     );
   }
 
-  static String _uniqueFileName(List<PanFile> existingFiles, String originalName) {
+  static String _uniqueFileName(
+      List<PanFile> existingFiles, String originalName) {
     final names = existingFiles.map((f) => f.name).toSet();
     if (!names.contains(originalName)) {
       return originalName;
     }
 
     final extIndex = originalName.lastIndexOf('.');
-    final base = extIndex > 0 ? originalName.substring(0, extIndex) : originalName;
+    final base =
+        extIndex > 0 ? originalName.substring(0, extIndex) : originalName;
     final ext = extIndex > 0 ? originalName.substring(extIndex) : '';
 
     int index = 1;
@@ -166,6 +178,7 @@ class PanService {
     } while (names.contains(candidate));
     return candidate;
   }
+
   ///
   /// 参考 iOS WFCCIMService.uploadMediaFile 的大文件逻辑：
   /// 当支持大文件上传且（强制预签名或文件 > 100MB）时，先获取预签名上传地址，
@@ -188,7 +201,8 @@ class PanService {
     final md5 = await _md5File(file);
     final mimeType = lookupMimeType(localPath) ?? 'application/octet-stream';
 
-    final bool useLargeUpload = isDesktopShell ? await _shouldUseLargeUpload(size) : false;
+    final bool useLargeUpload =
+        isDesktopShell ? await _shouldUseLargeUpload(size) : false;
 
     final String storageUrl;
     if (useLargeUpload) {
@@ -305,7 +319,8 @@ class PanService {
     }
   }
 
-  static Future<_UploadUrlInfo> _getUploadUrl(String fileName, String mimeType) async {
+  static Future<_UploadUrlInfo> _getUploadUrl(
+      String fileName, String mimeType) async {
     final completer = Completer<_UploadUrlInfo>();
     Imclient.getMediaUploadUrl(
       fileName,
@@ -319,7 +334,8 @@ class PanService {
           type: type,
         ));
       },
-      (errorCode) => completer.completeError(PanException(errorCode, '获取上传地址失败')),
+      (errorCode) =>
+          completer.completeError(PanException(errorCode, '获取上传地址失败')),
     );
     return completer.future;
   }
@@ -430,7 +446,8 @@ class PanService {
   }
 
   /// 移动文件/文件夹
-  static Future<void> moveFile(int fileId, int targetSpaceId, {int targetParentId = 0}) async {
+  static Future<void> moveFile(int fileId, int targetSpaceId,
+      {int targetParentId = 0}) async {
     await _post('/api/v1/files/move', {
       'fileId': fileId,
       'targetSpaceId': targetSpaceId,
@@ -439,7 +456,8 @@ class PanService {
   }
 
   /// 复制文件/文件夹
-  static Future<void> copyFile(int fileId, int targetSpaceId, {int targetParentId = 0}) async {
+  static Future<void> copyFile(int fileId, int targetSpaceId,
+      {int targetParentId = 0}) async {
     await _post('/api/v1/files/copy', {
       'fileId': fileId,
       'targetSpaceId': targetSpaceId,
@@ -457,7 +475,8 @@ class PanService {
 
   /// 检查空间写入权限
   static Future<bool> checkSpaceWritePermission(int spaceId) async {
-    final data = await _post('/api/v1/files/check-permission', {'spaceId': spaceId});
+    final data =
+        await _post('/api/v1/files/check-permission', {'spaceId': spaceId});
     final result = data['data'];
     if (result is bool) return result;
     return false;
@@ -471,7 +490,8 @@ class PanService {
 
 /// 以带一位小数的形式格式化字节数（网盘展示风格，如 '1.5 GB'）。
 String formatPanSize(int bytes) {
-  if (bytes >= 1073741824) return '${(bytes / 1073741824).toStringAsFixed(1)} GB';
+  if (bytes >= 1073741824)
+    return '${(bytes / 1073741824).toStringAsFixed(1)} GB';
   if (bytes >= 1048576) return '${(bytes / 1048576).toStringAsFixed(1)} MB';
   if (bytes >= 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
   return '$bytes B';
@@ -552,7 +572,8 @@ class PanSpace {
     if (typeValue is String) {
       spaceType = _parseSpaceType(typeValue);
     } else if (typeValue is int) {
-      spaceType = PanSpaceType.values[typeValue.clamp(0, PanSpaceType.values.length - 1)];
+      spaceType = PanSpaceType
+          .values[typeValue.clamp(0, PanSpaceType.values.length - 1)];
     } else {
       spaceType = PanSpaceType.globalPublic;
     }
@@ -655,23 +676,48 @@ class PanFile {
   PanIconType get iconType {
     if (isFolder) return PanIconType.folder;
     switch (extension) {
-      case 'jpg': case 'jpeg': case 'png': case 'gif': case 'bmp': case 'webp':
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif':
+      case 'bmp':
+      case 'webp':
         return PanIconType.image;
-      case 'mp4': case 'avi': case 'mov': case 'mkv': case 'asf': case 'wmv':
-      case 'mpeg': case 'ogg': case 'rmvb': case 'f4v':
+      case 'mp4':
+      case 'avi':
+      case 'mov':
+      case 'mkv':
+      case 'asf':
+      case 'wmv':
+      case 'mpeg':
+      case 'ogg':
+      case 'rmvb':
+      case 'f4v':
         return PanIconType.video;
-      case 'mp3': case 'wav': case 'aac': case 'flac': case 'amr': case 'acm':
+      case 'mp3':
+      case 'wav':
+      case 'aac':
+      case 'flac':
+      case 'amr':
+      case 'acm':
       case 'aif':
         return PanIconType.audio;
       case 'pdf':
         return PanIconType.pdf;
-      case 'doc': case 'docx': case 'pages':
+      case 'doc':
+      case 'docx':
+      case 'pages':
         return PanIconType.word;
-      case 'xls': case 'xlsx': case 'numbers':
+      case 'xls':
+      case 'xlsx':
+      case 'numbers':
         return PanIconType.excel;
-      case 'ppt': case 'pptx': case 'keynote':
+      case 'ppt':
+      case 'pptx':
+      case 'keynote':
         return PanIconType.ppt;
-      case 'html': case 'htm':
+      case 'html':
+      case 'htm':
         return PanIconType.html;
       case 'txt':
         return PanIconType.text;
@@ -679,7 +725,11 @@ class PanFile {
         return PanIconType.exe;
       case 'xml':
         return PanIconType.xml;
-      case 'zip': case 'rar': case '7z': case 'gzip': case 'gz':
+      case 'zip':
+      case 'rar':
+      case '7z':
+      case 'gzip':
+      case 'gz':
         return PanIconType.archive;
       default:
         return PanIconType.file;
@@ -687,4 +737,19 @@ class PanFile {
   }
 }
 
-enum PanIconType { folder, image, video, audio, pdf, word, excel, ppt, html, text, exe, xml, archive, file }
+enum PanIconType {
+  folder,
+  image,
+  video,
+  audio,
+  pdf,
+  word,
+  excel,
+  ppt,
+  html,
+  text,
+  exe,
+  xml,
+  archive,
+  file
+}

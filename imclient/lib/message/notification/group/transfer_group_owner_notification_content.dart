@@ -26,9 +26,9 @@ class TransferGroupOwnerNotificationContent extends NotificationMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.binaryContent != null) {
-      Map<dynamic, dynamic> map = json.decode(
-          utf8.decode(payload.binaryContent!));
+    if (payload.binaryContent != null) {
+      Map<dynamic, dynamic> map =
+          json.decode(utf8.decode(payload.binaryContent!));
       operateUser = map['o'];
       groupId = map['g'];
       owner = map['m'];
@@ -75,8 +75,7 @@ class TransferGroupOwnerNotificationContent extends NotificationMessageContent {
     if (owner == Imclient.currentUserId) {
       formatMsg = '$formatMsg 你';
     } else {
-      UserInfo? userInfo =
-          await Imclient.getUserInfo(owner, groupId: groupId);
+      UserInfo? userInfo = await Imclient.getUserInfo(owner, groupId: groupId);
       if (userInfo != null) {
         formatMsg = '$formatMsg ${userInfo.getReadableName()}';
       } else {

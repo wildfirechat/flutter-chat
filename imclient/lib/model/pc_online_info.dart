@@ -1,6 +1,7 @@
 class PCOnlineInfo {
   PCOnlineInfo(
-      {this.platform = 0, this.type = 0,
+      {this.platform = 0,
+      this.type = 0,
       this.isOnline = false,
       this.timestamp = 0});
   //0 pc; 1 web; 2 micro app

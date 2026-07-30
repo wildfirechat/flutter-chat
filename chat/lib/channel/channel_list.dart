@@ -48,20 +48,31 @@ class ChannelListState extends State<ChannelList> {
               title: Text(l10n.subscribedChannelsTitle),
               actions: actions,
             ),
-      body: SafeArea(child:
-      channelIds == null ? const Center(child: CircularProgressIndicator(),) :
-      ListView.separated(
-        itemCount: channelIds!.length,
-        separatorBuilder: (context, __) => Divider(
-          indent: 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 12.0,
-        ),
-        itemBuilder: (BuildContext context, int index) { return _buildRow(context, index);},)
-      ),
+      body: SafeArea(
+          child: channelIds == null
+              ? const Center(
+                  child: CircularProgressIndicator(),
+                )
+              : ListView.separated(
+                  itemCount: channelIds!.length,
+                  separatorBuilder: (context, __) => Divider(
+                    indent: 16.0 +
+                        LayoutScale.watchScale(context, 40.0,
+                            cap: LayoutScale.iconCap) +
+                        12.0,
+                  ),
+                  itemBuilder: (BuildContext context, int index) {
+                    return _buildRow(context, index);
+                  },
+                )),
     );
   }
 
   void _searchChannel() {
-    showSearch(context: context, delegate: SearchChannelDelegate(searchFieldHint: AppLocalizations.of(context)!.searchChannelHint));
+    showSearch(
+        context: context,
+        delegate: SearchChannelDelegate(
+            searchFieldHint: AppLocalizations.of(context)!.searchChannelHint));
   }
 
   Widget _buildRow(BuildContext context, int index) {
@@ -72,7 +83,9 @@ class ChannelListState extends State<ChannelList> {
   void _toChat(String channelId) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ConversationScreen(Conversation(conversationType: ConversationType.Channel, target: channelId))),
+      MaterialPageRoute(
+          builder: (context) => ConversationScreen(Conversation(
+              conversationType: ConversationType.Channel, target: channelId))),
     );
   }
 
@@ -102,14 +115,16 @@ class ChannelItem extends StatefulWidget {
 
 class ChannelItemState extends State<ChannelItem> {
   ChannelInfo? channelInfo;
-  late StreamSubscription<ChannelInfoUpdateEvent> _channelInfoUpdateSubscription;
+  late StreamSubscription<ChannelInfoUpdateEvent>
+      _channelInfoUpdateSubscription;
 
   @override
   void initState() {
     super.initState();
-    _channelInfoUpdateSubscription = Imclient.IMEventBus.on<ChannelInfoUpdateEvent>().listen((event) {
+    _channelInfoUpdateSubscription =
+        Imclient.IMEventBus.on<ChannelInfoUpdateEvent>().listen((event) {
       for (var channel in event.channelInfos) {
-        if(channel.channelId == widget.channelId) {
+        if (channel.channelId == widget.channelId) {
           setState(() {
             channelInfo = channel;
           });
@@ -136,7 +151,9 @@ class ChannelItemState extends State<ChannelItem> {
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Row(
           children: [
-            Portrait(channelInfo?.portrait ?? Config.defaultChannelPortrait, Config.defaultChannelPortrait, width: 40, height: 40),
+            Portrait(channelInfo?.portrait ?? Config.defaultChannelPortrait,
+                Config.defaultChannelPortrait,
+                width: 40, height: 40),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

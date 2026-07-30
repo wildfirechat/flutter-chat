@@ -6,7 +6,6 @@ import 'package:imclient/message/message_content.dart';
 import 'package:imclient/model/message_payload.dart';
 import 'package:moment/client/momentclient.dart';
 
-
 // ignore: non_constant_identifier_names
 MessageContent MomentFeedMessageContentCreator() {
   return MomentFeedMessageContent();
@@ -31,17 +30,17 @@ class MomentFeedMessageContent extends MessageContent {
   void decode(MessagePayload payload) {
     super.decode(payload);
 
-    Map<dynamic, dynamic> map = json.decode(
-        utf8.decode(payload.binaryContent!));
+    Map<dynamic, dynamic> map =
+        json.decode(utf8.decode(payload.binaryContent!));
     feedId = map["feedId"];
     type = WFMContentType.values[map['t']];
     sender = map['s'];
     text = map['c'];
     List<dynamic>? ms = map['ms'];
     medias = [];
-    if(ms != null) {
+    if (ms != null) {
       for (var value in ms) {
-        if(value is Map) {
+        if (value is Map) {
           medias!.add(MomentClientImpl.entryFromMap(value));
         }
       }
@@ -54,20 +53,20 @@ class MomentFeedMessageContent extends MessageContent {
     MessagePayload payload = super.encode();
 
     payload.searchableContent = text;
-    Map<String, dynamic> map = {'feedId':feedId, 't':type.index, 's':sender};
-    if(text != null) {
+    Map<String, dynamic> map = {'feedId': feedId, 't': type.index, 's': sender};
+    if (text != null) {
       map['c'] = text;
     }
-    if(medias != null && medias!.isNotEmpty) {
+    if (medias != null && medias!.isNotEmpty) {
       map['ms'] = MomentClientImpl.feedEntryList2Map(medias!);
     }
-    if(toUsers != null && toUsers!.isNotEmpty) {
+    if (toUsers != null && toUsers!.isNotEmpty) {
       map['to'] = toUsers;
     }
-    if(excludeUsers != null && excludeUsers!.isNotEmpty) {
+    if (excludeUsers != null && excludeUsers!.isNotEmpty) {
       map['ex'] = excludeUsers;
     }
-    if(extra != null) {
+    if (extra != null) {
       map['e'] = extra;
     }
     payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));

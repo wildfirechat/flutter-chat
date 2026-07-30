@@ -12,12 +12,15 @@ class StreamingTextCellBuilder extends PortraitCellBuilder {
   late String text;
   late bool isGenerating;
 
-  StreamingTextCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  StreamingTextCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     if (model.message.content is StreamingTextGeneratingMessageContent) {
-      text = (model.message.content as StreamingTextGeneratingMessageContent).text;
+      text =
+          (model.message.content as StreamingTextGeneratingMessageContent).text;
       isGenerating = true;
     } else if (model.message.content is StreamingTextGeneratedMessageContent) {
-      text = (model.message.content as StreamingTextGeneratedMessageContent).text;
+      text =
+          (model.message.content as StreamingTextGeneratedMessageContent).text;
       isGenerating = false;
     } else {
       text = "";
@@ -46,7 +49,9 @@ class StreamingTextCellBuilder extends PortraitCellBuilder {
                       onOpen: (link) => Utilities.openLink(context, link.url),
                       text: text,
                       style: AppText.lg,
-                      linkStyle: AppText.lg.copyWith(color: Colors.blue, decoration: TextDecoration.underline),
+                      linkStyle: AppText.lg.copyWith(
+                          color: Colors.blue,
+                          decoration: TextDecoration.underline),
                       options: const LinkifyOptions(
                         humanize: false,
                       ),
@@ -66,5 +71,4 @@ class StreamingTextCellBuilder extends PortraitCellBuilder {
       ],
     );
   }
-
 }

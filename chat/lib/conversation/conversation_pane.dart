@@ -59,7 +59,8 @@ class ConversationPane extends StatefulWidget {
   State<ConversationPane> createState() => _ConversationPaneState();
 }
 
-class _ConversationPaneState extends State<ConversationPane> with AmbientShortcutsMixin {
+class _ConversationPaneState extends State<ConversationPane>
+    with AmbientShortcutsMixin {
   late ConversationViewModel _conversationViewModel;
   late MessageInputBarController _inputBarController;
   ConversationController? _conversationController;
@@ -70,7 +71,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
   bool _isLoadingNewer = false;
   final Key _centerKey = UniqueKey();
   int _joinRequestCount = 0;
-  StreamSubscription<JoinGroupRequestUpdatedEvent>? _joinGroupRequestSubscription;
+  StreamSubscription<JoinGroupRequestUpdatedEvent>?
+      _joinGroupRequestSubscription;
 
   /// initState 中 setConversation 后的会话代际号，dispose 时据此判断
   /// viewModel 是否已被更新的 pane 接管（包括同会话定位消息的场景）。
@@ -80,8 +82,11 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
   void initState() {
     super.initState();
 
-    _conversationViewModel = Provider.of<ConversationViewModel>(context, listen: false);
-    _conversationViewModel.setConversation(widget.conversation, toFocusMessageId: widget.toFocusMessageId, joinChatroomErrorCallback: (err) {
+    _conversationViewModel =
+        Provider.of<ConversationViewModel>(context, listen: false);
+    _conversationViewModel.setConversation(widget.conversation,
+        toFocusMessageId: widget.toFocusMessageId,
+        joinChatroomErrorCallback: (err) {
       showToast(msg: AppLocalizations.of(context)!.joinChatroomFail);
       Navigator.of(context).maybePop();
     });
@@ -89,7 +94,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
 
     Imclient.clearConversationUnreadStatus(widget.conversation);
     _loadJoinRequestCount();
-    _joinGroupRequestSubscription = Imclient.IMEventBus.on<JoinGroupRequestUpdatedEvent>().listen((_) {
+    _joinGroupRequestSubscription =
+        Imclient.IMEventBus.on<JoinGroupRequestUpdatedEvent>().listen((_) {
       _loadJoinRequestCount();
     });
     _watchOnlineState(widget.conversation);
@@ -98,9 +104,9 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
       // 桌面端没有触摸下拉手势,滚动接近历史侧末端时自动加载更早的消息;
       // 首帧后主动触发一次,覆盖首屏消息不足一屏、无法产生滚动的情况。
       _scrollController.addListener(_autoLoadHistoryIfNeeded);
-      WidgetsBinding.instance.addPostFrameCallback((_) => _autoLoadHistoryIfNeeded());
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _autoLoadHistoryIfNeeded());
     }
-
   }
 
   /// 会话页的环境快捷键。不挂在 Focus 节点上的原因见 ambient_shortcuts.dart:
@@ -122,7 +128,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
 
   /// 输入框自己有选区时会先消费 Cmd/Ctrl+C(复制输入框内容),走不到这里,
   /// 所以不会抢输入框的复制。
-  bool _copySelectedText() => _conversationController?.copySelectedTextIfAny(context) ?? false;
+  bool _copySelectedText() =>
+      _conversationController?.copySelectedTextIfAny(context) ?? false;
 
   Future<void> _watchOnlineState(Conversation conversation) async {
     if (conversation.conversationType != ConversationType.Single) return;
@@ -162,7 +169,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
       return;
     }
     try {
-      final count = await Imclient.getJoinGroupRequestUnread(groupId: widget.conversation.target);
+      final count = await Imclient.getJoinGroupRequestUnread(
+          groupId: widget.conversation.target);
       if (mounted && count != _joinRequestCount) {
         setState(() => _joinRequestCount = count);
       }
@@ -173,7 +181,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
 
   void _openJoinGroupRequests() {
     Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => JoinGroupRequestScreen(groupId: widget.conversation.target),
+      builder: (_) =>
+          JoinGroupRequestScreen(groupId: widget.conversation.target),
     ));
   }
 
@@ -230,7 +239,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
         Imclient.getUserInfo(Imclient.currentUserId).then((userInfo) {
           if (userInfo != null) {
             TipNotificationContent tip = TipNotificationContent();
-            tip.tip = AppLocalizations.of(context)!.userLeftChatroom(MeshUserDisplay.getReadableName(userInfo));
+            tip.tip = AppLocalizations.of(context)!
+                .userLeftChatroom(MeshUserDisplay.getReadableName(userInfo));
             _conversationViewModel.sendMessage(tip);
           }
         });
@@ -270,7 +280,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
           setState(() {
             _isLoading = false;
           });
-          WidgetsBinding.instance.addPostFrameCallback((_) => _autoLoadHistoryIfNeeded());
+          WidgetsBinding.instance
+              .addPostFrameCallback((_) => _autoLoadHistoryIfNeeded());
         }
       });
     }
@@ -287,7 +298,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
     } else if (notification is ScrollUpdateNotification) {
       if (notification.metrics.pixels > notification.metrics.maxScrollExtent) {
         setState(() {
-          _pullDistance = (notification.metrics.pixels - notification.metrics.maxScrollExtent);
+          _pullDistance = (notification.metrics.pixels -
+              notification.metrics.maxScrollExtent);
         });
       } else {
         if (_pullDistance > 0) {
@@ -342,7 +354,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
   }
 
   /// 「回到最新」悬浮按钮：定位到历史消息后出现；角标显示这期间的新消息数。
-  Widget _buildBackToLatestButton(BuildContext context, ConversationViewModel conversationViewModel) {
+  Widget _buildBackToLatestButton(
+      BuildContext context, ConversationViewModel conversationViewModel) {
     final l10n = AppLocalizations.of(context)!;
     final pending = conversationViewModel.pendingNewMessageCount;
     return Material(
@@ -371,7 +384,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
               const SizedBox(width: 4),
               Text(
                 pending > 0
-                    ? l10n.backToLatestWithCount(pending > 99 ? '99+' : '$pending')
+                    ? l10n.backToLatestWithCount(
+                        pending > 99 ? '99+' : '$pending')
                     : l10n.backToLatest,
                 style: AppText.sm.copyWith(color: context.colors.accent),
               ),
@@ -394,12 +408,15 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
         ChangeNotifierProvider<ConversationController>(
           lazy: false,
           create: (_) {
-            _conversationController = ConversationController(conversationViewModel);
+            _conversationController =
+                ConversationController(conversationViewModel);
             return _conversationController!;
           },
         ),
         ChangeNotifierProvider<MessageInputBarController>(create: (_) {
-          _inputBarController = MessageInputBarController(conversation: widget.conversation, conversationViewModel: conversationViewModel);
+          _inputBarController = MessageInputBarController(
+              conversation: widget.conversation,
+              conversationViewModel: conversationViewModel);
           if (!isDesktopShell) {
             // 移动端:键入 '@' 跳选人页(微信手机端交互);
             // 桌面端不设置回调,由 PcMessageInputBar 的 @ 浮层就地选人(微信 PC 交互)
@@ -415,78 +432,99 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
             children: [
               Column(
                 children: [
-                  if (_joinRequestCount > 0)
-                    _buildJoinRequestBanner(context),
+                  if (_joinRequestCount > 0) _buildJoinRequestBanner(context),
                   Expanded(
                     child: Stack(
                       children: [
                         GestureDetector(
                           child: NotificationListener(
-                        onNotification: notificationFunction,
-                        child: CustomScrollView(
-                          controller: _scrollController,
-                          center: _centerKey,
-                          anchor: conversationViewModel.focusMessageIndex > 0 ? 0.5 : 0.0,
-                          reverse: true,
-                          // 桌面端滚轮/触控板没有回弹语义,用 clamping;历史加载走 _autoLoadHistoryIfNeeded
-                          physics: isDesktopShell
-                              ? const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics())
-                              : const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                          slivers: [
-                            if (conversationViewModel.focusMessageIndex > 0)
-                              SliverList(
-                                delegate: SliverChildBuilderDelegate(
-                                  (context, index) {
-                                    int focusIndex = conversationViewModel.focusMessageIndex;
-                                    int newerCount = focusIndex;
-                                    if (!conversationViewModel.noMoreNewerMsg) {
-                                      if (index == newerCount) {
-                                        if (!_isLoadingNewer) {
-                                          _isLoadingNewer = true;
-                                          _conversationViewModel.loadNewerMessage().then((value) {
-                                            if (mounted) {
-                                              setState(() {
-                                                _isLoadingNewer = false;
+                            onNotification: notificationFunction,
+                            child: CustomScrollView(
+                              controller: _scrollController,
+                              center: _centerKey,
+                              anchor:
+                                  conversationViewModel.focusMessageIndex > 0
+                                      ? 0.5
+                                      : 0.0,
+                              reverse: true,
+                              // 桌面端滚轮/触控板没有回弹语义,用 clamping;历史加载走 _autoLoadHistoryIfNeeded
+                              physics: isDesktopShell
+                                  ? const ClampingScrollPhysics(
+                                      parent: AlwaysScrollableScrollPhysics())
+                                  : const BouncingScrollPhysics(
+                                      parent: AlwaysScrollableScrollPhysics()),
+                              slivers: [
+                                if (conversationViewModel.focusMessageIndex > 0)
+                                  SliverList(
+                                    delegate: SliverChildBuilderDelegate(
+                                      (context, index) {
+                                        int focusIndex = conversationViewModel
+                                            .focusMessageIndex;
+                                        int newerCount = focusIndex;
+                                        if (!conversationViewModel
+                                            .noMoreNewerMsg) {
+                                          if (index == newerCount) {
+                                            if (!_isLoadingNewer) {
+                                              _isLoadingNewer = true;
+                                              _conversationViewModel
+                                                  .loadNewerMessage()
+                                                  .then((value) {
+                                                if (mounted) {
+                                                  setState(() {
+                                                    _isLoadingNewer = false;
+                                                  });
+                                                }
                                               });
                                             }
-                                          });
+                                            return Container(
+                                              padding: const EdgeInsets.all(10),
+                                              alignment: Alignment.center,
+                                              child: const SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                        strokeWidth: 2),
+                                              ),
+                                            );
+                                          }
                                         }
-                                        return Container(
-                                          padding: const EdgeInsets.all(10),
-                                          alignment: Alignment.center,
-                                          child: const SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(strokeWidth: 2),
-                                          ),
-                                        );
-                                      }
-                                    }
-                                    int listIndex = focusIndex - 1 - index;
-                                    if (listIndex < 0) return null;
-                                    return _buildMessageItem(context, listIndex, conversationViewModel);
-                                  },
-                                  childCount: conversationViewModel.focusMessageIndex + (!conversationViewModel.noMoreNewerMsg ? 1 : 0),
+                                        int listIndex = focusIndex - 1 - index;
+                                        if (listIndex < 0) return null;
+                                        return _buildMessageItem(context,
+                                            listIndex, conversationViewModel);
+                                      },
+                                      childCount: conversationViewModel
+                                              .focusMessageIndex +
+                                          (!conversationViewModel.noMoreNewerMsg
+                                              ? 1
+                                              : 0),
+                                    ),
+                                  ),
+                                SliverList(
+                                  key: _centerKey,
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) {
+                                      int listIndex = conversationViewModel
+                                              .focusMessageIndex +
+                                          index;
+                                      if (listIndex >=
+                                          conversationMessageList.length)
+                                        return null;
+                                      return _buildMessageItem(context,
+                                          listIndex, conversationViewModel);
+                                    },
+                                    childCount: conversationMessageList.length -
+                                        conversationViewModel.focusMessageIndex,
+                                  ),
                                 ),
-                              ),
-                            SliverList(
-                              key: _centerKey,
-                              delegate: SliverChildBuilderDelegate(
-                                (context, index) {
-                                  int listIndex = conversationViewModel.focusMessageIndex + index;
-                                  if (listIndex >= conversationMessageList.length) return null;
-                                  return _buildMessageItem(context, listIndex, conversationViewModel);
-                                },
-                                childCount: conversationMessageList.length - conversationViewModel.focusMessageIndex,
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                      onTap: () {
-                        _inputBarController.resetStatus();
-                        _conversationController?.clearTextSelection();
-                      },
+                          ),
+                          onTap: () {
+                            _inputBarController.resetStatus();
+                            _conversationController?.clearTextSelection();
+                          },
                         ),
                         // 定位到历史消息后显示「回到最新」悬浮按钮（对齐微信），
                         // 角标为这期间新收到的消息数；位于消息区右下角
@@ -494,12 +532,15 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
                           Positioned(
                             right: 16,
                             bottom: 16,
-                            child: _buildBackToLatestButton(context, conversationViewModel),
+                            child: _buildBackToLatestButton(
+                                context, conversationViewModel),
                           ),
                       ],
                     ),
                   ),
-                  conversationViewModel.isMultiSelectMode ? _buildMultiSelectToolBar(context, conversationViewModel) : widget.inputBar,
+                  conversationViewModel.isMultiSelectMode
+                      ? _buildMultiSelectToolBar(context, conversationViewModel)
+                      : widget.inputBar,
                 ],
               ),
               if (_pullDistance > 0 || _isLoading)
@@ -526,7 +567,9 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
                       ),
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        value: _isLoading ? null : (_pullDistance / 50).clamp(0.0, 1.0),
+                        value: _isLoading
+                            ? null
+                            : (_pullDistance / 50).clamp(0.0, 1.0),
                       ),
                     ),
                   ),
@@ -539,7 +582,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
 
           if (isDesktopShell) {
             return DropTarget(
-              onDragDone: (detail) => _handleDroppedFiles(innerContext, detail.files),
+              onDragDone: (detail) =>
+                  _handleDroppedFiles(innerContext, detail.files),
               child: content,
             );
           }
@@ -555,7 +599,9 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
     }
     final l10n = AppLocalizations.of(context)!;
     final fileNames = files.map((f) => f.name).toList();
-    final nameStr = fileNames.length == 1 ? fileNames.first : l10n.filesCountLabel(fileNames.length);
+    final nameStr = fileNames.length == 1
+        ? fileNames.first
+        : l10n.filesCountLabel(fileNames.length);
     showPcDialog<bool>(
       context: context,
       width: 360,
@@ -568,13 +614,16 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
           children: [
             Text(
               l10n.sendFile,
-              style: AppText.lg.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+              style: AppText.lg.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: context.colors.textPrimary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
             Text(
               l10n.confirmSendFiles(nameStr),
-              style: AppText.sm.copyWith(color: context.colors.textSecondary, height: 1.4),
+              style: AppText.sm
+                  .copyWith(color: context.colors.textSecondary, height: 1.4),
             ),
             const SizedBox(height: 20),
             Row(
@@ -597,12 +646,15 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
       ),
     ).then((confirmed) {
       if (confirmed != true) return;
-      final controller = Provider.of<ConversationController>(context, listen: false);
+      final controller =
+          Provider.of<ConversationController>(context, listen: false);
       final conversation = _inputBarController.conversation;
       final imageExts = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'};
       for (final file in files) {
         final path = file.path;
-        final ext = path.toLowerCase().substring(path.lastIndexOf('.') >= 0 ? path.lastIndexOf('.') : 0);
+        final ext = path
+            .toLowerCase()
+            .substring(path.lastIndexOf('.') >= 0 ? path.lastIndexOf('.') : 0);
         if (imageExts.contains(ext)) {
           controller.onPickImage(conversation, path);
         } else {
@@ -613,10 +665,12 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
     });
   }
 
-  Widget _buildMultiSelectToolBar(BuildContext context, ConversationViewModel viewModel) {
+  Widget _buildMultiSelectToolBar(
+      BuildContext context, ConversationViewModel viewModel) {
     return Container(
       height: 60,
-      color: isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
+      color:
+          isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -638,7 +692,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
     );
   }
 
-  void _handleDeleteSelected(BuildContext context, ConversationViewModel viewModel) {
+  void _handleDeleteSelected(
+      BuildContext context, ConversationViewModel viewModel) {
     if (viewModel.getSelectedMessages().isEmpty) {
       showToast(msg: AppLocalizations.of(context)!.selectMessage);
       return;
@@ -675,13 +730,16 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
     );
   }
 
-  void _deleteMessages(BuildContext context, ConversationViewModel viewModel, bool isRemote) {
+  void _deleteMessages(
+      BuildContext context, ConversationViewModel viewModel, bool isRemote) {
     var selected = viewModel.getSelectedMessages();
     for (var msg in selected) {
       if (isRemote) {
         if (msg.messageUid != null && msg.messageUid! > 0) {
           Imclient.deleteRemoteMessage(msg.messageUid!, () {}, (errorCode) {
-            showToast(msg: AppLocalizations.of(context)!.deleteRemoteMessageFail(errorCode.toString()));
+            showToast(
+                msg: AppLocalizations.of(context)!
+                    .deleteRemoteMessageFail(errorCode.toString()));
           });
         } else {
           viewModel.deleteMessage(msg.messageId);
@@ -732,7 +790,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
     );
   }
 
-  void _forwardMessages(BuildContext context, ConversationViewModel viewModel, List<Message> messages, bool isMerge) {
+  void _forwardMessages(BuildContext context, ConversationViewModel viewModel,
+      List<Message> messages, bool isMerge) {
     showPickForwardTarget(
       context,
       messages: messages,
@@ -746,7 +805,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
             _sendOneByOneMessage(context, target, messages);
           }
           if (comment != null && comment.isNotEmpty) {
-            Imclient.sendMessage(target, TextMessageContent(comment), successCallback: (uid, ts) {}, errorCallback: (err) {});
+            Imclient.sendMessage(target, TextMessageContent(comment),
+                successCallback: (uid, ts) {}, errorCallback: (err) {});
           }
         }
         showToast(msg: AppLocalizations.of(context)!.sent);
@@ -754,22 +814,28 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
     );
   }
 
-  void _sendOneByOneMessage(BuildContext context, Conversation target, List<Message> messages) {
+  void _sendOneByOneMessage(
+      BuildContext context, Conversation target, List<Message> messages) {
     messages.sort((a, b) => a.serverTime.compareTo(b.serverTime));
     for (var msg in messages) {
-      Imclient.sendMessage(target, msg.content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {
+      Imclient.sendMessage(target, msg.content,
+          successCallback: (messageUid, timestamp) {},
+          errorCallback: (errorCode) {
         showToast(msg: AppLocalizations.of(context)!.sendFail);
       });
     }
   }
 
-  void _sendCompositeMessage(BuildContext context, Conversation target, List<Message> messages) {
+  void _sendCompositeMessage(
+      BuildContext context, Conversation target, List<Message> messages) {
     CompositeMessageContent content = CompositeMessageContent();
     content.title = AppLocalizations.of(context)!.chatHistory;
     messages.sort((a, b) => a.serverTime.compareTo(b.serverTime));
     content.messages = messages;
 
-    Imclient.sendMessage(target, content, successCallback: (messageUid, timestamp) {}, errorCallback: (errorCode) {
+    Imclient.sendMessage(target, content,
+        successCallback: (messageUid, timestamp) {},
+        errorCallback: (errorCode) {
       showToast(msg: AppLocalizations.of(context)!.sendFail);
     });
   }
@@ -780,8 +846,11 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
     if (conversation.conversationType == ConversationType.Group) {
       var members = await Imclient.getGroupMembers(conversation.target);
       candidates.addAll(members.map((e) => e.memberId).toList());
-      var me = members.firstWhere((element) => element.memberId == Imclient.currentUserId, orElse: () => GroupMember());
-      if (me.type == GroupMemberType.Owner || me.type == GroupMemberType.Manager) {
+      var me = members.firstWhere(
+          (element) => element.memberId == Imclient.currentUserId,
+          orElse: () => GroupMember());
+      if (me.type == GroupMemberType.Owner ||
+          me.type == GroupMemberType.Manager) {
         showAll = true;
       }
     }
@@ -853,7 +922,8 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
     );
   }
 
-  Widget _buildMessageItem(BuildContext context, int index, ConversationViewModel conversationViewModel) {
+  Widget _buildMessageItem(BuildContext context, int index,
+      ConversationViewModel conversationViewModel) {
     var conversationMessageList = conversationViewModel.conversationMessageList;
     var msg = conversationMessageList[index];
     var cell = MessageCell(msg);
@@ -868,9 +938,11 @@ class _ConversationPaneState extends State<ConversationPane> with AmbientShortcu
           children: [
             if (msg.message.content is! NotificationMessageContent)
               Checkbox(
-                value: conversationViewModel.isMessageSelected(msg.message.messageId),
+                value: conversationViewModel
+                    .isMessageSelected(msg.message.messageId),
                 onChanged: (bool? value) {
-                  conversationViewModel.toggleMessageSelection(msg.message.messageId);
+                  conversationViewModel
+                      .toggleMessageSelection(msg.message.messageId);
                 },
               ),
             Expanded(

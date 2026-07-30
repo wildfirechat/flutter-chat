@@ -139,8 +139,8 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
 
     setState(() {
       _isRestoring = true;
-      _progress =
-          BackupProgress(total: 0, current: 0, phase: l10n.restoringConversations);
+      _progress = BackupProgress(
+          total: 0, current: 0, phase: l10n.restoringConversations);
     });
 
     await BackupManager().restoreBackup(
@@ -211,7 +211,8 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                 const SizedBox(height: 24),
                 FilledButton(
                   onPressed: _cancelOperation,
-                  style: FilledButton.styleFrom(backgroundColor: context.colors.danger),
+                  style: FilledButton.styleFrom(
+                      backgroundColor: context.colors.danger),
                   child: Text(l10n.cancel),
                 ),
               ],
@@ -245,27 +246,27 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                               return ListTile(
                                 leading: const Icon(Icons.backup),
                                 title: Text(_formatDate(backup.backupTime)),
-                                subtitle: Text(
-                                    l10n.backupListSubtitle(
-                                      "${backup.statistics?.totalConversations ?? 0}",
-                                      "${backup.statistics?.totalMessages ?? 0}",
-                                    )),
+                                subtitle: Text(l10n.backupListSubtitle(
+                                  "${backup.statistics?.totalConversations ?? 0}",
+                                  "${backup.statistics?.totalMessages ?? 0}",
+                                )),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.delete, color: Colors.grey),
-                                        onPressed: (_isBackingUp || _isRestoring)
-                                            ? null
-                                            : () => _deleteBackup(backup),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      FilledButton(
-                                        onPressed: (_isBackingUp || _isRestoring)
-                                            ? null
-                                            : () => _restoreBackup(backup),
-                                        child: Text(l10n.restoreBackup),
-                                      ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete,
+                                          color: Colors.grey),
+                                      onPressed: (_isBackingUp || _isRestoring)
+                                          ? null
+                                          : () => _deleteBackup(backup),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    FilledButton(
+                                      onPressed: (_isBackingUp || _isRestoring)
+                                          ? null
+                                          : () => _restoreBackup(backup),
+                                      child: Text(l10n.restoreBackup),
+                                    ),
                                   ],
                                 ),
                               );
@@ -280,7 +281,9 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: (_isBackingUp || _isRestoring) ? null : _createNewBackup,
+                        onPressed: (_isBackingUp || _isRestoring)
+                            ? null
+                            : _createNewBackup,
                         style: AppTheme.largeButtonStyle(),
                         child: Text(l10n.createNewBackup),
                       ),
@@ -289,7 +292,9 @@ class _BackupAndRestoreScreenState extends State<BackupAndRestoreScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton.tonal(
-                        onPressed: (_isBackingUp || _isRestoring) ? null : _restoreFromPC,
+                        onPressed: (_isBackingUp || _isRestoring)
+                            ? null
+                            : _restoreFromPC,
                         style: AppTheme.largeButtonStyle(),
                         child: Text(l10n.restoreFromPC),
                       ),

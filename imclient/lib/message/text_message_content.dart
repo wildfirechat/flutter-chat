@@ -1,5 +1,3 @@
-
-
 // ignore: non_constant_identifier_names
 import 'dart:convert';
 import 'dart:typed_data';
@@ -24,21 +22,21 @@ class TextMessageContent extends MessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.searchableContent != null) {
+    if (payload.searchableContent != null) {
       text = payload.searchableContent!;
     }
-    if(payload.binaryContent != null) {
-      Map<dynamic, dynamic> map = json.decode(
-          utf8.decode(payload.binaryContent!));
+    if (payload.binaryContent != null) {
+      Map<dynamic, dynamic> map =
+          json.decode(utf8.decode(payload.binaryContent!));
       Map<dynamic, dynamic> quote = map['quote'];
       quoteInfo = QuoteInfo(quote['u']);
-      if(quote['i'] != null) {
+      if (quote['i'] != null) {
         quoteInfo!.userId = quote['i'];
       }
-      if(quote['n'] != null) {
+      if (quote['n'] != null) {
         quoteInfo!.userDisplayName = quote['n'];
       }
-      if(quote['d'] != null) {
+      if (quote['d'] != null) {
         quoteInfo!.messageDigest = quote['d'];
       }
     }
@@ -48,24 +46,22 @@ class TextMessageContent extends MessageContent {
   MessagePayload encode() {
     MessagePayload payload = super.encode();
     payload.searchableContent = text;
-    if(quoteInfo != null) {
-      Map<dynamic, dynamic> quote = {"u":quoteInfo!.messageUid};
-      if(quoteInfo!.userId != null) {
+    if (quoteInfo != null) {
+      Map<dynamic, dynamic> quote = {"u": quoteInfo!.messageUid};
+      if (quoteInfo!.userId != null) {
         quote['i'] = quoteInfo!.userId;
       }
-      if(quoteInfo!.userDisplayName != null) {
+      if (quoteInfo!.userDisplayName != null) {
         quote['n'] = quoteInfo!.userDisplayName;
       }
-      if(quoteInfo!.messageDigest != null) {
+      if (quoteInfo!.messageDigest != null) {
         quote['d'] = quoteInfo!.messageDigest;
       }
-      payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode({
-        'quote': quote
-      })));
+      payload.binaryContent =
+          Uint8List.fromList(utf8.encode(json.encode({'quote': quote})));
     }
     return payload;
   }
-
 
   @override
   Future<String> digest(Message message) async {

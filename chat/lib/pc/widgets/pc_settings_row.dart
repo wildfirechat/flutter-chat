@@ -17,7 +17,8 @@ class PcSettingsSectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         title,
-        style: AppText.xs.copyWith(fontWeight: FontWeight.w600, color: context.colors.textSecondary),
+        style: AppText.xs.copyWith(
+            fontWeight: FontWeight.w600, color: context.colors.textSecondary),
       ),
     );
   }
@@ -48,9 +49,14 @@ class PcSettingsSwitchRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
+                Text(title,
+                    style: AppText.base.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: context.colors.textPrimary)),
                 const SizedBox(height: 4),
-                Text(subtitle, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
+                Text(subtitle,
+                    style: AppText.xs
+                        .copyWith(color: context.colors.textSecondary)),
               ],
             ),
           ),
@@ -93,13 +99,19 @@ class PcSettingsClickableRow extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
+                      Text(title,
+                          style: AppText.base.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: context.colors.textPrimary)),
                       const SizedBox(height: 4),
-                      Text(subtitle, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
+                      Text(subtitle,
+                          style: AppText.xs
+                              .copyWith(color: context.colors.textSecondary)),
                     ],
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios_rounded, size: 14, color: context.colors.textTertiary),
+                Icon(Icons.arrow_forward_ios_rounded,
+                    size: 14, color: context.colors.textTertiary),
               ],
             ),
           ),

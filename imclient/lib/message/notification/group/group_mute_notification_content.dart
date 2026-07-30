@@ -27,9 +27,9 @@ class GroupMuteNotificationContent extends NotificationMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.binaryContent != null) {
-      Map<dynamic, dynamic> map = json.decode(
-          utf8.decode(payload.binaryContent!));
+    if (payload.binaryContent != null) {
+      Map<dynamic, dynamic> map =
+          json.decode(utf8.decode(payload.binaryContent!));
       creator = map['o'];
       groupId = map['g'];
       type = map['n'];

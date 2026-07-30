@@ -8,7 +8,8 @@ import 'package:chat/l10n/app_localizations.dart';
 class JoinConferenceView extends StatefulWidget {
   final String? initialConferenceId;
 
-  const JoinConferenceView({Key? key, this.initialConferenceId}) : super(key: key);
+  const JoinConferenceView({Key? key, this.initialConferenceId})
+      : super(key: key);
 
   @override
   State<JoinConferenceView> createState() => _JoinConferenceViewState();
@@ -30,13 +31,16 @@ class _JoinConferenceViewState extends State<JoinConferenceView> {
   void _queryInfo() {
     if (_idController.text.isEmpty) return;
     setState(() => _loading = true);
-    AppServer.queryConferenceInfo(_idController.text, _pinController.text, (info) {
+    AppServer.queryConferenceInfo(_idController.text, _pinController.text,
+        (info) {
       setState(() => _loading = false);
       _showConferenceInfo(info);
     }, (error) {
       setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.conferenceQueryFailedWithError(error))),
+        SnackBar(
+            content: Text(AppLocalizations.of(context)!
+                .conferenceQueryFailedWithError(error))),
       );
     });
   }
@@ -75,7 +79,8 @@ class _JoinConferenceViewState extends State<JoinConferenceView> {
             TextField(
               controller: _idController,
               style: TextStyle(color: context.colors.textPrimary),
-              decoration: InputDecoration(labelText: l10n.conferenceIdInputLabel),
+              decoration:
+                  InputDecoration(labelText: l10n.conferenceIdInputLabel),
             ),
             const SizedBox(height: 12),
             TextField(

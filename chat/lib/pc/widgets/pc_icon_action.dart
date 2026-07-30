@@ -43,7 +43,9 @@ class PcIconAction extends StatelessWidget {
             children: [
               Icon(icon, size: iconSize, color: colors.accent),
               const SizedBox(height: 5),
-              Text(label, style: AppText.xs.copyWith(color: labelColor ?? colors.textSecondary)),
+              Text(label,
+                  style: AppText.xs
+                      .copyWith(color: labelColor ?? colors.textSecondary)),
             ],
           ),
         ),

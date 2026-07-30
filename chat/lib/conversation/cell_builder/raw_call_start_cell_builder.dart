@@ -22,7 +22,8 @@ class RawCallStartCellBuilder extends PortraitCellBuilder {
       context,
       text: info.text,
       audioOnly: info.audioOnly,
-      onTap: () => startAvCall(context, model.message.conversation, audioOnly: info.audioOnly),
+      onTap: () => startAvCall(context, model.message.conversation,
+          audioOnly: info.audioOnly),
     );
   }
 

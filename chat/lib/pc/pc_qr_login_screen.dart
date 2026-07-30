@@ -192,7 +192,10 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
     if (view == _PCLoginView.form) {
       _pollTimer?.cancel();
       _pollTimer = null;
-    } else if (_isPolling && _pollTimer == null && _token != null && !_loginSuccess) {
+    } else if (_isPolling &&
+        _pollTimer == null &&
+        _token != null &&
+        !_loginSuccess) {
       _doPoll();
       _startPollTimer();
     }
@@ -293,7 +296,8 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
   // ===== QR 视图 =====
   Widget _buildQrView() {
     final l10n = AppLocalizations.of(context)!;
-    final qrData = _token != null ? '${WfcScheme.qrCodePrefixPcSession}$_token' : '';
+    final qrData =
+        _token != null ? '${WfcScheme.qrCodePrefixPcSession}$_token' : '';
 
     // 登录窗是固定小窗,最大字号档 + 出错重试文案时卡片会顶到高度上限,
     // 这里跟表单视图一样套一层滚动,避免溢出。
@@ -341,7 +345,8 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
               // 已扫码：显示取消按钮
               TextButton(
                 onPressed: _cancelScan,
-                child: Text(l10n.cancel, style: TextStyle(color: context.colors.danger)),
+                child: Text(l10n.cancel,
+                    style: TextStyle(color: context.colors.danger)),
               )
             else
               // 未扫码：显示验证码/密码登录按钮
@@ -368,7 +373,8 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Icon(Icons.person, size: 80, color: Color(0xFFCCCCCC)),
+                    errorBuilder: (_, __, ___) => const Icon(Icons.person,
+                        size: 80, color: Color(0xFFCCCCCC)),
                   )
                 : const Icon(Icons.person, size: 80, color: Color(0xFFCCCCCC)),
           ),
@@ -384,7 +390,9 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
       );
     }
     if (_error != null && _token == null) {
-      return Center(child: Icon(Icons.error_outline, color: context.colors.danger, size: 48));
+      return Center(
+          child: Icon(Icons.error_outline,
+              color: context.colors.danger, size: 48));
     }
     if (qrData.isEmpty) {
       return const Center(child: CircularProgressIndicator());
@@ -419,7 +427,9 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
             SizedBox(height: Platform.isMacOS ? 52 : 12),
             Center(
               child: Text(
-                _form.isPasswordLogin ? l10n.loginWithPassword : l10n.loginCodeTitle,
+                _form.isPasswordLogin
+                    ? l10n.loginWithPassword
+                    : l10n.loginCodeTitle,
                 style: AppText.xl.copyWith(fontWeight: FontWeight.bold),
               ),
             ),
@@ -433,7 +443,8 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(4),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               ),
             ),
             const SizedBox(height: 12),
@@ -445,11 +456,14 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
                     controller: _form.codeOrPwdController,
                     obscureText: _form.isPasswordLogin,
                     decoration: InputDecoration(
-                      hintText: _form.isPasswordLogin ? l10n.inputPassword : l10n.inputVerificationCode,
+                      hintText: _form.isPasswordLogin
+                          ? l10n.inputPassword
+                          : l10n.inputVerificationCode,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 12),
                     ),
                   ),
                 ),
@@ -458,8 +472,12 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
                   SizedBox(
                     height: 46,
                     child: FilledButton(
-                      onPressed: _form.canSendCode ? () => _form.sendCode(context) : null,
-                      child: _form.isSentCode ? Text('${_form.waitResendCount}s') : Text(l10n.sendCode),
+                      onPressed: _form.canSendCode
+                          ? () => _form.sendCode(context)
+                          : null,
+                      child: _form.isSentCode
+                          ? Text('${_form.waitResendCount}s')
+                          : Text(l10n.sendCode),
                     ),
                   ),
                 ],
@@ -515,7 +533,9 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
             Center(
               child: TextButton(
                 onPressed: _form.toggleLoginMode,
-                child: Text(_form.isPasswordLogin ? l10n.loginWithPhoneCode : l10n.loginWithPassword),
+                child: Text(_form.isPasswordLogin
+                    ? l10n.loginWithPhoneCode
+                    : l10n.loginWithPassword),
               ),
             ),
             // 回二维码登录。原先是页面左上角的返回箭头,不如和上面的登录方式切换

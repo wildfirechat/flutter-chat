@@ -12,11 +12,13 @@ class OptionButtonItem extends StatelessWidget {
   final bool showBottomDivider;
   final GestureTapCallback onTap;
 
-  const OptionButtonItem(this.title, this.onTap, {this.showBottomDivider = true, this.titleColor, super.key});
+  const OptionButtonItem(this.title, this.onTap,
+      {this.showBottomDivider = true, this.titleColor, super.key});
 
   @override
   Widget build(BuildContext context) {
-    final btnHeight = LayoutScale.watchScale(context, 32.0, cap: LayoutScale.rowCap);
+    final btnHeight =
+        LayoutScale.watchScale(context, 32.0, cap: LayoutScale.rowCap);
     return Column(
       children: [
         Material(

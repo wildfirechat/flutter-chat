@@ -76,7 +76,8 @@ class WindowEventChannel {
   }
 
   /// 向目标窗口发送消息。
-  static Future<T?> invoke<T>(int targetWindowId, String method, dynamic args) async {
+  static Future<T?> invoke<T>(
+      int targetWindowId, String method, dynamic args) async {
     try {
       final result = await DesktopMultiWindow.invokeMethod(
         targetWindowId,
@@ -90,7 +91,8 @@ class WindowEventChannel {
       print('$_tag invoke $method to window $targetWindowId: plugin not ready');
       return null;
     } on PlatformException catch (e) {
-      print('$_tag invoke $method to window $targetWindowId error: ${e.message}');
+      print(
+          '$_tag invoke $method to window $targetWindowId error: ${e.message}');
       rethrow;
     }
   }

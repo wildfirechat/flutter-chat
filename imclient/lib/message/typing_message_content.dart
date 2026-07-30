@@ -1,4 +1,3 @@
-
 // ignore: non_constant_identifier_names
 import '../model/message_payload.dart';
 import 'message.dart';
@@ -25,7 +24,7 @@ class TypingMessageContent extends MessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.content != null) {
+    if (payload.content != null) {
       type = TypingType.values[int.parse(payload.content!)];
     }
   }
@@ -36,7 +35,6 @@ class TypingMessageContent extends MessageContent {
     payload.content = type.index.toString();
     return payload;
   }
-
 
   @override
   Future<String> digest(Message message) async {

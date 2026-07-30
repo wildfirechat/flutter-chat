@@ -49,7 +49,8 @@ class PcMessageInputBar extends StatefulWidget {
 
 class _PcMessageInputBarState extends State<PcMessageInputBar> {
   final GlobalKey _emojiButtonKey = GlobalKey();
-  final PcClipboardPasteHandler _clipboardPasteHandler = const PcClipboardPasteHandler();
+  final PcClipboardPasteHandler _clipboardPasteHandler =
+      const PcClipboardPasteHandler();
 
   /// @ 浮层靠它反查 '@' 的光标位置,把浮层贴到 '@' 上方
   final GlobalKey _textFieldKey = GlobalKey();
@@ -71,7 +72,9 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     if (!identical(controller, _boundController)) {
       _mentionOverlay?.dispose();
       _boundController = controller;
-      _mentionOverlay = PcMentionOverlay(inputBarController: controller, textFieldKey: _textFieldKey)..attach(context);
+      _mentionOverlay = PcMentionOverlay(
+          inputBarController: controller, textFieldKey: _textFieldKey)
+        ..attach(context);
     }
   }
 
@@ -86,13 +89,15 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
   static const double _quoteChipRowHeight = 38;
 
   double get _minHeight =>
-      PcTheme.inputBarMinHeight + (_boundController?.hasQuote == true ? _quoteChipRowHeight : 0);
+      PcTheme.inputBarMinHeight +
+      (_boundController?.hasQuote == true ? _quoteChipRowHeight : 0);
 
   /// 会话区太矮时压缩输入栏,保证消息列表还剩得下内容。
   double get _maxHeight => math.max(_minHeight, widget.maxHeight);
 
   /// 渲染高度。只夹取不回写:窗口重新拉大后,用户存下的期望高度原样恢复。
-  double _effectiveHeight(double height) => height.clamp(_minHeight, _maxHeight).toDouble();
+  double _effectiveHeight(double height) =>
+      height.clamp(_minHeight, _maxHeight).toDouble();
 
   void _onResizeStart(PcLayoutViewModel layout) {
     _dragStartHeight = _effectiveHeight(layout.inputBarHeight);
@@ -102,12 +107,16 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
   /// 分隔条在输入栏顶部:向上拖(dy 为负)变高。
   void _onResizeDelta(PcLayoutViewModel layout, double delta) {
     _dragOffset += delta;
-    layout.setInputBarHeight((_dragStartHeight - _dragOffset).clamp(_minHeight, _maxHeight).toDouble());
+    layout.setInputBarHeight((_dragStartHeight - _dragOffset)
+        .clamp(_minHeight, _maxHeight)
+        .toDouble());
   }
 
-  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event, MessageInputBarController controller) {
+  KeyEventResult _handleKeyEvent(
+      FocusNode node, KeyEvent event, MessageInputBarController controller) {
     // @ 浮层可见时优先消费 上下键/Enter/Tab/Esc
-    final KeyEventResult mentionResult = _mentionOverlay?.handleKeyEvent(event) ?? KeyEventResult.ignored;
+    final KeyEventResult mentionResult =
+        _mentionOverlay?.handleKeyEvent(event) ?? KeyEventResult.ignored;
     if (mentionResult != KeyEventResult.ignored) {
       return mentionResult;
     }
@@ -117,11 +126,14 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     // Ctrl/Cmd+V 粘贴全量接管:剪贴板有文件/图片则内联插入输入框(微信 PC 交互),
     // 否则手动粘贴纯文本。不走 TextField 默认粘贴,避免文件/图片剪贴板附带的
     // 元数据文本(如文件名)被贴进来。
-    if (event.logicalKey == LogicalKeyboardKey.keyV && (HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed)) {
+    if (event.logicalKey == LogicalKeyboardKey.keyV &&
+        (HardwareKeyboard.instance.isControlPressed ||
+            HardwareKeyboard.instance.isMetaPressed)) {
       _handlePaste(controller);
       return KeyEventResult.handled;
     }
-    if (event.logicalKey != LogicalKeyboardKey.enter && event.logicalKey != LogicalKeyboardKey.numpadEnter) {
+    if (event.logicalKey != LogicalKeyboardKey.enter &&
+        event.logicalKey != LogicalKeyboardKey.numpadEnter) {
       return KeyEventResult.ignored;
     }
     // Shift+Enter 换行,交给输入框
@@ -140,11 +152,13 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
 
   /// 粘贴逻辑下沉到 [PcClipboardPasteHandler],输入栏只负责按键路由。
   Future<void> _handlePaste(MessageInputBarController controller) {
-    return _clipboardPasteHandler.handlePaste(controller, isMounted: () => mounted);
+    return _clipboardPasteHandler.handlePaste(controller,
+        isMounted: () => mounted);
   }
 
   void _showEmojiPopover(MessageInputBarController controller) {
-    final renderBox = _emojiButtonKey.currentContext?.findRenderObject() as RenderBox?;
+    final renderBox =
+        _emojiButtonKey.currentContext?.findRenderObject() as RenderBox?;
     if (renderBox == null) {
       return;
     }
@@ -171,7 +185,8 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     );
   }
 
-  Future<void> _pickImage(ConversationController conversationController, MessageInputBarController controller) async {
+  Future<void> _pickImage(ConversationController conversationController,
+      MessageInputBarController controller) async {
     if (_isPickingFile) return;
     _isPickingFile = true;
     try {
@@ -187,14 +202,16 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
     }
   }
 
-  Future<void> _pickFile(ConversationController conversationController, MessageInputBarController controller) async {
+  Future<void> _pickFile(ConversationController conversationController,
+      MessageInputBarController controller) async {
     if (_isPickingFile) return;
     _isPickingFile = true;
     try {
       final result = await FilePicker.platform.pickFiles();
       final file = result?.files.firstOrNull;
       if (file?.path != null) {
-        conversationController.onPickFile(controller.conversation, file!.path!, file.name, file.size);
+        conversationController.onPickFile(
+            controller.conversation, file!.path!, file.name, file.size);
       }
     } catch (e) {
       debugPrint('pickFile error: $e');
@@ -213,7 +230,8 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
       }
       return;
     }
-    final result = await ScreenshotService.captureToFile(l10n, hideWindow: hideWindow);
+    final result =
+        await ScreenshotService.captureToFile(l10n, hideWindow: hideWindow);
     if (result.success) {
       controller.insertInlineImage(result.path!);
     } else if (result.error != null && mounted) {
@@ -224,16 +242,19 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
   @override
   Widget build(BuildContext context) {
     final controller = Provider.of<MessageInputBarController>(context);
-    final conversationController = Provider.of<ConversationController>(context, listen: false);
+    final conversationController =
+        Provider.of<ConversationController>(context, listen: false);
     final layout = Provider.of<PcLayoutViewModel>(context, listen: false);
     final l10n = AppLocalizations.of(context)!;
 
     // 频道(公众号)配了菜单时,输入栏可整体切换成菜单栏。菜单栏高度固定,
     // 不参与输入栏的拖拽调高,所以在这里直接返回,不进下面的可调高结构。
-    final List<ChannelMenu> channelMenus = controller.conversation.conversationType == ConversationType.Channel
-        ? (controller.channelInfo?.menus ?? const [])
-        : const [];
-    if (channelMenus.isNotEmpty && controller.status == ChatInputBarStatus.menuStatus) {
+    final List<ChannelMenu> channelMenus =
+        controller.conversation.conversationType == ConversationType.Channel
+            ? (controller.channelInfo?.menus ?? const [])
+            : const [];
+    if (channelMenus.isNotEmpty &&
+        controller.status == ChatInputBarStatus.menuStatus) {
       return Container(
         color: context.colors.chatBgDesktop,
         child: ChannelMenuWidget(
@@ -289,7 +310,8 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                           _ToolbarButton(
                             icon: Icons.image_outlined,
                             tooltip: l10n.image,
-                            onTap: () => _pickImage(conversationController, controller),
+                            onTap: () =>
+                                _pickImage(conversationController, controller),
                           ),
                           // 截图按钮 + 紧贴的下拉箭头(对齐微信 PC):主按钮普通截图
                           // (窗口入镜),箭头菜单里另有「隐藏窗口截图」。
@@ -303,30 +325,40 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                               ),
                               _ScreenshotMenuArrow(
                                 onSelected: (hideWindow) => _captureScreenshot(
-                                    controller, hideWindow: hideWindow),
+                                    controller,
+                                    hideWindow: hideWindow),
                               ),
                             ],
                           ),
                           _ToolbarButton(
                             icon: Icons.folder_outlined,
                             tooltip: l10n.filePicker,
-                            onTap: () => _pickFile(conversationController, controller),
+                            onTap: () =>
+                                _pickFile(conversationController, controller),
                           ),
-                          if (controller.conversation.conversationType == ConversationType.Group &&
+                          if (controller.conversation.conversationType ==
+                                  ConversationType.Group &&
                               Config.collectionServerAddress != null &&
                               Config.collectionServerAddress!.isNotEmpty)
                             _ToolbarButton(
-                              iconWidget: CollectionIcon(size: 21, color: context.colors.iconSecondary),
+                              iconWidget: CollectionIcon(
+                                  size: 21,
+                                  color: context.colors.iconSecondary),
                               tooltip: l10n.collection,
-                              onTap: () => CreateCollectionScreen.show(context, controller.conversation),
+                              onTap: () => CreateCollectionScreen.show(
+                                  context, controller.conversation),
                             ),
-                          if (controller.conversation.conversationType == ConversationType.Group &&
+                          if (controller.conversation.conversationType ==
+                                  ConversationType.Group &&
                               Config.pollServerAddress != null &&
                               Config.pollServerAddress!.isNotEmpty)
                             _ToolbarButton(
-                              iconWidget: Icon(Icons.poll, size: 21, color: context.colors.iconSecondary),
+                              iconWidget: Icon(Icons.poll,
+                                  size: 21,
+                                  color: context.colors.iconSecondary),
                               tooltip: l10n.poll,
-                              onTap: () => PollHomeScreen.show(context, controller.conversation.target),
+                              onTap: () => PollHomeScreen.show(
+                                  context, controller.conversation.target),
                             ),
                           // 频道菜单入口:切回菜单栏(切换按钮在菜单栏自己右侧)
                           if (channelMenus.isNotEmpty)
@@ -338,16 +370,23 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                           const Spacer(),
                           // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
                           // 单聊直接发起,群聊先弹选人对话框再发起(见 startAvCall)
-                          if (controller.conversation.conversationType == ConversationType.Single || controller.conversation.conversationType == ConversationType.Group) ...[
+                          if (controller.conversation.conversationType ==
+                                  ConversationType.Single ||
+                              controller.conversation.conversationType ==
+                                  ConversationType.Group) ...[
                             _ToolbarButton(
                               icon: Icons.call_outlined,
                               tooltip: l10n.audioCallAction,
-                              onTap: () => startAvCall(context, controller.conversation, audioOnly: true),
+                              onTap: () => startAvCall(
+                                  context, controller.conversation,
+                                  audioOnly: true),
                             ),
                             _ToolbarButton(
                               icon: Icons.videocam_outlined,
                               tooltip: l10n.videoCallAction,
-                              onTap: () => startAvCall(context, controller.conversation, audioOnly: false),
+                              onTap: () => startAvCall(
+                                  context, controller.conversation,
+                                  audioOnly: false),
                             ),
                           ],
                         ],
@@ -355,7 +394,8 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                     ),
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
                         // 内联图片行可能超出输入区视口(如粘贴后拖矮输入栏),
                         // 裁掉溢出绘制,防止盖住上方工具条
                         child: ClipRect(
@@ -366,10 +406,14 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                             builder: (context, constraints) {
                               // 48 = 图片行超出图片本身的部分(WidgetSpan 内边距 + 基线下
                               // 行距,随字体约 15~20)+ 视觉余量,保证整行落在视口内
-                              controller.textEditingController.inlineImageMaxHeight =
-                                  (constraints.maxHeight - 48).clamp(40.0, 456.0).toDouble();
+                              controller.textEditingController
+                                      .inlineImageMaxHeight =
+                                  (constraints.maxHeight - 48)
+                                      .clamp(40.0, 456.0)
+                                      .toDouble();
                               return Focus(
-                                onKeyEvent: (node, event) => _handleKeyEvent(node, event, controller),
+                                onKeyEvent: (node, event) =>
+                                    _handleKeyEvent(node, event, controller),
                                 child: TextField(
                                   key: _textFieldKey,
                                   controller: controller.textEditingController,
@@ -383,12 +427,15 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                                   strutStyle: StrutStyle.disabled,
                                   textAlignVertical: TextAlignVertical.top,
                                   keyboardType: TextInputType.multiline,
-                                  style: AppText.base.copyWith(height: 1.5, color: context.colors.textPrimary),
+                                  style: AppText.base.copyWith(
+                                      height: 1.5,
+                                      color: context.colors.textPrimary),
                                   decoration: InputDecoration(
                                     isCollapsed: true,
                                     border: InputBorder.none,
                                     hintText: l10n.enterToSendHint,
-                                    hintStyle: AppText.base.copyWith(color: context.colors.textTertiary),
+                                    hintStyle: AppText.base.copyWith(
+                                        color: context.colors.textTertiary),
                                   ),
                                 ),
                               );
@@ -450,10 +497,13 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
             height: 30,
             margin: const EdgeInsets.only(right: 2),
             decoration: BoxDecoration(
-              color: _hovered ? context.colors.hoverOverlay : Colors.transparent,
+              color:
+                  _hovered ? context.colors.hoverOverlay : Colors.transparent,
               borderRadius: BorderRadius.circular(4),
             ),
-            child: widget.iconWidget ?? Icon(widget.icon!, size: 21, color: context.colors.iconSecondary),
+            child: widget.iconWidget ??
+                Icon(widget.icon!,
+                    size: 21, color: context.colors.iconSecondary),
           ),
         ),
       ),
@@ -478,15 +528,18 @@ class _ScreenshotMenuArrowState extends State<_ScreenshotMenuArrow> {
 
   void _showMenu(BuildContext context, Offset globalPosition) {
     final l10n = AppLocalizations.of(context)!;
-    final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final overlayBox =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
     final localPosition = overlayBox.globalToLocal(globalPosition);
     showMenu<bool>(
       context: context,
-      position: RelativeRect.fromLTRB(
-          localPosition.dx, localPosition.dy, localPosition.dx, localPosition.dy),
+      position: RelativeRect.fromLTRB(localPosition.dx, localPosition.dy,
+          localPosition.dx, localPosition.dy),
       items: [
-        PopupMenuItem(value: false, height: 34, child: Text(l10n.screenshotTool)),
-        PopupMenuItem(value: true, height: 34, child: Text(l10n.screenshotHideWindow)),
+        PopupMenuItem(
+            value: false, height: 34, child: Text(l10n.screenshotTool)),
+        PopupMenuItem(
+            value: true, height: 34, child: Text(l10n.screenshotHideWindow)),
       ],
     ).then((value) {
       if (value != null) {
@@ -539,12 +592,14 @@ class _QuoteChip extends StatelessWidget {
       if (content is ImageMessageContent && content.thumbnail != null) {
         thumbnail = ClipRRect(
           borderRadius: BorderRadius.circular(3),
-          child: Image.memory(content.thumbnail!, width: 24, height: 24, fit: BoxFit.cover),
+          child: Image.memory(content.thumbnail!,
+              width: 24, height: 24, fit: BoxFit.cover),
         );
       } else if (content is VideoMessageContent && content.thumbnail != null) {
         thumbnail = ClipRRect(
           borderRadius: BorderRadius.circular(3),
-          child: Image.memory(content.thumbnail!, width: 24, height: 24, fit: BoxFit.cover),
+          child: Image.memory(content.thumbnail!,
+              width: 24, height: 24, fit: BoxFit.cover),
         );
       }
     } else if (quoteInfo != null) {
@@ -583,7 +638,9 @@ class _QuoteChip extends StatelessWidget {
               cursor: SystemMouseCursors.click,
               builder: (context, hovered) => GestureDetector(
                 onTap: () => controller.setQuotedMessage(null),
-                child: Icon(Icons.close, size: 14, color: hovered ? colors.textPrimary : colors.textSecondary),
+                child: Icon(Icons.close,
+                    size: 14,
+                    color: hovered ? colors.textPrimary : colors.textSecondary),
               ),
             ),
           ],
@@ -592,4 +649,3 @@ class _QuoteChip extends StatelessWidget {
     );
   }
 }
-

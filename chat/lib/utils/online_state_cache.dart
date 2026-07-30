@@ -10,7 +10,8 @@ import 'package:imclient/model/user_online_state.dart';
 /// - 提供同步查询能力；UI 格式化请使用 [OnlineStateFormatter]。
 class OnlineStateCache extends ChangeNotifier {
   OnlineStateCache._() {
-    _subscription = Imclient.IMEventBus.on<UserOnlineStateUpdatedEvent>().listen((event) {
+    _subscription =
+        Imclient.IMEventBus.on<UserOnlineStateUpdatedEvent>().listen((event) {
       _updateStates(event.onlineInfos);
     });
   }

@@ -39,7 +39,8 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
   Future<void> _loadDomainInfo() async {
     setState(() => _loading = true);
     try {
-      final info = await MeshCache.instance.loadDomainInfo(widget.domainId, refresh: true);
+      final info = await MeshCache.instance
+          .loadDomainInfo(widget.domainId, refresh: true);
       if (mounted) {
         setState(() {
           _domainInfo = info;
@@ -55,7 +56,9 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
   }
 
   void _searchUsersInDomain() {
-    final delegate = SearchUserDelegate(domainId: widget.domainId, searchFieldHint: AppLocalizations.of(context)!.searchUserFieldHint);
+    final delegate = SearchUserDelegate(
+        domainId: widget.domainId,
+        searchFieldHint: AppLocalizations.of(context)!.searchUserFieldHint);
     showSearch(context: context, delegate: delegate);
   }
 
@@ -124,9 +127,12 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
               subtitle: info.desc,
             ),
             const PcProfileDivider(),
-            if (info.email != null && info.email!.isNotEmpty) PcProfileRow(label: l10n.domainEmail, value: info.email),
-            if (info.tel != null && info.tel!.isNotEmpty) PcProfileRow(label: l10n.domainTel, value: info.tel),
-            if (info.address != null && info.address!.isNotEmpty) PcProfileRow(label: l10n.domainAddress, value: info.address),
+            if (info.email != null && info.email!.isNotEmpty)
+              PcProfileRow(label: l10n.domainEmail, value: info.email),
+            if (info.tel != null && info.tel!.isNotEmpty)
+              PcProfileRow(label: l10n.domainTel, value: info.tel),
+            if (info.address != null && info.address!.isNotEmpty)
+              PcProfileRow(label: l10n.domainAddress, value: info.address),
             const PcProfileDivider(),
             PcProfileActions(children: [
               PcIconAction(
@@ -184,9 +190,11 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
+          Text(label,
+              style: AppText.xs.copyWith(color: context.colors.textSecondary)),
           const SizedBox(height: 4),
-          Text(value, style: AppText.lg.copyWith(color: context.colors.textPrimary)),
+          Text(value,
+              style: AppText.lg.copyWith(color: context.colors.textPrimary)),
         ],
       ),
     );

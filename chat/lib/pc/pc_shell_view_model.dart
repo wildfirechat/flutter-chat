@@ -17,7 +17,8 @@ class PCShellViewModel extends ChangeNotifier {
 
   /// 由 PCHome 注入。深层复用组件(如用户信息卡片、右栏用户详情的“发消息”)通过
   /// [openConversation]/[openPage] 请求在右栏打开内容并同步选中态,而不是自己 push 页面。
-  void Function(Conversation conversation, {int? toFocusMessageId})? conversationOpener;
+  void Function(Conversation conversation, {int? toFocusMessageId})?
+      conversationOpener;
   void Function(Widget page)? pageOpener;
 
   /// 由 PCHome 注入。右栏当前页面自知失效时(如群聊被移出通讯录)经 [closePage]

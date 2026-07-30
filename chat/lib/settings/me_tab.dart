@@ -257,8 +257,8 @@ class SelfProfile extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       child: Container(
-                        margin: const EdgeInsets.only(
-                            left: 10, top: 0, bottom: 10),
+                        margin:
+                            const EdgeInsets.only(left: 10, top: 0, bottom: 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -282,7 +282,8 @@ class SelfProfile extends StatelessWidget {
                                 AppLocalizations.of(context)!
                                     .wildfireId(userInfo.name),
                                 textAlign: TextAlign.left,
-                                style: AppText.xs.copyWith(color: context.colors.textSecondary),
+                                style: AppText.xs.copyWith(
+                                    color: context.colors.textSecondary),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             )

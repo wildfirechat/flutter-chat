@@ -42,11 +42,14 @@ const double _kDividerHeight = 0.5; // 不随字号缩放
 
 /// 固定表头行(新的朋友/收藏群组/…/组织)的完整高度。
 double _headerExtent(BuildContext context) =>
-    LayoutScale.scale(context, _kRowHeight, cap: LayoutScale.rowCap) + _kDividerHeight;
+    LayoutScale.scale(context, _kRowHeight, cap: LayoutScale.rowCap) +
+    _kDividerHeight;
 
 /// 联系人行的完整高度。带分类标题时多一条纯文本的分类条。
 double _contactExtent(BuildContext context, bool showCategory) =>
-    (showCategory ? LayoutScale.scale(context, _kCategoryHeight, cap: LayoutScale.textCap) : 0) +
+    (showCategory
+        ? LayoutScale.scale(context, _kCategoryHeight, cap: LayoutScale.textCap)
+        : 0) +
     LayoutScale.scale(context, _kRowHeight, cap: LayoutScale.rowCap) +
     _kDividerHeight;
 
@@ -71,9 +74,12 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   double _cachedFontScale = 1.0;
   Map<String, double> _cachedOffsets = {};
 
-  Map<String, double> _getOffsets(List<UIContactInfo> contactList, int headerCount) {
+  Map<String, double> _getOffsets(
+      List<UIContactInfo> contactList, int headerCount) {
     final fontScale = context.read<FontSizeViewModel>().textScaleFactor;
-    if (_cachedContactList == contactList && _cachedHeaderCount == headerCount && _cachedFontScale == fontScale) {
+    if (_cachedContactList == contactList &&
+        _cachedHeaderCount == headerCount &&
+        _cachedFontScale == fontScale) {
       return _cachedOffsets;
     }
     _cachedContactList = contactList;
@@ -83,7 +89,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     return _cachedOffsets;
   }
 
-  Map<String, double> _calculateIndexOffsets(List<UIContactInfo> contactList, int headerCount) {
+  Map<String, double> _calculateIndexOffsets(
+      List<UIContactInfo> contactList, int headerCount) {
     Map<String, double> offsets = {};
     double offset = headerCount * _headerExtent(context);
     for (var contact in contactList) {
@@ -131,11 +138,22 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     // 字号变化必须重跑本 build:itemExtentBuilder 与索引偏移都要按新字号重算。
     context.watch<FontSizeViewModel>();
     final List fixHeaderList = [
-      ['assets/images/contact_new_friend.png', AppLocalizations.of(context)!.newFriend, 'new_friend'],
-      ['assets/images/contact_fav_group.png', AppLocalizations.of(context)!.favGroup, 'fav_group'],
-      ['assets/images/contact_subscribed_channel.png', AppLocalizations.of(context)!.subscribedChannel, 'subscribed_channel'],
-      if (_meshEnabled)
-        [null, AppLocalizations.of(context)!.mesh, 'mesh'],
+      [
+        'assets/images/contact_new_friend.png',
+        AppLocalizations.of(context)!.newFriend,
+        'new_friend'
+      ],
+      [
+        'assets/images/contact_fav_group.png',
+        AppLocalizations.of(context)!.favGroup,
+        'fav_group'
+      ],
+      [
+        'assets/images/contact_subscribed_channel.png',
+        AppLocalizations.of(context)!.subscribedChannel,
+        'subscribed_channel'
+      ],
+      if (_meshEnabled) [null, AppLocalizations.of(context)!.mesh, 'mesh'],
     ];
     return ChangeNotifierProvider<OrganizationViewModel>(
       create: (_) {
@@ -148,12 +166,22 @@ class _ContactListWidgetState extends State<ContactListWidget> {
         body: SafeArea(
           child: Stack(
             children: [
-              Selector2<ContactListViewModel, OrganizationViewModel,
-                  ({List<UIContactInfo> contactList, int unreadFriendRequestCount, List<Organization> rootOrgs, List<Organization> myOrgs})>(
+              Selector2<
+                  ContactListViewModel,
+                  OrganizationViewModel,
+                  ({
+                    List<UIContactInfo> contactList,
+                    int unreadFriendRequestCount,
+                    List<Organization> rootOrgs,
+                    List<Organization> myOrgs
+                  })>(
                 builder: (_, record, __) {
                   List<String> indexList = _getIndexList(record.contactList);
-                  int headerCount = fixHeaderList.length + record.rootOrgs.length + record.myOrgs.length;
-                  Map<String, double> indexOffsets = _getOffsets(record.contactList, headerCount);
+                  int headerCount = fixHeaderList.length +
+                      record.rootOrgs.length +
+                      record.myOrgs.length;
+                  Map<String, double> indexOffsets =
+                      _getOffsets(record.contactList, headerCount);
 
                   return Stack(
                     children: [
@@ -161,7 +189,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                           controller: _scrollController,
                           itemCount: headerCount + record.contactList.length,
                           // 使用key帮助ListView正确处理数据更新
-                          key: ValueKey('contact_list_${record.contactList.length}'),
+                          key: ValueKey(
+                              'contact_list_${record.contactList.length}'),
                           cacheExtent: 200,
                           addRepaintBoundaries: true,
                           addAutomaticKeepAlives: false,
@@ -171,22 +200,35 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                             if (index < headerCount) {
                               return _headerExtent(context);
                             }
-                            return _contactExtent(context, record.contactList[index - headerCount].showCategory);
+                            return _contactExtent(
+                                context,
+                                record.contactList[index - headerCount]
+                                    .showCategory);
                           },
                           itemBuilder: (context, i) {
                             if (i < fixHeaderList.length) {
-                              return _contactListFixHeader(context, i, record.unreadFriendRequestCount, fixHeaderList);
-                            } else if (i < fixHeaderList.length + record.rootOrgs.length) {
-                              var org = record.rootOrgs[i - fixHeaderList.length];
+                              return _contactListFixHeader(
+                                  context,
+                                  i,
+                                  record.unreadFriendRequestCount,
+                                  fixHeaderList);
+                            } else if (i <
+                                fixHeaderList.length + record.rootOrgs.length) {
+                              var org =
+                                  record.rootOrgs[i - fixHeaderList.length];
                               return _contactListOrgHeader(context, org, true);
                             } else if (i < headerCount) {
-                              var org = record.myOrgs[i - fixHeaderList.length - record.rootOrgs.length];
+                              var org = record.myOrgs[i -
+                                  fixHeaderList.length -
+                                  record.rootOrgs.length];
                               return _contactListOrgHeader(context, org, false);
                             } else {
-                              var contactInfo = record.contactList[i - headerCount];
+                              var contactInfo =
+                                  record.contactList[i - headerCount];
                               return ContactListItem(
                                 contactInfo,
-                                key: ValueKey('contact_${contactInfo.userInfo.userId}-${contactInfo.userInfo.updateDt}'),
+                                key: ValueKey(
+                                    'contact_${contactInfo.userInfo.userId}-${contactInfo.userInfo.updateDt}'),
                                 onTap: widget.onUserSelected,
                               );
                             }
@@ -196,12 +238,14 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                           indexList: indexList,
                           onIndexSelected: (tag) {
                             final offset = tag == '↑' ? 0.0 : indexOffsets[tag];
-                            if (offset != null && _scrollController.hasClients) {
+                            if (offset != null &&
+                                _scrollController.hasClients) {
                               _scrollController.jumpTo(offset);
                             }
                           },
                           onTouch: (tag, isTouching) {
-                            if (_currentLetter != tag || _isTouchingIndex != isTouching) {
+                            if (_currentLetter != tag ||
+                                _isTouchingIndex != isTouching) {
                               setState(() {
                                 _currentLetter = tag;
                                 _isTouchingIndex = isTouching;
@@ -214,7 +258,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                 },
                 selector: (_, contactListViewModel, organizationViewModel) => (
                   contactList: contactListViewModel.contactList,
-                  unreadFriendRequestCount: contactListViewModel.unreadFriendRequestCount,
+                  unreadFriendRequestCount:
+                      contactListViewModel.unreadFriendRequestCount,
                   rootOrgs: organizationViewModel.rootOrganizations,
                   myOrgs: organizationViewModel.myOrganizations
                 ),
@@ -230,7 +275,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                     ),
                     alignment: Alignment.center,
                     child: _currentLetter == '↑'
-                        ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
+                        ? const Icon(Icons.arrow_upward,
+                            size: 40, color: Colors.white)
                         : Text(
                             _currentLetter,
                             style: AppText.xxxl.copyWith(color: Colors.white),
@@ -261,7 +307,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   }
 
   Widget _buildHeaderIcon(String? imagePath) {
-    final size = LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap);
+    final size =
+        LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap);
     if (imagePath == null || imagePath.isEmpty) {
       // 外部单位/固定入口图标，与其他带色圆角背景的入口图标保持一致
       return Container(
@@ -277,7 +324,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     return Image.asset(imagePath, width: size, height: size);
   }
 
-  Widget _contactListFixHeader(BuildContext context, int index, int unreadFriendRequestCount, List<dynamic> fixHeaderList) {
+  Widget _contactListFixHeader(BuildContext context, int index,
+      int unreadFriendRequestCount, List<dynamic> fixHeaderList) {
     String? imagePath = fixHeaderList[index][0] as String?;
     String title = (fixHeaderList[index][1] as String?) ?? '';
     String key = (fixHeaderList[index][2] as String?) ?? '';
@@ -286,11 +334,13 @@ class _ContactListWidgetState extends State<ContactListWidget> {
       child: InkWell(
         onTap: () {
           if (key == "new_friend") {
-            var contactListViewModel = Provider.of<ContactListViewModel>(context, listen: false);
+            var contactListViewModel =
+                Provider.of<ContactListViewModel>(context, listen: false);
             contactListViewModel.clearUnreadFriendRequestStatus();
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const FriendRequestPage()),
+              MaterialPageRoute(
+                  builder: (context) => const FriendRequestPage()),
             );
           } else if (key == "fav_group") {
             Navigator.push(
@@ -300,7 +350,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
           } else if (key == "subscribed_channel") {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const SubscribedChannelsPage()),
+              MaterialPageRoute(
+                  builder: (context) => const SubscribedChannelsPage()),
             );
           } else if (key == "mesh") {
             Navigator.push(
@@ -308,7 +359,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
               MaterialPageRoute(builder: (context) => const DomainListScreen()),
             );
           } else {
-            Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+            Fluttertoast.showToast(
+                msg: AppLocalizations.of(context)!.methodNotImpl);
             if (kDebugMode) {
               print("on tap item $index");
             }
@@ -318,8 +370,10 @@ class _ContactListWidgetState extends State<ContactListWidget> {
         child: Column(
           children: <Widget>[
             Container(
-              height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
-              margin: EdgeInsets.fromLTRB(16.0, 0.0, isDesktopShell ? 0.0 : 32.0, 0.0),
+              height: LayoutScale.watchScale(context, _kRowHeight,
+                  cap: LayoutScale.rowCap),
+              margin: EdgeInsets.fromLTRB(
+                  16.0, 0.0, isDesktopShell ? 0.0 : 32.0, 0.0),
               child: Row(
                 children: <Widget>[
                   key == 'new_friend'
@@ -343,7 +397,10 @@ class _ContactListWidgetState extends State<ContactListWidget> {
             Divider(
               indent: isDesktopShell
                   ? 12.0
-                  : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
+                  : 16.0 +
+                      LayoutScale.watchScale(context, 40.0,
+                          cap: LayoutScale.iconCap) +
+                      16.0,
               endIndent: 12.0,
             ),
           ],
@@ -352,8 +409,11 @@ class _ContactListWidgetState extends State<ContactListWidget> {
     );
   }
 
-  Widget _contactListOrgHeader(BuildContext context, Organization org, bool isRoot) {
-    String imagePath = isRoot ? 'assets/images/contact_organization.png' : 'assets/images/contact_organization_expended.png';
+  Widget _contactListOrgHeader(
+      BuildContext context, Organization org, bool isRoot) {
+    String imagePath = isRoot
+        ? 'assets/images/contact_organization.png'
+        : 'assets/images/contact_organization_expended.png';
     return Material(
       color: context.colors.surface,
       child: InkWell(
@@ -372,11 +432,17 @@ class _ContactListWidgetState extends State<ContactListWidget> {
         child: Column(
           children: <Widget>[
             Container(
-              height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
-              margin: EdgeInsets.fromLTRB(16.0, 0.0, isDesktopShell ? 0.0 : 32.0, 0.0),
+              height: LayoutScale.watchScale(context, _kRowHeight,
+                  cap: LayoutScale.rowCap),
+              margin: EdgeInsets.fromLTRB(
+                  16.0, 0.0, isDesktopShell ? 0.0 : 32.0, 0.0),
               child: Row(
                 children: <Widget>[
-                  Image.asset(imagePath, width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap), height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap)),
+                  Image.asset(imagePath,
+                      width: LayoutScale.watchScale(context, 40.0,
+                          cap: LayoutScale.iconCap),
+                      height: LayoutScale.watchScale(context, 40.0,
+                          cap: LayoutScale.iconCap)),
                   Container(
                     margin: const EdgeInsets.only(left: 16),
                   ),
@@ -393,7 +459,10 @@ class _ContactListWidgetState extends State<ContactListWidget> {
             Divider(
               indent: isDesktopShell
                   ? 12.0
-                  : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
+                  : 16.0 +
+                      LayoutScale.watchScale(context, 40.0,
+                          cap: LayoutScale.iconCap) +
+                      16.0,
               endIndent: 12.0,
             ),
           ],
@@ -429,19 +498,27 @@ class _ContactListItemState extends State<ContactListItem> {
   Widget _buildContent(BuildContext context, UserInfo userInfo) {
     Color getBgColor() {
       if (!isDesktopShell) return Colors.transparent;
-      final selectedId = Provider.of<PCShellViewModel>(context).selectedContactItemId;
-      final isSelected = selectedId == 'user-${widget.contactInfo.userInfo.userId}';
+      final selectedId =
+          Provider.of<PCShellViewModel>(context).selectedContactItemId;
+      final isSelected =
+          selectedId == 'user-${widget.contactInfo.userInfo.userId}';
       if (isSelected) return context.colors.cellSelected;
       if (_hovered) return context.colors.cellHover;
       return Colors.transparent;
     }
 
     Widget contactRow = Container(
-      height: LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
+      height:
+          LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
       padding: EdgeInsets.fromLTRB(16.0, 0.0, isDesktopShell ? 0.0 : 32.0, 0.0),
       child: Row(
         children: <Widget>[
-          Portrait(widget.contactInfo.userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40, height: 40,),
+          Portrait(
+            widget.contactInfo.userInfo.portrait ?? Config.defaultUserPortrait,
+            Config.defaultUserPortrait,
+            width: 40,
+            height: 40,
+          ),
           Container(
             margin: const EdgeInsets.only(left: 16),
           ),
@@ -467,17 +544,22 @@ class _ContactListItemState extends State<ContactListItem> {
           if (widget.contactInfo.showCategory)
             Container(
               // 纯文本条:用 textCap 完整跟随字号,否则最大档位下分类字母会被裁掉。
-              height: LayoutScale.watchScale(context, _kCategoryHeight, cap: LayoutScale.textCap),
-              width: View.of(context).physicalSize.width / View.of(context).devicePixelRatio,
+              height: LayoutScale.watchScale(context, _kCategoryHeight,
+                  cap: LayoutScale.textCap),
+              width: View.of(context).physicalSize.width /
+                  View.of(context).devicePixelRatio,
               color: context.colors.hairlineSoft,
-              padding: EdgeInsets.only(left: 16, right: isDesktopShell ? 16.0 : 32.0),
+              padding: EdgeInsets.only(
+                  left: 16, right: isDesktopShell ? 16.0 : 32.0),
               alignment: Alignment.centerLeft,
               child: Text(
                 widget.contactInfo.category == '{'
                     ? '#'
                     : (widget.contactInfo.category == '☆'
                         ? AppLocalizations.of(context)!.favFriend
-                        : (widget.contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : widget.contactInfo.category)),
+                        : (widget.contactInfo.category == 'AI'
+                            ? AppLocalizations.of(context)!.aiRobot
+                            : widget.contactInfo.category)),
                 style: AppText.xs.copyWith(color: context.colors.textSecondary),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -500,7 +582,10 @@ class _ContactListItemState extends State<ContactListItem> {
           Divider(
             indent: isDesktopShell
                 ? 12.0
-                : 16.0 + LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap) + 16.0,
+                : 16.0 +
+                    LayoutScale.watchScale(context, 40.0,
+                        cap: LayoutScale.iconCap) +
+                    16.0,
             endIndent: 12.0,
           ),
         ],
@@ -524,12 +609,14 @@ class _ContactListItemState extends State<ContactListItem> {
         final showIndicator = OnlineStateFormatter.showIndicator(state);
         final statusText = OnlineStateFormatter.contactStatusText(state, l10n);
 
-        final nameSpan = MeshUserDisplay.getReadableNameSpan(userInfo, style: AppText.lg);
+        final nameSpan =
+            MeshUserDisplay.getReadableNameSpan(userInfo, style: AppText.lg);
         final spans = List<InlineSpan>.from(nameSpan.children ?? [nameSpan]);
         if (statusText != null && statusText.isNotEmpty) {
           spans.add(TextSpan(
             text: '($statusText)',
-            style: AppText.sm.copyWith(color: Theme.of(context).colorScheme.secondary),
+            style: AppText.sm
+                .copyWith(color: Theme.of(context).colorScheme.secondary),
           ));
         }
         if (showIndicator) {
@@ -540,7 +627,8 @@ class _ContactListItemState extends State<ContactListItem> {
               child: Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                    color: Colors.green, shape: BoxShape.circle),
               ),
             ),
           ));
@@ -558,7 +646,9 @@ class _ContactListItemState extends State<ContactListItem> {
   _toUserInfoPage(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => UserInfoWidget(widget.contactInfo.userInfo.userId)),
+      MaterialPageRoute(
+          builder: (context) =>
+              UserInfoWidget(widget.contactInfo.userInfo.userId)),
     );
   }
 }

@@ -22,7 +22,8 @@ import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/theme/app_typography.dart';
 
-typedef OnPickUserCallback = void Function(BuildContext context, List<String> pickedUsers);
+typedef OnPickUserCallback = void Function(
+    BuildContext context, List<String> pickedUsers);
 
 /// 按平台形态呈现选人页:桌面居中 Dialog(420x560),移动端整页 push。
 /// 回调中的 Navigator.pop(context) 在两种形态下都会关闭选人 UI。
@@ -157,7 +158,9 @@ class _PickUserScreenState extends State<PickUserScreen> {
   }
 
   void _initData() async {
-    var userInfos = widget.candidates != null ? await Imclient.getUserInfos(widget.candidates!) : await UserRepo.getFriendUserInfos();
+    var userInfos = widget.candidates != null
+        ? await Imclient.getUserInfos(widget.candidates!)
+        : await UserRepo.getFriendUserInfos();
     _pickUserViewModel.setup(userInfos,
         maxPickCount: widget.maxSelected,
         uncheckableUserIds: widget.disabledUncheckedUsers,
@@ -166,16 +169,19 @@ class _PickUserScreenState extends State<PickUserScreen> {
   }
 
   void _onPressedDone(BuildContext context) {
-    widget.callback(context, _pickUserViewModel.pickedUsers.map((u) => u.userId).toList());
+    widget.callback(
+        context, _pickUserViewModel.pickedUsers.map((u) => u.userId).toList());
   }
 
   Future<void> _openOrganizationPicker(BuildContext context) async {
-    final remaining = widget.maxSelected - _pickUserViewModel.pickedUsers.length;
+    final remaining =
+        widget.maxSelected - _pickUserViewModel.pickedUsers.length;
     if (remaining <= 0) {
       Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
       return;
     }
-    final selected = _pickUserViewModel.pickedUsers.map((u) => u.userId).toList();
+    final selected =
+        _pickUserViewModel.pickedUsers.map((u) => u.userId).toList();
     final result = await Navigator.push<List<String>>(
       context,
       MaterialPageRoute(
@@ -228,8 +234,11 @@ class _PickUserScreenState extends State<PickUserScreen> {
         _scrollController.jumpTo(offset);
         return;
       }
-      final double categoryHeight = user.showCategory ? LayoutScale.scale(context, 18.0, cap: LayoutScale.textCap) : 0.0;
-      final double contentHeight = LayoutScale.scale(context, 52.0, cap: LayoutScale.rowCap);
+      final double categoryHeight = user.showCategory
+          ? LayoutScale.scale(context, 18.0, cap: LayoutScale.textCap)
+          : 0.0;
+      final double contentHeight =
+          LayoutScale.scale(context, 52.0, cap: LayoutScale.rowCap);
       const double dividerHeight = 0.5;
       offset += categoryHeight + contentHeight + dividerHeight;
     }
@@ -242,16 +251,22 @@ class _PickUserScreenState extends State<PickUserScreen> {
       value: _pickUserViewModel,
       child: Consumer<PickUserViewModel>(
         builder: (context, viewModel, child) {
-          List<String> indexList = viewModel.isSearching ? [] : _getIndexList(viewModel.userList);
-          final title = widget.title.isEmpty ? AppLocalizations.of(context)!.selectUser : widget.title;
+          List<String> indexList =
+              viewModel.isSearching ? [] : _getIndexList(viewModel.userList);
+          final title = widget.title.isEmpty
+              ? AppLocalizations.of(context)!.selectUser
+              : widget.title;
           final actions = [
             if (widget.maxSelected > 1)
               AppBarTextAction(
                 label: viewModel.pickedUsers.isNotEmpty
-                    ? AppLocalizations.of(context)!.doneWithCount(viewModel.pickedUsers.length.toString())
+                    ? AppLocalizations.of(context)!
+                        .doneWithCount(viewModel.pickedUsers.length.toString())
                     : AppLocalizations.of(context)!.cancel,
                 onPressed: () => _onPressedDone(context),
-                textColor: viewModel.pickedUsers.isNotEmpty ? null : context.colors.textSecondary,
+                textColor: viewModel.pickedUsers.isNotEmpty
+                    ? null
+                    : context.colors.textSecondary,
               ),
           ];
 
@@ -273,18 +288,22 @@ class _PickUserScreenState extends State<PickUserScreen> {
                   if (widget.showOrganizationEntry) ...[
                     Container(
                       constraints: BoxConstraints(
-                        minHeight: LayoutScale.watchScale(context, 56.0, cap: LayoutScale.rowCap),
+                        minHeight: LayoutScale.watchScale(context, 56.0,
+                            cap: LayoutScale.rowCap),
                       ),
                       child: ListTile(
                         leading: Icon(
                           Icons.corporate_fare,
                           color: Theme.of(context).colorScheme.secondary,
-                          size: LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap),
+                          size: LayoutScale.watchScale(context, 24.0,
+                              cap: LayoutScale.iconCap),
                         ),
-                        title: Text(AppLocalizations.of(context)!.selectFromOrganization),
+                        title: Text(AppLocalizations.of(context)!
+                            .selectFromOrganization),
                         trailing: Icon(
                           Icons.chevron_right,
-                          size: LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap),
+                          size: LayoutScale.watchScale(context, 20.0,
+                              cap: LayoutScale.iconCap),
                         ),
                         onTap: () => _openOrganizationPicker(context),
                       ),
@@ -292,7 +311,10 @@ class _PickUserScreenState extends State<PickUserScreen> {
                     Divider(
                       indent: isDesktopShell
                           ? 16.0
-                          : 16.0 + LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap) + 16.0,
+                          : 16.0 +
+                              LayoutScale.watchScale(context, 24.0,
+                                  cap: LayoutScale.iconCap) +
+                              16.0,
                     ),
                   ],
                   Container(
@@ -307,13 +329,17 @@ class _PickUserScreenState extends State<PickUserScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Row(
                         children: [
-                          Icon(Icons.search, color: context.colors.iconSecondary),
+                          Icon(Icons.search,
+                              color: context.colors.iconSecondary),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Row(
                               children: [
                                 ConstrainedBox(
-                                  constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width - 140),
+                                  constraints: BoxConstraints(
+                                      maxWidth:
+                                          MediaQuery.of(context).size.width -
+                                              140),
                                   child: SingleChildScrollView(
                                     controller: _selectedUsersScrollController,
                                     scrollDirection: Axis.horizontal,
@@ -321,11 +347,20 @@ class _PickUserScreenState extends State<PickUserScreen> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: viewModel.pickedUsers
                                           .map((u) => Padding(
-                                                padding: const EdgeInsets.only(right: 4),
+                                                padding: const EdgeInsets.only(
+                                                    right: 4),
                                                 child: GestureDetector(
-                                                  onTap: () => viewModel.pickUser(u, false),
-                                                  child: Portrait(u.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait,
-                                                      width: 30, height: 30, borderRadius: 4),
+                                                  onTap: () => viewModel
+                                                      .pickUser(u, false),
+                                                  child: Portrait(
+                                                      u.portrait ??
+                                                          Config
+                                                              .defaultUserPortrait,
+                                                      Config
+                                                          .defaultUserPortrait,
+                                                      width: 30,
+                                                      height: 30,
+                                                      borderRadius: 4),
                                                 ),
                                               ))
                                           .toList(),
@@ -335,11 +370,14 @@ class _PickUserScreenState extends State<PickUserScreen> {
                                 Expanded(
                                   child: TextField(
                                     controller: _searchController,
-                                    style: TextStyle(color: context.colors.textPrimary),
+                                    style: TextStyle(
+                                        color: context.colors.textPrimary),
                                     decoration: InputDecoration(
                                       border: InputBorder.none,
-                                      hintText: AppLocalizations.of(context)!.search,
-                                      hintStyle: TextStyle(color: context.colors.textTertiary),
+                                      hintText:
+                                          AppLocalizations.of(context)!.search,
+                                      hintStyle: TextStyle(
+                                          color: context.colors.textTertiary),
                                       isDense: true,
                                       contentPadding: EdgeInsets.zero,
                                     ),
@@ -359,7 +397,8 @@ class _PickUserScreenState extends State<PickUserScreen> {
                     child: Stack(
                       children: [
                         ListView.builder(
-                          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
                           controller: _scrollController,
                           itemCount: viewModel.userList.length,
                           itemBuilder: (context, i) {
@@ -401,10 +440,12 @@ class _PickUserScreenState extends State<PickUserScreen> {
                               ),
                               alignment: Alignment.center,
                               child: _currentLetter == '↑'
-                                  ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
+                                  ? const Icon(Icons.arrow_upward,
+                                      size: 40, color: Colors.white)
                                   : Text(
                                       _currentLetter,
-                                      style: AppText.xxxl.copyWith(color: Colors.white),
+                                      style: AppText.xxxl
+                                          .copyWith(color: Colors.white),
                                     ),
                             ),
                           ),
@@ -427,16 +468,20 @@ class SelectableUserItem extends StatelessWidget {
   final OnPickUserCallback? callback;
   final VoidCallback? onUserPicked;
 
-  const SelectableUserItem(this.contactInfo, this.maxSelected, this.callback, {super.key, this.onUserPicked});
+  const SelectableUserItem(this.contactInfo, this.maxSelected, this.callback,
+      {super.key, this.onUserPicked});
 
   @override
   Widget build(BuildContext context) {
-    PickUserViewModel pickUserViewModel = Provider.of<PickUserViewModel>(context);
+    PickUserViewModel pickUserViewModel =
+        Provider.of<PickUserViewModel>(context);
     UserInfo userInfo = contactInfo.userInfo;
-    bool showCategory = contactInfo.showCategory && !pickUserViewModel.isSearching;
+    bool showCategory =
+        contactInfo.showCategory && !pickUserViewModel.isSearching;
     final bool checkable = pickUserViewModel.isCheckable(userInfo.userId);
 
-    final double portraitWidth = LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap);
+    final double portraitWidth =
+        LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap);
     final double leftIndent = isDesktopShell
         ? 16.0
         : (maxSelected > 1
@@ -455,7 +500,8 @@ class SelectableUserItem extends StatelessWidget {
                 } else {
                   bool checked = pickUserViewModel.isChecked(userInfo.userId);
                   if (!pickUserViewModel.pickUser(userInfo, !checked)) {
-                    Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
+                    Fluttertoast.showToast(
+                        msg: AppLocalizations.of(context)!.maxUserLimit);
                   } else {
                     if (!checked && onUserPicked != null) {
                       onUserPicked!();
@@ -466,7 +512,8 @@ class SelectableUserItem extends StatelessWidget {
             : null,
         hoverColor: context.colors.hoverOverlay,
         child: Container(
-          height: LayoutScale.watchScale(context, 52.0, cap: LayoutScale.rowCap),
+          height:
+              LayoutScale.watchScale(context, 52.0, cap: LayoutScale.rowCap),
           padding: EdgeInsets.only(right: isDesktopShell ? 0.0 : 32.0),
           child: Row(
             children: <Widget>[
@@ -475,11 +522,14 @@ class SelectableUserItem extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 16.0),
                   child: Checkbox(
                     value: pickUserViewModel.isChecked(userInfo.userId) ||
-                        pickUserViewModel.disabledAndCheckedUserIds.contains(userInfo.userId),
+                        pickUserViewModel.disabledAndCheckedUserIds
+                            .contains(userInfo.userId),
                     onChanged: pickUserViewModel.isCheckable(userInfo.userId)
                         ? (bool? value) {
                             if (!pickUserViewModel.pickUser(userInfo, value!)) {
-                              Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
+                              Fluttertoast.showToast(
+                                  msg: AppLocalizations.of(context)!
+                                      .maxUserLimit);
                             } else {
                               if (value == true && onUserPicked != null) {
                                 onUserPicked!();
@@ -495,12 +545,20 @@ class SelectableUserItem extends StatelessWidget {
                   child: Row(
                     children: <Widget>[
                       Padding(
-                        padding: EdgeInsets.only(left: maxSelected > 1 ? 8.0 : 16.0),
+                        padding:
+                            EdgeInsets.only(left: maxSelected > 1 ? 8.0 : 16.0),
                         child: userInfo.userId == '@all'
-                            ? Image.asset('assets/images/group_avatar_default.png',
-                                width: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap),
-                                height: LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap))
-                            : Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait, width: 40.0, height: 40.0),
+                            ? Image.asset(
+                                'assets/images/group_avatar_default.png',
+                                width: LayoutScale.watchScale(context, 40.0,
+                                    cap: LayoutScale.iconCap),
+                                height: LayoutScale.watchScale(context, 40.0,
+                                    cap: LayoutScale.iconCap))
+                            : Portrait(
+                                userInfo.portrait ?? Config.defaultUserPortrait,
+                                Config.defaultUserPortrait,
+                                width: 40.0,
+                                height: 40.0),
                       ),
                       Expanded(
                         child: Padding(
@@ -508,13 +566,15 @@ class SelectableUserItem extends StatelessWidget {
                           child: userInfo.userId == '@all'
                               ? Text(
                                   AppLocalizations.of(context)!.allMembers,
-                                  style: AppText.lg.copyWith(color: context.colors.textPrimary),
+                                  style: AppText.lg.copyWith(
+                                      color: context.colors.textPrimary),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 )
                               : MeshUserName(
                                   userInfo,
-                                  style: AppText.lg.copyWith(color: context.colors.textPrimary),
+                                  style: AppText.lg.copyWith(
+                                      color: context.colors.textPrimary),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -534,13 +594,19 @@ class SelectableUserItem extends StatelessWidget {
       children: <Widget>[
         if (showCategory)
           Container(
-            height: LayoutScale.watchScale(context, 18.0, cap: LayoutScale.textCap),
+            height:
+                LayoutScale.watchScale(context, 18.0, cap: LayoutScale.textCap),
             width: double.infinity,
             color: context.colors.sectionGap,
-            padding: EdgeInsets.only(left: 16, right: isDesktopShell ? 16.0 : 32.0),
+            padding:
+                EdgeInsets.only(left: 16, right: isDesktopShell ? 16.0 : 32.0),
             alignment: Alignment.centerLeft,
             child: Text(
-              contactInfo.category == '{' ? '#' : (contactInfo.category == 'AI' ? AppLocalizations.of(context)!.aiRobot : contactInfo.category),
+              contactInfo.category == '{'
+                  ? '#'
+                  : (contactInfo.category == 'AI'
+                      ? AppLocalizations.of(context)!.aiRobot
+                      : contactInfo.category),
               style: AppText.xs.copyWith(color: context.colors.textSecondary),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

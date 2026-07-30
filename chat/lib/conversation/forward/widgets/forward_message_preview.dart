@@ -17,7 +17,8 @@ class ForwardMessagePreview extends StatelessWidget {
   final List<Message>? messages;
   final bool oneByOne;
 
-  const ForwardMessagePreview({super.key, required this.messages, required this.oneByOne});
+  const ForwardMessagePreview(
+      {super.key, required this.messages, required this.oneByOne});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,9 @@ class ForwardMessagePreview extends StatelessWidget {
     if (messages == null || messages.isEmpty) {
       return const SizedBox.shrink();
     }
-    return messages.length == 1 ? _buildSingle(context, messages.first) : _buildSummary(context, messages.length);
+    return messages.length == 1
+        ? _buildSingle(context, messages.first)
+        : _buildSummary(context, messages.length);
   }
 
   Widget _buildSingle(BuildContext context, Message message) {
@@ -48,7 +51,10 @@ class ForwardMessagePreview extends StatelessWidget {
             children: [
               Text(
                 text,
-                style: AppText.sm.copyWith(color: context.colors.textSecondary, height: 1.4, decoration: TextDecoration.none),
+                style: AppText.sm.copyWith(
+                    color: context.colors.textSecondary,
+                    height: 1.4,
+                    decoration: TextDecoration.none),
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -102,7 +108,8 @@ class ForwardMessagePreview extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.description_rounded, color: context.colors.iconSecondary, size: 36),
+          Icon(Icons.description_rounded,
+              color: context.colors.iconSecondary, size: 36),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -110,12 +117,15 @@ class ForwardMessagePreview extends StatelessWidget {
               children: [
                 Text(
                   oneByOne ? l10n.forwardOneByOne : l10n.forwardCombined,
-                  style: AppText.sm.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+                  style: AppText.sm.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: context.colors.textPrimary),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   l10n.totalMessages('$count'),
-                  style: AppText.xs.copyWith(color: context.colors.textSecondary),
+                  style:
+                      AppText.xs.copyWith(color: context.colors.textSecondary),
                 ),
               ],
             ),

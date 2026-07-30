@@ -20,7 +20,8 @@ import 'package:imclient/model/user_info.dart';
 class ConferenceHomeScreen extends StatefulWidget {
   final bool isEmbedded;
 
-  const ConferenceHomeScreen({Key? key, this.isEmbedded = false}) : super(key: key);
+  const ConferenceHomeScreen({Key? key, this.isEmbedded = false})
+      : super(key: key);
 
   @override
   State<ConferenceHomeScreen> createState() => _ConferenceHomeScreenState();
@@ -69,7 +70,9 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
     ];
     for (var info in all) {
       var owner = info['owner'] as String?;
-      if (owner != null && owner.isNotEmpty && !_userInfoCache.containsKey(owner)) {
+      if (owner != null &&
+          owner.isNotEmpty &&
+          !_userInfoCache.containsKey(owner)) {
         var userInfo = await Imclient.getUserInfo(owner);
         if (userInfo != null) {
           _userInfoCache[owner] = userInfo;
@@ -162,9 +165,11 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
       var m = (seconds % 3600) ~/ 60;
       var s = seconds % 60;
       if (h > 0) {
-        duration = l10n.conferenceDurationHours(h, m.toString().padLeft(2, '0'));
+        duration =
+            l10n.conferenceDurationHours(h, m.toString().padLeft(2, '0'));
       } else if (m > 0) {
-        duration = l10n.conferenceDurationMinutes(m, s.toString().padLeft(2, '0'));
+        duration =
+            l10n.conferenceDurationMinutes(m, s.toString().padLeft(2, '0'));
       } else {
         duration = l10n.conferenceDurationSeconds(s);
       }
@@ -189,15 +194,19 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
         ),
         title: Text(title,
             style: AppText.base.copyWith(
-                color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
-        subtitle: Text(subtitle, style: AppText.sm.copyWith(color: context.colors.textSecondary)),
-        trailing: Icon(Icons.chevron_right, color: context.colors.textSecondary),
+                color: context.colors.textPrimary,
+                fontWeight: FontWeight.w600)),
+        subtitle: Text(subtitle,
+            style: AppText.sm.copyWith(color: context.colors.textSecondary)),
+        trailing:
+            Icon(Icons.chevron_right, color: context.colors.textSecondary),
         onTap: onTap,
       ),
     );
   }
 
-  Widget _buildConferenceTile(Map<String, dynamic> info, {bool isHistory = false}) {
+  Widget _buildConferenceTile(Map<String, dynamic> info,
+      {bool isHistory = false}) {
     var title = info['conferenceTitle'] ?? info['title'] ?? '';
     var owner = info['owner'] as String?;
     var ownerInfo = _userInfoCache[owner];
@@ -211,7 +220,9 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
         borderRadius: 22,
       ),
       title: Text(
-        title.isNotEmpty ? title : AppLocalizations.of(context)!.conferenceUntitled,
+        title.isNotEmpty
+            ? title
+            : AppLocalizations.of(context)!.conferenceUntitled,
         style: AppText.sm.copyWith(color: context.colors.textPrimary),
         overflow: TextOverflow.ellipsis,
       ),
@@ -247,7 +258,8 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
               children: [
                 Text(l10n.conferenceVideoConferenceTitle,
                     style: AppText.lg.copyWith(
-                        color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+                        color: context.colors.textPrimary,
+                        fontWeight: FontWeight.w600)),
                 const SizedBox(height: 20),
                 _buildActionCard(
                   icon: Icons.login,
@@ -313,11 +325,13 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
           ],
           Text(l10n.conferenceFavorites,
               style: AppText.base.copyWith(
-                  color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+                  color: context.colors.textPrimary,
+                  fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           if (_loadingFav && _favConferences.isEmpty)
             Center(
-                child: CircularProgressIndicator(color: context.colors.iconSecondary)),
+                child: CircularProgressIndicator(
+                    color: context.colors.iconSecondary)),
           if (!_loadingFav && _favConferences.isEmpty)
             Text(l10n.conferenceNoFavorites,
                 style: TextStyle(color: context.colors.textSecondary)),
@@ -325,7 +339,8 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
           const SizedBox(height: 24),
           Text(l10n.conferenceHistory,
               style: AppText.base.copyWith(
-                  color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+                  color: context.colors.textPrimary,
+                  fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           if (_historyConferences.isEmpty)
             Text(l10n.conferenceNoHistory,

@@ -6,7 +6,6 @@ import 'media_message_content.dart';
 import 'message.dart';
 import 'message_content.dart';
 
-
 // ignore: non_constant_identifier_names
 MessageContent CallStartMessageContentCreator() {
   return CallStartMessageContent();
@@ -38,7 +37,7 @@ enum CallStartEndStatus {
 
 class CallStartMessageContent extends MediaMessageContent {
   late String callId;
-  List<String> ?targetIds;
+  List<String>? targetIds;
   int? connectTime;
   int? endTime;
 
@@ -60,25 +59,25 @@ class CallStartMessageContent extends MediaMessageContent {
   void decode(MessagePayload payload) {
     super.decode(payload);
     callId = payload.content!;
-    if(payload.binaryContent != null) {
-      Map<dynamic, dynamic> map = json.decode(
-          utf8.decode(payload.binaryContent!));
-      status = map['s']??0;
-      sdkType = map['ty']??0;
+    if (payload.binaryContent != null) {
+      Map<dynamic, dynamic> map =
+          json.decode(utf8.decode(payload.binaryContent!));
+      status = map['s'] ?? 0;
+      sdkType = map['ty'] ?? 0;
       pin = map['p'] ?? '';
-      if(map['a'] == null) {
+      if (map['a'] == null) {
         audioOnly = false;
       } else {
         audioOnly = map['a'] > 0;
       }
       connectTime = map['c'];
       endTime = map['e'];
-      if(map['ts'] != null) {
+      if (map['ts'] != null) {
         List<dynamic> ts = map['ts'];
-       targetIds = [];
-       for (String value in ts) {
-         targetIds!.add(value);
-       }
+        targetIds = [];
+        for (String value in ts) {
+          targetIds!.add(value);
+        }
       }
     }
   }
@@ -89,12 +88,12 @@ class CallStartMessageContent extends MediaMessageContent {
 
     payload.content = callId;
     payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode({
-      'c': connectTime??0,
-      'e': endTime??0,
+      'c': connectTime ?? 0,
+      'e': endTime ?? 0,
       's': status,
       'ty': sdkType,
-      'a' : audioOnly ? 1: 0,
-      'ts': targetIds??[],
+      'a': audioOnly ? 1 : 0,
+      'ts': targetIds ?? [],
       'p': pin
     })));
     return payload;

@@ -67,7 +67,8 @@ Future<void> showBottomActionSheet({
                                 item.leading!,
                                 const SizedBox(width: 8),
                               ] else if (item.icon != null) ...[
-                                Icon(item.icon, size: 22, color: colors.iconPrimary),
+                                Icon(item.icon,
+                                    size: 22, color: colors.iconPrimary),
                                 const SizedBox(width: 8),
                               ],
                               Text(item.label, style: labelStyle),

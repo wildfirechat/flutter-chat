@@ -1,4 +1,3 @@
-
 import 'group_info.dart';
 
 ///群组搜索批评类型Mask，比如搜索群组时同时批评到了群组的名称和群组成员的名称，那么marchType就是0x01&0x02 = 3

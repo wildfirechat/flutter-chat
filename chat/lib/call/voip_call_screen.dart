@@ -97,16 +97,17 @@ class _VoipCallScreenState extends State<VoipCallScreen>
 
   String get _remoteUserId {
     var participants = _session.getParticipantIds();
-    return participants.firstWhere((uid) => uid != Imclient.currentUserId, orElse: () => '');
+    return participants.firstWhere((uid) => uid != Imclient.currentUserId,
+        orElse: () => '');
   }
 
   void _updateRemoteVideoMuted() {
     final targetId = _remoteUserId;
     if (targetId.isEmpty) return;
     final profile = _session.getParticipantProfiles().firstWhere(
-      (p) => p.userId == targetId,
-      orElse: () => ParticipantProfile(targetId),
-    );
+          (p) => p.userId == targetId,
+          orElse: () => ParticipantProfile(targetId),
+        );
     _remoteVideoMuted = profile.videoMuted;
   }
 
@@ -145,7 +146,8 @@ class _VoipCallScreenState extends State<VoipCallScreen>
       targetId = _session.initiatorId;
     } else {
       var participants = _session.getParticipantIds();
-      targetId = participants.firstWhere((uid) => uid != Imclient.currentUserId, orElse: () => '');
+      targetId = participants.firstWhere((uid) => uid != Imclient.currentUserId,
+          orElse: () => '');
     }
 
     if (targetId.isNotEmpty) {
@@ -232,7 +234,6 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     });
   }
 
-
   void _onToggleSpeaker() {
     // _session.enableSpeaker(!_isSpeakerOn); // Need to check if this API exists in CallSession
     // In avenginekit/lib/engine/call_session.dart:
@@ -313,8 +314,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
   }
 
   @override
-  void didCreateLocalVideo(MediaStream stream,
-      {bool screenSharing = false}) {
+  void didCreateLocalVideo(MediaStream stream, {bool screenSharing = false}) {
     if (mounted) {
       setState(() {
         if (_localRenderer.srcObject != stream) {
@@ -343,9 +343,9 @@ class _VoipCallScreenState extends State<VoipCallScreen>
       }
       if (remoteId.isNotEmpty && participants.contains(remoteId)) {
         final profile = _session.getParticipantProfiles().firstWhere(
-          (p) => p.userId == remoteId,
-          orElse: () => ParticipantProfile(remoteId),
-        );
+              (p) => p.userId == remoteId,
+              orElse: () => ParticipantProfile(remoteId),
+            );
         _remoteVideoMuted = profile.videoMuted;
       }
     });
@@ -468,7 +468,8 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                       // 最小化按钮所有状态可用（仅移动端）
                       if (!isDesktopShell)
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           child: Row(
                             children: [
                               const Spacer(),
@@ -489,7 +490,10 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                             isConnected
                                 ? _formatDuration(Duration(seconds: seconds))
                                 : _statusLabel(AppLocalizations.of(context)!),
-                            style: AppText.lg.copyWith(color: Colors.white70, fontWeight: FontWeight.w400, letterSpacing: 0.5),
+                            style: AppText.lg.copyWith(
+                                color: Colors.white70,
+                                fontWeight: FontWeight.w400,
+                                letterSpacing: 0.5),
                           );
                         },
                       ),
@@ -504,15 +508,22 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                               child: BackdropFilter(
                                 filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
                                   color: Colors.black.withValues(alpha: 0.38),
                                   // 时长走秒,用 ValueNotifier 局部刷新,不重建整页
                                   child: ValueListenableBuilder<int>(
                                     valueListenable: _durationSeconds,
                                     builder: (context, seconds, child) {
                                       return Text(
-                                        _formatDuration(Duration(seconds: seconds)),
-                                        style: AppText.base.copyWith(color: Colors.white, fontWeight: FontWeight.w500, fontFeatures: [FontFeature.tabularFigures()]),
+                                        _formatDuration(
+                                            Duration(seconds: seconds)),
+                                        style: AppText.base.copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500,
+                                            fontFeatures: [
+                                              FontFeature.tabularFigures()
+                                            ]),
                                       );
                                     },
                                   ),
@@ -544,8 +555,8 @@ class _VoipCallScreenState extends State<VoipCallScreen>
   /// 接通后的大画面（默认远端，切换后可显示本地）
   Widget _buildMainVideo() {
     final renderer = _isSwapped ? _localRenderer : _remoteRenderer;
-    final bool showOverlay = !_isSwapped &&
-        (_remoteVideoMuted || _remoteRenderer.srcObject == null);
+    final bool showOverlay =
+        !_isSwapped && (_remoteVideoMuted || _remoteRenderer.srcObject == null);
     return Positioned.fill(
       child: Stack(
         children: [
@@ -678,7 +689,6 @@ class _VoipCallScreenState extends State<VoipCallScreen>
     );
   }
 
-
   /// 语音通话背景（模糊头像或渐变）
   Widget _buildAudioBackground() {
     if (_targetUserInfo != null &&
@@ -688,7 +698,8 @@ class _VoipCallScreenState extends State<VoipCallScreen>
         child: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage(MediaUrlRedirector.redirect(_targetUserInfo!.portrait!)),
+              image: NetworkImage(
+                  MediaUrlRedirector.redirect(_targetUserInfo!.portrait!)),
               fit: BoxFit.cover,
             ),
           ),
@@ -718,7 +729,8 @@ class _VoipCallScreenState extends State<VoipCallScreen>
   }
 
   Widget _buildUserInfo() {
-    final bool isPulsing = _session.status == CallState.STATUS_OUTGOING || _session.status == CallState.STATUS_CONNECTING;
+    final bool isPulsing = _session.status == CallState.STATUS_OUTGOING ||
+        _session.status == CallState.STATUS_CONNECTING;
     final nameStyle = AppText.xxl.copyWith(
       color: Colors.white,
       fontWeight: FontWeight.w600,
@@ -807,7 +819,9 @@ class _VoipCallScreenState extends State<VoipCallScreen>
             children: [
               _CallActionButton(
                 icon: _isMicMuted ? Icons.mic_off : Icons.mic_none,
-                backgroundColor: _isMicMuted ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                backgroundColor: _isMicMuted
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.1),
                 iconColor: _isMicMuted ? Colors.black87 : Colors.white,
                 onPressed: _onToggleMic,
                 label: AppLocalizations.of(context)!.callMute,
@@ -827,8 +841,12 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                 )
               else
                 _CallActionButton(
-                  icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_mute_outlined,
-                  backgroundColor: _isSpeakerOn ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                  icon: _isSpeakerOn
+                      ? Icons.volume_up
+                      : Icons.volume_mute_outlined,
+                  backgroundColor: _isSpeakerOn
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.1),
                   iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
                   onPressed: _onToggleSpeaker,
                   label: AppLocalizations.of(context)!.callSpeaker,
@@ -847,13 +865,16 @@ class _VoipCallScreenState extends State<VoipCallScreen>
             GestureDetector(
               onTap: _onToggleCamera,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.black26,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Text(
-                  _isCameraOff ? AppLocalizations.of(context)!.callCameraOn : AppLocalizations.of(context)!.callCameraOff,
+                  _isCameraOff
+                      ? AppLocalizations.of(context)!.callCameraOn
+                      : AppLocalizations.of(context)!.callCameraOff,
                   style: AppText.sm.copyWith(color: Colors.white70),
                 ),
               ),
@@ -871,7 +892,9 @@ class _VoipCallScreenState extends State<VoipCallScreen>
             children: [
               _CallActionButton(
                 icon: _isMicMuted ? Icons.mic_off : Icons.mic_none,
-                backgroundColor: _isMicMuted ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                backgroundColor: _isMicMuted
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.1),
                 iconColor: _isMicMuted ? Colors.black87 : Colors.white,
                 onPressed: _onToggleMic,
                 label: AppLocalizations.of(context)!.callMute,
@@ -892,8 +915,12 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                 )
               else
                 _CallActionButton(
-                  icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_mute_outlined,
-                  backgroundColor: _isSpeakerOn ? Colors.white : Colors.white.withValues(alpha: 0.1),
+                  icon: _isSpeakerOn
+                      ? Icons.volume_up
+                      : Icons.volume_mute_outlined,
+                  backgroundColor: _isSpeakerOn
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.1),
                   iconColor: _isSpeakerOn ? Colors.black87 : Colors.white,
                   onPressed: _onToggleSpeaker,
                   label: AppLocalizations.of(context)!.callSpeaker,
@@ -942,7 +969,9 @@ class _CallActionButtonState extends State<_CallActionButton> {
             child: MouseRegion(
               onEnter: (_) => setState(() => _isHovered = true),
               onExit: (_) => setState(() => _isHovered = false),
-              cursor: widget.isActive ? SystemMouseCursors.click : SystemMouseCursors.basic,
+              cursor: widget.isActive
+                  ? SystemMouseCursors.click
+                  : SystemMouseCursors.basic,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 width: 64,
@@ -951,9 +980,8 @@ class _CallActionButtonState extends State<_CallActionButton> {
                 transformAlignment: Alignment.center,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: widget.isActive 
-                      ? widget.backgroundColor 
-                      : Colors.white12,
+                  color:
+                      widget.isActive ? widget.backgroundColor : Colors.white12,
                   boxShadow: [
                     if (_isHovered)
                       BoxShadow(
@@ -975,7 +1003,9 @@ class _CallActionButtonState extends State<_CallActionButton> {
         const SizedBox(height: 8),
         Text(
           widget.label,
-          style: AppText.xs.copyWith(color: widget.isActive ? Colors.white70 : Colors.white38, fontWeight: FontWeight.w400),
+          style: AppText.xs.copyWith(
+              color: widget.isActive ? Colors.white70 : Colors.white38,
+              fontWeight: FontWeight.w400),
         ),
       ],
     );
@@ -1041,7 +1071,8 @@ class _PulsingAvatarState extends State<_PulsingAvatar>
                 height: 100 + 40 * _controller.value,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.15 * (1 - _controller.value)),
+                  color: Colors.white
+                      .withValues(alpha: 0.15 * (1 - _controller.value)),
                 ),
               );
             },
@@ -1069,4 +1100,3 @@ class _PulsingAvatarState extends State<_PulsingAvatar>
     );
   }
 }
-

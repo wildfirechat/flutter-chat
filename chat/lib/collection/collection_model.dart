@@ -1,6 +1,8 @@
-import 'package:imclient/message/collection_message_content.dart' show CollectionEntry;
+import 'package:imclient/message/collection_message_content.dart'
+    show CollectionEntry;
 
-export 'package:imclient/message/collection_message_content.dart' show CollectionEntry;
+export 'package:imclient/message/collection_message_content.dart'
+    show CollectionEntry;
 
 /// 群接龙模型
 class Collection {

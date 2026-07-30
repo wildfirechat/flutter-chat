@@ -9,7 +9,8 @@ import 'package:chat/widget/app_bar_actions.dart';
 import 'backup_destination_screen.dart';
 
 class PickConversationScreen extends StatefulWidget {
-  final void Function(List<ConversationInfo> conversations, bool includeMedia)? onSelected;
+  final void Function(List<ConversationInfo> conversations, bool includeMedia)?
+      onSelected;
 
   const PickConversationScreen({Key? key, this.onSelected}) : super(key: key);
 
@@ -31,8 +32,13 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
   }
 
   Future<void> _loadConversations() async {
-    final convs = await Imclient.getConversationInfos(
-        [ConversationType.Single, ConversationType.Group, ConversationType.Channel], [0]);
+    final convs = await Imclient.getConversationInfos([
+      ConversationType.Single,
+      ConversationType.Group,
+      ConversationType.Channel
+    ], [
+      0
+    ]);
     // Filter out empty conversations or system ones if needed
     // For now, keep all user visible ones
     setState(() {
@@ -104,7 +110,9 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
               children: [
                 CheckboxListTile(
                   title: Text(l10n.selectAll),
-                  value: _selectedConversations.length == _conversations.length && _conversations.isNotEmpty,
+                  value:
+                      _selectedConversations.length == _conversations.length &&
+                          _conversations.isNotEmpty,
                   onChanged: _toggleSelectAll,
                 ),
                 CheckboxListTile(
@@ -133,9 +141,11 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
                         enableLongPress: false,
                         trailing: Checkbox(
                           value: isChecked,
-                          onChanged: (checked) => _toggleConversation(info, checked),
+                          onChanged: (checked) =>
+                              _toggleConversation(info, checked),
                         ),
-                        onTap: (conversation) => _toggleConversation(info, !isChecked),
+                        onTap: (conversation) =>
+                            _toggleConversation(info, !isChecked),
                       );
                     },
                   ),

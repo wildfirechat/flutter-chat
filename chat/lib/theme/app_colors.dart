@@ -419,7 +419,8 @@ class AppColors extends ThemeExtension<AppColors> {
       bubbleSent: bubbleSent ?? this.bubbleSent,
       bubbleSentDesktop: bubbleSentDesktop ?? this.bubbleSentDesktop,
       bubbleReceived: bubbleReceived ?? this.bubbleReceived,
-      bubbleReceivedDesktop: bubbleReceivedDesktop ?? this.bubbleReceivedDesktop,
+      bubbleReceivedDesktop:
+          bubbleReceivedDesktop ?? this.bubbleReceivedDesktop,
       bubbleSentText: bubbleSentText ?? this.bubbleSentText,
       bubbleReceivedText: bubbleReceivedText ?? this.bubbleReceivedText,
       bubbleQuoted: bubbleQuoted ?? this.bubbleQuoted,
@@ -484,7 +485,8 @@ class AppColors extends ThemeExtension<AppColors> {
       bubbleSent: mix(bubbleSent, other.bubbleSent),
       bubbleSentDesktop: mix(bubbleSentDesktop, other.bubbleSentDesktop),
       bubbleReceived: mix(bubbleReceived, other.bubbleReceived),
-      bubbleReceivedDesktop: mix(bubbleReceivedDesktop, other.bubbleReceivedDesktop),
+      bubbleReceivedDesktop:
+          mix(bubbleReceivedDesktop, other.bubbleReceivedDesktop),
       bubbleSentText: mix(bubbleSentText, other.bubbleSentText),
       bubbleReceivedText: mix(bubbleReceivedText, other.bubbleReceivedText),
       bubbleQuoted: mix(bubbleQuoted, other.bubbleQuoted),
@@ -509,5 +511,6 @@ extension AppColorsContext on BuildContext {
   ///
   /// 兜底成浅色而不是抛异常:少数子树(第三方组件、独立 `Theme()`)可能没带上
   /// extension,取不到时宁可退化成浅色,也不要在运行时炸掉整个页面。
-  AppColors get colors => Theme.of(this).extension<AppColors>() ?? AppColors.light;
+  AppColors get colors =>
+      Theme.of(this).extension<AppColors>() ?? AppColors.light;
 }

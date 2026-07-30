@@ -123,10 +123,10 @@ class _DragToDismissState extends State<DragToDismiss>
       _offsetAnimation = Tween<Offset>(
         begin: _dragOffset,
         end: Offset(_dragOffset.dx, _screenHeight),
-      ).animate(CurvedAnimation(
-          parent: _animationController, curve: Curves.easeOut));
-      _scaleAnimation =
-          Tween<double>(begin: _scale, end: _scale).animate(_animationController);
+      ).animate(
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
+      _scaleAnimation = Tween<double>(begin: _scale, end: _scale)
+          .animate(_animationController);
       _animationController.forward(from: 0).then((_) {
         widget.onDismiss();
       });
@@ -165,8 +165,8 @@ class _DragToDismissState extends State<DragToDismiss>
         : Rect.fromPoints(box.globalToLocal(globalTarget.topLeft),
             box.globalToLocal(globalTarget.bottomRight));
 
-    final double endScale = math.max(
-        target.width / content.width, target.height / content.height);
+    final double endScale =
+        math.max(target.width / content.width, target.height / content.height);
     final Offset endOffset =
         target.center - _anchor - (content.center - _anchor) * endScale;
 
@@ -191,8 +191,8 @@ class _DragToDismissState extends State<DragToDismiss>
 
   @override
   Widget build(BuildContext context) {
-    final double opacity = _opacityAnimation?.value ??
-        (1.0 - _downProgress * 1.5).clamp(0.0, 1.0);
+    final double opacity =
+        _opacityAnimation?.value ?? (1.0 - _downProgress * 1.5).clamp(0.0, 1.0);
 
     // 以手指按下处为锚点缩放,再叠加手指位移:锚点处的图像点始终跟着手指走
     final Matrix4 transform = Matrix4.identity()

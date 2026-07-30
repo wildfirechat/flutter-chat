@@ -65,7 +65,9 @@ class _MomentPrivacySettingsScreenState
     });
     MomentClient.updateMyProfile(
         WFMUpdateUserProfileType.WFMUpdateUserProfileType_StrangerVisiableCount,
-        null, enable ? 10 : 0, () {}, (errorCode) {
+        null,
+        enable ? 10 : 0,
+        () {}, (errorCode) {
       if (mounted) {
         setState(() {
           _profiles?.strangerVisiableCount = oldCount;
@@ -274,11 +276,11 @@ class MomentVisibleRangeScreen extends StatelessWidget {
                   MomentClient.updateMyProfile(
                       WFMUpdateUserProfileType
                           .WFMUpdateUserProfileType_VisiableScope,
-                      null, scope.index, () {
+                      null,
+                      scope.index, () {
                     Navigator.pop(context, scope);
                   }, (errorCode) {
-                    Fluttertoast.showToast(
-                        msg: l10n.operateFail('$errorCode'));
+                    Fluttertoast.showToast(msg: l10n.operateFail('$errorCode'));
                   });
                 },
               ),
@@ -346,8 +348,7 @@ class _MomentBlockListScreenState extends State<MomentBlockListScreen> {
     final selected = await picker(context, _userIds);
     if (!mounted) return;
     // 只提交新增的 userId
-    final addList =
-        selected.where((id) => !_userIds.contains(id)).toList();
+    final addList = selected.where((id) => !_userIds.contains(id)).toList();
     if (addList.isEmpty) return;
     MomentClient.updateBlackOrBlockList(widget.isBlock, addList, null, () {
       setState(() {
@@ -390,8 +391,8 @@ class _MomentBlockListScreenState extends State<MomentBlockListScreen> {
           : _userIds.isEmpty
               // 空名单占位,文案与 moment 包现有风格保持一致
               ? const Center(
-                  child: Text('暂无成员',
-                      style: TextStyle(color: Color(0xFF999999))))
+                  child:
+                      Text('暂无成员', style: TextStyle(color: Color(0xFF999999))))
               : ListView.separated(
                   itemCount: _userIds.length,
                   separatorBuilder: (_, __) => const Divider(indent: 72),

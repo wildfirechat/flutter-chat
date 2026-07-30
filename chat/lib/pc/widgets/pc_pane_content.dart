@@ -19,7 +19,8 @@ class PcPaneContent extends StatelessWidget {
   final Widget child;
   final double maxWidth;
 
-  const PcPaneContent({super.key, required this.child, this.maxWidth = defaultMaxWidth});
+  const PcPaneContent(
+      {super.key, required this.child, this.maxWidth = defaultMaxWidth});
 
   @override
   Widget build(BuildContext context) {

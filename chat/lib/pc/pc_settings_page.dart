@@ -50,12 +50,18 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final menuItems = [
-      _MenuData(l10n.general, Icons.tune_rounded, const PcGeneralSettingsDetail()),
-      _MenuData(l10n.messageNotification, Icons.notifications_none_rounded, const PcNotificationSettingsDetail()),
-      _MenuData(l10n.appearanceAndTheme, Icons.palette_outlined, const PcAppearanceSettingsDetail()),
-      _MenuData(l10n.accountSafety, Icons.security_rounded, const PcSecuritySettingsDetail()),
-      _MenuData(l10n.privacy, Icons.privacy_tip_outlined, const PcPrivacySettingsDetail()),
-      _MenuData(l10n.about, Icons.info_outline_rounded, const PcAboutSettingsDetail()),
+      _MenuData(
+          l10n.general, Icons.tune_rounded, const PcGeneralSettingsDetail()),
+      _MenuData(l10n.messageNotification, Icons.notifications_none_rounded,
+          const PcNotificationSettingsDetail()),
+      _MenuData(l10n.appearanceAndTheme, Icons.palette_outlined,
+          const PcAppearanceSettingsDetail()),
+      _MenuData(l10n.accountSafety, Icons.security_rounded,
+          const PcSecuritySettingsDetail()),
+      _MenuData(l10n.privacy, Icons.privacy_tip_outlined,
+          const PcPrivacySettingsDetail()),
+      _MenuData(l10n.about, Icons.info_outline_rounded,
+          const PcAboutSettingsDetail()),
     ];
 
     return Container(
@@ -81,7 +87,8 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
                   },
                   borderRadius: BorderRadius.circular(4),
                   child: Container(
-                    height: LayoutScale.watchScale(context, 40, cap: LayoutScale.rowCap),
+                    height: LayoutScale.watchScale(context, 40,
+                        cap: LayoutScale.rowCap),
                     decoration: BoxDecoration(
                       color: isSelected
                           ? context.colors.cellSelected
@@ -95,14 +102,21 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
                       children: [
                         Icon(
                           item.icon,
-                          size: LayoutScale.watchScale(context, 18, cap: LayoutScale.iconCap),
-                          color: isSelected ? context.colors.accent : context.colors.iconSecondary,
+                          size: LayoutScale.watchScale(context, 18,
+                              cap: LayoutScale.iconCap),
+                          color: isSelected
+                              ? context.colors.accent
+                              : context.colors.iconSecondary,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
                             item.title,
-                            style: AppText.sm.copyWith(fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal, color: context.colors.textPrimary),
+                            style: AppText.sm.copyWith(
+                                fontWeight: isSelected
+                                    ? FontWeight.w500
+                                    : FontWeight.normal,
+                                color: context.colors.textPrimary),
                           ),
                         ),
                       ],
@@ -134,7 +148,8 @@ class PcGeneralSettingsDetail extends StatefulWidget {
   const PcGeneralSettingsDetail({super.key});
 
   @override
-  State<PcGeneralSettingsDetail> createState() => _PcGeneralSettingsDetailState();
+  State<PcGeneralSettingsDetail> createState() =>
+      _PcGeneralSettingsDetailState();
 }
 
 class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
@@ -151,7 +166,8 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
   }
 
   void _loadUserSettings() {
-    NotificationSettings.getBool(kUserSettingDisableSyncDraft, invert: true).then((value) {
+    NotificationSettings.getBool(kUserSettingDisableSyncDraft, invert: true)
+        .then((value) {
       if (mounted) {
         setState(() {
           _syncDraftEnabled = value;
@@ -209,7 +225,8 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                   value: _syncDraftEnabled,
                   onChanged: (val) {
                     setState(() => _syncDraftEnabled = val);
-                    _updateUserSetting(kUserSettingDisableSyncDraft, val, revert: true);
+                    _updateUserSetting(kUserSettingDisableSyncDraft, val,
+                        revert: true);
                   },
                 ),
               ]),
@@ -284,10 +301,12 @@ class PcNotificationSettingsDetail extends StatefulWidget {
   const PcNotificationSettingsDetail({super.key});
 
   @override
-  State<PcNotificationSettingsDetail> createState() => _PcNotificationSettingsDetailState();
+  State<PcNotificationSettingsDetail> createState() =>
+      _PcNotificationSettingsDetailState();
 }
 
-class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDetail> {
+class _PcNotificationSettingsDetailState
+    extends State<PcNotificationSettingsDetail> {
   // 字段均为 UI 语义（"接收/显示"为 true），与服务端"静默/隐藏"存储语义的
   // 取反由 NotificationSettings 统一处理。
   bool _receiveMsgNotification = true;
@@ -304,7 +323,8 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
   }
 
   void _loadUserSettings() {
-    NotificationSettings.getBool(kUserSettingGlobalSilent, invert: true).then((value) {
+    NotificationSettings.getBool(kUserSettingGlobalSilent, invert: true)
+        .then((value) {
       if (mounted) {
         setState(() {
           _receiveMsgNotification = value;
@@ -312,7 +332,8 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
       }
     });
 
-    NotificationSettings.getBool(kUserSettingVoipSilent, invert: true).then((value) {
+    NotificationSettings.getBool(kUserSettingVoipSilent, invert: true)
+        .then((value) {
       if (mounted) {
         setState(() {
           _receiveVoipNotification = value;
@@ -320,7 +341,9 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
       }
     });
 
-    NotificationSettings.getBool(kUserSettingHiddenNotificationDetail, invert: true).then((value) {
+    NotificationSettings.getBool(kUserSettingHiddenNotificationDetail,
+            invert: true)
+        .then((value) {
       if (mounted) {
         setState(() {
           _showNotificationDetail = value;
@@ -404,7 +427,8 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
                   value: _receiveMsgNotification,
                   onChanged: (val) {
                     setState(() => _receiveMsgNotification = val);
-                    _updateUserSetting(kUserSettingGlobalSilent, val, revert: true);
+                    _updateUserSetting(kUserSettingGlobalSilent, val,
+                        revert: true);
                   },
                 ),
                 const Divider(),
@@ -414,7 +438,8 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
                   value: _receiveVoipNotification,
                   onChanged: (val) {
                     setState(() => _receiveVoipNotification = val);
-                    _updateUserSetting(kUserSettingVoipSilent, val, revert: true);
+                    _updateUserSetting(kUserSettingVoipSilent, val,
+                        revert: true);
                   },
                 ),
                 const Divider(),
@@ -424,15 +449,20 @@ class _PcNotificationSettingsDetailState extends State<PcNotificationSettingsDet
                   value: _showNotificationDetail,
                   onChanged: (val) {
                     setState(() => _showNotificationDetail = val);
-                    _updateUserSetting(kUserSettingHiddenNotificationDetail, val, revert: true);
+                    _updateUserSetting(
+                        kUserSettingHiddenNotificationDetail, val,
+                        revert: true);
                   },
                 ),
                 const Divider(),
                 PcSettingsSwitchRow(
                   title: l10n.noDisturb,
-                  subtitle: _noDisturbing && _noDisturbStartTime != _noDisturbEndTime
-                      ? l10n.noDisturbPeriod(NotificationSettings.formatNoDisturbTime(_noDisturbStartTime, _noDisturbEndTime))
-                      : l10n.noDisturbDesc,
+                  subtitle:
+                      _noDisturbing && _noDisturbStartTime != _noDisturbEndTime
+                          ? l10n.noDisturbPeriod(
+                              NotificationSettings.formatNoDisturbTime(
+                                  _noDisturbStartTime, _noDisturbEndTime))
+                          : l10n.noDisturbDesc,
                   value: _noDisturbing,
                   onChanged: (val) {
                     _toggleNoDisturb(val);
@@ -517,8 +547,12 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
 
   void _showLanguageMenu(BuildContext selectorContext, Offset tapPosition) {
     final l10n = AppLocalizations.of(selectorContext)!;
-    final localeViewModel = Provider.of<LocaleViewModel>(selectorContext, listen: false);
-    final overlay = Navigator.of(selectorContext).overlay!.context.findRenderObject() as RenderBox;
+    final localeViewModel =
+        Provider.of<LocaleViewModel>(selectorContext, listen: false);
+    final overlay = Navigator.of(selectorContext)
+        .overlay!
+        .context
+        .findRenderObject() as RenderBox;
     showMenu<String>(
       context: selectorContext,
       position: RelativeRect.fromRect(
@@ -540,8 +574,12 @@ class PcAppearanceSettingsDetail extends StatelessWidget {
 
   void _showThemeMenu(BuildContext selectorContext, Offset tapPosition) {
     final l10n = AppLocalizations.of(selectorContext)!;
-    final themeViewModel = Provider.of<ThemeViewModel>(selectorContext, listen: false);
-    final overlay = Navigator.of(selectorContext).overlay!.context.findRenderObject() as RenderBox;
+    final themeViewModel =
+        Provider.of<ThemeViewModel>(selectorContext, listen: false);
+    final overlay = Navigator.of(selectorContext)
+        .overlay!
+        .context
+        .findRenderObject() as RenderBox;
     showMenu<ThemeMode>(
       context: selectorContext,
       position: RelativeRect.fromRect(
@@ -566,7 +604,8 @@ class PcSecuritySettingsDetail extends StatefulWidget {
   const PcSecuritySettingsDetail({super.key});
 
   @override
-  State<PcSecuritySettingsDetail> createState() => _PcSecuritySettingsDetailState();
+  State<PcSecuritySettingsDetail> createState() =>
+      _PcSecuritySettingsDetailState();
 }
 
 class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
@@ -650,7 +689,8 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Selector<UserViewModel, UserInfo?>(
-      selector: (context, viewModel) => viewModel.getUserInfo(Imclient.currentUserId),
+      selector: (context, viewModel) =>
+          viewModel.getUserInfo(Imclient.currentUserId),
       builder: (context, userInfo, _) {
         if (userInfo == null) {
           return Scaffold(
@@ -674,7 +714,8 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                     decoration: BoxDecoration(
                       color: context.colors.surface,
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: context.colors.hairline, width: 0.5),
+                      border: Border.all(
+                          color: context.colors.hairline, width: 0.5),
                     ),
                     padding: const EdgeInsets.all(20),
                     child: Row(
@@ -693,12 +734,15 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                             children: [
                               Text(
                                 userInfo.displayName ?? userInfo.name,
-                                style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+                                style: AppText.lg.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: context.colors.textPrimary),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 l10n.accountName(userInfo.name),
-                                style: AppText.xs.copyWith(color: context.colors.textSecondary),
+                                style: AppText.xs.copyWith(
+                                    color: context.colors.textSecondary),
                               ),
                             ],
                           ),
@@ -706,7 +750,8 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                         FilledButton.tonal(
                           onPressed: _handleLogout,
                           // 危险次要:灰底无边框,只换前景色,形态走全局按钮主题。
-                          style: FilledButton.styleFrom(foregroundColor: context.colors.danger),
+                          style: FilledButton.styleFrom(
+                              foregroundColor: context.colors.danger),
                           child: Text(l10n.signOut),
                         ),
                       ],
@@ -721,7 +766,9 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const ChangePasswordScreen()),
                         );
                       },
                     ),
@@ -741,7 +788,9 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const PcBackupRestorePage()),
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const PcBackupRestorePage()),
                         );
                       },
                     ),
@@ -763,7 +812,8 @@ class PcPrivacySettingsDetail extends StatefulWidget {
   const PcPrivacySettingsDetail({super.key});
 
   @override
-  State<PcPrivacySettingsDetail> createState() => _PcPrivacySettingsDetailState();
+  State<PcPrivacySettingsDetail> createState() =>
+      _PcPrivacySettingsDetailState();
 }
 
 class _PcPrivacySettingsDetailState extends State<PcPrivacySettingsDetail> {
@@ -871,7 +921,8 @@ class _PcPrivacySettingsDetailState extends State<PcPrivacySettingsDetail> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const BlacklistScreen()),
+                      MaterialPageRoute(
+                          builder: (context) => const BlacklistScreen()),
                     );
                   },
                 ),
@@ -908,7 +959,8 @@ class _PcPrivacySettingsDetailState extends State<PcPrivacySettingsDetail> {
                   PcSettingsClickableRow(
                     title: l10n.momentWindowTitle,
                     subtitle: l10n.momentsPrivacyDesc,
-                    onTap: () => pushPage(context, const MomentPrivacySettingsScreen()),
+                    onTap: () =>
+                        pushPage(context, const MomentPrivacySettingsScreen()),
                   ),
                 ],
               ]),
@@ -959,7 +1011,9 @@ class PcAboutSettingsDetail extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 l10n.appName,
-                style: AppText.xl.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+                style: AppText.xl.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: context.colors.textPrimary),
               ),
               const SizedBox(height: 8),
               Text(
@@ -968,16 +1022,19 @@ class PcAboutSettingsDetail extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 decoration: BoxDecoration(
                   color: context.colors.surface,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: context.colors.hairline, width: 0.5),
+                  border:
+                      Border.all(color: context.colors.hairline, width: 0.5),
                 ),
                 child: Text(
                   l10n.aboutDescription,
                   textAlign: TextAlign.center,
-                  style: AppText.sm.copyWith(color: context.colors.textPrimary, height: 1.5),
+                  style: AppText.sm
+                      .copyWith(color: context.colors.textPrimary, height: 1.5),
                 ),
               ),
               const SizedBox(height: 40),
@@ -985,15 +1042,23 @@ class PcAboutSettingsDetail extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _SettingsTextLink(label: l10n.officialWebsite, url: "https://wildfirechat.cn"),
+                  _SettingsTextLink(
+                      label: l10n.officialWebsite,
+                      url: "https://wildfirechat.cn"),
                   const SizedBox(width: 12),
-                  Text("|", style: TextStyle(color: context.colors.textTertiary)),
+                  Text("|",
+                      style: TextStyle(color: context.colors.textTertiary)),
                   const SizedBox(width: 12),
-                  _SettingsTextLink(label: l10n.githubRepo, url: "https://github.com/wildfirechat"),
+                  _SettingsTextLink(
+                      label: l10n.githubRepo,
+                      url: "https://github.com/wildfirechat"),
                   const SizedBox(width: 12),
-                  Text("|", style: TextStyle(color: context.colors.textTertiary)),
+                  Text("|",
+                      style: TextStyle(color: context.colors.textTertiary)),
                   const SizedBox(width: 12),
-                  _SettingsTextLink(label: l10n.issueFeedback, url: "https://bbs.wildfirechat.cn"),
+                  _SettingsTextLink(
+                      label: l10n.issueFeedback,
+                      url: "https://bbs.wildfirechat.cn"),
                 ],
               ),
               const SizedBox(height: 8),
@@ -1053,17 +1118,25 @@ class _SettingsSelectorRowState extends State<_SettingsSelectorRow> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(widget.title, style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
+                        Text(widget.title,
+                            style: AppText.base.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: context.colors.textPrimary)),
                         const SizedBox(height: 4),
-                        Text(widget.subtitle, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
+                        Text(widget.subtitle,
+                            style: AppText.xs
+                                .copyWith(color: context.colors.textSecondary)),
                       ],
                     ),
                   ),
                   Row(
                     children: [
-                      Text(widget.valueText, style: AppText.sm.copyWith(color: context.colors.textSecondary)),
+                      Text(widget.valueText,
+                          style: AppText.sm
+                              .copyWith(color: context.colors.textSecondary)),
                       const SizedBox(width: 8),
-                      Icon(Icons.keyboard_arrow_down_rounded, size: 18, color: context.colors.textTertiary),
+                      Icon(Icons.keyboard_arrow_down_rounded,
+                          size: 18, color: context.colors.textTertiary),
                     ],
                   ),
                 ],
@@ -1106,9 +1179,14 @@ class _SettingsSliderRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(title, style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary)),
+                    Text(title,
+                        style: AppText.base.copyWith(
+                            fontWeight: FontWeight.w500,
+                            color: context.colors.textPrimary)),
                     const SizedBox(height: 4),
-                    Text(subtitle, style: AppText.xs.copyWith(color: context.colors.textSecondary)),
+                    Text(subtitle,
+                        style: AppText.xs
+                            .copyWith(color: context.colors.textSecondary)),
                   ],
                 ),
               ),
@@ -1117,23 +1195,28 @@ class _SettingsSliderRow extends StatelessWidget {
           const SizedBox(height: 12),
           // 滑块自身是调节字号的控件,不跟着字号放大:否则档位标签在英文下会横向溢出。
           MediaQuery(
-            data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+            data: MediaQuery.of(context)
+                .copyWith(textScaler: TextScaler.noScaling),
             child: Column(
               children: [
                 Row(
                   children: [
-                    Text("A", style: AppText.xs.copyWith(color: context.colors.textSecondary)),
+                    Text("A",
+                        style: AppText.xs
+                            .copyWith(color: context.colors.textSecondary)),
                     Expanded(
                       child: SliderTheme(
                         data: SliderTheme.of(context).copyWith(
                           activeTrackColor: context.colors.accent,
                           inactiveTrackColor: context.colors.inputBg,
                           thumbColor: context.colors.surface,
-                          overlayColor: context.colors.accent.withValues(alpha: 0.1),
+                          overlayColor:
+                              context.colors.accent.withValues(alpha: 0.1),
                           valueIndicatorColor: context.colors.accent,
                           activeTickMarkColor: context.colors.accent,
                           inactiveTickMarkColor: context.colors.textTertiary,
-                          tickMarkShape: const RoundSliderTickMarkShape(tickMarkRadius: 2.0),
+                          tickMarkShape: const RoundSliderTickMarkShape(
+                              tickMarkRadius: 2.0),
                         ),
                         child: Slider(
                           value: index.toDouble(),
@@ -1144,7 +1227,10 @@ class _SettingsSliderRow extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Text("A", style: AppText.lg.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
+                    Text("A",
+                        style: AppText.lg.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: context.colors.textPrimary)),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -1159,7 +1245,8 @@ class _SettingsSliderRow extends StatelessWidget {
                             textAlign: TextAlign.center,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppText.xs.copyWith(color: context.colors.textSecondary),
+                            style: AppText.xs
+                                .copyWith(color: context.colors.textSecondary),
                           ),
                         ),
                     ],
@@ -1175,7 +1262,13 @@ class _SettingsSliderRow extends StatelessWidget {
 
   static List<String> _fontSizeLabels(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return [l10n.fontSizeSmall, l10n.fontSizeNormal, l10n.fontSizeMedium, l10n.fontSizeLarge, l10n.fontSizeExtraLarge];
+    return [
+      l10n.fontSizeSmall,
+      l10n.fontSizeNormal,
+      l10n.fontSizeMedium,
+      l10n.fontSizeLarge,
+      l10n.fontSizeExtraLarge
+    ];
   }
 }
 
@@ -1199,12 +1292,20 @@ class _SettingsTextLink extends StatelessWidget {
             if (await canLaunchUrl(uri)) {
               await launchUrl(uri, mode: LaunchMode.externalApplication);
             } else if (context.mounted) {
-              Fluttertoast.showToast(msg: AppLocalizations.of(context)!.cannotOpenLink);
+              Fluttertoast.showToast(
+                  msg: AppLocalizations.of(context)!.cannotOpenLink);
             }
           },
           child: Text(
             label,
-            style: AppText.xs.copyWith(color: hovered ? context.colors.accentPressed : context.colors.accent, decoration: TextDecoration.underline, decorationColor: hovered ? context.colors.accentPressed : context.colors.accent),
+            style: AppText.xs.copyWith(
+                color: hovered
+                    ? context.colors.accentPressed
+                    : context.colors.accent,
+                decoration: TextDecoration.underline,
+                decorationColor: hovered
+                    ? context.colors.accentPressed
+                    : context.colors.accent),
           ),
         );
       },

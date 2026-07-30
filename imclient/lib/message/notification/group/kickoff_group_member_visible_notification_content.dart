@@ -56,8 +56,7 @@ class KickoffGroupMemberVisibleNotificationContent
       'g': groupId,
       'ms': kickedMembers,
     };
-    payload.binaryContent =
-        Uint8List.fromList(utf8.encode(json.encode(map)));
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 

@@ -66,5 +66,4 @@ class MainSearchProxy {
     await SearchWindowManager.instance.close();
     return null;
   }
-
 }

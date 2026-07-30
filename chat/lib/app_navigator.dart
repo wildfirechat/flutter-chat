@@ -83,8 +83,7 @@ void pushReplacementPage(BuildContext context, Widget page) {
       ),
     );
   } else {
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (_) => page));
+    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
   }
 }
 

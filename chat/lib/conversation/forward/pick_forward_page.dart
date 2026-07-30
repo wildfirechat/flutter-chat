@@ -21,7 +21,8 @@ import 'package:chat/widget/sidebar_index.dart';
 import 'package:chat/widget/app_bar_actions.dart';
 import 'package:chat/theme/app_typography.dart';
 
-typedef OnForwardTargetsSelected = void Function(List<Conversation> targets, String? comment);
+typedef OnForwardTargetsSelected = void Function(
+    List<Conversation> targets, String? comment);
 
 /// 移动端转发选目标整页。
 ///
@@ -31,7 +32,11 @@ class PickForwardPage extends StatefulWidget {
   final List<Message>? messages;
   final bool oneByOne;
 
-  const PickForwardPage({super.key, required this.onSelected, this.messages, this.oneByOne = false});
+  const PickForwardPage(
+      {super.key,
+      required this.onSelected,
+      this.messages,
+      this.oneByOne = false});
 
   @override
   State<PickForwardPage> createState() => _PickForwardPageState();
@@ -56,7 +61,8 @@ class _PickForwardPageState extends State<PickForwardPage> {
     _searchController.addListener(() {
       setState(() => _searchText = _searchController.text);
       if (_searchText.isNotEmpty) {
-        _searchViewModel.search(_searchText, searchTypes: ForwardTargetList.searchTypes);
+        _searchViewModel.search(_searchText,
+            searchTypes: ForwardTargetList.searchTypes);
       }
     });
     _memberSearchController.addListener(() {
@@ -124,12 +130,16 @@ class _PickForwardPageState extends State<PickForwardPage> {
     // 只选中一位好友时直接转发到单聊,无需建群
     if (pickedUsers.length == 1) {
       _exitMemberSelection();
-      _onTargetTap(Conversation(conversationType: ConversationType.Single, target: pickedUsers[0].userId, line: 0));
+      _onTargetTap(Conversation(
+          conversationType: ConversationType.Single,
+          target: pickedUsers[0].userId,
+          line: 0));
       return;
     }
 
     final l10n = AppLocalizations.of(context)!;
-    final result = await _controller.createGroup(pickedUsers, etcNameBuilder: l10n.groupNameEtc);
+    final result = await _controller.createGroup(pickedUsers,
+        etcNameBuilder: l10n.groupNameEtc);
     if (!mounted) return;
     if (!result.isSuccess) {
       showToast(msg: l10n.createGroupFail('${result.errorCode}'));
@@ -137,15 +147,19 @@ class _PickForwardPageState extends State<PickForwardPage> {
     }
 
     _exitMemberSelection();
-    _onTargetTap(Conversation(conversationType: ConversationType.Group, target: result.groupId!, line: 0));
+    _onTargetTap(Conversation(
+        conversationType: ConversationType.Group,
+        target: result.groupId!,
+        line: 0));
   }
 
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
       listenable: _controller,
-      builder: (context, child) =>
-          _controller.isSelectingMembers ? _buildMemberSelection(context) : _buildTargetSelection(context),
+      builder: (context, child) => _controller.isSelectingMembers
+          ? _buildMemberSelection(context)
+          : _buildTargetSelection(context),
     );
   }
 
@@ -156,10 +170,14 @@ class _PickForwardPageState extends State<PickForwardPage> {
     return Scaffold(
       backgroundColor: context.colors.chatBg,
       appBar: AppBar(
-        title: Text(_controller.isMultiSelect ? l10n.pickMultipleChats : l10n.pickOneChat),
+        title: Text(_controller.isMultiSelect
+            ? l10n.pickMultipleChats
+            : l10n.pickOneChat),
         actions: [
           AppBarTextAction(
-            label: _controller.isMultiSelect ? l10n.singleSelect : l10n.multiSelect,
+            label: _controller.isMultiSelect
+                ? l10n.singleSelect
+                : l10n.multiSelect,
             onPressed: _controller.toggleMultiSelect,
           ),
         ],
@@ -220,7 +238,10 @@ class _PickForwardPageState extends State<PickForwardPage> {
             ),
             const Spacer(),
             FilledButton(
-              onPressed: _controller.hasSelection ? () => _showConfirmationSheet(_controller.selectedConversations) : null,
+              onPressed: _controller.hasSelection
+                  ? () =>
+                      _showConfirmationSheet(_controller.selectedConversations)
+                  : null,
               child: Text(l10n.sendWithCount('$count')),
             ),
           ],
@@ -239,7 +260,9 @@ class _PickForwardPageState extends State<PickForwardPage> {
       return Scaffold(
         backgroundColor: context.colors.chatBg,
         appBar: AppBar(
-          leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _exitMemberSelection),
+          leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: _exitMemberSelection),
           title: Text(l10n.createGroupChat),
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -250,18 +273,28 @@ class _PickForwardPageState extends State<PickForwardPage> {
       value: pickUserViewModel,
       child: Consumer<PickUserViewModel>(
         builder: (context, viewModel, child) {
-          final indexList = viewModel.isSearching ? <String>[] : _buildIndexList(viewModel.userList);
-          final canConfirm = viewModel.pickedUsers.isNotEmpty && !_controller.creatingGroup;
+          final indexList = viewModel.isSearching
+              ? <String>[]
+              : _buildIndexList(viewModel.userList);
+          final canConfirm =
+              viewModel.pickedUsers.isNotEmpty && !_controller.creatingGroup;
 
           return Scaffold(
             backgroundColor: context.colors.chatBg,
             appBar: AppBar(
-              leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _exitMemberSelection),
+              leading: IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: _exitMemberSelection),
               title: Text(l10n.createGroupChat),
               actions: [
                 AppBarTextAction(
-                  label: viewModel.pickedUsers.isNotEmpty ? '${l10n.confirm}(${viewModel.pickedUsers.length})' : l10n.confirm,
-                  onPressed: canConfirm ? () => _confirmMemberSelection(List<UserInfo>.from(viewModel.pickedUsers)) : null,
+                  label: viewModel.pickedUsers.isNotEmpty
+                      ? '${l10n.confirm}(${viewModel.pickedUsers.length})'
+                      : l10n.confirm,
+                  onPressed: canConfirm
+                      ? () => _confirmMemberSelection(
+                          List<UserInfo>.from(viewModel.pickedUsers))
+                      : null,
                 ),
               ],
             ),
@@ -273,7 +306,8 @@ class _PickForwardPageState extends State<PickForwardPage> {
                     maxChipsWidth: MediaQuery.of(context).size.width - 140,
                     chips: viewModel.pickedUsers
                         .map((user) => PortraitChip(
-                              portrait: user.portrait ?? Config.defaultUserPortrait,
+                              portrait:
+                                  user.portrait ?? Config.defaultUserPortrait,
                               defaultPortrait: Config.defaultUserPortrait,
                               onTap: () => viewModel.pickUser(user, false),
                             ))
@@ -283,7 +317,8 @@ class _PickForwardPageState extends State<PickForwardPage> {
                     child: Stack(
                       children: [
                         ListView.builder(
-                          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
                           controller: _memberScrollController,
                           itemCount: viewModel.userList.length,
                           itemBuilder: (context, i) => SelectableUserItem(
@@ -296,7 +331,8 @@ class _PickForwardPageState extends State<PickForwardPage> {
                         if (indexList.isNotEmpty)
                           SidebarIndex(
                             indexList: indexList,
-                            onIndexSelected: (tag) => _jumpToTag(tag, viewModel.userList),
+                            onIndexSelected: (tag) =>
+                                _jumpToTag(tag, viewModel.userList),
                             onTouch: (tag, isTouching) {
                               setState(() {
                                 _currentLetter = tag;
@@ -329,7 +365,8 @@ class _PickForwardPageState extends State<PickForwardPage> {
         alignment: Alignment.center,
         child: _currentLetter == '↑'
             ? const Icon(Icons.arrow_upward, size: 40, color: Colors.white)
-            : Text(_currentLetter, style: AppText.xxxl.copyWith(color: Colors.white)),
+            : Text(_currentLetter,
+                style: AppText.xxxl.copyWith(color: Colors.white)),
       ),
     );
   }

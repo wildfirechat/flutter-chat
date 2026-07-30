@@ -95,9 +95,11 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
     try {
       final currentUserId = Imclient.currentUserId;
       final allSpaces = await PanService.getSpaces();
-      debugPrint('Pan getSpaces returned ${allSpaces.length} spaces, currentUserId=$currentUserId');
+      debugPrint(
+          'Pan getSpaces returned ${allSpaces.length} spaces, currentUserId=$currentUserId');
       for (final space in allSpaces) {
-        debugPrint('Pan space raw: id=${space.spaceId}, type=${space.spaceType}, ownerId=${space.ownerId}, name=${space.name}');
+        debugPrint(
+            'Pan space raw: id=${space.spaceId}, type=${space.spaceType}, ownerId=${space.ownerId}, name=${space.name}');
       }
       _spaces = allSpaces.where((space) {
         if (space.spaceType == PanSpaceType.globalPublic) {
@@ -198,7 +200,8 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
   }
 
   Widget _buildSpaceCard(PanSpace space) {
-    final usagePercent = space.totalQuota > 0 ? space.usedQuota / space.totalQuota : 0.0;
+    final usagePercent =
+        space.totalQuota > 0 ? space.usedQuota / space.totalQuota : 0.0;
     final displayName = _spaceDisplayName(space);
     return Card(
       margin: const EdgeInsets.all(12),
@@ -226,7 +229,8 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
                   ),
                   Text(
                     AppLocalizations.of(context)!.panFileCount(space.fileCount),
-                    style: AppText.sm.copyWith(color: context.colors.textSecondary),
+                    style: AppText.sm
+                        .copyWith(color: context.colors.textSecondary),
                   ),
                 ],
               ),
@@ -236,7 +240,8 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
                 child: LinearProgressIndicator(
                   value: usagePercent,
                   backgroundColor: context.colors.inputBg,
-                  valueColor: AlwaysStoppedAnimation<Color>(context.colors.accent),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(context.colors.accent),
                   minHeight: 6,
                 ),
               ),
@@ -284,8 +289,6 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
       ),
     );
   }
-
-
 }
 
 /// 空间文件列表页面
@@ -374,8 +377,9 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
   List<Widget> _buildActions() {
     final l10n = AppLocalizations.of(context)!;
     if (widget.isMoveMode) {
-      final isSameLocation = widget.sourceSpace?.spaceId == widget.space.spaceId &&
-          (widget.sourceParentId ?? 0) == widget.parentId;
+      final isSameLocation =
+          widget.sourceSpace?.spaceId == widget.space.spaceId &&
+              (widget.sourceParentId ?? 0) == widget.parentId;
       return [
         TextButton(
           onPressed: isSameLocation ? null : _executeMove,
@@ -389,8 +393,9 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
     }
 
     if (widget.isCopyMode) {
-      final isSameLocation = widget.sourceCopySpace?.spaceId == widget.space.spaceId &&
-          (widget.sourceCopyParentId ?? 0) == widget.parentId;
+      final isSameLocation =
+          widget.sourceCopySpace?.spaceId == widget.space.spaceId &&
+              (widget.sourceCopyParentId ?? 0) == widget.parentId;
       return [
         TextButton(
           onPressed: isSameLocation ? null : _executeCopy,
@@ -434,7 +439,8 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(l10n.loadFailedRetry, style: TextStyle(color: context.colors.danger)),
+            Text(l10n.loadFailedRetry,
+                style: TextStyle(color: context.colors.danger)),
             const SizedBox(height: 12),
             FilledButton(
               onPressed: _loadFiles,
@@ -536,13 +542,17 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
 
   void _openFolder(PanFile file) {
     final l10n = AppLocalizations.of(context)!;
-    if (widget.isMoveMode && widget.fileToMove != null &&
-        widget.fileToMove!.isFolder && widget.fileToMove!.fileId == file.fileId) {
+    if (widget.isMoveMode &&
+        widget.fileToMove != null &&
+        widget.fileToMove!.isFolder &&
+        widget.fileToMove!.fileId == file.fileId) {
       Fluttertoast.showToast(msg: l10n.panCannotMoveFolderIntoItself);
       return;
     }
-    if (widget.isCopyMode && widget.fileToCopy != null &&
-        widget.fileToCopy!.isFolder && widget.fileToCopy!.fileId == file.fileId) {
+    if (widget.isCopyMode &&
+        widget.fileToCopy != null &&
+        widget.fileToCopy!.isFolder &&
+        widget.fileToCopy!.fileId == file.fileId) {
       Fluttertoast.showToast(msg: l10n.panCannotCopyFolderIntoItself);
       return;
     }
@@ -885,8 +895,9 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
     if (file == null || widget.sourceSpace == null) return;
 
     final l10n = AppLocalizations.of(context)!;
-    final isSameLocation = widget.sourceSpace!.spaceId == widget.space.spaceId &&
-        (widget.sourceParentId ?? 0) == widget.parentId;
+    final isSameLocation =
+        widget.sourceSpace!.spaceId == widget.space.spaceId &&
+            (widget.sourceParentId ?? 0) == widget.parentId;
     if (isSameLocation) {
       Fluttertoast.showToast(msg: l10n.panCannotMoveToSameLocation);
       return;
@@ -908,8 +919,9 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
     if (file == null || widget.sourceCopySpace == null) return;
 
     final l10n = AppLocalizations.of(context)!;
-    final isSameLocation = widget.sourceCopySpace!.spaceId == widget.space.spaceId &&
-        (widget.sourceCopyParentId ?? 0) == widget.parentId;
+    final isSameLocation =
+        widget.sourceCopySpace!.spaceId == widget.space.spaceId &&
+            (widget.sourceCopyParentId ?? 0) == widget.parentId;
     if (isSameLocation) {
       Fluttertoast.showToast(msg: l10n.panCannotCopyToSameLocation);
       return;
@@ -951,7 +963,8 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.delete, style: TextStyle(color: context.colors.danger)),
+            child: Text(l10n.delete,
+                style: TextStyle(color: context.colors.danger)),
           ),
         ],
       ),
@@ -1022,7 +1035,8 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
               ),
               ListTile(
                 leading: Icon(Icons.delete_outline, color: ctx.colors.danger),
-                title: Text(l10n.delete, style: TextStyle(color: ctx.colors.danger)),
+                title: Text(l10n.delete,
+                    style: TextStyle(color: ctx.colors.danger)),
                 onTap: () {
                   Navigator.pop(ctx);
                   _deleteFile(file);

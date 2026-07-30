@@ -21,11 +21,16 @@ class MomentUploader {
   /// 上传单个文件并返回远端 URL。
   static Future<String> uploadFile(String path, MediaType type) {
     final completer = Completer<String>();
-    Imclient.uploadMediaFile(path, type, (remoteUrl) {
-      completer.complete(remoteUrl);
-    }, (current, total) {}, (errorCode) {
-      completer.completeError(Exception('upload failed: $errorCode'));
-    });
+    Imclient.uploadMediaFile(
+        path,
+        type,
+        (remoteUrl) {
+          completer.complete(remoteUrl);
+        },
+        (current, total) {},
+        (errorCode) {
+          completer.completeError(Exception('upload failed: $errorCode'));
+        });
     return completer.future;
   }
 
@@ -33,11 +38,17 @@ class MomentUploader {
   static Future<String> uploadBytes(
       String fileName, Uint8List bytes, MediaType type) {
     final completer = Completer<String>();
-    Imclient.uploadMedia(fileName, bytes, type, (remoteUrl) {
-      completer.complete(remoteUrl);
-    }, (current, total) {}, (errorCode) {
-      completer.completeError(Exception('upload failed: $errorCode'));
-    });
+    Imclient.uploadMedia(
+        fileName,
+        bytes,
+        type,
+        (remoteUrl) {
+          completer.complete(remoteUrl);
+        },
+        (current, total) {},
+        (errorCode) {
+          completer.completeError(Exception('upload failed: $errorCode'));
+        });
     return completer.future;
   }
 
@@ -95,7 +106,6 @@ class MomentUploader {
 
 /// 上传单个媒体文件并返回远端 URL（背景图等不需要 [FeedEntry] 的场景）。
 Future<String> uploadMomentMedia(MomentPickedMedia media) {
-  return MomentUploader.uploadFile(
-      media.path,
+  return MomentUploader.uploadFile(media.path,
       media.isVideo ? MediaType.Media_Type_VIDEO : MediaType.Media_Type_IMAGE);
 }

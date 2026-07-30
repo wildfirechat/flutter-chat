@@ -41,7 +41,8 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
     }
 
     final DWebViewController controller = DWebViewController();
-    final jsApi = JsApi(context, widget.url, controller, pushOverlay: _pushOverlay);
+    final jsApi =
+        JsApi(context, widget.url, controller, pushOverlay: _pushOverlay);
 
     configureDsBridgeWebView(
       controller: controller,
@@ -61,7 +62,8 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
     unawaited(() async {
       // 同工作台:UA 上的标记决定页面选不选 dsbridge 传输,必须赶在加载之前。
       await ensureDesktopDsBridgeUserAgent(controller);
-      await controller.loadRequest(Uri.parse(MediaUrlRedirector.redirect(widget.url)));
+      await controller
+          .loadRequest(Uri.parse(MediaUrlRedirector.redirect(widget.url)));
     }());
 
     _controller = controller;
@@ -96,7 +98,8 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
                 children: [
                   Container(
                     height: 18,
-                    width: double.infinity, // Use double.infinity for full width
+                    width:
+                        double.infinity, // Use double.infinity for full width
                     color: const Color(0xffebebeb),
                   ),
                   Expanded(
@@ -104,7 +107,8 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
                         ? const SizedBox.shrink()
                         : WebViewWidget(
                             controller: controller,
-                            gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+                            gestureRecognizers: const <Factory<
+                                OneSequenceGestureRecognizer>>{},
                           ),
                   ),
                 ],

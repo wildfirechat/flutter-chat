@@ -76,7 +76,8 @@ class NineGridView extends StatelessWidget {
               }
               return Expanded(
                 child: Padding(
-                  padding: EdgeInsets.only(right: c == columns - 1 ? 0 : spacing),
+                  padding:
+                      EdgeInsets.only(right: c == columns - 1 ? 0 : spacing),
                   child: SizedBox(
                     width: cell,
                     height: cell,
@@ -92,7 +93,8 @@ class NineGridView extends StatelessWidget {
   }
 
   Widget _cell(int index, FeedEntry entry) {
-    final url = (entry.thumbUrl ?? '').isNotEmpty ? entry.thumbUrl! : entry.mediaUrl;
+    final url =
+        (entry.thumbUrl ?? '').isNotEmpty ? entry.thumbUrl! : entry.mediaUrl;
     final isVideo = momentIsVideoFile(entry.mediaUrl);
     return GestureDetector(
       onTap: () => onTapItem?.call(index),
@@ -102,7 +104,8 @@ class NineGridView extends StatelessWidget {
           MomentNetworkImage(url, fit: BoxFit.cover),
           if (isVideo)
             const Center(
-              child: Icon(Icons.play_circle_fill, color: Colors.white70, size: 36),
+              child:
+                  Icon(Icons.play_circle_fill, color: Colors.white70, size: 36),
             ),
         ],
       ),

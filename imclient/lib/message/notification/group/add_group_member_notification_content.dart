@@ -9,7 +9,6 @@ import '../../message.dart';
 import '../../message_content.dart';
 import '../notification_message_content.dart';
 
-
 // ignore: non_constant_identifier_names
 MessageContent AddGroupMemberNotificationContentCreator() {
   return AddGroupMemberNotificationContent();
@@ -28,9 +27,9 @@ class AddGroupMemberNotificationContent extends NotificationMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.binaryContent != null) {
-      Map<dynamic, dynamic> map = json.decode(
-          utf8.decode(payload.binaryContent!));
+    if (payload.binaryContent != null) {
+      Map<dynamic, dynamic> map =
+          json.decode(utf8.decode(payload.binaryContent!));
       invitor = map['o'];
       groupId = map['g'];
       invitees = Tools.convertDynamicList(map['ms']);

@@ -24,7 +24,8 @@ class DesktopPopupMenuItem<T> extends PopupMenuEntry<T> {
   bool represents(T? value) => this.value == value;
 
   @override
-  State<DesktopPopupMenuItem<T>> createState() => _DesktopPopupMenuItemState<T>();
+  State<DesktopPopupMenuItem<T>> createState() =>
+      _DesktopPopupMenuItemState<T>();
 }
 
 class _DesktopPopupMenuItemState<T> extends State<DesktopPopupMenuItem<T>> {
@@ -37,11 +38,17 @@ class _DesktopPopupMenuItemState<T> extends State<DesktopPopupMenuItem<T>> {
       padding: EdgeInsets.zero,
       child: HoverBuilder(
         builder: (context, hovered) {
-          final Color textColor = hovered ? Colors.white : (widget.isDanger ? colors.danger : colors.textPrimary);
+          final Color textColor = hovered
+              ? Colors.white
+              : (widget.isDanger ? colors.danger : colors.textPrimary);
 
-          final Color iconColor = hovered ? Colors.white : (widget.isDanger ? colors.danger : colors.textPrimary);
+          final Color iconColor = hovered
+              ? Colors.white
+              : (widget.isDanger ? colors.danger : colors.textPrimary);
 
-          final Color bgColor = hovered ? (widget.isDanger ? colors.danger : colors.accent) : Colors.transparent;
+          final Color bgColor = hovered
+              ? (widget.isDanger ? colors.danger : colors.accent)
+              : Colors.transparent;
 
           return Container(
             width: double.infinity,
@@ -54,7 +61,10 @@ class _DesktopPopupMenuItemState<T> extends State<DesktopPopupMenuItem<T>> {
               borderRadius: BorderRadius.circular(6),
             ),
             child: DefaultTextStyle(
-              style: AppText.sm.copyWith(color: textColor, fontFamily: Theme.of(context).textTheme.bodyMedium?.fontFamily),
+              style: AppText.sm.copyWith(
+                  color: textColor,
+                  fontFamily:
+                      Theme.of(context).textTheme.bodyMedium?.fontFamily),
               child: IconTheme.merge(
                 data: IconThemeData(
                   color: iconColor,

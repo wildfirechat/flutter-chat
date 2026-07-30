@@ -13,10 +13,12 @@ class MessageNotificationSettings extends StatefulWidget {
   const MessageNotificationSettings({super.key});
 
   @override
-  State<MessageNotificationSettings> createState() => _MessageNotificationSettingsState();
+  State<MessageNotificationSettings> createState() =>
+      _MessageNotificationSettingsState();
 }
 
-class _MessageNotificationSettingsState extends State<MessageNotificationSettings> {
+class _MessageNotificationSettingsState
+    extends State<MessageNotificationSettings> {
   bool _receiveMsgNotification = true;
   bool _receiveVoipNotification = true;
   bool _showNotificationDetail = true;
@@ -32,19 +34,24 @@ class _MessageNotificationSettingsState extends State<MessageNotificationSetting
   }
 
   void _loadUserSettings() {
-    NotificationSettings.getBool(kUserSettingGlobalSilent, invert: true).then((value) {
+    NotificationSettings.getBool(kUserSettingGlobalSilent, invert: true)
+        .then((value) {
       if (!mounted) return;
       setState(() => _receiveMsgNotification = value);
     });
-    NotificationSettings.getBool(kUserSettingVoipSilent, invert: true).then((value) {
+    NotificationSettings.getBool(kUserSettingVoipSilent, invert: true)
+        .then((value) {
       if (!mounted) return;
       setState(() => _receiveVoipNotification = value);
     });
-    NotificationSettings.getBool(kUserSettingHiddenNotificationDetail, invert: true).then((value) {
+    NotificationSettings.getBool(kUserSettingHiddenNotificationDetail,
+            invert: true)
+        .then((value) {
       if (!mounted) return;
       setState(() => _showNotificationDetail = value);
     });
-    NotificationSettings.getBool(kUserSettingDisableSyncDraft, invert: true).then((value) {
+    NotificationSettings.getBool(kUserSettingDisableSyncDraft, invert: true)
+        .then((value) {
       if (!mounted) return;
       setState(() => _syncDraftEnabled = value);
     });
@@ -80,7 +87,8 @@ class _MessageNotificationSettingsState extends State<MessageNotificationSetting
     final l10n = AppLocalizations.of(context)!;
     setState(() {
       _noDisturbing = enable;
-      _noDisturbStartTime = enable ? NotificationSettings.defaultNoDisturbStart : 0;
+      _noDisturbStartTime =
+          enable ? NotificationSettings.defaultNoDisturbStart : 0;
       _noDisturbEndTime = enable ? NotificationSettings.defaultNoDisturbEnd : 0;
     });
 
@@ -91,7 +99,8 @@ class _MessageNotificationSettingsState extends State<MessageNotificationSetting
     }
 
     if (enable) {
-      Imclient.setNoDisturbingTimes(_noDisturbStartTime, _noDisturbEndTime, onSuccess, onFailure);
+      Imclient.setNoDisturbingTimes(
+          _noDisturbStartTime, _noDisturbEndTime, onSuccess, onFailure);
     } else {
       Imclient.clearNoDisturbingTimes(onSuccess, onFailure);
     }
@@ -113,17 +122,26 @@ class _MessageNotificationSettingsState extends State<MessageNotificationSetting
                 color: colors.surface,
                 child: Column(
                   children: [
-                    OptionSwitchItem(l10n.receiveNewMessageNotification, _receiveMsgNotification, (value) {
+                    OptionSwitchItem(l10n.receiveNewMessageNotification,
+                        _receiveMsgNotification, (value) {
                       setState(() => _receiveMsgNotification = value);
-                      _updateUserSetting(kUserSettingGlobalSilent, value, revert: true);
+                      _updateUserSetting(kUserSettingGlobalSilent, value,
+                          revert: true);
                     }),
-                    OptionSwitchItem(l10n.receiveCallNotification, _receiveVoipNotification, (value) {
+                    OptionSwitchItem(
+                        l10n.receiveCallNotification, _receiveVoipNotification,
+                        (value) {
                       setState(() => _receiveVoipNotification = value);
-                      _updateUserSetting(kUserSettingVoipSilent, value, revert: true);
+                      _updateUserSetting(kUserSettingVoipSilent, value,
+                          revert: true);
                     }),
-                    OptionSwitchItem(l10n.showNotificationDetail, _showNotificationDetail, showBottomDivider: false, (value) {
+                    OptionSwitchItem(
+                        l10n.showNotificationDetail, _showNotificationDetail,
+                        showBottomDivider: false, (value) {
                       setState(() => _showNotificationDetail = value);
-                      _updateUserSetting(kUserSettingHiddenNotificationDetail, value, revert: true);
+                      _updateUserSetting(
+                          kUserSettingHiddenNotificationDetail, value,
+                          revert: true);
                     }),
                   ],
                 ),
@@ -135,18 +153,22 @@ class _MessageNotificationSettingsState extends State<MessageNotificationSetting
                   l10n.noDisturb,
                   _noDisturbing,
                   _toggleNoDisturb,
-                  desc: _noDisturbing && _noDisturbStartTime != _noDisturbEndTime
-                      ? NotificationSettings.formatNoDisturbTime(_noDisturbStartTime, _noDisturbEndTime)
-                      : null,
+                  desc:
+                      _noDisturbing && _noDisturbStartTime != _noDisturbEndTime
+                          ? NotificationSettings.formatNoDisturbTime(
+                              _noDisturbStartTime, _noDisturbEndTime)
+                          : null,
                   showBottomDivider: false,
                 ),
               ),
               const SizedBox(height: 18),
               Container(
                 color: colors.surface,
-                child: OptionSwitchItem(l10n.syncDraft, _syncDraftEnabled, showBottomDivider: false, (value) {
+                child: OptionSwitchItem(l10n.syncDraft, _syncDraftEnabled,
+                    showBottomDivider: false, (value) {
                   setState(() => _syncDraftEnabled = value);
-                  _updateUserSetting(kUserSettingDisableSyncDraft, value, revert: true);
+                  _updateUserSetting(kUserSettingDisableSyncDraft, value,
+                      revert: true);
                 }),
               ),
             ],

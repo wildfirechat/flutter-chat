@@ -62,8 +62,7 @@ class _VisibleScopePageState extends State<VisibleScopePage> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context)
-                  .pop(VisibleScopeResult(_mode, _users));
+              Navigator.of(context).pop(VisibleScopeResult(_mode, _users));
             },
             child: const Text('完成'),
           ),

@@ -20,7 +20,8 @@ class StatusNotificationViewModel extends ChangeNotifier {
     _connectionStatus = await Imclient.connectionStatus;
     refreshOnlineInfos();
 
-    _connectionStatusSubscription = Imclient.IMEventBus.on<ConnectionStatusChangedEvent>().listen((event) {
+    _connectionStatusSubscription =
+        Imclient.IMEventBus.on<ConnectionStatusChangedEvent>().listen((event) {
       _connectionStatus = event.connectionStatus;
       if (_connectionStatus == kConnectionStatusConnected) {
         refreshOnlineInfos();
@@ -28,7 +29,8 @@ class StatusNotificationViewModel extends ChangeNotifier {
       notifyListeners();
     });
 
-    _userSettingUpdatedSubscription = Imclient.IMEventBus.on<UserSettingUpdatedEvent>().listen((event) {
+    _userSettingUpdatedSubscription =
+        Imclient.IMEventBus.on<UserSettingUpdatedEvent>().listen((event) {
       refreshOnlineInfos();
     });
   }

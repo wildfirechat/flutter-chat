@@ -1,4 +1,3 @@
-
 class BackupMetadata {
   String version;
   String format;
@@ -232,12 +231,15 @@ class BackupMessage {
     return BackupMessage(
       messageUid: json['messageUid'] ?? 0,
       fromUser: json['fromUser'] ?? '',
-      toUsers: json['toUsers'] != null ? List<String>.from(json['toUsers']) : null,
+      toUsers:
+          json['toUsers'] != null ? List<String>.from(json['toUsers']) : null,
       direction: json['direction'] ?? 0,
       status: json['status'] ?? 0,
       timestamp: json['timestamp'] ?? 0,
       localExtra: json['localExtra'] ?? '',
-      payload: json['payload'] != null ? BackupMessagePayload.fromJson(json['payload']) : null,
+      payload: json['payload'] != null
+          ? BackupMessagePayload.fromJson(json['payload'])
+          : null,
       mediaFileSize: json['mediaFileSize'] ?? 0,
     );
   }
@@ -300,12 +302,16 @@ class BackupMessagePayload {
       binaryContent: json['binaryContent'] ?? '',
       localContent: json['localContent'] ?? '',
       mentionedType: json['mentionedType'] ?? 0,
-      mentionedTargets: json['mentionedTargets'] != null ? List<String>.from(json['mentionedTargets']) : null,
+      mentionedTargets: json['mentionedTargets'] != null
+          ? List<String>.from(json['mentionedTargets'])
+          : null,
       extra: json['extra'] ?? '',
       notLoaded: json['notLoaded'] ?? false,
       mediaType: json['mediaType'] ?? 0,
       remoteMediaUrl: json['remoteMediaUrl'] ?? '',
-      localMediaInfo: json['localMediaInfo'] != null ? BackupMediaInfo.fromJson(json['localMediaInfo']) : null,
+      localMediaInfo: json['localMediaInfo'] != null
+          ? BackupMediaInfo.fromJson(json['localMediaInfo'])
+          : null,
     );
   }
 

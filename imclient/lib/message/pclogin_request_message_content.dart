@@ -25,9 +25,9 @@ class PCLoginRequestMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.binaryContent != null) {
-      Map<dynamic, dynamic> map = json.decode(
-          utf8.decode(payload.binaryContent!));
+    if (payload.binaryContent != null) {
+      Map<dynamic, dynamic> map =
+          json.decode(utf8.decode(payload.binaryContent!));
       platform = PlatformType.values[map['p']];
       sessionId = map['t'];
     } else {
@@ -39,8 +39,8 @@ class PCLoginRequestMessageContent extends MediaMessageContent {
   @override
   MessagePayload encode() {
     MessagePayload payload = super.encode();
-    payload.binaryContent =
-        Uint8List.fromList(utf8.encode(json.encode({'p': platform.index, 't': sessionId})));
+    payload.binaryContent = Uint8List.fromList(
+        utf8.encode(json.encode({'p': platform.index, 't': sessionId})));
     return payload;
   }
 

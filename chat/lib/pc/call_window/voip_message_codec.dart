@@ -65,13 +65,17 @@ class VoipMessageCodec {
     VOIP_CONTENT_TYPE_END: () => ByeMessageContent(callId: ''),
     VOIP_CONTENT_TYPE_ACCEPT: () => AnswerMessageContent(callId: ''),
     VOIP_CONTENT_TYPE_ACCEPT_T: () => CallAnswerTMessageContent(),
-    VOIP_CONTENT_TYPE_SIGNAL: () => SignalMessageContent(callId: '', payload: ''),
+    VOIP_CONTENT_TYPE_SIGNAL: () =>
+        SignalMessageContent(callId: '', payload: ''),
     VOIP_CONTENT_TYPE_MODIFY: () => CallModifyMessageContent(),
-    VOIP_CONTENT_TYPE_ADD_PARTICIPANT: () => CallAddParticipantsNotificationContent(),
+    VOIP_CONTENT_TYPE_ADD_PARTICIPANT: () =>
+        CallAddParticipantsNotificationContent(),
     VOIP_CONTENT_MUTE_VIDEO: () => MuteVideoMessageContent(),
     VOIP_CONTENT_CONFERENCE_INVITE: () => ConferenceInviteMessageContent(),
-    VOIP_CONTENT_CONFERENCE_CHANGE_MODE: () => ConferenceChangeModeMessageContent(),
-    VOIP_CONTENT_CONFERENCE_KICKOFF_MEMBER: () => ConferenceKickoffMemberMessageContent(),
+    VOIP_CONTENT_CONFERENCE_CHANGE_MODE: () =>
+        ConferenceChangeModeMessageContent(),
+    VOIP_CONTENT_CONFERENCE_KICKOFF_MEMBER: () =>
+        ConferenceKickoffMemberMessageContent(),
     VOIP_CONTENT_CONFERENCE_COMMAND: () => ConferenceCommandMessageContent(),
     VOIP_CONTENT_MULTI_CALL_ONGOING: () => MultiCallOngoingMessageContent(),
     VOIP_CONTENT_JOIN_CALL_REQUEST: () => JoinCallRequestMessageContent(),
@@ -84,7 +88,8 @@ class _TextLikeContent extends MessageContent {
   _TextLikeContent(this._type);
 
   @override
-  MessageContentMeta get meta => MessageContentMeta(_type, MessageFlag.TRANSPARENT, () => _TextLikeContent(_type));
+  MessageContentMeta get meta => MessageContentMeta(
+      _type, MessageFlag.TRANSPARENT, () => _TextLikeContent(_type));
 
   @override
   Future<String> digest(Message message) async => '未知通话消息';

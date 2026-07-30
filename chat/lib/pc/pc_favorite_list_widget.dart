@@ -134,7 +134,9 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
   List<FavoriteItem> _filterByCategory(List<FavoriteItem> items) {
     switch (widget.category) {
       case FavoriteCategory.file:
-        return items.where((fi) => fi.favType == MESSAGE_CONTENT_TYPE_FILE).toList();
+        return items
+            .where((fi) => fi.favType == MESSAGE_CONTENT_TYPE_FILE)
+            .toList();
       case FavoriteCategory.media:
         return items
             .where((fi) =>
@@ -204,7 +206,8 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
               ),
             ListTile(
               leading: Icon(Icons.delete_outline, color: context.colors.danger),
-              title: Text(l10n.delete, style: TextStyle(color: context.colors.danger)),
+              title: Text(l10n.delete,
+                  style: TextStyle(color: context.colors.danger)),
               onTap: () {
                 Navigator.pop(ctx);
                 _showDeleteConfirm(item);
@@ -219,7 +222,8 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
   void _forwardItem(FavoriteItem item) {
     final message = item.toMessage();
     if (message.content is UnknownMessageContent) {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.unsupportedMessageType);
+      Fluttertoast.showToast(
+          msg: AppLocalizations.of(context)!.unsupportedMessageType);
       return;
     }
     showPickForwardTarget(
@@ -231,9 +235,11 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
     );
   }
 
-  void _sendForwardMessages(List<Conversation> targets, List<Message> messages, String? comment) {
+  void _sendForwardMessages(
+      List<Conversation> targets, List<Message> messages, String? comment) {
     final l10n = AppLocalizations.of(context)!;
-    final total = targets.length * messages.length + (comment != null && comment.isNotEmpty ? targets.length : 0);
+    final total = targets.length * messages.length +
+        (comment != null && comment.isNotEmpty ? targets.length : 0);
     int successCount = 0;
     int failCount = 0;
 
@@ -242,7 +248,9 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
         if (failCount == 0) {
           Fluttertoast.showToast(msg: '${l10n.forward}${l10n.success}');
         } else {
-          Fluttertoast.showToast(msg: '${l10n.send}${l10n.success}: $successCount, ${l10n.setFail}$failCount');
+          Fluttertoast.showToast(
+              msg:
+                  '${l10n.send}${l10n.success}: $successCount, ${l10n.setFail}$failCount');
         }
       }
     }
@@ -312,7 +320,8 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
         (authorizedUrl) async {
           try {
             final client = HttpClient();
-            final request = await client.getUrl(Uri.parse(MediaUrlRedirector.redirect(authorizedUrl)));
+            final request = await client
+                .getUrl(Uri.parse(MediaUrlRedirector.redirect(authorizedUrl)));
             final response = await request.close();
             // 流式写盘,避免整文件 fold 进内存
             final sink = File(outputFile).openWrite();
@@ -383,7 +392,8 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
           context,
           PageRouteBuilder(
             opaque: false,
-            pageBuilder: (context, animation, secondaryAnimation) => MMPreviewView(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                MMPreviewView(
               [message],
               defaultIndex: 0,
               pageToEnd: (fromIndex, tail) {},
@@ -555,7 +565,8 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
                 children: [
                   Text(
                     item.title.isNotEmpty ? item.title : _getDefaultTitle(item),
-                    style: AppText.lg.copyWith(color: context.colors.textPrimary),
+                    style:
+                        AppText.lg.copyWith(color: context.colors.textPrimary),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -564,12 +575,14 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
                     children: [
                       Text(
                         item.origin,
-                        style: AppText.xs.copyWith(color: context.colors.textSecondary),
+                        style: AppText.xs
+                            .copyWith(color: context.colors.textSecondary),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         Utilities.formatTime(context, item.timestamp),
-                        style: AppText.xs.copyWith(color: context.colors.textSecondary),
+                        style: AppText.xs
+                            .copyWith(color: context.colors.textSecondary),
                       ),
                     ],
                   ),

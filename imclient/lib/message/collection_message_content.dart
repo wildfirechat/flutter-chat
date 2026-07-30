@@ -125,11 +125,12 @@ class CollectionMessageContent extends MessageContent {
     super.decode(payload);
     // 从 searchableContent 解析 title
     title = payload.searchableContent ?? '';
-    
+
     // 从 binaryContent 解析其他数据
     if (payload.binaryContent != null) {
       try {
-        Map<dynamic, dynamic> map = json.decode(utf8.decode(payload.binaryContent!));
+        Map<dynamic, dynamic> map =
+            json.decode(utf8.decode(payload.binaryContent!));
         collectionId = map['collectionId']?.toString() ?? '';
         groupId = map['groupId'] ?? '';
         creatorId = map['creatorId'] ?? '';
@@ -141,7 +142,7 @@ class CollectionMessageContent extends MessageContent {
         status = map['status'] ?? 0;
         createdAt = map['createdAt'] ?? 0;
         updatedAt = map['updatedAt'] ?? 0;
-        
+
         // 解析参与记录
         entries = [];
         if (map['entries'] != null) {
@@ -171,7 +172,7 @@ class CollectionMessageContent extends MessageContent {
     MessagePayload payload = super.encode();
     // title 放入 searchableContent 用于搜索
     payload.searchableContent = title;
-    
+
     // 其他数据 JSON 编码后放入 binaryContent
     Map<String, dynamic> dataDict = {
       'collectionId': collectionId,
@@ -186,13 +187,14 @@ class CollectionMessageContent extends MessageContent {
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };
-    
+
     // 编码参与记录
     if (entries.isNotEmpty) {
       dataDict['entries'] = entries.map((e) => e.toJson()).toList();
     }
-    
-    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(dataDict)));
+
+    payload.binaryContent =
+        Uint8List.fromList(utf8.encode(json.encode(dataDict)));
     return payload;
   }
 

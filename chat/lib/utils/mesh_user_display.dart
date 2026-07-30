@@ -28,7 +28,8 @@ class MeshUserDisplay {
       MeshCache.instance.loadDomainInfo(domainId);
       return userInfo.getReadableName();
     }
-    return ExternalTargetUtils.buildExternalName(_baseName(userInfo), domainName);
+    return ExternalTargetUtils.buildExternalName(
+        _baseName(userInfo), domainName);
   }
 
   /// 同步获取带域后缀的富文本名称。
@@ -59,6 +60,7 @@ class MeshUserDisplay {
     if (domainId == null) return userInfo.getReadableName();
     final info = await MeshCache.instance.loadDomainInfo(domainId);
     if (info == null || info.name.isEmpty) return userInfo.getReadableName();
-    return ExternalTargetUtils.buildExternalName(_baseName(userInfo), info.name);
+    return ExternalTargetUtils.buildExternalName(
+        _baseName(userInfo), info.name);
   }
 }

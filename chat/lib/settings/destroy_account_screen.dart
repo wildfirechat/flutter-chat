@@ -120,7 +120,9 @@ class _DestroyAccountScreenState extends State<DestroyAccountScreen> {
       appBar: isDesktopShell
           ? PcPageHeader(title: l10n.destroyAccount)
           : AppBar(title: Text(l10n.destroyAccount)),
-      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : context.colors.primaryBackground,
+      backgroundColor: isDesktopShell
+          ? context.colors.chatBgDesktop
+          : context.colors.primaryBackground,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -148,7 +150,9 @@ class _DestroyAccountScreenState extends State<DestroyAccountScreen> {
                   const SizedBox(width: 8),
                   FilledButton(
                     onPressed: _canSendCode ? _sendCode : null,
-                    child: _isSentCode ? Text('${60 - _waitResendCount} s') : Text(l10n.sendCode),
+                    child: _isSentCode
+                        ? Text('${60 - _waitResendCount} s')
+                        : Text(l10n.sendCode),
                   ),
                 ],
               ),
@@ -172,7 +176,8 @@ class _DestroyCodeSlideVerifyListener implements SlideVerifyListener {
   final VoidCallback onSent;
   final void Function(String msg) onError;
 
-  _DestroyCodeSlideVerifyListener({required this.onSent, required this.onError});
+  _DestroyCodeSlideVerifyListener(
+      {required this.onSent, required this.onError});
 
   @override
   void onVerifySuccess(String token) {

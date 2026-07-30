@@ -18,7 +18,8 @@ import 'package:chat/l10n/app_localizations.dart';
 class ArticlesCellBuilder extends PortraitCellBuilder {
   late ArticlesMessageContent articlesContent;
 
-  ArticlesCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  ArticlesCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     articlesContent = model.message.content as ArticlesMessageContent;
   }
 
@@ -33,7 +34,8 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
     }
 
     return _card(context, cardWidth, [
-      _topArticle(context, topArticle, cardWidth, hasSubArticles: subArticles.isNotEmpty),
+      _topArticle(context, topArticle, cardWidth,
+          hasSubArticles: subArticles.isNotEmpty),
       for (final article in subArticles) ...[
         Divider(height: 1, thickness: 1, color: context.colors.hairlineSoft),
         _subArticle(context, article),
@@ -46,7 +48,9 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
     if (isDesktopShell) {
       return 340;
     }
-    return (MediaQuery.of(context).size.width * 0.75).clamp(240.0, 320.0).toDouble();
+    return (MediaQuery.of(context).size.width * 0.75)
+        .clamp(240.0, 320.0)
+        .toDouble();
   }
 
   Widget _card(BuildContext context, double width, List<Widget> children) {
@@ -68,7 +72,8 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
 
   /// 主文章:大封面。有子文章时标题压在封面底部(公众号多图文样式),
   /// 只有一篇时标题另起一行放在封面下方,便于完整展示。
-  Widget _topArticle(BuildContext context, Article article, double width, {required bool hasSubArticles}) {
+  Widget _topArticle(BuildContext context, Article article, double width,
+      {required bool hasSubArticles}) {
     const double coverHeight = 150;
     return _tappable(
       context,
@@ -97,7 +102,8 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
                     ),
                     child: Text(
                       article.title,
-                      style: AppText.base.copyWith(color: Colors.white, fontWeight: FontWeight.w500),
+                      style: AppText.base.copyWith(
+                          color: Colors.white, fontWeight: FontWeight.w500),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -110,7 +116,9 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
               padding: const EdgeInsets.all(10),
               child: Text(
                 article.title,
-                style: AppText.base.copyWith(fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+                style: AppText.base.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: context.colors.textPrimary),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -159,13 +167,15 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
     );
   }
 
-  Widget _cover(BuildContext context, String url, {required double width, required double height}) {
+  Widget _cover(BuildContext context, String url,
+      {required double width, required double height}) {
     final dpr = MediaQuery.of(context).devicePixelRatio;
     final fallback = Container(
       width: width,
       height: height,
       color: context.colors.inputBg,
-      child: Icon(Icons.article_outlined, size: height > 80 ? 40 : 22, color: context.colors.textTertiary),
+      child: Icon(Icons.article_outlined,
+          size: height > 80 ? 40 : 22, color: context.colors.textTertiary),
     );
     if (url.isEmpty) {
       return fallback;

@@ -60,13 +60,16 @@ class MainAvEngineKitProxy {
 
     _registerVoipMessageTypes();
 
-    _receiveMessageSubscription = _eventBus.on<ReceiveMessagesEvent>().listen((event) {
+    _receiveMessageSubscription =
+        _eventBus.on<ReceiveMessagesEvent>().listen((event) {
       _onReceiveMessages(event.messages, event.hasMore);
     });
-    _conferenceEventSubscription = _eventBus.on<ConferenceEvent>().listen((event) {
+    _conferenceEventSubscription =
+        _eventBus.on<ConferenceEvent>().listen((event) {
       _onConferenceEvent(event.event);
     });
-    _connectionStatusSubscription = _eventBus.on<ConnectionStatusChangedEvent>().listen((event) {
+    _connectionStatusSubscription =
+        _eventBus.on<ConnectionStatusChangedEvent>().listen((event) {
       _onConnectionStatusChanged(event.connectionStatus);
     });
 
@@ -191,7 +194,8 @@ class MainAvEngineKitProxy {
 
   /// 创建/加入会议的公共路径:先加入会议聊天室(失败也继续,只记日志,
   /// 与既有行为一致),再拉起会议子窗口。
-  Future<void> _enterConference(String initialEvent, String callId, Map<String, dynamic> args) async {
+  Future<void> _enterConference(
+      String initialEvent, String callId, Map<String, dynamic> args) async {
     if (_callWindowId != null) {
       print('$_tag call already in progress');
       return;
@@ -239,12 +243,15 @@ class MainAvEngineKitProxy {
       // 偏差超过 1 分钟时,不校准就会把实时的来电/信令消息当历史消息全部丢掉
       // (表现为来电不弹窗、去电接不通)。算法与 avenginekit 内部超时判断一致。
       final delta = await _serverDeltaTime();
-      final age = DateTime.now().millisecondsSinceEpoch + delta - msg.serverTime;
+      final age =
+          DateTime.now().millisecondsSinceEpoch + delta - msg.serverTime;
       if (msg.serverTime > 0 && age > 60 * 1000) {
-        print('$_tag drop stale voip message type=$type age=${age}ms delta=$delta');
+        print(
+            '$_tag drop stale voip message type=$type age=${age}ms delta=$delta');
         continue;
       }
-      print('$_tag voip message type=$type direction=${msg.direction} age=${age}ms');
+      print(
+          '$_tag voip message type=$type direction=${msg.direction} age=${age}ms');
 
       // 来电/邀请类消息需要先创建 Call 窗口。
       if (_callWindowId == null &&
@@ -303,7 +310,8 @@ class MainAvEngineKitProxy {
     required String initialEvent,
     required Map<String, dynamic> initialArgs,
   }) async {
-    print('$_tag _ensureCallWindow type=${_resolveWindowType(conversation, isConference)}');
+    print(
+        '$_tag _ensureCallWindow type=${_resolveWindowType(conversation, isConference)}');
     final windowType = _resolveWindowType(conversation, isConference);
     final windowId = await CallWindowManager.instance.createCallWindow(
       type: windowType,
@@ -330,7 +338,8 @@ class MainAvEngineKitProxy {
 
   String _resolveWindowType(Conversation? conversation, bool isConference) {
     if (isConference) return 'conference';
-    if (conversation?.conversationType == ConversationType.Single) return 'single';
+    if (conversation?.conversationType == ConversationType.Single)
+      return 'single';
     return 'multi';
   }
 
@@ -339,7 +348,8 @@ class MainAvEngineKitProxy {
     if (_callWindowReady && _callWindowId != null) {
       WindowEventChannel.invoke(_callWindowId!, event, args);
     } else {
-      print('$_tag queue $event (windowId=$_callWindowId ready=$_callWindowReady)');
+      print(
+          '$_tag queue $event (windowId=$_callWindowId ready=$_callWindowReady)');
       _eventQueue.add(_QueuedEvent(event, args));
     }
   }
@@ -365,7 +375,8 @@ class MainAvEngineKitProxy {
   /// 已由 MainImclientProxy 在共享域 `im.*` 统一提供,这里只保留通话专有的
   /// 写接口与窗口生命周期事件。
   void _registerMainWindowHandlers(WindowEventChannel channel) {
-    channel.register(MainWindowEvents.voipStatusChanged, _handleVoipStatusChanged);
+    channel.register(
+        MainWindowEvents.voipStatusChanged, _handleVoipStatusChanged);
     channel.register(MainWindowEvents.windowClosed, _handleWindowClosed);
   }
 
@@ -403,23 +414,29 @@ class MainAvEngineKitProxy {
         type == mc.VOIP_CONTENT_JOIN_CALL_REQUEST;
   }
 
-
   /// 所有需要主窗口注册的 VOIP 类型及其对应 flag。
   static final List<_VoipType> _voipTypes = [
-    const _VoipType(mc.VOIP_CONTENT_TYPE_START, mc.MessageFlag.PERSIST_AND_COUNT),
+    const _VoipType(
+        mc.VOIP_CONTENT_TYPE_START, mc.MessageFlag.PERSIST_AND_COUNT),
     const _VoipType(mc.VOIP_CONTENT_TYPE_END, mc.MessageFlag.NOT_PERSIST),
     const _VoipType(mc.VOIP_CONTENT_TYPE_ACCEPT, mc.MessageFlag.NOT_PERSIST),
     const _VoipType(mc.VOIP_CONTENT_TYPE_ACCEPT_T, mc.MessageFlag.NOT_PERSIST),
     const _VoipType(mc.VOIP_CONTENT_TYPE_SIGNAL, mc.MessageFlag.TRANSPARENT),
     const _VoipType(mc.VOIP_CONTENT_TYPE_MODIFY, mc.MessageFlag.NOT_PERSIST),
-    const _VoipType(mc.VOIP_CONTENT_TYPE_ADD_PARTICIPANT, mc.MessageFlag.PERSIST),
+    const _VoipType(
+        mc.VOIP_CONTENT_TYPE_ADD_PARTICIPANT, mc.MessageFlag.PERSIST),
     const _VoipType(mc.VOIP_CONTENT_MUTE_VIDEO, mc.MessageFlag.NOT_PERSIST),
     const _VoipType(mc.VOIP_CONTENT_CONFERENCE_INVITE, mc.MessageFlag.PERSIST),
-    const _VoipType(mc.VOIP_CONTENT_CONFERENCE_CHANGE_MODE, mc.MessageFlag.NOT_PERSIST),
-    const _VoipType(mc.VOIP_CONTENT_CONFERENCE_KICKOFF_MEMBER, mc.MessageFlag.NOT_PERSIST),
-    const _VoipType(mc.VOIP_CONTENT_CONFERENCE_COMMAND, mc.MessageFlag.NOT_PERSIST),
-    const _VoipType(mc.VOIP_CONTENT_MULTI_CALL_ONGOING, mc.MessageFlag.NOT_PERSIST),
-    const _VoipType(mc.VOIP_CONTENT_JOIN_CALL_REQUEST, mc.MessageFlag.NOT_PERSIST),
+    const _VoipType(
+        mc.VOIP_CONTENT_CONFERENCE_CHANGE_MODE, mc.MessageFlag.NOT_PERSIST),
+    const _VoipType(
+        mc.VOIP_CONTENT_CONFERENCE_KICKOFF_MEMBER, mc.MessageFlag.NOT_PERSIST),
+    const _VoipType(
+        mc.VOIP_CONTENT_CONFERENCE_COMMAND, mc.MessageFlag.NOT_PERSIST),
+    const _VoipType(
+        mc.VOIP_CONTENT_MULTI_CALL_ONGOING, mc.MessageFlag.NOT_PERSIST),
+    const _VoipType(
+        mc.VOIP_CONTENT_JOIN_CALL_REQUEST, mc.MessageFlag.NOT_PERSIST),
   ];
 }
 

@@ -13,12 +13,18 @@ class MiddleEllipsisText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final defaultStyle = DefaultTextStyle.of(context).style;
-    final effectiveTextStyle = (style == null || style!.inherit) ? defaultStyle.merge(style) : style!;
+    final effectiveTextStyle =
+        (style == null || style!.inherit) ? defaultStyle.merge(style) : style!;
     final textDirection = Directionality.of(context);
     final textScaler = MediaQuery.textScalerOf(context);
 
-    Widget buildText(String value, {TextOverflow overflow = TextOverflow.clip}) {
-      return Text(value, style: effectiveTextStyle, maxLines: 1, softWrap: false, overflow: overflow);
+    Widget buildText(String value,
+        {TextOverflow overflow = TextOverflow.clip}) {
+      return Text(value,
+          style: effectiveTextStyle,
+          maxLines: 1,
+          softWrap: false,
+          overflow: overflow);
     }
 
     return LayoutBuilder(
@@ -39,9 +45,11 @@ class MiddleEllipsisText extends StatelessWidget {
         // 过宽的候选会被 layout 折到第二行、首行宽度被夹到 <= maxWidth，
         // 只看 width 会误判为「放得下」，导致取字过多、渲染时半字被裁。
         bool fits(String candidate) {
-          textPainter.text = TextSpan(text: candidate, style: effectiveTextStyle);
+          textPainter.text =
+              TextSpan(text: candidate, style: effectiveTextStyle);
           textPainter.layout(maxWidth: maxWidth);
-          return !textPainter.didExceedMaxLines && textPainter.width <= maxWidth;
+          return !textPainter.didExceedMaxLines &&
+              textPainter.width <= maxWidth;
         }
 
         if (fits(text)) {
@@ -71,8 +79,11 @@ class MiddleEllipsisText extends StatelessWidget {
         }
 
         // 还有余量就多给头部一个字（非对称利用剩余宽度）。
-        final withExtraHead = '${chars.take(best + 1)}$_ellipsis${chars.takeLast(best)}';
-        final result = fits(withExtraHead) ? withExtraHead : '${chars.take(best)}$_ellipsis${chars.takeLast(best)}';
+        final withExtraHead =
+            '${chars.take(best + 1)}$_ellipsis${chars.takeLast(best)}';
+        final result = fits(withExtraHead)
+            ? withExtraHead
+            : '${chars.take(best)}$_ellipsis${chars.takeLast(best)}';
 
         return buildText(result);
       },

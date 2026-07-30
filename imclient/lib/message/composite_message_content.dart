@@ -8,7 +8,6 @@ import 'media_message_content.dart';
 import 'message.dart';
 import 'message_content.dart';
 
-
 // ignore: non_constant_identifier_names
 MessageContent CompositeMessageContentCreator() {
   return CompositeMessageContent();
@@ -29,20 +28,20 @@ class CompositeMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.content != null) {
+    if (payload.content != null) {
       title = payload.content!;
     } else {
       title = "";
     }
     messages = [];
-    if(payload.binaryContent != null) {
-      Map<dynamic, dynamic> map = json.decode(
-          utf8.decode(payload.binaryContent!));
+    if (payload.binaryContent != null) {
+      Map<dynamic, dynamic> map =
+          json.decode(utf8.decode(payload.binaryContent!));
       List<dynamic> ms = map['ms'];
       for (int i = 0; i < ms.length; ++i) {
         Map mmap = ms[i];
         Message msg = Message();
-        if(mmap['uid'] is String) {
+        if (mmap['uid'] is String) {
           String str = mmap['uid'];
           str = str.replaceAll("L", "");
           msg.messageUid = int.tryParse(str);
@@ -51,16 +50,16 @@ class CompositeMessageContent extends MediaMessageContent {
         }
         msg.conversation = Conversation();
         msg.conversation.conversationType =
-        ConversationType.values[mmap['type']];
+            ConversationType.values[mmap['type']];
         msg.conversation.target = mmap['target'];
-        if(mmap['line'] != null) {
+        if (mmap['line'] != null) {
           msg.conversation.line = mmap['line'];
         } else {
           msg.conversation.line = 0;
         }
 
         msg.fromUser = mmap['from'];
-        if(mmap['tos'] != null && mmap['tos'] is List<dynamic>) {
+        if (mmap['tos'] != null && mmap['tos'] is List<dynamic>) {
           msg.toUsers = mmap['tos'].cast<String>();
         }
         msg.direction = MessageDirection.MessageDirection_Send;
@@ -71,7 +70,7 @@ class CompositeMessageContent extends MediaMessageContent {
           msg.status = MessageStatus.values[mmap['status']];
         }
         // msg.serverTime = mmap['serverTime'];
-        if(mmap['uid'] is String) {
+        if (mmap['uid'] is String) {
           String str = mmap['serverTime'];
           str = str.replaceAll("L", "");
           msg.serverTime = int.tryParse(str)!;
@@ -88,8 +87,8 @@ class CompositeMessageContent extends MediaMessageContent {
         if (mmap['cbc'] != null) {
           payload.binaryContent = const Base64Decoder().convert(mmap['cbc']);
         }
-        payload.mentionedType = mmap['cmt']??0;
-        if(mmap['cmts'] != null) {
+        payload.mentionedType = mmap['cmt'] ?? 0;
+        if (mmap['cmts'] != null) {
           payload.mentionedTargets = mmap['cmts'].cast<String>();
         }
         payload.extra = mmap['ce'];
@@ -149,7 +148,8 @@ class CompositeMessageContent extends MediaMessageContent {
       ms.add(map);
     }
 
-    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode({'ms': ms})));
+    payload.binaryContent =
+        Uint8List.fromList(utf8.encode(json.encode({'ms': ms})));
     return payload;
   }
 

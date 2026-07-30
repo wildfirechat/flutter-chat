@@ -43,7 +43,8 @@ class PopupMenuPanel extends StatelessWidget {
 
   /// 菜单项不足一行时,把面板收窄到刚好放下这些项(格子宽度与整屏菜单保持一致),
   /// 免得只有一两项时留出大片空白
-  static double widthForItems(int itemCount, {double popupWidth = 250, int crossAxisCount = 4}) {
+  static double widthForItems(int itemCount,
+      {double popupWidth = 250, int crossAxisCount = 4}) {
     if (itemCount >= crossAxisCount) {
       return popupWidth;
     }
@@ -54,7 +55,11 @@ class PopupMenuPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double itemWidth = (popupWidth - _padding * 2) / crossAxisCount;
-    final double menuHeight = listMode ? menuItems.length * _listItemHeight + (menuItems.length - 1) * _dividerHeight : (menuItems.length / crossAxisCount).ceil() * _itemHeight + _padding * 2;
+    final double menuHeight = listMode
+        ? menuItems.length * _listItemHeight +
+            (menuItems.length - 1) * _dividerHeight
+        : (menuItems.length / crossAxisCount).ceil() * _itemHeight +
+            _padding * 2;
 
     final mediaQuery = MediaQuery.of(context);
     final screenSize = mediaQuery.size;
@@ -122,7 +127,9 @@ class PopupMenuPanel extends StatelessWidget {
                   if (!showAbove) _buildArrow(popupWidth, arrowLeft, true),
                   Container(
                     width: popupWidth,
-                    padding: listMode ? EdgeInsets.zero : const EdgeInsets.all(_padding),
+                    padding: listMode
+                        ? EdgeInsets.zero
+                        : const EdgeInsets.all(_padding),
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
                       color: const Color(0xFF4C4C4C),
@@ -136,7 +143,8 @@ class PopupMenuPanel extends StatelessWidget {
                                 if (i > 0)
                                   Container(
                                     height: _dividerHeight,
-                                    margin: const EdgeInsets.symmetric(horizontal: 12),
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 12),
                                     color: Colors.white.withValues(alpha: 0.12),
                                   ),
                                 _PopupMenuListItem(
@@ -168,7 +176,8 @@ class PopupMenuPanel extends StatelessWidget {
     );
   }
 
-  static Widget _buildArrow(double containerWidth, double leftOffset, bool pointUp) {
+  static Widget _buildArrow(
+      double containerWidth, double leftOffset, bool pointUp) {
     return SizedBox(
       width: containerWidth,
       height: 10,

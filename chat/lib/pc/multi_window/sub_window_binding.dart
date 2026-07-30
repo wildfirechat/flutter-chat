@@ -33,7 +33,8 @@ class SubWindowWidgetsBinding extends WidgetsFlutterBinding {
         effective = state;
     }
     if (effective != state) {
-      debugPrint('SubWindowWidgetsBinding remap lifecycle $state -> $effective');
+      debugPrint(
+          'SubWindowWidgetsBinding remap lifecycle $state -> $effective');
     }
     super.handleAppLifecycleStateChanged(effective);
   }

@@ -27,7 +27,15 @@ typedef MomentContactPicker = Future<List<String>> Function(
 );
 
 const Set<String> _kVideoExts = {
-  'mp4', 'mov', 'm4v', 'avi', 'mkv', 'flv', 'wmv', '3gp', 'webm',
+  'mp4',
+  'mov',
+  'm4v',
+  'avi',
+  'mkv',
+  'flv',
+  'wmv',
+  '3gp',
+  'webm',
 };
 
 bool _isVideoPath(String path) {

@@ -57,7 +57,8 @@ class FavUsersPageState extends State<FavUsersPage> {
           return Container();
         }
         return ListTile(
-          leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait, Config.defaultUserPortrait),
+          leading: Portrait(userInfo.portrait ?? Config.defaultUserPortrait,
+              Config.defaultUserPortrait),
           title: AnimatedBuilder(
             animation: MeshCache.instance,
             builder: (context, child) {
@@ -69,7 +70,10 @@ class FavUsersPageState extends State<FavUsersPage> {
               context,
               MaterialPageRoute(
                 builder: (context) => ConversationScreen(
-                  Conversation(conversationType: ConversationType.Single, target: userId, line: 0),
+                  Conversation(
+                      conversationType: ConversationType.Single,
+                      target: userId,
+                      line: 0),
                 ),
               ),
             );

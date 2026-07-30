@@ -36,27 +36,30 @@ class VoiceCellBuilder extends PortraitCellBuilder {
   Timer? _timer;
   int _voiceLevel = 0;
 
-  VoiceCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  VoiceCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     soundMessageContent = model.message.content as SoundMessageContent;
     messageId = model.message.messageId;
-    _playEventSubscription = eventBus.on<VoicePlayStatusChangedEvent>().listen((event) {
-      if(event.messageId == messageId) {
+    _playEventSubscription =
+        eventBus.on<VoicePlayStatusChangedEvent>().listen((event) {
+      if (event.messageId == messageId) {
         if (_playing != event.start) {
-           _playing = event.start;
-           if (_playing) {
-             _startTimer();
-           } else {
-             _stopTimer();
-             _voiceLevel = 0;
-           }
-           setState(() {});
+          _playing = event.start;
+          if (_playing) {
+            _startTimer();
+          } else {
+            _stopTimer();
+            _voiceLevel = 0;
+          }
+          setState(() {});
         }
       }
     });
 
     // 监听转文字更新事件
-    _speechToTextSubscription = eventBus.on<VoiceSpeechToTextUpdatedEvent>().listen((event) {
-      if(event.messageId == messageId) {
+    _speechToTextSubscription =
+        eventBus.on<VoiceSpeechToTextUpdatedEvent>().listen((event) {
+      if (event.messageId == messageId) {
         setState(() {});
       }
     });
@@ -65,9 +68,9 @@ class VoiceCellBuilder extends PortraitCellBuilder {
   void _startTimer() {
     _stopTimer();
     _timer = Timer.periodic(const Duration(milliseconds: 300), (timer) {
-       setState(() {
-         _voiceLevel = (_voiceLevel+1)%3;
-       });
+      setState(() {
+        _voiceLevel = (_voiceLevel + 1) % 3;
+      });
     });
   }
 
@@ -78,9 +81,13 @@ class VoiceCellBuilder extends PortraitCellBuilder {
 
   @override
   Widget buildMessageContent(BuildContext context) {
-    String imagePath = isSendMessage ? 'assets/images/send_voice.png' : 'assets/images/receive_voice.png';
+    String imagePath = isSendMessage
+        ? 'assets/images/send_voice.png'
+        : 'assets/images/receive_voice.png';
     if (_playing) {
-      imagePath = isSendMessage ? 'assets/images/send_voice_$_voiceLevel.png' : 'assets/images/receive_voice_$_voiceLevel.png';
+      imagePath = isSendMessage
+          ? 'assets/images/send_voice_$_voiceLevel.png'
+          : 'assets/images/receive_voice_$_voiceLevel.png';
     }
     Image image = Image.asset(imagePath, width: 20.0, height: 20.0);
     Text text = Text('${soundMessageContent.duration}"');
@@ -105,7 +112,8 @@ class VoiceCellBuilder extends PortraitCellBuilder {
     );
 
     // 如果有转文字内容，在语音气泡下方显示
-    if (soundMessageContent.speechText != null && soundMessageContent.speechText!.isNotEmpty) {
+    if (soundMessageContent.speechText != null &&
+        soundMessageContent.speechText!.isNotEmpty) {
       return Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,7 +140,8 @@ class VoiceCellBuilder extends PortraitCellBuilder {
           const SizedBox(height: 6),
           SizedBox(
             // 12sp 的「转文字中」在最大档位下行高约 20.4px,固定 20 会溢出。
-            height: LayoutScale.watchScale(context, 20.0, cap: LayoutScale.textCap),
+            height:
+                LayoutScale.watchScale(context, 20.0, cap: LayoutScale.textCap),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

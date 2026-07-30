@@ -135,7 +135,8 @@ class WorkspaceTabsViewModel extends ChangeNotifier {
 
     if (_tabs.length >= maxTabCount) {
       // 首页永远不挤,从最旧的可关闭页签开始腾位置。
-      final victim = _tabs.firstWhere((tab) => tab.closable, orElse: () => homeTab);
+      final victim =
+          _tabs.firstWhere((tab) => tab.closable, orElse: () => homeTab);
       if (victim.closable) {
         _tabs.remove(victim);
         _recycleHost(victim);

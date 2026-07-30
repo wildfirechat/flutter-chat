@@ -31,19 +31,25 @@ class MessageInputBar extends StatefulWidget {
   State<MessageInputBar> createState() => _MessageInputBarState();
 }
 
-class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingObserver {
+class _MessageInputBarState extends State<MessageInputBar>
+    with WidgetsBindingObserver {
   static const List<String> emojis = kChatEmojis;
 
   /// 上一次显示的面板类型（emoji 或 plugin）
   ChatInputBarStatus? _previousBoardStatus;
+
   /// 面板→键盘过渡期间保持面板可见
   bool _keepBoardVisible = false;
+
   /// 收起动画时显示的面板类型
   ChatInputBarStatus? _animatingBoardStatus;
+
   /// 持久化的键盘高度
   double _savedKeyboardHeight = 0;
+
   /// 上一次的键盘高度（用于检测稳定）
   double _lastKeyboardHeight = 0;
+
   /// 键盘高度连续稳定的次数
   int _keyboardStableCount = 0;
 
@@ -79,8 +85,9 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
 
   @override
   void didChangeMetrics() {
-    final keyboardHeight =
-        WidgetsBinding.instance.platformDispatcher.views.first.viewInsets.bottom / WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
+    final keyboardHeight = WidgetsBinding
+            .instance.platformDispatcher.views.first.viewInsets.bottom /
+        WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
 
     // 检测键盘高度是否稳定
     if (keyboardHeight == _lastKeyboardHeight && keyboardHeight > 0) {
@@ -99,12 +106,14 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
 
     // 键盘弹出到目标高度时，结束面板→键盘的过渡
     if (_keepBoardVisible && keyboardHeight > 0) {
-      final targetHeight = _savedKeyboardHeight > 0 ? _savedKeyboardHeight : _minBoardHeight;
+      final targetHeight =
+          _savedKeyboardHeight > 0 ? _savedKeyboardHeight : _minBoardHeight;
       // 条件1: 键盘高度达到目标高度
       // 条件2: 键盘高度稳定3帧以上（说明键盘已弹出完成，即使高度不同）
       if (keyboardHeight >= targetHeight || _keyboardStableCount >= 3) {
         // 更新保存的高度为实际键盘高度，确保下次过渡平滑
-        if (keyboardHeight > 0 && (_savedKeyboardHeight - keyboardHeight).abs() > 1) {
+        if (keyboardHeight > 0 &&
+            (_savedKeyboardHeight - keyboardHeight).abs() > 1) {
           _savedKeyboardHeight = keyboardHeight;
           _saveKeyboardHeight(keyboardHeight);
         }
@@ -120,22 +129,27 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
   Widget build(BuildContext context) {
     // 逐键输入会 notifyListeners:整体结构只订阅 面板状态/引用态/频道菜单 三类变化,
     // 发送按钮的文本非空态在 _buildInputBar 内单独订阅,避免每个按键重建整个输入栏(含 emoji/插件面板栈)
-    return Selector<MessageInputBarController, (ChatInputBarStatus, bool, bool)>(
+    return Selector<MessageInputBarController,
+        (ChatInputBarStatus, bool, bool)>(
       selector: (context, controller) => (
         controller.status,
         controller.hasQuote,
         controller.channelInfo?.menus?.isNotEmpty ?? false,
       ),
       builder: (context, _, __) {
-        final controller = Provider.of<MessageInputBarController>(context, listen: false);
+        final controller =
+            Provider.of<MessageInputBarController>(context, listen: false);
         final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
         final bottomPadding = MediaQuery.of(context).viewPadding.bottom;
 
-        final bool isInBoardMode = controller.status == ChatInputBarStatus.emojiStatus || controller.status == ChatInputBarStatus.pluginStatus;
+        final bool isInBoardMode =
+            controller.status == ChatInputBarStatus.emojiStatus ||
+                controller.status == ChatInputBarStatus.pluginStatus;
 
         _lastKeyboardHeight = keyboardHeight;
 
-        final double targetBoardHeight = max(_savedKeyboardHeight, _minBoardHeight);
+        final double targetBoardHeight =
+            max(_savedKeyboardHeight, _minBoardHeight);
 
         // 状态变化处理
         if (isInBoardMode) {
@@ -147,7 +161,8 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
             keyboardHeight < targetBoardHeight * 0.5) {
           // 从面板切换到键盘，保持面板可见直到键盘弹出
           _keepBoardVisible = true;
-        } else if (controller.status != ChatInputBarStatus.keyboardStatus || !controller.focusNode.hasFocus) {
+        } else if (controller.status != ChatInputBarStatus.keyboardStatus ||
+            !controller.focusNode.hasFocus) {
           // 非面板非键盘状态，或键盘失去焦点（收起全部），清除记录
           _previousBoardStatus = null;
           _keepBoardVisible = false;
@@ -172,7 +187,9 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
         // 判断是否使用动画：
         // 只有"纯面板显示/隐藏"才用动画（即：当前无键盘、上一帧也无键盘、且不在过渡中）
         // 所有涉及键盘的场景都不用动画
-        final bool useAnimation = keyboardHeight == 0 && _lastKeyboardHeight == 0 && !_keepBoardVisible;
+        final bool useAnimation = keyboardHeight == 0 &&
+            _lastKeyboardHeight == 0 &&
+            !_keepBoardVisible;
 
         // 记录当前显示的面板类型，用于收起动画
         if (isInBoardMode) {
@@ -180,7 +197,9 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
         }
 
         return Container(
-          color: isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
+          color: isDesktopShell
+              ? context.colors.chatBgDesktop
+              : context.colors.chatBg,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -191,11 +210,15 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
                         duration: const Duration(milliseconds: 250),
                         curve: Curves.easeOutCubic,
                         height: bottomHeight,
-                        child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
+                        child: showBoard
+                            ? _buildBoardsStack(controller, targetBoardHeight)
+                            : null,
                       )
                     : Container(
                         height: bottomHeight,
-                        child: showBoard ? _buildBoardsStack(controller, targetBoardHeight) : null,
+                        child: showBoard
+                            ? _buildBoardsStack(controller, targetBoardHeight)
+                            : null,
                       ),
               ),
             ],
@@ -222,7 +245,8 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
         if (content.thumbnail != null) {
           thumbnail = ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: Image.memory(content.thumbnail!, width: 40, height: 40, fit: BoxFit.cover),
+            child: Image.memory(content.thumbnail!,
+                width: 40, height: 40, fit: BoxFit.cover),
           );
         }
       }
@@ -231,7 +255,8 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
         if (content.thumbnail != null) {
           thumbnail = ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: Image.memory(content.thumbnail!, width: 40, height: 40, fit: BoxFit.cover),
+            child: Image.memory(content.thumbnail!,
+                width: 40, height: 40, fit: BoxFit.cover),
           );
         }
       }
@@ -258,7 +283,8 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
               digest,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: AppText.sm.copyWith(color: context.colors.bubbleQuotedText),
+              style:
+                  AppText.sm.copyWith(color: context.colors.bubbleQuotedText),
             ),
           ),
           const SizedBox(width: 8),
@@ -266,7 +292,8 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
             onTap: () => controller.setQuotedMessage(null),
             child: Container(
               padding: const EdgeInsets.all(4),
-              child: Icon(Icons.close, size: 18, color: context.colors.iconSecondary),
+              child: Icon(Icons.close,
+                  size: 18, color: context.colors.iconSecondary),
             ),
           ),
         ],
@@ -276,11 +303,14 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
 
   Widget _buildInputBar(MessageInputBarController controller) {
     const double iconSize = 32;
-    bool showMenu = controller.channelInfo?.menus != null && controller.channelInfo!.menus!.isNotEmpty;
+    bool showMenu = controller.channelInfo?.menus != null &&
+        controller.channelInfo!.menus!.isNotEmpty;
 
     return Container(
       decoration: BoxDecoration(
-        color: isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
+        color: isDesktopShell
+            ? context.colors.chatBgDesktop
+            : context.colors.chatBg,
         border: Border(
           top: BorderSide(width: 1, color: context.colors.hairline),
         ),
@@ -293,17 +323,33 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
             children: [
               controller.status == ChatInputBarStatus.recordStatus
                   ? IconButton(
-                      icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
-                  : IconButton(icon: Image.asset('assets/images/input/chat_input_bar_voice.png', width: iconSize, height: iconSize), onPressed: controller.onVoiceButton),
+                      icon: Image.asset(
+                          'assets/images/input/chat_input_bar_keyboard.png',
+                          width: iconSize,
+                          height: iconSize),
+                      onPressed: controller.onKeyboardButton)
+                  : IconButton(
+                      icon: Image.asset(
+                          'assets/images/input/chat_input_bar_voice.png',
+                          width: iconSize,
+                          height: iconSize),
+                      onPressed: controller.onVoiceButton),
               if (showMenu)
                 IconButton(
                     icon: controller.status == ChatInputBarStatus.menuStatus
-                        ? Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize)
-                        : const Icon(Icons.menu, size: iconSize, color: Color(0xFF7f7f7f)),
+                        ? Image.asset(
+                            'assets/images/input/chat_input_bar_keyboard.png',
+                            width: iconSize,
+                            height: iconSize)
+                        : const Icon(Icons.menu,
+                            size: iconSize, color: Color(0xFF7f7f7f)),
                     onPressed: controller.onMenuButton),
               Expanded(
-                child: showMenu && controller.status == ChatInputBarStatus.menuStatus
-                    ? ChannelMenuWidget(menus: controller.channelInfo!.menus!, conversation: controller.conversation)
+                child: showMenu &&
+                        controller.status == ChatInputBarStatus.menuStatus
+                    ? ChannelMenuWidget(
+                        menus: controller.channelInfo!.menus!,
+                        conversation: controller.conversation)
                     : (controller.status == ChatInputBarStatus.recordStatus
                         ? RecordWidget(controller.conversation)
                         : Padding(
@@ -317,18 +363,22 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
                                   focusNode: controller.focusNode,
                                   onSubmitted: (_) => controller.onSendButton(),
                                   onChanged: controller.onTextChanged,
-                                  style: TextStyle(color: context.colors.textPrimary),
-                                  placeholderStyle: TextStyle(color: context.colors.textTertiary),
+                                  style: TextStyle(
+                                      color: context.colors.textPrimary),
+                                  placeholderStyle: TextStyle(
+                                      color: context.colors.textTertiary),
                                   decoration: BoxDecoration(
                                     color: context.colors.surface,
                                     borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: context.colors.hairline),
+                                    border: Border.all(
+                                        color: context.colors.hairline),
                                   ),
                                   cursorColor: context.colors.accent,
                                 ),
                                 if (controller.hasQuote)
                                   Padding(
-                                      padding: const EdgeInsets.fromLTRB(0, 5, 0, 0),
+                                      padding:
+                                          const EdgeInsets.fromLTRB(0, 5, 0, 0),
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(4),
                                         child: _buildQuoteWidget(controller),
@@ -339,27 +389,46 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
               if (controller.status != ChatInputBarStatus.menuStatus) ...[
                 controller.status == ChatInputBarStatus.emojiStatus
                     ? IconButton(
-                        icon: Image.asset('assets/images/input/chat_input_bar_keyboard.png', width: iconSize, height: iconSize), onPressed: controller.onKeyboardButton)
+                        icon: Image.asset(
+                            'assets/images/input/chat_input_bar_keyboard.png',
+                            width: iconSize,
+                            height: iconSize),
+                        onPressed: controller.onKeyboardButton)
                     : IconButton(
-                        icon: Image.asset('assets/images/input/chat_input_bar_emoji.png', width: iconSize, height: iconSize), onPressed: controller.onEmojiButton),
+                        icon: Image.asset(
+                            'assets/images/input/chat_input_bar_emoji.png',
+                            width: iconSize,
+                            height: iconSize),
+                        onPressed: controller.onEmojiButton),
                 // 发送按钮只订阅"文本是否非空",逐键输入不会触发这里以外的重建
                 Selector<MessageInputBarController, bool>(
-                  selector: (context, controller) => controller.textEditingController.text.isNotEmpty,
+                  selector: (context, controller) =>
+                      controller.textEditingController.text.isNotEmpty,
                   builder: (context, hasText, _) {
-                    final controller = Provider.of<MessageInputBarController>(context, listen: false);
+                    final controller = Provider.of<MessageInputBarController>(
+                        context,
+                        listen: false);
                     return hasText &&
-                            controller.status != ChatInputBarStatus.recordStatus &&
+                            controller.status !=
+                                ChatInputBarStatus.recordStatus &&
                             controller.status != ChatInputBarStatus.pluginStatus
                         ? FilledButton(
                             onPressed: controller.onSendButton,
-                            style: FilledButton.styleFrom(minimumSize: const Size(44, 28)),
+                            style: FilledButton.styleFrom(
+                                minimumSize: const Size(44, 28)),
                             child: Text(AppLocalizations.of(context)!.send))
                         : IconButton(
-                            icon: Image.asset('assets/images/input/chat_input_bar_plugin.png', width: iconSize, height: iconSize), onPressed: controller.onPluginButton);
+                            icon: Image.asset(
+                                'assets/images/input/chat_input_bar_plugin.png',
+                                width: iconSize,
+                                height: iconSize),
+                            onPressed: controller.onPluginButton);
                   },
                 ),
               ],
-              SizedBox( width : 8.0, ),
+              SizedBox(
+                width: 8.0,
+              ),
             ],
           ),
         ],
@@ -368,7 +437,8 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
   }
 
   /// 构建面板（用于动画，使用记录的面板类型）
-  Widget _buildBoardsStackForAnimation(MessageInputBarController controller, double height) {
+  Widget _buildBoardsStackForAnimation(
+      MessageInputBarController controller, double height) {
     // 使用记录的面板类型，确保收起动画显示正确的面板
     int index = 0;
     final statusToUse = _animatingBoardStatus ?? controller.status;
@@ -387,7 +457,8 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
               emojis,
               pickerEmojiCallback: (emoji) => controller.insertText(emoji),
               delEmojiCallback: () => controller.backspace(emojis),
-              pickerStickerCallback: (stickerPath) => controller.sendSticker(stickerPath),
+              pickerStickerCallback: (stickerPath) =>
+                  controller.sendSticker(stickerPath),
               height: height,
             ),
             PluginBoard(controller.conversation, height: height),
@@ -398,12 +469,14 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
   }
 
   /// 构建面板
-  Widget _buildBoardsStack(MessageInputBarController controller, double height) {
+  Widget _buildBoardsStack(
+      MessageInputBarController controller, double height) {
     // 优先用 _previousBoardStatus 或 _keepBoardVisible 时的面板类型，保证收起动画期间显示正确面板
     ChatInputBarStatus? statusToShow;
     if (_keepBoardVisible && _previousBoardStatus != null) {
       statusToShow = _previousBoardStatus;
-    } else if (controller.status == ChatInputBarStatus.emojiStatus || controller.status == ChatInputBarStatus.pluginStatus) {
+    } else if (controller.status == ChatInputBarStatus.emojiStatus ||
+        controller.status == ChatInputBarStatus.pluginStatus) {
       statusToShow = controller.status;
     }
     int index = (statusToShow == ChatInputBarStatus.pluginStatus) ? 1 : 0;
@@ -419,7 +492,8 @@ class _MessageInputBarState extends State<MessageInputBar> with WidgetsBindingOb
               emojis,
               pickerEmojiCallback: (emoji) => controller.insertText(emoji),
               delEmojiCallback: () => controller.backspace(emojis),
-              pickerStickerCallback: (stickerPath) => controller.sendSticker(stickerPath),
+              pickerStickerCallback: (stickerPath) =>
+                  controller.sendSticker(stickerPath),
               height: height,
             ),
             PluginBoard(controller.conversation, height: height),

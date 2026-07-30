@@ -8,7 +8,8 @@ import '../../ui_model/ui_message.dart';
 class StickerCellBuilder extends PortraitCellBuilder {
   late StickerMessageContent stickerContent;
 
-  StickerCellBuilder(BuildContext context, UIMessage model) : super(context, model) {
+  StickerCellBuilder(BuildContext context, UIMessage model)
+      : super(context, model) {
     stickerContent = model.message.content as StickerMessageContent;
   }
 
@@ -19,7 +20,8 @@ class StickerCellBuilder extends PortraitCellBuilder {
     double dpr = MediaQuery.of(context).devicePixelRatio;
     int cacheSize = (150 * dpr).ceil();
 
-    if (stickerContent.localPath != null && stickerContent.localPath!.isNotEmpty) {
+    if (stickerContent.localPath != null &&
+        stickerContent.localPath!.isNotEmpty) {
       if (stickerContent.localPath!.startsWith('assets/')) {
         imageWidget = Image.asset(stickerContent.localPath!);
       } else {
@@ -29,14 +31,16 @@ class StickerCellBuilder extends PortraitCellBuilder {
           cacheHeight: cacheSize,
         );
       }
-    } else if (stickerContent.remoteUrl != null && stickerContent.remoteUrl!.isNotEmpty) {
+    } else if (stickerContent.remoteUrl != null &&
+        stickerContent.remoteUrl!.isNotEmpty) {
       imageWidget = Image.network(
         MediaUrlRedirector.redirect(stickerContent.remoteUrl!),
         cacheWidth: cacheSize,
         cacheHeight: cacheSize,
       );
     } else {
-      imageWidget = const Icon(Icons.broken_image, size: 64, color: Colors.grey);
+      imageWidget =
+          const Icon(Icons.broken_image, size: 64, color: Colors.grey);
     }
 
     return Container(

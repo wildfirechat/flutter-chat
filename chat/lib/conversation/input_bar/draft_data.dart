@@ -29,7 +29,8 @@ class DraftData {
     if (quoteInfo != null) {
       final q = <String, dynamic>{'u': quoteInfo!.messageUid};
       if (quoteInfo!.userId != null) q['i'] = quoteInfo!.userId;
-      if (quoteInfo!.userDisplayName != null) q['n'] = quoteInfo!.userDisplayName;
+      if (quoteInfo!.userDisplayName != null)
+        q['n'] = quoteInfo!.userDisplayName;
       if (quoteInfo!.messageDigest != null) q['d'] = quoteInfo!.messageDigest;
       map['quoteInfo'] = q;
     }
@@ -126,7 +127,8 @@ class DraftMention {
       uid: map['target'] as String? ?? '',
       isMentionAll: (map['type'] as num?)?.toInt() == 2,
       start: (map['loc'] as num?)?.toInt() ?? 0,
-      end: ((map['loc'] as num?)?.toInt() ?? 0) + ((map['len'] as num?)?.toInt() ?? 0),
+      end: ((map['loc'] as num?)?.toInt() ?? 0) +
+          ((map['len'] as num?)?.toInt() ?? 0),
       displayName: map['displayName'] as String?,
     );
   }

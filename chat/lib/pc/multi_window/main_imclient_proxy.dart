@@ -98,8 +98,7 @@ class MainImclientProxy {
 
   void _register(WindowEventChannel channel, String method,
       Future<dynamic> Function(dynamic) handler) {
-    assert(!_blockedMethods.contains(method),
-        '$method 是进程/连接级方法,不得代子窗口执行');
+    assert(!_blockedMethods.contains(method), '$method 是进程/连接级方法,不得代子窗口执行');
     channel.register(event(method), handler);
   }
 
@@ -113,14 +112,13 @@ class MainImclientProxy {
     _register(channel, 'connectionStatus',
         (_) async => await Imclient.connectionStatus);
     _register(channel, 'isLogined', (_) async => await Imclient.isLogined);
-    _register(
-        channel, 'serverDeltaTime', (_) async => await Imclient.serverDeltaTime);
+    _register(channel, 'serverDeltaTime',
+        (_) async => await Imclient.serverDeltaTime);
 
     // ---------------------------------------------------------- 消息读取
     _register(channel, 'getMessages', _handleGetMessages);
     _register(channel, 'searchMessages', _handleSearchMessages);
-    _register(
-        channel, 'getMessagesByTimestamp', _handleGetMessagesByTimestamp);
+    _register(channel, 'getMessagesByTimestamp', _handleGetMessagesByTimestamp);
     _register(channel, 'getMessageCountByDay', _handleGetMessageCountByDay);
     _register(channel, 'getMessageByUid', _handleGetMessageByUid);
     _register(channel, 'getConversationsMessageByStatus',
@@ -141,8 +139,7 @@ class MainImclientProxy {
     _register(channel, 'quitChatroom', _handleQuitChatroom);
 
     // ---------------------------------------------------------- 回调式接口
-    _register(
-        channel, 'sendConferenceRequest', _handleSendConferenceRequest);
+    _register(channel, 'sendConferenceRequest', _handleSendConferenceRequest);
     _register(channel, 'sendMomentsRequest', _handleSendMomentsRequest);
     _register(channel, 'uploadMedia', _handleUploadMedia);
     _register(channel, 'uploadMediaFile', _handleUploadMediaFile);
@@ -380,26 +377,26 @@ class MainImclientProxy {
   // ------------------------------------------------------------------ 回调式接口
 
   Future<dynamic> _handleSendConferenceRequest(dynamic args) async {
-    return ProxyCompleter.stringResult((onSuccess, onFailure) =>
-        Imclient.sendConferenceRequest(
-          args['sessionId'] as int? ?? 0,
-          args['roomId'] as String? ?? '',
-          args['request'] as String? ?? '',
-          args['advanced'] as bool? ?? false,
-          args['data'] as String? ?? '',
-          onSuccess,
-          onFailure,
-        ));
+    return ProxyCompleter.stringResult(
+        (onSuccess, onFailure) => Imclient.sendConferenceRequest(
+              args['sessionId'] as int? ?? 0,
+              args['roomId'] as String? ?? '',
+              args['request'] as String? ?? '',
+              args['advanced'] as bool? ?? false,
+              args['data'] as String? ?? '',
+              onSuccess,
+              onFailure,
+            ));
   }
 
   Future<dynamic> _handleSendMomentsRequest(dynamic args) async {
-    return ProxyCompleter.stringResult((onSuccess, onFailure) =>
-        Imclient.sendMomentsRequest(
-          args['path'] as String? ?? '',
-          args['data'] as String? ?? '',
-          onSuccess,
-          onFailure,
-        ));
+    return ProxyCompleter.stringResult(
+        (onSuccess, onFailure) => Imclient.sendMomentsRequest(
+              args['path'] as String? ?? '',
+              args['data'] as String? ?? '',
+              onSuccess,
+              onFailure,
+            ));
   }
 
   Future<dynamic> _handleUploadMedia(dynamic args) async {
@@ -409,26 +406,26 @@ class MainImclientProxy {
           'mediaData is ${mediaData.runtimeType}, expected Uint8List');
       return {'errorCode': -1, 'result': null};
     }
-    return ProxyCompleter.stringResult((onSuccess, onFailure) =>
-        Imclient.uploadMedia(
-          args['fileName'] as String? ?? '',
-          mediaData,
-          mc.MediaType.values[args['mediaType'] as int? ?? 0],
-          onSuccess,
-          (current, total) {},
-          onFailure,
-        ));
+    return ProxyCompleter.stringResult(
+        (onSuccess, onFailure) => Imclient.uploadMedia(
+              args['fileName'] as String? ?? '',
+              mediaData,
+              mc.MediaType.values[args['mediaType'] as int? ?? 0],
+              onSuccess,
+              (current, total) {},
+              onFailure,
+            ));
   }
 
   Future<dynamic> _handleUploadMediaFile(dynamic args) async {
-    return ProxyCompleter.stringResult((onSuccess, onFailure) =>
-        Imclient.uploadMediaFile(
-          args['filePath'] as String? ?? '',
-          mc.MediaType.values[args['mediaType'] as int? ?? 0],
-          onSuccess,
-          (current, total) {},
-          onFailure,
-        ));
+    return ProxyCompleter.stringResult(
+        (onSuccess, onFailure) => Imclient.uploadMediaFile(
+              args['filePath'] as String? ?? '',
+              mc.MediaType.values[args['mediaType'] as int? ?? 0],
+              onSuccess,
+              (current, total) {},
+              onFailure,
+            ));
   }
 
   Future<dynamic> _handleGetConversationFiles(dynamic args) async {
@@ -463,14 +460,14 @@ class MainImclientProxy {
   }
 
   Future<dynamic> _handleGetAuthorizedMediaUrl(dynamic args) async {
-    return ProxyCompleter.stringResult((onSuccess, onFailure) =>
-        Imclient.getAuthorizedMediaUrl(
-          args['mediaPath'] as String? ?? '',
-          args['messageUid'] as int? ?? 0,
-          args['mediaType'] as int? ?? 0,
-          onSuccess,
-          onFailure,
-        ));
+    return ProxyCompleter.stringResult(
+        (onSuccess, onFailure) => Imclient.getAuthorizedMediaUrl(
+              args['mediaPath'] as String? ?? '',
+              args['messageUid'] as int? ?? 0,
+              args['mediaType'] as int? ?? 0,
+              onSuccess,
+              onFailure,
+            ));
   }
 
   Future<dynamic> _handleDeleteFileRecord(dynamic args) async {
@@ -482,27 +479,27 @@ class MainImclientProxy {
   /// 键名对齐 imclient 侧原始 args:`applicationId` / `type`
   /// (**不是** `appId` / `appType`——历史上在中间层写错过)。
   Future<dynamic> _handleGetAuthCode(dynamic args) async {
-    return ProxyCompleter.stringResult((onSuccess, onFailure) =>
-        Imclient.getAuthCode(
-          args['applicationId'] as String? ?? '',
-          args['type'] as int? ?? 0,
-          args['host'] as String? ?? '',
-          onSuccess,
-          onFailure,
-        ));
+    return ProxyCompleter.stringResult(
+        (onSuccess, onFailure) => Imclient.getAuthCode(
+              args['applicationId'] as String? ?? '',
+              args['type'] as int? ?? 0,
+              args['host'] as String? ?? '',
+              onSuccess,
+              onFailure,
+            ));
   }
 
   Future<dynamic> _handleConfigApplication(dynamic args) async {
-    return ProxyCompleter.voidResult((onSuccess, onFailure) =>
-        Imclient.configApplication(
-          args['applicationId'] as String? ?? '',
-          args['type'] as int? ?? 0,
-          args['timestamp'] as int? ?? 0,
-          args['nonce'] as String? ?? '',
-          args['signature'] as String? ?? '',
-          onSuccess,
-          onFailure,
-        ));
+    return ProxyCompleter.voidResult(
+        (onSuccess, onFailure) => Imclient.configApplication(
+              args['applicationId'] as String? ?? '',
+              args['type'] as int? ?? 0,
+              args['timestamp'] as int? ?? 0,
+              args['nonce'] as String? ?? '',
+              args['signature'] as String? ?? '',
+              onSuccess,
+              onFailure,
+            ));
   }
 
   // ------------------------------------------------------------------ 参数解析

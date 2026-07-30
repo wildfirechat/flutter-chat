@@ -26,23 +26,23 @@ class LinkMessageContent extends MediaMessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.searchableContent != null) {
+    if (payload.searchableContent != null) {
       title = payload.searchableContent!;
     } else {
       title = "";
     }
     url = "";
     contentDigest = "";
-    if(payload.binaryContent != null) {
-      Map<dynamic, dynamic> map = json.decode(
-          utf8.decode(payload.binaryContent!));
-      if(map.containsKey('d')) {
+    if (payload.binaryContent != null) {
+      Map<dynamic, dynamic> map =
+          json.decode(utf8.decode(payload.binaryContent!));
+      if (map.containsKey('d')) {
         contentDigest = map['d'];
       }
-      if(map.containsKey('u')) {
+      if (map.containsKey('u')) {
         url = map['u'];
       }
-      if(map.containsKey('t')) {
+      if (map.containsKey('t')) {
         thumbnailUrl = map['t'];
       }
     }

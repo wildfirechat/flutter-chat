@@ -37,8 +37,7 @@ class OrganizationEx {
     return {
       'organizationId': organizationId,
       'organization': organization?.toJson(),
-      'subOrganizations':
-          subOrganizations?.map((e) => e.toJson()).toList(),
+      'subOrganizations': subOrganizations?.map((e) => e.toJson()).toList(),
       'employees': employees?.map((e) => e.toJson()).toList(),
     };
   }

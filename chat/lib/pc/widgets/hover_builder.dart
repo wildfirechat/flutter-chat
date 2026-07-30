@@ -5,7 +5,8 @@ class HoverBuilder extends StatefulWidget {
   final Widget Function(BuildContext context, bool hovered) builder;
   final MouseCursor cursor;
 
-  const HoverBuilder({super.key, required this.builder, this.cursor = MouseCursor.defer});
+  const HoverBuilder(
+      {super.key, required this.builder, this.cursor = MouseCursor.defer});
 
   @override
   State<HoverBuilder> createState() => _HoverBuilderState();

@@ -23,8 +23,7 @@ const modifyGroupExtraNotificationContentMeta = MessageContentMeta(
 ///
 /// 群扩展信息被修改时的通知
 /// 消息类型: 122
-class ModifyGroupExtraNotificationContent
-    extends NotificationMessageContent {
+class ModifyGroupExtraNotificationContent extends NotificationMessageContent {
   late String groupId;
   late String operateUser;
   String groupExtra = '';
@@ -54,8 +53,7 @@ class ModifyGroupExtraNotificationContent
       'o': operateUser,
       'g': groupId,
     };
-    payload.binaryContent =
-        Uint8List.fromList(utf8.encode(json.encode(map)));
+    payload.binaryContent = Uint8List.fromList(utf8.encode(json.encode(map)));
     return payload;
   }
 

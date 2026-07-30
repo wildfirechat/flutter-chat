@@ -20,12 +20,22 @@ class OptionItem extends StatelessWidget {
   final GestureTapCallback? onTap;
 
   const OptionItem(this.title,
-      {super.key, this.desc = '', this.showRightArrow = true, this.showBottomDivider = true, this.onTap, this.leftImage, this.rightImage, this.leftIcon, this.rightIcon});
+      {super.key,
+      this.desc = '',
+      this.showRightArrow = true,
+      this.showBottomDivider = true,
+      this.onTap,
+      this.leftImage,
+      this.rightImage,
+      this.leftIcon,
+      this.rightIcon});
 
   @override
   Widget build(BuildContext context) {
-    final rowHeight = LayoutScale.watchScale(context, 36.0, cap: LayoutScale.rowCap);
-    final iconSize = LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap);
+    final rowHeight =
+        LayoutScale.watchScale(context, 36.0, cap: LayoutScale.rowCap);
+    final iconSize =
+        LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap);
     final colors = context.colors;
 
     return Material(
@@ -62,7 +72,8 @@ class OptionItem extends StatelessWidget {
                           desc!,
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.right,
-                          style: AppText.base.copyWith(color: colors.textSecondary),
+                          style: AppText.base
+                              .copyWith(color: colors.textSecondary),
                         ),
                       ),
                     )
@@ -83,10 +94,12 @@ class OptionItem extends StatelessWidget {
                         ? Padding(
                             padding: const EdgeInsets.only(right: 8),
                             child: Icon(Icons.arrow_forward_ios_rounded,
-                                size: LayoutScale.watchScale(context, 13.0), color: colors.textTertiary),
+                                size: LayoutScale.watchScale(context, 13.0),
+                                color: colors.textTertiary),
                           )
                         : Icon(Icons.chevron_right,
-                            size: LayoutScale.watchScale(context, 24.0), color: colors.textTertiary),
+                            size: LayoutScale.watchScale(context, 24.0),
+                            color: colors.textTertiary),
                 ],
               ),
             ),

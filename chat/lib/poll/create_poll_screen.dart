@@ -35,12 +35,14 @@ class CreatePollScreen extends StatefulWidget {
         context: context,
         width: 460,
         height: 620,
-        builder: (_) => CreatePollScreen(conversation: conversation, asDialog: true),
+        builder: (_) =>
+            CreatePollScreen(conversation: conversation, asDialog: true),
       );
     }
     return Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => CreatePollScreen(conversation: conversation)),
+      MaterialPageRoute(
+          builder: (_) => CreatePollScreen(conversation: conversation)),
     );
   }
 
@@ -165,7 +167,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
     final now = DateTime.now();
     final date = await showDatePicker(
       context: context,
-      initialDate: _endTime != null ? DateTime.fromMillisecondsSinceEpoch(_endTime!) : now.add(const Duration(days: 1)),
+      initialDate: _endTime != null
+          ? DateTime.fromMillisecondsSinceEpoch(_endTime!)
+          : now.add(const Duration(days: 1)),
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
     );
@@ -174,13 +178,16 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
     final time = await showTimePicker(
       context: context,
       initialTime: _endTime != null
-          ? TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(_endTime!))
+          ? TimeOfDay.fromDateTime(
+              DateTime.fromMillisecondsSinceEpoch(_endTime!))
           : TimeOfDay.now(),
     );
     if (time == null) return;
 
     setState(() {
-      _endTime = DateTime(date.year, date.month, date.day, time.hour, time.minute).millisecondsSinceEpoch;
+      _endTime =
+          DateTime(date.year, date.month, date.day, time.hour, time.minute)
+              .millisecondsSinceEpoch;
     });
   }
 
@@ -198,14 +205,16 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
     setState(() {
       _type = type;
       // 单选恒为 1;切到多选时给一个合法的默认上限
-      _maxSelect = type == 1 ? 1 : _maxSelect.clamp(2, _optionControllers.length);
+      _maxSelect =
+          type == 1 ? 1 : _maxSelect.clamp(2, _optionControllers.length);
     });
   }
 
   Future<void> _pickMaxSelect() async {
     // 最多可选的上限是选项总数,下限 2(否则等同单选)
     final choices = [
-      for (int n = 2; n <= _optionControllers.length; n++) (value: n, label: '$n${_l10n.pollOptions}'),
+      for (int n = 2; n <= _optionControllers.length; n++)
+        (value: n, label: '$n${_l10n.pollOptions}'),
     ];
     if (choices.isEmpty) return;
 
@@ -296,7 +305,8 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
           FormSectionLabel(l10n.pollOptionsTitle),
           FormCard(
             children: [
-              for (int i = 0; i < _optionControllers.length; i++) _buildOptionRow(i),
+              for (int i = 0; i < _optionControllers.length; i++)
+                _buildOptionRow(i),
               if (_optionControllers.length < maxOptions)
                 InkWell(
                   onTap: _addOption,
@@ -304,9 +314,11 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     child: Row(
                       children: [
-                        Icon(Icons.add_circle_outline, size: 20, color: colors.accent),
+                        Icon(Icons.add_circle_outline,
+                            size: 20, color: colors.accent),
                         const SizedBox(width: 8),
-                        Text(l10n.pollAddOption, style: AppText.base.copyWith(color: colors.accent)),
+                        Text(l10n.pollAddOption,
+                            style: AppText.base.copyWith(color: colors.accent)),
                       ],
                     ),
                   ),
@@ -347,7 +359,9 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
               ),
               OptionItem(
                 l10n.pollEndTime,
-                desc: _endTime == null ? l10n.pollNoEndTime : _formatEndTime(_endTime!),
+                desc: _endTime == null
+                    ? l10n.pollNoEndTime
+                    : _formatEndTime(_endTime!),
                 showBottomDivider: false,
                 onTap: _pickEndTime,
               ),
@@ -370,7 +384,8 @@ class _CreatePollScreenState extends State<CreatePollScreen> {
         ),
         if (_optionControllers.length > minOptions)
           IconButton(
-            icon: Icon(Icons.remove_circle_outline, size: 20, color: context.colors.textTertiary),
+            icon: Icon(Icons.remove_circle_outline,
+                size: 20, color: context.colors.textTertiary),
             splashRadius: 18,
             tooltip: _l10n.delete,
             onPressed: () => _removeOption(index),

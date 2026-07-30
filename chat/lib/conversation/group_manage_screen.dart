@@ -41,7 +41,8 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
     _groupInfo = widget.groupInfo;
     _loadCommercialServer();
     _loadCurrentMember();
-    _groupInfoUpdatedSubscription = Imclient.IMEventBus.on<GroupInfoUpdatedEvent>().listen((event) {
+    _groupInfoUpdatedSubscription =
+        Imclient.IMEventBus.on<GroupInfoUpdatedEvent>().listen((event) {
       for (var info in event.groupInfos) {
         if (info.target == _groupInfo.target) {
           setState(() {
@@ -63,7 +64,8 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
   }
 
   void _loadCurrentMember() async {
-    var member = await Imclient.getGroupMember(_groupInfo.target, Imclient.currentUserId);
+    var member = await Imclient.getGroupMember(
+        _groupInfo.target, Imclient.currentUserId);
     if (mounted) {
       setState(() {
         _currentMember = member;
@@ -83,7 +85,9 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: isDesktopShell ? context.colors.surface : context.colors.primaryBackground,
+      backgroundColor: isDesktopShell
+          ? context.colors.surface
+          : context.colors.primaryBackground,
       appBar: isDesktopShell
           ? PcPageHeader(
               title: l10n.groupManagement,
@@ -103,12 +107,15 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
                 children: [
                   if (_isOwner)
                     OptionItem(l10n.managerSetting, onTap: () {
-                      openPage(context, GroupManagerScreen(groupInfo: _groupInfo));
+                      openPage(
+                          context, GroupManagerScreen(groupInfo: _groupInfo));
                     }),
                   OptionItem(l10n.muteSetting, onTap: () {
                     openPage(context, GroupMuteScreen(groupInfo: _groupInfo));
                   }),
-                  OptionSwitchItem(l10n.allowTemporarySession, _groupInfo.privateChat == 0, showBottomDivider: false, (value) {
+                  OptionSwitchItem(
+                      l10n.allowTemporarySession, _groupInfo.privateChat == 0,
+                      showBottomDivider: false, (value) {
                     Imclient.modifyGroupInfo(
                       _groupInfo.target,
                       ModifyGroupInfoType.Modify_Group_PrivateChat,
@@ -119,7 +126,8 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
                         });
                       },
                       (errorCode) {
-                        Fluttertoast.showToast(msg: '${l10n.setFail}$errorCode');
+                        Fluttertoast.showToast(
+                            msg: '${l10n.setFail}$errorCode');
                       },
                     );
                   }),
@@ -139,12 +147,15 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
                   ),
                   OptionItem(
                     l10n.groupVisible,
-                    desc: _groupInfo.searchable == 0 ? l10n.searchable : l10n.notSearchable,
+                    desc: _groupInfo.searchable == 0
+                        ? l10n.searchable
+                        : l10n.notSearchable,
                     showBottomDivider: _isCommercialServer == true,
                     onTap: _showSearchablePicker,
                   ),
                   if (_isCommercialServer == true) ...[
-                    OptionSwitchItem(l10n.groupHistoryMessage, _groupInfo.historyMessage == 1, (value) {
+                    OptionSwitchItem(l10n.groupHistoryMessage,
+                        _groupInfo.historyMessage == 1, (value) {
                       Imclient.modifyGroupInfo(
                         _groupInfo.target,
                         ModifyGroupInfoType.Modify_Group_History_Message,
@@ -155,13 +166,16 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
                           });
                         },
                         (errorCode) {
-                          Fluttertoast.showToast(msg: '${l10n.setFail}$errorCode');
+                          Fluttertoast.showToast(
+                              msg: '${l10n.setFail}$errorCode');
                         },
                       );
                     }),
                     OptionItem(
                       l10n.groupMaxMember,
-                      desc: _groupInfo.maxMemberCount > 0 ? _groupInfo.maxMemberCount.toString() : '',
+                      desc: _groupInfo.maxMemberCount > 0
+                          ? _groupInfo.maxMemberCount.toString()
+                          : '',
                       showRightArrow: false,
                       showBottomDivider: false,
                     ),
@@ -170,12 +184,16 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
               ),
             ),
             // Section 2: 入群申请
-            if (_isOwner && _groupInfo.type == GroupType.Restricted && _groupInfo.joinType == 3) ...[
+            if (_isOwner &&
+                _groupInfo.type == GroupType.Restricted &&
+                _groupInfo.joinType == 3) ...[
               const SectionDivider(),
               Container(
                 color: context.colors.surface,
-                child: OptionItem(l10n.joinGroupRequests, showBottomDivider: false, onTap: () {
-                  pushPage(context, JoinGroupRequestScreen(groupId: _groupInfo.target));
+                child: OptionItem(l10n.joinGroupRequests,
+                    showBottomDivider: false, onTap: () {
+                  pushPage(context,
+                      JoinGroupRequestScreen(groupId: _groupInfo.target));
                 }),
               ),
             ],
@@ -210,7 +228,8 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
       (2, l10n.managerInviteOnly),
       if (_groupInfo.type == GroupType.Restricted) (3, l10n.needManagerVerify),
     ];
-    _showSelectionDialog(l10n.joinGroupPermission, options, _groupInfo.joinType, (selected) {
+    _showSelectionDialog(l10n.joinGroupPermission, options, _groupInfo.joinType,
+        (selected) {
       if (selected == _groupInfo.joinType) return;
       Imclient.modifyGroupInfo(
         _groupInfo.target,
@@ -230,7 +249,8 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
       (0, l10n.searchable),
       (1, l10n.notSearchable),
     ];
-    _showSelectionDialog(l10n.groupVisible, options, _groupInfo.searchable, (selected) {
+    _showSelectionDialog(l10n.groupVisible, options, _groupInfo.searchable,
+        (selected) {
       if (selected == _groupInfo.searchable) return;
       Imclient.modifyGroupInfo(
         _groupInfo.target,
@@ -261,7 +281,9 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
               children: options.map((option) {
                 return ListTile(
                   title: Text(option.$2),
-                  trailing: option.$1 == currentValue ? const Icon(Icons.check, color: Colors.blue) : null,
+                  trailing: option.$1 == currentValue
+                      ? const Icon(Icons.check, color: Colors.blue)
+                      : null,
                   onTap: () {
                     Navigator.pop(context);
                     onSelected(option.$1);

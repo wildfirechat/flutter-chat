@@ -14,7 +14,7 @@ const streamingTextGeneratingContentMeta = MessageContentMeta(
 
 class StreamingTextGeneratingMessageContent extends MessageContent {
   StreamingTextGeneratingMessageContent({this.text = "", this.streamId = ""});
-  
+
   String text;
   String streamId;
 

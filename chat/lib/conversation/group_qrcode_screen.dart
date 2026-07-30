@@ -36,7 +36,8 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    String qrCodeValue = WfcScheme.buildGroupScheme(widget.groupInfo.target, Imclient.currentUserId);
+    String qrCodeValue = WfcScheme.buildGroupScheme(
+        widget.groupInfo.target, Imclient.currentUserId);
 
     return Scaffold(
       appBar: isDesktopShell
@@ -47,7 +48,9 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
           : AppBar(
               title: Text(l10n.groupQrCode),
             ),
-      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : context.colors.primaryBackground,
+      backgroundColor: isDesktopShell
+          ? context.colors.chatBgDesktop
+          : context.colors.primaryBackground,
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24.0),
@@ -107,7 +110,8 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
               const SizedBox(height: 24),
               Text(
                 l10n.scanQrCodeToJoinGroup,
-                style: AppText.base.copyWith(color: context.colors.textSecondary),
+                style:
+                    AppText.base.copyWith(color: context.colors.textSecondary),
               ),
             ],
           ),

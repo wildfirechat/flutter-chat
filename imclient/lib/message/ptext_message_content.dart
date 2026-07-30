@@ -17,7 +17,7 @@ class PTextMessageContent extends MessageContent {
   @override
   void decode(MessagePayload payload) {
     super.decode(payload);
-    if(payload.searchableContent != null) {
+    if (payload.searchableContent != null) {
       text = payload.searchableContent!;
     } else {
       text = "";
@@ -30,7 +30,6 @@ class PTextMessageContent extends MessageContent {
     payload.searchableContent = text;
     return payload;
   }
-
 
   @override
   Future<String> digest(Message message) async {

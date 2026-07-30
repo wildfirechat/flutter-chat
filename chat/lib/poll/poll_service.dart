@@ -140,9 +140,7 @@ class PollService {
     if (result == null) {
       return [];
     }
-    return result
-        .map((e) => Poll.fromJson(e as Map<String, dynamic>))
-        .toList();
+    return result.map((e) => Poll.fromJson(e as Map<String, dynamic>)).toList();
   }
 }
 

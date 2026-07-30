@@ -30,9 +30,11 @@ Future<T?> showPcSideSheet<T>({
           ),
         ),
       ),
-      transitionsBuilder: (context, animation, secondaryAnimation, child) => SlideTransition(
+      transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+          SlideTransition(
         position: Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero)
-            .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+            .animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
         child: child,
       ),
     ),

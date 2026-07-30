@@ -31,9 +31,8 @@ class _FeedMessagesPageState extends State<FeedMessagesPage> {
   Future<void> _load({bool refresh = false}) async {
     if (_loading) return;
     setState(() => _loading = true);
-    final fromIndex = refresh
-        ? 0
-        : (_messages.isEmpty ? 0 : _messages.last.messageId);
+    final fromIndex =
+        refresh ? 0 : (_messages.isEmpty ? 0 : _messages.last.messageId);
     final messages = await MomentClient.getMessages(fromIndex, refresh);
     if (!mounted) return;
     setState(() {
@@ -70,7 +69,8 @@ class _FeedMessagesPageState extends State<FeedMessagesPage> {
         },
         child: ListView.separated(
           itemCount: _messages.length + (_loading ? 1 : 0),
-          separatorBuilder: (_, __) => const Divider(height: 0.5, thickness: 0.5),
+          separatorBuilder: (_, __) =>
+              const Divider(height: 0.5, thickness: 0.5),
           itemBuilder: (context, index) {
             if (index == _messages.length) {
               return const Padding(
