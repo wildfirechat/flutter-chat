@@ -6,7 +6,6 @@ import 'package:avenginekit/engine/call_state.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
-import 'package:imclient/imclient_method_channel.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
@@ -23,14 +22,13 @@ import '../multi_window/ipc_codec.dart';
 import '../multi_window/sub_window_app_base.dart';
 import '../multi_window/window_event_channel.dart';
 import 'call_window_events.dart';
-import 'call_window_imclient_channel.dart';
 import 'call_window_manager.dart';
 import 'voip_message_codec.dart';
 
 /// Call 窗口的入口 Widget。
 ///
 /// 运行在独立的 Flutter Engine / Dart isolate 中，持有真实 avenginekit，
-/// 并通过 [CallWindowImclientChannel] 把 IM 调用转发给主窗口。
+/// 并通过基类装配的 [SharedImclientChannel] 把 IM 调用转发给主窗口。
 /// 窗口初始化/标题/主题/关窗通知等样板见 [SubWindowAppBase];
 /// 就绪/关窗事件名与窗口样式分支是本窗口特有的,走基类覆写口。
 class CallWindowApp extends StatefulWidget {
@@ -54,7 +52,6 @@ class _CallWindowAppState extends State<CallWindowApp>
 
   // 先同步创建 ViewModel 实例，确保 build 在 init 完成前也能读到非 null 的 provider。
   // Call 窗口不直接连接 IM，也不走主窗口的 SharedPreferences 插件。
-  final CallWindowImclientChannel _imclientProxy = CallWindowImclientChannel();
   final PCShellViewModel _shellViewModel = PCShellViewModel();
   final UserViewModel _userViewModel = UserViewModel();
 
@@ -93,17 +90,10 @@ class _CallWindowAppState extends State<CallWindowApp>
       ];
 
   @override
-  ImclientChannel get imclientChannel => _imclientProxy;
-
-  @override
   Map<String, Future<dynamic> Function(dynamic)> get eventHandlers => {
         CallWindowEvents.message: _handleMessage,
         CallWindowEvents.conferenceEvent: _handleConferenceEvent,
         CallWindowEvents.connectionStatus: _handleConnectionStatus,
-        CallWindowEvents.sendMessageResult: (args) async {
-          _imclientProxy.handleSendMessageResult(args);
-          return null;
-        },
         CallWindowEvents.startCall: _handleStartCall,
         CallWindowEvents.startConference: _handleStartConference,
         CallWindowEvents.joinConference: _handleJoinConference,

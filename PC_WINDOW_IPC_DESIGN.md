@@ -39,7 +39,7 @@ Flutter 桌面多窗口（通过 `desktop_multi_window`）会为每个子窗口�
 │  │  │  Flutter UI / 聊天列表   │  │      │  │  VoipCallScreen / MultiCall  ││ │
 │  │  │  Imclient (真实 IM SDK)  │  │      │  │  ConferenceCallScreen        ││ │
 │  │  │  MainAvEngineKitProxy    │  │◄────►│  │  AVEngineKitImpl (真实引擎)   ││ │
-│  │  │  - 监听 IM 事件          │  │ IPC  │  │  CallWindowImclientChannel   ││ │
+│  │  │  - 监听 IM 事件          │  │ IPC  │  │  SharedImclientChannel       ││ │
 │  │  │  - 创建/管理通话窗口      │  │      │  │  - 把 IM 调用转发给主窗口     ││ │
 │  │  │  - 代发 IM 消息/会议请求  │  │      │  │                              ││ │
 │  │  └─────────────────────────┘  │      │  └─────────────────────────────┘│ │
@@ -54,7 +54,7 @@ Flutter 桌面多窗口（通过 `desktop_multi_window`）会为每个子窗口�
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-媒体预览/朋友圈/搜索窗口与上图同构：主窗口侧各有 `MainXxxProxy`（代执行 IM 调用、转发事件），子窗口侧各有 `XxxWindowImclientChannel`（转发 IM 调用）或干脆不连 IM（媒体预览）。四类窗口的 App 模板、Manager 样板、IM 代理通道都已收敛到 `multi_window/` 公共层，见 §4。
+媒体预览/朋友圈/搜索/WebView 窗口与上图同构。**IM 调用已完全统一**：所有子窗口共用一个 `SharedImclientChannel`，主窗口侧共用一个 `MainImclientProxy`（见 §4.7）；各窗口的 `MainXxxProxy` 只保留自己的**非 IM** 窗口业务（转发 VOIP 事件、广播 feed 刷新、定位消息等）。App 模板、Manager 样板也都在 `multi_window/` 公共层，见 §4。
 
 ### 2.1 职责划分
 
@@ -106,9 +106,9 @@ class WindowEventChannel {
   `Map<Object?,Object?>` → `Map<String,dynamic>` 的类型归一化,**不做 JSON 字符串化**;
 - `listen()` 底层的 `setMethodHandler` 是进程内全局唯一,因此本类是每个 isolate 的单例:
   所有功能(通话代理、媒体预览……)把各自的 handler 注册到同一张表上;
-- method 命名约定 **`<domain>[.imclient].<method>`**：domain 为窗口/功能域
-  （voip / mediaPreview / moment / search 等）；转发 Imclient 调用的代理事件在 domain
-  后再加 `.imclient` 一段，如 `moment.imclient.getUserInfo`；
+- method 命名约定 **`<domain>.<method>`**：domain 为窗口/功能域（voip / mediaPreview /
+  moment / search / wfWebView）。**所有 IM 调用统一走共享域 `im.<method>`**
+  （`kSharedImEventPrefix`，见 §4.7），不再按窗口分域；
 - 同一 method **重复注册**会覆盖旧 handler，覆盖前打 `debugPrint` 告警（多半意味着
   前缀冲突或重复 install），不抛异常。
 
@@ -167,7 +167,7 @@ hidden/paused/detached 一律降级为 inactive，保证帧调度常开。`main.
 | `minWindowSize` | 抽象 | 窗口最小尺寸 |
 | `buildHome(context)` | 抽象 | ready 后的主内容；未 ready 统一显示加载页 |
 | `windowId` / `windowArguments` | 抽象 | 子窗口 Widget 持有的窗口 id 与创建参数（`_selfUserId`、`_windowType` 等从这里取） |
-| `imclientChannel` | `null` | 子窗口的 IM 代理通道（媒体预览不连 IM 为 null） |
+| `imclientChannel` | `SharedImclientChannel` | 所有子窗口装同一套 IM 代理通道，子类**不需要**覆写（见 §4.7） |
 | `registerMessageContents()` | 空 | 注册消息内容类型（仅 Dart 层解码用） |
 | `eventHandlers` | `{}` | 主窗口转发事件的 handler 表 |
 | `onWindowReady()` | 空 | 子类初始化（解析 arguments 等），ready 通知前 await |
@@ -210,23 +210,22 @@ create→setFrame→center→show 创建序列（先 center 再 show，防角落
 默认 true，**四类子窗口均注入**：连接 IM 的子窗口业务需要；媒体预览窗虽不连 IM，
 也靠它在子窗口侧设置 `Imclient.currentUserId`，供全局水印显示用户 ID，见 §4.3）。
 
-### 4.5 子窗口 IM 代理通道：`ProxyImclientChannel`
+### 4.5 子窗口 IM 代理通道基类：`ProxyImclientChannel`
 
 文件：`chat/lib/pc/multi_window/proxy_imclient_channel.dart`
 
-`ProxyImclientChannel implements ImclientChannel`，构造参数为事件前缀
-（如 `'moment.imclient'`），子窗口 Channel 在构造时用声明式方法表注册转发规则：
+`implements ImclientChannel`，提供转发原语与结果分发助手：
 
 - `forwardSimple(method)`：按原 args 转发 `$prefix.$method`，回传主窗口结果；
 - `forward(method, {event, reshapeArgs})`：先整形参数（或改事件名）再转发；
 - `forwardWithRequestId(method, dispatch, {event, makeRequest})`：回调式接口。
-  从 args 取 requestId，主窗口同步返回 `{errorCode, result}`（或 files 等字段）后交给
-  dispatch 闭包走 `ImclientPlatform` 的 dispatch 方法触发回调并清理。
+  从 args 取 requestId，主窗口返回 `{errorCode, ...}` 后交给 dispatch 闭包走
+  `ImclientPlatform` 的 dispatch 方法触发回调并清理。
+- 静态分发助手：`dispatchStringResult` / `dispatchFilesResult` /
+  `dispatchVoidResult` / `dispatchConferenceResult` / `dispatchSendMessageResult`。
 
 `registerMessage` 直接返回 null（消息类型注册只作用于 Dart 层解码，原生侧已在主窗口
 完成注册）；未注册的方法抛 `UnsupportedError`；`setMethodCallHandler` 空实现。
-三个子窗口 Channel（CallWindowImclientChannel / MomentWindowImclientChannel /
-SearchWindowImclientChannel）均基于它，见 §7.1。
 
 ### 4.6 主窗口侧回调包装：`ProxyCompleter`
 
@@ -234,16 +233,78 @@ SearchWindowImclientChannel）均基于它，见 §7.1。
 
 主窗口 proxy 把 Imclient 的 callback 式 API 包装成 Future 的统一助手，结果统一编成
 `{errorCode, ...}` map 回传子窗口：`stringResult`（字符串结果）、`filesResult`
-（文件记录列表）、`voidResult`（无参成功），与子窗口侧三类 dispatch 一一对应。
+（文件记录列表）、`voidResult`（无参成功）。
 
-### 4.7 四类窗口 × 文件 × 事件前缀对照
+**它同时是 requestId 的隔离边界**，见 §4.7。
 
-| 窗口 | 子窗口目录 | 事件前缀 | 主窗口 proxy |
-|------|-----------|---------|-------------|
-| 通话 | `pc/call_window/` | `voip.*`（下行）、`imclient.*`（上行 IM 代理） | `MainAvEngineKitProxy` |
+### 4.7 一套 proxy + 一套 channel：`MainImclientProxy` / `SharedImclientChannel`
+
+文件：`chat/lib/pc/multi_window/main_imclient_proxy.dart`
+　　　`chat/lib/pc/multi_window/shared_imclient_channel.dart`
+
+**所有子窗口共用同一套 IM 代理**：子窗口侧一个 `SharedImclientChannel`
+（由 `SubWindowAppBase` 默认装配，子类不需要覆写），主窗口侧一个
+`MainImclientProxy`，事件名统一为 `im.<method>`（常量 `kSharedImEventPrefix`）。
+当前覆盖 30 个方法，按需增加。
+
+**为什么合并。** 此前每个窗口一份 channel 子类 + 一份主窗口 proxy，同一个
+`getUserInfo` 有四份实现、编码器也各写一份。这套重复造成过三次**静默**故障
+（全部经 mock channel 灌入旧形状实测确认）：
+
+| 故障 | 原因 | 表现 |
+|------|------|------|
+| UserInfo 全丢 | `MainWFWebViewProxy` 自带编码器主键写成 `'userId'`（应 `'uid'`） | `_convertProtoUserInfo` 返回 null |
+| 群通话邀请崩溃 | `ModelCodec.encodeGroupMember` 漏 `'groupId'` | 赋 null 给 `late String` → `TypeError` |
+| 工作台换不到认证码 | webview 整形闭包读 `'appId'`/`'appType'`，imclient 发的是 `'applicationId'`/`'type'` | `getAuthCode` 拿空 applicationId、`type` 恒为 0 |
+
+三次都是"手写映射漏字段/错键名"，不是逻辑错误——所以根治办法是让映射**只有一份**。
+
+**参数一律透传，不整形。** 子窗口不改 args，主窗口按 imclient 的原始参数键名读，
+"发什么"和"读什么"共用同一份契约（imclient 自己的参数定义），不存在第三套键名。
+
+**requestId 不需要跨窗口命名空间。** 回调式接口在主窗口侧经 `ProxyCompleter`
+绕回类型化 `Imclient.xxx` API，由主 isolate 重新分配自己的 requestId，回调闭包
+**词法捕获**子窗口的 requestId——闭包本身就是那张映射表。
+
+> 只有把子窗口 requestId 原样喂给原生的"裸透传"方案才需要命名空间，而那条路
+> 另有两个前置：① requestId 在桌面端被当作指针地址传给 C 层
+> （`Pointer<Void>.fromAddress(requestId)`），必须是**正整数**，负值被 FFI 通道
+> 保留作内部等待，所以不能用 `"windowId-requestId"` 这类字符串编码；
+> ② `ImclientPlatform` 的解码分发 switch（578 行）被困在 `init()` 内部，而子窗口
+> 不能调 `init`（它会 `initProto`），要复用得先把它抽成公开方法。
+
+`sendMessage` 是唯一需要知道调用方的接口：成功/失败在服务器 ack 之后才回来，
+必须回传给**发起的那个**窗口，所以子窗口在 args 里带上 `_windowId`，主窗口经
+`im.onSendMessageResult` 定向回传。
+
+**`sendMessage` / `updateMessage` 需要 MessageContent 对象**，而主窗口不理解各业务
+的消息类型。具体实现由知道类型的一方在 `install(rawContentDecoder: ...)` 时注入
+（当前是 `RawVoipMessageContent.fromMap`），避免 multi_window 公共层反向依赖
+call_window。
+
+**仍然禁止转发的 14 个方法**（`MainImclientProxy._blockedMethods`，assert 兜底）：
+`connect` / `disconnect` / `initProto` / `useSM4` / `setLiteMode` / `setProxyInfo` /
+`setBackupAddress(Strategy)` / `setDeviceToken` / `setVoipDeviceToken` /
+`setProtoUserAgent` / `addHttpHeader` / `startLog` / `stopLog`。
+这些是进程/连接级方法——子窗口调 `disconnect(clearSession)` 就等于把用户登出，
+`connect` / `initProto` 会破坏主窗口的唯一 IM 连接。
+
+`install()` 须在主窗口 `Imclient.init` 之后、其它窗口代理之前调用。
+
+### 4.8 五类窗口 × 文件 × 事件前缀对照
+
+| 窗口 | 子窗口目录 | 窗口业务事件前缀 | 主窗口窗口业务 proxy |
+|------|-----------|---------------|------------------|
+| **全部子窗口** | `pc/multi_window/` | **`im.*`（全部 IM 调用）** | **`MainImclientProxy`** |
+| 通话 | `pc/call_window/` | `voip.*`（下行 + 窗口状态） | `MainAvEngineKitProxy` |
 | 媒体预览 | `pc/media_preview_window/` | `mediaPreview.*` | 无（Manager 直接代查 loadMore） |
-| 朋友圈 | `pc/moment_window/` | `moment.*`、`moment.imclient.*` | `MainMomentProxy` |
-| 会话搜索 | `pc/search_window/` | `search.*`、`search.imclient.*` | `MainSearchProxy` |
+| 朋友圈 | `pc/moment_window/` | `moment.*`（ready/refresh/closed） | `MainMomentProxy`（只广播 feed 刷新） |
+| 会话搜索 | `pc/search_window/` | `search.*`（ready/定位/closed） | `MainSearchProxy`（只处理定位消息） |
+| WebView | `pc/wf_webview_window/` | `wfWebView.*`（ready/openUrl/closed） | 无（IM 全走共享域后已删） |
+
+> IM 调用不再按窗口分域。此前通话窗用裸 `imclient.*`、其余用
+> `<domain>.imclient.*`，现已全部收敛为 `im.*`，`MomentMainEvents` /
+> `SearchMainEvents` 已删除，`MainWindowEvents` 只剩两个窗口状态事件。
 
 ---
 
@@ -281,54 +342,49 @@ class CallWindowEvents {
 
 ### 5.2 子窗口 → 主窗口（上行调用）
 
-通话子窗口需要主窗口代为执行的 IM 操作与状态通知，常量在同一个文件的
-`MainWindowEvents`(统一 `imclient.` 前缀,窗口状态类用 `voip.` 前缀):
+通话子窗口需要主窗口代为执行的**通话专有** IM 操作与状态通知，常量在同一个文件的
+`MainWindowEvents`(统一 `voip.imclient.` 前缀,窗口状态类用 `voip.` 前缀):
 
 ```dart
 class MainWindowEvents {
-  static const String sendMessage = 'imclient.sendMessage';
-  static const String sendConferenceRequest = 'imclient.sendConferenceRequest';
-  static const String updateMessageContent = 'imclient.updateMessageContent';
-  static const String getMessageByUid = 'imclient.getMessageByUid';
-  static const String getUserInfo = 'imclient.getUserInfo';
-  static const String getUserInfos = 'imclient.getUserInfos';
-  static const String getGroupMembers = 'imclient.getGroupMembers';
-  static const String joinChatroom = 'imclient.joinChatroom';
-  static const String quitChatroom = 'imclient.quitChatroom';
-  static const String currentUserId = 'imclient.currentUserId';
-  static const String clientId = 'imclient.clientId';
-  static const String connectionStatus = 'imclient.connectionStatus';
-  static const String isLogined = 'imclient.isLogined';
-  static const String serverDeltaTime = 'imclient.serverDeltaTime';
+  static const String sendMessage = 'voip.imclient.sendMessage';
+  static const String sendConferenceRequest = 'voip.imclient.sendConferenceRequest';
+  static const String updateMessageContent = 'voip.imclient.updateMessageContent';
+  static const String getMessageByUid = 'voip.imclient.getMessageByUid';
+  static const String joinChatroom = 'voip.imclient.joinChatroom';
+  static const String quitChatroom = 'voip.imclient.quitChatroom';
   static const String voipStatusChanged = 'voip.statusChanged';
   static const String windowClosed = 'voip.windowClosed';
 }
 ```
 
+各窗口共用的无副作用读接口（`getUserInfo` / `getUserInfos` / `getGroupMembers` /
+`currentUserId` / `clientId` / `connectionStatus` / `isLogined` /
+`serverDeltaTime`）不在此声明，走共享域 `im.*`，见 §4.7。
+
 | 调用 | 用途 | 返回 |
 |------|------|------|
 | `sendMessage` | 子窗口让主窗口发送 VOIP 信令消息 | 序列化后的 Message |
 | `sendConferenceRequest` | 子窗口让主窗口发送会议请求 | HTTP 结果字符串 |
-| `getUserInfo` / `getUserInfos` | 获取远端用户头像/昵称 | 序列化后的 UserInfo 列表 |
-| `getGroupMembers` | 多人通话获取群成员信息 | 序列化后的 GroupMember 列表 |
 | `getMessageByUid` | 查询已发送信令消息 | 序列化后的 Message |
-| `updateMessageContent` | 更新本地通话记录消息（方法名 `updateMessage` → 事件名 `imclient.updateMessageContent`） | 无 |
+| `updateMessageContent` | 更新本地通话记录消息（方法名 `updateMessage` → 事件名 `voip.imclient.updateMessageContent`） | 无 |
 | `joinChatroom` / `quitChatroom` | 会议聊天室进出 | 无（回调式） |
-| `currentUserId` / `clientId` / `connectionStatus` / `isLogined` / `serverDeltaTime` | 子窗口读主窗口 IM 状态 | 对应标量 |
 | `voip.statusChanged` | 子窗口 → 主窗口：`{status:'ready'/'ended', ...}`，通话窗的"就绪"通知走它而不是 `<kind>.ready` | — |
 | `voip.windowClosed` | 子窗口通知主窗口通话窗已关闭 | — |
+| `im.getUserInfo` / `im.getUserInfos` | 获取远端用户头像/昵称（共享域） | 序列化后的 UserInfo（列表） |
+| `im.getGroupMembers` | 多人通话获取群成员信息（共享域） | 序列化后的 GroupMember 列表 |
+| `im.currentUserId` / `im.clientId` / `im.connectionStatus` / `im.isLogined` / `im.serverDeltaTime` | 子窗口读主窗口 IM 状态（共享域） | 对应标量 |
 
-### 5.3 四类窗口的事件前缀与事件名来源
+### 5.3 各窗口的事件前缀与事件名来源
 
 | 前缀 | 用途 | 常量定义文件 |
 |------|------|-------------|
+| `im.*` | **所有子窗口共用**的无副作用 IM 读接口 | `pc/multi_window/window_event_channel.dart`（`kSharedImEventPrefix`）+ `main_imclient_proxy.dart` |
 | `voip.*` | 通话窗下行事件 + 窗口状态（ready/closed） | `pc/call_window/call_window_events.dart` |
-| `imclient.*` | 通话窗上行 IM 代理 | 同上（`MainWindowEvents`） |
 | `mediaPreview.*` | 预览窗 show/ready/loadMore/windowClosed | `pc/media_preview_window/media_preview_ipc.dart`（`MediaPreviewEvents`） |
 | `moment.*` | 朋友圈窗 ready/refresh/windowClosed | `pc/moment_window/moment_ipc.dart`（`MomentWindowEvents`） |
-| `moment.imclient.*` | 朋友圈窗上行 IM 代理 | 同上（`MomentMainEvents`） |
 | `search.*` | 搜索窗 ready/updateConversation/locateMessage/windowClosed | `pc/search_window/search_window_ipc.dart`（`SearchWindowEvents`） |
-| `search.imclient.*` | 搜索窗上行 IM 代理 | 同上（`SearchMainEvents`） |
+| `wfWebView.*` | WebView 窗 ready/openUrl/windowClosed | `pc/wf_webview_window/wf_webview_window_ipc.dart`（`WFWebViewWindowEvents`） |
 
 ---
 
@@ -340,22 +396,34 @@ class MainWindowEvents {
 
 文件：`chat/lib/pc/multi_window/ipc_codec.dart`
 
-`Message` / `MessagePayload` / `Conversation` 与 Map 的互转只在 `IpcCodec` 一处实现,
-主窗口编码、子窗口解码、`RawVoipMessageContent` 全部复用它:
+所有跨窗口模型与 Map 的互转只在 `IpcCodec` 一处实现,主窗口编码、子窗口解码、
+`RawVoipMessageContent` 全部复用它:
 
 ```dart
 class IpcCodec {
+  // 消息 / 会话
   static Map<String, dynamic> encodeMessage(Message message);
   static Map<String, dynamic> encodePayload(MessagePayload payload);
   static MessagePayload decodePayload(Map<dynamic, dynamic> map);
   static Map<String, dynamic> encodeConversation(Conversation conversation);
   static Conversation decodeConversation(Map<dynamic, dynamic> map);
+  // 用户 / 群成员
+  static Map<String, dynamic> encodeUserInfo(UserInfo user);
+  static Map<String, dynamic> encodeGroupMember(GroupMember member);
+  // 其它模型
+  static Map<String, dynamic> encodeFileRecord(FileRecord record);
+  static Map<String, dynamic> encodeUnreadCount(UnreadCount unread);
 }
 ```
 
 **线格式与 imclient 的 proto map 完全一致**(payload 与 conversation 都用 `'type'` key、
-`binaryContent` 为 base64),因此子窗口把主窗口返回的 map 直接交给
-`ImclientPlatform` 的 `_convertProtoXxx` 即可解析,SDK 层无需为 IPC 添加任何 key 别名。
+`binaryContent` 为 base64、UserInfo 主键用 `'uid'`),因此子窗口把主窗口返回的 map
+直接交给 `ImclientPlatform` 的 `_convertProtoXxx` 即可解析,SDK 层无需为 IPC 添加
+任何 key 别名——也因此这里多数 `encode` 没有对应的 `decode`。
+
+> ⚠️ **不要在各 proxy 里另写 `encodeXxx`。** 线格式与 `_convertProtoXxx` 读取的键名
+> 是隐式契约，重复实现一旦漏字段就是静默失败（历史上的两次事故见 §4.7）。新增模型
+> 一律加到 `IpcCodec`。
 
 编码后的消息结构：
 
@@ -397,52 +465,56 @@ class IpcCodec {
 - 把 `MessagePayload` 按字段原样保存；
 - `encode()` 时把 payload 返回给主窗口代理，代理再交给 `VoipMessageCodec` 编码传给子窗口。
 
-### 6.3 用户/群成员信息：`ModelCodec`
+### 6.3 用户/群成员信息（原 `ModelCodec`，已并入 `IpcCodec`）
 
-文件：`chat/lib/pc/call_window/model_codec.dart`
+`chat/lib/pc/call_window/model_codec.dart` 已删除——它放在 `call_window/` 目录下却被
+`MainSearchProxy` / `MainMomentProxy` 跨域 import，且与 `IpcCodec` 并列成了第二个
+线格式定义处。现在 `encodeUserInfo` / `encodeGroupMember` 都在 `IpcCodec`（§6.1）。
 
-```dart
-class ModelCodec {
-  static Map<String, dynamic> encodeUserInfo(UserInfo user);
-  static UserInfo decodeUserInfo(Map<String, dynamic> map);
-  static Map<String, dynamic> encodeGroupMember(GroupMember member);
-  static GroupMember decodeGroupMember(Map<String, dynamic> map);
-}
-```
+关键约定（改动时必读）：
 
-关键约定：
-
-- 编码 `UserInfo` 时用 `'uid'` 作为主键，与 IM SDK 内部 `_convertProtoUserInfo` 的字段名一致，避免子窗口侧解析失败；
-- 解码时兼容 `'uid'` 和 `'userId'`；
-- 所有字段都做了类型容错和缺省值处理。
+- `UserInfo` 主键必须是 `'uid'`：`_convertProtoUserInfo` 见到 `map['uid'] == null`
+  就直接返回 `null`，写成 `'userId'` 会让子窗口拿不到任何用户信息；
+- `GroupMember` 必须带 `'groupId'`：`GroupMember.groupId` 是 `late String`，
+  `_convertProtoGroupMember` 无条件赋值，缺键会以 `TypeError` 形式抛出；
+- `'type'` 用枚举 `index`；所有字段做类型容错和缺省值处理。
 
 ---
 
 ## 7. IM 代理机制详解
 
-### 7.1 子窗口侧：`CallWindowImclientChannel`
+### 7.1 子窗口侧：`SharedImclientChannel`
 
 文件：`chat/lib/pc/call_window/call_window_imclient_channel.dart`
 
 子窗口启动时**不执行** `Imclient.init`,只把 `ImclientPlatform.instance.channel` 替换为代理通道。
-三个连接 IM 的子窗口（通话/朋友圈/搜索）的 Channel 都基于公共层
+四个用到 IM 的子窗口（通话/朋友圈/搜索/WebView）的 Channel 都基于公共层
 `ProxyImclientChannel`（见 §4.5），在构造中用声明式方法表注册转发规则：
 
 ```dart
-class CallWindowImclientChannel extends ProxyImclientChannel {
-  CallWindowImclientChannel() : super('imclient', ...) {
+class SharedImclientChannel extends ProxyImclientChannel {
+  SharedImclientChannel({required int windowId, required String windowName})
+      : super(kSharedImEventPrefix, ...) {
+    // 通话专有：走本窗口域 voip.imclient.*
     forward('sendMessage', reshapeArgs: ...);
     forwardWithRequestId('sendConferenceRequest', _dispatch, makeRequest: ...);
     forward('updateMessage', event: MainWindowEvents.updateMessageContent, ...);
-    forwardSimple('currentUserId');
+    // 各窗口共用：走共享域 im.*（见 §4.7）
+    forwardShared('getUserInfo');
+    forwardShared('currentUserId');
     // ... 共 14 个方法
   }
 }
 ```
 
-朋友圈（前缀 `'moment.imclient'`，9 个方法）与搜索（前缀 `'search.imclient'`，
-9 个方法）同构；媒体预览窗不连 IM，没有代理通道（但创建参数仍注入
+朋友圈（前缀 `'moment.imclient'`）、搜索（`'search.imclient'`）、WebView
+（`'wfWebView.imclient'`）同构；媒体预览窗不连 IM，没有代理通道（但创建参数仍注入
 `_selfUserId`，供全局水印显示用户 ID，见 §4.3/§4.4）。
+
+`forwardShared` 的 args **按 imclient 侧原始形状透传、不做整形**——共享 handler 按
+参数超集读取（如 `getUserInfo` 读 `{userId, refresh, groupId?}`）。通话窗此前手写的
+整形闭包会把 `groupId` 丢掉，导致群内备注名在通话界面失效，改用 `forwardShared`
+后一并修正。
 
 这样，子窗口里的 `Imclient.sendMessage(...)`、`Imclient.getUserInfo(...)` 等调用，实际上都通过 IPC 发到了主窗口。
 
@@ -462,7 +534,7 @@ class CallWindowImclientChannel extends ProxyImclientChannel {
 `dispatchConferenceRequestResult`）；会议请求仍用 `dispatchConferenceRequestResult`，
 文件记录列表/无参成功回调用 `dispatchOperationResult`。
 
-### 7.2 主窗口侧：`MainAvEngineKitProxy`
+### 7.2 主窗口侧：`MainImclientProxy` + `MainAvEngineKitProxy`
 
 文件：`chat/lib/pc/call_window/main_avengine_kit_proxy.dart`
 
@@ -485,19 +557,24 @@ Future<dynamic> _handleSendMessage(dynamic args) async {
 }
 ```
 
-收到子窗口的 `getUserInfo` 请求后：
+`getUserInfo` 这类共用的读接口**不在这里**——它们由 `MainImclientProxy` 在共享域
+`im.*` 一处实现（见 §4.7）：
 
 ```dart
 Future<dynamic> _handleGetUserInfo(dynamic args) async {
-  final userInfo = await Imclient.getUserInfo(args['userId'], refresh: args['refresh']);
-  return userInfo != null ? ModelCodec.encodeUserInfo(userInfo) : null;
+  final userInfo = await Imclient.getUserInfo(args['userId'],
+      groupId: args['groupId'], refresh: args['refresh'] ?? false);
+  return userInfo != null ? IpcCodec.encodeUserInfo(userInfo) : null;
 }
 ```
 
-朋友圈/搜索窗的主窗口侧对应 `MainMomentProxy` / `MainSearchProxy`，结构相同；
-其中 callback 式 API（sendMomentsRequest、uploadMedia、getConversationFiles、
-getAuthorizedMediaUrl、deleteFileRecord 等）统一用 `ProxyCompleter`（见 §4.6）把
-回调包装成 `{errorCode, ...}` 的 Future 回传。
+朋友圈/搜索/WebView 窗的主窗口侧对应 `MainMomentProxy` / `MainSearchProxy` /
+`MainSearchProxy`，现在**只保留各自的非 IM 窗口业务**（广播 feed 刷新、定位消息跳回
+主窗口）；WebView 窗口的 IM 调用全部并入共享域后，`MainWFWebViewProxy` 已删除。
+所有 callback 式 API
+（sendMomentsRequest、uploadMedia、getConversationFiles、getAuthorizedMediaUrl、
+deleteFileRecord、getAuthCode、configApplication 等）统一用 `ProxyCompleter`
+（见 §4.6）把回调包装成 `{errorCode, ...}` 的 Future 回传。
 
 ### 7.3 为什么不能让子窗口直接连接 IM？
 
@@ -529,7 +606,7 @@ desktop_multi_window 创建子窗口，执行 main(['multi_window', windowId, ar
         │
         ▼
 CallWindowApp 初始化
-  - 替换 ImclientPlatform.channel 为 CallWindowImclientChannel
+  - 替换 ImclientPlatform.channel 为 SharedImclientChannel（基类默认装配）
   - 初始化 AVEngineKitImpl
   - 经 voip.statusChanged {status:'ready'} 通知主窗口 ready
         │
@@ -563,7 +640,7 @@ MainAvEngineKitProxy._onReceiveMessages()
 子窗口 AVEngineKitImpl 需要发 Answer / Bye / Signal / Modify 等消息
         │
         ▼
-Imclient.sendMessage() → CallWindowImclientChannel.invokeMethod()
+Imclient.sendMessage() → SharedImclientChannel.invokeMethod()
         │
         ▼
 IPC 到主窗口 MainWindowEvents.sendMessage
@@ -796,6 +873,19 @@ if (isDesktopShell) {
    `MainAvEngineKitProxy` 手工路由）。后续可以统一，去掉这个特例。
 5. **Windows/Linux 新插件**：后续若子窗口引入新的原生插件（如截图、通知），先确认
    对应平台 `generated_plugin_registrant.cc` 中存在该插件，再同步更新子窗口注册代码。
+6. **IM 信息更新事件回流子窗口（待做，当前最大的功能缺口）**：目前**没有任何** IM
+   信息更新事件被转发给子窗口（只有通话窗收 `voip.*` 域事件）。而 imclient 的约定是
+   `getUserInfo`/`getGroupInfo` 先返回本地库数据、再异步向服务器刷新，更新经
+   `IMEventBus` 通知（见 `CLAUDE.md` 的 data-fetch convention）。子窗口拿到的是首次
+   的占位/旧值，之后**永远收不到刷新**——`MomentUserCache`（`moment/lib/src/
+   moment_user_cache.dart`）、通话窗 `voip_call_screen` 的 `_targetUserInfo` 都受影响。
+   建议做法：`MainImclientProxy` 订阅 `UserInfoUpdatedEvent`，向**声明订阅**的子窗口
+   广播 `im.onUserInfoUpdated`（按 `getAllSubWindowIds()` 剔除已销毁窗口，参见
+   `SubWindowManagerBase.ensureWindowAlive` 里 Linux 静默销毁的坑）；子窗口侧解码后
+   fire 到本 isolate 的 `IMEventBus`，需要在 `ImclientPlatform` 增一个
+   `dispatchUserInfoUpdated`（与既有 `dispatchStringResult` 等同构，因为
+   `_convertProtoUserInfo` 是私有的）。**注意这比扩大方法覆盖率重要得多**：把 188 个
+   方法全代理完但不回流事件，子窗口 UI 该显示旧值还是显示旧值。
 
 ---
 
@@ -805,14 +895,16 @@ if (isDesktopShell) {
 
 | 文件 | 作用 |
 |------|------|
-| `window_event_channel.dart` | 跨窗口事件通道封装（isolate 单例、重复注册告警、`<domain>[.imclient].<method>` 约定） |
-| `window_kind.dart` | `kWindowKindKey` + 四个窗口种类常量 |
+| `window_event_channel.dart` | 跨窗口事件通道封装（isolate 单例、重复注册告警、`<domain>[.imclient].<method>` 约定、`kSharedImEventPrefix`） |
+| `window_kind.dart` | `kWindowKindKey` + 窗口种类常量 |
 | `sub_window_binding.dart` | 子窗口专用 Binding（macOS 生命周期降级，帧调度常开） |
 | `sub_window_app_base.dart` | 子窗口 App 模板 mixin（init/标题/主题/关窗样板 + 模板方法钩子） |
 | `sub_window_manager_base.dart` | 主窗口侧 Manager 基类（创建序列、ready/closed、三种 reusePolicy） |
-| `proxy_imclient_channel.dart` | 子窗口 IM 代理通道基类（声明式方法表） |
-| `proxy_completer.dart` | 主窗口侧 callback API → Future(`{errorCode, ...}`) 包装 |
-| `ipc_codec.dart` | 跨窗口线格式唯一定义处(Message/Payload/Conversation ⇄ Map) |
+| `proxy_imclient_channel.dart` | 子窗口 IM 代理通道基类（声明式方法表 + `forwardShared`） |
+| `main_imclient_proxy.dart` | **主窗口侧唯一 IM 代理**（`im.*`，30 个方法，所有子窗口共用；含 14 个方法黑名单） |
+| `shared_imclient_channel.dart` | **子窗口侧唯一 IM 代理通道**（所有子窗口共用，由 SubWindowAppBase 默认装配） |
+| `proxy_completer.dart` | 主窗口侧 callback API → Future(`{errorCode, ...}`) 包装（requestId 翻译边界） |
+| `ipc_codec.dart` | 跨窗口线格式唯一定义处(Message/Payload/Conversation/UserInfo/GroupMember/FileRecord/UnreadCount ⇄ Map) |
 
 ### 通话窗口（`chat/lib/pc/call_window/`）
 
@@ -820,12 +912,10 @@ if (isDesktopShell) {
 |------|------|
 | `call_window_app.dart` | 子窗口根 Widget（基于 SubWindowAppBase），初始化 avenginekit，把主窗口事件 fire 到子窗口 IMEventBus |
 | `call_window_manager.dart` | 创建/管理通话窗（基于 SubWindowManagerBase，recreate 策略，类型尺寸表） |
-| `call_window_events.dart` | 通话窗事件名常量（`CallWindowEvents` voip.* / `MainWindowEvents` imclient.*） |
+| `call_window_events.dart` | 通话窗事件名常量（`CallWindowEvents` voip.* / `MainWindowEvents` voip.imclient.*） |
 | `main_avengine_kit_proxy.dart` | 主窗口代理：监听 IM、转发事件、代发消息、回传发送结果、路由 ready/closed |
-| `call_window_imclient_channel.dart` | 子窗口 IM 代理（基于 ProxyImclientChannel，14 个方法） |
 | `voip_message_codec.dart` | 子窗口按 contentType 实例化 avenginekit 消息内容类 |
 | `raw_voip_message_content.dart` | 主窗口占位 VOIP 消息内容类 |
-| `model_codec.dart` | 用户/群成员信息编码(proto 形态,子窗口用 SDK 转换器解码) |
 
 ### 媒体预览窗口（`chat/lib/pc/media_preview_window/`）
 
@@ -841,9 +931,8 @@ if (isDesktopShell) {
 |------|------|
 | `moment_window_app.dart` | 朋友圈子窗口 App（基于 SubWindowAppBase） |
 | `moment_window_manager.dart` | 主窗口侧 Manager（raiseOnly 复用，notifyFeedChanged） |
-| `moment_window_imclient_channel.dart` | 子窗口 IM 代理（前缀 `moment.imclient`，9 个方法） |
-| `main_moment_proxy.dart` | 主窗口代理（代执行 IM 调用、转发 feed 刷新，用 ProxyCompleter） |
-| `moment_ipc.dart` | `MomentWindowEvents` / `MomentMainEvents` 事件名 |
+| `main_moment_proxy.dart` | 主窗口侧朋友圈**窗口业务**（只广播 feed 刷新；IM 调用已归 MainImclientProxy） |
+| `moment_ipc.dart` | `MomentWindowEvents` 事件名（IM 代理事件已并入 `im.*`） |
 
 ### 会话搜索窗口（`chat/lib/pc/search_window/`）
 
@@ -851,15 +940,22 @@ if (isDesktopShell) {
 |------|------|
 | `search_window_app.dart` | 搜索子窗口 App（基于 SubWindowAppBase，标准标题栏） |
 | `search_window_manager.dart` | 主窗口侧 Manager（updateContent 复用，close） |
-| `search_window_imclient_channel.dart` | 子窗口 IM 代理（前缀 `search.imclient`，9 个方法） |
-| `main_search_proxy.dart` | 主窗口代理（代执行 IM 调用、定位消息跳回主窗口，用 ProxyCompleter） |
-| `search_window_ipc.dart` | `SearchWindowEvents` / `SearchMainEvents` 事件名 + 创建参数编解码 |
+| `main_search_proxy.dart` | 主窗口侧搜索**窗口业务**（只处理定位消息跳回主窗口；IM 调用已归 MainImclientProxy） |
+| `search_window_ipc.dart` | `SearchWindowEvents` 事件名 + 创建参数编解码（IM 代理事件已并入 `im.*`） |
+
+### WebView 窗口（`chat/lib/pc/wf_webview_window/`）
+
+| 文件 | 作用 |
+|------|------|
+| `wf_webview_window_app.dart` | WebView 子窗口 App（基于 SubWindowAppBase） |
+| `wf_webview_window_manager.dart` | 主窗口侧 Manager |
+| `wf_webview_window_ipc.dart` | `WFWebViewWindowEvents` 事件名 + 创建参数编解码 + `kWFWebViewWindowKind` |
 
 ### 其它
 
 | 文件 | 作用 |
 |------|------|
-| `chat/lib/main.dart` | 子窗口入口 `args[0] == 'multi_window'`，按 `kWindowKindKey` 分发四类 WindowApp；主窗口安装 `MainAvEngineKitProxy` / `MainMomentProxy` / `MainSearchProxy` |
+| `chat/lib/main.dart` | 子窗口入口 `args[0] == 'multi_window'`，按 `kWindowKindKey` 分发各类 WindowApp；主窗口安装 `MainImclientProxy`（须最先，注入 rawContentDecoder）/ `MainAvEngineKitProxy` / `MainMomentProxy` / `MainSearchProxy` |
 | `chat/lib/call/av_call_launcher.dart` | 发起音视频通话的唯一入口(桌面/移动分流 + 通话中判断) |
 | `chat/lib/widget/watermark_overlay.dart` | 全局安全水印（主窗口与四类子窗口统一覆盖，用户 ID + 分钟精度时间，`Config.ENABLE_WATER_MARKER` 开关） |
 | `chat/lib/pc/widgets/pc_window_caption.dart` | Windows 主窗口自绘标题栏（配合 `PCWindowManager.ensureInitialized()` 的 `setTitleBarStyle(hidden)`；子窗口不使用） |

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
-import 'package:imclient/imclient_method_channel.dart';
 import 'package:imclient/message/articles_message_content.dart';
 import 'package:imclient/message/call_start_message_content.dart';
 import 'package:imclient/message/card_message_content.dart';
@@ -30,13 +29,12 @@ import '../../search/conversation_search_panel.dart';
 import '../multi_window/ipc_codec.dart';
 import '../multi_window/sub_window_app_base.dart';
 import '../multi_window/window_event_channel.dart';
-import 'search_window_imclient_channel.dart';
 import 'search_window_ipc.dart';
 
 /// 会话内搜索窗口的入口 Widget（类似 PC 微信的"聊天记录"窗口）。
 ///
 /// 运行在独立的 Flutter Engine / Dart isolate 中，不连接 IM；
-/// IM 调用经 [SearchWindowImclientChannel] 转发到主窗口执行，
+/// IM 调用经 [SharedImclientChannel] 转发到主窗口执行，
 /// 与朋友圈窗口（MomentWindowApp）同构。
 /// 窗口初始化/标题/主题/关窗通知等样板见 [SubWindowAppBase]。
 class SearchWindowApp extends StatefulWidget {
@@ -79,9 +77,6 @@ class _SearchWindowAppState extends State<SearchWindowApp>
   /// 恢复标准标题栏,显示 `"会话名"聊天记录` 标题（对齐 PC 微信）。
   @override
   bool get useNormalTitleBar => true;
-
-  @override
-  ImclientChannel get imclientChannel => SearchWindowImclientChannel();
 
   @override
   Map<String, Future<dynamic> Function(dynamic)> get eventHandlers => {

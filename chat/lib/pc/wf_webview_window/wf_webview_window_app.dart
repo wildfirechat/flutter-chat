@@ -6,8 +6,6 @@ import 'package:window_manager/window_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../../workspace/wf_webview_screen.dart';
 import '../multi_window/sub_window_app_base.dart';
-import 'package:imclient/imclient_method_channel.dart';
-import 'wf_webview_window_imclient_channel.dart';
 import 'wf_webview_window_ipc.dart';
 
 class WFWebViewWindowApp extends StatefulWidget {
@@ -43,9 +41,6 @@ class _WFWebViewWindowAppState extends State<WFWebViewWindowApp>
 
   @override
   bool get useNormalTitleBar => true;
-
-  @override
-  ImclientChannel get imclientChannel => WFWebViewWindowImclientChannel();
 
   @override
   Map<String, Future<dynamic> Function(dynamic)> get eventHandlers => {

@@ -5,6 +5,14 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+/// 各子窗口共用的 IM 查询代理事件前缀,完整事件名为 `im.<method>`。
+///
+/// 这些调用无副作用、与窗口无关(getUserInfo / getGroupMembers / clientId 等),
+/// 主窗口侧由 MainImclientProxy 一处实现,子窗口侧用
+/// `ProxyImclientChannel.forwardShared` 声明,避免每个窗口各写一份 handler
+/// 和一份编码器(重复实现曾导致 UserInfo/GroupMember 线格式漏字段)。
+const String kSharedImEventPrefix = 'im';
+
 /// 主窗口与各子窗口(通话、媒体预览等)之间的通信通道封装。
 ///
 /// 基于 [DesktopMultiWindow.invokeMethod] 实现：
@@ -21,6 +29,9 @@ import 'package:flutter/services.dart';
 /// method 命名约定:`<domain>[.imclient].<method>`。domain 为窗口/功能域
 /// (voip / mediaPreview / moment / search 等);转发 Imclient 调用的代理事件
 /// 在 domain 后再加 `.imclient` 一段,如 `moment.imclient.getUserInfo`。
+///
+/// 例外是 [kSharedImEventPrefix]:各窗口共用的无副作用 IM 查询不按窗口分域,
+/// 统一走 `im.<method>`,由主窗口的 MainImclientProxy 一处实现。
 class WindowEventChannel {
   static const String _tag = 'WindowEventChannel';
 

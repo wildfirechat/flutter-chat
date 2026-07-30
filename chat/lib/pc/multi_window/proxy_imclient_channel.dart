@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/services.dart';
 import 'package:imclient/imclient_method_channel.dart';
 
@@ -6,10 +8,13 @@ import 'window_event_channel.dart';
 /// PC 子窗口侧通用的 IM 代理通道:替换 [ImclientPlatform] 的
 /// [ImclientChannel],把 IM 调用经 [WindowEventChannel] 转发到主窗口执行。
 ///
-/// 子窗口(call/moment/search)不连接 IM,各自保留一个本类的子类,
-/// 在构造时用 [forwardSimple]/[forward]/[forwardWithRequestId] 声明方法表:
+/// 子窗口(call/moment/search/wfWebView)不连接 IM,各自保留一个本类的子类,
+/// 在构造时用 [forwardSimple]/[forwardShared]/[forward]/[forwardWithRequestId]
+/// 声明方法表:
 ///
 /// - [forwardSimple]:按原 args 转发到 `$eventPrefix.$method`,回传主窗口结果;
+/// - [forwardShared]:转发到各窗口共用的 `im.$method`(主窗口侧由
+///   MainImclientProxy 一处实现),用于无副作用的读接口;
 /// - [forward]:先用 reshapeArgs 整形参数再转发,回传主窗口结果;
 /// - [forwardWithRequestId]:回调式接口。主窗口同步返回
 ///   `{errorCode, result}`(或 files 等其它字段)后,交给 dispatch 闭包走
@@ -45,6 +50,18 @@ class ProxyImclientChannel implements ImclientChannel {
 
   /// 按原 args 转发 `method` 到 `$eventPrefix.$method`,回传主窗口结果。
   void forwardSimple(String method) => forward(method);
+
+  /// 转发 `method` 到**共享** IM 代理域 `im.$method`(而非本窗口的
+  /// `$eventPrefix.$method`),由主窗口的 MainImclientProxy 一处实现。
+  ///
+  /// 适用于各窗口共用的无副作用读接口(getUserInfo / getUserInfos /
+  /// getGroupMembers / clientId / serverDeltaTime 等)。args 按 imclient 侧的
+  /// 原始形状透传,不做整形——共享 handler 按参数超集读取。
+  ///
+  /// 仍需逐个显式声明:方法表是本窗口的权限白名单,未声明的方法会抛
+  /// [UnsupportedError] 并带上窗口名,便于定位越权来源。
+  void forwardShared(String method) =>
+      forward(method, event: '$kSharedImEventPrefix.$method');
 
   /// 转发 `method`:先经 [reshapeArgs] 整形参数(缺省按原 args),
   /// 再发给主窗口并回传其结果。[event] 可覆盖事件名(缺省
@@ -129,10 +146,46 @@ class ProxyImclientChannel implements ImclientChannel {
     ImclientPlatform.dispatchOperationResult(requestId, errorCode, files: files);
   }
 
-  /// 无参成功回调类接口(deleteFileRecord):
+  /// 无参成功回调类接口(deleteFileRecord/configApplication):
   /// 主窗口返回 `{errorCode}`,按 onOperationVoidSuccess 的语义触发回调。
   static void dispatchVoidResult(int requestId, dynamic result) {
     final errorCode = (result is Map) ? (result['errorCode'] as int? ?? -1) : -1;
     ImclientPlatform.dispatchOperationResult(requestId, errorCode);
+  }
+
+  /// 会议请求(sendConferenceRequest):主窗口返回 `{errorCode, result}`,
+  /// result 可能不是 String(如 Map),按既有语义统一成字符串后分发。
+  static void dispatchConferenceResult(int requestId, dynamic result) {
+    final errorCode = (result is Map) ? (result['errorCode'] as int? ?? 0) : 0;
+    final raw = (result is Map) ? result['result'] : null;
+    final String payload;
+    if (raw == null) {
+      payload = '';
+    } else if (raw is String) {
+      payload = raw;
+    } else {
+      payload = jsonEncode(raw);
+    }
+    ImclientPlatform.dispatchConferenceRequestResult(
+        requestId, errorCode, payload);
+  }
+
+  /// sendMessage 的异步结果:主窗口在服务器 ack/失败后经
+  /// `im.onSendMessageResult` 回传 `{requestId, errorCode, messageUid,
+  /// timestamp}`,这里按 onSendMessageSuccess/Failure 的既有语义触发回调、
+  /// 更新发送中消息并清理 requestId 关联状态,与移动端一致。
+  ///
+  /// 注意这里的 requestId 是**本窗口**分配的:主窗口侧的成功/失败回调是闭包,
+  /// 词法捕获了它,所以不存在跨窗口 requestId 撞号的问题。
+  static void dispatchSendMessageResult(dynamic args) {
+    if (args is! Map) return;
+    final requestId = args['requestId'] as int?;
+    if (requestId == null) return;
+    ImclientPlatform.dispatchSendMessageResult(
+      requestId,
+      args['errorCode'] as int? ?? 0,
+      messageUid: args['messageUid'] as int? ?? 0,
+      timestamp: args['timestamp'] as int? ?? 0,
+    );
   }
 }

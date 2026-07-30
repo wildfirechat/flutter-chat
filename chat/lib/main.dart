@@ -76,10 +76,11 @@ import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
 import 'package:chat/pc/media_preview_window/media_preview_window_app.dart';
 import 'package:chat/pc/moment_window/main_moment_proxy.dart';
 import 'package:chat/pc/moment_window/moment_window_app.dart';
+import 'package:chat/pc/call_window/raw_voip_message_content.dart';
+import 'package:chat/pc/multi_window/main_imclient_proxy.dart';
 import 'package:chat/pc/multi_window/sub_window_binding.dart';
 import 'package:chat/pc/search_window/main_search_proxy.dart';
 import 'package:chat/pc/search_window/search_window_app.dart';
-import 'package:chat/pc/wf_webview_window/main_wf_webview_proxy.dart';
 import 'package:chat/pc/wf_webview_window/wf_webview_window_app.dart';
 import 'package:chat/pc/wf_webview_window/wf_webview_window_ipc.dart';
 
@@ -429,6 +430,11 @@ class _MyAppState extends State<MyApp> {
 
     // IM 初始化完成后立即安装音视频代理（桌面端通过子窗口承载，移动端直接初始化 avenginekit）。
     if (isDesktopShell) {
+      // 所有子窗口共用的 IM 代理（im.* 共享域），须先于各窗口自己的代理安装。
+      // rawContentDecoder 供 sendMessage/updateMessage 重建 MessageContent：
+      // 主窗口不理解具体消息业务，只按 payload 原样透传（当前只有通话在用）。
+      MainImclientProxy.instance
+          .install(rawContentDecoder: RawVoipMessageContent.fromMap);
       MainAvEngineKitProxy.instance.install();
     } else {
       _avEngineCallback = MainAVEngineCallback(navKey, _shell);
@@ -471,13 +477,11 @@ class _MyAppState extends State<MyApp> {
       }
     });
     if (isDesktopShell) {
+      // 朋友圈/搜索窗口的**非 IM** 窗口业务代理（feed 刷新广播、定位消息跳回
+      // 主窗口）。IM 调用本身已全部由 MainImclientProxy 统一代执行，
+      // WebView 窗口因此不再需要自己的代理。
       MainMomentProxy.instance.install();
-      // 会话内搜索子窗口代理（与朋友圈窗口同构：子窗口不连接 IM，
-      // 经主窗口代执行 IM 调用；定位消息由主窗口打开会话完成）。
       MainSearchProxy.instance.install();
-      // WebView 子窗口代理（子窗口不连接 IM，页面 JS API 依赖的 IM 调用
-      // 通过主窗口代执行）。
-      MainWFWebViewProxy.instance.install();
     }
   }
 

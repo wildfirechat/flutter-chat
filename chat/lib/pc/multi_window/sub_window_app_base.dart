@@ -15,6 +15,7 @@ import '../../viewmodel/font_size_view_model.dart';
 import '../../viewmodel/locale_view_model.dart';
 import '../../viewmodel/theme_view_model.dart';
 import '../../widget/watermark_overlay.dart';
+import 'shared_imclient_channel.dart';
 import 'window_event_channel.dart';
 
 /// PC 子窗口 App 的公共基类(call/media_preview/moment/search 四个窗口
@@ -61,8 +62,16 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
   /// ready 之后的主内容。
   Widget buildHome(BuildContext context);
 
-  /// 子窗口的 IM 代理通道;为 null 表示不替换(默认)。
-  ImclientChannel? get imclientChannel => null;
+  /// 子窗口的 IM 代理通道。
+  ///
+  /// 默认所有子窗口都装同一套 [SharedImclientChannel](主窗口侧对应
+  /// MainImclientProxy),能力完全一致,新增窗口零成本。子类不需要覆写——
+  /// 此前每个窗口一份 channel 子类,同一个方法有四份实现,已造成三次静默故障
+  /// (见 [SharedImclientChannel] 类注释)。
+  late final SharedImclientChannel imclientChannel = SharedImclientChannel(
+    windowId: windowId,
+    windowName: windowKind,
+  );
 
   /// 注册消息内容类型(仅 Dart 层解码用);默认无。
   void registerMessageContents() {}
@@ -205,17 +214,16 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
         ImclientPlatform.instance.userId = selfUserId;
       }
 
-      // 1. 替换 IM 通道为代理通道(若子窗口提供)。
-      final channel = imclientChannel;
-      if (channel != null) {
-        ImclientPlatform.instance.channel = channel;
-      }
+      // 1. 替换 IM 通道为共享代理通道(所有子窗口一致)。
+      ImclientPlatform.instance.channel = imclientChannel;
 
       // 2. 注册消息内容类型(仅 Dart 层解码用)。
       registerMessageContents();
 
-      // 3. 监听主窗口转发来的事件。
+      // 3. 监听主窗口转发来的事件:共享通道自己的 handler(如
+      //    sendMessage 结果回传)先注册,再叠加子类的窗口专有 handler。
       final eventChannel = WindowEventChannel();
+      imclientChannel.eventHandlers.forEach(eventChannel.register);
       eventHandlers.forEach(eventChannel.register);
       eventChannel.listen();
 

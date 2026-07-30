@@ -22,51 +22,14 @@ class CallWindowEvents {
   static const String joinConference = 'voip.joinConference';
 }
 
-/// Call 窗口 → 主窗口 的事件名。
+/// Call 窗口 → 主窗口 的事件名（仅窗口生命周期）。
+///
+/// 通话窗口的 IM 调用已全部并入共享域 `im.*`（见 multi_window/
+/// shared_imclient_channel.dart + main_imclient_proxy.dart），所有子窗口共用
+/// 一套 proxy + 一套 channel，这里只剩通话窗特有的窗口状态通知。
 class MainWindowEvents {
-  /// Imclient.sendMessage / sendConversationMessage。
-  static const String sendMessage = 'imclient.sendMessage';
-
-  /// Imclient.sendConferenceRequest。
-  static const String sendConferenceRequest = 'imclient.sendConferenceRequest';
-
-  /// Imclient.updateMessageContent。
-  static const String updateMessageContent = 'imclient.updateMessageContent';
-
-  /// Imclient.getMessageByUid。
-  static const String getMessageByUid = 'imclient.getMessageByUid';
-
-  /// Imclient.getUserInfo。
-  static const String getUserInfo = 'imclient.getUserInfo';
-
-  /// Imclient.getUserInfos。
-  static const String getUserInfos = 'imclient.getUserInfos';
-
-  /// Imclient.getGroupMembers。
-  static const String getGroupMembers = 'imclient.getGroupMembers';
-
-  /// Imclient.joinChatroom。
-  static const String joinChatroom = 'imclient.joinChatroom';
-
-  /// Imclient.quitChatroom。
-  static const String quitChatroom = 'imclient.quitChatroom';
-
-  /// Imclient.currentUserId。
-  static const String currentUserId = 'imclient.currentUserId';
-
-  /// Imclient.clientId。
-  static const String clientId = 'imclient.clientId';
-
-  /// Imclient.connectionStatus。
-  static const String connectionStatus = 'imclient.connectionStatus';
-
-  /// Imclient.isLogined。
-  static const String isLogined = 'imclient.isLogined';
-
-  /// Imclient.serverDeltaTime。
-  static const String serverDeltaTime = 'imclient.serverDeltaTime';
-
-  /// 通话窗口状态变化（可选）。
+  /// 通话窗口状态变化（`{status:'ready'/'ended', windowId}`）。
+  /// 通话窗的「就绪」通知走它而不是公共层的 `<kind>.ready`。
   static const String voipStatusChanged = 'voip.statusChanged';
 
   /// 通话窗口关闭。

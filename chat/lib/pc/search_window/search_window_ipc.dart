@@ -21,25 +21,9 @@ class SearchWindowEvents {
   static const String windowClosed = 'search.windowClosed';
 }
 
-/// 搜索窗口 → 主窗口 的 IM 代理事件名。
-///
-/// 搜索窗口不连接 IM，所有 Imclient 调用经这些事件转发给主窗口执行，
-/// 与朋友圈窗口的 moment.imclient.* 代理同构（见 MainMomentProxy）。
-class SearchMainEvents {
-  static const String getMessages = 'search.imclient.getMessages';
-  static const String searchMessages = 'search.imclient.searchMessages';
-  static const String getMessagesByTimestamp =
-      'search.imclient.getMessagesByTimestamp';
-  static const String getMessageCountByDay =
-      'search.imclient.getMessageCountByDay';
-  static const String getUserInfo = 'search.imclient.getUserInfo';
-  static const String getConversationFiles =
-      'search.imclient.getConversationFiles';
-  static const String searchFiles = 'search.imclient.searchFiles';
-  static const String getAuthorizedMediaUrl =
-      'search.imclient.getAuthorizedMediaUrl';
-  static const String deleteFileRecord = 'search.imclient.deleteFileRecord';
-}
+// 搜索窗口的 IM 调用事件名已全部并入共享域 `im.*`
+// (见 multi_window/shared_imclient_channel.dart + main_imclient_proxy.dart),
+// 原 SearchMainEvents 已删除。
 
 /// 搜索窗口创建参数 / updateConversation 事件的 payload 编解码。
 class SearchWindowPayload {

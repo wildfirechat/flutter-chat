@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:imclient/imclient_method_channel.dart';
 import 'package:moment/client/momentclient.dart';
 import 'package:moment/moment.dart';
 import 'package:window_manager/window_manager.dart';
@@ -9,12 +8,11 @@ import 'package:window_manager/window_manager.dart';
 import '../../l10n/app_localizations.dart';
 import '../multi_window/sub_window_app_base.dart';
 import 'moment_ipc.dart';
-import 'moment_window_imclient_channel.dart';
 
 /// 朋友圈窗口的入口 Widget。
 ///
 /// 运行在独立的 Flutter Engine / Dart isolate 中，不连接 IM；
-/// IM 调用经 [MomentWindowImclientChannel] 转发到主窗口执行，
+/// IM 调用经 [SharedImclientChannel] 转发到主窗口执行，
 /// 与 Call 窗口（CallWindowApp）同构。
 /// 窗口初始化/标题/主题/关窗通知等样板见 [SubWindowAppBase]。
 class MomentWindowApp extends StatefulWidget {
@@ -50,9 +48,6 @@ class _MomentWindowAppState extends State<MomentWindowApp>
 
   @override
   Size get minWindowSize => const Size(480, 600);
-
-  @override
-  ImclientChannel get imclientChannel => MomentWindowImclientChannel();
 
   @override
   Map<String, Future<dynamic> Function(dynamic)> get eventHandlers => {
