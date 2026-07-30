@@ -1,1 +1,1 @@
-dart format moment chat imclient/lib/message imclient/lib/model
+dart format ../moment ../chat ../imclient/lib/message ../imclient/lib/model
