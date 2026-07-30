@@ -48,3 +48,4 @@ app.*.map.json
 
 build-profile.json5.local
 chat/android/build
+/out

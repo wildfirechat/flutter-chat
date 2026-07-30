@@ -221,7 +221,8 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         this.channel = new MethodChannel(binding.getBinaryMessenger(), CHANNEL_NAME)
         this.channel?.setMethodCallHandler(this)
         this.flutterPluginBinding = binding
-        initProto(binding.getApplicationContext().filesDir)
+        initProto(binding.getApplicationContext().filesDir,
+            binding.getApplicationContext().applicationInfo.name)
         setWfcEventListener((value: object) => {
             let args = (value as Record<string, Object>)['args'] as Object[]
             let event = args[0] as string

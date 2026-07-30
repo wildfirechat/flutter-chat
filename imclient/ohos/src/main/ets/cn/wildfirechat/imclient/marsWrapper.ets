@@ -1,12 +1,34 @@
 import clientModule from '@wfc/marswrapper';
+import { deviceInfo } from '@kit.BasicServicesKit';
 type StringCallback = (value: string) => void;
 type VoidCallback = () => void;
 type SuccessCallback = VoidCallback;
 type FailCallback = (error: number) => void;
 let wfcEventListener: null | ((value: object) => void) = null;
 
-function initProto(dbPath: string): void {
+/// 上报服务器的客户端平台号,对齐 WFCCPlatformType 与 Dart 侧
+/// imclient_platform.dart 的 clientPlatformCodeFor:Harmony=10
+/// HarmonyPad=11 HarmonyPC=12。deviceType 无法识别时按手机兜底。
+function harmonyPlatformCode(): number {
+    switch (deviceInfo.deviceType) {
+        case 'tablet':
+            return 11;
+        case '2in1':
+        case 'pc':
+            return 12;
+        default:
+            return 10;
+    }
+}
+
+/// 必须在 connect 之前把平台号告知 native,否则 im-server 侧
+/// session.platform 为默认值,会被 PushServer 判为 "Not mobile platform"
+/// 而完全不下发离线推送(同时也会影响多端在线互踢、PC 在线手机静音)。
+function initProto(dbPath: string, packageName: string): void {
     clientModule.setDBPath(dbPath);
+    clientModule.setPackageName(packageName);
+    clientModule.setDeviceInfo(harmonyPlatformCode(), deviceInfo.productModel,
+        deviceInfo.displayVersion, deviceInfo.marketName);
     clientModule.setConnectionStatusListener(genWfcEventListener('onConnectionStatusChange'));
     clientModule.setConnectToServerListener(genWfcEventListener('onConnectToServer'));
     clientModule.setReceiveMessageListener(genWfcEventListener('onReceiveMessage'),
