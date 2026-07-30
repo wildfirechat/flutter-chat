@@ -966,6 +966,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reportTitle => '举报';
 
   @override
+  String get momentPermission => '朋友圈权限';
+
+  @override
+  String get momentPermissionDesc => '设置动态的默认可见范围';
+
+  @override
   String get reportDesc => '举报违规内容';
 
   @override
@@ -2974,6 +2980,69 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get blacklistRemove => '移除';
+
+  @override
+  String get privacy => '隐私';
+
+  @override
+  String get findMeBy => '找到我的方式';
+
+  @override
+  String get findMeByDesc => '设置他人可通过哪些方式搜索到你';
+
+  @override
+  String get msgReceipt => '消息回执';
+
+  @override
+  String get msgReceiptDesc => '开启后，对方可以看到消息的阅读状态';
+
+  @override
+  String get onlineStatus => '在线状态';
+
+  @override
+  String get onlineStatusDesc => '向联系人展示我的在线状态';
+
+  @override
+  String get friendVerify => '加我为好友时需要验证';
+
+  @override
+  String get friendVerifyDesc => '开启后，他人加你为好友需要你的同意';
+
+  @override
+  String get blockThem => '不让他(她)看';
+
+  @override
+  String get hideThem => '不看他(她)';
+
+  @override
+  String get strangerTen => '允许陌生人查看10条朋友圈';
+
+  @override
+  String get visibleRange => '允许朋友查看朋友圈的范围';
+
+  @override
+  String get momentsPrivacyDesc => '设置朋友圈的隐私与可见范围';
+
+  @override
+  String get account => '账号';
+
+  @override
+  String get phoneNumber => '手机号';
+
+  @override
+  String get rangeNoLimit => '公开';
+
+  @override
+  String get range3Days => '最近三天';
+
+  @override
+  String get range1Month => '最近一个月';
+
+  @override
+  String get range6Months => '最近半年';
+
+  @override
+  String get add => '添加';
 
   @override
   String get searchOrgMembers => '搜索成员';

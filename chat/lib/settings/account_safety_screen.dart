@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/settings/blacklist_screen.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/option_item.dart';
 
 /// 账号与安全页面
 ///
-/// 提供修改密码、黑名单管理等账号安全相关功能入口。
+/// 提供修改密码等账号安全相关功能入口。
+/// 隐私相关设置已抽离为独立页面(privacy_settings_screen.dart)。
 class AccountSafetyScreen extends StatelessWidget {
   const AccountSafetyScreen({super.key});
 
@@ -22,26 +23,22 @@ class AccountSafetyScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              OptionItem(
-                l10n.changePassword,
-                leftImage: const Icon(Icons.lock_outline, color: Color(0xFF576b95), size: 20),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
-                  );
-                },
-              ),
-              const Divider(indent: 56),
-              OptionItem(
-                l10n.blacklist,
-                leftImage: const Icon(Icons.block, color: Colors.red, size: 20),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const BlacklistScreen()),
-                  );
-                },
+              const SizedBox(height: 10),
+              Container(
+                color: context.colors.surface,
+                child: OptionItem(
+                  l10n.changePassword,
+                  leftImage: const Icon(Icons.lock_outline,
+                      color: Color(0xFF576b95), size: 20),
+                  showBottomDivider: false,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ChangePasswordScreen()),
+                    );
+                  },
+                ),
               ),
             ],
           ),

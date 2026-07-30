@@ -98,10 +98,8 @@ class Config {
   static const String defaultGroupPortrait = 'assets/images/group_avatar_default.png';
   static const String defaultChannelPortrait = 'assets/images/channel_avatar_default.png';
 
-  // 用户协议地址
+  //用户协议和隐私政策，上线前请替换成您自己的内容
   static const String USER_AGREEMENT_URL = "https://example.com/user_agreement.html";
-
-  //  隐私协议地址
   static const String PRIVACY_AGREEMENT_URL = "https://example.com/user_privacy.html";
 
   /// 根据主备地址选择服务地址。

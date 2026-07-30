@@ -13,7 +13,9 @@ import 'package:chat/pc/widgets/pc_pane_content.dart';
 import 'package:chat/settings/account_safety_screen.dart';
 import 'package:chat/settings/blacklist_screen.dart';
 import 'package:chat/settings/destroy_account_screen.dart';
+import 'package:chat/settings/moment_privacy_settings_screen.dart';
 import 'package:chat/settings/notification_settings.dart';
+import 'package:chat/settings/privacy_find_me_screen.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/backup/pc_backup_restore_page.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -25,6 +27,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/app_navigator.dart';
+import 'package:chat/utilities.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -51,6 +54,7 @@ class _PcSettingsMenuState extends State<PcSettingsMenu> {
       _MenuData(l10n.messageNotification, Icons.notifications_none_rounded, const PcNotificationSettingsDetail()),
       _MenuData(l10n.appearanceAndTheme, Icons.palette_outlined, const PcAppearanceSettingsDetail()),
       _MenuData(l10n.accountSafety, Icons.security_rounded, const PcSecuritySettingsDetail()),
+      _MenuData(l10n.privacy, Icons.privacy_tip_outlined, const PcPrivacySettingsDetail()),
       _MenuData(l10n.about, Icons.info_outline_rounded, const PcAboutSettingsDetail()),
     ];
 
@@ -255,7 +259,7 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                   title: l10n.userAgreement,
                   subtitle: l10n.userAgreementDesc,
                   onTap: () {
-                    Fluttertoast.showToast(msg: l10n.methodNotImpl);
+                    Utilities.openLink(context, Config.USER_AGREEMENT_URL);
                   },
                 ),
                 const Divider(),
@@ -263,7 +267,7 @@ class _PcGeneralSettingsDetailState extends State<PcGeneralSettingsDetail> {
                   title: l10n.privacyPolicy,
                   subtitle: l10n.privacyPolicyDesc,
                   onTap: () {
-                    Fluttertoast.showToast(msg: l10n.methodNotImpl);
+                    Utilities.openLink(context, Config.PRIVACY_AGREEMENT_URL);
                   },
                 ),
               ]),
@@ -723,17 +727,6 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
                     ),
                     const Divider(),
                     _SettingsClickableRow(
-                      title: l10n.blacklist,
-                      subtitle: l10n.blacklistDesc,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const BlacklistScreen()),
-                        );
-                      },
-                    ),
-                    const Divider(),
-                    _SettingsClickableRow(
                       title: l10n.reportTitle,
                       subtitle: l10n.reportDesc,
                       onTap: _showReportDialog,
@@ -759,6 +752,170 @@ class _PcSecuritySettingsDetailState extends State<PcSecuritySettingsDetail> {
           ),
         );
       },
+    );
+  }
+}
+
+// --- 隐私 (Privacy) ---
+/// 隐私设置详情页:找到我的方式、黑名单、消息回执、在线状态、
+/// 好友验证、朋友圈。从账户与安全抽离为独立一级设置项。
+class PcPrivacySettingsDetail extends StatefulWidget {
+  const PcPrivacySettingsDetail({super.key});
+
+  @override
+  State<PcPrivacySettingsDetail> createState() => _PcPrivacySettingsDetailState();
+}
+
+class _PcPrivacySettingsDetailState extends State<PcPrivacySettingsDetail> {
+  /// 在线状态开关的本地存储 key(语义:向联系人展示我的在线状态)
+  static const String _onlineStateKey = 'privacy_show_online_state';
+
+  /// 服务端是否支持消息回执(不支持则不展示该条目)
+  bool _receiptEnabled = false;
+  bool _receiptOn = false;
+
+  /// 服务端是否开启在线状态能力(未开启则不展示该条目)
+  bool _onlineStateEnabled = false;
+  bool _showOnlineState = true;
+
+  /// 加我为好友时是否需要验证
+  bool _friendVerify = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrivacySettings();
+  }
+
+  /// 进入页面时异步加载服务端能力与各开关初值,加载完成前只展示其余条目。
+  Future<void> _loadPrivacySettings() async {
+    bool receiptEnabled = false;
+    bool receiptOn = false;
+    bool onlineStateEnabled = false;
+    bool friendVerify = true;
+    try {
+      receiptEnabled = await Imclient.isReceiptEnabled();
+      if (receiptEnabled) {
+        receiptOn = await Imclient.isUserEnableReceipt();
+      }
+      onlineStateEnabled = await Imclient.isEnableUserOnlineState();
+      friendVerify = await Imclient.isAddFriendNeedVerify();
+    } catch (e) {
+      debugPrint('Privacy settings load error: $e');
+    }
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _receiptEnabled = receiptEnabled;
+        _receiptOn = receiptOn;
+        _onlineStateEnabled = onlineStateEnabled;
+        _showOnlineState = prefs.getBool(_onlineStateKey) ?? true;
+        _friendVerify = friendVerify;
+      });
+    }
+  }
+
+  void _onReceiptChanged(bool value) {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _receiptOn = value);
+    Imclient.setUserEnableReceipt(value, () {}, (errorCode) {
+      if (mounted) {
+        setState(() => _receiptOn = !value);
+      }
+      Fluttertoast.showToast(msg: l10n.operateFail('$errorCode'));
+    });
+  }
+
+  Future<void> _onOnlineStateChanged(bool value) async {
+    setState(() => _showOnlineState = value);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_onlineStateKey, value);
+  }
+
+  void _onFriendVerifyChanged(bool value) {
+    final l10n = AppLocalizations.of(context)!;
+    setState(() => _friendVerify = value);
+    Imclient.setAddFriendNeedVerify(value, () {}, (errorCode) {
+      if (mounted) {
+        setState(() => _friendVerify = !value);
+      }
+      Fluttertoast.showToast(msg: l10n.operateFail('$errorCode'));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      backgroundColor: context.colors.chatBgDesktop,
+      appBar: PcPageHeader(title: l10n.privacy),
+      body: SingleChildScrollView(
+        padding: PcPaneContent.defaultPadding,
+        child: PcPaneContent(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _SettingsSectionTitle(l10n.privacy),
+              PcCard(children: [
+                _SettingsClickableRow(
+                  title: l10n.findMeBy,
+                  subtitle: l10n.findMeByDesc,
+                  // pushPage 压入子页面,返回时回到本隐私页;
+                  // openPage 会整栏替换,返回后只剩空占位页
+                  onTap: () => pushPage(context, const FindMeByScreen()),
+                ),
+                const Divider(),
+                _SettingsClickableRow(
+                  title: l10n.blacklist,
+                  subtitle: l10n.blacklistDesc,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BlacklistScreen()),
+                    );
+                  },
+                ),
+                // 消息回执:仅当服务端支持时展示
+                if (_receiptEnabled) ...[
+                  const Divider(),
+                  _SettingsSwitchRow(
+                    title: l10n.msgReceipt,
+                    subtitle: l10n.msgReceiptDesc,
+                    value: _receiptOn,
+                    onChanged: _onReceiptChanged,
+                  ),
+                ],
+                // 在线状态:仅当服务端开启在线状态能力时展示
+                if (_onlineStateEnabled) ...[
+                  const Divider(),
+                  _SettingsSwitchRow(
+                    title: l10n.onlineStatus,
+                    subtitle: l10n.onlineStatusDesc,
+                    value: _showOnlineState,
+                    onChanged: _onOnlineStateChanged,
+                  ),
+                ],
+                const Divider(),
+                _SettingsSwitchRow(
+                  title: l10n.friendVerify,
+                  subtitle: l10n.friendVerifyDesc,
+                  value: _friendVerify,
+                  onChanged: _onFriendVerifyChanged,
+                ),
+                // 朋友圈设置,受 Config.ENABLE_MOMENTS 开关控制
+                if (Config.ENABLE_MOMENTS) ...[
+                  const Divider(),
+                  _SettingsClickableRow(
+                    title: l10n.momentWindowTitle,
+                    subtitle: l10n.momentsPrivacyDesc,
+                    onTap: () => pushPage(context, const MomentPrivacySettingsScreen()),
+                  ),
+                ],
+              ]),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

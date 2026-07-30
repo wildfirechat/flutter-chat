@@ -1036,13 +1036,15 @@ class _PcSideBar extends StatelessWidget {
             onTabSelected: onTabSelected,
           ),
           const SizedBox(height: PcTheme.sidebarTabGap),
-          _SideBarIconButton(
-            icon: Icons.dynamic_feed_rounded,
-            tooltip: l10n.momentWindowTitle,
-            onTap: () {
-              MomentWindowManager.instance.show();
-            },
-          ),
+          // 朋友圈入口受 Config.ENABLE_MOMENTS 开关控制
+          if (Config.ENABLE_MOMENTS)
+            _SideBarIconButton(
+              icon: Icons.dynamic_feed_rounded,
+              tooltip: l10n.momentWindowTitle,
+              onTap: () {
+                MomentWindowManager.instance.show();
+              },
+            ),
           const Spacer(),
           _SideBarTab(
             tab: PCShellViewModel.tabMe,

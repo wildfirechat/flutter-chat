@@ -24,3 +24,4 @@ export 'src/feed_detail_page.dart';
 export 'src/feed_messages_page.dart';
 export 'src/publish_feed_page.dart';
 export 'src/visible_scope_page.dart';
+export 'src/moment_permission.dart';

@@ -1856,6 +1856,18 @@ abstract class AppLocalizations {
   /// **'举报'**
   String get reportTitle;
 
+  /// No description provided for @momentPermission.
+  ///
+  /// In zh, this message translates to:
+  /// **'朋友圈权限'**
+  String get momentPermission;
+
+  /// No description provided for @momentPermissionDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置动态的默认可见范围'**
+  String get momentPermissionDesc;
+
   /// No description provided for @reportDesc.
   ///
   /// In zh, this message translates to:
@@ -5611,6 +5623,132 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'移除'**
   String get blacklistRemove;
+
+  /// No description provided for @privacy.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐私'**
+  String get privacy;
+
+  /// No description provided for @findMeBy.
+  ///
+  /// In zh, this message translates to:
+  /// **'找到我的方式'**
+  String get findMeBy;
+
+  /// No description provided for @findMeByDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置他人可通过哪些方式搜索到你'**
+  String get findMeByDesc;
+
+  /// No description provided for @msgReceipt.
+  ///
+  /// In zh, this message translates to:
+  /// **'消息回执'**
+  String get msgReceipt;
+
+  /// No description provided for @msgReceiptDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后，对方可以看到消息的阅读状态'**
+  String get msgReceiptDesc;
+
+  /// No description provided for @onlineStatus.
+  ///
+  /// In zh, this message translates to:
+  /// **'在线状态'**
+  String get onlineStatus;
+
+  /// No description provided for @onlineStatusDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'向联系人展示我的在线状态'**
+  String get onlineStatusDesc;
+
+  /// No description provided for @friendVerify.
+  ///
+  /// In zh, this message translates to:
+  /// **'加我为好友时需要验证'**
+  String get friendVerify;
+
+  /// No description provided for @friendVerifyDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'开启后，他人加你为好友需要你的同意'**
+  String get friendVerifyDesc;
+
+  /// No description provided for @blockThem.
+  ///
+  /// In zh, this message translates to:
+  /// **'不让他(她)看'**
+  String get blockThem;
+
+  /// No description provided for @hideThem.
+  ///
+  /// In zh, this message translates to:
+  /// **'不看他(她)'**
+  String get hideThem;
+
+  /// No description provided for @strangerTen.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许陌生人查看10条朋友圈'**
+  String get strangerTen;
+
+  /// No description provided for @visibleRange.
+  ///
+  /// In zh, this message translates to:
+  /// **'允许朋友查看朋友圈的范围'**
+  String get visibleRange;
+
+  /// No description provided for @momentsPrivacyDesc.
+  ///
+  /// In zh, this message translates to:
+  /// **'设置朋友圈的隐私与可见范围'**
+  String get momentsPrivacyDesc;
+
+  /// No description provided for @account.
+  ///
+  /// In zh, this message translates to:
+  /// **'账号'**
+  String get account;
+
+  /// No description provided for @phoneNumber.
+  ///
+  /// In zh, this message translates to:
+  /// **'手机号'**
+  String get phoneNumber;
+
+  /// No description provided for @rangeNoLimit.
+  ///
+  /// In zh, this message translates to:
+  /// **'公开'**
+  String get rangeNoLimit;
+
+  /// No description provided for @range3Days.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近三天'**
+  String get range3Days;
+
+  /// No description provided for @range1Month.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近一个月'**
+  String get range1Month;
+
+  /// No description provided for @range6Months.
+  ///
+  /// In zh, this message translates to:
+  /// **'最近半年'**
+  String get range6Months;
+
+  /// No description provided for @add.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加'**
+  String get add;
 
   /// No description provided for @searchOrgMembers.
   ///

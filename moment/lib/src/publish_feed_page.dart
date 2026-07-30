@@ -5,6 +5,7 @@ import 'package:moment/client/momentclient.dart';
 
 import 'moment_config.dart';
 import 'moment_media_picker.dart';
+import 'moment_permission.dart';
 import 'moment_upload.dart';
 import 'visible_scope_page.dart';
 import 'widgets/moment_page_scaffold.dart';
@@ -32,6 +33,20 @@ class _PublishFeedPageState extends State<PublishFeedPage> {
 
   bool _publishing = false;
   String _publishProgress = '';
+
+  @override
+  void initState() {
+    super.initState();
+    // 初始可见范围取「设置-朋友圈权限」里保存的默认值
+    MomentPermission.loadDefaultScope().then((scope) {
+      if (mounted) {
+        setState(() {
+          _visibleScope = scope.mode;
+          _scopeUsers = scope.users;
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {

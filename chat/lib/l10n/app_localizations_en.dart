@@ -979,6 +979,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reportTitle => 'Report';
 
   @override
+  String get momentPermission => 'Moments Permission';
+
+  @override
+  String get momentPermissionDesc => 'Set the default visibility of your posts';
+
+  @override
   String get reportDesc => 'Report inappropriate content';
 
   @override
@@ -3029,6 +3035,71 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get blacklistRemove => 'Remove';
+
+  @override
+  String get privacy => 'Privacy';
+
+  @override
+  String get findMeBy => 'Ways to Find Me';
+
+  @override
+  String get findMeByDesc => 'Choose how others can search for you';
+
+  @override
+  String get msgReceipt => 'Message Receipt';
+
+  @override
+  String get msgReceiptDesc =>
+      'When enabled, others can see the read status of your messages';
+
+  @override
+  String get onlineStatus => 'Online Status';
+
+  @override
+  String get onlineStatusDesc => 'Show my online status to contacts';
+
+  @override
+  String get friendVerify => 'Require Verification for Friend Requests';
+
+  @override
+  String get friendVerifyDesc =>
+      'When enabled, others need your approval to add you as a friend';
+
+  @override
+  String get blockThem => 'Don\'t Let Them See';
+
+  @override
+  String get hideThem => 'Don\'t See Them';
+
+  @override
+  String get strangerTen => 'Allow Strangers to View 10 Moments';
+
+  @override
+  String get visibleRange => 'Moments Visible to Friends';
+
+  @override
+  String get momentsPrivacyDesc => 'Moments privacy and visibility settings';
+
+  @override
+  String get account => 'Account';
+
+  @override
+  String get phoneNumber => 'Phone Number';
+
+  @override
+  String get rangeNoLimit => 'All';
+
+  @override
+  String get range3Days => 'Last 3 Days';
+
+  @override
+  String get range1Month => 'Last Month';
+
+  @override
+  String get range6Months => 'Last 6 Months';
+
+  @override
+  String get add => 'Add';
 
   @override
   String get searchOrgMembers => 'Search members';

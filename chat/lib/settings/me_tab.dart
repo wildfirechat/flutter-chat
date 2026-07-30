@@ -15,6 +15,7 @@ import 'package:chat/pc/pc_favorite_list_widget.dart';
 import 'package:chat/settings/file_records_screen.dart';
 import 'package:chat/backup/backup_and_restore_screen.dart';
 import 'package:chat/settings/account_safety_screen.dart';
+import 'package:chat/settings/privacy_settings_screen.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -114,6 +115,15 @@ class MeTab extends StatelessWidget {
                         width: 20.0, height: 20.0),
                     onTap: () {
                       openPage(context, const AccountSafetyScreen());
+                    },
+                  ),
+                  // 隐私:从账号与安全抽离为独立一级设置项
+                  OptionItem(
+                    AppLocalizations.of(context)!.privacy,
+                    leftImage: const Icon(Icons.privacy_tip_outlined,
+                        color: Color(0xFF576b95), size: 20),
+                    onTap: () {
+                      openPage(context, const PrivacySettingsScreen());
                     },
                   ),
                   OptionItem(

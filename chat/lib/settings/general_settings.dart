@@ -3,6 +3,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
+import 'package:chat/config.dart';
+import 'package:chat/utilities.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import '../app_navigator.dart';
 import '../pc/pc_platform.dart';
@@ -11,6 +13,7 @@ import '../viewmodel/locale_view_model.dart';
 import '../viewmodel/theme_view_model.dart';
 import 'destroy_account_screen.dart';
 import 'font_size_settings_screen.dart';
+import 'privacy_settings_screen.dart';
 import '../widget/option_item.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -39,7 +42,7 @@ class GeneralSettings extends StatelessWidget {
                     OptionItem(
                       AppLocalizations.of(context)!.privacySettings,
                       onTap: () {
-                        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                        openPage(context, const PrivacySettingsScreen());
                       },
                     ),
                     OptionItem(
@@ -83,13 +86,13 @@ class GeneralSettings extends StatelessWidget {
                     OptionItem(
                       AppLocalizations.of(context)!.userAgreement,
                       onTap: () {
-                        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                        Utilities.openLink(context, Config.USER_AGREEMENT_URL);
                       },
                     ),
                     OptionItem(
                       AppLocalizations.of(context)!.privacyPolicy,
                       onTap: () {
-                        Fluttertoast.showToast(msg: AppLocalizations.of(context)!.methodNotImpl);
+                        Utilities.openLink(context, Config.PRIVACY_AGREEMENT_URL);
                       },
                     ),
                     OptionItem(
