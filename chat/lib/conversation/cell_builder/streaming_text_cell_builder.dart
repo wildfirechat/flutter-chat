@@ -29,6 +29,9 @@ class StreamingTextCellBuilder extends PortraitCellBuilder {
   }
 
   @override
+  bool get hasBubbleTail => true;
+
+  @override
   Widget buildMessageContent(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

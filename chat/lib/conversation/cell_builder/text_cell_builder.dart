@@ -30,6 +30,9 @@ class TextCellBuilder extends PortraitCellBuilder {
   }
 
   @override
+  bool get hasBubbleTail => true;
+
+  @override
   Widget buildMessageContent(BuildContext context) {
     final Widget child;
     if (textMessageContent.quoteInfo != null) {

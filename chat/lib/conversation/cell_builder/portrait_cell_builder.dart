@@ -20,6 +20,7 @@ import '../../config.dart';
 import '../../ui_model/ui_message.dart';
 import '../../utils/mesh_user_name.dart';
 import '../../widget/portrait.dart';
+import 'bubble_tail_border.dart';
 import 'message_cell_builder.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -114,6 +115,14 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       size: const Size(68, 60),
     );
   }
+
+  /// 气泡是否画指向头像的小尾巴。
+  ///
+  /// 只有正文直接铺在气泡底色上的消息适合带尾巴(文本、流式文本);
+  /// 图片/视频/表情/图文这类整块卡片自带底色和圆角,带尾巴会显得突兀,
+  /// 所以默认关闭,由子类按需打开。
+  @protected
+  bool get hasBubbleTail => false;
 
   final GlobalKey _bubbleKey = GlobalKey();
 
@@ -224,7 +233,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                             model.message.content is ArticlesMessageContent)
                         ? const EdgeInsets.all(0)
                         : const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
+                    decoration: ShapeDecoration(
                       // 高亮时直接改消息内容 view 的背景色(原气泡色 + 高亮色叠加),而不是染外层。
                       color: () {
                         final baseColor = isSendMessage
@@ -239,12 +248,14 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                                 context.colors.messageHighlight, baseColor)
                             : baseColor;
                       }(),
-                      borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(8),
-                        topLeft: Radius.circular(8),
-                        bottomLeft: Radius.circular(8),
-                        bottomRight: Radius.circular(8),
-                      ),
+                      // 带尾巴的气泡靠 shape 的 dimensions 自动给正文让出尾巴宽度,
+                      // 上面的 padding 不用区分有没有尾巴。
+                      shape: hasBubbleTail
+                          ? BubbleTailBorder(tailOnRight: isSendMessage)
+                          : const RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8)),
+                            ),
                     ),
                     // 气泡内的正文色在这里一次性定死,而不是每个 cell_builder 各写一遍:
                     // 暗色下己方气泡是实心蓝,继承主题的灰白正文色对比度不够,必须走纯白。
