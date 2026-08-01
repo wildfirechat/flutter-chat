@@ -16,7 +16,20 @@ class PcWindowCaption extends StatefulWidget {
   /// 登录页是固定尺寸小窗,窗口本身已不可缩放,这里也要把入口一并去掉。
   final bool canMaximize;
 
-  const PcWindowCaption({super.key, this.canMaximize = true});
+  /// 背景色。默认与左侧导航栏同色(sidebarBgDesktop);登录页这类没有侧栏的
+  /// 界面传入内容区颜色,避免标题栏与内容之间出现色块断层。
+  final Color? backgroundColor;
+
+  /// 是否显示底部的发丝分割线。登录页标题栏与内容区同色,再画分割线会
+  /// 是一条突兀的横线,传 false 让标题栏完全融入内容区。
+  final bool showDivider;
+
+  const PcWindowCaption({
+    super.key,
+    this.canMaximize = true,
+    this.backgroundColor,
+    this.showDivider = true,
+  });
 
   @override
   State<PcWindowCaption> createState() => _PcWindowCaptionState();
@@ -78,11 +91,13 @@ class _PcWindowCaptionState extends State<PcWindowCaption> with WindowListener {
     return Container(
       height: captionHeight,
       decoration: BoxDecoration(
-        // 标题栏与左侧导航栏保持同色
-        color: colors.sidebarBgDesktop,
-        border: Border(
-          bottom: BorderSide(color: colors.hairline, width: 0.5),
-        ),
+        // 默认与左侧导航栏保持同色
+        color: widget.backgroundColor ?? colors.sidebarBgDesktop,
+        border: widget.showDivider
+            ? Border(
+                bottom: BorderSide(color: colors.hairline, width: 0.5),
+              )
+            : null,
       ),
       child: Row(
         children: [

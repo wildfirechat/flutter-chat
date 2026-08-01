@@ -278,8 +278,14 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
     return Column(
       children: [
         // Windows 自绘标题栏(系统标题栏已隐藏,见 PCWindowManager.setupWindow)。
-        // 登录窗是固定尺寸,不给最大化入口。
-        if (Platform.isWindows) const PcWindowCaption(canMaximize: false),
+        // 登录窗是固定尺寸,不给最大化入口;没有侧栏,标题栏融入内容区(同色、
+        // 无分割线),只留最小化/关闭两个按钮。
+        if (Platform.isWindows)
+          PcWindowCaption(
+            canMaximize: false,
+            backgroundColor: context.colors.surface,
+            showDivider: false,
+          ),
         Expanded(
           child: Scaffold(
             backgroundColor: context.colors.surface,

@@ -327,6 +327,13 @@ class _WindowListener extends WindowListener {
       return;
     }
 
+    // 未登录(登录页小窗)时关闭即退出:还没建立会话,藏到托盘没有意义,
+    // 用户只能从托盘图标再把窗口找回来,体验上是"关了但没关"。
+    if (PCWindowManager().isLoginWindow) {
+      await PCWindowManager().closeWindow();
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final closeToExit = prefs.getBool('pc_close_to_exit') ?? false;
 
