@@ -638,6 +638,27 @@ class _MyAppState extends State<MyApp> {
       isLogined = true;
     });
     if (isDesktopShell) {
+      final navigator = navKey.currentState;
+      if (navigator != null) {
+        bool topIsLogin = false;
+        navigator.popUntil((route) {
+          topIsLogin = route.settings.name == 'login';
+          return true; // 只探测栈顶,不弹
+        });
+        if (topIsLogin) {
+          // 登出/被踢时 navigateToLogin 用 pushAndRemoveUntil 把 home 路由
+          // 一并清掉了,登录页自己占着栈底,popUntil 弹不掉它,home 的切换
+          // 全被挡住("登录成功却进不了主界面")。此时没有其他 PCHome 实例,
+          // 直接把登录路由替换成主界面,不涉及双实例问题。
+          navigator.pushReplacement(
+            MaterialPageRoute(builder: (_) => const PCHome()),
+          );
+        } else {
+          // 登录页可能就是 home 本身(首次启动),或 home 之上还压着别的页面
+          // (扫码确认页等),统一弹回栈底,露出切换好的 home。
+          navigator.popUntil((route) => route.isFirst);
+        }
+      }
       // 登录页是固定小窗,进主界面要放大回上次记住的尺寸/位置。
       // 二维码登录与验证码/密码登录都经由本方法,这里是唯一的还原点。
       PCWindowManager().applyMainWindow();
