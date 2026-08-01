@@ -123,7 +123,12 @@ dependencies:
   # 输入区域,整个顶层窗口对鼠标透明(点击穿透到后面的应用、窗口都拖不动,
   # 而拖不动就再也触发不了重算 = 死锁)。故不销毁,改由工作台复用 WebView,
   # 见 WorkspaceTabsViewModel 的 host 池。
-  webview_all_linux: ^1.2.1
+  # ⚠️ 锁死 1.2.1,不要升级:1.3.0 起上游把接口包从 webview_flutter_platform_interface
+  # 改名成自己的 webview_platform_interface,LinuxWebViewController 与 webview_flutter
+  # 的 PlatformWebViewController 变成两套无关系的类型,`is` 判断不再提升类型,
+  # webview_support.dart 的 openDevTools 直接编译失败(且上面的整个"同一接口"前提
+  # 也不成立了)。vendor 的 webview_all_windows 仍用 webview_flutter_platform_interface。
+  webview_all_linux: 1.2.1
   # 同一套联邦实现的 Windows 版(WebView2)。与 Linux 那个不同,它是**纹理渲染**
   # (Texture + textureId),网页画进 Flutter 场景里,没有原生浮层那套遮挡/输入区域
   # 问题;它的 widget 卸载也不会销毁 controller,所以工作台"只挂当前页签"的做法
