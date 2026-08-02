@@ -41,22 +41,22 @@ class Utilities {
     var diff = now.difference(date);
     var time = '';
 
+    // 会话列表每行每次重建都会调到,DateFormat 一律走缓存,不再逐次构造。
     if (diff.inSeconds <= 0 ||
         diff.inSeconds > 0 && diff.inMinutes == 0 ||
         diff.inMinutes > 0 && diff.inHours == 0 ||
         diff.inHours > 0 && diff.inDays == 0) {
-      var format = DateFormat('HH:mm');
-      time = format.format(date);
+      time = _hourMinuteFormat.format(date);
     } else {
       if (diff.inDays == 1) {
         time = AppLocalizations.of(context)!.yesterday;
       } else if (diff.inDays < 365) {
-        var format = DateFormat(AppLocalizations.of(context)!.monthDayFormat);
-        time = format.format(date);
+        time = _cachedDateFormat(AppLocalizations.of(context)!.monthDayFormat)
+            .format(date);
       } else {
-        var format =
-            DateFormat(AppLocalizations.of(context)!.yearMonthDayFormat);
-        time = format.format(date);
+        time =
+            _cachedDateFormat(AppLocalizations.of(context)!.yearMonthDayFormat)
+                .format(date);
       }
     }
 

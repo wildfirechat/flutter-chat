@@ -7,6 +7,7 @@ import 'package:imclient/model/group_member.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/repo/group_repo.dart';
 import 'package:chat/repo/user_repo.dart';
+import 'package:chat/utils/batch_loader.dart';
 
 class GroupViewModel extends ChangeNotifier {
   late StreamSubscription<GroupInfoUpdatedEvent> _groupInfoUpdatedSubscription;
@@ -26,13 +27,18 @@ class GroupViewModel extends ChangeNotifier {
   }
 
   void reset() {
-    _fetchingGroupIds.clear();
+    _loader.clear();
     _fetchedGroupMemberIds.clear();
     GroupRepo.clear();
     notifyListeners();
   }
 
-  final Set<String> _fetchingGroupIds = {};
+  /// 同 [UserViewModel]:缺失的群信息按固定窗口限量成批查询,整批只通知一次。
+  /// 单批必须小 —— ImclientPlugin 的 method call 跑在 Android 主线程上。
+  late final BatchLoader<String> _loader = BatchLoader<String>(
+    fetch: _fetchBatch,
+    debugLabel: 'GroupViewModel',
+  );
 
   // 已发起过成员获取（获取中或已获取）的群：build 路径每次重建都会调
   // getGroupMemberUserInfos，每个 groupId 只允许走一次 DB 查询，
@@ -42,19 +48,24 @@ class GroupViewModel extends ChangeNotifier {
   GroupInfo getGroupInfo(String groupId) {
     var groupInfo = GroupRepo.getGroupInfo(groupId);
     if (groupInfo.updateDt == 0) {
-      if (!_fetchingGroupIds.contains(groupId)) {
-        _fetchingGroupIds.add(groupId);
-        Imclient.getGroupInfo(groupId).then((info) {
-          _fetchingGroupIds.remove(groupId);
-          if (info != null && info.updateDt > 0) {
-            GroupRepo.putGroupInfo(info);
-            notifyListeners();
-          }
-        });
-      }
+      _loader.request(groupId);
     }
     return groupInfo;
   }
+
+  Future<void> _fetchBatch(List<String> groupIds) async {
+    final infos = await Imclient.getGroupInfos(groupIds);
+    bool changed = false;
+    for (final info in infos) {
+      if (info.updateDt > 0) {
+        GroupRepo.putGroupInfo(info);
+        changed = true;
+      }
+    }
+    if (changed && !_disposed) notifyListeners();
+  }
+
+  bool _disposed = false;
 
   List<UserInfo>? getGroupMemberUserInfos(String groupId) {
     var memberUserInfos = UserRepo.getGroupMemberUserInfos(groupId);
@@ -83,8 +94,10 @@ class GroupViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    super.dispose();
+    _disposed = true;
+    _loader.clear();
     _groupInfoUpdatedSubscription.cancel();
     _groupMembersUpdatedSubscription.cancel();
+    super.dispose();
   }
 }

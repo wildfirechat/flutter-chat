@@ -16,10 +16,6 @@ class ConversationListViewModel extends ChangeNotifier {
   late StreamSubscription<ReceiveMessagesEvent> _receiveMessageSubscription;
   late StreamSubscription<UserSettingUpdatedEvent>
       _userSettingUpdatedSubscription;
-  late StreamSubscription<UserInfoUpdatedEvent> _userInfoUpdatedSubscription;
-  late StreamSubscription<GroupInfoUpdatedEvent> _groupInfoUpdatedSubscription;
-  late StreamSubscription<GroupMembersUpdatedEvent>
-      _groupMembersUpdatedSubscription;
   late StreamSubscription<RecallMessageEvent> _recallMessageSubscription;
   late StreamSubscription<DeleteMessageEvent> _deleteMessageSubscription;
   late StreamSubscription<ClearConversationUnreadEvent>
@@ -44,13 +40,19 @@ class ConversationListViewModel extends ChangeNotifier {
 
   late int _connectionStatus = 0;
   Timer? _debounceTimer;
+  bool _loading = false;
+  bool _reloadPending = false;
+  int? _unreadMessageCount;
 
+  /// 底部 tab 的角标每次 notify 都会读一次。上万会话时不能每次都全量累加。
   int get unreadMessageCount {
+    var cached = _unreadMessageCount;
+    if (cached != null) return cached;
     int count = 0;
     for (ConversationInfo info in _conversationList) {
-      var convInfo = info;
-      count += convInfo.isSilent ? 0 : convInfo.unreadCount.unread;
+      count += info.isSilent ? 0 : info.unreadCount.unread;
     }
+    _unreadMessageCount = count;
     return count;
   }
 
@@ -75,28 +77,28 @@ class ConversationListViewModel extends ChangeNotifier {
     _receiveMessageSubscription =
         _eventBus.on<ReceiveMessagesEvent>().listen((event) {
       if (!event.hasMore && _connectionStatus == kConnectionStatusConnected) {
+        // 只重载收到消息的那几个会话。原先是整批消息触发一次全量
+        // getConversationInfos —— 上万会话时每次都是「通道搬运 + 逐条解码
+        // lastMessage」的几百毫秒,收消息期间滚动必卡。
+        Set<Conversation> touched = {};
         for (Message msg in event.messages) {
           if (msg.messageId > 0) {
-            _loadConversationList();
-            break;
+            touched.add(msg.conversation);
           }
+        }
+        if (touched.isNotEmpty) {
+          _reloadConversations(touched, insertWhenNotFound: true);
         }
       }
     });
+
+    // 注意:UserInfoUpdatedEvent / GroupInfoUpdatedEvent / GroupMembersUpdatedEvent
+    // 曾经也在这里触发全量重载。它们只影响会话行的头像与名称,而这些是
+    // UserViewModel / GroupViewModel / ChannelViewModel 通过 Selector 响应式提供的,
+    // 会话数据本身(时间、未读、置顶、免打扰、草稿)不受影响,不需要重载。
+    // 唯一的例外是通知类消息的摘要要跟着用户名变,由会话 cell 自己订阅这两个事件处理。
     _userSettingUpdatedSubscription =
         _eventBus.on<UserSettingUpdatedEvent>().listen((event) {
-      _loadConversationList();
-    });
-    _userInfoUpdatedSubscription =
-        _eventBus.on<UserInfoUpdatedEvent>().listen((event) {
-      _loadConversationList();
-    });
-    _groupInfoUpdatedSubscription =
-        _eventBus.on<GroupInfoUpdatedEvent>().listen((event) {
-      _loadConversationList();
-    });
-    _groupMembersUpdatedSubscription =
-        _eventBus.on<GroupMembersUpdatedEvent>().listen((event) {
       _loadConversationList();
     });
     _recallMessageSubscription =
@@ -146,11 +148,11 @@ class ConversationListViewModel extends ChangeNotifier {
     });
     _silentUpdatedSubscription =
         _eventBus.on<ConversationSilentUpdatedEvent>().listen((event) {
-      _loadConversationList();
+      _reloadConversation(event.conversation);
     });
     _topUpdatedSubscription =
         _eventBus.on<ConversationTopUpdatedEvent>().listen((event) {
-      _loadConversationList();
+      _reloadConversation(event.conversation);
     });
 
     _loadConversationList(force: true);
@@ -179,26 +181,54 @@ class ConversationListViewModel extends ChangeNotifier {
   }
 
   _reloadConversation(Conversation conversation,
+          {bool insertWhenNotFound = false}) =>
+      _reloadConversations([conversation],
+          insertWhenNotFound: insertWhenNotFound);
+
+  /// 逐个重载指定会话并按置顶/时间重新排序。相比全量 getConversationInfos,
+  /// 通道往返和解码量都只跟受影响会话数相关。
+  Future<void> _reloadConversations(Iterable<Conversation> conversations,
       {bool insertWhenNotFound = false}) async {
-    var info = await Imclient.getConversationInfo(conversation);
-    if (info != null) {
-      bool found = false;
-      for (int i = 0; i < _conversationList.length; i++) {
-        if (_conversationList[i].conversation == conversation) {
-          _conversationList[i] = info;
-          found = true;
-          break;
-        }
-      }
-      if (found) {
-        notifyListeners();
-      } else if (!found && insertWhenNotFound) {
+    bool changed = false;
+    for (final conversation in conversations) {
+      var info = await Imclient.getConversationInfo(conversation);
+
+      int index = _indexOfConversation(conversation);
+      if (index >= 0) {
+        if (_sameConversationInfo(_conversationList[index], info)) continue;
+        _conversationList[index] = info;
+        changed = true;
+      } else if (insertWhenNotFound) {
         _conversationList.add(info);
-        _conversationList.sort((a, b) => a.compareTo(b));
-        notifyListeners();
+        changed = true;
       }
     }
+
+    if (!changed) return;
+    _conversationList.sort((a, b) => a.compareTo(b));
+    _unreadMessageCount = null;
+    notifyListeners();
   }
+
+  int _indexOfConversation(Conversation conversation) {
+    for (int i = 0; i < _conversationList.length; i++) {
+      if (_conversationList[i].conversation == conversation) return i;
+    }
+    return -1;
+  }
+
+  /// 两条会话信息在 UI 上是否等价。
+  ///
+  /// 不用 [ConversationInfo] 自带的 == :它会比较 `lastMessage.content`,
+  /// 而多数 [MessageContent] 子类没实现 ==,退化成引用比较后永远不相等。
+  /// [Message] 的 == 已覆盖 messageId/messageUid/status/serverTime。
+  static bool _sameConversationInfo(ConversationInfo a, ConversationInfo b) =>
+      a.timestamp == b.timestamp &&
+      a.isTop == b.isTop &&
+      a.isSilent == b.isSilent &&
+      a.draft == b.draft &&
+      a.unreadCount == b.unreadCount &&
+      a.lastMessage == b.lastMessage;
 
   _loadConversationList({bool force = false}) async {
     if (!force && _connectionStatus != kConnectionStatusConnected) {
@@ -206,7 +236,19 @@ class ConversationListViewModel extends ChangeNotifier {
     }
 
     if (_debounceTimer?.isActive ?? false) _debounceTimer!.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 100), () async {
+    _debounceTimer = Timer(const Duration(milliseconds: 100), () {
+      _doLoadConversationList(force);
+    });
+  }
+
+  Future<void> _doLoadConversationList(bool preloadTargets) async {
+    // 一次全量加载在上万会话时是几百毫秒的活儿,不能让它们并发堆叠。
+    if (_loading) {
+      _reloadPending = true;
+      return;
+    }
+    _loading = true;
+    try {
       var conversationInfos = await Imclient.getConversationInfos([
         ConversationType.Single,
         ConversationType.Group,
@@ -214,13 +256,32 @@ class ConversationListViewModel extends ChangeNotifier {
       ], [
         0
       ]);
-      // var conversationInfos = await Imclient.getConversationInfos([ConversationType.Single], [0]);
-      _conversationList = conversationInfos;
-      if (force) {
+      if (preloadTargets) {
         _preloadConversationGroupAndChannel(conversationInfos);
       }
+
+      // 未变的会话沿用旧实例:会话 cell 以 conversationInfo 的引用变化作为
+      // 「重新算摘要」的信号,整表换新会让所有可见 cell 白白重算一遍。
+      final previous = <Conversation, ConversationInfo>{
+        for (final info in _conversationList) info.conversation: info
+      };
+      for (int i = 0; i < conversationInfos.length; i++) {
+        final old = previous[conversationInfos[i].conversation];
+        if (old != null && _sameConversationInfo(old, conversationInfos[i])) {
+          conversationInfos[i] = old;
+        }
+      }
+
+      _conversationList = conversationInfos;
+      _unreadMessageCount = null;
       notifyListeners();
-    });
+    } finally {
+      _loading = false;
+      if (_reloadPending) {
+        _reloadPending = false;
+        _loadConversationList();
+      }
+    }
   }
 
   removeConversation(Conversation conversation, [bool clearMessage = false]) {
@@ -228,6 +289,7 @@ class ConversationListViewModel extends ChangeNotifier {
     for (int i = 0; i < _conversationList.length; i++) {
       if (_conversationList[i].conversation == conversation) {
         _conversationList.removeAt(i);
+        _unreadMessageCount = null;
         notifyListeners();
         break;
       }
@@ -236,7 +298,7 @@ class ConversationListViewModel extends ChangeNotifier {
 
   setConversationTop(Conversation conversation, int top) {
     Imclient.setConversationTop(conversation, top, () {
-      _loadConversationList();
+      _reloadConversation(conversation);
     },
         (int err) => {
               // do nothing
@@ -245,31 +307,29 @@ class ConversationListViewModel extends ChangeNotifier {
 
   clearConversationUnreadStatus(Conversation conversation) {
     Imclient.clearConversationUnreadStatus(conversation).then((onValue) {
-      _loadConversationList();
+      _reloadConversation(conversation);
     });
   }
 
   markConversationAsUnRead(Conversation conversation, [bool unread = true]) {
     Imclient.markAsUnRead(conversation, unread).then((value) {
-      _loadConversationList();
+      _reloadConversation(conversation);
     });
   }
 
   void reset() {
     _conversationList = [];
+    _unreadMessageCount = null;
     notifyListeners();
   }
 
   @override
   void dispose() {
-    super.dispose();
+    _debounceTimer?.cancel();
     _conversationList.clear();
     _connectionStatusSubscription.cancel();
     _receiveMessageSubscription.cancel();
     _userSettingUpdatedSubscription.cancel();
-    _userInfoUpdatedSubscription.cancel();
-    _groupInfoUpdatedSubscription.cancel();
-    _groupMembersUpdatedSubscription.cancel();
     _recallMessageSubscription.cancel();
     _deleteMessageSubscription.cancel();
     _clearConversationUnreadSubscription.cancel();
@@ -281,5 +341,6 @@ class ConversationListViewModel extends ChangeNotifier {
     _topUpdatedSubscription.cancel();
     _sendMessageSuccessSubscription.cancel();
     _sendMessageFailureSubscription.cancel();
+    super.dispose();
   }
 }

@@ -68,6 +68,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/widget/watermark_overlay.dart';
 import 'package:chat/mesh/mesh_cache.dart';
+import 'package:chat/utils/join_group_request_unread_cache.dart';
 import 'package:chat/organization/organization_cache.dart';
 import 'package:chat/organization/organization_service.dart';
 import 'package:chat/conversation/input_bar/wf_asset_picker_delegate.dart';
@@ -360,6 +361,7 @@ class _MyAppState extends State<MyApp> {
           OrganizationService.instance.clearOrgServiceAuthInfos();
           OrganizationCache.instance.clearCaches();
           MeshCache.instance.clear();
+          JoinGroupRequestUnreadCache.instance.clear();
           _firstConnected = false;
         });
 

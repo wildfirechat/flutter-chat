@@ -280,7 +280,10 @@ class _PcContactListState extends State<PcContactList> {
               ],
             ],
             // 「联系人」可折叠分组:星标联系人 / AI 机器人 / 普通联系人(字母序)全部收入其下
-            if (record.contactList.isNotEmpty) ...[
+            // 联系人行不在这里展开 —— 上万条时每次重建都实例化一遍 Widget,
+            // ListView.builder 的懒加载完全被抵消。这里只放分组标题,
+            // 行本身由下面的 itemBuilder 按需构建。
+            if (record.contactList.isNotEmpty)
               _SectionHeader(
                 icon: Icons.contacts_outlined,
                 title: l10n.contactCategory,
@@ -288,13 +291,17 @@ class _PcContactListState extends State<PcContactList> {
                 onTap: () =>
                     setState(() => _contactExpanded = !_contactExpanded),
               ),
-              if (_contactExpanded)
-                ..._buildContactRows(context, record.contactList),
-            ],
           ];
+
+          final contactRows = _contactExpanded
+              ? _contactRowSpecs(l10n, record.contactList)
+              : const <_ContactRowSpec>[];
+
           return ListView.builder(
-            itemCount: children.length,
-            itemBuilder: (context, index) => children[index],
+            itemCount: children.length + contactRows.length,
+            itemBuilder: (context, index) => index < children.length
+                ? children[index]
+                : _buildContactRow(contactRows[index - children.length]),
           );
         },
       ),
@@ -408,9 +415,19 @@ class _PcContactListState extends State<PcContactList> {
   /// 「联系人」展开后的行:从 view model 的字母序 [contactList] 就地拆分为
   /// 星标(category '☆') / AI 机器人(category 'AI') / 普通好友(字母)三段,
   /// 各段前置一个分组小标题,成员用统一的 [_ContactRow] 渲染。
-  List<Widget> _buildContactRows(
-      BuildContext context, List<UIContactInfo> contactList) {
-    final l10n = AppLocalizations.of(context)!;
+  List<UIContactInfo>? _cachedContactSource;
+  AppLocalizations? _cachedContactL10n;
+  List<_ContactRowSpec> _cachedContactRows = const [];
+
+  /// 联系人区的行排布。只在联系人列表实例或语言变化时重算,
+  /// 结果是一串轻量描述,真正的 Widget 由 ListView 按需构建。
+  List<_ContactRowSpec> _contactRowSpecs(
+      AppLocalizations l10n, List<UIContactInfo> contactList) {
+    if (identical(_cachedContactSource, contactList) &&
+        identical(_cachedContactL10n, l10n)) {
+      return _cachedContactRows;
+    }
+
     final fav = <UIContactInfo>[];
     final ai = <UIContactInfo>[];
     final regular = <UIContactInfo>[];
@@ -424,36 +441,45 @@ class _PcContactListState extends State<PcContactList> {
       }
     }
 
-    final rows = <Widget>[];
+    final rows = <_ContactRowSpec>[];
     if (fav.isNotEmpty) {
-      rows.add(_GroupLabel(title: l10n.starredContact));
+      rows.add(_ContactRowSpec.label(l10n.starredContact));
       for (final c in fav) {
-        rows.add(_ContactRow(
-            key: ValueKey('pc-fav-${c.userInfo.userId}'),
-            userInfo: c.userInfo,
-            onTap: () => _openUser(c.userInfo.userId)));
+        rows.add(_ContactRowSpec.contact('pc-fav', c));
       }
     }
     if (ai.isNotEmpty) {
-      rows.add(_GroupLabel(title: l10n.aiRobot));
+      rows.add(_ContactRowSpec.label(l10n.aiRobot));
       for (final c in ai) {
-        rows.add(_ContactRow(
-            key: ValueKey('pc-ai-${c.userInfo.userId}'),
-            userInfo: c.userInfo,
-            onTap: () => _openUser(c.userInfo.userId)));
+        rows.add(_ContactRowSpec.contact('pc-ai', c));
       }
     }
     for (final c in regular) {
       // showCategory 由 view model 按字母边界预置;拆出星标/AI 后首个普通好友仍为 true。
       if (c.showCategory) {
-        rows.add(_GroupLabel(title: c.category == '{' ? '#' : c.category));
+        rows.add(
+            _ContactRowSpec.label(c.category == '{' ? '#' : c.category));
       }
-      rows.add(_ContactRow(
-          key: ValueKey('pc-contact-${c.userInfo.userId}'),
-          userInfo: c.userInfo,
-          onTap: () => _openUser(c.userInfo.userId)));
+      rows.add(_ContactRowSpec.contact('pc-contact', c));
     }
+
+    _cachedContactSource = contactList;
+    _cachedContactL10n = l10n;
+    _cachedContactRows = rows;
     return rows;
+  }
+
+  Widget _buildContactRow(_ContactRowSpec spec) {
+    final contact = spec.contact;
+    if (contact == null) {
+      return _GroupLabel(title: spec.label!);
+    }
+    final userId = contact.userInfo.userId;
+    return _ContactRow(
+      key: ValueKey('${spec.keyPrefix}-$userId'),
+      userInfo: contact.userInfo,
+      onTap: () => _openUser(userId),
+    );
   }
 
   Widget _buildOrgRow(BuildContext context, Organization org, bool isRoot) {
@@ -472,6 +498,20 @@ class _PcContactListState extends State<PcContactList> {
       },
     );
   }
+}
+
+/// 联系人区的一行:要么是分组字母/类别标题,要么是一个联系人。
+/// 只描述「这一行是什么」,不构造 Widget —— 上万联系人时,重建时构造整串
+/// Widget 的开销本身就是卡顿来源。
+class _ContactRowSpec {
+  const _ContactRowSpec.label(this.label)
+      : contact = null,
+        keyPrefix = '';
+  const _ContactRowSpec.contact(this.keyPrefix, this.contact) : label = null;
+
+  final String? label;
+  final String keyPrefix;
+  final UIContactInfo? contact;
 }
 
 /// 可折叠分组大标题:折叠箭头 + 图标(资源图或 IconData)+ 标题(+ 未读角标)。

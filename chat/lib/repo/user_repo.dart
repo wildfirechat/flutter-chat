@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:imclient/imclient.dart';
@@ -17,19 +18,43 @@ mixin UserRepo {
     _groupUserMap.clear();
   }
 
+  /// 单次 getUserInfos 的条数上限。
+  ///
+  /// ImclientPlugin 的 method call 跑在 Android 主线程上,而 Flutter 的 vsync
+  /// 同样由主线程的 Choreographer 发出 —— 一次两万人的 getUserInfos 会把主线程
+  /// 占住好几秒,期间整个 App 一帧都出不来。切成小片后,片与片之间主线程的
+  /// Looper 能插进 vsync 回调,界面就还能动。
+  static const int _userInfoChunkSize = 200;
+
   static Future<List<UserInfo>> getFriendUserInfos(
       {bool refresh = false}) async {
     if (!refresh && _friendUserMap.isNotEmpty) {
       return _friendUserMap.values.toList();
     }
     var friends = await Imclient.getMyFriendList(refresh: refresh);
-    var userInfos = await Imclient.getUserInfos(friends);
-    for (var user in userInfos) {
-      _friendUserMap[user.userId] = user;
-      _userMap.remove(user.userId);
+
+    // 只补拉缓存里没有的。refresh 的语义是「重新同步好友关系」,
+    // 已经在内存里的用户信息由 UserInfoUpdatedEvent 负责更新,
+    // 不必每次进联系人页都把两万条重新搬一遍。
+    final missing =
+        friends.where((userId) => !_friendUserMap.containsKey(userId)).toList();
+    for (int start = 0; start < missing.length; start += _userInfoChunkSize) {
+      final end = min(start + _userInfoChunkSize, missing.length);
+      final userInfos =
+          await Imclient.getUserInfos(missing.sublist(start, end));
+      for (var user in userInfos) {
+        _friendUserMap[user.userId] = user;
+        _userMap.remove(user.userId);
+      }
     }
-    debugPrint('getFriendUserInfos ${userInfos.length}');
-    return userInfos;
+
+    // 已解除好友关系的要从缓存里清掉,否则会一直留在联系人列表上。
+    final friendIds = friends.toSet();
+    _friendUserMap.removeWhere((userId, _) => !friendIds.contains(userId));
+
+    debugPrint(
+        'getFriendUserInfos ${_friendUserMap.length} (fetched ${missing.length})');
+    return _friendUserMap.values.toList();
   }
 
   static UserInfo getUserInfo(String userId, {String? groupId}) {

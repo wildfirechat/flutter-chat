@@ -16,6 +16,7 @@ import 'package:chat/contact/friend_request_page.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/organization/organization_screen.dart';
+import 'package:chat/widget/prefix_extent_list.dart';
 import 'package:chat/widget/sidebar_index.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 
@@ -34,24 +35,67 @@ import '../utils/online_state_formatter.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 
-// 行度量。itemExtentBuilder 与侧栏索引的跳转偏移必须共用下面两个函数,
-// 任何一边单独改写都会让 A-Z 跳转逐行累积偏差。
+// 行度量。子项 extent、A-Z 跳转偏移、侧栏字母表三者必须同源,
+// 任何一边单独改写都会让 A-Z 跳转逐行累积偏差 —— 统一由 [_ContactListLayout] 产出。
 const double _kRowHeight = 52.0;
 const double _kCategoryHeight = 18.0;
 const double _kDividerHeight = 0.5; // 不随字号缩放
 
-/// 固定表头行(新的朋友/收藏群组/…/组织)的完整高度。
-double _headerExtent(BuildContext context) =>
-    LayoutScale.scale(context, _kRowHeight, cap: LayoutScale.rowCap) +
-    _kDividerHeight;
+/// 联系人列表的一次性布局计算结果。
+///
+/// 两万联系人时不能再用 `ListView.builder(itemExtentBuilder:)`:框架实现里
+/// 每次求偏移/求可见下标都要从 0 逐项累加,单帧就是几十万次回调(详见
+/// [ItemExtents] 的注释)。这里把每项高度、A-Z 偏移、侧栏字母表在数据变化时
+/// 算一次,滚动期间的几何计算全部走前缀和。
+class _ContactListLayout {
+  const _ContactListLayout(this.extents, this.indexOffsets, this.indexList);
 
-/// 联系人行的完整高度。带分类标题时多一条纯文本的分类条。
-double _contactExtent(BuildContext context, bool showCategory) =>
-    (showCategory
-        ? LayoutScale.scale(context, _kCategoryHeight, cap: LayoutScale.textCap)
-        : 0) +
-    LayoutScale.scale(context, _kRowHeight, cap: LayoutScale.rowCap) +
-    _kDividerHeight;
+  /// 表头 + 联系人行的完整高度序列,长度等于列表 itemCount。
+  final ItemExtents extents;
+
+  /// 字母 -> 该分类第一行的滚动偏移。
+  final Map<String, double> indexOffsets;
+
+  /// 侧栏字母表。首项固定是回到顶部的 '↑'。
+  final List<String> indexList;
+
+  /// 固定表头行(新的朋友/收藏群组/…/组织)与联系人行共用同一个行高 [rowExtent],
+  /// 联系人行带分类标题时再多一条 [categoryExtent] 高的纯文本分类条。
+  factory _ContactListLayout.build({
+    required List<UIContactInfo> contactList,
+    required int headerCount,
+    required double rowExtent,
+    required double categoryExtent,
+  }) {
+    final itemExtents =
+        List<double>.filled(headerCount + contactList.length, rowExtent);
+    final indexOffsets = <String, double>{};
+    final indexList = <String>['↑'];
+
+    double offset = headerCount * rowExtent;
+    for (int i = 0; i < contactList.length; i++) {
+      final contact = contactList[i];
+      final extent =
+          contact.showCategory ? categoryExtent + rowExtent : rowExtent;
+      itemExtents[headerCount + i] = extent;
+      if (contact.showCategory) {
+        var category = contact.category;
+        if (category == '{') category = '#';
+        if (!indexOffsets.containsKey(category)) {
+          indexOffsets[category] = offset;
+          // AI 机器人不进侧栏字母表
+          if (!category.startsWith('AI')) {
+            indexList.add(category);
+          }
+        }
+      }
+      offset += extent;
+    }
+
+    return _ContactListLayout(
+        ItemExtents(itemExtents), indexOffsets, indexList);
+  }
+}
 
 class ContactListWidget extends StatefulWidget {
   /// 桌面端 Shell 注入:点击联系人时回调(替代默认的全屏 push)。移动端不传,保持原有行为。
@@ -72,38 +116,37 @@ class _ContactListWidgetState extends State<ContactListWidget> {
   List<UIContactInfo>? _cachedContactList;
   int _cachedHeaderCount = 0;
   double _cachedFontScale = 1.0;
-  Map<String, double> _cachedOffsets = {};
+  _ContactListLayout? _cachedLayout;
 
-  Map<String, double> _getOffsets(
+  /// 布局只在「联系人列表实例 / 表头数量 / 字号」变化时重算。
+  /// 上层 Selector2 每次 rebuild 都会走到这里,两万条的全量扫描不能每帧做。
+  _ContactListLayout _layoutOf(
       List<UIContactInfo> contactList, int headerCount) {
     final fontScale = context.read<FontSizeViewModel>().textScaleFactor;
-    if (_cachedContactList == contactList &&
+    final cached = _cachedLayout;
+    if (cached != null &&
+        identical(_cachedContactList, contactList) &&
         _cachedHeaderCount == headerCount &&
         _cachedFontScale == fontScale) {
-      return _cachedOffsets;
+      return cached;
     }
+
+    final rowExtent =
+        LayoutScale.scale(context, _kRowHeight, cap: LayoutScale.rowCap) +
+            _kDividerHeight;
+    final layout = _ContactListLayout.build(
+      contactList: contactList,
+      headerCount: headerCount,
+      rowExtent: rowExtent,
+      categoryExtent: LayoutScale.scale(context, _kCategoryHeight,
+          cap: LayoutScale.textCap),
+    );
+
     _cachedContactList = contactList;
     _cachedHeaderCount = headerCount;
     _cachedFontScale = fontScale;
-    _cachedOffsets = _calculateIndexOffsets(contactList, headerCount);
-    return _cachedOffsets;
-  }
-
-  Map<String, double> _calculateIndexOffsets(
-      List<UIContactInfo> contactList, int headerCount) {
-    Map<String, double> offsets = {};
-    double offset = headerCount * _headerExtent(context);
-    for (var contact in contactList) {
-      if (contact.showCategory) {
-        String category = contact.category;
-        if (category == '{') category = '#';
-        if (!offsets.containsKey(category)) {
-          offsets[category] = offset;
-        }
-      }
-      offset += _contactExtent(context, contact.showCategory);
-    }
-    return offsets;
+    _cachedLayout = layout;
+    return layout;
   }
 
   @override
@@ -176,68 +219,63 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                     List<Organization> myOrgs
                   })>(
                 builder: (_, record, __) {
-                  List<String> indexList = _getIndexList(record.contactList);
                   int headerCount = fixHeaderList.length +
                       record.rootOrgs.length +
                       record.myOrgs.length;
-                  Map<String, double> indexOffsets =
-                      _getOffsets(record.contactList, headerCount);
+                  final layout = _layoutOf(record.contactList, headerCount);
 
                   return Stack(
                     children: [
-                      ListView.builder(
-                          controller: _scrollController,
-                          itemCount: headerCount + record.contactList.length,
-                          // 使用key帮助ListView正确处理数据更新
-                          key: ValueKey(
-                              'contact_list_${record.contactList.length}'),
-                          cacheExtent: 200,
-                          addRepaintBoundaries: true,
-                          addAutomaticKeepAlives: false,
-                          // 字号变化时 build 重跑,新的闭包会让 RenderSliverVariedExtentList
-                          // 重新 layout;这里必须用不注册依赖的 LayoutScale.scale。
-                          itemExtentBuilder: (index, dimensions) {
-                            if (index < headerCount) {
-                              return _headerExtent(context);
-                            }
-                            return _contactExtent(
-                                context,
-                                record.contactList[index - headerCount]
-                                    .showCategory);
-                          },
-                          itemBuilder: (context, i) {
-                            if (i < fixHeaderList.length) {
-                              return _contactListFixHeader(
-                                  context,
-                                  i,
-                                  record.unreadFriendRequestCount,
-                                  fixHeaderList);
-                            } else if (i <
-                                fixHeaderList.length + record.rootOrgs.length) {
-                              var org =
-                                  record.rootOrgs[i - fixHeaderList.length];
-                              return _contactListOrgHeader(context, org, true);
-                            } else if (i < headerCount) {
-                              var org = record.myOrgs[i -
-                                  fixHeaderList.length -
-                                  record.rootOrgs.length];
-                              return _contactListOrgHeader(context, org, false);
-                            } else {
-                              var contactInfo =
-                                  record.contactList[i - headerCount];
-                              return ContactListItem(
-                                contactInfo,
-                                key: ValueKey(
-                                    'contact_${contactInfo.userInfo.userId}-${contactInfo.userInfo.updateDt}'),
-                                onTap: widget.onUserSelected,
-                              );
-                            }
-                          }),
-                      if (indexList.isNotEmpty)
+                      CustomScrollView(
+                        controller: _scrollController,
+                        cacheExtent: 200,
+                        slivers: [
+                          SliverPrefixExtentList(
+                            extents: layout.extents,
+                            delegate: SliverChildBuilderDelegate(
+                              (context, i) {
+                                if (i < fixHeaderList.length) {
+                                  return _contactListFixHeader(
+                                      context,
+                                      i,
+                                      record.unreadFriendRequestCount,
+                                      fixHeaderList);
+                                } else if (i <
+                                    fixHeaderList.length +
+                                        record.rootOrgs.length) {
+                                  var org =
+                                      record.rootOrgs[i - fixHeaderList.length];
+                                  return _contactListOrgHeader(
+                                      context, org, true);
+                                } else if (i < headerCount) {
+                                  var org = record.myOrgs[i -
+                                      fixHeaderList.length -
+                                      record.rootOrgs.length];
+                                  return _contactListOrgHeader(
+                                      context, org, false);
+                                } else {
+                                  var contactInfo =
+                                      record.contactList[i - headerCount];
+                                  return ContactListItem(
+                                    contactInfo,
+                                    key: ValueKey(
+                                        'contact_${contactInfo.userInfo.userId}'),
+                                    onTap: widget.onUserSelected,
+                                  );
+                                }
+                              },
+                              childCount: layout.extents.length,
+                              addAutomaticKeepAlives: false,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (layout.indexList.isNotEmpty)
                         SidebarIndex(
-                          indexList: indexList,
+                          indexList: layout.indexList,
                           onIndexSelected: (tag) {
-                            final offset = tag == '↑' ? 0.0 : indexOffsets[tag];
+                            final offset =
+                                tag == '↑' ? 0.0 : layout.indexOffsets[tag];
                             if (offset != null &&
                                 _scrollController.hasClients) {
                               _scrollController.jumpTo(offset);
@@ -288,22 +326,6 @@ class _ContactListWidgetState extends State<ContactListWidget> {
         ),
       ),
     );
-  }
-
-  List<String> _getIndexList(List<UIContactInfo> contactList) {
-    List<String> indexList = [];
-    indexList.add('↑');
-    for (var contact in contactList) {
-      if (contact.showCategory) {
-        String category = contact.category;
-        if (category.startsWith("AI")) continue;
-        if (category == "{") category = "#";
-        if (!indexList.contains(category)) {
-          indexList.add(category);
-        }
-      }
-    }
-    return indexList;
   }
 
   Widget _buildHeaderIcon(String? imagePath) {
@@ -487,6 +509,11 @@ class _ContactListItemState extends State<ContactListItem> {
 
   @override
   Widget build(BuildContext context) {
+    // 只有外部域用户的显示名依赖 MeshCache(域名称异步到达后要重绘)。
+    // 内部用户挂上监听没有收益,却会让每次 MeshCache 变化重建全部可见行。
+    if (!ExternalTargetUtils.isExternalTarget(widget.contactInfo.userInfo.userId)) {
+      return _buildContent(context, widget.contactInfo.userInfo);
+    }
     return AnimatedBuilder(
       animation: MeshCache.instance,
       builder: (context, child) {
@@ -539,6 +566,9 @@ class _ContactListItemState extends State<ContactListItem> {
 
     return RepaintBoundary(
       child: Column(
+        // 分类条要铺满整行。原先靠 View.of(context) 取物理屏宽换算,
+        // 在分屏/桌面窗口下是错的,而且每行都要读一次 View;交给 stretch 即可。
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
           // 分类标题
           if (widget.contactInfo.showCategory)
@@ -546,8 +576,6 @@ class _ContactListItemState extends State<ContactListItem> {
               // 纯文本条:用 textCap 完整跟随字号,否则最大档位下分类字母会被裁掉。
               height: LayoutScale.watchScale(context, _kCategoryHeight,
                   cap: LayoutScale.textCap),
-              width: View.of(context).physicalSize.width /
-                  View.of(context).devicePixelRatio,
               color: context.colors.hairlineSoft,
               padding: EdgeInsets.only(
                   left: 16, right: isDesktopShell ? 16.0 : 32.0),

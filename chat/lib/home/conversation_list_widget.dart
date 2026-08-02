@@ -3,6 +3,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 
 import '../widgets/unread_badge.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/imclient_platform.dart';
@@ -18,6 +19,7 @@ import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/utils/join_group_request_unread_cache.dart';
 import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
@@ -70,8 +72,6 @@ class ConversationListWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var conversationListViewModel =
-        Provider.of<ConversationListViewModel>(context);
     return ChangeNotifierProvider<StatusNotificationViewModel>(
       create: (_) => StatusNotificationViewModel(),
       child: Scaffold(
@@ -82,92 +82,72 @@ class ConversationListWidget extends StatelessWidget {
             child: Column(
               children: [
                 const StatusNotificationHeader(),
+                // 会话数据变化只重建列表,不牵动外层 Scaffold/SafeArea/横幅。
                 Expanded(
-                  child: isDesktopShell && scrollOffset != null
-                      ? ValueListenableBuilder<double>(
-                          valueListenable: scrollOffset!,
-                          builder: (context, offset, child) {
-                            final list =
-                                conversationListViewModel.conversationList;
-                            final isFirstItemPinned =
-                                list.isNotEmpty && list[0].isTop > 0;
-                            final overscrollHeight =
-                                (offset < 0 && isFirstItemPinned)
-                                    ? -offset
-                                    : 0.0;
-                            return Stack(
-                              children: [
-                                Positioned.fill(
-                                  child: Container(
-                                    color: context.colors.middleBgDesktop,
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  height: overscrollHeight,
-                                  child: Container(
-                                    color: context.colors.cellTopDesktop,
-                                  ),
-                                ),
-                                Positioned.fill(
-                                  child: child!,
-                                ),
-                              ],
-                            );
-                          },
-                          child: ListView.builder(
-                            controller: scrollController,
-                            itemCount: conversationListViewModel
-                                .conversationList.length,
-                            itemExtent: conversationItemExtent(context),
-                            cacheExtent: 200,
-                            addRepaintBoundaries: true,
-                            addAutomaticKeepAlives: false,
-                            itemBuilder: (context, i) {
-                              ConversationInfo info =
-                                  conversationListViewModel.conversationList[i];
-                              var key =
-                                  '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
-                              return ConversationListItem(
-                                info,
-                                key: ValueKey(key),
-                                onTap: onConversationSelected,
-                                isSelected:
-                                    info.conversation == selectedConversation,
-                              );
-                            },
-                          ),
-                        )
-                      : ListView.builder(
-                          controller: scrollController,
-                          itemCount:
-                              conversationListViewModel.conversationList.length,
-                          itemExtent: conversationItemExtent(context),
-                          cacheExtent: 200,
-                          addRepaintBoundaries: true,
-                          addAutomaticKeepAlives: false,
-                          itemBuilder: (context, i) {
-                            ConversationInfo info =
-                                conversationListViewModel.conversationList[i];
-                            var key =
-                                '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.conversationType}-${info.conversation.line}';
-                            return ConversationListItem(
-                              info,
-                              key: ValueKey(key),
-                              onTap: onConversationSelected,
-                              isSelected:
-                                  info.conversation == selectedConversation,
-                            );
-                          },
-                        ),
+                  child: Consumer<ConversationListViewModel>(
+                    builder: (context, viewModel, child) =>
+                        _buildBody(context, viewModel.conversationList),
+                  ),
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, List<ConversationInfo> list) {
+    final listView = _buildListView(context, list);
+    if (!isDesktopShell || scrollOffset == null) {
+      return listView;
+    }
+    // 桌面端下拉过头时,顶部露出的那一截要跟置顶行同色。
+    return ValueListenableBuilder<double>(
+      valueListenable: scrollOffset!,
+      builder: (context, offset, child) {
+        final isFirstItemPinned = list.isNotEmpty && list[0].isTop > 0;
+        final overscrollHeight =
+            (offset < 0 && isFirstItemPinned) ? -offset : 0.0;
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: Container(color: context.colors.middleBgDesktop),
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: overscrollHeight,
+              child: Container(color: context.colors.cellTopDesktop),
+            ),
+            Positioned.fill(child: child!),
+          ],
+        );
+      },
+      child: listView,
+    );
+  }
+
+  Widget _buildListView(BuildContext context, List<ConversationInfo> list) {
+    return ListView.builder(
+      controller: scrollController,
+      itemCount: list.length,
+      itemExtent: conversationItemExtent(context),
+      cacheExtent: 200,
+      addRepaintBoundaries: true,
+      addAutomaticKeepAlives: false,
+      itemBuilder: (context, i) {
+        ConversationInfo info = list[i];
+        var key =
+            '${info.conversation.conversationType}-${info.conversation.target}-${info.conversation.line}';
+        return ConversationListItem(
+          info,
+          key: ValueKey(key),
+          onTap: onConversationSelected,
+          isSelected: info.conversation == selectedConversation,
+        );
+      },
     );
   }
 }
@@ -280,18 +260,18 @@ class ConversationListItem extends StatefulWidget {
   State<ConversationListItem> createState() => _ConversationListItemState();
 }
 
-class _ConversationListItemState extends State<ConversationListItem>
-    with AutomaticKeepAliveClientMixin {
+class _ConversationListItemState extends State<ConversationListItem> {
   String lastMsgDigest = '';
   bool isLoading = true;
-  int _joinRequestCount = 0;
+
+  /// 入群申请未读数。只有群会话才订阅,查询与缓存统一由
+  /// [JoinGroupRequestUnreadCache] 管理,避免每行各发一次跨进程查询。
+  ValueListenable<int>? _joinRequestUnread;
+  String? _watchedGroupId;
 
   StreamSubscription<UserInfoUpdatedEvent>? _userInfoUpdatedSubscription;
-  StreamSubscription<JoinGroupRequestUpdatedEvent>?
-      _joinGroupRequestSubscription;
-
-  @override
-  bool get wantKeepAlive => true;
+  StreamSubscription<GroupMembersUpdatedEvent>?
+      _groupMembersUpdatedSubscription;
 
   @override
   void initState() {
@@ -303,17 +283,21 @@ class _ConversationListItemState extends State<ConversationListItem>
       // TODO 更细致的判断，仅包含用户信息的消息，比如加群等消息，需要重新加载 lastMessage
       if (lastMessage != null &&
           lastMessage.content is NotificationMessageContent) {
+        // 通知类消息的摘要里带用户名/群昵称,这两个事件到达时要重算。
+        // 会话列表 ViewModel 不再因为它们做全量重载,这里是唯一的刷新入口。
         _userInfoUpdatedSubscription =
             Imclient.IMEventBus.on<UserInfoUpdatedEvent>().listen((event) {
           _loadLastMessageDigest();
         });
+        _groupMembersUpdatedSubscription =
+            Imclient.IMEventBus.on<GroupMembersUpdatedEvent>().listen((event) {
+          if (event.groupId == widget.conversationInfo.conversation.target) {
+            _loadLastMessageDigest();
+          }
+        });
       }
       _loadLastMessageDigest();
-      _loadJoinRequestCount();
-      _joinGroupRequestSubscription =
-          Imclient.IMEventBus.on<JoinGroupRequestUpdatedEvent>().listen((_) {
-        _loadJoinRequestCount();
-      });
+      _watchJoinRequestUnread();
     } else {
       isLoading = false;
     }
@@ -321,9 +305,10 @@ class _ConversationListItemState extends State<ConversationListItem>
 
   @override
   void dispose() {
-    super.dispose();
     _userInfoUpdatedSubscription?.cancel();
-    _joinGroupRequestSubscription?.cancel();
+    _groupMembersUpdatedSubscription?.cancel();
+    _releaseJoinRequestUnread();
+    super.dispose();
   }
 
   @override
@@ -333,33 +318,38 @@ class _ConversationListItemState extends State<ConversationListItem>
     if (oldWidget.conversationInfo != widget.conversationInfo) {
       if (widget.showSubtitle) {
         _loadLastMessageDigest();
-        _loadJoinRequestCount();
       }
     }
     // 副标题由隐藏切为显示时，需要补加载数据
     if (!oldWidget.showSubtitle && widget.showSubtitle) {
       _loadLastMessageDigest();
-      _loadJoinRequestCount();
+    }
+    if (widget.showSubtitle) {
+      _watchJoinRequestUnread();
+    } else {
+      _releaseJoinRequestUnread();
     }
   }
 
-  Future<void> _loadJoinRequestCount() async {
-    if (widget.conversationInfo.conversation.conversationType !=
-        ConversationType.Group) {
-      if (_joinRequestCount != 0) {
-        setState(() => _joinRequestCount = 0);
-      }
-      return;
-    }
-    try {
-      final count = await Imclient.getJoinGroupRequestUnread(
-          groupId: widget.conversationInfo.conversation.target);
-      if (mounted && count != _joinRequestCount) {
-        setState(() => _joinRequestCount = count);
-      }
-    } catch (e) {
-      // ignore
-    }
+  void _watchJoinRequestUnread() {
+    final conversation = widget.conversationInfo.conversation;
+    final groupId = conversation.conversationType == ConversationType.Group
+        ? conversation.target
+        : null;
+    if (groupId == _watchedGroupId) return;
+
+    _releaseJoinRequestUnread();
+    if (groupId == null) return;
+    _watchedGroupId = groupId;
+    _joinRequestUnread = JoinGroupRequestUnreadCache.instance.watch(groupId);
+  }
+
+  void _releaseJoinRequestUnread() {
+    final groupId = _watchedGroupId;
+    if (groupId == null) return;
+    JoinGroupRequestUnreadCache.instance.release(groupId);
+    _watchedGroupId = null;
+    _joinRequestUnread = null;
   }
 
   // 未使用 futureBuilder
@@ -370,7 +360,7 @@ class _ConversationListItemState extends State<ConversationListItem>
         digest = await widget.conversationInfo.lastMessage!.content
             .digest(widget.conversationInfo.lastMessage!);
       }
-      if (mounted) {
+      if (mounted && (digest != lastMsgDigest || isLoading)) {
         setState(() {
           lastMsgDigest = digest;
           isLoading = false;
@@ -390,8 +380,6 @@ class _ConversationListItemState extends State<ConversationListItem>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
-
     if (isDesktopShell) {
       return RepaintBoundary(
         child: HoverBuilder(
@@ -525,14 +513,7 @@ class _ConversationListItemState extends State<ConversationListItem>
                                                             .colors.danger),
                                                   )
                                                 : Container(),
-                                            if (_joinRequestCount > 0) ...[
-                                              Text(
-                                                '[${AppLocalizations.of(context)!.newJoinGroupRequestCount(_joinRequestCount)}]',
-                                                style: AppText.xs.copyWith(
-                                                    color: Colors.red),
-                                              ),
-                                              const SizedBox(width: 4),
-                                            ],
+                                            _buildJoinRequestTag(context),
                                             Expanded(
                                               // Selector 复用同一 UserInfo 实例不会因域名到达而重估，这里单独监听 MeshCache
                                               child: AnimatedBuilder(
@@ -672,6 +653,26 @@ class _ConversationListItemState extends State<ConversationListItem>
     );
 
     return mobileCellWithLongPress;
+  }
+
+  /// 「N 条新入群申请」标签。未读数由 [JoinGroupRequestUnreadCache] 异步补齐,
+  /// 只让这一小块跟着变,不牵动整行重建。
+  Widget _buildJoinRequestTag(BuildContext context) {
+    final unread = _joinRequestUnread;
+    if (unread == null) return const SizedBox.shrink();
+    return ValueListenableBuilder<int>(
+      valueListenable: unread,
+      builder: (context, count, child) {
+        if (count <= 0) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.only(right: 4),
+          child: Text(
+            '[${AppLocalizations.of(context)!.newJoinGroupRequestCount(count)}]',
+            style: AppText.xs.copyWith(color: Colors.red),
+          ),
+        );
+      },
+    );
   }
 
   /// 会话标题：外部域用户显示带黄色、小字号域后缀的富文本。
