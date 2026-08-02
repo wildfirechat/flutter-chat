@@ -3,6 +3,11 @@
 本目录用于存放 Flutter 桌面端截图功能依赖的 `flameshot` 二进制(仅 Windows/Linux;
 macOS 已改用系统原生 ScreenCaptureKit,不再需要 flameshot,见根目录 SCREENSHOT.md)。
 
+## 分发
+
+由于工具比较大，为方便开发者，采用压缩包的方式进行分发，未使用 git lfs
+ 开发、打包时，请将`linux.zip` 和`windows.zip`解压，解压后的目录结构要和后文的目录结构一致
+
 ## 目录结构
 
 ```text
