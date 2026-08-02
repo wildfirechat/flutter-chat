@@ -18,18 +18,22 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/collection/create_collection_screen.dart';
 import 'package:chat/collection/collection_icon.dart';
 import 'package:chat/poll/poll_home_screen.dart';
+import 'package:chat/poll/poll_icon.dart';
 import 'package:chat/conversation/conversation_controller.dart';
+import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/screenshot_service.dart';
 
 class _PluginItem {
-  String iconPath;
-  String key;
+  /// 图标资源；接龙/投票/截屏用矢量绘制，没有对应图片，故可空。
+  final String? iconPath;
+  final String key;
 
   _PluginItem(this.iconPath, this.key);
 }
 
 class PluginBoard extends StatelessWidget {
-  PluginBoard(this.conversation, {super.key, this.height});
+  const PluginBoard(this.conversation, {super.key, this.height});
 
   static const int _maxImagePickCount = 9;
 
@@ -40,7 +44,7 @@ class PluginBoard extends StatelessWidget {
     final items = [
       _PluginItem('assets/images/input/album.png', "album"),
       // 截图依赖 flameshot,仅原生桌面可用(鸿蒙电脑无此能力)
-      if (WfcPlatform.isNativeDesktop) _PluginItem('', "screenshot"),
+      if (WfcPlatform.isNativeDesktop) _PluginItem(null, "screenshot"),
       if (!isDesktopShell)
         _PluginItem('assets/images/input/camera.png', "camera"),
       if (!isDesktopShell) _PluginItem('assets/images/input/call.png', "call"),
@@ -54,15 +58,14 @@ class PluginBoard extends StatelessWidget {
     if (conversation.conversationType == ConversationType.Group &&
         Config.collectionServerAddress != null &&
         Config.collectionServerAddress!.isNotEmpty) {
-      items
-          .add(_PluginItem('assets/images/input/collection.png', "collection"));
+      items.add(_PluginItem(null, "collection"));
     }
 
     // 群投票仅在群组中且配置了服务地址时显示
     if (conversation.conversationType == ConversationType.Group &&
         Config.pollServerAddress != null &&
         Config.pollServerAddress!.isNotEmpty) {
-      items.add(_PluginItem('assets/images/input/poll.png', "poll"));
+      items.add(_PluginItem(null, "poll"));
     }
 
     return items;
@@ -103,13 +106,17 @@ class PluginBoard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _buildIcon(item, itemWidth),
+          _buildIcon(context, item, itemWidth),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: Text(
               _getPluginTitle(context, item.key),
               textAlign: TextAlign.center,
+              // 单行省略:「视频通话」这类较长文案不能把格子撑得比别人高
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppText.xs.copyWith(color: context.colors.textSecondary),
             ),
           ),
         ],
@@ -117,55 +124,43 @@ class PluginBoard extends StatelessWidget {
     );
   }
 
-  Widget _buildIcon(_PluginItem item, double size) {
-    // 接龙图标使用自定义 Widget
-    if (item.key == 'collection') {
-      return CollectionIconWidget(size: size);
-    }
-    // 投票图标使用自定义 Widget
-    if (item.key == 'poll') {
-      return _buildPollIcon(size);
-    }
-    // 截屏按钮使用 Material 图标
-    if (item.key == 'screenshot') {
-      return Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(size * 0.2),
-        ),
-        child: Icon(
-          Icons.cut,
-          size: size * 0.5,
-          color: const Color(0xFF585858),
-        ),
-      );
-    }
-    // 其他图标使用图片资源
-    return Image.asset(
-      item.iconPath,
-      width: size,
-      height: size,
-    );
-  }
-
-  Widget _buildPollIcon(double size) {
+  /// 统一的扩展项图标：主题色圆角底板 + 居中字形。
+  ///
+  /// 底板一律在这里画，图片资源只提供透明字形 —— 早先的 png 把白色底板烤进了图片，
+  /// 暗色模式下就是一块白斑，且和接龙/投票这些矢量图标的底板对不上。
+  Widget _buildIcon(BuildContext context, _PluginItem item, double size) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(size * 0.2),
       ),
-      child: Center(
-        child: Icon(
-          Icons.poll,
-          size: size * 0.5,
-          color: const Color(0xFF585858),
-        ),
-      ),
+      child: Center(child: _buildGlyph(context, item, size)),
     );
+  }
+
+  /// 字形按「占底板约 44%」对齐，各图标的留白比例不同，故传入的尺寸也不同：
+  /// - png 自带约 44% 的留白，铺满底板即可；
+  /// - 矢量图标画在 24 视口里、笔画范围 10 单位（≈42%），同样铺满底板；
+  /// - Material 图标的字形约占字号的 83%，故取一半。
+  Widget _buildGlyph(BuildContext context, _PluginItem item, double size) {
+    final Color color = context.colors.iconSecondary;
+    switch (item.key) {
+      case 'collection':
+        return CollectionIcon(size: size, color: color);
+      case 'poll':
+        return PollIcon(size: size, color: color);
+      case 'screenshot':
+        return Icon(Icons.cut, size: size * 0.5, color: color);
+      default:
+        return Image.asset(
+          item.iconPath!,
+          width: size,
+          height: size,
+          color: color,
+        );
+    }
   }
 
   Future<void> _onClickItem(BuildContext context, String key) async {
