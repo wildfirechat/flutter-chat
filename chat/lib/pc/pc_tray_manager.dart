@@ -73,11 +73,11 @@ class PCTrayManager {
   Future<void> _prepareIconPaths() async {
     if (Platform.isWindows) {
       _trayIconPath = await _extractAssetToTempFile(
-          'assets/images/app_icon.ico', 'tray_app_icon.ico');
+          'assets/images/tray_icon.ico', 'tray_app_icon.ico');
       _transparentIconPath = await _generateTransparentIco();
     } else if (Platform.isMacOS || Platform.isLinux) {
-      // macOS 托盘图标建议为 16x16~22x22 的模板图,这里复用 app_icon
-      _trayIconPath = 'assets/images/app_icon.png';
+      // macOS 托盘图标建议为 16x16~22x22 的模板图,这里用圆形火焰小图
+      _trayIconPath = 'assets/images/tray_icon.png';
       _transparentIconPath = 'assets/images/transparent.png';
     }
   }
