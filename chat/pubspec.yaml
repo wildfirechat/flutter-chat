@@ -93,7 +93,12 @@ dependencies:
   # 修子窗口关闭后点击主窗口崩溃),见 vendor/window_manager/PATCHES.md
   window_manager:
     path: ../vendor/window_manager
-  desktop_multi_window: ^0.2.0
+  # 本地补丁版 0.2.1(Linux:子窗口的 FlView 先套 GtkOverlay,否则 webview 子窗口
+  # 会被 webview_all_linux 重挂父节点 → FlView 重新 realize → 引擎被启动第二次 →
+  # 必崩;另外去掉建窗时那次多余的 show/hide,并让 center() 真正算居中坐标),
+  # 见 vendor/desktop_multi_window/PATCHES.md
+  desktop_multi_window:
+    path: ../vendor/desktop_multi_window
   tray_manager: ^0.2.4
   menu_base: ^0.1.1
   windows_single_instance: ^0.1.1

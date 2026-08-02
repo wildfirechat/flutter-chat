@@ -1,8 +1,9 @@
 # webview_all_windows 1.2.1(本地补丁版)
 
 来源:pub.dev `webview_all_windows: 1.2.1`(未包含上游的 `test/` 目录)。
-改动了 `windows/src/webview/webview.cc`(补丁 1)与
-`windows/src/plugin/windows_host_api.{h,cc}`(补丁 2、3),Dart 侧与上游一致。
+改动了 `windows/src/webview/webview.cc`(补丁 1)、
+`windows/src/plugin/windows_host_api.{h,cc}`(补丁 2、3)与
+`windows/src/webview/webview_host.{h,cc}`(补丁 4),Dart 侧与上游一致。
 升级 webview_all_windows 时需要把下面的补丁重新套用。
 
 这个包是 `webview_flutter` 在 Windows 上的实现(WebView2 + 纹理渲染),为什么直接
@@ -185,3 +186,55 @@ tagDsBridgeUserAgent failed: PlatformException(unsupported_platform, …)
 ### 上游
 
 上游 1.2.1 未修;上游只面向单窗口场景,不会遇到。
+
+## 补丁 4:异步创建回调加存活令牌(修"打开 webview 子窗口就崩")
+
+### 问题
+
+`WebviewHost::CreateWebview()` 把裸的 `this` 捕进异步回调:
+
+```cpp
+CreateWebViewCompositionController(
+    hwnd, [=, self = this](wil::com_ptr<ICoreWebView2CompositionController> controller,
+                           std::unique_ptr<WebviewCreationError> error) {
+      if (controller) {
+        std::unique_ptr<Webview> webview(new Webview(
+            std::move(controller), self, hwnd, owns_window, offscreen_only));  // ← self
+```
+
+`CreateCoreWebView2CompositionController()` 是**异步**的(要等 WebView2 浏览器进程
+应答,首次尤其慢,几百毫秒起),完成回调由主线程消息循环派发。而 `WebviewHost`
+归本引擎的 `WindowsHostApi::webview_host_` 所有,**子窗口引擎一销毁它就没了**;
+`WindowsHostApi::CreateWebView` 那层 lambda 捕的 `this` 与 pigeon `result` 同理。
+
+于是"开一个 webview 子窗口 → 创建还在飞 → 引擎/插件销毁 → 回调才到"就是
+use-after-free。`Webview` 构造函数第 226 行 `CreateSurface(host->compositor(), …)`
+第一个碰到已释放内存(2026-08-02 VS 抓栈,`m_ptr` 是随机值,不是 nullptr):
+
+```
+webview_all_windows_plugin.dll!winrt::com_ptr<…ICompositor>::add_ref()      ← m_ptr=0x6c6e3705064c579a
+webview_all_windows_plugin.dll!winrt::com_ptr<…ICompositor>::com_ptr(const com_ptr&)
+webview_all_windows_plugin.dll!webview_all_windows::WebviewHost::compositor() Line 61
+webview_all_windows_plugin.dll!webview_all_windows::Webview::Webview(…)      Line 226
+… WebviewHost::CreateWebview::__l2::<lambda_1>::operator()
+… WebviewHost::CreateWebViewCompositionController::__l2::<lambda_1>::operator()(HRESULT, ICoreWebView2CompositionController*)
+wildfirechat.exe!wWinMain                                                    ← 主线程消息循环派发
+```
+
+补丁 3 之前 Windows 子窗口的 `IsSupported()` 直接返回 false、根本走不到
+`CreateWebview`,所以这条一直没现形;子窗口 webview 能用了之后才暴露出来。
+
+### 改动
+
+`windows/src/webview/webview_host.{h,cc}`,以 `[PATCH]` 标出:
+
+- `WebviewHost` 新增 `std::shared_ptr<int> alive_` 存活令牌;
+- `CreateWebview()` 的完成回调改为捕获 `std::weak_ptr`,`expired()` 时**整个丢弃**
+  这次创建:不碰 `self`,也不回调 `callback`(它捕的 `WindowsHostApi` /
+  pigeon reply 一样已经失效,调了就是补丁 2 那类"messenger 上 engine 已空"的崩溃)。
+  丢弃前把已经建出来的 controller `Close()`(否则白留一个 WebView2 浏览器进程)、
+  并销毁本该由 `Webview` 接管的消息窗口。
+
+### 上游
+
+上游 1.2.1 未修;上游只面向单窗口场景,插件与进程同寿,不会遇到。

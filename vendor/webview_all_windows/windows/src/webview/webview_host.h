@@ -5,6 +5,7 @@
 #include <wil/com.h>
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -64,6 +65,12 @@ public:
 private:
   winrt::com_ptr<ABI::Windows::UI::Composition::ICompositor> compositor_;
   wil::com_ptr<ICoreWebView2Environment3> webview_env_;
+
+  // [PATCH] 存活令牌。CreateWebview 的完成回调是 WebView2 的异步回调(可能几百
+  // 毫秒后才由消息循环派发),而回调里要用裸的 WebviewHost*;host 归
+  // WindowsHostApi 所有,子窗口引擎一销毁它就没了 —— 回调再来就是 use-after-free。
+  // 回调只持这个令牌的 weak_ptr,过期就整个丢弃。见 PATCHES.md 补丁 4。
+  std::shared_ptr<int> alive_ = std::make_shared<int>(0);
 
   WebviewHost(WebviewPlatform *platform,
               wil::com_ptr<ICoreWebView2Environment3> webview_env);

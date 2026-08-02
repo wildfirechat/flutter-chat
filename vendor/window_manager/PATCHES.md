@@ -1,7 +1,7 @@
 # window_manager 0.4.3(本地补丁版)
 
 来源:pub.dev `window_manager: 0.4.3`(未包含上游的 `example/` 目录)。
-改动了 `linux/window_manager_plugin.cc`(补丁 1、2)与
+改动了 `linux/window_manager_plugin.cc`(补丁 1、2、4)与
 `windows/window_manager_plugin.cpp`(补丁 3),macOS / Dart 侧与上游一致。
 升级 window_manager 时需要把下面的补丁重新套用。
 
@@ -127,3 +127,43 @@ macOS 侧 `WindowManagerPlugin` 本来就是每个 registrar 一个实例、chan
 > 同类问题:`tray_manager` 的 Windows / Linux 实现也用进程级全局记录最后一次
 > 注册的 channel / plugin。托盘只有主窗口用得到,所以三个平台的
 > window-created 回调里都**不注册** TrayManagerPlugin,而不是给它打补丁。
+
+## 补丁 4:Linux 窗口已销毁时统一拦下 windowManager 调用(修关子窗口后崩溃)
+
+### 问题
+
+Linux 子窗口(desktop_multi_window)的**引擎比它的 GtkWindow 活得久**:关窗走
+`gtk_widget_destroy`,FlView 随之析构,但引擎和 Dart isolate 还在跑,之前排队的
+`windowManager` 调用照样会打进插件。此时 registrar 里的 FlView 弱引用已失效,
+`get_window()` 返回 nullptr,而上游每个 handler 都直接把它当有效 `GtkWindow` 用。
+
+GTK 里不少函数是**先解引用 `window->priv`、再做 `g_return_if_fail`** 的,
+`gtk_window_get_titlebar()` 就是,于是 NULL 直接段错误(2026-08-02 gdb 实证):
+
+```
+Thread 1 "wildfirechat" received signal SIGSEGV
+#0  gtk_window_get_titlebar () from /lib/x86_64-linux-gnu/libgtk-3.so.0
+#1  get_header_bar (window=0x0) at window_manager_plugin.cc:504
+#2  set_title_bar_style (…)      <- 子窗口 applyWindowStyle 里的 setTitleBarStyle
+#3  window_manager_plugin_handle_method_call
+```
+
+复现:反复开关同一类子窗口(日报 webview 窗),赶在子窗口 `applyWindowStyle`
+(postFrame + 50ms 才开始)完成之前关窗。补丁 2 只给三个方法加了判断,
+其余四十多个方法同样中招。
+
+### 改动
+
+`linux/window_manager_plugin.cc`,以 `[PATCH]` 注释标出:
+
+- `get_window()` 增加 `GTK_IS_WINDOW(toplevel)` 判断。FlView 被摘下来重挂时
+  (`webview_all_linux` 的 `ensure_overlay` 会这么干)`gtk_widget_get_toplevel()`
+  返回的是 FlView 自己,`GTK_WINDOW()` 只告警不拦截,拿去用一样是野指针;
+- `window_manager_plugin_handle_method_call()` 开头统一判断:除
+  `ensureInitialized` / `waitUntilReadyToShow`(纯应答)与 `setBrightness`
+  (只动 GtkSettings)外,`get_window()` 为空一律回
+  `window_destroyed` 错误,不再往下走。Dart 侧收到 PlatformException,
+  子窗口基类 `SubWindowAppBase` 的各处 try/catch 会打日志忽略。
+
+> 这只是"不崩"的兜底。根因是 Linux 子窗口关闭后引擎没被销毁(僵尸引擎:Dart
+> 还在跑、还在出帧),那条另有其账,见 chat 侧记录。

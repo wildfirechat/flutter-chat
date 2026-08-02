@@ -259,10 +259,9 @@ packages:
   desktop_multi_window:
     dependency: "direct main"
     description:
-      name: desktop_multi_window
-      sha256: "3ea2d696e50c3df696aabfddbd98c220ab4dde38f12c2ab12d1103bfe00ae79b"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
+      path: "../vendor/desktop_multi_window"
+      relative: true
+    source: path
     version: "0.2.1"
   device_info_plus:
     dependency: transitive

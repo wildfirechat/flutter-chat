@@ -40,7 +40,14 @@ GtkWindow* get_window(WindowManagerPlugin* self) {
   if (view == nullptr)
     return nullptr;
 
-  return GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+  // [PATCH] FlView 可能暂时没有挂在窗口下(webview_all_linux 会把 FlView 摘下来
+  // 重挂进 GtkOverlay),此时 gtk_widget_get_toplevel 返回的是 FlView 自己。
+  // GTK_WINDOW() 只告警不拦截,把它当窗口用一样是解引用野字段,这里直接判类型。
+  GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(view));
+  if (!GTK_IS_WINDOW(toplevel))
+    return nullptr;
+
+  return GTK_WINDOW(toplevel);
 }
 
 GdkWindow* get_gdk_window(WindowManagerPlugin* self) {
@@ -849,6 +856,33 @@ static void window_manager_plugin_handle_method_call(
 
   const gchar* method = fl_method_call_get_name(method_call);
   FlValue* args = fl_method_call_get_args(method_call);
+
+  // [PATCH] 窗口已经没了还继续处理调用 = 崩进程。
+  //
+  // 子窗口(desktop_multi_window)的引擎比它的 GtkWindow 活得久:关窗走
+  // gtk_widget_destroy,FlView 随之析构,但引擎/Dart isolate 还在跑,之前排队的
+  // windowManager 调用照样会打过来。此时 registrar 里的 FlView 弱引用已失效,
+  // get_window() 返回 nullptr,而上游每个 handler 都直接把它当有效 GtkWindow 用。
+  // GTK 那边不少函数(如 gtk_window_get_titlebar)是先解引用 window->priv、再做
+  // g_return_if_fail 的,于是 NULL 直接段错误:
+  //
+  //   #0 gtk_window_get_titlebar
+  //   #1 get_header_bar (window=0x0)
+  //   #2 set_title_bar_style        <- 子窗口 applyWindowStyle 的 setTitleBarStyle
+  //
+  // 复现:PC 端反复开关同一类子窗口(如日报 webview 窗),在窗口 style 应用完成
+  // 之前关窗即可。这里统一拦一道,返回错误让 Dart 侧按失败处理。
+  // ensureInitialized / waitUntilReadyToShow 是纯应答,setBrightness 只动
+  // GtkSettings,都不碰窗口,放行。
+  if (g_strcmp0(method, "ensureInitialized") != 0 &&
+      g_strcmp0(method, "waitUntilReadyToShow") != 0 &&
+      g_strcmp0(method, "setBrightness") != 0 && get_window(self) == nullptr) {
+    g_autoptr(FlMethodResponse) gone = FL_METHOD_RESPONSE(
+        fl_method_error_response_new("window_destroyed",
+                                     "window is already destroyed", nullptr));
+    fl_method_call_respond(method_call, gone, nullptr);
+    return;
+  }
 
   if (g_strcmp0(method, "ensureInitialized") == 0) {
     g_autoptr(FlValue) result = fl_value_new_bool(true);

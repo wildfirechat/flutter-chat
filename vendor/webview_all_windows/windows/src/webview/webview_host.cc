@@ -62,10 +62,31 @@ WebviewHost::WebviewHost(WebviewPlatform *platform,
 void WebviewHost::CreateWebview(HWND hwnd, bool offscreen_only,
                                 bool owns_window,
                                 WebviewCreationCallback callback) {
+  // [PATCH] 见 PATCHES.md 补丁 4:下面这个完成回调由 WebView2 异步派发,期间
+  // WindowsHostApi(以及它持有的 this)可能已经随子窗口引擎销毁了。捕获存活
+  // 令牌,过期就把这次创建的结果整个丢掉 —— 既不能碰 self(compositor() 会读到
+  // 已释放内存),也不能回调 callback(它捕获的 WindowsHostApi 与 pigeon reply
+  // 同样已经失效)。
+  std::weak_ptr<int> alive = alive_;
   CreateWebViewCompositionController(
       hwnd, [=, self = this](
                 wil::com_ptr<ICoreWebView2CompositionController> controller,
                 std::unique_ptr<WebviewCreationError> error) {
+        if (alive.expired()) {
+          if (controller) {
+            // 控制器已经建出来了,不 Close 会白留一个 WebView2 浏览器进程。
+            if (auto c = controller.try_query<ICoreWebView2Controller>()) {
+              c->Close();
+            }
+            controller = nullptr;
+          }
+          // 正常路径下这个消息窗口由 Webview 析构时销毁(owns_window_),
+          // 这里 Webview 没建起来,自己收尾。
+          if (owns_window && hwnd != nullptr) {
+            DestroyWindow(hwnd);
+          }
+          return;
+        }
         if (controller) {
           std::unique_ptr<Webview> webview(new Webview(
               std::move(controller), self, hwnd, owns_window, offscreen_only));
