@@ -24,7 +24,11 @@ public:
   ~WindowsHostApi() override;
 
 private:
-  std::unique_ptr<WebviewPlatform> platform_;
+  // [PATCH] 原为 std::unique_ptr<WebviewPlatform>(每个引擎一份)。WebviewPlatform
+  // 持有的是**线程/进程级**资源(RoInitialize、当前线程的 DispatcherQueue、
+  // D3D 设备),多引擎下每个都建一份必然失败,见 PATCHES.md 补丁 3。改为进程级
+  // 共享的裸指针,实例由 InitPlatform() 持有并刻意不回收。
+  WebviewPlatform *platform_ = nullptr;
   std::unique_ptr<WebviewHost> webview_host_;
   std::unordered_map<int64_t, std::unique_ptr<WebviewBridge>> instances_;
 

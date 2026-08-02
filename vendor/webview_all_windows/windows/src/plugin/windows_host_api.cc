@@ -49,9 +49,23 @@ WindowsHostApi::WindowsHostApi(flutter::TextureRegistrar *textures,
 }
 
 WindowsHostApi::~WindowsHostApi() {
-  webview_all_windows::WindowsWebViewHostApi::SetUp(messenger_, nullptr);
+  // [PATCH] 这里原本有一行
+  //     WindowsWebViewHostApi::SetUp(messenger_, nullptr);
+  // 用来摘掉 pigeon 的 message handler。它会崩 —— 见 PATCHES.md 补丁 2。
+  //
+  // 简述:plugin 的析构只发生在引擎销毁时,由
+  // FlutterWindowsEngine 的析构 → Stop() → registrar destruction callback
+  // 触发;而引擎析构里 messenger 与 engine 的解绑排在 Stop() **之前**。
+  // 于是 SetMessageHandler(nullptr) 走到嵌入层
+  // FlutterDesktopMessengerSetCallback 时,messenger 上的 engine 已是空,
+  // 直接空指针解引用崩进程。引擎马上就没了,handler 摘不摘毫无意义,
+  // 其他 Windows 插件(url_launcher_windows 等)也一律不摘。
   instances_.clear();
-  UnregisterClass(window_class_.lpszClassName, nullptr);
+  // [PATCH] 同样不再 UnregisterClass。窗口类 "FlutterWebviewMessage" 是进程级的,
+  // 而本项目每个 desktop_multi_window 子窗口引擎都会再注册一次本插件:第二个
+  // 实例的 RegisterClass 会因重名失败,却由**先关掉的那个**实例把类注销掉,
+  // 之后主窗口再建 webview 就没有窗口类可用了。留着不注销,代价是进程退出前
+  // 多挂一个窗口类。
 }
 
 std::optional<webview_all_windows::FlutterError>
@@ -86,7 +100,7 @@ WindowsHostApi::InitializeEnvironment(
   }
 
   webview_host_ = std::move(WebviewHost::Create(
-      platform_.get(), user_data_wpath, browser_exe_wpath, additional_args));
+      platform_, user_data_wpath, browser_exe_wpath, additional_args));
   if (!webview_host_) {
     return webview_all_windows::FlutterError(
         kErrorCodeEnvironmentCreationFailed);
@@ -118,7 +132,7 @@ void WindowsHostApi::CreateWebView(
 
   if (!webview_host_) {
     webview_host_ = std::move(WebviewHost::Create(
-        platform_.get(), platform_->GetDefaultDataDirectory()));
+        platform_, platform_->GetDefaultDataDirectory()));
     if (!webview_host_) {
       return result(webview_all_windows::FlutterError(
           kErrorCodeEnvironmentCreationFailed));
@@ -728,9 +742,22 @@ WindowsHostApi::SetSize(int64_t texture_id,
 }
 
 bool WindowsHostApi::InitPlatform() {
-  if (!platform_) {
-    platform_ = std::make_unique<WebviewPlatform>();
-  }
+  // [PATCH] 进程级单例,且刻意不回收 —— 详见 PATCHES.md 补丁 3。
+  //
+  // WebviewPlatform 的构造做的是三件**线程/进程级**的事:RoInitialize、
+  // 在当前线程上 CreateDispatcherQueueController(DQTYPE_THREAD_CURRENT)、
+  // 建 D3D 设备。而 desktop_multi_window 的子窗口引擎与主窗口跑在**同一个**
+  // 平台线程上,本插件又是每个引擎注册一份,于是:
+  //   - 一个线程只能有一个 DispatcherQueue,第二份 WebviewPlatform 的
+  //     CreateDispatcherQueueController 必失败 → valid_=false →
+  //     IsSupported() 返回 false → Dart 侧收到 unsupported_platform;
+  //   - webview 子窗口关闭时这份 WebviewPlatform 被析构,DispatcherQueue
+  //     并不会随 controller 的 Release 从线程上摘掉(要 ShutdownQueueAsync),
+  //     所以**重开 webview 子窗口同样失败**,而且是永久性的。
+  // 单例之后全进程只建一次,重开、多窗口并存都正常。不回收是因为它绑在
+  // 平台线程上,谁先关窗口都不该把另一个引擎正在用的 D3D 设备/队列带走。
+  static WebviewPlatform *const shared_platform = new WebviewPlatform();
+  platform_ = shared_platform;
   return platform_->IsSupported();
 }
 
