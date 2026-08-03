@@ -21,7 +21,7 @@ native_tools/
 > macOS 不再需要本目录:截图已改用 ScreenCaptureKit,`macos/flameshot.app` 已删除。
 
 ## 源码
-https://github.com/heavyrain2012/flameshot
+[https://github.com/heavyrain2012/flameshot](https://github.com/heavyrain2012/flameshot)
 
 ## 如何更新
 

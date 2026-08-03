@@ -6,9 +6,7 @@
 - 许可证：GNU General Public License v3.0 or later（GPL-3.0-or-later）
 - 完整许可证文本见同目录下的 `LICENSE.flameshot`
 
- flameshot 的源码位于 `../flameshot`（相对于本项目根目录的兄弟目录）。
- 如果你需要获取 flameshot 的源码，也可以通过其 GitHub 仓库下载：
- https://github.com/flameshot-org/flameshot
+ 本项目做了部分修改，开放源码位于 `https://github.com/heavyrain2012/flameshot` 。
 
 ---
 
@@ -20,7 +18,7 @@
 根据 GPL-3.0 的规定，我们向最终用户提供：
 
 1. flameshot 的完整许可证文本（`LICENSE.flameshot`）。
-2. 获取 flameshot 对应源码的途径（上述 GitHub 仓库或本地 `../flameshot` 目录）。
+2. 获取 flameshot 对应源码的途径（上述 GitHub 仓库）。
 
 ---
 
