@@ -1,0 +1,47 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.flameshot.Flameshot">
+
+    <!--
+        captureScreen:
+
+        Open the GUI screenshot capture tool.
+    -->
+    <method name="captureScreen"/>
+
+    <!--
+        attachPin:
+        @data: Byte array containing the screenshot and geometry information.
+
+        Attach a pinned screenshot widget to the daemon.
+    -->
+    <method name="attachPin">
+      <arg name="data" type="ay" direction="in"/>
+    </method>
+
+    <!--
+        attachScreenshotToClipboard:
+        @screenshot: Byte array containing the screenshot pixmap.
+
+        Copy the screenshot to the daemon's clipboard, to prevent losing the
+        clipboard when a flameshot subcommand exits.
+    -->
+    <method name="attachScreenshotToClipboard">
+      <arg name="screenshot" type="ay" direction="in"/>
+    </method>
+
+    <!--
+        attachTextToClipboard:
+        @text: Text to be copied to the clipboard.
+        @notification: Optional notification to send.
+
+        Copy the text to the daemon's clipboard, to prevent losing the
+        clipboard when a flameshot subcommand exits.
+    -->
+    <method name="attachTextToClipboard">
+      <arg name="text" type="s" direction="in"/>
+      <arg name="notification" type="s" direction="in"/>
+    </method>
+
+  </interface>
+</node>

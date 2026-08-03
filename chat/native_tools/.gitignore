@@ -1,3 +1,0 @@
-# 不提交 flameshot 二进制（体积大，应由 CI 或本地构建后放置）
-windows/flameshot/
-linux/flameshot/
