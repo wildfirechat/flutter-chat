@@ -4,6 +4,7 @@ import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/message.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/sticker_message_content.dart';
+import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/user_info.dart';
@@ -20,6 +21,7 @@ import '../../config.dart';
 import '../../ui_model/ui_message.dart';
 import '../../utils/mesh_user_name.dart';
 import '../../widget/portrait.dart';
+import '../quoted_message_line.dart';
 import 'bubble_tail_border.dart';
 import 'message_cell_builder.dart';
 import 'package:chat/theme/app_colors.dart';
@@ -134,6 +136,25 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
       return null;
     }
     return renderBox.localToGlobal(Offset.zero) & renderBox.size;
+  }
+
+  /// 桌面端气泡最宽只到内容区宽度减去这一档,给对侧留白,长文本不顶到另一边。
+  /// 正文类气泡(文本、流式文本)共用一个数,免得各自漂移出不同的行宽。
+  static const double desktopBubbleInset = 120;
+
+  /// 给正文类气泡套上桌面端的最大宽度;移动端由外层 Flexible 收着,原样返回。
+  @protected
+  Widget constrainBubbleWidth(Widget child) {
+    if (!isDesktopShell) {
+      return child;
+    }
+    return LayoutBuilder(
+      builder: (context, constraints) => ConstrainedBox(
+        constraints:
+            BoxConstraints(maxWidth: constraints.maxWidth - desktopBubbleInset),
+        child: child,
+      ),
+    );
   }
 
   /// 让正文支持部分选择:桌面端鼠标拖选,移动端长按全选后拖手柄调整范围。
@@ -280,12 +301,61 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
               _playStatus(context),
             ],
           ),
+          _quotedMessage(context),
           Container(
             padding: const EdgeInsets.only(bottom: 3),
           )
         ],
       ),
     );
+  }
+
+  /// 被引用的消息挂在气泡下面(参考微信),不进气泡:引用是这条消息的附注,
+  /// 不该跟着气泡底色走,也不该把气泡撑宽。目前只有文本消息能带引用。
+  Widget _quotedMessage(BuildContext context) {
+    final content = model.message.content;
+    final quoteInfo = content is TextMessageContent ? content.quoteInfo : null;
+    if (quoteInfo == null) {
+      return const SizedBox.shrink();
+    }
+    // 带尾巴的气泡在靠头像那一侧多占了尾巴的宽度,引用行要跟气泡本体对齐
+    final double tailInset =
+        hasBubbleTail ? BubbleTailBorder.defaultTailWidth : 0;
+    return LayoutBuilder(builder: (context, constraints) {
+      return Padding(
+        padding: EdgeInsets.only(
+          top: 4,
+          left: isSendMessage ? 0 : tailInset,
+          right: isSendMessage ? tailInset : 0,
+        ),
+        child: ConstrainedBox(
+          // 行宽和气泡同一个上限,再长的摘要按两行省略
+          constraints: BoxConstraints(
+            maxWidth: (isDesktopShell
+                    ? constraints.maxWidth - desktopBubbleInset
+                    : constraints.maxWidth) -
+                tailInset,
+          ),
+          child: QuotedMessageLine(
+            quoteInfo: quoteInfo,
+            isSendMessage: isSendMessage,
+            // 单聊里被引用的必然是这两个人之一,不必再显示发送者
+            showSender: model.message.conversation.conversationType !=
+                ConversationType.Single,
+            onLongPress: isDesktopShell
+                ? null
+                : (details) => conversationController?.onLongPressedCell(
+                    context, model, bubbleRect),
+            onSecondaryTapUp: (details) =>
+                conversationController?.onLongPressedCell(
+                    context,
+                    model,
+                    Rect.fromCenter(
+                        center: details.globalPosition, width: 4, height: 4)),
+          ),
+        ),
+      );
+    });
   }
 
   Widget _sendStatus() {

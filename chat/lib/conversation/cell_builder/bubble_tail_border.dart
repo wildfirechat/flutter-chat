@@ -13,10 +13,14 @@ class BubbleTailBorder extends ShapeBorder {
   const BubbleTailBorder({
     required this.tailOnRight,
     this.radius = 8.0,
-    this.tailWidth = 6.0,
+    this.tailWidth = defaultTailWidth,
     this.tailHeight = 14.0,
     this.tailTop = 11.0,
   });
+
+  /// 尾巴的默认长度。气泡外面要跟气泡本体对齐的元素(如气泡下面的引用行)
+  /// 得把这一档让出来,所以单列成常量。
+  static const double defaultTailWidth = 6.0;
 
   /// true 尾巴在右侧(己方发出),false 在左侧(对方发来)。
   final bool tailOnRight;

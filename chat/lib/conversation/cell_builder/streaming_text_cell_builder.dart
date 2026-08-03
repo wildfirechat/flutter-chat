@@ -33,7 +33,7 @@ class StreamingTextCellBuilder extends PortraitCellBuilder {
 
   @override
   Widget buildMessageContent(BuildContext context) {
-    return Column(
+    return constrainBubbleWidth(Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Wrap(
@@ -72,6 +72,6 @@ class StreamingTextCellBuilder extends PortraitCellBuilder {
           ],
         ),
       ],
-    );
+    ));
   }
 }
