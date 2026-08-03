@@ -36,73 +36,78 @@ class TextCellBuilder extends PortraitCellBuilder {
   Widget buildMessageContent(BuildContext context) {
     final Widget child;
     if (textMessageContent.quoteInfo != null) {
-      child = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          selectableText(
-              context,
-              Text(
-                textMessageContent.text,
-                overflow: TextOverflow.ellipsis,
-                maxLines: 3,
-              )),
-          const SizedBox(height: 6),
-          GestureDetector(
-            onTap: () async {
-              var messageUid = textMessageContent.quoteInfo!.messageUid;
-              var message = await Imclient.getMessageByUid(messageUid);
-              if (message != null) {
-                if (message.content is ImageMessageContent ||
-                    message.content is VideoMessageContent) {
-                  if (context.mounted) {
-                    if (isDesktopShell) {
-                      // 参考微信:引用的图片/视频在独立窗口中预览(单条,不翻页)
-                      MediaPreviewWindowManager.instance.show(
-                        mediaItems: [message],
-                        defaultIndex: 0,
-                      );
-                    } else {
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          opaque: false,
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  MMPreviewView(
-                            [message],
-                            defaultIndex: 0,
-                            pageToEnd: (fromIndex, tail) {},
+      // 气泡要跟着内容自适应宽度:引用块不能写 width: double.infinity(那会把
+      // 气泡撑满整行)。用 IntrinsicWidth 取正文和引用块里较宽的那个作为气泡宽度
+      // (仍受外层 maxWidth 约束,超了正常换行),再用 stretch 让引用块补齐到同宽,
+      // 避免正文长、引用短时下面的灰底块比正文窄一截。
+      child = IntrinsicWidth(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            selectableText(
+                context,
+                Text(
+                  textMessageContent.text,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 3,
+                )),
+            const SizedBox(height: 6),
+            GestureDetector(
+              onTap: () async {
+                var messageUid = textMessageContent.quoteInfo!.messageUid;
+                var message = await Imclient.getMessageByUid(messageUid);
+                if (message != null) {
+                  if (message.content is ImageMessageContent ||
+                      message.content is VideoMessageContent) {
+                    if (context.mounted) {
+                      if (isDesktopShell) {
+                        // 参考微信:引用的图片/视频在独立窗口中预览(单条,不翻页)
+                        MediaPreviewWindowManager.instance.show(
+                          mediaItems: [message],
+                          defaultIndex: 0,
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            opaque: false,
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    MMPreviewView(
+                              [message],
+                              defaultIndex: 0,
+                              pageToEnd: (fromIndex, tail) {},
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      }
                     }
+                  } else {
+                    var digest = await message.content.digest(message);
+                    Fluttertoast.showToast(msg: digest);
                   }
                 } else {
-                  var digest = await message.content.digest(message);
-                  Fluttertoast.showToast(msg: digest);
+                  if (context.mounted) {
+                    Fluttertoast.showToast(
+                        msg: AppLocalizations.of(context)!.messageNotExist);
+                  }
                 }
-              } else {
-                if (context.mounted) {
-                  Fluttertoast.showToast(
-                      msg: AppLocalizations.of(context)!.messageNotExist);
-                }
-              }
-            },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: context.colors.bubbleQuoted,
-                borderRadius: BorderRadius.circular(4),
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: context.colors.bubbleQuoted,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  "${textMessageContent.quoteInfo!.userDisplayName ?? ''}: ${textMessageContent.quoteInfo!.messageDigest ?? ''}",
+                  style: AppText.xs
+                      .copyWith(color: context.colors.bubbleQuotedText),
+                ),
               ),
-              child: Text(
-                "${textMessageContent.quoteInfo!.userDisplayName ?? ''}: ${textMessageContent.quoteInfo!.messageDigest ?? ''}",
-                style:
-                    AppText.xs.copyWith(color: context.colors.bubbleQuotedText),
-              ),
-            ),
-          )
-        ],
+            )
+          ],
+        ),
       );
     } else {
       final text = textMessageContent.text.trim();
