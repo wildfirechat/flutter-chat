@@ -38,6 +38,9 @@ const double _kTailWidth = 16;
 /// [tail] 为 true 时卡片朝锚点一侧长出一个指向性小三角(微信预览卡片形态)。
 /// 尾巴的横向位置由本文件按锚点中心算,方向必须和落位一致,所以此时
 /// [placement] 不能是 auto —— 调用方自己判断上方放不放得下(它才知道内容高度)。
+///
+/// [backgroundColor] 覆盖卡片底色(默认 popupBg)。尾巴是卡片外形的一部分,
+/// 内容自带底色又和 popupBg 不同时(如表情面板),要在这里改成同色。
 Future<T?> showPcPopover<T>({
   required BuildContext context,
   required Rect anchor,
@@ -46,6 +49,7 @@ Future<T?> showPcPopover<T>({
   PcPopoverAlign align = PcPopoverAlign.start,
   PcPopoverPlacement placement = PcPopoverPlacement.auto,
   bool tail = false,
+  Color? backgroundColor,
   required WidgetBuilder builder,
 }) {
   assert(!tail || placement != PcPopoverPlacement.auto,
@@ -58,6 +62,7 @@ Future<T?> showPcPopover<T>({
         align: align,
         placement: placement,
         tail: tail,
+        backgroundColor: backgroundColor,
         builder: builder),
   );
 }
@@ -69,6 +74,7 @@ class _PcPopoverRoute<T> extends PopupRoute<T> {
   final PcPopoverAlign align;
   final PcPopoverPlacement placement;
   final bool tail;
+  final Color? backgroundColor;
   final WidgetBuilder builder;
 
   _PcPopoverRoute({
@@ -78,6 +84,7 @@ class _PcPopoverRoute<T> extends PopupRoute<T> {
     required this.align,
     required this.placement,
     required this.tail,
+    required this.backgroundColor,
     required this.builder,
   });
 
@@ -135,7 +142,7 @@ class _PcPopoverRoute<T> extends PopupRoute<T> {
         child: Theme(
           data: PcTheme.themeData(context),
           child: Material(
-            color: context.colors.popupBg,
+            color: backgroundColor ?? context.colors.popupBg,
             // 卡片压在聊天区上:阴影拉开纵深,再用一道极淡的边收住轮廓。
             elevation: 12,
             shadowColor: context.colors.shadow,

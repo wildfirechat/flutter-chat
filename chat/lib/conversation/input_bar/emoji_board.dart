@@ -143,6 +143,11 @@ const List<String> kChatEmojis = [
   '🏡'
 ];
 
+/// 面板底色。桌面端弹层要把卡片(含指向表情按钮的小尾巴)刷成同一个颜色,
+/// 尾巴才不会和面板脱色,所以对外暴露。
+Color emojiBoardBackgroundColor(BuildContext context) =>
+    isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg;
+
 class EmojiBoard extends StatefulWidget {
   final List<String> emojis;
   final OnPickerEmojiCallback pickerEmojiCallback;
@@ -352,8 +357,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
 
     return Container(
       height: boardHeight,
-      color:
-          isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
+      color: emojiBoardBackgroundColor(context),
       child: Column(
         children: [
           // Tab Bar (Top Row as requested)
@@ -465,6 +469,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
                   return Material(
                     color: Colors.transparent,
                     child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
                       onTap: () =>
                           widget.pickerEmojiCallback(widget.emojis[index]),
                       child: Center(

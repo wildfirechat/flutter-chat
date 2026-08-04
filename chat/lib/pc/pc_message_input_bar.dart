@@ -169,6 +169,11 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
       width: 400,
       // 面板居中于表情按钮,左半边压在会话列表上方(微信 PC 的位置感)。
       align: PcPopoverAlign.center,
+      // 输入栏贴着窗口底,面板只可能落在上方,尾巴固定朝下指向表情按钮。
+      placement: PcPopoverPlacement.above,
+      tail: true,
+      // 尾巴是卡片外形的一部分,底色要跟面板一致,否则暗色下会露出一块浅色三角。
+      backgroundColor: emojiBoardBackgroundColor(context),
       builder: (popoverContext) => EmojiBoard(
         kChatEmojis,
         pickerEmojiCallback: (emoji) {
