@@ -16,7 +16,19 @@ WindowCreatedCallback _g_window_created_callback = nullptr;
 }
 
 gboolean on_close_clicked(GtkWidget *widget, GdkEvent *event, gpointer user_data) {
-    gtk_widget_destroy(widget);
+    // [PATCH] 原来在这里同步 gtk_widget_destroy():销毁发生在 delete-event
+    // 回调栈内,此刻该窗口的帧时钟/绘制事件仍在途;而关窗后引擎不会立即停
+    // (PATCHES.md "还没做:关窗后引擎/Dart 仍在跑"),僵尸引擎继续请求出帧,
+    // 绘制落到正在销毁/已销毁的 GdkWindow 上,几秒后(有新的帧被调度时)在
+    // gdk_window_end_draw_frame 里 SIGSEGV,整个进程连带主窗口崩掉。
+    // 改为:先 hide —— 未映射窗口的帧时钟停止,不再调度新的绘制;destroy
+    // 推迟到 idle,让当前事件处理与在途绘制走完、主循环回到干净状态再销毁。
+    // 上游 macOS/Windows 实现同样是异步销毁,Linux 这条同步路径是独有的。
+    gtk_widget_hide(widget);
+    g_idle_add(+[](gpointer data) -> gboolean {
+      gtk_widget_destroy(GTK_WIDGET(data));
+      return G_SOURCE_REMOVE;
+    }, widget);
     return TRUE;
 }
 

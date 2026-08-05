@@ -119,3 +119,29 @@ Ubuntu 24.04 + llvmpipe)都是同一个根因:
 (FlView)已经析构之后还在发 platform message(所以才有 window_manager 那个
 `window=0x0` 崩溃)。补丁 1 落地后要重新确认:关掉子窗口,那三个引擎线程是不是
 真的退出了。如果没退,再查谁多持了一份 FlEngine 引用。
+
+## 补丁 3(待验证):关窗改为 hide + idle 异步销毁(修"关子窗口几秒后整个进程崩")
+
+### 现象
+
+Linux 上关闭任意子窗口(图片预览/朋友圈/通话/webview),约 3 秒后整个应用
+(含主窗口)消失。gdb 实证(2026-08-02,无系统符号,栈顶两帧 strip):
+主线程 `gtk_main_do_event` → 某窗口画帧 → `gdk_window_end_draw_frame`
+内部 SIGSEGV;崩溃前终端有 5 条 `eglMakeCurrent failed`。即:窗口销毁后
+仍有绘制被调度到已死的 GdkWindow/EGL surface 上。
+
+### 改动
+
+`linux/flutter_window.cc` `on_close_clicked`:不再在 delete-event 回调里
+同步 `gtk_widget_destroy()`,改为先 `gtk_widget_hide()`(未映射窗口的帧时钟
+停止,不再调度新绘制),destroy 用 `g_idle_add` 推迟到主循环干净时执行。
+上游 macOS/Windows 本来就是异步销毁,Linux 这条同步路径是独有的。
+
+### 待验证
+
+- 若不再崩:确认根因是"销毁与在途绘制同栈竞态",本节并入上面"还没做"
+  的引擎销毁账目(僵尸引擎本身仍未修,只是不再踩雷)。
+- 若还崩且栈不变:说明绘制源不是事件队列里的在途绘制,而是僵尸引擎主动
+  请求出帧,需要回到"关窗时先停引擎再销毁窗口"的路线;
+  下一步数据:`thread apply all bt`(引擎线程自带符号)+
+  崩溃现场对各 `???` 帧地址逐条 `info symbol <addr>`(不需要网络符号)。
