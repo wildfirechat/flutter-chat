@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show AppExitResponse;
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,10 @@ import 'window_event_channel.dart';
 ///   初始化并发导致的 macOS 原生崩溃)→ setMinimumSize → show → focus。
 /// - 偏好加载完成后按最终语言再走一次标题更新(同样走门闩)。
 /// - 关窗:[onWindowClose] 通知主窗口 `<kind>.windowClosed`。
+/// - 退出请求:init 即注册 [AppLifecycleListener],子窗口 isolate 对
+///   System.requestAppExit 一律应答 cancel(否则 Linux 上引擎的
+///   delete-event handler 会让整个进程随子窗口一起退出,
+///   见 [_lifecycleListener] 注释)。
 /// - build:MultiProvider(三个偏好 VM)+ Consumer(Locale+FontSize)+
 ///   MaterialApp(主题/字号/语言与主窗口同源);未 ready 时统一显示
 ///   CircularProgressIndicator,ready 后交给 [buildHome]。
@@ -173,6 +178,13 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
 
   AmbientShortcutRegistration? _closeShortcut;
 
+  /// Linux 上 flutter_gtk 会给每个 FlView 的顶层窗口挂 delete-event
+  /// handler:子窗口点关闭时引擎向本 isolate 发 System.requestAppExit,
+  /// Dart 默认应答 'exit' 会让原生侧 g_application_quit 杀掉整个进程
+  /// (含主窗口)。子窗口的退出请求一律应答 cancel——窗口的实际销毁由
+  /// desktop_multi_window 原生侧自行负责,与本应答互不干扰。
+  AppLifecycleListener? _lifecycleListener;
+
   String get _tag => windowKind;
 
   // -------------------------------------------------------------- init 流程
@@ -183,6 +195,9 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
     fontSizeViewModel = FontSizeViewModel(autoLoad: false);
     themeViewModel = ThemeViewModel();
     localeViewModel = LocaleViewModel(autoLoad: false);
+    _lifecycleListener = AppLifecycleListener(
+      onExitRequested: () async => AppExitResponse.cancel,
+    );
     if (closableByShortcut) {
       // 登记为环境快捷键而不是包一层 Focus:焦点在谁手里都能关窗,
       // 内容区也不必再为了收按键去和祖先抢焦点(详见 ambient_shortcuts.dart)
@@ -202,6 +217,7 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
 
   @override
   void dispose() {
+    _lifecycleListener?.dispose();
     _closeShortcut?.dispose();
     super.dispose();
   }
