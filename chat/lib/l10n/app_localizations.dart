@@ -6494,6 +6494,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'在系统浏览器中打开'**
   String get openInSystemBrowser;
+
+  /// No description provided for @greetingMorning.
+  ///
+  /// In zh, this message translates to:
+  /// **'早上好'**
+  String get greetingMorning;
+
+  /// No description provided for @greetingNoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'中午好'**
+  String get greetingNoon;
+
+  /// No description provided for @greetingAfternoon.
+  ///
+  /// In zh, this message translates to:
+  /// **'下午好'**
+  String get greetingAfternoon;
+
+  /// No description provided for @greetingEvening.
+  ///
+  /// In zh, this message translates to:
+  /// **'晚上好'**
+  String get greetingEvening;
+
+  /// No description provided for @greetingNight.
+  ///
+  /// In zh, this message translates to:
+  /// **'夜深了'**
+  String get greetingNight;
+
+  /// No description provided for @workspaceWelcomeSubtitle.
+  ///
+  /// In zh, this message translates to:
+  /// **'祝你有美好的一天'**
+  String get workspaceWelcomeSubtitle;
+
+  /// No description provided for @workspaceWelcomeHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'探索今天的高效工作吧'**
+  String get workspaceWelcomeHint;
+
+  /// No description provided for @workspaceWelcomeDate.
+  ///
+  /// In zh, this message translates to:
+  /// **'{year} 年 {month} 月 {day} 日'**
+  String workspaceWelcomeDate(int year, int month, int day);
 }
 
 class _AppLocalizationsDelegate

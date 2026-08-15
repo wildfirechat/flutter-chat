@@ -256,7 +256,7 @@ Future<void> _loadTab(
 ) async {
   // 必须赶在 loadRequest 之前:页面靠 UA 里的标记选 dsbridge 传输。
   // 只在桌面打 —— 移动端现在选中的分支是通的,不去动它。
-  await ensureDesktopDsBridgeUserAgent(controller);
+  await ensureDsBridgeUserAgent(controller);
 
   final bool isHome = !tab.closable;
   // 首页地址在加载时才取 Config,与改造前一致 —— selectServer 将来接上双网判断后,

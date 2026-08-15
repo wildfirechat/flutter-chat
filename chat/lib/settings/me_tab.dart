@@ -210,9 +210,14 @@ class SelfProfile extends StatelessWidget {
               constraints: BoxConstraints(
                   minHeight: LayoutScale.watchScale(context, 70.0,
                       cap: LayoutScale.rowCap)),
-              margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+              // 上下等距。原来是 (top 0, bottom 10),整块内容比白卡的中线高 5px ——
+              // 手机上标题栏与白卡同色看不出来,平板的我 tab 有了灰色标题栏,白卡
+              // 成了独立一块,这 5px 就明显偏上了。总高仍是 80,与改前一致。
+              margin: const EdgeInsets.fromLTRB(10, 5, 10, 5),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                // 行高被 minHeight 撑到 70,头像只有 60:start 会让头像贴着顶、
+                // 底下空 10px。居中对齐,头像与右侧文字也才算彼此对齐。
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Portrait(
                     userInfo.portrait ?? Config.defaultUserPortrait,
@@ -257,8 +262,9 @@ class SelfProfile extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       child: Container(
-                        margin:
-                            const EdgeInsets.only(left: 10, top: 0, bottom: 10),
+                        // 只留与头像之间的间距。原来的 bottom: 10 是配合上面
+                        // CrossAxisAlignment.start 用的,居中之后它会把文字顶高 5px。
+                        margin: const EdgeInsets.only(left: 10),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.center,

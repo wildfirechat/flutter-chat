@@ -61,7 +61,7 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
 
     unawaited(() async {
       // 同工作台:UA 上的标记决定页面选不选 dsbridge 传输,必须赶在加载之前。
-      await ensureDesktopDsBridgeUserAgent(controller);
+      await ensureDsBridgeUserAgent(controller);
       await controller
           .loadRequest(Uri.parse(MediaUrlRedirector.redirect(widget.url)));
     }());

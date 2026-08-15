@@ -40,7 +40,10 @@ class _AppHomeState extends State<AppHome> {
   /// 选中的 tab 与列表滚动位置都不丢 —— 否则转一下屏就跳回消息 tab、滚回顶部。
   ///
   /// 只有平板需要:手机和 PC 不存在这种搬移,给 null 保持原来的 const 构造。
-  final GlobalKey _tabBarKey = GlobalKey();
+  ///
+  /// 带类型是为了能读到 [HomeTabBarState.tabIndex]:PadHome 是跨断点新建的,
+  /// 得从上一形态那份 State 里把"停在第几个 tab"接过来。
+  final GlobalKey<HomeTabBarState> _tabBarKey = GlobalKey<HomeTabBarState>();
 
   @override
   void initState() {
@@ -108,7 +111,12 @@ class _AppHomeState extends State<AppHome> {
       case AppShellKind.pcThreePane:
         return const PCHome();
       case AppShellKind.padTwoPane:
-        return PadHome(tabBarKey: _tabBarKey);
+        // currentState 此刻还是上一形态那份(搬移发生在本次 build 之后),
+        // 首次进入时为 null,取默认的 0。
+        return PadHome(
+          tabBarKey: _tabBarKey,
+          initialTabIndex: _tabBarKey.currentState?.tabIndex ?? 0,
+        );
     }
   }
 }

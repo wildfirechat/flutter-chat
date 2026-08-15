@@ -25,6 +25,13 @@ class PCShellViewModel extends ChangeNotifier {
   /// 请求清空右栏回到占位欢迎页。
   VoidCallback? paneCloser;
 
+  /// 由 PadHome 注入:当前 tab 那一栏的详情 [NavigatorState]。
+  ///
+  /// 给的是 Navigator 本身而不是"打开某页"的回调,因为有些入口(如 [showSearch])
+  /// 只接受 BuildContext、要自己压路由,[openPage] 那套代不了。
+  /// PC 不注入 —— 它的中栏用的是 pc_* 那套自己的页面,没有走到这条路的入口。
+  NavigatorState? Function()? paneNavigatorProvider;
+
   int _selectedTab = tabChat;
   Conversation? _selectedConversation;
   String? _selectedContactItemId;
@@ -41,6 +48,7 @@ class PCShellViewModel extends ChangeNotifier {
     conversationOpener = null;
     pageOpener = null;
     paneCloser = null;
+    paneNavigatorProvider = null;
   }
 
   String? get selectedContactItemId => _selectedContactItemId;

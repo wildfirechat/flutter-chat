@@ -304,3 +304,152 @@ P5 一节(iPad 竖/横/1:1 分屏/1:3 分屏/台前调度、Android 平板竖/�
 
 **验证**:`flutter analyze` 0 error,问题总数仍是基线 363;`chat` 98 通过、`imclient` 16 通过,
 **两个套件首次全绿**。
+
+### 阶段 6 — 各 tab 的下钻页进右栏 ✅ 已完成
+
+P2 落地时右栏只接会话与 `app_navigator` 那几个入口,左栏其余 tab 的下钻仍是整页
+`Navigator.push`(当时记在"已知缺口")。这一阶段把它补上,顺带修了长按菜单的定位。
+导航形态参考 hm-chat 的 `SplitTabPane`(见该仓库 CLAUDE.md 的"Pad/宽屏适配"一节)。
+
+**每个 tab 一条独立详情栈**。右栏从一个 `Navigator` 变成一叠(每 tab 一个),
+用 `IndexedStack` 按当前 tab 选中。这是形态问题而不是偏好:共用一条栈的话,
+在通讯录点开某人资料再切到消息 tab,右栏还挂着那个人;切回通讯录又变成了会话。
+微信 Pad 与 hm-chat 都是每 tab 一条栈,页面在哪个 tab 打开就留在哪个 tab。
+`HomeTabBar` 为此多了两个可选参数(`twoPane`/`onTabChanged`),手机与 PC 拿默认值,
+构造路径与之前逐位相同。
+
+**工作台**:两栏时左栏换成迎宾面板 `PadWorkspaceWelcome`(问候语 + 日期),
+真正的网页常驻右栏 —— 与 hm-chat 的 `WorkspacePane` 同一套。工作台没有
+"列表 → 详情"的层次,一整个网页塞进 320 宽的左栏没法看。
+
+**入口改走 `app_navigator`**:左栏顶部的搜索与加号菜单(发起聊天、添加朋友)、
+通讯录 6 处、发现页 6 处。手机端这些调用最终落回 `Navigator.push(MaterialPageRoute)`,
+与改动前逐位相同;PC 端根本不经过这些组件(它有自己的 `pc_contact_list` /
+`pc_discovery_list` / `pc_search_view`)。
+
+`app_navigator` 新增两个入口:
+- `openSearch` —— `showSearch` 的界面是条自带动画与状态的路由,只能由它自己压,
+  `openPage` 代不了。所以换的是"压给哪个 Navigator":取右栏 Navigator 的
+  overlay context,它的最近 Navigator 祖先正是右栏那个。
+- `replaceWithConversation` —— 选完人/建完群后进会话。单栏仍是 pushReplacement
+  (与改动前一致),多栏则整栏换成会话并同步左栏选中态。
+
+**长按菜单定位(缺陷修复)**。`PopupMenuPanel` 按**全局坐标**定位、按
+`MediaQuery.size` 避让边缘,而菜单实际挂在最近的 Overlay 上 —— 平板两栏时那是
+右栏,于是菜单整体右移了一个左栏的宽度。桌面右键菜单早有这道换算
+(`_showDesktopContextMenu` 里那段注释),移动端这条路径漏了。修法是加
+`PopupMenuPanel.anchorIn`,在两个调用点(消息菜单、选区菜单)统一换算,
+并把避让边界从窗口尺寸改成宿主尺寸。手机上 Overlay 就是整屏,换算前后逐位相同。
+
+**顺带修的三处**,都是"一个 Navigator"的旧假设在嵌套栈下不成立:
+- 五条栈不能各包一个 `NavigatorPopHandler`:它们的 `PopScope` 会注册到同一条外层
+  路由上,按一次返回键把没露面的那几栏也弹掉。改成整块一个 `PopScope`,
+  由 `NavigationNotification` 驱动重算当前栏能否返回。
+- 建群的"正在处理"圈用 `showDialog` 压在根 Navigator 上,却用
+  `Navigator.of(context).pop()` 关 —— 平板上弹掉的是右栏当前页,圈一直转。
+  改成 `rootNavigator: true`,手机上两者本就是同一个。
+- 跨断点新建的 `PadHome` 不知道左栏停在第几个 tab,右栏会对不上。改由 `AppHome`
+  从上一形态的 `HomeTabBarState.tabIndex` 读出来传入。
+
+**懒建**:没进过的 tab 不建右栏。工作台那一栏一建就是个 WebView 要拉远端页面,
+不该因为"进了平板形态"就白拉一次。
+
+**验证**:`flutter analyze` 0 error,问题总数仍是基线 363;`chat` 98 通过、
+`imclient` 16 通过,两个套件仍全绿。
+
+### 阶段 7 — 两栏形态的三处收口 ✅ 已完成
+
+**「PC 已登录」横幅进右栏**。顺手把 `openPage` 的返回值从 `void` 改成 `Future<void>`:
+单栏下它在页面被弹回时完成(与直接 `Navigator.push` 一致),多栏下右栏是"换内容"、
+没有"关闭"那一刻,立即完成。靠 `.then()` 做收尾的调用点因此要另想办法 ——
+这里的做法是让 `PCOnlineDevicesScreen` 踢完设备后**自己通知**
+`StatusNotificationViewModel`,三端都即时正确,不再依赖"页面被弹回"这个时机。
+
+**键盘不再顶起左栏**。根因是 PadHome 自己那层 `Scaffold`:
+`resizeToAvoidBottomInset` 默认 true,把整个 body(两栏一起)缩短,左栏底部的 tab
+栏就被顶到键盘上面去。而且 Scaffold 缩身的同时会用 `MediaQuery.removeViewInsets`
+把 viewInsets 从 body 里抹掉 —— 右栏那些真正需要让位的组件(输入栏、表情面板的
+高度缓存,见阶段 4)反而读不到键盘高度,平板上那套缓存等于是废的。
+
+改成 `resizeToAvoidBottomInset: false`,整行保持满高,两栏各自处理:
+- 左栏包一层 `_KeyboardInsetShield`,把 viewInsets 底部清零,并从 `viewPadding`
+  把 `padding.bottom` 补回来(键盘弹起时系统会把安全区并进 viewInsets,
+  只清前者会让 tab 栏丢掉 home indicator 那一档);
+- 右栏的 `ConversationScreen` 自己那层 Scaffold 照常避让,与手机上完全一致。
+
+`_KeyboardInsetShield` 做成独立 Widget 而不是 PadHome 里的一个方法:MediaQuery 是
+逐帧跟着键盘动画变的,读在 `PadHome.build` 里会把右栏那一整叠拖着一起重建。
+
+**媒体预览全屏**。三处入口(会话内、引用消息、聊天媒体网格)原本都是
+`Navigator.push`,在右栏里就只盖住右半边;而且预览的进出场动画是按气泡的**全局**
+坐标算的,压错栈连动画起点都是偏的。新增 `app_navigator.pushFullScreen`
+(压到根 Navigator),三处统一改走它。手机上根 Navigator 就是唯一那个,逐位相同;
+PC 走的是独立子窗口,不经过这条路径。
+
+**验证**:`flutter analyze` 0 error,问题总数仍是基线 363;`chat` 98 通过、
+`imclient` 16 通过,两个套件仍全绿。
+
+### 阶段 8 — 右栏栈的层级(缺陷修复)✅ 已完成
+
+从通讯录点开某人 → 点「发送消息」,会话页顶部没有返回键,资料页也回不去了。
+原因是阶段 6 里**所有**往右栏开的东西都走 `_setPaneRoot`
+(`pushAndRemoveUntil(..., isFirst)`),不分"换内容"还是"往下钻",一律把栈清到只剩
+占位页;会话页又硬写着 `showBackButton: false`。两件事叠在一起,资料页就没了。
+
+这两种语义得分开:
+- **换内容**(从左栏选了另一个联系人、另一个发现入口)→ 替换,不叠栈;
+- **往下钻**(从资料页点「发消息」)→ 压入,下面那页留着,返回回得去。
+
+判据取自**栈里现在有什么**:栈顶已经是会话就替换(在会话之间点来点去不该越叠越深,
+与 PC 一致),否则压入。返回键则看新页之下除占位页外还有没有真页面 —— 消息 tab 直接
+点开的会话下面只有占位页,返回过去是一片空白,那就不给返回键。
+
+`NavigatorState` 不对外暴露栈内容,而栈里除了 PadHome 自己压的还有页面自己 push 的
+子页(群资料、成员列表…),所以加了个 `_PaneRouteTracker`(`NavigatorObserver`)
+给每条栈如实记一份路由表。占位页带上路由名 `pad-empty` 以便从"真页面"里排除 ——
+工作台那条栈的基座是工作台本身而不是占位页,不能按"是不是第一条"来判。
+
+顺带把两处**因为改成每 tab 一条栈而变得不准**的状态修了:
+- `_paneShowsConversation` 是个全局 bool,可会话可能压在一条已经切走的栈上。
+  换成 `_conversationPaneTab`(记在哪条栈上),会话被删除时只弹**那一页**而不是清整条栈
+  —— 它下面垫着的资料页没失效,该露出来。
+- `_popPane` 原来"这条栈弹空了就取消选中",在别的 tab 里按一下返回会把消息 tab
+  开着的会话也取消高亮。改由 tracker 按"会话页还在不在栈上"来撤。
+
+### 阶段 9 — 右栏的坐标系与层级(缺陷修复)✅ 已完成
+
+两个都只在平板上犯,根子都是"右栏不是根的那一个"。
+
+**一、消息长按菜单横向偏了一个左栏的宽度。**
+移动端长按文本消息弹的是 `SelectableRegion` 的选区菜单(带手柄,不能盖整屏遮罩),
+它由 Flutter 的 `ContextMenuController.show` 弹出 —— 那边**写死** `rootOverlay: true`,
+菜单实际挂在根 Overlay 上,坐标系是整个窗口。而阶段 6 给的锚点是按**最近**的 Overlay
+(右栏)换算的,于是菜单整体左移了一个左栏的宽度。
+
+"菜单挂在哪"和"菜单该待在哪"本来就不是同一块,`PopupMenuPanel.anchorIn` 因此分成两个值:
+坐标系跟着条目插进的那个 Overlay(`rootOverlay` 参数),可用范围一律取最近的 Overlay ——
+选区菜单于是坐标按整窗算、避让仍限在右栏内,不会骑到左栏上。面板的 `hostSize`(尺寸)
+随之换成 `hostRect`(矩形),因为范围的原点不再一定是 (0,0)。
+
+整屏遮罩那条路径(图片、文件等非文本消息)本来就是自洽的,两个值相等,行为不变;
+手机与 PC 主窗口里最近的 Overlay 就是根 Overlay,两条路径逐位相同。
+
+**二、群会话 → 群会话详情 → 用户详情,返回把整条栈清空了。**
+阶段 8 只修了会话页那条路径,`openPage` 仍是无差别的整栏替换:群资料里点成员走
+`openPage` → `_setPaneRoot` → `pushAndRemoveUntil(..., isFirst)`,把底下的会话页和群资料
+一起清了,栈里只剩 `[占位页, 用户详情]`,返回自然回到空栏。
+
+同一个判据、换个层次落实:**换内容 vs 往下钻**这次按**调用点在栏里还是栏外**分 ——
+右栏那条嵌套栈里的页面,其最近的 Navigator 不是根 Navigator。栏外(左栏选中另一项)
+仍交给 Shell 整栏替换,栏内则退回移动端那条 `Navigator.push`,与手机上完全一致。
+
+只认平板:PC 右栏是带页面缓存的整栏替换形态(`PCHome._openPage`),栏内 `openPage`
+换掉整栏是**它要的**行为(pc_settings_page 里明写着靠这个),不能跟着改。
+
+顺带把 `pushPage`/`pushReplacementPage` 在平板上也换回带转场的移动端路径:会话页点右上角
+进群资料本来就是直接 `Navigator.push`(有转场),`pushPage` 那条无转场的是为 PC 定的,
+不统一的话同一栏里一半滑进来一半直接闪出来。PC 仍走无转场那条。
+
+新增 `chat/test/pad_pane_navigation_test.dart`(8 项):两种 Overlay 下的锚点换算、
+无嵌套栏时两条路径逐位相同(手机/PC 的零变化保证)、菜单避让不越到左栏、
+`openPage` 栏内压栈/栏外交给 Shell/PC 仍整栏替换。

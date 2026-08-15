@@ -5,6 +5,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
+import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
@@ -359,27 +360,13 @@ class _ContactListWidgetState extends State<ContactListWidget> {
             var contactListViewModel =
                 Provider.of<ContactListViewModel>(context, listen: false);
             contactListViewModel.clearUnreadFriendRequestStatus();
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const FriendRequestPage()),
-            );
+            openPage(context, const FriendRequestPage());
           } else if (key == "fav_group") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const FavGroupsPage()),
-            );
+            openPage(context, const FavGroupsPage());
           } else if (key == "subscribed_channel") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const SubscribedChannelsPage()),
-            );
+            openPage(context, const SubscribedChannelsPage());
           } else if (key == "mesh") {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const DomainListScreen()),
-            );
+            openPage(context, const DomainListScreen());
           } else {
             Fluttertoast.showToast(
                 msg: AppLocalizations.of(context)!.methodNotImpl);
@@ -440,15 +427,8 @@ class _ContactListWidgetState extends State<ContactListWidget> {
       color: context.colors.surface,
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            // Directly navigate to OrganizationViewPage.
-            // The ViewModel in OrganizationViewPage will handle loading the root/default organization.
-            MaterialPageRoute(
-                builder: (context) => OrganizationScreen(
-                      initialOrganizationId: org.id,
-                    )),
-          );
+          // OrganizationScreen 的 ViewModel 自己负责加载根组织/默认组织
+          openPage(context, OrganizationScreen(initialOrganizationId: org.id));
         },
         hoverColor: context.colors.hoverOverlay,
         child: Column(
@@ -674,11 +654,6 @@ class _ContactListItemState extends State<ContactListItem> {
   }
 
   _toUserInfoPage(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) =>
-              UserInfoWidget(widget.contactInfo.userInfo.userId)),
-    );
+    openPage(context, UserInfoWidget(widget.contactInfo.userInfo.userId));
   }
 }

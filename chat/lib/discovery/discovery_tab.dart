@@ -3,9 +3,8 @@ import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:moment/moment.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/call/conference/conference_home_screen.dart';
-import 'package:chat/channel/channel_list.dart';
-import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/discovery/chatroom_list.dart';
 import 'package:chat/pan/pan_home_screen.dart';
 import 'package:chat/widget/option_item.dart';
@@ -38,11 +37,7 @@ class DiscoveryTab extends StatelessWidget {
                             width: 20.0,
                             height: 20.0),
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const FeedListPage()),
-                          );
+                          openPage(context, const FeedListPage());
                         },
                       ),
                     OptionItem(
@@ -52,11 +47,7 @@ class DiscoveryTab extends StatelessWidget {
                           width: 20.0,
                           height: 20.0),
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ChatroomList()),
-                        );
+                        openPage(context, ChatroomList());
                       },
                     ),
                     OptionItem(
@@ -64,14 +55,11 @@ class DiscoveryTab extends StatelessWidget {
                       leftImage: Image.asset('assets/images/discover_robot.png',
                           width: 20.0, height: 20.0),
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => ConversationScreen(
-                                  Conversation(
-                                      conversationType: ConversationType.Single,
-                                      target: 'FireRobot'))),
-                        );
+                        openConversation(
+                            context,
+                            Conversation(
+                                conversationType: ConversationType.Single,
+                                target: 'FireRobot'));
                       },
                     ),
                     if (avEngineKit.isSupportConference())
@@ -83,12 +71,7 @@ class DiscoveryTab extends StatelessWidget {
                             height: 20.0),
                         showBottomDivider: false,
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const ConferenceHomeScreen()),
-                          );
+                          openPage(context, const ConferenceHomeScreen());
                         },
                       ),
                   ],
@@ -109,11 +92,7 @@ class DiscoveryTab extends StatelessWidget {
                           Config.panServerAddress!.isNotEmpty,
                       onTap: () {
                         var url = 'https://docs.wildfirechat.cn';
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => WFWebViewScreen(url)),
-                        );
+                        openPage(context, WFWebViewScreen(url));
                       },
                     ),
                     if (Config.panServerAddress != null &&
@@ -124,11 +103,7 @@ class DiscoveryTab extends StatelessWidget {
                             width: 20.0, height: 20.0),
                         showBottomDivider: false,
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const PanHomeScreen()),
-                          );
+                          openPage(context, const PanHomeScreen());
                         },
                       ),
                   ],

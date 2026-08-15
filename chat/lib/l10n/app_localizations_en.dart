@@ -3539,4 +3539,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openInSystemBrowser => 'Open in system browser';
+
+  @override
+  String get greetingMorning => 'Good morning';
+
+  @override
+  String get greetingNoon => 'Good afternoon';
+
+  @override
+  String get greetingAfternoon => 'Good afternoon';
+
+  @override
+  String get greetingEvening => 'Good evening';
+
+  @override
+  String get greetingNight => 'Working late';
+
+  @override
+  String get workspaceWelcomeSubtitle => 'Have a great day';
+
+  @override
+  String get workspaceWelcomeHint => 'Here\'s to a productive day';
+
+  @override
+  String workspaceWelcomeDate(int year, int month, int day) {
+    return '$month/$day/$year';
+  }
 }

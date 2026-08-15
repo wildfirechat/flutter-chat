@@ -3463,4 +3463,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get openInSystemBrowser => '在系统浏览器中打开';
+
+  @override
+  String get greetingMorning => '早上好';
+
+  @override
+  String get greetingNoon => '中午好';
+
+  @override
+  String get greetingAfternoon => '下午好';
+
+  @override
+  String get greetingEvening => '晚上好';
+
+  @override
+  String get greetingNight => '夜深了';
+
+  @override
+  String get workspaceWelcomeSubtitle => '祝你有美好的一天';
+
+  @override
+  String get workspaceWelcomeHint => '探索今天的高效工作吧';
+
+  @override
+  String workspaceWelcomeDate(int year, int month, int day) {
+    return '$year 年 $month 月 $day 日';
+  }
 }

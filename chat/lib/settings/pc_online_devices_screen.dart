@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/pc_online_info.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/viewmodel/status_notification_view_model.dart';
 import 'package:chat/widget/app_switch.dart';
 
 class PCOnlineDevicesScreen extends StatefulWidget {
@@ -39,6 +41,11 @@ class _PCOnlineDevicesScreenState extends State<PCOnlineDevicesScreen> {
     Imclient.kickoffPCClient(info.clientId, () {
       Fluttertoast.showToast(msg: AppLocalizations.of(context)!.kickedOffline);
       _loadData();
+      // 会话列表顶部那条「PC 已登录」横幅读的是共享的 ViewModel。手机端本来靠
+      // 「本页被弹回」时刷新,两栏形态下本页在右栏里不会被弹回,所以在这里直接通知。
+      if (mounted) {
+        context.read<StatusNotificationViewModel>().refreshOnlineInfos();
+      }
     }, (err) {
       Fluttertoast.showToast(
           msg: AppLocalizations.of(context)!.operateFail(err.toString()));

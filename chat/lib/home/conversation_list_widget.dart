@@ -207,11 +207,9 @@ class StatusNotificationHeader extends StatelessWidget {
               .join('/');
           headers.add(GestureDetector(
             onTap: () {
-              Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const PCOnlineDevicesScreen()))
-                  .then((_) {
+              // 两栏形态下这个 Future 立即完成(右栏是换内容,没有"关闭"那一刻),
+              // 踢下线后的刷新由 PCOnlineDevicesScreen 自己通知 ViewModel。
+              openPage(context, const PCOnlineDevicesScreen()).then((_) {
                 viewModel.refreshOnlineInfos();
               });
             },

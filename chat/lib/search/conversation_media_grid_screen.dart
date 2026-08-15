@@ -5,6 +5,7 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
@@ -105,7 +106,8 @@ class _ConversationMediaGridViewState extends State<ConversationMediaGridView> {
 
   /// 全屏预览；预览里翻到两端时继续向前/向后翻页加载
   void _openPreview(int index) {
-    Navigator.push(
+    // 全屏而不是压进右栏,见 app_navigator.pushFullScreen
+    pushFullScreen(
       context,
       PageRouteBuilder(
         opaque: false,

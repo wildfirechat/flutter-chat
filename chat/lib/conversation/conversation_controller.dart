@@ -311,7 +311,8 @@ class ConversationController extends ChangeNotifier {
               conversation: conversation,
             );
           } else {
-            Navigator.push(
+            // 全屏而不是压进右栏:预览要盖住整个窗口,进出场动画也按气泡的全局坐标算
+            pushFullScreen(
               context,
               PageRouteBuilder(
                 opaque: false,
@@ -790,14 +791,15 @@ class ConversationController extends ChangeNotifier {
       return;
     }
 
-    // 如果没有bubbleRect，使用屏幕中心
-    final screenSize = MediaQuery.of(context).size;
+    // 没有 bubbleRect 时退到消息区中心。取 Overlay 而不是 MediaQuery：两者在手机上
+    // 是同一块，平板两栏时前者才是右栏（菜单最终也挂在它上面）
+    final overlayBox =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    final Rect overlayRect = overlayBox != null && overlayBox.hasSize
+        ? overlayBox.localToGlobal(Offset.zero) & overlayBox.size
+        : Offset.zero & MediaQuery.sizeOf(context);
     final targetRect = bubbleRect ??
-        Rect.fromCenter(
-          center: Offset(screenSize.width / 2, screenSize.height / 2),
-          width: 100,
-          height: 50,
-        );
+        Rect.fromCenter(center: overlayRect.center, width: 100, height: 50);
 
     PopupMenuOverlay.show(
       context: context,

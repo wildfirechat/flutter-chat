@@ -52,11 +52,7 @@ void configureDsBridgeWebView({
   unawaited(setTransparentBackground(controller));
 }
 
-/// 让桌面 WebView 的 UA 带上 dsbridge 标记,必须在 loadRequest 之前调用。
-Future<void> ensureDesktopDsBridgeUserAgent(
-    DWebViewController controller) async {
-  if (!WfcPlatform.isDesktop) {
-    return;
-  }
+/// 让 WebView 的 UA 带上 dsbridge 标记,必须在 loadRequest 之前调用。
+Future<void> ensureDsBridgeUserAgent(DWebViewController controller) async {
   await tagDsBridgeUserAgent(controller);
 }

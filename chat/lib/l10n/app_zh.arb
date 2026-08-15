@@ -1087,5 +1087,20 @@
   "multiCallWindowTitle": "多人通话",
   "momentWindowTitle": "朋友圈",
   "webViewNotSupport": "当前系统暂不支持内置网页浏览",
-  "openInSystemBrowser": "在系统浏览器中打开"
+  "openInSystemBrowser": "在系统浏览器中打开",
+  "greetingMorning": "早上好",
+  "greetingNoon": "中午好",
+  "greetingAfternoon": "下午好",
+  "greetingEvening": "晚上好",
+  "greetingNight": "夜深了",
+  "workspaceWelcomeSubtitle": "祝你有美好的一天",
+  "workspaceWelcomeHint": "探索今天的高效工作吧",
+  "workspaceWelcomeDate": "{year} 年 {month} 月 {day} 日",
+  "@workspaceWelcomeDate": {
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"},
+      "day": {"type": "int"}
+    }
+  }
 }

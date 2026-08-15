@@ -6,6 +6,7 @@ import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/quote_info.dart';
 
+import 'package:chat/app_navigator.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/media_preview_window/media_preview_window_manager.dart';
 import 'package:chat/pc/widgets/pc_popover.dart';
@@ -70,7 +71,8 @@ Future<void> showQuotedMessagePreview(
         defaultIndex: 0,
       );
     } else {
-      Navigator.push(
+      // 全屏而不是压进右栏,见 app_navigator.pushFullScreen
+      pushFullScreen(
         context,
         PageRouteBuilder(
           opaque: false,

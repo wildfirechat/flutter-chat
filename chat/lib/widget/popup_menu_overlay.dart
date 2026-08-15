@@ -1,26 +1,67 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:chat/theme/app_typography.dart';
 
-/// 弹出菜单的面板本体：深色卡片 + 指向目标的小三角，自动避让屏幕边缘。
-/// 需要铺满整屏的约束（overlay 条目或 Positioned.fill），内部按全局坐标定位。
+/// 弹出菜单的面板本体：深色卡片 + 指向目标的小三角，自动避让宿主边缘。
+/// 需要铺满宿主的约束（overlay 条目或 Positioned.fill），内部按**宿主局部坐标**定位。
 ///
 /// 两条路径共用它，保证外观一致：
 /// - [PopupMenuOverlay.show]：整屏遮罩 + 面板，点击别处关闭；
 /// - 文本气泡内的选区菜单（SelectionArea 的 contextMenuBuilder）：不能带遮罩，
 ///   否则会盖住下层的选择手柄，让选区没法再调整。
+///
+/// 锚点一律先经 [anchorIn] 从全局坐标换算过来，别直接把全局矩形传进来。
 class PopupMenuPanel extends StatelessWidget {
   const PopupMenuPanel({
     super.key,
     required this.targetRect,
     required this.menuItems,
     required this.onItemTap,
+    this.hostRect,
     this.popupWidth = 250,
     this.crossAxisCount = 4,
     this.listMode = false,
   });
 
-  /// 菜单要指向的目标（气泡、选区）的全局矩形
+  /// 把全局坐标的锚点矩形换算到菜单**所在** [Overlay] 的局部坐标，并给出菜单
+  /// **应当待在**的范围（同一坐标系）用于避让边缘。
+  ///
+  /// 这两者不一定是同一块，所以分开算：
+  /// - 坐标系由菜单条目插进了哪个 Overlay 决定。[rootOverlay] 为真表示插在根
+  ///   Overlay 上 —— Flutter 的 [ContextMenuController.show]（选区菜单走它）
+  ///   写死 `rootOverlay: true`，此时坐标系就是整个窗口。
+  /// - 可用范围一律取**最近**的 Overlay：平板两栏时会话页在右栏的嵌套 Navigator
+  ///   里，菜单不该越到左栏上去。
+  ///
+  /// 手机与 PC 主窗口里两者本就是同一块整屏，换算前后逐位相同。
+  static ({Rect rect, Rect host}) anchorIn(BuildContext context, Rect globalRect,
+      {bool rootOverlay = false}) {
+    final hostBox =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    final frameBox = rootOverlay
+        ? Overlay.of(context, rootOverlay: true).context.findRenderObject()
+            as RenderBox?
+        : hostBox;
+    if (hostBox == null ||
+        !hostBox.hasSize ||
+        frameBox == null ||
+        !frameBox.hasSize) {
+      return (rect: globalRect, host: Offset.zero & MediaQuery.sizeOf(context));
+    }
+    final Offset origin = frameBox.localToGlobal(Offset.zero);
+    final Rect hostGlobal = hostBox.localToGlobal(Offset.zero) & hostBox.size;
+    return (
+      rect: globalRect.shift(-origin),
+      host: hostGlobal.shift(-origin),
+    );
+  }
+
+  /// 菜单要指向的目标（气泡、选区）在**菜单所在 Overlay 的局部坐标**下的矩形，见 [anchorIn]
   final Rect targetRect;
+
+  /// 菜单可用的范围，与 [targetRect] 同一坐标系；null 表示铺满整个窗口
+  final Rect? hostRect;
 
   /// 菜单项列表，每项包含 label, value, icon
   final List<Map<String, dynamic>> menuItems;
@@ -62,20 +103,23 @@ class PopupMenuPanel extends StatelessWidget {
             _padding * 2;
 
     final mediaQuery = MediaQuery.of(context);
-    final screenSize = mediaQuery.size;
+    // 范围铺满窗口时两者相同（手机、PC 主窗口）；平板上它只有右栏那么宽
+    final Rect host = hostRect ?? (Offset.zero & mediaQuery.size);
 
-    // 可用区域的上下边界
-    final double minTop = mediaQuery.padding.top + 20;
-    final double maxBottom = screenSize.height - mediaQuery.padding.bottom - 20;
+    // 可用区域的上下边界。安全区是窗口级的，与范围取交集
+    final double minTop = math.max(host.top, mediaQuery.padding.top) + 20;
+    final double maxBottom =
+        math.min(host.bottom, mediaQuery.size.height - mediaQuery.padding.bottom) -
+            20;
 
     // 目标元素中心点
     final double targetCenterX = targetRect.center.dx;
 
-    // 计算菜单水平位置，确保不超出屏幕
+    // 计算菜单水平位置，确保不超出可用范围
     double left = targetCenterX - popupWidth / 2;
-    if (left < 10) left = 10;
-    if (left + popupWidth > screenSize.width - 10) {
-      left = screenSize.width - popupWidth - 10;
+    if (left < host.left + 10) left = host.left + 10;
+    if (left + popupWidth > host.right - 10) {
+      left = host.right - popupWidth - 10;
     }
 
     // 判断菜单显示在目标上方还是下方，优先显示在上方
@@ -243,6 +287,8 @@ class PopupMenuOverlay {
     }
 
     final overlayState = Overlay.of(context);
+    // 条目挂在这个 Overlay 上，锚点也必须换算到它的坐标系里，见 [PopupMenuPanel.anchorIn]
+    final anchor = PopupMenuPanel.anchorIn(context, targetRect);
     _onDismiss = onDismiss;
 
     _currentOverlay = OverlayEntry(
@@ -263,7 +309,8 @@ class PopupMenuOverlay {
               // 菜单主体
               Positioned.fill(
                 child: PopupMenuPanel(
-                  targetRect: targetRect,
+                  targetRect: anchor.rect,
+                  hostRect: anchor.host,
                   menuItems: menuItems,
                   popupWidth: popupWidth,
                   crossAxisCount: crossAxisCount,

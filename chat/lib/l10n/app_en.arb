@@ -1087,5 +1087,20 @@
   "multiCallWindowTitle": "Group Call",
   "momentWindowTitle": "Moments",
   "webViewNotSupport": "Built-in web browsing is not supported on this platform",
-  "openInSystemBrowser": "Open in system browser"
+  "openInSystemBrowser": "Open in system browser",
+  "greetingMorning": "Good morning",
+  "greetingNoon": "Good afternoon",
+  "greetingAfternoon": "Good afternoon",
+  "greetingEvening": "Good evening",
+  "greetingNight": "Working late",
+  "workspaceWelcomeSubtitle": "Have a great day",
+  "workspaceWelcomeHint": "Here's to a productive day",
+  "workspaceWelcomeDate": "{month}/{day}/{year}",
+  "@workspaceWelcomeDate": {
+    "placeholders": {
+      "year": {"type": "int"},
+      "month": {"type": "int"},
+      "day": {"type": "int"}
+    }
+  }
 }

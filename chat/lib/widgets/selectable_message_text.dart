@@ -135,15 +135,21 @@ class _SelectableMessageTextState extends State<SelectableMessageText> {
     final anchors = state.contextMenuAnchors;
     final Offset above = anchors.primaryAnchor;
     final Offset below = anchors.secondaryAnchor ?? anchors.primaryAnchor;
-    final Rect targetRect =
+    final Rect globalRect =
         Rect.fromLTRB(above.dx, above.dy, above.dx, below.dy + handleAllowance);
+    // 选区菜单由 SelectableRegion 经 ContextMenuController 弹出,那边写死插进
+    // **根** Overlay,所以坐标系是整个窗口(rootOverlay: true) —— 按右栏那块换算的话,
+    // 菜单会整体左移一个左栏的宽度。可用范围仍限在右栏内,见 [PopupMenuPanel.anchorIn]。
+    final anchor =
+        PopupMenuPanel.anchorIn(this.context, globalRect, rootOverlay: true);
 
     return ValueListenableBuilder<bool>(
       valueListenable: _partialSelection,
       builder: (context, partialSelection, _) {
         final items = itemsBuilder(partialSelection);
         return PopupMenuPanel(
-          targetRect: targetRect,
+          targetRect: anchor.rect,
+          hostRect: anchor.host,
           menuItems: items,
           popupWidth: PopupMenuPanel.widthForItems(items.length),
           crossAxisCount: items.length < 4 ? items.length : 4,

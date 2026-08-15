@@ -15,8 +15,10 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/call/conference/join_conference_view.dart';
 import 'package:avenginekit/engine/avenginekit.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
 import 'package:chat/contact/pick_user_screen.dart';
+import 'package:chat/pad/pad_workspace_welcome.dart';
 import 'package:chat/contact/search_user.dart';
 import 'package:chat/search/search_portal_delegate.dart';
 import 'package:chat/settings/me_tab.dart';
@@ -35,13 +37,23 @@ import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 import '../contact/contact_list_widget.dart';
-import '../conversation/conversation_screen.dart';
 import '../discovery/discovery_tab.dart';
 import 'conversation_list_widget.dart';
 import 'package:chat/app_shell.dart';
 
+/// 移动端主界面:五个 tab 的 PageView + 底部栏。平板两栏时它整体就是左栏。
+///
+/// [twoPane] 与 [onTabChanged] 只有平板会传:手机与 PC 拿默认值,构造路径与
+/// 引入平板之前逐位相同。
 class HomeTabBar extends StatefulWidget {
-  const HomeTabBar({Key? key}) : super(key: key);
+  /// 处于两栏形态(平板宽栏):详情去右栏,工作台 tab 的本栏换成欢迎页。
+  final bool twoPane;
+
+  /// 当前 tab 变了。平板据此切换右栏 —— 每个 tab 有各自独立的详情栈。
+  final ValueChanged<int>? onTabChanged;
+
+  const HomeTabBar({Key? key, this.twoPane = false, this.onTabChanged})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => HomeTabBarState();
@@ -69,6 +81,53 @@ class HomeTabBarState extends State<HomeTabBar> {
 
   Image getTabImage(path) {
     return Image.asset(path, width: 20.0, height: 20.0);
+  }
+
+  /// 当前 tab。跨断点时本 State 会被整棵搬移(见 AppHome 的 GlobalKey),
+  /// 新建出来的 PadHome 靠它对齐右栏,不然左栏停在"发现"、右栏却是"消息"那一叠。
+  int get tabIndex => _tabIndex;
+
+  /// 切 tab 的唯一入口:底部栏点击与 PageView 滑动都走这里,
+  /// 免得两处各自 setState 却漏掉通知外层(平板右栏就是靠这个通知跟着换的)。
+  void _setTabIndex(int index) {
+    if (_tabIndex == index) {
+      return;
+    }
+    setState(() {
+      _tabIndex = index;
+    });
+    widget.onTabChanged?.call(index);
+  }
+
+  /// 工作台 tab 在 [pages] 里的下标;没配工作台地址时它整个不存在,返回 -1。
+  int get _workspaceTabIndex => (Config.workspaceUrl ?? '').isEmpty ? -1 : 2;
+
+  /// 顶部右上角的搜索与加号只属于消息、通讯录这两个 tab —— 工作台、发现、我
+  /// 都不是可搜索的列表,也没有"发起聊天 / 加好友 / 扫一扫"的语境。
+  ///
+  /// 认下标 0、1 而不是"除了最后一个":工作台缺席只会让它**之后**的 tab 前移,
+  /// 前两个 tab 的下标恒定。
+  bool get _showAppBarActions => _tabIndex <= 1;
+
+  /// 我 tab 用空标题栏(无标题、与下面的个人资料卡同色连成一片,对齐微信)。
+  ///
+  /// 只在单栏时这么做:平板两栏下左栏只有 [kPadListColumnWidth] 宽、右边紧挨着
+  /// 详情栏,空着的标题栏看起来像没加载出来,所以平板的我 tab 与其它 tab 一样
+  /// 正常显示标题。
+  bool get _bareMeAppBar => _tabIndex == pages.length - 1 && !widget.twoPane;
+
+  /// 本栏(两栏形态下即左栏)实际要渲染的五个页面。
+  ///
+  /// 只有工作台不一样:两栏时它的正文是一整个网页,挤在 320 宽的左栏里没法看,
+  /// 所以左栏换成欢迎页,真正的工作台由右栏承载(见 PadHome)。
+  List<Widget> get _visiblePages {
+    if (!widget.twoPane || _workspaceTabIndex < 0) {
+      return pages;
+    }
+    return List<Widget>.of(pages)
+      ..[_workspaceTabIndex] = const _KeepAliveWrapper(
+        child: PadWorkspaceWelcome(),
+      );
   }
 
   @override
@@ -159,9 +218,9 @@ class HomeTabBarState extends State<HomeTabBar> {
   }
 
   void _onTapSearchButton(BuildContext context) {
-    showSearch(
-        context: context,
-        delegate: SearchPortalDelegate(
+    openSearch(
+        context,
+        SearchPortalDelegate(
             searchFieldHint: AppLocalizations.of(context)!.pleaseInput));
   }
 
@@ -187,7 +246,10 @@ class HomeTabBarState extends State<HomeTabBar> {
   }
 
   void _dismissProcessingDialog(BuildContext context) {
-    Navigator.of(context).pop();
+    // showDialog 默认压在**根** Navigator 上,关它也必须指名根 —— 手机上只有一个
+    // Navigator,两者是同一个;平板两栏时 context 落在右栏那条嵌套栈里,
+    // 不指名的话弹掉的是右栏当前页,而"正在建群"的圈会一直转下去。
+    Navigator.of(context, rootNavigator: true).pop();
   }
 
   void _showProcessingDialog(BuildContext context, String title) {
@@ -210,26 +272,17 @@ class HomeTabBarState extends State<HomeTabBar> {
   }
 
   void _startChat() {
-    Navigator.push(
+    openPage(
       context,
-      MaterialPageRoute(
-          builder: (context) =>
-              PickUserScreen(title: AppLocalizations.of(context)!.startChat,
-                  (context, members) async {
-                if (members.isEmpty) {
-                  showToast(
-                      msg:
-                          AppLocalizations.of(context)!.pickFriendsToStartChat);
-                } else if (members.length == 1) {
-                  Conversation conversation = Conversation(
-                      conversationType: ConversationType.Single,
-                      target: members[0]);
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => ConversationScreen(conversation)),
-                  );
-                } else {
+      PickUserScreen(title: AppLocalizations.of(context)!.startChat,
+          (context, members) async {
+        if (members.isEmpty) {
+          showToast(msg: AppLocalizations.of(context)!.pickFriendsToStartChat);
+        } else if (members.length == 1) {
+          Conversation conversation = Conversation(
+              conversationType: ConversationType.Single, target: members[0]);
+          replaceWithConversation(context, conversation);
+        } else {
                   _showProcessingDialog(
                       context, AppLocalizations.of(context)!.creatingGroup);
 
@@ -256,12 +309,7 @@ class HomeTabBarState extends State<HomeTabBar> {
                     Conversation conversation = Conversation(
                         conversationType: ConversationType.Group,
                         target: strValue);
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) =>
-                              ConversationScreen(conversation)),
-                    );
+                    replaceWithConversation(context, conversation);
                   }, (errorCode) {
                     _dismissProcessingDialog(context);
                     showToast(
@@ -269,14 +317,14 @@ class HomeTabBarState extends State<HomeTabBar> {
                             .createGroupFail(errorCode));
                   });
                 }
-              })),
+              }),
     );
   }
 
   void _addFriend() {
-    showSearch(
-        context: context,
-        delegate: SearchUserDelegate(
+    openSearch(
+        context,
+        SearchUserDelegate(
             searchFieldHint:
                 AppLocalizations.of(context)!.searchUserFieldHint));
   }
@@ -366,8 +414,7 @@ class HomeTabBarState extends State<HomeTabBar> {
 
     switch (prefix) {
       case WfcScheme.qrCodePrefixUser:
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => UserInfoWidget(value)));
+        openPage(context, UserInfoWidget(value));
         break;
       case WfcScheme.qrCodePrefixGroup:
         // Parse from parameter if exists
@@ -378,11 +425,7 @@ class HomeTabBarState extends State<HomeTabBar> {
         } catch (e) {
           // ignore
         }
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    GroupInfoScreen(groupId: value, from: from)));
+        openPage(context, GroupInfoScreen(groupId: value, from: from));
         break;
       case WfcScheme.qrCodePrefixPcSession:
         Navigator.push(
@@ -436,14 +479,8 @@ class HomeTabBarState extends State<HomeTabBar> {
     _body = PageView(
       controller: _pageController,
       physics: physics,
-      children: pages,
-      onPageChanged: (index) {
-        if (_tabIndex != index) {
-          setState(() {
-            _tabIndex = index;
-          });
-        }
-      },
+      children: _visiblePages,
+      onPageChanged: _setTabIndex,
     );
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -460,15 +497,12 @@ class HomeTabBarState extends State<HomeTabBar> {
       child: Scaffold(
         //布局结构
         appBar: AppBar(
-          backgroundColor:
-              _tabIndex == pages.length - 1 ? context.colors.surface : null,
+          backgroundColor: _bareMeAppBar ? context.colors.surface : null,
           elevation: 0,
           //选中每一项的标题和图标设置
-          title: _tabIndex == pages.length - 1
-              ? null
-              : Text(appBarTitles[_tabIndex]),
+          title: _bareMeAppBar ? null : Text(appBarTitles[_tabIndex]),
           centerTitle: false,
-          actions: _tabIndex == pages.length - 1
+          actions: !_showAppBarActions
               ? null
               : [
                   IconButton(
@@ -524,9 +558,7 @@ class HomeTabBarState extends State<HomeTabBar> {
           currentIndex: _tabIndex,
           onTap: (index) {
             if (_tabIndex != index) {
-              setState(() {
-                _tabIndex = index;
-              });
+              _setTabIndex(index);
               _pageController?.jumpToPage(index);
             } else if (index == 0) {
               // 双击消息 tab：滚动第一个未读会话到顶部（对齐微信）
