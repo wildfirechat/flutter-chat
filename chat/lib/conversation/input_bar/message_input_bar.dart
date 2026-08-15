@@ -16,8 +16,16 @@ import 'message_input_bar_controller.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/app_shell.dart';
 
-/// 持久化的键盘高度key
-const String _kKeyboardHeightKey = 'saved_keyboard_height';
+/// 持久化的键盘高度 key,横竖屏分开存。
+///
+/// 同一台设备横屏与竖屏的键盘高度差得很多,共用一个值的话旋转之后表情/插件面板
+/// 会先按另一个方向的高度弹出来,再被真实键盘高度纠正 —— 平板上尤其明显。
+const String _kKeyboardHeightKeyPortrait = 'saved_keyboard_height_portrait';
+const String _kKeyboardHeightKeyLandscape = 'saved_keyboard_height_landscape';
+
+/// 旧版本只存一个值、横竖屏共用。升级后新键还是空的,先按它兜底,
+/// 这样升级当次的表现与升级前完全一致;在某个方向存过一次之后就用不到了。
+const String _kLegacyKeyboardHeightKey = 'saved_keyboard_height';
 
 /// 微信风格的输入栏
 /// 实现原理：
@@ -68,10 +76,25 @@ class _MessageInputBarState extends State<MessageInputBar>
     super.dispose();
   }
 
+  /// 当前方向对应的存储 key。用 view 的物理尺寸判断,与本文件读键盘高度是同一个源。
+  String get _keyboardHeightKey {
+    final size =
+        WidgetsBinding.instance.platformDispatcher.views.first.physicalSize;
+    return size.width > size.height
+        ? _kKeyboardHeightKeyLandscape
+        : _kKeyboardHeightKeyPortrait;
+  }
+
+  /// `_savedKeyboardHeight` 当前对应的是哪个方向,用于旋转后判断要不要重读。
+  String? _loadedHeightKey;
+
   Future<void> _loadSavedKeyboardHeight() async {
+    final key = _keyboardHeightKey;
+    _loadedHeightKey = key;
     final prefs = await SharedPreferences.getInstance();
-    final savedHeight = prefs.getDouble(_kKeyboardHeightKey) ?? 0;
-    if (savedHeight > 0 && mounted) {
+    final savedHeight =
+        prefs.getDouble(key) ?? prefs.getDouble(_kLegacyKeyboardHeightKey) ?? 0;
+    if (savedHeight > 0 && mounted && _loadedHeightKey == key) {
       setState(() {
         _savedKeyboardHeight = savedHeight;
       });
@@ -80,11 +103,16 @@ class _MessageInputBarState extends State<MessageInputBar>
 
   Future<void> _saveKeyboardHeight(double height) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_kKeyboardHeightKey, height);
+    await prefs.setDouble(_keyboardHeightKey, height);
   }
 
   @override
   void didChangeMetrics() {
+    // 旋转也会走到这里:方向变了就把那个方向存过的高度读回来,
+    // 否则面板会一直按上一个方向的高度弹。只在 key 真的变了时才读 prefs。
+    if (_loadedHeightKey != null && _loadedHeightKey != _keyboardHeightKey) {
+      _loadSavedKeyboardHeight();
+    }
     final keyboardHeight = WidgetsBinding
             .instance.platformDispatcher.views.first.viewInsets.bottom /
         WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;

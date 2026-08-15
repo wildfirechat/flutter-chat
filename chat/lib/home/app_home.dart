@@ -33,6 +33,15 @@ class AppHome extends StatefulWidget {
 class _AppHomeState extends State<AppHome> {
   bool? _wasMultiPane;
 
+  /// 左栏/单栏那个 [HomeTabBar] 的身份。
+  ///
+  /// 平板跨断点时 HomeTabBar 会从「AppHome 的直接子节点」搬到「PadHome 左栏里」
+  /// (或反过来)。挂同一个 GlobalKey,Flutter 会把整棵子树连同 State 一起搬过去,
+  /// 选中的 tab 与列表滚动位置都不丢 —— 否则转一下屏就跳回消息 tab、滚回顶部。
+  ///
+  /// 只有平板需要:手机和 PC 不存在这种搬移,给 null 保持原来的 const 构造。
+  final GlobalKey _tabBarKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -90,8 +99,12 @@ class _AppHomeState extends State<AppHome> {
     _wasMultiPane = multiPane;
 
     if (!multiPane) {
-      return const HomeTabBar();
+      return WfcPlatform.isTablet
+          ? HomeTabBar(key: _tabBarKey)
+          : const HomeTabBar();
     }
-    return WfcPlatform.isDesktop ? const PCHome() : const PadHome();
+    return WfcPlatform.isDesktop
+        ? const PCHome()
+        : PadHome(tabBarKey: _tabBarKey);
   }
 }

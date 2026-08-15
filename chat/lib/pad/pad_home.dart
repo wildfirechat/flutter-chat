@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/home/home.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
+import 'package:chat/viewmodel/conversation_list_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
 
 /// 左栏(列表栏)宽度。
@@ -25,7 +26,11 @@ const double kPadListColumnWidth = 320;
 /// 共享的 ConversationPane(移动输入栏),放进栏里即是平板要的样子,不需要
 /// 另写一套 pane。
 class PadHome extends StatefulWidget {
-  const PadHome({super.key});
+  /// 左栏 [HomeTabBar] 的 key,由 [AppHome] 持有并在两种形态间复用 ——
+  /// 断点来回跨时 HomeTabBar 的 State(选中的 tab、列表滚动位置)靠它保住。
+  final Key? tabBarKey;
+
+  const PadHome({super.key, this.tabBarKey});
 
   @override
   State<PadHome> createState() => _PadHomeState();
@@ -34,10 +39,21 @@ class PadHome extends StatefulWidget {
 class _PadHomeState extends State<PadHome> {
   final GlobalKey<NavigatorState> _paneNavKey = GlobalKey<NavigatorState>();
   late PCShellViewModel _shell;
+  late ConversationListViewModel _conversationListViewModel;
+
+  /// 右栏当前显示的是不是会话(而不是资料页等)。会话被删除时据此决定要不要清栏。
+  bool _paneShowsConversation = false;
+
+  /// 选中的会话在列表里出现过。新建的会话在发出首条消息前不在列表里,
+  /// 不先确认"来过"就清栏,会把刚建的会话立刻关掉。
+  bool _selectedSeenInList = false;
 
   @override
   void initState() {
     super.initState();
+    _conversationListViewModel =
+        Provider.of<ConversationListViewModel>(context, listen: false);
+    _conversationListViewModel.addListener(_onConversationListChanged);
     // Shell 状态是应用级的(main.dart 注册),这里只注入打开器。
     // **刻意不 reset**:窄→宽旋转会重建本 Widget,reset 会把用户正在看的会话丢掉。
     // 跨账号的残留由 AppHome 在登录态切换时清理。
@@ -60,6 +76,7 @@ class _PadHomeState extends State<PadHome> {
 
   @override
   void dispose() {
+    _conversationListViewModel.removeListener(_onConversationListChanged);
     // 路由替换时新实例先 initState、旧的后 dispose,只清掉仍属于自己的打开器
     if (_shell.conversationOpener == _openConversation) {
       _shell.conversationOpener = null;
@@ -97,15 +114,47 @@ class _PadHomeState extends State<PadHome> {
   void _openConversation(Conversation conversation, {int? toFocusMessageId}) {
     _shell.selectTab(PCShellViewModel.tabChat);
     _shell.selectConversation(conversation);
+    // 打开的若是列表里已有的会话,立即记为「来过」,它被删掉时才能可靠清栏;
+    // 新建的会话保持 false,等它发出首条消息进列表后由列表回调置真。
+    _selectedSeenInList = _conversationListViewModel.conversationList
+        .any((info) => info.conversation == conversation);
+    _paneShowsConversation = true;
     _setPaneRoot(_conversationPane(conversation, toFocusMessageId));
   }
 
   void _openPage(Widget page) {
+    _paneShowsConversation = false;
     _setPaneRoot(page);
+  }
+
+  /// 选中的会话被删除(在列表里出现过、现在没了)时,取消选中;
+  /// 若右栏正显示的就是它,一并清回空态 —— 否则会停在一个已经不存在的会话里继续打字。
+  void _onConversationListChanged() {
+    final selected = _shell.selectedConversation;
+    if (selected == null ||
+        selected.conversationType == ConversationType.Chatroom) {
+      return;
+    }
+    final exists = _conversationListViewModel.conversationList
+        .any((info) => info.conversation == selected);
+    if (exists) {
+      _selectedSeenInList = true;
+      return;
+    }
+    if (!_selectedSeenInList) {
+      return;
+    }
+    _selectedSeenInList = false;
+    final wasShowingConversation = _paneShowsConversation;
+    _shell.selectConversation(null);
+    if (wasShowingConversation) {
+      _closePane();
+    }
   }
 
   /// 右栏当前内容自知失效(如群聊被移出通讯录)时回到空态。
   void _closePane() {
+    _paneShowsConversation = false;
     _shell.selectConversation(null);
     _paneNavKey.currentState?.popUntil((route) => route.isFirst);
   }
@@ -124,6 +173,10 @@ class _PadHomeState extends State<PadHome> {
   /// 旋转成两栏时右栏直接接上,不用等一帧再补 push。
   List<Route<dynamic>> _initialPaneRoutes() {
     final selected = _shell.selectedConversation;
+    _paneShowsConversation = selected != null;
+    _selectedSeenInList = selected != null &&
+        _conversationListViewModel.conversationList
+            .any((info) => info.conversation == selected);
     return [
       _paneRoute(const _PadEmptyPane()),
       if (selected != null) _paneRoute(_conversationPane(selected, null)),
@@ -150,7 +203,9 @@ class _PadHomeState extends State<PadHome> {
     return Scaffold(
       body: Row(
         children: [
-          const SizedBox(width: kPadListColumnWidth, child: HomeTabBar()),
+          SizedBox(
+              width: kPadListColumnWidth,
+              child: HomeTabBar(key: widget.tabBarKey)),
           VerticalDivider(
               width: 0.5, thickness: 0.5, color: context.colors.hairline),
           Expanded(

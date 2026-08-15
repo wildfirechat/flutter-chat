@@ -8,6 +8,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:imclient/imclient_platform.dart';
 
 /// 微信式应用内相册选图(仅 Android/iOS,photo_manager 无桌面/ohos 实现)。
 /// 返回选中的图片文件;取消返回空列表;相册权限被拒时提示并引导到系统设置。
@@ -59,6 +60,8 @@ Future<List<File>> pickImagesWithWfAssetPicker(
             ? (BuildContext context, AssetPathEntity? path, int length) =>
                 _buildTakePhotoItem(context, path, l10n)
             : null,
+        // 平板屏幕宽,还按手机的 4 列排会把每张缩略图撑得很大、一屏看不了几张
+        gridCount: WfcPlatform.isTablet ? 6 : 4,
       ),
       permissionRequestOption: permissionOption,
     );
@@ -129,6 +132,7 @@ class WfAssetPickerBuilderDelegate extends DefaultAssetPickerBuilderDelegate {
   WfAssetPickerBuilderDelegate({
     required super.provider,
     required super.initialPermission,
+    super.gridCount,
     super.pickerTheme,
     super.textDelegate,
     super.specialPickerType,

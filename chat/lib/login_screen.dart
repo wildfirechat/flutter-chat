@@ -8,6 +8,7 @@ import 'utilities.dart';
 import 'package:chat/app_theme.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:imclient/imclient_platform.dart';
 
 /// 移动端登录页(手机壳)。表单状态与登录流程在共享的 [LoginFormController],
 /// 桌面端 PCQRLoginScreen 的表单视图复用同一控制器。
@@ -43,112 +44,122 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         title: Text(l10n.loginPageTitle),
       ),
+      // 平板屏幕宽,表单铺满整幅会让输入框拉成一条横线、标签和内容离得老远。
+      // 收成一栏居中的卡片宽度。手机取不到这一层(isTablet 为 false),原样铺满。
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(8, 40, 8, 10),
-              child: Text(
-                _form.isPasswordLogin
-                    ? l10n.loginWithPassword
-                    : l10n.loginWithPhone,
-                style: AppText.xl.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: CupertinoTextField(
-                placeholder: l10n.phoneNumberHint,
-                controller: _form.phoneController,
-                keyboardType: TextInputType.phone,
-                clearButtonMode: OverlayVisibilityMode.editing,
-                autocorrect: false,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: CupertinoTextField(
-                      placeholder: _form.isPasswordLogin
-                          ? l10n.inputPassword
-                          : l10n.inputVerificationCode,
-                      controller: _form.codeOrPwdController,
-                      clearButtonMode: OverlayVisibilityMode.editing,
-                      autocorrect: false,
-                      obscureText: _form.isPasswordLogin,
-                    ),
-                  ),
-                  if (!_form.isPasswordLogin) ...[
-                    const SizedBox(
-                      width: 8,
-                    ),
-                    FilledButton(
-                      onPressed: _form.canSendCode
-                          ? () => _form.sendCode(context)
-                          : null,
-                      child: _form.isSentCode
-                          ? Text('${_form.waitResendCount} s')
-                          : Text(l10n.sendCode),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            Row(
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+                maxWidth: WfcPlatform.isTablet ? 420 : double.infinity),
+            child: ListView(
+              padding: const EdgeInsets.all(16),
               children: [
-                Checkbox(
-                  value: _form.agreementChecked,
-                  onChanged: (bool? value) {
-                    _form.agreementChecked = value!;
-                  },
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(8, 40, 8, 10),
+                  child: Text(
+                    _form.isPasswordLogin
+                        ? l10n.loginWithPassword
+                        : l10n.loginWithPhone,
+                    style: AppText.xl.copyWith(fontWeight: FontWeight.bold),
+                  ),
                 ),
-                Expanded(
-                  child: RichText(
-                    text: TextSpan(
-                      text: l10n.readAndAgree,
-                      style: const TextStyle(color: Colors.black),
-                      children: <TextSpan>[
-                        TextSpan(
-                          text: l10n.userAgreement,
-                          style: const TextStyle(color: Colors.blue),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Utilities.openLink(
-                                  context, Config.USER_AGREEMENT_URL);
-                            },
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: CupertinoTextField(
+                    placeholder: l10n.phoneNumberHint,
+                    controller: _form.phoneController,
+                    keyboardType: TextInputType.phone,
+                    clearButtonMode: OverlayVisibilityMode.editing,
+                    autocorrect: false,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: CupertinoTextField(
+                          placeholder: _form.isPasswordLogin
+                              ? l10n.inputPassword
+                              : l10n.inputVerificationCode,
+                          controller: _form.codeOrPwdController,
+                          clearButtonMode: OverlayVisibilityMode.editing,
+                          autocorrect: false,
+                          obscureText: _form.isPasswordLogin,
                         ),
-                        TextSpan(text: l10n.and),
-                        TextSpan(
-                          text: l10n.privacyPolicy,
-                          style: const TextStyle(color: Colors.blue),
-                          recognizer: TapGestureRecognizer()
-                            ..onTap = () {
-                              Utilities.openLink(
-                                  context, Config.PRIVACY_AGREEMENT_URL);
-                            },
+                      ),
+                      if (!_form.isPasswordLogin) ...[
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        FilledButton(
+                          onPressed: _form.canSendCode
+                              ? () => _form.sendCode(context)
+                              : null,
+                          child: _form.isSentCode
+                              ? Text('${_form.waitResendCount} s')
+                              : Text(l10n.sendCode),
                         ),
                       ],
-                    ),
+                    ],
                   ),
+                ),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: _form.agreementChecked,
+                      onChanged: (bool? value) {
+                        _form.agreementChecked = value!;
+                      },
+                    ),
+                    Expanded(
+                      child: RichText(
+                        text: TextSpan(
+                          text: l10n.readAndAgree,
+                          style: const TextStyle(color: Colors.black),
+                          children: <TextSpan>[
+                            TextSpan(
+                              text: l10n.userAgreement,
+                              style: const TextStyle(color: Colors.blue),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  Utilities.openLink(
+                                      context, Config.USER_AGREEMENT_URL);
+                                },
+                            ),
+                            TextSpan(text: l10n.and),
+                            TextSpan(
+                              text: l10n.privacyPolicy,
+                              style: const TextStyle(color: Colors.blue),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = () {
+                                  Utilities.openLink(
+                                      context, Config.PRIVACY_AGREEMENT_URL);
+                                },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                FilledButton(
+                  onPressed:
+                      _form.canSubmit ? () => _form.submit(context) : null,
+                  // 整页唯一主行动,叠大档。
+                  style: AppTheme.largeButtonStyle(),
+                  child: Text(l10n.login),
+                ),
+                TextButton(
+                  onPressed: _form.toggleLoginMode,
+                  child: Text(_form.isPasswordLogin
+                      ? l10n.loginWithPhoneCode
+                      : l10n.loginWithPassword),
                 ),
               ],
             ),
-            FilledButton(
-              onPressed: _form.canSubmit ? () => _form.submit(context) : null,
-              // 整页唯一主行动,叠大档。
-              style: AppTheme.largeButtonStyle(),
-              child: Text(l10n.login),
-            ),
-            TextButton(
-              onPressed: _form.toggleLoginMode,
-              child: Text(_form.isPasswordLogin
-                  ? l10n.loginWithPhoneCode
-                  : l10n.loginWithPassword),
-            ),
-          ],
+          ),
         ),
       ),
     );
