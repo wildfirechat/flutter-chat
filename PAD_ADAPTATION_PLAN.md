@@ -139,7 +139,60 @@ WfcPlatform.isNativeDesktop    // 原生能力(已有,本阶段未动)
 `widget_test.dart`(它找的 `'Running on:'` 在 `lib/` 中出现 0 次,且裸 pump `MyApp()` 缺
 `Consumer3` 所需的三个 Provider),与本次改动无关。
 
-### 阶段 2 — pad 两栏 Shell
+### 阶段 2 — pad 两栏 Shell ✅ 已完成
+
+落地形态:
+
+```
+AppHome(chat/lib/home/app_home.dart)        ← MaterialApp 的 home
+ ├ 手机 / 平板窄栏  → HomeTabBar(原样)
+ ├ PC              → PCHome(原样)
+ └ 平板宽栏        → PadHome(chat/lib/pad/pad_home.dart)
+                      ├ 左栏 320:整套 HomeTabBar(五个 tab / 底部栏 / 搜索 / 加号全复用)
+                      └ 右栏:嵌套 Navigator,详情直接用 ConversationScreen
+```
+
+**高复用的几处**:
+
+- 右栏详情就是 `ConversationScreen` —— 它本来就是 Scaffold + AppBar + 共享的
+  `ConversationPane`(移动输入栏),放进栏里即是平板要的样子,没有另写一套 pane。
+- 左栏就是 `HomeTabBar` 本体,五个 tab 一行代码没改。
+- 走 `app_navigator` 的 88 个调用点**零改动**自动分流进右栏 —— 这正是阶段 1
+  预判的那笔存量红利。
+
+**阶段 1 标记的两个复核项**:
+
+- 会话列表选中态:已接上。移动端选中色 `colors.cellSelected` 本来就存在,平板直接用。
+  订阅方式是 `Selector<PCShellViewModel, Conversation?>` 精确到 selectedConversation
+  一个字段(Shell 上还挂着 tab、通话、联系人选中,整体 watch 会让长列表被无关变化全表重建)。
+  门控条件写成"是不是平板"而**不是**"selectedConversation 是否为空" —— 后者会让 PC 在
+  "未选中↔已选中"之间增删一层 Selector,ListView 在树中的位置一变就得重建,滚动位置会丢。
+- 列表 `backgroundColor: transparent`:**结论是不用改**。它跟着 `isDesktopStyle`,平板取
+  false → 用默认底色,由左栏 HomeTabBar 自己的 Scaffold 铺,不会露白。
+
+**平板特有、PC 从来不需要的两件事**:
+
+1. **系统返回键**。右栏是嵌套 Navigator,而返回键默认只认根 Navigator —— 不接
+   `NavigatorPopHandler`,在右栏里点开群资料后按返回会直接退出 App。PC 没有返回键,
+   所以 PCHome 里没有这一层。
+2. **断点跨越时的上下文保持**。旋转/分屏会在两种 Shell 之间来回切,靠 Shell 里的
+   选中会话承载:窄→宽把根栈上的会话整页收起(`popUntil` 到第一个非会话页,设置/资料
+   这类页面不受牵连),宽→窄把选中的会话补成整页。单栏形态下的会话整页因此带上了
+   路由名 `kConversationRouteName`。
+
+**已知缺口**(留到阶段 4):
+
+- 选中的会话被删除时右栏不会自动清空。PCHome 有 `_onConversationListChanged` 处理,
+  平板要复用得先把它从 PCHome 里抽出来 —— 那会动到 PC,不在本阶段的风险预算内。
+- 85 处裸 `Navigator.push` 的下钻页(联系人、设置等)在两栏下仍是全屏整页,不进右栏。
+  走 `app_navigator` 的那 88 处已自动进右栏。
+- 左栏宽度固定 320 不可拖拽(PC 的拖拽走 `PcLayoutViewModel`,是桌面专属);
+  ≥900 时的 `NavigationRail` 也未做。
+
+**验证**:`flutter analyze` 0 error,问题总数仍与基线一致(363);`flutter test` 88 通过
+(新增 `test/app_shell_test.dart` 2 个断点用例),唯一失败仍是那个 stale `widget_test.dart`。
+
+### 阶段 2 设计备忘 — pad 两栏 Shell
 
 - 新增 `AdaptiveHome`:窗口宽 ≥ 断点走两栏(列表 + 详情),否则回落 `HomeTabBar`。
 - **断点 720dp**(已定义为 `AppShell.multiPaneBreakpoint`):iPad mini 竖屏 744pt 刚好进两栏;

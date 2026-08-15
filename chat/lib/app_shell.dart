@@ -33,19 +33,17 @@ class AppShell {
 
   /// 多栏布局:列表与详情同屏,详情在右栏内打开(而不是整页 push)。
   ///
-  /// [context] 目前未参与判断,保留是因为平板这一档取决于**运行时窗口宽度**而不是
-  /// 平台 —— 旋转、分屏、台前调度、折叠屏都会让同一进程内的宽度来回跳,判断必须
-  /// 建立 MediaQuery 依赖才能跟着重建。平板 Shell 在阶段 2 落地时,这里会变成:
+  /// 平板这一档取决于**运行时窗口宽度**而不是平台 —— 旋转、分屏、台前调度、折叠屏
+  /// 都会让同一进程内的宽度来回跳,所以这里读 MediaQuery,调用方会跟着重建。
+  /// `sizeOf` 是按 size 这一维订阅的,键盘弹出(viewInsets 变化)不会触发重建。
   ///
-  /// ```dart
-  /// if (WfcPlatform.isTablet) {
-  ///   return MediaQuery.sizeOf(context).width >= multiPaneBreakpoint;
-  /// }
-  /// ```
-  ///
-  /// 在那之前平板与手机一样走单栏 —— 多栏的承载者(Shell + ShellViewModel)还不
-  /// 存在,提前返回 true 会让平板落进一个没有右栏的半成品状态。
-  static bool isMultiPane(BuildContext context) => WfcPlatform.isDesktop;
+  /// 手机与 PC 不碰 MediaQuery:两者的形态是平台常量,不建立多余的重建依赖。
+  static bool isMultiPane(BuildContext context) {
+    if (WfcPlatform.isTablet) {
+      return MediaQuery.sizeOf(context).width >= multiPaneBreakpoint;
+    }
+    return WfcPlatform.isDesktop;
+  }
 
   /// 桌面视觉与产品形态:更密的行高/留白/字号,桌面专属配色与头部栏
   /// (chatBgDesktop、[PcPageHeader] 等),以及只在桌面出现的页面(如扫码登录页)。

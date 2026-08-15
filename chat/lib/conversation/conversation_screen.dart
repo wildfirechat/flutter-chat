@@ -13,8 +13,13 @@ class ConversationScreen extends StatelessWidget {
   final Conversation conversation;
   final int? toFocusMessageId;
 
+  /// 是否显示返回键。整页打开时必须有(默认);平板右栏里没有"上一页"可回,
+  /// 由 PadHome 传 false 关掉 —— 栏底下垫着占位页,不关的话 AppBar 会自动
+  /// 长出一个箭头,点了就退到空栏。
+  final bool showBackButton;
+
   const ConversationScreen(this.conversation,
-      {super.key, this.toFocusMessageId});
+      {super.key, this.toFocusMessageId, this.showBackButton = true});
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +49,7 @@ class ConversationScreen extends StatelessWidget {
       resizeToAvoidBottomInset: false,
       backgroundColor: context.colors.conversationBg,
       appBar: AppBar(
+        automaticallyImplyLeading: showBackButton,
         title: ConversationAppbarTitle(conversation),
         actions: actions,
       ),

@@ -54,7 +54,7 @@ import 'config.dart';
 import 'utils/media_url_redirector.dart';
 
 import 'default_portrait_provider.dart';
-import 'home/home.dart';
+import 'home/app_home.dart';
 import 'internal/app_state.dart';
 import 'login_screen.dart';
 import 'pc/pc_home.dart';
@@ -195,9 +195,12 @@ void main([List<String>? args]) async {
           create: (_) => WorkspaceTabsViewModel()),
       // 已在 main 中 load 完毕,用 .value 交给 Provider(应用级生命周期,不随登出销毁)
       ChangeNotifierProvider<ThemeViewModel>.value(value: themeViewModel),
-      // 桌面 Shell 的导航状态。仅桌面注册:共享代码经 app_navigator.dart 查找,
-      // 移动端取不到即走整页 push 路径。
-      if (WfcPlatform.isDesktop)
+      // 多栏 Shell 的导航状态。桌面与平板注册:共享代码经 app_navigator.dart 查找,
+      // 手机端取不到即走整页 push 路径。
+      // 平板是否**用**右栏由窗口宽决定(AppShell.isMultiPane),但 Provider 无条件
+      // 注册 —— 它得跨越窄↔宽的旋转活着,选中的会话才接得上;而且这里是 main(),
+      // 没有 BuildContext 可供判断宽度。
+      if (WfcPlatform.isDesktop || WfcPlatform.isTablet)
         ChangeNotifierProvider<PCShellViewModel>(
             create: (_) => PCShellViewModel()),
       if (WfcPlatform.isDesktop)
@@ -678,8 +681,9 @@ class _MyAppState extends State<MyApp> {
           ? const PCQRLoginScreen()
           : const LoginScreen();
     } else {
-      home =
-          AppShell.isMultiPane(context) ? const PCHome() : const HomeTabBar();
+      // 形态分流放在 AppHome 内部:这里的 context 在 MaterialApp **之上**,
+      // 在这儿读窗口宽会让整个 MaterialApp 跟着尺寸变化重建。
+      home = const AppHome();
     }
     // 启动页/登录页还没有用户身份,不显示水印。此时 _currentUserId 为 null,
     // WatermarkOverlay 会回退到尚未初始化的 Imclient.currentUserId 而抛

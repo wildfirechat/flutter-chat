@@ -30,7 +30,6 @@ import 'package:chat/settings/pc_online_devices_screen.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 import '../config.dart';
-import '../conversation/conversation_screen.dart';
 import '../conversation/input_bar/draft_data.dart';
 import '../viewmodel/user_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
@@ -39,6 +38,8 @@ import 'package:chat/widget/middle_ellipsis_text.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/external_target_utils.dart';
 import 'package:chat/app_shell.dart';
+import 'package:chat/app_navigator.dart';
+import 'package:chat/pc/pc_shell_view_model.dart';
 
 /// 会话行的内容高度与分隔线高度。分隔线不随字号缩放,itemExtent 必须把它单独加上,
 /// 否则 s < 1 时内容比 extent 高,debug 下会报 overflow。
@@ -130,6 +131,26 @@ class ConversationListWidget extends StatelessWidget {
   }
 
   Widget _buildListView(BuildContext context, List<ConversationInfo> list) {
+    // 平板两栏:列表是 HomeTabBar 在 initState 里建出来的,拿不到外部传入的选中会话,
+    // 只能自己去 Shell 订阅。**用 Selector 精确订阅 selectedConversation 这一个字段** ——
+    // Shell 上还挂着 tab、通话、联系人选中等状态,整体 watch 会让长会话列表被无关变化
+    // 反复全表重建。
+    //
+    // 条件写成"是不是平板"而不是"selectedConversation 是否为空":PC 由 PCHome 显式传入,
+    // 未选中时传的也是 null,若按空值判断就会在"未选中↔已选中"之间增删这一层 Selector,
+    // ListView 在树中的位置一变就得从头建,滚动位置会丢。手机没有多栏,同样不进这条。
+    if (!WfcPlatform.isTablet || !AppShell.isMultiPane(context)) {
+      return _buildRawListView(context, list, selectedConversation);
+    }
+    return Selector<PCShellViewModel, Conversation?>(
+      selector: (_, shell) => shell.selectedConversation,
+      builder: (context, selected, _) =>
+          _buildRawListView(context, list, selected),
+    );
+  }
+
+  Widget _buildRawListView(BuildContext context, List<ConversationInfo> list,
+      Conversation? selected) {
     return ListView.builder(
       controller: scrollController,
       itemCount: list.length,
@@ -145,7 +166,7 @@ class ConversationListWidget extends StatelessWidget {
           info,
           key: ValueKey(key),
           onTap: onConversationSelected,
-          isSelected: info.conversation == selectedConversation,
+          isSelected: info.conversation == selected,
         );
       },
     );
@@ -777,11 +798,12 @@ class _ConversationListItemState extends State<ConversationListItem> {
         : Portrait(portrait, defaultPortrait, borderRadius: 6.0);
   }
 
+  /// 没有外部注入 onTap 时的默认打开方式。
+  ///
+  /// 走 app_navigator 的统一入口而不是自己 push:手机端它就是同一句
+  /// `Navigator.push(ConversationScreen)`(行为不变),平板宽栏时则由它分流到右栏。
   void _toChatPage(BuildContext context, Conversation conversation) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ConversationScreen(conversation)),
-    ).then((value) {});
+    openConversation(context, conversation);
   }
 
   void _onLongPressed(BuildContext context, ConversationInfo conversationInfo,

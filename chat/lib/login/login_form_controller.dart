@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:chat/app_server.dart';
 import 'package:chat/config.dart';
-import 'package:chat/home/home.dart';
+import 'package:chat/home/app_home.dart';
 import 'package:chat/main.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/widget/slide_verify_dialog.dart';
@@ -176,7 +176,7 @@ class LoginFormController extends ChangeNotifier {
       // 同 3376556 对扫码登录的处理;移动端 home 是路由,仍需 pushReplacement。
       if (!WfcPlatform.isDesktop) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeTabBar()),
+          MaterialPageRoute(builder: (_) => const AppHome()),
         );
       }
     }
