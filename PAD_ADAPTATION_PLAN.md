@@ -209,12 +209,47 @@ AppHome(chat/lib/home/app_home.dart)        ← MaterialApp 的 home
 - 注册 ShellViewModel(建议 `PCShellViewModel` 更名为 `ShellViewModel`)→ `app_navigator` 自动生效。
 - **状态保持**:选中会话 id 存在 ShellViewModel 里,单栏↔两栏切换时翻译成 push/pop,不能依赖 widget 树里的局部 state。
 
-### 阶段 3 — 面板宽度正确性(缺陷修复)
+### 阶段 3 — 面板宽度正确性(缺陷修复)✅ 已完成
 
-- 1.5 节列出的 5 个 cell_builder 从 `MediaQuery` / `PlatformDispatcher` 改为 `LayoutBuilder` 的 `constraints`。
-- `desktopBubbleInset` 改成"气泡最大宽度"语义,按面板宽计算,多栏形态统一生效。
-- `record_widget` 全屏遮罩改挂到会话面板的 Overlay。
-- 逐条走查 23 处 `MediaQuery.size`。
+⚠️ **先更正 1.5 节的判断**:那里说"5 个 cell_builder 按屏幕宽算 → 两栏下一律偏宽/溢出",
+**这个结论是错的,实测下来它们都不会溢出**。两道保险:
+
+1. Flutter 的约束系统本身会兜底 —— `Container(width: 720)` 落在一个 max 500 的父约束里,
+   `RenderConstrainedBox` 会 `additionalConstraints.enforce(constraints)`,渲染出来就是 500。
+   这些卡片都在 `_messageContentContainer` 的 `Flexible` 之下,父约束有界。
+2. 它们自己还各带一道 `.clamp(...)`:articles / link 夹在 [240, 320],rich_notification
+   夹在 [220, 400] —— 无论屏幕多宽,算出来都落在这个区间,而两栏形态下右栏最窄也有 400。
+
+所以按面板宽重算对手机、PC、平板**三端都是 no-op**。为一个 no-op 引入
+"会话区宽度"的 InheritedWidget 抽象不划算,**这四个 builder 因此保持原样**
+(articles / link / card / rich_notification)。
+
+真正需要修、也已经修掉的是这三处:
+
+- **正文气泡在平板两栏下没有最大宽度**(真缺陷)。`constrainBubbleWidth` 原先只认
+  `isDesktopStyle`,平板取 false → 长文本横贯整个右栏(830px 的栏能拉出 760px 的一行)。
+  现在抽出 `PortraitCellBuilder.bubbleMaxWidth(context, contentWidth)`,引用行
+  (quoted line)与气泡共用同一个上限:
+  - PC:`contentWidth - 120`,与原先逐字节相同;
+  - 手机 / 平板窄栏:不设限,原样返回 —— 且**刻意不套 LayoutBuilder**,
+    它不支持 intrinsic 尺寸计算,凭空加进手机端气泡可能打断上层的 intrinsic 查询;
+  - 平板宽栏:`contentWidth - min(120, contentWidth * 0.15)`。右栏比 PC 窄得多
+    (断点 720 时只有 400 上下),固定扣 120 会把气泡压得没法读,所以按比例取、
+    上限仍是 PC 那一档。
+- **`file_cell_builder` 绕过 MediaQuery**(真 bug)。原先直接读
+  `PlatformDispatcher.instance.views.first.physicalSize / devicePixelRatio`:
+  (a) 不建立重建依赖,窗口尺寸变了文件名宽度不更新;(b) 多窗口下 `views.first`
+  拿到的是主窗口,子窗口(媒体预览/搜索)里是错的。改走 `MediaQuery.sizeOf(context)`,
+  在主窗口上**数值完全相同**,只是补上了依赖与正确的 view。
+- **`record_widget` 录音遮罩按屏幕尺寸铺**(平板真缺陷)。这个 OverlayEntry 是用
+  `Overlay.of(context)` 插的,平板两栏时落在右栏嵌套 Navigator 的 Overlay 里,却按屏幕
+  宽高铺 → 溢出到左栏上。改成 `Positioned.fill`,铺满所在的那个 Overlay:手机上两者
+  是同一个东西(根 Navigator 的 Overlay 就是全屏),行为不变;PC 用的是 PcMessageInputBar,
+  不经过这个组件。
+
+**验证**:`flutter analyze` 0 error,问题总数仍是基线 363;`flutter test` 88 通过,
+唯一失败仍是 stale `widget_test.dart`。手机与 PC 的改动面为零:PC 走 `isDesktopStyle`
+老分支、手机走"原样返回",file cell 数值不变,record 遮罩在根 Overlay 下等价。
 
 ### 阶段 4 — pad 专属体验
 

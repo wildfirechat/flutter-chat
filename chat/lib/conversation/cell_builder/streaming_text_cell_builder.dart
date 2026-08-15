@@ -33,45 +33,48 @@ class StreamingTextCellBuilder extends PortraitCellBuilder {
 
   @override
   Widget buildMessageContent(BuildContext context) {
-    return constrainBubbleWidth(Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
+    return constrainBubbleWidth(
+        context,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 流式生成期间每个 token 到达都会触发 rebuild,此时用普通 Text 展示,
-            // 避免 Linkify 反复全文正则解析;生成结束后才启用 Linkify 识别链接
-            selectableText(
-              context,
-              isGenerating
-                  ? Text(
-                      text,
-                      style: AppText.lg,
-                    )
-                  : Linkify(
-                      onOpen: (link) => Utilities.openLink(context, link.url),
-                      text: text,
-                      style: AppText.lg,
-                      linkStyle: AppText.lg.copyWith(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline),
-                      options: const LinkifyOptions(
-                        humanize: false,
-                      ),
-                    ),
-            ),
-            if (isGenerating)
-              const Padding(
-                padding: EdgeInsets.only(left: 4),
-                child: SizedBox(
-                  width: 10,
-                  height: 10,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                // 流式生成期间每个 token 到达都会触发 rebuild,此时用普通 Text 展示,
+                // 避免 Linkify 反复全文正则解析;生成结束后才启用 Linkify 识别链接
+                selectableText(
+                  context,
+                  isGenerating
+                      ? Text(
+                          text,
+                          style: AppText.lg,
+                        )
+                      : Linkify(
+                          onOpen: (link) =>
+                              Utilities.openLink(context, link.url),
+                          text: text,
+                          style: AppText.lg,
+                          linkStyle: AppText.lg.copyWith(
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline),
+                          options: const LinkifyOptions(
+                            humanize: false,
+                          ),
+                        ),
                 ),
-              ),
+                if (isGenerating)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 4),
+                    child: SizedBox(
+                      width: 10,
+                      height: 10,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+              ],
+            ),
           ],
-        ),
-      ],
-    ));
+        ));
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/articles_message_content.dart';
 import 'package:imclient/message/image_message_content.dart';
@@ -142,16 +143,40 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   /// 正文类气泡(文本、流式文本)共用一个数,免得各自漂移出不同的行宽。
   static const double desktopBubbleInset = 120;
 
-  /// 给正文类气泡套上桌面端的最大宽度;移动端由外层 Flexible 收着,原样返回。
+  /// 平板右栏比 PC 右栏窄得多(断点 720 时只有 400 上下),固定扣 120 会把气泡
+  /// 压得没法读。按内容区宽度取比例,上限仍是 PC 那一档。
+  static const double _paneBubbleInsetRatio = 0.15;
+
+  /// 内容区宽 [contentWidth] 扣掉留白后,正文气泡的最大宽度。
+  ///
+  /// 单栏形态(手机、平板窄栏)不设限 —— 气泡本来就由外层 Flexible 收着,
+  /// 屏幕就那么宽,再扣一道只会浪费横向空间。多栏形态下不扣的话,长文本会横贯
+  /// 整个右栏:PC 上早有这道留白,平板两栏落地后同样需要。
   @protected
-  Widget constrainBubbleWidth(Widget child) {
-    if (!AppShell.isDesktopStyle) {
+  double bubbleMaxWidth(BuildContext context, double contentWidth) {
+    if (AppShell.isDesktopStyle) {
+      return contentWidth - desktopBubbleInset;
+    }
+    if (!AppShell.isMultiPane(context)) {
+      return contentWidth;
+    }
+    return contentWidth -
+        min(desktopBubbleInset, contentWidth * _paneBubbleInsetRatio);
+  }
+
+  /// 给正文类气泡套上多栏形态的最大宽度;单栏由外层 Flexible 收着,原样返回。
+  ///
+  /// 单栏这条**必须原样返回而不是套一层 LayoutBuilder**:LayoutBuilder 不支持
+  /// intrinsic 尺寸计算,凭空加进手机端的气泡里可能把上层的 intrinsic 查询打断。
+  @protected
+  Widget constrainBubbleWidth(BuildContext context, Widget child) {
+    if (!AppShell.isDesktopStyle && !AppShell.isMultiPane(context)) {
       return child;
     }
     return LayoutBuilder(
       builder: (context, constraints) => ConstrainedBox(
-        constraints:
-            BoxConstraints(maxWidth: constraints.maxWidth - desktopBubbleInset),
+        constraints: BoxConstraints(
+            maxWidth: bubbleMaxWidth(context, constraints.maxWidth)),
         child: child,
       ),
     );
@@ -331,10 +356,8 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
         child: ConstrainedBox(
           // 行宽和气泡同一个上限,再长的摘要按两行省略
           constraints: BoxConstraints(
-            maxWidth: (AppShell.isDesktopStyle
-                    ? constraints.maxWidth - desktopBubbleInset
-                    : constraints.maxWidth) -
-                tailInset,
+            // 引用行与气泡同一个上限,再长的摘要按两行省略
+            maxWidth: bubbleMaxWidth(context, constraints.maxWidth) - tailInset,
           ),
           child: QuotedMessageLine(
             quoteInfo: quoteInfo,

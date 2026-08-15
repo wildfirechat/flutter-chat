@@ -212,11 +212,10 @@ class RecordState extends State<RecordWidget> {
   buildOverLayView(BuildContext context) {
     if (overlayEntry == null) {
       overlayEntry = OverlayEntry(builder: (content) {
-        return Positioned(
-          top: 0,
-          left: 0,
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
+        // 铺满**所在的那个 Overlay**,而不是整块屏幕。两者在手机上是同一个东西
+        // (根 Navigator 的 Overlay 就是全屏);平板两栏时这个 entry 插在右栏
+        // 嵌套 Navigator 的 Overlay 里,按屏幕尺寸铺会溢出到左栏上去。
+        return Positioned.fill(
           child: Material(
             color: Colors.transparent,
             type: MaterialType.canvas,

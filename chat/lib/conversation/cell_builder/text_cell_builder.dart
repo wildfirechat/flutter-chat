@@ -27,7 +27,8 @@ class TextCellBuilder extends PortraitCellBuilder {
   Widget buildMessageContent(BuildContext context) {
     // 被引用的消息不进气泡,由 PortraitCellBuilder 挂在气泡下面(见 quoted_message_line.dart),
     // 所以这里只管正文,气泡宽度也就只跟正文走。
-    return constrainBubbleWidth(selectableText(context, _bodyText(context)));
+    return constrainBubbleWidth(
+        context, selectableText(context, _bodyText(context)));
   }
 
   Widget _bodyText(BuildContext context) {

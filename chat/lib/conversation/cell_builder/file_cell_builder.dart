@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:imclient/message/file_message_content.dart';
@@ -44,11 +42,12 @@ class FileCellBuilder extends PortraitCellBuilder {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ConstrainedBox(
+              // 文件名最多占窗口宽的三分之一。数值与原先直接读
+              // PlatformDispatcher.views.first 时一致(都是本窗口的逻辑宽),
+              // 但走 MediaQuery 才会在窗口尺寸变化时重建 —— 而且多窗口下
+              // views.first 拿到的是主窗口,子窗口(媒体预览/搜索)里是错的。
               constraints: BoxConstraints(
-                  maxWidth: PlatformDispatcher
-                          .instance.views.first.physicalSize.width /
-                      PlatformDispatcher.instance.views.first.devicePixelRatio /
-                      3),
+                  maxWidth: MediaQuery.sizeOf(context).width / 3),
               child: nameText,
             ),
             padding,
