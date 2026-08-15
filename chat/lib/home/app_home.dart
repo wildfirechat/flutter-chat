@@ -86,7 +86,8 @@ class _AppHomeState extends State<AppHome> {
 
   @override
   Widget build(BuildContext context) {
-    final bool multiPane = AppShell.isMultiPane(context);
+    final AppShellKind kind = AppShell.shellFor(context);
+    final bool multiPane = kind != AppShellKind.singleColumn;
     if (_wasMultiPane != null && _wasMultiPane != multiPane) {
       // 形态切换要等这一帧的新 Shell 挂上去之后再搬会话:此刻旧 Shell 还在树上,
       // 立即 push/pop 会作用在正要被替换的那棵子树上。
@@ -98,13 +99,16 @@ class _AppHomeState extends State<AppHome> {
     }
     _wasMultiPane = multiPane;
 
-    if (!multiPane) {
-      return WfcPlatform.isTablet
-          ? HomeTabBar(key: _tabBarKey)
-          : const HomeTabBar();
+    switch (kind) {
+      case AppShellKind.singleColumn:
+        // 手机与 PC 保持原来的 const 构造:GlobalKey 只有平板的跨形态搬移需要。
+        return WfcPlatform.isTablet
+            ? HomeTabBar(key: _tabBarKey)
+            : const HomeTabBar();
+      case AppShellKind.pcThreePane:
+        return const PCHome();
+      case AppShellKind.padTwoPane:
+        return PadHome(tabBarKey: _tabBarKey);
     }
-    return WfcPlatform.isDesktop
-        ? const PCHome()
-        : PadHome(tabBarKey: _tabBarKey);
   }
 }

@@ -153,11 +153,25 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   /// 屏幕就那么宽,再扣一道只会浪费横向空间。多栏形态下不扣的话,长文本会横贯
   /// 整个右栏:PC 上早有这道留白,平板两栏落地后同样需要。
   @protected
-  double bubbleMaxWidth(BuildContext context, double contentWidth) {
-    if (AppShell.isDesktopStyle) {
+  double bubbleMaxWidth(BuildContext context, double contentWidth) =>
+      bubbleMaxWidthFor(
+        desktopStyle: AppShell.isDesktopStyle,
+        multiPane: AppShell.isMultiPane(context),
+        contentWidth: contentWidth,
+      );
+
+  /// [bubbleMaxWidth] 的纯函数形态,把公式从形态查询里择出来单独钉住 ——
+  /// 这几个数一旦漂了,表现是气泡在某一档宽度下悄悄变窄或顶到对侧,肉眼很难发现。
+  @visibleForTesting
+  static double bubbleMaxWidthFor({
+    required bool desktopStyle,
+    required bool multiPane,
+    required double contentWidth,
+  }) {
+    if (desktopStyle) {
       return contentWidth - desktopBubbleInset;
     }
-    if (!AppShell.isMultiPane(context)) {
+    if (!multiPane) {
       return contentWidth;
     }
     return contentWidth -

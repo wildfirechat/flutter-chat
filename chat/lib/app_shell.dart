@@ -22,6 +22,22 @@ import 'package:imclient/imclient_platform.dart';
 ///   与 UI 无关,直接用 [WfcPlatform.isDesktop]。例如备份包的 appType、
 ///   桌面 WebView 的 UA 标记、通话走不走子窗口代理。
 ///
+/// 登录后主界面分流到的三种 Shell,由 [AppShell.shellFor] 选出,`AppHome` 据此建树。
+///
+/// 之所以把选择结果做成一个值而不是就地写三元:三种 Shell 各自都会拉起 IM、
+/// 通话引擎和一堆 ViewModel,在测试里 pump 不动,而"哪种设备 + 多宽的窗口 →
+/// 哪个 Shell"这条规则恰恰是整个 pad 适配的总闸,必须能被单独钉住。
+enum AppShellKind {
+  /// 单栏 `HomeTabBar`:手机,以及窄窗口(分屏、竖屏小平板)下的平板。
+  singleColumn,
+
+  /// 平板两栏 `PadHome`:左列表 + 右详情。
+  padTwoPane,
+
+  /// PC 三栏 `PCHome`。
+  pcThreePane,
+}
+
 /// 完整背景见仓库根目录 PAD_ADAPTATION_PLAN.md。
 class AppShell {
   AppShell._();
@@ -43,6 +59,27 @@ class AppShell {
       return MediaQuery.sizeOf(context).width >= multiPaneBreakpoint;
     }
     return WfcPlatform.isDesktop;
+  }
+
+  /// 主界面该用哪个 Shell。
+  ///
+  /// 只有两步:先按 [isMultiPane] 决定单栏还是多栏,多栏再按设备形态分给平板或 PC。
+  /// 手机与 PC 的取值与引入平板之前逐位相同 —— 手机 [isMultiPane] 恒 false 走
+  /// [AppShellKind.singleColumn],PC 恒 true 且不是平板走
+  /// [AppShellKind.pcThreePane],窗口宽度对这两者都不起作用。
+  ///
+  /// 第二步问的是 [WfcPlatform.isTablet] 而不是 `!isDesktop`:走到这一步时多栏
+  /// 只有两种来源 —— 平板够宽,或桌面平台 —— 两个判断在真机上取值必然相同
+  /// (桌面三端不查设备形态,恒为 unknown;鸿蒙电脑是 pc 不是 tablet)。用
+  /// [WfcPlatform.isTablet] 是因为它直接说明了"两栏是给平板的",而且在桌面宿主
+  /// 上跑的单测里也能把平板这条分支走通。
+  static AppShellKind shellFor(BuildContext context) {
+    if (!isMultiPane(context)) {
+      return AppShellKind.singleColumn;
+    }
+    return WfcPlatform.isTablet
+        ? AppShellKind.padTwoPane
+        : AppShellKind.pcThreePane;
   }
 
   /// 桌面视觉与产品形态:更密的行高/留白/字号,桌面专属配色与头部栏

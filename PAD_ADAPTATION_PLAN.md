@@ -260,8 +260,47 @@ AppHome(chat/lib/home/app_home.dart)        ← MaterialApp 的 home
 - 通话:`conference` 已有 mobile/grid/speaker 三套 layout,大概率可用;`voip_call_screen` 横屏需单独验。
 - 分屏/台前调度:确认窗口宽变化不会触发 IM 重连。
 
-### 阶段 5 — 验证
+### 阶段 5 — 验证 ✅ 已完成(代码部分)
 
-- 设备矩阵:iPad(竖/横、1:1 与 1:3 分屏、台前调度)、Android 平板(竖/横/分屏)、鸿蒙平板、折叠屏展开↔折叠。
-- **回归重点是手机端与 PC 端零变化**。
-- 可单测的:`clientPlatformCodeFor` 映射表、`parseDeviceType`、断点选择函数、`AppShell` 各轴取值。
+设备矩阵那半部分要真机,已整理成 [PAD_VERIFY_CHECKLIST.md](PAD_VERIFY_CHECKLIST.md) 的
+P5 一节(iPad 竖/横/1:1 分屏/1:3 分屏/台前调度、Android 平板竖/横/分屏、鸿蒙平板、折叠屏)。
+这里记的是能自动化的那半部分。
+
+**把分流规则从界面树里择出来**。`AppShell.shellFor(context) → AppShellKind`
+(singleColumn / padTwoPane / pcThreePane),`AppHome` 改为 switch 它。原来那两行三元
+无法单测 —— 三种 Shell 各自都会拉起 IM、通话引擎和一堆 ViewModel,在测试里 pump 不动,
+而"哪种设备 + 多宽的窗口 → 哪个 Shell"恰恰是整个 pad 适配的总闸。
+
+顺带把第二步的判据从 `isDesktop` 换成 `isTablet`。**两者在真机上取值必然相同**:
+走到第二步时多栏只有两种来源 —— 平板够宽(此时 `isDesktop` 必假,桌面三端不查设备形态
+恒为 `unknown`,鸿蒙电脑是 `pc` 不是 `tablet`),或桌面平台(此时 `isTablet` 必假)。
+换的理由有二:`isTablet` 直接说明了"两栏是给平板的";以及测试宿主是桌面,
+`isDesktop` 顶不掉,不换就永远走不通平板那条分支。
+
+**气泡宽度公式抽成纯函数** `PortraitCellBuilder.bubbleMaxWidthFor`,实例方法改为委托。
+公式本身一行没动。
+
+**删掉 `chat/lib/pc/pc_platform.dart`**。阶段 1 拆轴后 `isDesktopShell` 在 `lib/` 已无人使用,
+只剩两个测试还 import 着它 —— 文件留着,下一个人就会再 import 它,把刚拆开的三条轴又合回去。
+两个测试按语义各归其位:主题按钮尺寸/圆角 → `isDesktopStyle`,长按 vs 右键 → `isPointerInput`。
+
+**删掉 `chat/test/widget_test.dart`**。2019 年 Flutter 模板残留,找的 `'Running on:'` 在
+`lib/` 出现 0 次,且 bare-pump `MyApp()` 缺 Provider 必抛 —— 它一直红着。留着它,
+套件就永远不能拿"全绿"当门槛,新失败会淹没在这一条老失败里。
+
+**补的单测**:
+- 拆轴的零变化不变量:非平板上三条轴与 `WfcPlatform.isDesktop` 恒等;平板不掺和密度轴
+  与交互轴、窗口宽也不影响它们;非平板任何宽度都拿不到 `padTwoPane`。
+  阶段 1 的零变化保证是构造性的(三条轴当时全等于 `isDesktop`,250 个判断点因此不用逐个复核),
+  往后只要还没人有意给某条轴单独定制,这个恒等式就得成立 —— 一旦有人顺手把某条轴改成
+  "顺便也照顾一下平板",受影响的是手机或 PC 上那一整批判断点,而不是他改的那一处。
+- `shellFor` 三种 Shell 的分流,含断点两侧与"非平板拿不到平板两栏"。
+- 气泡宽度三档取值、内容区够宽时收敛回 PC 那一档、三档都随内容区单调不减。
+
+**这半部分锁不住的**:`isDesktopStyle` / `isPointerInput` 在真平板上为 false ——
+测试宿主是桌面,`isDesktop` 是真正的平台常量,顶替不了。单测锁的是"这两条轴的取值仍旧
+只由 `isDesktop` 决定",剩下半句由 imclient 侧 `设备形态不影响 isMobile/isDesktop 分流`
+补上,两边合起来才是完整命题。
+
+**验证**:`flutter analyze` 0 error,问题总数仍是基线 363;`chat` 98 通过、`imclient` 16 通过,
+**两个套件首次全绿**。
