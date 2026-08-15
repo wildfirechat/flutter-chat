@@ -3,16 +3,16 @@ import 'package:imclient/model/conversation.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/login_screen.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_qr_login_screen.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
+import 'package:chat/app_shell.dart';
 
 /// 平台兼容导航的唯一入口。
 /// 桌面 Shell 内(能取到 [PCShellViewModel])会话/页面在右栏打开并同步选中态,
 /// 移动端整页 push。共享页面一律经由这里跳转,不要自行判断平台或下钻回调。
 
 PCShellViewModel? _shellOf(BuildContext context) {
-  if (!isDesktopShell) {
+  if (!AppShell.isMultiPane(context)) {
     return null;
   }
   try {
@@ -100,8 +100,9 @@ void navigateToLogin(NavigatorState rootNavigator) {
   }
   rootNavigator.pushAndRemoveUntil(
     MaterialPageRoute(
-      builder: (_) =>
-          isDesktopShell ? const PCQRLoginScreen() : const LoginScreen(),
+      builder: (_) => AppShell.isDesktopStyle
+          ? const PCQRLoginScreen()
+          : const LoginScreen(),
       settings: const RouteSettings(name: 'login'),
     ),
     (route) => false,

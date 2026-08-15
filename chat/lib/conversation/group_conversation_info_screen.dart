@@ -20,7 +20,6 @@ import 'package:chat/widget/option_switch_item.dart';
 import 'package:chat/widget/section_divider.dart';
 
 import '../contact/pick_user_screen.dart';
-import '../pc/pc_platform.dart';
 import '../pc/pc_user_card.dart';
 import '../pc/search_window/search_window_manager.dart';
 import '../search/search_conversation_result_view.dart';
@@ -33,6 +32,7 @@ import 'group_manage_screen.dart';
 import 'group_qrcode_screen.dart';
 
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/app_shell.dart';
 
 class GroupConversationInfoScreen extends StatelessWidget {
   const GroupConversationInfoScreen(this.conversation, {super.key});
@@ -49,10 +49,10 @@ class GroupConversationInfoScreen extends StatelessWidget {
         },
         child: Consumer<GroupConversationInfoViewModel>(
             builder: (context, viewModel, child) => Scaffold(
-                  backgroundColor: isDesktopShell
+                  backgroundColor: AppShell.isDesktopStyle
                       ? context.colors.surface
                       : context.colors.primaryBackground,
-                  appBar: isDesktopShell
+                  appBar: AppShell.isDesktopStyle
                       ? null
                       : AppBar(
                           title: Text(AppLocalizations.of(context)!
@@ -81,14 +81,14 @@ class GroupConversationInfoScreen extends StatelessWidget {
 
     return SingleChildScrollView(
         child: Column(children: [
-      if (isDesktopShell) const SizedBox(height: 12.0),
+      if (AppShell.isDesktopStyle) const SizedBox(height: 12.0),
       Container(
         color: context.colors.surface,
         child: GroupConversationInfoMembersView(
           conversation,
           onGroupMemberTap: (userInfo, anchor) {
             // 桌面端点群成员弹用户信息卡片(与会话内点头像一致),移动端仍整页打开
-            if (isDesktopShell) {
+            if (AppShell.isDesktopStyle) {
               showPcUserCard(
                   context: context,
                   anchor: anchor,

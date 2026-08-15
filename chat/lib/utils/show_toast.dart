@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 /// 全局 NavigatorKey，桌面端自绘 Toast 需要依附其 Overlay。
 /// 请在 [MaterialApp] 创建后通过 [setToastNavigatorKey] 注入。
@@ -22,7 +22,7 @@ void showToast({
   ToastGravity? gravity,
   Duration duration = const Duration(seconds: 2),
 }) {
-  if (!isDesktopShell) {
+  if (!AppShell.isDesktopStyle) {
     Fluttertoast.showToast(
       msg: msg,
       toastLength: duration.inMilliseconds > 2500

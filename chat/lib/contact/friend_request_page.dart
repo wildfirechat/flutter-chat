@@ -4,7 +4,6 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/friend_request.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 
 import '../app_navigator.dart';
@@ -16,6 +15,7 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/app_shell.dart';
 
 class FriendRequestPage extends StatefulWidget {
   const FriendRequestPage({super.key});
@@ -64,7 +64,7 @@ class FriendRequestPageState extends State<FriendRequestPage> {
     ];
 
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: AppLocalizations.of(context)!.friendRequest,
               actions: actions,
@@ -73,7 +73,8 @@ class FriendRequestPageState extends State<FriendRequestPage> {
               actions: actions,
               title: Text(AppLocalizations.of(context)!.friendRequest),
             ),
-      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
+      backgroundColor:
+          AppShell.isDesktopStyle ? context.colors.chatBgDesktop : null,
       body: SafeArea(
         child: ListView.separated(
           itemCount: requests.length,

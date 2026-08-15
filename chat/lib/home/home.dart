@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:chat/pc/pc_platform.dart';
 import 'package:badges/badges.dart' as badge;
 import '../widgets/unread_badge.dart';
 import 'package:flutter/cupertino.dart';
@@ -39,6 +38,7 @@ import '../contact/contact_list_widget.dart';
 import '../conversation/conversation_screen.dart';
 import '../discovery/discovery_tab.dart';
 import 'conversation_list_widget.dart';
+import 'package:chat/app_shell.dart';
 
 class HomeTabBar extends StatefulWidget {
   const HomeTabBar({Key? key}) : super(key: key);
@@ -429,9 +429,10 @@ class HomeTabBarState extends State<HomeTabBar> {
 
   @override
   Widget build(BuildContext context) {
-    final ScrollPhysics physics = (!isDesktopShell && WfcPlatform.isAndroid)
-        ? const PageScrollPhysics()
-        : const NeverScrollableScrollPhysics();
+    final ScrollPhysics physics =
+        (!AppShell.isPointerInput && WfcPlatform.isAndroid)
+            ? const PageScrollPhysics()
+            : const NeverScrollableScrollPhysics();
     _body = PageView(
       controller: _pageController,
       physics: physics,

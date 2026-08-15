@@ -9,8 +9,8 @@ import 'package:chat/workspace/dsbridge_webview.dart';
 import 'package:chat/workspace/js_api.dart';
 import 'package:chat/workspace/webview_support.dart';
 import 'package:chat/utils/media_url_redirector.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
+import 'package:chat/app_shell.dart';
 
 class WFWebViewScreen extends StatefulWidget {
   final String url;
@@ -84,7 +84,7 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
   Widget build(BuildContext context) {
     final controller = _controller;
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: _pageTitle,
             )

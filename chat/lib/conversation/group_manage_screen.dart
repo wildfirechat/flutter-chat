@@ -13,12 +13,12 @@ import 'package:chat/widget/section_divider.dart';
 
 import '../app_navigator.dart';
 import '../group/join_group_request_screen.dart';
-import '../pc/pc_platform.dart';
 import '../pc/widgets/pc_page_header.dart';
 import 'group_manager_screen.dart';
 import 'group_mute_screen.dart';
 
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/app_shell.dart';
 
 class GroupManageScreen extends StatefulWidget {
   final GroupInfo groupInfo;
@@ -85,10 +85,10 @@ class _GroupManageScreenState extends State<GroupManageScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      backgroundColor: isDesktopShell
+      backgroundColor: AppShell.isDesktopStyle
           ? context.colors.surface
           : context.colors.primaryBackground,
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: l10n.groupManagement,
               onBack: () => Navigator.of(context).maybePop(),

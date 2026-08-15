@@ -8,7 +8,6 @@ import 'package:imclient/model/quote_info.dart';
 
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/media_preview_window/media_preview_window_manager.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_popover.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -17,6 +16,7 @@ import 'package:chat/utils/show_toast.dart';
 import 'package:chat/widgets/rich_text_message.dart';
 
 import 'mm_preview_view.dart';
+import 'package:chat/app_shell.dart';
 
 /// 气泡里引用块的一行摘要:去掉换行,让它在有限的行数里尽量多放内容
 /// (与微信一致,引用条永远是连续的一段,不跟随原文分行)。
@@ -63,7 +63,7 @@ Future<void> showQuotedMessagePreview(
 
   final content = message.content;
   if (content is ImageMessageContent || content is VideoMessageContent) {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       // 参考微信:引用的图片/视频在独立窗口中预览(单条,不翻页)
       MediaPreviewWindowManager.instance.show(
         mediaItems: [message],
@@ -94,7 +94,7 @@ Future<void> showQuotedMessagePreview(
     return;
   }
 
-  if (isDesktopShell && anchor != null) {
+  if (AppShell.isDesktopStyle && anchor != null) {
     // 小三角的朝向要和卡片落位一致,而落位取决于卡片多高,所以先把正文量一遍。
     final cardHeight = _previewCardHeight(context, body);
     final fitsAbove = anchor.top - cardHeight - 16 >= 0;

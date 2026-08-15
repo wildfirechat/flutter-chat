@@ -4,11 +4,11 @@ import 'package:imclient/model/group_info.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:chat/wfc_scheme.dart';
 import 'package:chat/widget/portrait.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/app_shell.dart';
 
 class GroupQrCodeScreen extends StatefulWidget {
   final GroupInfo groupInfo;
@@ -40,7 +40,7 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
         widget.groupInfo.target, Imclient.currentUserId);
 
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: l10n.groupQrCode,
               onBack: () => Navigator.of(context).maybePop(),
@@ -48,7 +48,7 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
           : AppBar(
               title: Text(l10n.groupQrCode),
             ),
-      backgroundColor: isDesktopShell
+      backgroundColor: AppShell.isDesktopStyle
           ? context.colors.chatBgDesktop
           : context.colors.primaryBackground,
       body: Center(

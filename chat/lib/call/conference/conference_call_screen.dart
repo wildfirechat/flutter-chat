@@ -12,7 +12,6 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/call/call_overlay_manager.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -24,6 +23,7 @@ import 'conference_mobile_layout.dart';
 import 'conference_participant_item.dart';
 import 'conference_participant_list_view.dart';
 import 'conference_speaker_layout.dart';
+import 'package:chat/app_shell.dart';
 
 extension _FirstWhereOrNullExtension<E> on Iterable<E> {
   E? firstWhereOrNull(bool Function(E) test) {
@@ -338,7 +338,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
   }
 
   void _onToggleMemberList() {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       setState(() {
         _showMemberList = !_showMemberList;
       });
@@ -421,7 +421,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     if (mounted) {
       Future.delayed(const Duration(seconds: 1), () {
         if (!mounted) return;
-        final shell = isDesktopShell ? context.read<PCShellViewModel>() : null;
+        final shell =
+            AppShell.isDesktopStyle ? context.read<PCShellViewModel>() : null;
         if (shell != null && shell.activeCallSession != null) {
           shell.endCallSession();
         } else {
@@ -660,7 +661,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
       if (a.videoMuted != b.videoMuted) return a.videoMuted ? 1 : -1;
       return a.userId.compareTo(b.userId);
     });
-    if (!isDesktopShell) {
+    if (!AppShell.isDesktopStyle) {
       var selfIndex =
           sorted.indexWhere((i) => i.userId == Imclient.currentUserId);
       if (selfIndex > 0) {
@@ -752,7 +753,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
       if (item.userId == Imclient.currentUserId) continue;
 
       int type;
-      if (isDesktopShell) {
+      if (AppShell.isDesktopStyle) {
         if (_effectiveLayout == 0) {
           final start = _pcGridPage * ConferenceGridLayout.pageSize;
           type = (i >= start && i < start + ConferenceGridLayout.pageSize)
@@ -797,7 +798,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     var items = _visibleItems;
     var sortedItems = _sortItems(items);
     var focus = _resolveFocusItem(items);
-    var previewItem = isDesktopShell ? null : _resolvePreviewItem(items, focus);
+    var previewItem =
+        AppShell.isDesktopStyle ? null : _resolvePreviewItem(items, focus);
     _syncSubscriptions(sortedItems, focus, previewItem);
   }
 
@@ -829,7 +831,8 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
     var items = _visibleItems;
     var sortedItems = _sortItems(items);
     var focus = _resolveFocusItem(items);
-    var previewItem = isDesktopShell ? null : _resolvePreviewItem(items, focus);
+    var previewItem =
+        AppShell.isDesktopStyle ? null : _resolvePreviewItem(items, focus);
 
     // 注意:大小流订阅信令不在 build 中下发,
     // 由状态变更回调统一调 _updateSubscriptions(内部有缓存,未变化时不发信令)。
@@ -850,7 +853,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
                             ? Center(
                                 child: CircularProgressIndicator(
                                     color: context.colors.textPrimary))
-                            : isDesktopShell
+                            : AppShell.isDesktopStyle
                                 ? (_effectiveLayout == 0
                                     ? ConferenceGridLayout(
                                         items: sortedItems,
@@ -886,7 +889,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
                                     },
                                   ),
                       ),
-                      if (isDesktopShell && _showMemberList)
+                      if (AppShell.isDesktopStyle && _showMemberList)
                         SizedBox(
                           width: 260,
                           child: ConferenceParticipantListView(
@@ -962,7 +965,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
             ),
           ),
           // 最小化为悬浮窗（仅移动端）
-          if (!isDesktopShell)
+          if (!AppShell.isDesktopStyle)
             IconButton(
               icon: Icon(Icons.photo_size_select_small_rounded,
                   color: context.colors.textSecondary),
@@ -975,7 +978,7 @@ class _ConferenceCallScreenState extends State<ConferenceCallScreen>
             tooltip: l10n.conferenceMemberList,
           ),
           // 布局切换仅 PC 提供;移动端只有"焦点页+网格分页"一种布局
-          if (isDesktopShell)
+          if (AppShell.isDesktopStyle)
             PopupMenuButton<int>(
               icon: Icon(Icons.view_comfy_outlined,
                   color: context.colors.textSecondary),

@@ -11,13 +11,13 @@ import 'package:chat/app_theme.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import '../widget/portrait.dart';
 import 'poll_model.dart';
 import 'poll_service.dart';
+import 'package:chat/app_shell.dart';
 
 /// 投票详情。
 ///
@@ -50,7 +50,7 @@ class PollDetailScreen extends StatefulWidget {
 
   static Future<void> _show(
       BuildContext context, PollDetailScreen Function(bool asDialog) create) {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       return showPcDialog(
         context: context,
         width: 460,

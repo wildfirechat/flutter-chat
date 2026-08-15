@@ -9,9 +9,9 @@ import 'package:chat/conversation/conversation_info_member_action_item.dart';
 import 'package:chat/conversation/conversation_info_member_item.dart';
 import 'package:chat/conversation/member_cell_anchor.dart';
 import 'package:chat/viewmodel/group_conversation_info_view_model.dart';
-import 'package:chat/pc/pc_platform.dart';
 
 import '../config.dart';
+import 'package:chat/app_shell.dart';
 
 class SingleConversationMemberView extends StatelessWidget {
   final Conversation conversation;
@@ -26,7 +26,7 @@ class SingleConversationMemberView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<UserInfo> userInfos = [userInfo];
-    int columnCount = isDesktopShell ? 4 : 5;
+    int columnCount = AppShell.isDesktopStyle ? 4 : 5;
     int memberCount = 2;
     // 头像(iconCap)+ 名字(完整跟随字号),格子高度按行高上限放大才装得下。
     // 在 LayoutBuilder 外取值:builder 在 layout 阶段执行,不适合注册 Provider 依赖。

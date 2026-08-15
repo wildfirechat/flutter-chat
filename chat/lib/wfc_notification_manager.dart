@@ -15,9 +15,9 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:imclient/model/pc_online_info.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_tray_manager.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'package:imclient/imclient_platform.dart';
 
 class WfcNotificationManager {
   static final WfcNotificationManager _instance =
@@ -90,7 +90,7 @@ class WfcNotificationManager {
     }
   }
 
-  bool get _shouldShowDesktopNotification => isDesktopShell;
+  bool get _shouldShowDesktopNotification => WfcPlatform.isDesktop;
 
   Future<void> handleReceiveMessage(List<Message> messages) async {
     if (messages.isEmpty) return;

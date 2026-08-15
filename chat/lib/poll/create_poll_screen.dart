@@ -3,7 +3,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -12,6 +11,7 @@ import 'package:chat/widget/form_card.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/option_switch_item.dart';
 import 'poll_service.dart';
+import 'package:chat/app_shell.dart';
 
 /// 发起投票。
 ///
@@ -30,7 +30,7 @@ class CreatePollScreen extends StatefulWidget {
   });
 
   static Future<void> show(BuildContext context, Conversation conversation) {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       return showPcDialog(
         context: context,
         width: 460,

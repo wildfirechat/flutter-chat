@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/app_server.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/app_bar_actions.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/app_shell.dart';
 
 class GroupAnnouncementScreen extends StatefulWidget {
   final String groupId;
@@ -90,7 +90,7 @@ class _GroupAnnouncementScreenState extends State<GroupAnnouncementScreen> {
     ];
 
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: l10n.groupAnnouncement,
               onBack: () => Navigator.of(context).maybePop(),

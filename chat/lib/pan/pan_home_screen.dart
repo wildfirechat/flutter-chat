@@ -12,10 +12,10 @@ import 'package:chat/utilities.dart';
 import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'pan_service.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 /// 加载失败类型。build 时再映射为本地化文案
 /// （initState 同步路径里不能做 InheritedWidget 查找）。
@@ -119,7 +119,7 @@ class _PanHomeScreenState extends State<PanHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: _appBarTitle,
               actions: _buildActions(),
@@ -353,7 +353,7 @@ class _PanFileListScreenState extends State<PanFileListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: _appBarTitle,
               onBack: () => Navigator.of(context).maybePop(),

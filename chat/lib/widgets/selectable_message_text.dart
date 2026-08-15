@@ -4,8 +4,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import 'package:chat/conversation/conversation_controller.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/widget/popup_menu_overlay.dart';
+import 'package:chat/app_shell.dart';
 
 /// 消息正文的可选择包装(文本消息、流式消息共用):
 /// - SelectionArea 提供选择能力,选区实时上报 controller;
@@ -72,7 +72,7 @@ class _SelectableMessageTextState extends State<SelectableMessageText> {
   /// 长按全选 + 跟随选区弹菜单,只在移动端启用:桌面端没有手柄可拖,
   /// 右键菜单仍走 showMenu。
   bool get _inlineMenuEnabled =>
-      !isDesktopShell &&
+      !AppShell.isPointerInput &&
       widget.menuItemsBuilder != null &&
       widget.onMenuItemTap != null;
 
@@ -194,7 +194,7 @@ class _SelectableMessageTextState extends State<SelectableMessageText> {
           // 桌面端不挂长按:鼠标按下后停顿超过 500ms 再拖,长按会抢赢手势竞技场,
           // SelectableRegion 的鼠标识别器被判负后触发 onCancel → clearSelection,
           // 拖选就选不出东西/选区被清掉。PC 端的消息菜单本来就走右键。
-          if (!isDesktopShell)
+          if (!AppShell.isPointerInput)
             LongPressGestureRecognizer: GestureRecognizerFactoryWithHandlers<
                 LongPressGestureRecognizer>(
               () => LongPressGestureRecognizer(debugOwner: this),

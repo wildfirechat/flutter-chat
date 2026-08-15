@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/app_shell.dart';
 
 /// 右栏(详情区)的内容宽度契约。
 ///
@@ -24,7 +24,7 @@ class PcPaneContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!isDesktopShell) {
+    if (!AppShell.isMultiPane(context)) {
       return child;
     }
     return Align(

@@ -15,7 +15,6 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:super_clipboard/super_clipboard.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/shortcuts/ambient_shortcuts.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
@@ -26,6 +25,7 @@ import 'package:chat/widget/drag_to_dismiss.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 typedef PageToEnd = void Function(int messageId, bool tail);
 
@@ -99,7 +99,7 @@ class MMPreviewViewState extends State<MMPreviewView>
   /// 移动端不接键盘;另存为对话框/倍速菜单压在上面时,快捷键交给它们
   @override
   bool get ambientShortcutsActive =>
-      isDesktopShell && super.ambientShortcutsActive;
+      AppShell.isPointerInput && super.ambientShortcutsActive;
 
   bool _closeByShortcut() {
     _requestClose();
@@ -278,7 +278,7 @@ class MMPreviewViewState extends State<MMPreviewView>
   Widget build(BuildContext context) {
     // 桌面端翻页走两侧按钮/方向键(与微信一致),滚轮专用于缩放
     Widget gallery = PhotoViewGallery.builder(
-        scrollPhysics: isDesktopShell
+        scrollPhysics: AppShell.isPointerInput
             ? const NeverScrollableScrollPhysics()
             : const BouncingScrollPhysics(),
         builder: (BuildContext context, int index) {
@@ -451,7 +451,7 @@ class MMPreviewViewState extends State<MMPreviewView>
               // 翻到的这张形状变了,独立预览窗口要跟着调窗口大小
               _notifyCurrentMediaChanged();
             }));
-    if (isDesktopShell) {
+    if (AppShell.isPointerInput) {
       // 参考微信:滚轮向上放大、向下缩小当前图片
       gallery = Listener(
         onPointerSignal: (event) {
@@ -470,7 +470,7 @@ class MMPreviewViewState extends State<MMPreviewView>
           gallery,
           // 桌面端不再叠加悬浮关闭按钮:独立预览窗口有系统标题栏关闭键,ESC/空格也可关
           // Left chevron button on desktop
-          if (isDesktopShell && currentIndex > 0)
+          if (AppShell.isPointerInput && currentIndex > 0)
             Positioned(
               left: 24,
               top: 0,
@@ -493,7 +493,8 @@ class MMPreviewViewState extends State<MMPreviewView>
               ),
             ),
           // Right chevron button on desktop
-          if (isDesktopShell && currentIndex < widget.mediaItems.length - 1)
+          if (AppShell.isPointerInput &&
+              currentIndex < widget.mediaItems.length - 1)
             Positioned(
               right: 24,
               top: 0,
@@ -517,7 +518,7 @@ class MMPreviewViewState extends State<MMPreviewView>
             ),
           // 内嵌整页路由打开时(如搜索窗口/收藏预览)没有窗口关闭按钮，
           // 补一个右上角关闭按钮；独立预览窗口(onClose != null)由窗口 chrome 负责
-          if (isDesktopShell && widget.onClose == null)
+          if (AppShell.isDesktopStyle && widget.onClose == null)
             Positioned(
               top: 16,
               right: 16,
@@ -538,7 +539,7 @@ class MMPreviewViewState extends State<MMPreviewView>
             ),
           // Bottom toolbar on desktop:缩放/旋转对视频没有意义,存储已挪到右键菜单,
           // 只在图片页显示;视频页由 MMVideoPlayer 自己的底部控制条负责。
-          if (isDesktopShell &&
+          if (AppShell.isDesktopStyle &&
               widget.mediaItems[currentIndex].content is ImageMessageContent)
             Positioned(
               bottom: 30,
@@ -616,7 +617,7 @@ class MMPreviewViewState extends State<MMPreviewView>
       ),
     );
 
-    if (isDesktopShell) {
+    if (AppShell.isPointerInput) {
       // 桌面端：黑色背景、键盘翻页(见上面的环境快捷键声明)、禁用拖拽关闭。
       // ExcludeFocus 仍要留着:内部按钮(翻页/工具栏)一旦拿到焦点,空格会被
       // 按钮的"激活"语义吃掉,轮不到我们的关窗/播放暂停。
@@ -973,7 +974,7 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
   // 拖进度条时也常驻 —— 拖动中指针很容易划出视频区域触发 onExit,
   // 控制条中途消失会把这一次拖拽也一起打断。
   bool get _controlsVisible =>
-      (isDesktopShell ? _hovering : _showControls) ||
+      (AppShell.isPointerInput ? _hovering : _showControls) ||
       !_controller.value.isPlaying ||
       _dragPositionMs != null;
 
@@ -993,8 +994,9 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
     return Positioned(
       left: 24,
       right: 24,
-      bottom:
-          isDesktopShell ? 30 : (24 + MediaQuery.of(context).padding.bottom),
+      bottom: AppShell.isDesktopStyle
+          ? 30
+          : (24 + MediaQuery.of(context).padding.bottom),
       child: Container(
         height: 40,
         padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -1173,7 +1175,7 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
         setState(() {
           // 桌面端控制条常驻于悬停,点击画面直接播放/暂停(与空格键一致);
           // 触屏端没有悬停,仍沿用点击切换控制条显隐
-          if (isDesktopShell) {
+          if (AppShell.isPointerInput) {
             _togglePlayPause();
           } else {
             _showControls = !_showControls;
@@ -1203,7 +1205,7 @@ class _MMVideoPlayerState extends State<MMVideoPlayer> {
       ),
     );
 
-    if (isDesktopShell) {
+    if (AppShell.isPointerInput) {
       // 鼠标移到视频上就显示控制条(移开即隐),不用点一下才出来
       player = MouseRegion(
         onEnter: (_) {

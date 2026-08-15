@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -13,6 +12,7 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 
 import 'conference_manager.dart';
+import 'package:chat/app_shell.dart';
 
 /// 会议详情弹窗：查看信息、收藏、销毁、加入
 class ConferenceInfoView extends StatefulWidget {
@@ -137,7 +137,7 @@ class _ConferenceInfoViewState extends State<ConferenceInfoView> {
     var joinVideoMuted = !_enableVideo;
     var joinAudience = audience || (joinAudioMuted && joinVideoMuted);
 
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       await MainAvEngineKitProxy.instance.joinConference(
         callId: conferenceId,
         audioOnly: audioOnly,

@@ -15,7 +15,6 @@ import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/layout_scale.dart';
@@ -39,12 +38,13 @@ import 'package:chat/widget/desktop_popup_menu_item.dart';
 import 'package:chat/widget/middle_ellipsis_text.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/external_target_utils.dart';
+import 'package:chat/app_shell.dart';
 
 /// 会话行的内容高度与分隔线高度。分隔线不随字号缩放,itemExtent 必须把它单独加上,
 /// 否则 s < 1 时内容比 extent 高,debug 下会报 overflow。
 const double _kConversationRowHeightMobile = 64.0;
 const double _kConversationRowHeightDesktop = 70.0;
-double get kConversationRowHeight => isDesktopShell
+double get kConversationRowHeight => AppShell.isDesktopStyle
     ? _kConversationRowHeightDesktop
     : _kConversationRowHeightMobile;
 const double _kDividerHeight = 0.5;
@@ -76,7 +76,7 @@ class ConversationListWidget extends StatelessWidget {
       create: (_) => StatusNotificationViewModel(),
       child: Scaffold(
         // 桌面端中栏由 PCHome 铺 context.colors.middleBg,列表本身透明
-        backgroundColor: isDesktopShell ? Colors.transparent : null,
+        backgroundColor: AppShell.isDesktopStyle ? Colors.transparent : null,
         body: SafeArea(
           child: SlidableAutoCloseBehavior(
             child: Column(
@@ -99,7 +99,7 @@ class ConversationListWidget extends StatelessWidget {
 
   Widget _buildBody(BuildContext context, List<ConversationInfo> list) {
     final listView = _buildListView(context, list);
-    if (!isDesktopShell || scrollOffset == null) {
+    if (!AppShell.isDesktopStyle || scrollOffset == null) {
       return listView;
     }
     // 桌面端下拉过头时,顶部露出的那一截要跟置顶行同色。
@@ -171,7 +171,7 @@ class StatusNotificationHeader extends StatelessWidget {
         }
 
         // “PC 已登录”横幅只对手机端有意义,桌面端自身就是 PC
-        if (!isDesktopShell &&
+        if (!WfcPlatform.isDesktop &&
             viewModel.connectionStatus == kConnectionStatusConnected &&
             viewModel.pcOnlineInfos.isNotEmpty) {
           String pcStatus = viewModel.pcOnlineInfos
@@ -380,7 +380,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
 
   @override
   Widget build(BuildContext context) {
-    if (isDesktopShell) {
+    if (AppShell.isPointerInput) {
       return RepaintBoundary(
         child: HoverBuilder(
           cursor: SystemMouseCursors.click,
@@ -401,7 +401,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
   Color _cellBackground(bool hovered) {
     var conversationInfo = widget.conversationInfo;
     final colors = context.colors;
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       if (widget.isSelected) return colors.cellSelectedDesktop;
       final isTop = conversationInfo.isTop > 0;
       if (!hovered) return isTop ? colors.cellTopDesktop : Colors.transparent;
@@ -431,7 +431,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
         Container(
           height: LayoutScale.watchScale(context, kConversationRowHeight,
               cap: LayoutScale.rowCap),
-          margin: EdgeInsets.only(left: isDesktopShell ? 11 : 15),
+          margin: EdgeInsets.only(left: AppShell.isDesktopStyle ? 11 : 15),
           child: Selector3<
                   UserViewModel,
                   GroupViewModel,
@@ -489,7 +489,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
                                   ? Alignment.topLeft
                                   : Alignment.centerLeft,
                               margin: EdgeInsets.only(
-                                  left: isDesktopShell ? 11 : 15),
+                                  left: AppShell.isDesktopStyle ? 11 : 15),
                               child: widget.showSubtitle
                                   ? Column(
                                       crossAxisAlignment:
@@ -550,7 +550,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
                                     Utilities.formatTime(
                                         context, conversationInfo.timestamp),
                                     style: AppText.xxs.copyWith(
-                                        color: (isDesktopShell &&
+                                        color: (AppShell.isDesktopStyle &&
                                                 widget.isSelected)
                                             ? Colors.white
                                             : context.colors.textTertiary),
@@ -575,7 +575,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
         // 桌面端参照微信 PC 不加分隔线,由背景色区分;保留高度以维持 itemExtent
         Container(
           margin: EdgeInsets.fromLTRB(
-            isDesktopShell
+            AppShell.isDesktopStyle
                 ? 12.0
                 : 15.0 +
                     LayoutScale.watchScale(context, 48.0,
@@ -586,14 +586,14 @@ class _ConversationListItemState extends State<ConversationListItem> {
             0.0,
           ),
           height: _kDividerHeight,
-          color: isDesktopShell
+          color: AppShell.isDesktopStyle
               ? context.colors.cellTopDesktop
               : context.colors.hairlineSoft,
         ),
       ],
     );
 
-    if (isDesktopShell) {
+    if (AppShell.isPointerInput) {
       return Material(
         color: _cellBackground(hovered),
         child: GestureDetector(
@@ -680,7 +680,8 @@ class _ConversationListItemState extends State<ConversationListItem> {
       GroupInfo? targetGroupInfo, ChannelInfo? targetChannelInfo) {
     final conversation = widget.conversationInfo.conversation;
     final titleStyle = AppText.lg.copyWith(
-      color: (isDesktopShell && widget.isSelected) ? Colors.white : null,
+      color:
+          (AppShell.isDesktopStyle && widget.isSelected) ? Colors.white : null,
     );
     if (conversation.conversationType == ConversationType.Single &&
         targetUserInfo != null &&
@@ -707,7 +708,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
     String lastMsgDigest,
   ) {
     final textStyle = AppText.xs.copyWith(
-      color: (isDesktopShell && widget.isSelected)
+      color: (AppShell.isDesktopStyle && widget.isSelected)
           ? Colors.white
           : context.colors.textTertiary,
     );
@@ -770,7 +771,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
                     ConversationType.Group
                 ? Config.defaultGroupPortrait
                 : Config.defaultChannelPortrait;
-    return isDesktopShell
+    return AppShell.isDesktopStyle
         ? Portrait(portrait, defaultPortrait,
             width: 44.0, height: 44.0, borderRadius: 6.0)
         : Portrait(portrait, defaultPortrait, borderRadius: 6.0);
@@ -785,7 +786,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
 
   void _onLongPressed(BuildContext context, ConversationInfo conversationInfo,
       Offset position) {
-    final double itemHeight = isDesktopShell
+    final double itemHeight = AppShell.isDesktopStyle
         ? LayoutScale.scale(context, 34, cap: LayoutScale.rowCap)
         : kMinInteractiveDimension;
     final List<Map<String, dynamic>> menuDefs = [];
@@ -825,7 +826,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
     });
 
     final List<PopupMenuEntry<String>> items = menuDefs.map((def) {
-      if (isDesktopShell) {
+      if (AppShell.isDesktopStyle) {
         return DesktopPopupMenuItem<String>(
           value: def['value'] as String,
           isDanger: def['isDanger'] == true,
@@ -846,7 +847,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
     showMenu(
       context: context,
       // 桌面端菜单直接从鼠标位置展开;移动端保留左偏,避免长按时菜单出屏
-      position: isDesktopShell
+      position: AppShell.isPointerInput
           ? RelativeRect.fromLTRB(
               position.dx, position.dy, position.dx, position.dy)
           : RelativeRect.fromLTRB(

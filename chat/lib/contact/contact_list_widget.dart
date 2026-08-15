@@ -25,7 +25,6 @@ import 'fav_groups.dart';
 import 'subscribed_channels.dart';
 import '../mesh/domain_list_screen.dart';
 import '../mesh/mesh_cache.dart';
-import '../pc/pc_platform.dart';
 import '../utils/layout_scale.dart';
 import '../utils/external_target_utils.dart';
 import '../utils/mesh_user_display.dart';
@@ -34,6 +33,7 @@ import '../utils/online_state_builder.dart';
 import '../utils/online_state_formatter.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 // 行度量。子项 extent、A-Z 跳转偏移、侧栏字母表三者必须同源,
 // 任何一边单独改写都会让 A-Z 跳转逐行累积偏差 —— 统一由 [_ContactListLayout] 产出。
@@ -395,7 +395,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
               height: LayoutScale.watchScale(context, _kRowHeight,
                   cap: LayoutScale.rowCap),
               margin: EdgeInsets.fromLTRB(
-                  16.0, 0.0, isDesktopShell ? 0.0 : 32.0, 0.0),
+                  16.0, 0.0, AppShell.isDesktopStyle ? 0.0 : 32.0, 0.0),
               child: Row(
                 children: <Widget>[
                   key == 'new_friend'
@@ -417,7 +417,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
               ),
             ),
             Divider(
-              indent: isDesktopShell
+              indent: AppShell.isDesktopStyle
                   ? 12.0
                   : 16.0 +
                       LayoutScale.watchScale(context, 40.0,
@@ -457,7 +457,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
               height: LayoutScale.watchScale(context, _kRowHeight,
                   cap: LayoutScale.rowCap),
               margin: EdgeInsets.fromLTRB(
-                  16.0, 0.0, isDesktopShell ? 0.0 : 32.0, 0.0),
+                  16.0, 0.0, AppShell.isDesktopStyle ? 0.0 : 32.0, 0.0),
               child: Row(
                 children: <Widget>[
                   Image.asset(imagePath,
@@ -479,7 +479,7 @@ class _ContactListWidgetState extends State<ContactListWidget> {
               ),
             ),
             Divider(
-              indent: isDesktopShell
+              indent: AppShell.isDesktopStyle
                   ? 12.0
                   : 16.0 +
                       LayoutScale.watchScale(context, 40.0,
@@ -511,7 +511,8 @@ class _ContactListItemState extends State<ContactListItem> {
   Widget build(BuildContext context) {
     // 只有外部域用户的显示名依赖 MeshCache(域名称异步到达后要重绘)。
     // 内部用户挂上监听没有收益,却会让每次 MeshCache 变化重建全部可见行。
-    if (!ExternalTargetUtils.isExternalTarget(widget.contactInfo.userInfo.userId)) {
+    if (!ExternalTargetUtils.isExternalTarget(
+        widget.contactInfo.userInfo.userId)) {
       return _buildContent(context, widget.contactInfo.userInfo);
     }
     return AnimatedBuilder(
@@ -524,7 +525,7 @@ class _ContactListItemState extends State<ContactListItem> {
 
   Widget _buildContent(BuildContext context, UserInfo userInfo) {
     Color getBgColor() {
-      if (!isDesktopShell) return Colors.transparent;
+      if (!AppShell.isPointerInput) return Colors.transparent;
       final selectedId =
           Provider.of<PCShellViewModel>(context).selectedContactItemId;
       final isSelected =
@@ -537,7 +538,8 @@ class _ContactListItemState extends State<ContactListItem> {
     Widget contactRow = Container(
       height:
           LayoutScale.watchScale(context, _kRowHeight, cap: LayoutScale.rowCap),
-      padding: EdgeInsets.fromLTRB(16.0, 0.0, isDesktopShell ? 0.0 : 32.0, 0.0),
+      padding: EdgeInsets.fromLTRB(
+          16.0, 0.0, AppShell.isDesktopStyle ? 0.0 : 32.0, 0.0),
       child: Row(
         children: <Widget>[
           Portrait(
@@ -550,12 +552,12 @@ class _ContactListItemState extends State<ContactListItem> {
             margin: const EdgeInsets.only(left: 16),
           ),
           Expanded(child: _buildNameWithOnlineStatus(context, userInfo)),
-          if (!isDesktopShell) const SizedBox(width: 12),
+          if (!AppShell.isDesktopStyle) const SizedBox(width: 12),
         ],
       ),
     );
 
-    if (isDesktopShell) {
+    if (AppShell.isPointerInput) {
       contactRow = MouseRegion(
         cursor: SystemMouseCursors.click,
         onEnter: (_) => setState(() => _hovered = true),
@@ -578,7 +580,7 @@ class _ContactListItemState extends State<ContactListItem> {
                   cap: LayoutScale.textCap),
               color: context.colors.hairlineSoft,
               padding: EdgeInsets.only(
-                  left: 16, right: isDesktopShell ? 16.0 : 32.0),
+                  left: 16, right: AppShell.isDesktopStyle ? 16.0 : 32.0),
               alignment: Alignment.centerLeft,
               child: Text(
                 widget.contactInfo.category == '{'
@@ -608,7 +610,7 @@ class _ContactListItemState extends State<ContactListItem> {
             ),
           ),
           Divider(
-            indent: isDesktopShell
+            indent: AppShell.isDesktopStyle
                 ? 12.0
                 : 16.0 +
                     LayoutScale.watchScale(context, 40.0,

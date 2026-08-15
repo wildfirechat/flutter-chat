@@ -8,7 +8,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:imclient/imclient_platform.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/config.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/conversation/input_bar/wf_asset_picker_delegate.dart';
@@ -23,6 +22,7 @@ import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/screenshot_service.dart';
+import 'package:chat/app_shell.dart';
 
 class _PluginItem {
   /// 图标资源；接龙/投票/截屏用矢量绘制，没有对应图片，故可空。
@@ -45,10 +45,11 @@ class PluginBoard extends StatelessWidget {
       _PluginItem('assets/images/input/album.png', "album"),
       // 截图依赖 flameshot,仅原生桌面可用(鸿蒙电脑无此能力)
       if (WfcPlatform.isNativeDesktop) _PluginItem(null, "screenshot"),
-      if (!isDesktopShell)
+      if (!AppShell.isDesktopStyle)
         _PluginItem('assets/images/input/camera.png', "camera"),
-      if (!isDesktopShell) _PluginItem('assets/images/input/call.png', "call"),
-      if (!isDesktopShell)
+      if (!AppShell.isDesktopStyle)
+        _PluginItem('assets/images/input/call.png', "call"),
+      if (!AppShell.isDesktopStyle)
         _PluginItem('assets/images/input/location.png', "location"),
       _PluginItem('assets/images/input/file.png', "file"),
       _PluginItem('assets/images/input/card.png', "card"),
@@ -170,7 +171,7 @@ class PluginBoard extends StatelessWidget {
     switch (key) {
       case "album":
         {
-          if (isDesktopShell) {
+          if (AppShell.isDesktopStyle) {
             FilePicker.platform.pickFiles(type: FileType.image).then((value) {
               if (value != null && value.files.isNotEmpty) {
                 conversationController.onPickImage(

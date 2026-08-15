@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 /// 全端共享的 ThemeData(移动端 + 桌面端通用)。
 /// 颜色一律从 [AppColors] 取,桌面端布局/密度的专属覆盖在 pc/pc_theme.dart。
@@ -157,17 +157,19 @@ class AppTheme {
   /// 实底/灰底按钮共用的「中档」形态(尺寸、圆角、字号),不含任何颜色。
   static ButtonStyle buttonShapeStyle() => ButtonStyle(
         shape: WidgetStatePropertyAll(RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(isDesktopShell ? 4 : 6))),
+            borderRadius:
+                BorderRadius.circular(AppShell.isDesktopStyle ? 4 : 6))),
         minimumSize: WidgetStatePropertyAll(
-            isDesktopShell ? const Size(64, 40) : const Size(64, 36)),
-        padding: WidgetStatePropertyAll(isDesktopShell
+            AppShell.isDesktopStyle ? const Size(64, 40) : const Size(64, 36)),
+        padding: WidgetStatePropertyAll(AppShell.isDesktopStyle
             ? const EdgeInsets.symmetric(horizontal: 20, vertical: 10)
             : const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
-        textStyle: WidgetStatePropertyAll(isDesktopShell
+        textStyle: WidgetStatePropertyAll(AppShell.isDesktopStyle
             ? AppText.sm
             : AppText.base.copyWith(fontWeight: FontWeight.w500)),
         // 移动端保持默认 padded:36 的视觉高度外,可点区域仍撑到 48 不缩水。
-        tapTargetSize: isDesktopShell ? MaterialTapTargetSize.shrinkWrap : null,
+        tapTargetSize:
+            AppShell.isDesktopStyle ? MaterialTapTargetSize.shrinkWrap : null,
       );
 
   /// 大档:整页唯一主行动 / 通栏底栏(登录、poll 底栏、转发确认…)。
@@ -175,11 +177,11 @@ class AppTheme {
   /// 需要同时改色时:FilledButton.styleFrom(backgroundColor: …).merge(largeButtonStyle())。
   static ButtonStyle largeButtonStyle() => ButtonStyle(
         minimumSize: WidgetStatePropertyAll(
-            isDesktopShell ? const Size(80, 48) : const Size(64, 44)),
-        padding: WidgetStatePropertyAll(isDesktopShell
+            AppShell.isDesktopStyle ? const Size(80, 48) : const Size(64, 44)),
+        padding: WidgetStatePropertyAll(AppShell.isDesktopStyle
             ? const EdgeInsets.symmetric(horizontal: 32, vertical: 12)
             : const EdgeInsets.symmetric(horizontal: 20, vertical: 10)),
-        textStyle: WidgetStatePropertyAll(isDesktopShell
+        textStyle: WidgetStatePropertyAll(AppShell.isDesktopStyle
             ? AppText.base
             : AppText.lg.copyWith(fontWeight: FontWeight.w500)),
       );
@@ -187,9 +189,11 @@ class AppTheme {
   /// 文字动作:前景色走组件默认值(colorScheme.primary,即品牌蓝),
   /// 这里只收桌面字号与点击区。
   static ButtonStyle textButtonStyle() => ButtonStyle(
-        textStyle:
-            isDesktopShell ? const WidgetStatePropertyAll(AppText.sm) : null,
-        tapTargetSize: isDesktopShell ? MaterialTapTargetSize.shrinkWrap : null,
+        textStyle: AppShell.isDesktopStyle
+            ? const WidgetStatePropertyAll(AppText.sm)
+            : null,
+        tapTargetSize:
+            AppShell.isDesktopStyle ? MaterialTapTargetSize.shrinkWrap : null,
       );
 
   /// 对话框「取消」位的压灰文字动作,弱于右侧的确认位。

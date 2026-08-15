@@ -5,9 +5,9 @@ import 'package:imclient/model/conversation.dart';
 
 import '../conversation/conversation_screen.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class ChatroomList extends StatelessWidget {
   final List modelList = ['chatroom1', 'chatroom2', 'chatroom3'];
@@ -18,7 +18,7 @@ class ChatroomList extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = AppLocalizations.of(context)!.messageSettings;
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(title: title)
           : AppBar(title: Text(title)),
       body: SafeArea(

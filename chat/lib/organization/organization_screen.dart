@@ -5,7 +5,6 @@ import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/widget/portrait.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utils/layout_scale.dart';
 import '../default_portrait_provider.dart';
@@ -15,6 +14,7 @@ import 'model/organization.dart';
 import 'organization_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class OrganizationScreen extends StatefulWidget {
   final int? initialOrganizationId;
@@ -179,10 +179,10 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       builder: (context, viewModel, child) {
         final colors = context.colors;
         return Container(
-          color: isDesktopShell ? colors.chatBgDesktop : null,
+          color: AppShell.isDesktopStyle ? colors.chatBgDesktop : null,
           padding: EdgeInsets.symmetric(
-            horizontal: isDesktopShell ? 12.0 : 16.0,
-            vertical: isDesktopShell ? 8.0 : 12.0,
+            horizontal: AppShell.isDesktopStyle ? 12.0 : 16.0,
+            vertical: AppShell.isDesktopStyle ? 8.0 : 12.0,
           ),
           child: TextField(
             controller: _searchController,
@@ -205,13 +205,15 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                   : null,
               contentPadding: const EdgeInsets.symmetric(vertical: 0.0),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(isDesktopShell ? 6.0 : 8.0),
+                borderRadius:
+                    BorderRadius.circular(AppShell.isDesktopStyle ? 6.0 : 8.0),
                 borderSide: BorderSide.none,
               ),
               filled: true,
               // 桌面端输入框浮在 chatBg 上,取 surface 才有层次;
               // 移动端输入框嵌在 surface 页面里,要往下压一档。
-              fillColor: isDesktopShell ? colors.surface : colors.inputBg,
+              fillColor:
+                  AppShell.isDesktopStyle ? colors.surface : colors.inputBg,
             ),
           ),
         );
@@ -274,7 +276,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
 
   Widget _buildSubOrgTile(Organization subOrg) {
     final name = '${subOrg.name}(${subOrg.memberCount ?? 0})';
-    final baseHeight = isDesktopShell ? 48.0 : 56.0;
+    final baseHeight = AppShell.isDesktopStyle ? 48.0 : 56.0;
     // 用 minTileHeight 而不是外层 Container(minHeight):后者只会把容器撑高,
     // ListTile 的内容仍按自身高度锚在顶部,导致行内不垂直居中。
     return ListTile(
@@ -336,8 +338,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
 
     final hasSubtitle = emp.title != null && emp.title!.isNotEmpty;
     final baseHeight = hasSubtitle
-        ? (isDesktopShell ? 64.0 : 72.0)
-        : (isDesktopShell ? 48.0 : 56.0);
+        ? (AppShell.isDesktopStyle ? 64.0 : 72.0)
+        : (AppShell.isDesktopStyle ? 48.0 : 56.0);
 
     return Opacity(
       opacity: isDisabled ? 0.5 : 1.0,
@@ -461,8 +463,9 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     return TextButton(
       onPressed: _onDone,
       // 栏标题右侧的确认位,比桌面按钮默认的 13 号大一号才压得住标题。
-      style:
-          isDesktopShell ? TextButton.styleFrom(textStyle: AppText.base) : null,
+      style: AppShell.isDesktopStyle
+          ? TextButton.styleFrom(textStyle: AppText.base)
+          : null,
       child: Text(label),
     );
   }
@@ -481,7 +484,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
               }
             },
             child: Scaffold(
-              appBar: isDesktopShell
+              appBar: AppShell.isDesktopStyle
                   // 桌面端不要静态标题:面包屑说的就是"当前在哪个部门",跟标题是同一件事。
                   // 把面包屑放进标题栏,重复消掉,而三栏共用的 60px 水平线、返回键和
                   // 选人模式的「确定」都还留在原位。
@@ -499,12 +502,12 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
                       actions: widget.selectMode ? [_buildDoneAction()] : null,
                     ),
               backgroundColor:
-                  isDesktopShell ? context.colors.chatBgDesktop : null,
+                  AppShell.isDesktopStyle ? context.colors.chatBgDesktop : null,
               body: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 移动端的面包屑仍是正文里的一条(标题栏归 AppBar);桌面端已经放进标题栏了。
-                  if (!isDesktopShell) ...[
+                  if (!AppShell.isDesktopStyle) ...[
                     _buildBreadcrumbs(),
                     const Divider(),
                   ],

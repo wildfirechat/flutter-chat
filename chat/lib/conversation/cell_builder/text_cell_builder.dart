@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:chat/conversation/cell_builder/portrait_cell_builder.dart';
 import 'package:chat/widgets/rich_text_message.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +10,7 @@ import 'package:chat/viewmodel/conversation_view_model.dart';
 import '../../ui_model/ui_message.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class TextCellBuilder extends PortraitCellBuilder {
   late TextMessageContent textMessageContent;
@@ -53,7 +53,7 @@ class TextCellBuilder extends PortraitCellBuilder {
               : context.colors.link,
           decoration: TextDecoration.underline),
       onLinkTap: (url) => Utilities.openLink(context, url),
-      isSingleEmoji: isSingleEmoji && !isDesktopShell,
+      isSingleEmoji: isSingleEmoji && !AppShell.isDesktopStyle,
       isLastMessage: isLastMessage,
     );
   }

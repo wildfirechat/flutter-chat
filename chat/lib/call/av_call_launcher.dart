@@ -7,7 +7,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
-import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/app_shell.dart';
 
 /// 发起音视频通话的统一入口(输入栏按钮、用户信息卡片、通话记录气泡共用)。
 ///
@@ -56,7 +56,7 @@ void startAvCallWithParticipants(
 }
 
 bool _checkCallInProgress(BuildContext context) {
-  final bool inProgress = isDesktopShell
+  final bool inProgress = AppShell.isDesktopStyle
       ? MainAvEngineKitProxy.instance.callActive
       : avEngineKit.currentSession != null &&
           avEngineKit.currentSession!.status != CallState.STATUS_IDLE;
@@ -68,7 +68,7 @@ bool _checkCallInProgress(BuildContext context) {
 
 void _startCall(
     Conversation conversation, List<String> participants, bool audioOnly) {
-  if (isDesktopShell) {
+  if (AppShell.isDesktopStyle) {
     MainAvEngineKitProxy.instance
         .startCall(conversation, participants, audioOnly);
   } else {

@@ -4,7 +4,6 @@ import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/app_navigator.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/pc/widgets/pc_icon_action.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
@@ -13,6 +12,7 @@ import 'package:chat/pc/widgets/pc_profile.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class ChannelInfoWidget extends StatefulWidget {
   final ChannelInfo? channelInfo;
@@ -57,7 +57,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     // 桌面端:频道名字就写在正文里,标题栏再写一遍「频道详情」是多余的 —— 走无标题栏形态。
-    final appBar = isDesktopShell
+    final appBar = AppShell.isDesktopStyle
         ? const PcPageHeader(bare: true)
         : AppBar(title: Text(l10n.channelDetails));
 
@@ -66,7 +66,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
       body = const Center(child: CircularProgressIndicator());
     } else if (channelInfo == null) {
       body = Center(child: Text(l10n.channelNotExist));
-    } else if (isDesktopShell) {
+    } else if (AppShell.isDesktopStyle) {
       body = _buildPcBody(context, channelInfo!);
     } else {
       body = ListView.builder(
@@ -78,7 +78,7 @@ class ChannelInfoWidgetState extends State<ChannelInfoWidget> {
     }
 
     return Scaffold(
-      backgroundColor: isDesktopShell ? context.colors.surface : null,
+      backgroundColor: AppShell.isDesktopStyle ? context.colors.surface : null,
       appBar: appBar,
       body: SafeArea(child: body),
     );

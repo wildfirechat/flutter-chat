@@ -11,12 +11,12 @@ import 'package:chat/app_theme.dart';
 import 'package:chat/config.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/organization/organization_service.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/widget/slide_verify_dialog.dart';
+import 'package:chat/app_shell.dart';
 
 /// 注销账号流程页(App Store 审核指南 5.1.1(v) 要求)。
 /// 交互对齐原生 iOS WFCDestroyAccountViewController:发送短信验证码(可过滑块验证)
@@ -117,10 +117,10 @@ class _DestroyAccountScreenState extends State<DestroyAccountScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(title: l10n.destroyAccount)
           : AppBar(title: Text(l10n.destroyAccount)),
-      backgroundColor: isDesktopShell
+      backgroundColor: AppShell.isDesktopStyle
           ? context.colors.chatBgDesktop
           : context.colors.primaryBackground,
       body: SafeArea(

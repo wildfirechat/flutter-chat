@@ -11,7 +11,6 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/conversation/read_receipt_status_widget.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_user_card.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
@@ -26,6 +25,7 @@ import 'bubble_tail_border.dart';
 import 'message_cell_builder.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 abstract class PortraitCellBuilder extends MessageCellBuilder {
   late bool isSendMessage;
@@ -70,21 +70,21 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
     return GestureDetector(
       child: Container(
           key: _portraitKey,
-          margin: isDesktopShell
+          margin: AppShell.isDesktopStyle
               ? EdgeInsets.fromLTRB(
                   isSendMessage ? 8 : 12, 0, isSendMessage ? 12 : 8, 0)
               : const EdgeInsets.fromLTRB(8, 0, 8, 0),
           child: Portrait(portrait, Config.defaultUserPortrait,
               width: 44.0, height: 44.0, borderRadius: 6.0)),
       // 桌面端点头像弹用户信息卡片(微信 PC 形态),移动端仍整页打开
-      onTap: () => isDesktopShell
+      onTap: () => AppShell.isDesktopStyle
           ? _showUserCard(context)
           : conversationController?.onPortraitTaped(context, model),
       onLongPress: () =>
           conversationController?.onPortraitLongTaped(context, model),
       onSecondaryTapUp: (details) {
         if (!isSendMessage &&
-            isDesktopShell &&
+            AppShell.isPointerInput &&
             model.message.conversation.conversationType ==
                 ConversationType.Group) {
           conversationController?.onPortraitSecondaryTaped(
@@ -145,7 +145,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   /// 给正文类气泡套上桌面端的最大宽度;移动端由外层 Flexible 收着,原样返回。
   @protected
   Widget constrainBubbleWidth(Widget child) {
-    if (!isDesktopShell) {
+    if (!AppShell.isDesktopStyle) {
       return child;
     }
     return LayoutBuilder(
@@ -193,20 +193,20 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
         crossAxisAlignment:
             isSendMessage ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
-          (isDesktopShell
+          (AppShell.isDesktopStyle
                   ? !isSendMessage && !isHiddenGroupMemberName
                   : !isHiddenGroupMemberName)
               ? senderUserInfo != null
                   ? MeshUserName(
                       senderUserInfo,
-                      style: isDesktopShell
+                      style: AppShell.isDesktopStyle
                           ? AppText.xs
                               .copyWith(color: context.colors.messageSenderName)
                           : null,
                     )
                   : Text(
                       '<${model.message.fromUser}>',
-                      style: isDesktopShell
+                      style: AppShell.isDesktopStyle
                           ? AppText.xs
                               .copyWith(color: context.colors.messageSenderName)
                           : null,
@@ -228,7 +228,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                   // 桌面端同样不注册长按:鼠标按住不动超过 500ms 再拖时长按会抢赢竞技场,
                   // 连带把 SelectableRegion 的鼠标识别器判负(其 onCancel 会清空选区),
                   // 正文就选不中了。PC 端菜单走右键(下面的 onSecondaryTapUp)。
-                  onLongPressStart: isDesktopShell
+                  onLongPressStart: AppShell.isPointerInput
                       ? null
                       : (details) {
                           conversationController?.onLongPressedCell(
@@ -258,10 +258,10 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                       // 高亮时直接改消息内容 view 的背景色(原气泡色 + 高亮色叠加),而不是染外层。
                       color: () {
                         final baseColor = isSendMessage
-                            ? (isDesktopShell
+                            ? (AppShell.isDesktopStyle
                                 ? context.colors.bubbleSentDesktop
                                 : context.colors.bubbleSent)
-                            : (isDesktopShell
+                            : (AppShell.isDesktopStyle
                                 ? context.colors.bubbleReceivedDesktop
                                 : context.colors.bubbleReceived);
                         return model.highlighted
@@ -331,7 +331,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
         child: ConstrainedBox(
           // 行宽和气泡同一个上限,再长的摘要按两行省略
           constraints: BoxConstraints(
-            maxWidth: (isDesktopShell
+            maxWidth: (AppShell.isDesktopStyle
                     ? constraints.maxWidth - desktopBubbleInset
                     : constraints.maxWidth) -
                 tailInset,
@@ -342,7 +342,7 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
             // 单聊里被引用的必然是这两个人之一,不必再显示发送者
             showSender: model.message.conversation.conversationType !=
                 ConversationType.Single,
-            onLongPress: isDesktopShell
+            onLongPress: AppShell.isPointerInput
                 ? null
                 : (details) => conversationController?.onLongPressedCell(
                     context, model, bubbleRect),

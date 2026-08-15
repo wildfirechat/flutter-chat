@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:chat/config.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/workspace/dsbridge_webview.dart';
 import 'package:chat/workspace/js_api.dart';
@@ -17,6 +16,7 @@ import 'package:chat/workspace/webview_support.dart';
 import 'package:chat/workspace/workspace_tab_bar.dart';
 import 'package:chat/workspace/workspace_tabs_view_model.dart';
 import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/app_shell.dart';
 
 /// 工作台。
 ///
@@ -78,7 +78,7 @@ class _WorkSpaceState extends State<WorkSpace> {
             final tab = vm.activeTab;
             return Column(
               children: [
-                if (isDesktopShell)
+                if (AppShell.isDesktopStyle)
                   WorkspaceTabBar(
                     tabs: vm.tabs,
                     activeTabId: vm.activeTabId,
@@ -217,8 +217,9 @@ void _bindTabHost(
       controller,
       pushOverlay: (builder) => _pushTabOverlay(host, vm, hostContext, builder),
       // 桌面端页内跳转开新页签;移动端保持整页 push 的老形态。
-      onOpenUrl: isDesktopShell ? (String url) => vm.openTab(url) : null,
-      onClose: isDesktopShell ? vm.closeActiveTab : null,
+      onOpenUrl:
+          AppShell.isDesktopStyle ? (String url) => vm.openTab(url) : null,
+      onClose: AppShell.isDesktopStyle ? vm.closeActiveTab : null,
     ),
   );
   vm.attachHost(tab, host);

@@ -5,10 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:chat/home/conversation_list_widget.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
 
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/app_shell.dart';
 
 class PickConversationScreen extends StatefulWidget {
   final Function(BuildContext context, Conversation conversation)?
@@ -29,7 +29,7 @@ class _PickConversationScreenState extends State<PickConversationScreen> {
         Provider.of<ConversationListViewModel>(context);
     final title = AppLocalizations.of(context)!.selectConversations;
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: title,
               onBack: widget.onBack,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
 import '../utils/layout_scale.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 /// 分组列表里的一行(标题 + 可选左图标/右值/右箭头)。
 ///
@@ -42,7 +42,8 @@ class OptionItem extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        hoverColor: isDesktopShell ? Colors.transparent : colors.hoverOverlay,
+        hoverColor:
+            AppShell.isPointerInput ? Colors.transparent : colors.hoverOverlay,
         child: Column(
           children: [
             Container(
@@ -88,7 +89,7 @@ class OptionItem extends StatelessWidget {
                         )
                       : const SizedBox.shrink(),
                   if (showRightArrow)
-                    isDesktopShell
+                    AppShell.isDesktopStyle
                         // 桌面端用更细的一档箭头(Material 的 chevron_right 在 PC 上过粗),
                         // 右边距补回 8:细箭头本身没有 chevron_right 那圈内白边。
                         ? Padding(
@@ -104,7 +105,7 @@ class OptionItem extends StatelessWidget {
               ),
             ),
             // 桌面端行间不画线:分组内靠留白,分组之间由 SectionDivider 的弱线交代。
-            if (showBottomDivider && !isDesktopShell)
+            if (showBottomDivider && !AppShell.isDesktopStyle)
               Divider(
                 indent: (leftImage != null || leftIcon != null)
                     ? (15.0 + iconSize + 12.0)

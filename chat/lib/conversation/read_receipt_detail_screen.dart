@@ -9,13 +9,13 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/mesh/mesh_cache.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/user_info_widget.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class ReadReceiptDetailScreen extends StatefulWidget {
   final Message message;
@@ -25,7 +25,7 @@ class ReadReceiptDetailScreen extends StatefulWidget {
       {super.key, this.asDialog = false});
 
   static Future<void> show(BuildContext context, Message message) {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       return showPcDialog(
         context: context,
         width: 400,
@@ -203,7 +203,7 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen>
             hoverColor: context.colors.hoverOverlay,
             child: Container(
               height: LayoutScale.watchScale(
-                  context, isDesktopShell ? 52.0 : 56.0,
+                  context, AppShell.isDesktopStyle ? 52.0 : 56.0,
                   cap: LayoutScale.rowCap),
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
@@ -221,7 +221,9 @@ class _ReadReceiptDetailScreenState extends State<ReadReceiptDetailScreen>
                       builder: (context, child) {
                         return MeshUserName(
                           user,
-                          style: isDesktopShell ? AppText.base : AppText.lg,
+                          style: AppShell.isDesktopStyle
+                              ? AppText.base
+                              : AppText.lg,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         );

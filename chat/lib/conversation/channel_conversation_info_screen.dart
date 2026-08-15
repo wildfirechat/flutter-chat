@@ -18,11 +18,11 @@ import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/option_switch_item.dart';
 import 'package:chat/widget/section_divider.dart';
 
-import '../pc/pc_platform.dart';
 import '../pc/search_window/search_window_manager.dart';
 import '../search/search_conversation_result_view.dart';
 import 'conversation_files_screen.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/app_shell.dart';
 
 class ChannelConversationInfoScreen extends StatefulWidget {
   const ChannelConversationInfoScreen(this.conversation, {super.key});
@@ -50,10 +50,10 @@ class _ChannelConversationInfoScreenState
     return Selector<ChannelViewModel, ChannelInfo?>(
         builder: (context, channelInfo, child) {
           return Scaffold(
-            backgroundColor: isDesktopShell
+            backgroundColor: AppShell.isDesktopStyle
                 ? context.colors.surface
                 : context.colors.primaryBackground,
-            appBar: isDesktopShell
+            appBar: AppShell.isDesktopStyle
                 ? null
                 : AppBar(
                     title: Text(AppLocalizations.of(context)!.channelDetails),
@@ -75,7 +75,7 @@ class _ChannelConversationInfoScreenState
 
     return SingleChildScrollView(
         child: Column(children: [
-      if (isDesktopShell) const SizedBox(height: 12.0),
+      if (AppShell.isDesktopStyle) const SizedBox(height: 12.0),
       channelInfo != null
           ? Container(
               color: context.colors.surface,

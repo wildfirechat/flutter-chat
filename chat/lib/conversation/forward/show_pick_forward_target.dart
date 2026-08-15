@@ -3,8 +3,8 @@ import 'package:imclient/message/message.dart';
 
 import 'package:chat/conversation/forward/pick_forward_page.dart';
 import 'package:chat/pc/pc_pick_forward_dialog.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
+import 'package:chat/app_shell.dart';
 
 export 'package:chat/conversation/forward/pick_forward_page.dart'
     show OnForwardTargetsSelected;
@@ -18,7 +18,7 @@ Future<void> showPickForwardTarget(
   List<Message>? messages,
   bool oneByOne = false,
 }) {
-  if (isDesktopShell) {
+  if (AppShell.isDesktopStyle) {
     return showPcDialog(
       context: context,
       width: 680,

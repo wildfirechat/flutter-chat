@@ -7,10 +7,10 @@ import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/app_shell.dart';
 
 /// 会话图片与视频网格页：3 列方形缩略图，点击全屏预览（分页见 conversation_links_screen 模式）。
 class ConversationMediaGridScreen extends StatelessWidget {
@@ -22,7 +22,7 @@ class ConversationMediaGridScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: l10n.searchMedia,
               onBack: () => Navigator.of(context).maybePop(),

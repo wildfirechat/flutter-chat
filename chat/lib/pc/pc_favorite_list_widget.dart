@@ -23,7 +23,6 @@ import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/pc/media_preview_window/media_preview_window_manager.dart';
 import 'package:chat/model/favorite_item.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/media_url_redirector.dart';
@@ -31,6 +30,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 /// 收藏分类。
 ///
@@ -381,7 +381,7 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
     final message = item.toMessage();
     final content = message.content;
     if (content is ImageMessageContent || content is VideoMessageContent) {
-      if (isDesktopShell) {
+      if (AppShell.isDesktopStyle) {
         // 参考微信:收藏的图片/视频在独立窗口中预览(单条,不翻页)
         MediaPreviewWindowManager.instance.show(
           mediaItems: [message],
@@ -601,10 +601,11 @@ class _FavoriteListWidgetState extends State<FavoriteListWidget> {
       return _buildBody();
     }
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(title: _pageTitle(context))
           : AppBar(title: Text(_pageTitle(context))),
-      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
+      backgroundColor:
+          AppShell.isDesktopStyle ? context.colors.chatBgDesktop : null,
       body: _buildBody(),
     );
   }

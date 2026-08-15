@@ -2,11 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/app_bar_actions.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/app_shell.dart';
 
 class InviteFriendPage extends StatefulWidget {
   const InviteFriendPage(this.userId, {super.key});
@@ -36,7 +36,7 @@ class InviteFriendPageState extends State<InviteFriendPage> {
     ];
 
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: l10n.addFriend,
               onBack: () => Navigator.of(context).maybePop(),
@@ -46,7 +46,8 @@ class InviteFriendPageState extends State<InviteFriendPage> {
               actions: actions,
               title: Text(l10n.addFriend),
             ),
-      backgroundColor: isDesktopShell ? context.colors.chatBgDesktop : null,
+      backgroundColor:
+          AppShell.isDesktopStyle ? context.colors.chatBgDesktop : null,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

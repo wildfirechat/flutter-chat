@@ -7,13 +7,13 @@ import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/theme/app_colors.dart';
-import 'package:chat/pc/pc_platform.dart';
 
 import 'conversation_info_member_action_item.dart';
 import 'conversation_info_member_item.dart';
 import 'member_cell_anchor.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/app_shell.dart';
 
 class GroupConversationInfoMembersView extends StatefulWidget {
   final Conversation conversation;
@@ -59,7 +59,7 @@ class _GroupConversationInfoMembersViewState
 
     List<UserInfo> showGroupMemberUserInfos;
 
-    int columnCount = isDesktopShell ? 4 : 5;
+    int columnCount = AppShell.isDesktopStyle ? 4 : 5;
     int showLines = 4;
     bool hasMore = false;
 

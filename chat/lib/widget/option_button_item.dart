@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
 import '../utils/layout_scale.dart';
+import 'package:chat/app_shell.dart';
 
 class OptionButtonItem extends StatelessWidget {
   final String title;
@@ -37,7 +37,7 @@ class OptionButtonItem extends StatelessWidget {
           ),
         ),
         // 桌面端行间不画线,与 OptionItem 保持一致。
-        if (showBottomDivider && !isDesktopShell) const Divider(),
+        if (showBottomDivider && !AppShell.isDesktopStyle) const Divider(),
       ],
     );
   }

@@ -24,7 +24,6 @@ import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
 import 'package:chat/conversation/message_cell.dart';
 import 'package:chat/conversation/forward/show_pick_forward_target.dart';
 import 'package:chat/group/join_group_request_screen.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/shortcuts/ambient_shortcuts.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/utils/external_target_utils.dart';
@@ -37,6 +36,7 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 /// 会话消息面板:消息列表 + 输入栏 + 多选工具栏,并承载进入/退出会话的完整生命周期
 /// (setConversation、清未读、聊天室加退、草稿保存)。
@@ -100,7 +100,7 @@ class _ConversationPaneState extends State<ConversationPane>
     });
     _watchOnlineState(widget.conversation);
 
-    if (isDesktopShell) {
+    if (AppShell.isPointerInput) {
       // 桌面端没有触摸下拉手势,滚动接近历史侧末端时自动加载更早的消息;
       // 首帧后主动触发一次,覆盖首屏消息不足一屏、无法产生滚动的情况。
       _scrollController.addListener(_autoLoadHistoryIfNeeded);
@@ -417,7 +417,7 @@ class _ConversationPaneState extends State<ConversationPane>
           _inputBarController = MessageInputBarController(
               conversation: widget.conversation,
               conversationViewModel: conversationViewModel);
-          if (!isDesktopShell) {
+          if (!AppShell.isDesktopStyle) {
             // 移动端:键入 '@' 跳选人页(微信手机端交互);
             // 桌面端不设置回调,由 PcMessageInputBar 的 @ 浮层就地选人(微信 PC 交互)
             _inputBarController.onMentionTriggered = _onMentionTriggered;
@@ -448,7 +448,7 @@ class _ConversationPaneState extends State<ConversationPane>
                                       : 0.0,
                               reverse: true,
                               // 桌面端滚轮/触控板没有回弹语义,用 clamping;历史加载走 _autoLoadHistoryIfNeeded
-                              physics: isDesktopShell
+                              physics: AppShell.isPointerInput
                                   ? const ClampingScrollPhysics(
                                       parent: AlwaysScrollableScrollPhysics())
                                   : const BouncingScrollPhysics(
@@ -580,7 +580,7 @@ class _ConversationPaneState extends State<ConversationPane>
           // 会话页快捷键(Esc 退出多选、Cmd/Ctrl+C 复制气泡选区)见 _handleLateKeyEvent,
           // 挂在 FocusManager 上而不是这里的 Focus 节点,不受焦点归属影响。
 
-          if (isDesktopShell) {
+          if (AppShell.isPointerInput) {
             return DropTarget(
               onDragDone: (detail) =>
                   _handleDroppedFiles(innerContext, detail.files),
@@ -669,8 +669,9 @@ class _ConversationPaneState extends State<ConversationPane>
       BuildContext context, ConversationViewModel viewModel) {
     return Container(
       height: 60,
-      color:
-          isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg,
+      color: AppShell.isDesktopStyle
+          ? context.colors.chatBgDesktop
+          : context.colors.chatBg,
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,

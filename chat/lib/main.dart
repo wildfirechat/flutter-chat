@@ -30,7 +30,6 @@ import 'package:chat/call/multi_call_screen.dart';
 import 'package:chat/call/conference/conference_call_screen.dart';
 import 'package:chat/share/share_service.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 
 import 'package:moment/client/momentclient.dart';
@@ -84,6 +83,7 @@ import 'package:chat/pc/search_window/main_search_proxy.dart';
 import 'package:chat/pc/search_window/search_window_app.dart';
 import 'package:chat/pc/wf_webview_window/wf_webview_window_app.dart';
 import 'package:chat/pc/wf_webview_window/wf_webview_window_ipc.dart';
+import 'package:chat/app_shell.dart';
 
 /// video_player 官方桌面实现只覆盖 macOS(avfoundation)，Windows/Linux 缺失，
 /// 桌面端视频消息只能退化为系统播放器打开(见 mm_preview_view.dart)。
@@ -132,7 +132,7 @@ void main([List<String>? args]) async {
   WidgetsFlutterBinding.ensureInitialized();
   _registerDesktopVideoBackend();
 
-  // 查询设备形态(手机/平板/电脑)并缓存:鸿蒙上 isDesktopShell 依赖此结果,
+  // 查询设备形态(手机/平板/电脑)并缓存:鸿蒙上 AppShell 的三条轴依赖此结果,
   // iOS/Android 上决定协议平台号上报 iPhone/iPad、Android/APad。
   // 必须在 connect 之前完成,平台号是连接期一次性上报的。
   await WfcPlatform.init();
@@ -142,7 +142,7 @@ void main([List<String>? args]) async {
     ..maximumSize = 200
     ..maximumSizeBytes = 50 << 20; // 50MB
 
-  if (!isDesktopShell) {
+  if (!WfcPlatform.isDesktop) {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     // 状态栏/导航栏图标的明暗跟随主题,由 MyApp 里的 AnnotatedRegion 下发。
   }
@@ -162,8 +162,8 @@ void main([List<String>? args]) async {
     });
   }
   final PcLayoutViewModel? pcLayoutViewModel =
-      isDesktopShell ? PcLayoutViewModel() : null;
-  if (isDesktopShell) {
+      WfcPlatform.isDesktop ? PcLayoutViewModel() : null;
+  if (WfcPlatform.isDesktop) {
     // window_manager 仅原生桌面(Windows/macOS/Linux)可用,鸿蒙电脑跳过
     if (WfcPlatform.isNativeDesktop) {
       await PCWindowManager().ensureInitialized();
@@ -197,10 +197,10 @@ void main([List<String>? args]) async {
       ChangeNotifierProvider<ThemeViewModel>.value(value: themeViewModel),
       // 桌面 Shell 的导航状态。仅桌面注册:共享代码经 app_navigator.dart 查找,
       // 移动端取不到即走整页 push 路径。
-      if (isDesktopShell)
+      if (WfcPlatform.isDesktop)
         ChangeNotifierProvider<PCShellViewModel>(
             create: (_) => PCShellViewModel()),
-      if (isDesktopShell)
+      if (WfcPlatform.isDesktop)
         ChangeNotifierProvider<PcLayoutViewModel>.value(
             value: pcLayoutViewModel!),
     ],
@@ -237,7 +237,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     setToastNavigatorKey(navKey);
     setPCWindowNavKey(navKey);
-    if (isDesktopShell) {
+    if (WfcPlatform.isDesktop) {
       _shell = context.read<PCShellViewModel>();
       // 桌面端窗口恢复逻辑已后移到 _initIMClient 中，等登录状态判定完成后再 show/focus，
       // 避免未登录时窗口先闪到上次登录保存的位置。
@@ -447,7 +447,7 @@ class _MyAppState extends State<MyApp> {
     });
 
     // IM 初始化完成后立即安装音视频代理（桌面端通过子窗口承载，移动端直接初始化 avenginekit）。
-    if (isDesktopShell) {
+    if (WfcPlatform.isDesktop) {
       // 所有子窗口共用的 IM 代理（im.* 共享域），须先于各窗口自己的代理安装。
       // rawContentDecoder 供 sendMessage/updateMessage 重建 MessageContent：
       // 主窗口不理解具体消息业务，只按 payload 原样透传（当前只有通话在用）。
@@ -465,7 +465,7 @@ class _MyAppState extends State<MyApp> {
     _currentUserId = prefs.getString("userId");
     final hasCredentials =
         _currentUserId != null && prefs.getString("token") != null;
-    if (isDesktopShell) {
+    if (WfcPlatform.isDesktop) {
       // 桌面端先判断登录状态：未登录直接以登录页小窗显示，已登录才恢复上次窗口尺寸/位置
       await PCWindowManager().setupWindow(isLogined: hasCredentials);
     }
@@ -496,7 +496,7 @@ class _MyAppState extends State<MyApp> {
         debugPrint("receive moment feed");
       }
     });
-    if (isDesktopShell) {
+    if (WfcPlatform.isDesktop) {
       // 朋友圈/搜索窗口的**非 IM** 窗口业务代理（feed 刷新广播、定位消息跳回
       // 主窗口）。IM 调用本身已全部由 MainImclientProxy 统一代执行，
       // WebView 窗口因此不再需要自己的代理。
@@ -510,7 +510,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _handleNotificationTap(String payload) async {
-    if (!isDesktopShell) {
+    if (!WfcPlatform.isDesktop) {
       return;
     }
     try {
@@ -605,7 +605,7 @@ class _MyAppState extends State<MyApp> {
               ),
               child: child!,
             );
-            if (!isDesktopShell) {
+            if (!WfcPlatform.isDesktop) {
               // 这里的 context 位于 MaterialApp 的 Theme 之下,themeMode 为
               // ThemeMode.system 时也能拿到系统解析后的明暗。
               content = AnnotatedRegion<SystemUiOverlayStyle>(
@@ -641,7 +641,7 @@ class _MyAppState extends State<MyApp> {
       _currentUserId = userId;
       isLogined = true;
     });
-    if (isDesktopShell) {
+    if (WfcPlatform.isDesktop) {
       final navigator = navKey.currentState;
       if (navigator != null) {
         bool topIsLogin = false;
@@ -674,9 +674,12 @@ class _MyAppState extends State<MyApp> {
     if (isLogined == null) {
       home = const SplashScreen();
     } else if (!isLogined!) {
-      home = isDesktopShell ? const PCQRLoginScreen() : const LoginScreen();
+      home = AppShell.isDesktopStyle
+          ? const PCQRLoginScreen()
+          : const LoginScreen();
     } else {
-      home = isDesktopShell ? const PCHome() : const HomeTabBar();
+      home =
+          AppShell.isMultiPane(context) ? const PCHome() : const HomeTabBar();
     }
     // 启动页/登录页还没有用户身份,不显示水印。此时 _currentUserId 为 null,
     // WatermarkOverlay 会回退到尚未初始化的 Imclient.currentUserId 而抛

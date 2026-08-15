@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/theme/app_colors.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/widgets/animated_emoji.dart';
 import 'sticker_manager.dart';
+import 'package:chat/app_shell.dart';
 
 typedef OnPickerEmojiCallback = void Function(String emoji);
 typedef OnDelEmojiCallback = void Function();
@@ -145,8 +145,9 @@ const List<String> kChatEmojis = [
 
 /// 面板底色。桌面端弹层要把卡片(含指向表情按钮的小尾巴)刷成同一个颜色,
 /// 尾巴才不会和面板脱色,所以对外暴露。
-Color emojiBoardBackgroundColor(BuildContext context) =>
-    isDesktopShell ? context.colors.chatBgDesktop : context.colors.chatBg;
+Color emojiBoardBackgroundColor(BuildContext context) => AppShell.isDesktopStyle
+    ? context.colors.chatBgDesktop
+    : context.colors.chatBg;
 
 class EmojiBoard extends StatefulWidget {
   final List<String> emojis;
@@ -401,7 +402,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
           bool isSelected = _selectedIndex == index;
           return Material(
             color: isSelected
-                ? (isDesktopShell
+                ? (AppShell.isDesktopStyle
                     ? context.colors.chatBgDesktop
                     : context.colors.chatBg)
                 : context.colors.surface,

@@ -12,7 +12,7 @@ import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/pc/pc_platform.dart';
+import 'package:chat/app_shell.dart';
 
 extension EmptyStringToNull on String? {
   String? get emptyToNull {
@@ -218,7 +218,7 @@ class Utilities {
     }
     final uri = Uri.parse(MediaUrlRedirector.redirect(resolvedUrl));
     // PC 端统一交给系统默认浏览器打开,不使用内置浏览页;移动端保持原有内嵌 WebView 行为。
-    if (!isDesktopShell &&
+    if (!AppShell.isDesktopStyle &&
         (uri.scheme == 'http' || uri.scheme == 'https') &&
         isInlineWebViewSupported) {
       if (!context.mounted) {

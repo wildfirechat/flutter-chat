@@ -7,7 +7,6 @@ import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/channel/search_channel.dart';
 import 'package:chat/config.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -17,6 +16,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 import '../conversation/conversation_screen.dart';
+import 'package:chat/app_shell.dart';
 
 class ChannelList extends StatefulWidget {
   const ChannelList({Key? key}) : super(key: key);
@@ -39,7 +39,7 @@ class ChannelListState extends State<ChannelList> {
     ];
 
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: l10n.subscribedChannelsTitle,
               actions: actions,

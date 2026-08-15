@@ -36,7 +36,6 @@ import 'package:chat/conversation/media_cell_anchor.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/call/av_call_launcher.dart';
 import 'package:chat/pc/media_preview_window/media_preview_window_manager.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/utils/layout_scale.dart';
@@ -65,6 +64,7 @@ import 'package:chat/event_bus.dart';
 import 'package:chat/conversation/cell_builder/voice_cell_builder.dart';
 
 import 'package:chat/conversation/read_receipt_detail_screen.dart';
+import 'package:chat/app_shell.dart';
 
 class ConversationController extends ChangeNotifier {
   late ConversationViewModel conversationViewModel;
@@ -303,7 +303,7 @@ class ConversationController extends ChangeNotifier {
           list.add(model.message);
           list.addAll(newerMsgs);
           int index = eldMsgs.length;
-          if (isDesktopShell) {
+          if (AppShell.isDesktopStyle) {
             // 参考微信:媒体在独立窗口中预览,翻页到两端的加载由窗口管理器代查
             MediaPreviewWindowManager.instance.show(
               mediaItems: list,
@@ -783,7 +783,7 @@ class ConversationController extends ChangeNotifier {
         partialSelection: partialSelection);
 
     // 桌面端:标准垂直上下文菜单,锚定鼠标/气泡位置,showMenu 自动避让窗口边缘
-    if (isDesktopShell) {
+    if (AppShell.isPointerInput) {
       _showDesktopContextMenu(context, model, bubbleRect, menuItems,
               messageInputBarController, selectedText)
           .whenComplete(clearHighlight);

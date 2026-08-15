@@ -6,7 +6,7 @@ import 'package:imclient/model/conversation.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
-import 'package:chat/pc/pc_platform.dart';
+import 'package:imclient/imclient_platform.dart';
 
 /// 发起单聊音视频通话的统一入口(桌面输入栏按钮与用户信息卡片共用):
 /// 直接按 [audioOnly] 指定类型发起,不弹选择菜单;已有通话时提示。
@@ -20,7 +20,7 @@ void startSingleAvCall(BuildContext context, String userId,
   }
   final conversation =
       Conversation(conversationType: ConversationType.Single, target: userId);
-  if (isDesktopShell) {
+  if (WfcPlatform.isDesktop) {
     MainAvEngineKitProxy.instance.startCall(conversation, [userId], audioOnly);
   } else {
     avEngineKit.startCall(conversation, [userId], audioOnly);

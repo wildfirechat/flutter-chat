@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/model/domain_info.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_icon_action.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/pc/widgets/pc_pane_content.dart';
@@ -12,6 +11,7 @@ import 'package:chat/utils/show_toast.dart';
 import '../contact/search_user.dart';
 import 'mesh_cache.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 /// Mesh 外部单位/域详情页。
 class DomainProfileScreen extends StatefulWidget {
@@ -65,7 +65,7 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       return Scaffold(
         backgroundColor: context.colors.surface,
         // 单位名字就写在正文里,标题栏不必再说一遍 —— 与用户/频道资料页一致。

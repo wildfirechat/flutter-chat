@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/app_shell.dart';
 
 /// 分组列表之间的段间分隔。
 ///
@@ -17,7 +17,7 @@ class SectionDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!isDesktopShell) {
+    if (!AppShell.isDesktopStyle) {
       return const SizedBox(height: gap);
     }
     return Container(

@@ -6,7 +6,6 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -14,6 +13,7 @@ import 'package:chat/widget/app_bar_actions.dart';
 import '../widget/portrait.dart';
 import 'collection_model.dart';
 import 'collection_service.dart';
+import 'package:chat/app_shell.dart';
 
 /// 接龙详情:接龙内容 + 参与清单,自己那条可就地编辑。
 ///
@@ -26,7 +26,7 @@ class CollectionDetailScreen extends StatefulWidget {
       {super.key, required this.message, this.asDialog = false});
 
   static Future<void> show(BuildContext context, Message message) {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       return showPcDialog(
         context: context,
         width: 460,

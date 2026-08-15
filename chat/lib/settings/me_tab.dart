@@ -26,9 +26,9 @@ import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 
 import '../config.dart';
-import '../pc/pc_platform.dart';
 import '../user_info_widget.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class MeTab extends StatelessWidget {
   const MeTab({super.key});
@@ -60,7 +60,7 @@ class MeTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 18),
-            if (!isDesktopShell)
+            if (!AppShell.isDesktopStyle)
               Container(
                 color: context.colors.surface,
                 child: Column(
@@ -91,7 +91,7 @@ class MeTab extends StatelessWidget {
                   ],
                 ),
               ),
-            if (!isDesktopShell) const SizedBox(height: 18),
+            if (!AppShell.isDesktopStyle) const SizedBox(height: 18),
             Container(
               color: context.colors.surface,
               child: OptionItem(

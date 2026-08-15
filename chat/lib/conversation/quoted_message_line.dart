@@ -8,12 +8,12 @@ import 'package:imclient/message/message.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/quote_info.dart';
 
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 
 import 'quoted_message_preview.dart';
+import 'package:chat/app_shell.dart';
 
 class _QuoteThumb {
   const _QuoteThumb(this.bytes, this.isVideo);
@@ -151,7 +151,7 @@ class _QuotedMessageLineState extends State<QuotedMessageLine> {
           anchor: _lineRect),
       onLongPressStart: widget.onLongPress,
       onSecondaryTapUp: widget.onSecondaryTapUp,
-      child: isDesktopShell
+      child: AppShell.isDesktopStyle
           ? HoverBuilder(
               cursor: SystemMouseCursors.click,
               builder: (context, hovered) => _line(context, hovered),
@@ -171,10 +171,10 @@ class _QuotedMessageLineState extends State<QuotedMessageLine> {
     return Container(
       key: _lineKey,
       padding: EdgeInsets.only(
-        left: isDesktopShell && !onRight ? _kQuoteBarGap : 0,
-        right: isDesktopShell && onRight ? _kQuoteBarGap : 0,
+        left: AppShell.isDesktopStyle && !onRight ? _kQuoteBarGap : 0,
+        right: AppShell.isDesktopStyle && onRight ? _kQuoteBarGap : 0,
       ),
-      decoration: isDesktopShell
+      decoration: AppShell.isDesktopStyle
           ? BoxDecoration(
               border: Border(
                 left: onRight ? BorderSide.none : bar,

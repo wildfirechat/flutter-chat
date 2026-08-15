@@ -11,7 +11,6 @@ import 'package:chat/widget/option_switch_item.dart';
 import 'package:chat/widget/section_divider.dart';
 
 import '../contact/pick_user_screen.dart';
-import '../pc/pc_platform.dart';
 import '../pc/pc_user_card.dart';
 import '../pc/search_window/search_window_manager.dart';
 import '../search/search_conversation_result_view.dart';
@@ -25,6 +24,7 @@ import 'conversation_links_screen.dart';
 import 'package:chat/app_navigator.dart';
 
 import 'package:chat/theme/app_colors.dart';
+import 'package:chat/app_shell.dart';
 
 class SingleConversationInfoScreen extends StatefulWidget {
   const SingleConversationInfoScreen(this.conversation, {super.key});
@@ -52,10 +52,10 @@ class _SingleConversationInfoScreenState
     return Selector<UserViewModel, UserInfo?>(
         builder: (context, userInfo, child) {
           return Scaffold(
-            backgroundColor: isDesktopShell
+            backgroundColor: AppShell.isDesktopStyle
                 ? context.colors.surface
                 : context.colors.primaryBackground,
-            appBar: isDesktopShell
+            appBar: AppShell.isDesktopStyle
                 ? null
                 : AppBar(
                     title: Text(AppLocalizations.of(context)!
@@ -77,7 +77,7 @@ class _SingleConversationInfoScreenState
     final l10n = AppLocalizations.of(context)!;
     return SingleChildScrollView(
         child: Column(children: [
-      if (isDesktopShell) const SizedBox(height: 12.0),
+      if (AppShell.isDesktopStyle) const SizedBox(height: 12.0),
       userInfo != null
           ? Container(
               color: context.colors.surface,
@@ -86,7 +86,7 @@ class _SingleConversationInfoScreenState
                 userInfo,
                 onUserTap: (userInfo, anchor) {
                   // 桌面端点成员弹用户信息卡片(与会话内点头像一致),移动端仍整页打开
-                  if (isDesktopShell) {
+                  if (AppShell.isDesktopStyle) {
                     showPcUserCard(
                         context: context,
                         anchor: anchor,

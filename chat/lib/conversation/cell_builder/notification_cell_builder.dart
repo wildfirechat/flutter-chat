@@ -12,9 +12,9 @@ import 'package:imclient/message/notification/recall_notificiation_content.dart'
 import '../input_bar/message_input_bar_controller.dart';
 import '../message_cell.dart';
 import 'message_cell_builder.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class NotificationCellBuilder extends MessageCellBuilder {
   String notificaitonMsgDigest = '';
@@ -65,7 +65,7 @@ class NotificationCellBuilder extends MessageCellBuilder {
         : null;
 
     return Container(
-        padding: isDesktopShell
+        padding: AppShell.isDesktopStyle
             ? const EdgeInsets.fromLTRB(90, 0, 90, 0)
             : const EdgeInsets.fromLTRB(60, 0, 60, 0),
         child: notificaitonMsgDigest.isEmpty
@@ -84,7 +84,7 @@ class NotificationCellBuilder extends MessageCellBuilder {
                   Text(
                     notificaitonMsgDigest,
                     textAlign: TextAlign.center,
-                    style: isDesktopShell
+                    style: AppShell.isDesktopStyle
                         ? AppText.sm.copyWith(color: Color(0xFFA0A0A4))
                         : AppText.xs,
                   ),

@@ -8,7 +8,7 @@ import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
-import 'package:chat/pc/pc_platform.dart';
+import 'package:imclient/imclient_platform.dart';
 
 /// 桌面端发起音视频通话的统一入口(输入栏按钮与用户信息卡片共用):
 /// - 单聊:直接按 [audioOnly] 指定类型发起,不弹选择菜单;
@@ -23,7 +23,7 @@ void startAvCall(BuildContext context, Conversation conversation,
   }
   switch (conversation.conversationType) {
     case ConversationType.Single:
-      if (isDesktopShell) {
+      if (WfcPlatform.isDesktop) {
         MainAvEngineKitProxy.instance
             .startCall(conversation, [conversation.target], audioOnly);
       } else {
@@ -67,7 +67,7 @@ Future<void> _pickGroupMembersAndStart(
         return;
       }
       Navigator.pop(pickerContext);
-      if (isDesktopShell) {
+      if (WfcPlatform.isDesktop) {
         MainAvEngineKitProxy.instance
             .startCall(conversation, participants, audioOnly);
       } else {

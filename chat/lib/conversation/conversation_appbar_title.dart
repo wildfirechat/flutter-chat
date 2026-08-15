@@ -5,7 +5,6 @@ import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/external_target_utils.dart';
 import 'package:chat/utils/mesh_user_display.dart';
@@ -16,6 +15,7 @@ import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/middle_ellipsis_text.dart';
+import 'package:chat/app_shell.dart';
 
 /// 会话标题组件，支持显示 "对方正在输入..." 和用户在线状态。
 class ConversationAppbarTitle extends StatelessWidget {
@@ -130,7 +130,7 @@ class ConversationAppbarTitle extends StatelessWidget {
     );
 
     // 移动端标题字号比 AppBar 默认小 2pt
-    if (isDesktopShell) return child;
+    if (AppShell.isDesktopStyle) return child;
     return DefaultTextStyle.merge(
       style: TextStyle(
           fontSize: (DefaultTextStyle.of(context).style.fontSize ?? 18) - 2),

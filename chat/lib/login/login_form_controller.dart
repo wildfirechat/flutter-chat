@@ -8,10 +8,10 @@ import 'package:chat/app_server.dart';
 import 'package:chat/config.dart';
 import 'package:chat/home/home.dart';
 import 'package:chat/main.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/widget/slide_verify_dialog.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:imclient/imclient_platform.dart';
 
 /// 手机号 + 验证码/密码登录的共享表单逻辑,移动端 [LoginScreen] 与桌面
 /// PCQRLoginScreen 的表单视图共用:输入校验、验证码 60s 倒计时、滑动验证、
@@ -174,7 +174,7 @@ class LoginFormController extends ChangeNotifier {
       // PCHome,再压一个路由实例会同时存在两个 PCHome,后注册的 pageOpener 随
       // 被替换路由销毁时被置 null,右栏导航静默失效(设置页点项不切换)。
       // 同 3376556 对扫码登录的处理;移动端 home 是路由,仍需 pushReplacement。
-      if (!isDesktopShell) {
+      if (!WfcPlatform.isDesktop) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const HomeTabBar()),
         );

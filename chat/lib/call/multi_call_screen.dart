@@ -14,11 +14,11 @@ import 'package:provider/provider.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:chat/call/call_overlay_manager.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class _ParticipantItem {
   final String userId;
@@ -304,7 +304,8 @@ class _MultiCallScreenState extends State<MultiCallScreen>
       });
       Future.delayed(const Duration(seconds: 1), () {
         if (!mounted) return;
-        final shell = isDesktopShell ? context.read<PCShellViewModel>() : null;
+        final shell =
+            AppShell.isDesktopStyle ? context.read<PCShellViewModel>() : null;
         if (shell != null && shell.activeCallSession != null) {
           shell.endCallSession();
         } else {
@@ -571,7 +572,7 @@ class _MultiCallScreenState extends State<MultiCallScreen>
             ),
           ),
           // 最小化为悬浮窗（仅移动端）
-          if (!isDesktopShell)
+          if (!AppShell.isDesktopStyle)
             IconButton(
               icon: const Icon(Icons.photo_size_select_small_rounded,
                   color: Colors.white70),

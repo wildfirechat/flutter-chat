@@ -20,10 +20,10 @@ import 'package:chat/widget/option_item.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class FileRecordsScreen extends StatelessWidget {
   const FileRecordsScreen({super.key});
@@ -31,7 +31,7 @@ class FileRecordsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(title: AppLocalizations.of(context)!.fileRecords)
           : AppBar(
               title: Text(AppLocalizations.of(context)!.fileRecords),
@@ -162,7 +162,7 @@ class FileListScreen extends StatelessWidget {
         : null;
 
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: title,
               onBack: onBack,

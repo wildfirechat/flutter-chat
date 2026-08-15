@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:dsbridge_flutter/dsbridge_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/workspace/js_api.dart';
 import 'package:chat/workspace/webview_background.dart';
 import 'package:chat/workspace/webview_support.dart';
+import 'package:imclient/imclient_platform.dart';
 
 typedef DsBridgePageFinished = Future<void> Function(String url);
 
@@ -55,7 +55,7 @@ void configureDsBridgeWebView({
 /// 让桌面 WebView 的 UA 带上 dsbridge 标记,必须在 loadRequest 之前调用。
 Future<void> ensureDesktopDsBridgeUserAgent(
     DWebViewController controller) async {
-  if (!isDesktopShell) {
+  if (!WfcPlatform.isDesktop) {
     return;
   }
   await tagDsBridgeUserAgent(controller);

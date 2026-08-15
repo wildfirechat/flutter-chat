@@ -12,9 +12,9 @@ import 'package:chat/conversation/input_bar/channel_menu_widget.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/theme/app_colors.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'message_input_bar_controller.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 /// 持久化的键盘高度key
 const String _kKeyboardHeightKey = 'saved_keyboard_height';
@@ -197,7 +197,7 @@ class _MessageInputBarState extends State<MessageInputBar>
         }
 
         return Container(
-          color: isDesktopShell
+          color: AppShell.isDesktopStyle
               ? context.colors.chatBgDesktop
               : context.colors.chatBg,
           child: Column(
@@ -308,7 +308,7 @@ class _MessageInputBarState extends State<MessageInputBar>
 
     return Container(
       decoration: BoxDecoration(
-        color: isDesktopShell
+        color: AppShell.isDesktopStyle
             ? context.colors.chatBgDesktop
             : context.colors.chatBg,
         border: Border(

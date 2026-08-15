@@ -7,7 +7,6 @@ import 'package:chat/config.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import '../app_navigator.dart';
-import '../pc/pc_platform.dart';
 import '../pc/widgets/pc_page_header.dart';
 import '../viewmodel/locale_view_model.dart';
 import '../viewmodel/theme_view_model.dart';
@@ -17,6 +16,7 @@ import 'privacy_settings_screen.dart';
 import '../widget/option_item.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class GeneralSettings extends StatelessWidget {
   const GeneralSettings({super.key});
@@ -24,12 +24,12 @@ class GeneralSettings extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(title: AppLocalizations.of(context)!.settings)
           : AppBar(
               title: Text(AppLocalizations.of(context)!.settings),
             ),
-      backgroundColor: isDesktopShell
+      backgroundColor: AppShell.isDesktopStyle
           ? context.colors.chatBgDesktop
           : context.colors.primaryBackground,
       body: SafeArea(

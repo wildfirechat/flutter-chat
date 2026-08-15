@@ -5,10 +5,10 @@ import 'package:imclient/model/conversation.dart';
 import 'package:intl/intl.dart';
 import 'package:chat/conversation/conversation_screen.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 /// 按日期查找聊天内容：从当月起的日历，有消息的日期可点击定位到当天最后一条消息。
 class ConversationCalendarScreen extends StatelessWidget {
@@ -20,7 +20,7 @@ class ConversationCalendarScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(
               title: l10n.searchByDate,
               onBack: () => Navigator.of(context).maybePop(),

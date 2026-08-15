@@ -8,10 +8,10 @@ import 'package:imclient/message/message_content.dart';
 import 'package:mime/mime.dart';
 import 'package:path/path.dart' as path;
 
-import 'package:chat/pc/pc_platform.dart';
 import '../config.dart';
 import '../utils/auth_code_api_client.dart';
 import '../utils/media_url_redirector.dart';
+import 'package:imclient/imclient_platform.dart';
 
 /// 云盘服务
 ///
@@ -202,7 +202,7 @@ class PanService {
     final mimeType = lookupMimeType(localPath) ?? 'application/octet-stream';
 
     final bool useLargeUpload =
-        isDesktopShell ? await _shouldUseLargeUpload(size) : false;
+        WfcPlatform.isDesktop ? await _shouldUseLargeUpload(size) : false;
 
     final String storageUrl;
     if (useLargeUpload) {

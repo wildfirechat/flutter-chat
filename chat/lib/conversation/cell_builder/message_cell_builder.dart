@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../utilities.dart';
 import '../message_cell.dart';
 import '../../ui_model/ui_message.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 abstract class MessageCellBuilder {
   UIMessage model;
@@ -30,7 +30,7 @@ abstract class MessageCellBuilder {
 
   Widget build(BuildContext context) {
     final basePadding = model.showTimeLabel ? 5.0 : 3.0;
-    final verticalExtra = isDesktopShell ? 6.0 : 0.0;
+    final verticalExtra = AppShell.isDesktopStyle ? 6.0 : 0.0;
     return Container(
       padding: EdgeInsets.fromLTRB(
         basePadding,

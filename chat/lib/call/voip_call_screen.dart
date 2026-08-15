@@ -14,12 +14,12 @@ import 'package:provider/provider.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
 import 'package:chat/call/call_overlay_manager.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class VoipCallScreen extends StatefulWidget {
   final CallSession session;
@@ -278,7 +278,8 @@ class _VoipCallScreenState extends State<VoipCallScreen>
           return;
         }
         // 桌面端通话在 Shell 浮窗中,收起浮窗;移动端整页 pop
-        final shell = isDesktopShell ? context.read<PCShellViewModel>() : null;
+        final shell =
+            AppShell.isDesktopStyle ? context.read<PCShellViewModel>() : null;
         if (shell != null && shell.activeCallSession != null) {
           shell.endCallSession();
         } else {
@@ -466,7 +467,7 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                     // 未接通或语音通话时显示头像与状态
                     if (!isVideoMode || !isConnected) ...[
                       // 最小化按钮所有状态可用（仅移动端）
-                      if (!isDesktopShell)
+                      if (!AppShell.isDesktopStyle)
                         Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 8),
@@ -532,7 +533,8 @@ class _VoipCallScreenState extends State<VoipCallScreen>
                             ),
                             const Spacer(),
                             // 最小化为悬浮窗（仅移动端）
-                            if (!isDesktopShell) _buildMinimizeButton(),
+                            if (!AppShell.isDesktopStyle)
+                              _buildMinimizeButton(),
                           ],
                         ),
                       ),

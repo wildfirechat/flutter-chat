@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/message/articles_message_content.dart';
 import 'package:chat/utils/media_url_redirector.dart';
-import 'package:chat/pc/pc_platform.dart';
 
 import '../../ui_model/ui_message.dart';
 import '../../utilities.dart';
@@ -9,6 +8,7 @@ import 'portrait_cell_builder.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/app_shell.dart';
 
 /// 图文消息 Cell Builder
 ///
@@ -45,7 +45,7 @@ class ArticlesCellBuilder extends PortraitCellBuilder {
 
   /// 桌面端窗口很宽,按比例算会一路顶到上限,直接给固定宽度更稳定
   double _cardWidth(BuildContext context) {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       return 340;
     }
     return (MediaQuery.of(context).size.width * 0.75)

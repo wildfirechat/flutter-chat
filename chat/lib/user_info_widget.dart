@@ -12,7 +12,6 @@ import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/contact/invite_friend.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/user_view_model.dart';
 import 'package:chat/widget/option_button_item.dart';
@@ -39,6 +38,7 @@ import 'package:chat/widget/bottom_action_sheet.dart';
 
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class UserInfoWidget extends StatefulWidget {
   const UserInfoWidget(this.userId, {this.inGroupId, super.key});
@@ -205,10 +205,10 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       // 桌面端整页一张白底:正文限宽居中,分组之间只由弱分隔线交代,不套卡片
       // (面板本来就是白的,再套一层白卡片只会多出一圈没有意义的边框)。
       // 移动端仍是白卡片 + 凹槽灰。
-      backgroundColor: isDesktopShell
+      backgroundColor: AppShell.isDesktopStyle
           ? context.colors.surface
           : context.colors.primaryBackground,
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           // 标题只会是「用户信息」这个恒定名词,信息量为零 —— 去掉标题,但顶区(返回键、
           // 右上角菜单、三栏共用的 60px 水平线)必须留住,详见 PcPageHeader.bare。
           ? PcPageHeader(bare: true, actions: [actionsBuilder])
@@ -231,7 +231,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                 bool isFriend = snapshot.data!;
                 bool isMe = widget.userId == Imclient.currentUserId;
 
-                return isDesktopShell
+                return AppShell.isDesktopStyle
                     ? _buildDesktopBody(context, userInfo, isFriend, isMe)
                     : _buildMobileBody(context, userInfo, isFriend, isMe);
               },

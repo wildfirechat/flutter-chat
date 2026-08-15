@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/domain_info.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/app_navigator.dart';
 
 import 'domain_profile_screen.dart';
 import 'mesh_cache.dart';
+import 'package:chat/app_shell.dart';
 
 /// Mesh 外部单位/域列表页。
 ///
@@ -75,7 +75,7 @@ class _DomainListScreenState extends State<DomainListScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final body = _buildBody(context, l10n);
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       return Scaffold(
         backgroundColor: context.colors.chatBgDesktop,
         appBar: PcPageHeader(title: l10n.mesh),

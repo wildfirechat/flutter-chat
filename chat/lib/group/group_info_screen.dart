@@ -14,11 +14,11 @@ import 'package:chat/app_server.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/group/fav_group_event.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 class GroupInfoScreen extends StatefulWidget {
   final String groupId;
@@ -43,7 +43,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadRemotePortraitIfNeeded();
     });
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       Imclient.isFavGroup(widget.groupId).then((fav) {
         if (mounted && fav != _isFavGroup) {
           setState(() => _isFavGroup = fav);
@@ -82,17 +82,19 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
       builder: (context, groupInfo, child) {
         if (groupInfo == null || groupInfo.updateDt == 0) {
           return Scaffold(
-            backgroundColor: isDesktopShell ? context.colors.surface : null,
-            appBar: isDesktopShell
+            backgroundColor:
+                AppShell.isDesktopStyle ? context.colors.surface : null,
+            appBar: AppShell.isDesktopStyle
                 ? const PcPageHeader(bare: true)
                 : AppBar(title: Text(AppLocalizations.of(context)!.groupInfo)),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
         return Scaffold(
-          backgroundColor: isDesktopShell ? context.colors.surface : null,
+          backgroundColor:
+              AppShell.isDesktopStyle ? context.colors.surface : null,
           // 桌面端:群名字就写在正文里,标题栏再写一遍「群组信息」是多余的。
-          appBar: isDesktopShell
+          appBar: AppShell.isDesktopStyle
               ? const PcPageHeader(bare: true)
               : AppBar(title: Text(AppLocalizations.of(context)!.groupInfo)),
           body: _buildBody(context, groupInfo),
@@ -116,7 +118,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
 
     // 桌面端(参照微信 PC):居中头像/群名/群号 + 「进入群聊」,
     // 已保存到通讯录的群聊在底部固定一条「从通讯录移除」。
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       final l10n = AppLocalizations.of(context)!;
       return Column(
         children: [
@@ -244,10 +246,10 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
 
     // 观感来自全局按钮主题(app_theme.dart),两端只差布局:桌面定宽中档、移动通栏大档。
     return SizedBox(
-      width: isDesktopShell ? 120 : double.infinity,
+      width: AppShell.isDesktopStyle ? 120 : double.infinity,
       child: FilledButton(
         onPressed: _isLoading ? null : () => _onAction(groupInfo, isJoined),
-        style: isDesktopShell ? null : AppTheme.largeButtonStyle(),
+        style: AppShell.isDesktopStyle ? null : AppTheme.largeButtonStyle(),
         // 加载中按钮已禁用(灰底),spinner 用默认主色。
         child: _isLoading
             ? const SizedBox(
@@ -323,7 +325,7 @@ class _GroupInfoScreenState extends State<GroupInfoScreen> {
   }
 
   void _enterGroupChat() {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       openConversation(
           context,
           Conversation(

@@ -7,7 +7,6 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
 
 import 'package:chat/config.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_pick_user_dialog.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
@@ -21,6 +20,7 @@ import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 
 typedef OnPickUserCallback = void Function(
     BuildContext context, List<String> pickedUsers);
@@ -39,7 +39,7 @@ Future<void> showPickUserScreen(
   bool showOrganizationEntry = true,
 }) {
   // 桌面端多选走微信式分栏弹窗(左选人 / 右已选);单选仍用紧凑列表弹窗;移动端整页 push。
-  if (isDesktopShell) {
+  if (AppShell.isDesktopStyle) {
     if (maxSelected > 1) {
       return showPcDialog(
         context: context,
@@ -272,7 +272,7 @@ class _PickUserScreenState extends State<PickUserScreen> {
 
           return Scaffold(
             backgroundColor: context.colors.chatBg,
-            appBar: isDesktopShell
+            appBar: AppShell.isDesktopStyle
                 ? PcPageHeader(
                     title: title,
                     onBack: widget.onBack,
@@ -309,7 +309,7 @@ class _PickUserScreenState extends State<PickUserScreen> {
                       ),
                     ),
                     Divider(
-                      indent: isDesktopShell
+                      indent: AppShell.isDesktopStyle
                           ? 16.0
                           : 16.0 +
                               LayoutScale.watchScale(context, 24.0,
@@ -482,7 +482,7 @@ class SelectableUserItem extends StatelessWidget {
 
     final double portraitWidth =
         LayoutScale.watchScale(context, 40.0, cap: LayoutScale.iconCap);
-    final double leftIndent = isDesktopShell
+    final double leftIndent = AppShell.isDesktopStyle
         ? 16.0
         : (maxSelected > 1
             ? (16.0 + 32.0 + 8.0 + portraitWidth + 12.0)
@@ -514,7 +514,7 @@ class SelectableUserItem extends StatelessWidget {
         child: Container(
           height:
               LayoutScale.watchScale(context, 52.0, cap: LayoutScale.rowCap),
-          padding: EdgeInsets.only(right: isDesktopShell ? 0.0 : 32.0),
+          padding: EdgeInsets.only(right: AppShell.isDesktopStyle ? 0.0 : 32.0),
           child: Row(
             children: <Widget>[
               if (maxSelected > 1)
@@ -598,8 +598,8 @@ class SelectableUserItem extends StatelessWidget {
                 LayoutScale.watchScale(context, 18.0, cap: LayoutScale.textCap),
             width: double.infinity,
             color: context.colors.sectionGap,
-            padding:
-                EdgeInsets.only(left: 16, right: isDesktopShell ? 16.0 : 32.0),
+            padding: EdgeInsets.only(
+                left: 16, right: AppShell.isDesktopStyle ? 16.0 : 32.0),
             alignment: Alignment.centerLeft,
             child: Text(
               contactInfo.category == '{'

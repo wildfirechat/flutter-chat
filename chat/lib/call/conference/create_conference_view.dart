@@ -5,11 +5,11 @@ import 'package:avenginekit/engine/avenginekit.dart';
 import 'package:imclient/imclient.dart';
 import 'package:chat/app_server.dart';
 import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/app_switch.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/app_shell.dart';
 
 /// 创建会议页面
 class CreateConferenceView extends StatefulWidget {
@@ -111,7 +111,7 @@ class _CreateConferenceViewState extends State<CreateConferenceView> {
       }
 
       try {
-        if (isDesktopShell) {
+        if (AppShell.isDesktopStyle) {
           await MainAvEngineKitProxy.instance.startConference(
             callId: conferenceId,
             audioOnly: _audioOnly,

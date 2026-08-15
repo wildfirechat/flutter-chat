@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'create_poll_screen.dart';
 import 'poll_list_screen.dart';
+import 'package:chat/app_shell.dart';
 
 /// 投票入口:发起投票 / 我的投票。
 ///
@@ -20,7 +20,7 @@ class PollHomeScreen extends StatelessWidget {
       {super.key, required this.groupId, this.asDialog = false});
 
   static Future<void> show(BuildContext context, String groupId) {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       return showPcDialog(
         context: context,
         width: 400,

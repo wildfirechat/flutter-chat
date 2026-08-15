@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/pc/widgets/pc_dialog.dart';
 import 'package:chat/theme/app_colors.dart';
@@ -10,6 +9,7 @@ import 'package:chat/theme/app_typography.dart';
 import 'poll_model.dart';
 import 'poll_service.dart';
 import 'poll_detail_screen.dart';
+import 'package:chat/app_shell.dart';
 
 /// 我发起的投票。
 ///
@@ -22,7 +22,7 @@ class PollListScreen extends StatefulWidget {
   const PollListScreen({super.key, this.groupId, this.asDialog = false});
 
   static Future<void> show(BuildContext context, String? groupId) {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       return showPcDialog(
         context: context,
         width: 460,
@@ -178,7 +178,7 @@ class _PollListScreenState extends State<PollListScreen> {
     );
 
     // 桌面端的删除入口在卡片内(hover 显形),不再包一层左滑
-    if (isDesktopShell || !poll.isCreator) {
+    if (AppShell.isPointerInput || !poll.isCreator) {
       return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12), child: card);
     }
@@ -255,7 +255,7 @@ class _PollCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.colors;
-    final showHoverDelete = isDesktopShell && onDelete != null;
+    final showHoverDelete = AppShell.isPointerInput && onDelete != null;
 
     return HoverBuilder(
       cursor: SystemMouseCursors.click,

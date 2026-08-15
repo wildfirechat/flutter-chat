@@ -13,8 +13,8 @@ import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/mesh/mesh_cache.dart';
 
 import '../contact/pick_user_screen.dart';
-import '../pc/pc_platform.dart';
 import '../pc/widgets/pc_page_header.dart';
+import 'package:chat/app_shell.dart';
 
 class GroupManagerScreen extends StatefulWidget {
   final GroupInfo groupInfo;
@@ -89,7 +89,7 @@ class _GroupManagerScreenState extends State<GroupManagerScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: isDesktopShell
+      appBar: AppShell.isDesktopStyle
           ? PcPageHeader(title: l10n.managerSetting)
           : AppBar(
               title: Text(l10n.managerSetting),

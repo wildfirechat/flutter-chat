@@ -7,7 +7,6 @@ import 'package:moment/moment.dart';
 import 'package:chat/config.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/mesh/mesh_cache.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/widgets/pc_card.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/pc/widgets/pc_pane_content.dart';
@@ -16,6 +15,7 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/widget/option_item.dart';
 import 'package:chat/widget/portrait.dart';
+import 'package:chat/app_shell.dart';
 
 /// 朋友圈设置页面
 ///
@@ -95,7 +95,7 @@ class _MomentPrivacySettingsScreenState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     // PC 端与隐私设置主页一致的行样式(字体/开关大小对齐)
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       return Scaffold(
         backgroundColor: context.colors.chatBgDesktop,
         appBar: PcPageHeader(title: l10n.momentWindowTitle),

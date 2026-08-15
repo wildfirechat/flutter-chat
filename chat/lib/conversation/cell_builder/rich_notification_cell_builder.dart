@@ -5,13 +5,13 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/l10n/app_localizations.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/wf_webview_window/wf_webview_window_manager.dart';
 import 'package:chat/workspace/wf_webview_screen.dart';
 
 import '../conversation_controller.dart';
 import '../../ui_model/ui_message.dart';
 import 'message_cell_builder.dart';
+import 'package:chat/app_shell.dart';
 
 /// 富通知消息(参考 vue-pc-chat 的 RichNotificationMessageContentView.vue):
 /// 居中的卡片,展示标题、描述、键值数据列表和附加身份信息,不区分收发方向。
@@ -59,7 +59,7 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
       return;
     }
 
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       WFWebViewWindowManager.instance
           .show(url: url, title: richNotificationContent.title);
       return;
@@ -86,7 +86,7 @@ class RichNotificationCellBuilder extends MessageCellBuilder {
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: cardMaxWidth),
             child: GestureDetector(
-              onLongPressStart: isDesktopShell
+              onLongPressStart: AppShell.isPointerInput
                   ? null
                   : (details) {
                       conversationController?.onLongPressedCell(

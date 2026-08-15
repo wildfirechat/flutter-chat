@@ -5,7 +5,6 @@ import 'package:chat/call/conference/order_conference_view.dart';
 import 'package:chat/call/conference/conference_info_view.dart';
 import 'package:chat/call/conference/conference_manager.dart';
 import 'package:chat/app_server.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/config.dart';
@@ -14,6 +13,7 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
+import 'package:chat/app_shell.dart';
 
 /// 会议入口页：加入/发起/预定 + 收藏/历史列表
 /// [isEmbedded] 为 true 时用于 PC 中栏嵌入,不显示 Scaffold/AppBar/左侧操作面板。
@@ -83,7 +83,7 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
   }
 
   void _openCreate(BuildContext context) async {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       openPage(context, const CreateConferenceView());
     } else {
       await Navigator.push(
@@ -95,7 +95,7 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
   }
 
   void _openJoin(BuildContext context) {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       openPage(context, const JoinConferenceView());
     } else {
       Navigator.push(
@@ -106,7 +106,7 @@ class _ConferenceHomeScreenState extends State<ConferenceHomeScreen> {
   }
 
   void _openOrder(BuildContext context) {
-    if (isDesktopShell) {
+    if (AppShell.isDesktopStyle) {
       openPage(context, const OrderConferenceView());
     } else {
       Navigator.push(

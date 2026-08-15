@@ -22,7 +22,7 @@ import 'package:imclient/model/message_payload.dart';
 import 'backup_models.dart';
 import 'backup_crypto.dart';
 import 'package:crypto/crypto.dart' as crypto;
-import 'package:chat/pc/pc_platform.dart';
+import 'package:imclient/imclient_platform.dart';
 
 const String BACKUP_VERSION = "1";
 const String BACKUP_FORMAT = "directory";
@@ -71,7 +71,7 @@ class BackupManager {
   }
 
   String get _currentAppType =>
-      isDesktopShell ? BACKUP_APP_TYPE_PC : BACKUP_APP_TYPE_MOBILE;
+      WfcPlatform.isDesktop ? BACKUP_APP_TYPE_PC : BACKUP_APP_TYPE_MOBILE;
 
   String _formatBackupTimestamp(DateTime dt) {
     final utc = dt.toUtc();
@@ -517,7 +517,7 @@ class BackupManager {
               }
             }
 
-            if (isDesktopShell) {
+            if (WfcPlatform.isDesktop) {
               for (var msg in messagesToInsert) {
                 if (_isCancelled) throw Exception("Cancelled");
                 await Imclient.insertMessageEx(
@@ -688,7 +688,7 @@ class BackupManager {
     _isCancelled = false;
     try {
       int totalMessageCount = 0;
-      if (!isDesktopShell) {
+      if (!WfcPlatform.isDesktop) {
         for (var info in conversationInfos) {
           try {
             totalMessageCount +=

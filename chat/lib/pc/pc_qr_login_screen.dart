@@ -14,7 +14,6 @@ import 'package:chat/config.dart';
 import 'package:chat/login/login_form_controller.dart';
 import 'package:chat/main.dart';
 import 'package:chat/pc/pc_home.dart';
-import 'package:chat/pc/pc_platform.dart';
 import 'package:chat/pc/pc_window_manager.dart';
 import 'package:chat/pc/widgets/pc_window_caption.dart';
 import 'package:chat/utilities.dart';
@@ -95,7 +94,7 @@ class _PCQRLoginScreenState extends State<PCQRLoginScreen> {
   // ==================== QR 模式逻辑 ====================
 
   Future<void> _createSession() async {
-    if (!isDesktopShell) {
+    if (!WfcPlatform.isDesktop) {
       setState(() {
         _error = AppLocalizations.of(context)!.desktopOnly;
       });
