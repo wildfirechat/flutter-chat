@@ -1,5 +1,6 @@
 package cn.wildfirechat.imclient;
 
+import android.content.res.Resources;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -272,6 +273,46 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
     private void getClientId(@NonNull MethodCall call, @NonNull Result result) {
         result.success(ChatManager.Instance().getClientId());
+    }
+
+    /**
+     * 设备形态，Dart 侧据此区分手机/平板(协议平台号 2/9，以及后续的多栏布局)，
+     * 见 imclient_platform.dart。
+     */
+    private void getDeviceType(@NonNull MethodCall call, @NonNull Result result) {
+        result.success(isTabletDevice() ? "tablet" : "phone");
+    }
+
+    /**
+     * 按 sw600dp 这条 Android 标准分界判定平板。
+     *
+     * 取值必须来自 Resources.getSystem() —— 它是**默认显示屏的全局配置**。
+     * 不能用 Activity / applicationContext 的 Configuration：分屏、自由窗口下
+     * 那份配置反映的是当前窗口，窗口一缩平板就会被判成手机，而协议平台号是
+     * 连接期一次性上报的，不允许随窗口抖动。
+     *
+     * 个别 ROM 上系统资源的 smallestScreenWidthDp 可能拿不到有效值，此时退回用
+     * 同样来自 Resources.getSystem() 的物理显示尺寸换算。两条路都失败则返回
+     * false（按手机兜底，与引入本判断之前的行为一致）。
+     */
+    private boolean isTabletDevice() {
+        try {
+            Resources system = Resources.getSystem();
+            int swDp = system.getConfiguration().smallestScreenWidthDp;
+            if (swDp <= 0) {
+                float density = system.getDisplayMetrics().density;
+                if (density <= 0) {
+                    return false;
+                }
+                int shortestPx = Math.min(system.getDisplayMetrics().widthPixels,
+                    system.getDisplayMetrics().heightPixels);
+                swDp = (int) (shortestPx / density);
+            }
+            return swDp >= 600;
+        } catch (Exception e) {
+            Log.w(TAG, "detect device type failed", e);
+            return false;
+        }
     }
 
     private void serverDeltaTime(@NonNull MethodCall call, @NonNull Result result) {

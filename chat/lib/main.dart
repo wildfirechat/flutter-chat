@@ -132,7 +132,9 @@ void main([List<String>? args]) async {
   WidgetsFlutterBinding.ensureInitialized();
   _registerDesktopVideoBackend();
 
-  // 鸿蒙上查询设备形态(手机/平板/电脑)并缓存,后续 isDesktopShell 等平台判断依赖此结果
+  // 查询设备形态(手机/平板/电脑)并缓存:鸿蒙上 isDesktopShell 依赖此结果,
+  // iOS/Android 上决定协议平台号上报 iPhone/iPad、Android/APad。
+  // 必须在 connect 之前完成,平台号是连接期一次性上报的。
   await WfcPlatform.init();
 
   // 限制全局图片内存缓存，避免大图/头像过多时内存占用过高

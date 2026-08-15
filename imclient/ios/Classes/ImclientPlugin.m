@@ -88,6 +88,14 @@ ImclientPlugin *gIMClientInstance;
     result([[WFCCNetworkService sharedInstance] getClientId]);
 }
 
+// 设备形态,Dart 侧据此区分 iPhone/iPad(协议平台号 1/8，以及后续的多栏布局)，
+// 见 imclient_platform.dart。userInterfaceIdiom 是设备属性，与窗口大小无关，
+// iPad 分屏/台前调度下同样返回 Pad —— 平台号是连接期一次性上报的，不允许随窗口抖动。
+- (void)getDeviceType:(NSDictionary *)dict result:(FlutterResult)result {
+    BOOL isPad = [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad;
+    result(isPad ? @"tablet" : @"phone");
+}
+
 - (void)serverDeltaTime:(NSDictionary *)dict result:(FlutterResult)result {
     result(@([WFCCNetworkService sharedInstance].serverDeltaTime));
 }
