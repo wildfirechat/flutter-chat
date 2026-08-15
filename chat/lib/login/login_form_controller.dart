@@ -170,11 +170,16 @@ class LoginFormController extends ChangeNotifier {
     MyApp.of(context)?.onLoginSuccess(userId);
     if (context.mounted) {
       showToast(msg: AppLocalizations.of(context)!.loginSuccess);
-      // 桌面端不要再 pushReplacement(PCHome):onLoginSuccess 已经把 home 切成
-      // PCHome,再压一个路由实例会同时存在两个 PCHome,后注册的 pageOpener 随
-      // 被替换路由销毁时被置 null,右栏导航静默失效(设置页点项不切换)。
-      // 同 3376556 对扫码登录的处理;移动端 home 是路由,仍需 pushReplacement。
-      if (!WfcPlatform.isDesktop) {
+      // 用多栏 Shell 的形态(桌面、平板)不能再 pushReplacement 一个 home 实例:
+      // onLoginSuccess 已经把 home 切成 Shell,再压一个就同时存在两个,
+      // 后注册的 opener 随被替换路由销毁时被置 null,右栏导航静默失效
+      // ——「点会话列表右栏不显示」就是这个症状,PC 上先踩过一次(见 3376556)。
+      // 这两种形态改为弹回栈底,露出 onLoginSuccess 已经换好的 home。
+      // 手机端没有 Shell、不存在 opener,home 是路由,仍照旧 pushReplacement。
+      // 桌面端在这里**什么都不做**:它的收尾在 MyApp.onLoginSuccess 里。
+      if (WfcPlatform.isTablet) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      } else if (!WfcPlatform.isDesktop) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const AppHome()),
         );

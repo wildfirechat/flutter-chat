@@ -42,6 +42,17 @@ class _PadHomeState extends State<PadHome> {
     // **刻意不 reset**:窄→宽旋转会重建本 Widget,reset 会把用户正在看的会话丢掉。
     // 跨账号的残留由 AppHome 在登录态切换时清理。
     _shell = context.read<PCShellViewModel>();
+    _claimOpeners();
+  }
+
+  /// 把 Shell 上的三个打开器认领到自己身上。
+  ///
+  /// 每帧都重认一次,而不是只在 initState 认一次:这三个是 Shell 上的可变字段,
+  /// 任何一次 `reset()`(换账号、另一个 home 实例被建出来)都会把它们清成 null,
+  /// 而清掉之后的表现是**点会话没反应** —— 不抛异常、不留日志。PC 端为此踩过一次
+  /// (见 login_form_controller 里的注释),平板又踩了一次。重认的成本是三次引用比较,
+  /// 换掉这一整类静默失效。
+  void _claimOpeners() {
     _shell.conversationOpener = _openConversation;
     _shell.pageOpener = _openPage;
     _shell.paneCloser = _closePane;
@@ -135,6 +146,7 @@ class _PadHomeState extends State<PadHome> {
 
   @override
   Widget build(BuildContext context) {
+    _claimOpeners();
     return Scaffold(
       body: Row(
         children: [
