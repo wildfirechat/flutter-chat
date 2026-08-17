@@ -672,6 +672,11 @@ class ImclientFfiChannel implements ImclientChannel {
         return null; // 桌面端无对应实现（与原生插件行为一致）。
       case 'getLogFilesPath':
         return _outString((lp) => _wf.getLogFilesPath(lp));
+      case 'getAppPath':
+        return _outString((lp) => _wf.getAppPath(lp));
+      case 'resetClientId':
+        _wf.resetClientId();
+        return null;
 
       // ---- 会话 ----
       case 'getConversationInfos':

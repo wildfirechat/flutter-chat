@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -973,8 +976,123 @@ class _PcPrivacySettingsDetailState extends State<PcPrivacySettingsDetail> {
 }
 
 // --- 关于 (About) ---
-class PcAboutSettingsDetail extends StatelessWidget {
+class PcAboutSettingsDetail extends StatefulWidget {
   const PcAboutSettingsDetail({super.key});
+
+  @override
+  State<PcAboutSettingsDetail> createState() => _PcAboutSettingsDetailState();
+}
+
+class _PcAboutSettingsDetailState extends State<PcAboutSettingsDetail> {
+  Timer? _restartTimer;
+
+  Future<void> _openLogDir() async {
+    try {
+      final appPath = await Imclient.appPath;
+      if (appPath.isEmpty) {
+        Fluttertoast.showToast(msg: '无法获取日志目录');
+        return;
+      }
+      final uri = Uri.directory(appPath);
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        Fluttertoast.showToast(msg: '无法打开日志目录');
+      }
+    } catch (e) {
+      debugPrint('openLogDir error: $e');
+      Fluttertoast.showToast(msg: '打开日志目录失败');
+    }
+  }
+
+  Future<void> _doRestart() async {
+    _restartTimer?.cancel();
+    try {
+      await Process.start(Platform.resolvedExecutable, []);
+      exit(0);
+    } catch (e) {
+      debugPrint('restart app error: $e');
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        await showDialog(
+          context: context,
+          builder: (dialogContext) {
+            return AlertDialog(
+              title: const Text('重启失败'),
+              content: const Text('自动重启失败，请关闭应用后手动启动。'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(l10n.confirm),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
+  }
+
+  Future<void> _resetClientId() async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('警告'),
+          content: const Text('重置设备ID会删除本地所有内容（包括聊天记录、设置等），重置后需要重启应用。\n\n是否确认重置？'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: TextButton.styleFrom(foregroundColor: dialogContext.colors.danger),
+              child: const Text('确认重置'),
+            ),
+          ],
+        );
+      },
+    );
+    if (confirmed != true) return;
+
+    try {
+      await Imclient.resetClientId();
+    } catch (e) {
+      debugPrint('resetClientId error: $e');
+      Fluttertoast.showToast(msg: '重置设备ID失败');
+      return;
+    }
+
+    if (!mounted) return;
+
+    _restartTimer = Timer(const Duration(seconds: 2), _doRestart);
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('应用即将重启'),
+          content: const Text('重置完成，应用将在 2 秒后自动重启。'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                _doRestart();
+              },
+              child: const Text('立即重启'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _restartTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1059,6 +1177,23 @@ class PcAboutSettingsDetail extends StatelessWidget {
                   _SettingsTextLink(
                       label: l10n.issueFeedback,
                       url: "https://bbs.wildfirechat.cn"),
+                  const SizedBox(width: 12),
+                  Text("|",
+                      style: TextStyle(color: context.colors.textTertiary)),
+                  const SizedBox(width: 12),
+                  _SettingsActionLink(
+                    label: '日志目录',
+                    onTap: _openLogDir,
+                  ),
+                  const SizedBox(width: 12),
+                  Text("|",
+                      style: TextStyle(color: context.colors.textTertiary)),
+                  const SizedBox(width: 12),
+                  _SettingsActionLink(
+                    label: '重置设备ID',
+                    onTap: _resetClientId,
+                    textColor: context.colors.danger,
+                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -1084,7 +1219,7 @@ class _SettingsSelectorRow extends StatefulWidget {
   final String valueText;
   final void Function(BuildContext, Offset) onTap;
 
-  _SettingsSelectorRow({
+  const _SettingsSelectorRow({
     required this.title,
     required this.subtitle,
     required this.valueText,
@@ -1306,6 +1441,39 @@ class _SettingsTextLink extends StatelessWidget {
                 decorationColor: hovered
                     ? context.colors.accentPressed
                     : context.colors.accent),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SettingsActionLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  final Color? textColor;
+
+  const _SettingsActionLink({
+    required this.label,
+    required this.onTap,
+    this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return HoverBuilder(
+      cursor: SystemMouseCursors.click,
+      builder: (context, hovered) {
+        final baseColor = textColor ?? context.colors.accent;
+        final hoverColor = textColor ?? context.colors.accentPressed;
+        return GestureDetector(
+          onTap: onTap,
+          child: Text(
+            label,
+            style: AppText.xs.copyWith(
+                color: hovered ? hoverColor : baseColor,
+                decoration: TextDecoration.underline,
+                decorationColor: hovered ? hoverColor : baseColor),
           ),
         );
       },
