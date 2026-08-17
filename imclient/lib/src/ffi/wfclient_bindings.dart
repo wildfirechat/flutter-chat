@@ -635,6 +635,9 @@ class WFClientBindings {
   late final Pointer<Char> Function(Pointer<Size>) getAppPath =
       _lib.lookupFunction<Pointer<Char> Function(Pointer<Size>), Pointer<Char> Function(Pointer<Size>)>('getAppPath');
 
+  late final void Function() resetClientId =
+      _lib.lookupFunction<Void Function(), void Function()>('resetClientId');
+
   late final Pointer<Char> Function(Pointer<Char>, int, bool, Pointer<Size>) getDomainInfo =
       _lib.lookupFunction<Pointer<Char> Function(Pointer<Char>, Size, Bool, Pointer<Size>), Pointer<Char> Function(Pointer<Char>, int, bool, Pointer<Size>)>('getDomainInfo');
 

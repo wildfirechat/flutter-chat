@@ -499,6 +499,16 @@ class Imclient {
     return ImclientPlatform.instance.logFilesPath;
   }
 
+  ///获取应用数据目录路径
+  static Future<String> get appPath async {
+    return ImclientPlatform.instance.appPath;
+  }
+
+  ///重置客户端ID，下次获取clientId时会重新生成
+  static Future<void> resetClientId() async {
+    return ImclientPlatform.instance.resetClientId();
+  }
+
   ///初始化SDK。必须在程序启动之后在所有操作之前初始化，之后才可以做其它操作。
   static Future<void> init(
       ConnectionStatusChangedCallback connectionStatusChangedCallback,

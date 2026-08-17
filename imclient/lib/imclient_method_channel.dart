@@ -234,6 +234,16 @@ class ImclientPlatform extends PlatformInterface {
     return Tools.convertDynamicList(await _channel.invokeMethod('getLogFilesPath'));
   }
 
+  ///获取应用数据目录路径
+  Future<String> get appPath async {
+    return await _channel.invokeMethod('getAppPath');
+  }
+
+  ///重置客户端ID，下次获取clientId时会重新生成
+  Future<void> resetClientId() async {
+    await _channel.invokeMethod('resetClientId');
+  }
+
   static setDefaultPortraitProvider(DefaultPortraitProvider provider) {
     defaultPortraitProvider = provider;
   }
