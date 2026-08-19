@@ -68,6 +68,19 @@ Android 和 iOS 可以免费使用，其中iOS可以直接配置 IM_SERVER_HOST�
 2. 由于 gradle 版本和 flutter 版本有依赖关系，会使用对应的 gradle 版本，目前是 `8.7`
 3. Flutter 版本：鸿蒙开发必须使用鸿蒙适配版 Flutter，其他平台使用官方版本，详见下方「鸿蒙(OHOS)开发指南」
 
+## 关于 Linux arm64 环境的重要说明
+1. 安装依赖
+  ```
+  sudo apt install clang cmake ninjia-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libwebkit2gtk-4.1-dev libayatana-appindicator3-dev curl unzip xz-utils zip libglu1-mesa
+
+  ```
+2. 安装 flutter 环境
+  > 由于官方并没有发布`Linux Arm64`的包，只能通过`git clone` 方式安装；可能也能通过`VS Code`来安装
+  ```
+  git clone https://github.com/flutter/flutter.git -b stable --depth=1
+  flutter --version #确认版本
+  ```
+
 
 ## 鸿蒙(OHOS)开发指南
 
