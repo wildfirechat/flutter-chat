@@ -8,6 +8,7 @@ import 'package:imclient/message/rich_notification_message_content.dart';
 import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/streaming_text_generated_message_content.dart';
 import 'package:imclient/message/streaming_text_generating_message_content.dart';
+import 'package:imclient/message/streaming_text_cancelled_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/message/sticker_message_content.dart';
@@ -28,6 +29,7 @@ import 'cell_builder/message_cell_builder.dart';
 import 'cell_builder/notification_cell_builder.dart';
 import 'cell_builder/rich_notification_cell_builder.dart';
 import 'cell_builder/streaming_text_cell_builder.dart';
+import 'cell_builder/streaming_text_cancelled_cell_builder.dart';
 import 'cell_builder/text_cell_builder.dart';
 import 'cell_builder/unknown_cell_builder.dart';
 import 'cell_builder/video_cell_builder.dart';
@@ -119,6 +121,11 @@ class _MessageCellState extends State<MessageCell>
             is StreamingTextGeneratingMessageContent ||
         widget.model.message.content is StreamingTextGeneratedMessageContent) {
       _cellBuilder = StreamingTextCellBuilder(context, widget.model);
+    } else if (widget.model.message.content
+        is StreamingTextCancelledMessageContent) {
+      // 取消消息(20)：不创建气泡，渲染为空（兜底，正常流程下不会进入列表）
+      _cellBuilder =
+          StreamingTextCancelledCellBuilder(context, widget.model);
     } else if (widget.model.message.content is CompositeMessageContent) {
       _cellBuilder = CompositeCellBuilder(context, widget.model);
     } else if (widget.model.message.content is CollectionMessageContent) {

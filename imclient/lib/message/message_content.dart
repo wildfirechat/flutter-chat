@@ -44,6 +44,9 @@ const int MESSAGE_CONTENT_TYPE_STREAMING_TEXT_GENERATING = 14;
 const int MESSAGE_CONTENT_TYPE_STREAMING_TEXT_GENERATED = 15;
 //消息未能送达消息
 const int MESSAGE_CONTENT_TYPE_NOT_DELIVERED = 16;
+//流式文本取消消息（生成无产出/失败时由机器人发送，客户端按 streamId 删除对应的 14/15 消息；
+//取消消息自身不显示、Transparent 不落库）
+const int MESSAGE_CONTENT_TYPE_STREAMING_TEXT_CANCELLED = 20;
 //投票消息
 const int MESSAGE_CONTENT_TYPE_POLL = 18;
 //投票结果消息

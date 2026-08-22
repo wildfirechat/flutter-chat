@@ -8,6 +8,7 @@ import 'package:imclient/message/message_content.dart';
 import 'package:imclient/message/notification/tip_notificiation_content.dart';
 import 'package:imclient/message/streaming_text_generated_message_content.dart';
 import 'package:imclient/message/streaming_text_generating_message_content.dart';
+import 'package:imclient/message/streaming_text_cancelled_message_content.dart';
 import 'package:imclient/message/typing_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/model/conversation_info.dart';
@@ -175,6 +176,27 @@ class ConversationViewModel extends ChangeNotifier {
       }
       for (Message msg in messages) {
         if (msg.conversation == _currentConversation) {
+          // 流式文本取消消息(20)：按 streamId 从消息列表删除对应的
+          // generating(14)/generated(15) 消息（"生成中"气泡直接消失），
+          // 取消消息自身不进入列表（Transparent，不落库）
+          if (msg.content is StreamingTextCancelledMessageContent) {
+            var content = msg.content as StreamingTextCancelledMessageContent;
+            var index = _conversationMessageList.indexWhere((element) {
+              final c = element.message.content;
+              if (c is StreamingTextGeneratingMessageContent) {
+                return c.streamId == content.streamId;
+              }
+              if (c is StreamingTextGeneratedMessageContent) {
+                return c.streamId == content.streamId;
+              }
+              return false;
+            });
+            if (index != -1) {
+              _conversationMessageList.removeAt(index);
+              newMsg = true;
+            }
+            continue;
+          }
           if (msg.messageId == 0) {
             if (msg.content is TypingMessageContent) {
               _typingUserTime[msg.fromUser] =

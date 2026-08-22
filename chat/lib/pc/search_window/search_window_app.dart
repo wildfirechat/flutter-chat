@@ -19,6 +19,7 @@ import 'package:imclient/message/sound_message_content.dart';
 import 'package:imclient/message/sticker_message_content.dart';
 import 'package:imclient/message/streaming_text_generated_message_content.dart';
 import 'package:imclient/message/streaming_text_generating_message_content.dart';
+import 'package:imclient/message/streaming_text_cancelled_message_content.dart';
 import 'package:imclient/message/text_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:imclient/model/conversation.dart';
@@ -116,6 +117,8 @@ class _SearchWindowAppState extends State<SearchWindowApp>
     Imclient.registerMessageContent(tipNotificationContentMeta);
     Imclient.registerMessageContent(streamingTextGeneratingContentMeta);
     Imclient.registerMessageContent(streamingTextGeneratedContentMeta);
+    // 流式文本取消消息(20)：Transparent 透传，正常不落库不显示
+    Imclient.registerMessageContent(streamingTextCancelledContentMeta);
   }
 
   @override
