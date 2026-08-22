@@ -135,7 +135,7 @@ setx FLUTTER_STORAGE_BASE_URL "https://storage.flutter-io.cn"
 1. 鸿蒙上提示包找不到，请从 [flutter_packages](https://gitcode.com/openharmony-tpc/flutter_packages) 查询已适配鸿蒙平台的版本，并固定为该版本。
 
 ## Windows的依赖
-1. MSVC 2022(其他版本测试都有问题，有些依赖编译不过去)
+1. MSVC 2022(其他版本测试都有问题，有些依赖编译不过去)，[下载地址](https://aka.ms/vs/17/release/vs_community.exe)
 
 ## 运行
 
