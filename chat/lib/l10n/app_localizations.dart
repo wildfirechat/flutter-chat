@@ -2537,7 +2537,7 @@ abstract class AppLocalizations {
   /// No description provided for @pcOnlineDevices.
   ///
   /// In zh, this message translates to:
-  /// **'已登录设备'**
+  /// **'已登录的设备'**
   String get pcOnlineDevices;
 
   /// No description provided for @noPcOnline.
@@ -2551,6 +2551,168 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'{count} 个设备已登录'**
   String pcOnlineDeviceCount(Object count);
+
+  /// No description provided for @pcMultiDeviceLoggedIn.
+  ///
+  /// In zh, this message translates to:
+  /// **'{count}个设备已经登录'**
+  String pcMultiDeviceLoggedIn(Object count);
+
+  /// No description provided for @pcOnlineMuteSuffix.
+  ///
+  /// In zh, this message translates to:
+  /// **'，手机通知已关闭'**
+  String get pcOnlineMuteSuffix;
+
+  /// No description provided for @lockPC.
+  ///
+  /// In zh, this message translates to:
+  /// **'锁定电脑'**
+  String get lockPC;
+
+  /// No description provided for @logoutDevice.
+  ///
+  /// In zh, this message translates to:
+  /// **'退出{name}登录'**
+  String logoutDevice(Object name);
+
+  /// No description provided for @deviceLoggedOut.
+  ///
+  /// In zh, this message translates to:
+  /// **'已退出登录'**
+  String get deviceLoggedOut;
+
+  /// No description provided for @devicePC.
+  ///
+  /// In zh, this message translates to:
+  /// **'电脑'**
+  String get devicePC;
+
+  /// No description provided for @devicePad.
+  ///
+  /// In zh, this message translates to:
+  /// **'平板'**
+  String get devicePad;
+
+  /// No description provided for @deviceWeb.
+  ///
+  /// In zh, this message translates to:
+  /// **'Web'**
+  String get deviceWeb;
+
+  /// No description provided for @deviceWindows.
+  ///
+  /// In zh, this message translates to:
+  /// **'Windows'**
+  String get deviceWindows;
+
+  /// No description provided for @deviceMac.
+  ///
+  /// In zh, this message translates to:
+  /// **'Mac'**
+  String get deviceMac;
+
+  /// No description provided for @deviceLinux.
+  ///
+  /// In zh, this message translates to:
+  /// **'Linux'**
+  String get deviceLinux;
+
+  /// No description provided for @deviceHarmonyPC.
+  ///
+  /// In zh, this message translates to:
+  /// **'鸿蒙PC'**
+  String get deviceHarmonyPC;
+
+  /// No description provided for @deviceHarmonyPad.
+  ///
+  /// In zh, this message translates to:
+  /// **'鸿蒙Pad'**
+  String get deviceHarmonyPad;
+
+  /// No description provided for @deviceHarmonyPhone.
+  ///
+  /// In zh, this message translates to:
+  /// **'鸿蒙手机'**
+  String get deviceHarmonyPhone;
+
+  /// No description provided for @deviceIPad.
+  ///
+  /// In zh, this message translates to:
+  /// **'iPad'**
+  String get deviceIPad;
+
+  /// No description provided for @deviceAndroidPad.
+  ///
+  /// In zh, this message translates to:
+  /// **'Android 平板'**
+  String get deviceAndroidPad;
+
+  /// No description provided for @deviceWeChatMiniProgram.
+  ///
+  /// In zh, this message translates to:
+  /// **'微信小程序'**
+  String get deviceWeChatMiniProgram;
+
+  /// No description provided for @deviceMiniProgram.
+  ///
+  /// In zh, this message translates to:
+  /// **'小程序'**
+  String get deviceMiniProgram;
+
+  /// No description provided for @deviceWatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'手表'**
+  String get deviceWatch;
+
+  /// No description provided for @deviceAndroidWatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'Android 手表'**
+  String get deviceAndroidWatch;
+
+  /// No description provided for @deviceHarmonyWatch.
+  ///
+  /// In zh, this message translates to:
+  /// **'鸿蒙手表'**
+  String get deviceHarmonyWatch;
+
+  /// No description provided for @deviceTV.
+  ///
+  /// In zh, this message translates to:
+  /// **'电视'**
+  String get deviceTV;
+
+  /// No description provided for @deviceAndroidTV.
+  ///
+  /// In zh, this message translates to:
+  /// **'Android 电视'**
+  String get deviceAndroidTV;
+
+  /// No description provided for @deviceAppleTV.
+  ///
+  /// In zh, this message translates to:
+  /// **'Apple TV'**
+  String get deviceAppleTV;
+
+  /// No description provided for @deviceHarmonyTV.
+  ///
+  /// In zh, this message translates to:
+  /// **'鸿蒙电视'**
+  String get deviceHarmonyTV;
+
+  /// No description provided for @deviceIOS.
+  ///
+  /// In zh, this message translates to:
+  /// **'iOS'**
+  String get deviceIOS;
+
+  /// No description provided for @deviceAndroid.
+  ///
+  /// In zh, this message translates to:
+  /// **'Android'**
+  String get deviceAndroid;
 
   /// No description provided for @mobileMute.
   ///

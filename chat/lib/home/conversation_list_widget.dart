@@ -19,6 +19,7 @@ import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/utils/join_group_request_unread_cache.dart';
+import 'package:chat/utils/pc_online_util.dart';
 import 'package:chat/mesh/mesh_cache.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
@@ -191,20 +192,24 @@ class StatusNotificationHeader extends StatelessWidget {
               context, AppLocalizations.of(context)!.connectionFailed));
         }
 
-        // “PC 已登录”横幅只对手机端有意义,桌面端自身就是 PC
+        // 多端登录条:只对手机端有意义,桌面端自身就是 PC。
+        // 单端:对应平台图标 + 「XX 已登录」(静音时带「，手机通知已关闭」后缀);
+        // 多端:合并为一条,电脑图标 + 「N个设备已经登录」。与 HarmonyOS 版一致。
         if (!WfcPlatform.isDesktop &&
             viewModel.connectionStatus == kConnectionStatusConnected &&
             viewModel.pcOnlineInfos.isNotEmpty) {
-          String pcStatus = viewModel.pcOnlineInfos
-              .map((e) {
-                if (e.type == 0) return AppLocalizations.of(context)!.pcClient;
-                if (e.type == 1) return AppLocalizations.of(context)!.webClient;
-                if (e.type == 2)
-                  return AppLocalizations.of(context)!.miniProgram;
-                return AppLocalizations.of(context)!.pcClient;
-              })
-              .toSet()
-              .join('/');
+          final infos = viewModel.pcOnlineInfos;
+          final l10n = AppLocalizations.of(context)!;
+          String bannerText;
+          if (infos.length == 1) {
+            bannerText = l10n.pcLoggedIn(
+                PcOnlineUtil.deviceName(context, infos.first));
+            if (viewModel.isMuteWhenPcOnline) {
+              bannerText += l10n.pcOnlineMuteSuffix;
+            }
+          } else {
+            bannerText = l10n.pcMultiDeviceLoggedIn(infos.length);
+          }
           headers.add(GestureDetector(
             onTap: () {
               // 两栏形态下这个 Future 立即完成(右栏是换内容,没有"关闭"那一刻),
@@ -214,19 +219,28 @@ class StatusNotificationHeader extends StatelessWidget {
               });
             },
             child: Container(
-              height: 40,
+              height: 44,
               color: context.colors.chatBg,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.only(left: 16, right: 16),
               child: Row(
                 children: [
-                  Icon(Icons.computer,
-                      color: context.colors.textSecondary, size: 20),
-                  const SizedBox(width: 8),
-                  Text(AppLocalizations.of(context)!.pcLoggedIn(pcStatus),
-                      style: TextStyle(color: context.colors.textSecondary)),
-                  const Spacer(),
-                  Icon(Icons.chevron_right,
-                      color: context.colors.textSecondary, size: 20),
+                  Icon(
+                    infos.length == 1
+                        ? PcOnlineUtil.icon(infos.first)
+                        : Icons.computer,
+                    color: context.colors.textSecondary,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      bannerText,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.lg
+                          .copyWith(color: context.colors.textSecondary),
+                    ),
+                  ),
                 ],
               ),
             ),

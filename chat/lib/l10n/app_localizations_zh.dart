@@ -1324,7 +1324,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unknownDevice => '未知设备';
 
   @override
-  String get pcOnlineDevices => '已登录设备';
+  String get pcOnlineDevices => '已登录的设备';
 
   @override
   String get noPcOnline => '当前没有其他设备登录';
@@ -1333,6 +1333,91 @@ class AppLocalizationsZh extends AppLocalizations {
   String pcOnlineDeviceCount(Object count) {
     return '$count 个设备已登录';
   }
+
+  @override
+  String pcMultiDeviceLoggedIn(Object count) {
+    return '$count个设备已经登录';
+  }
+
+  @override
+  String get pcOnlineMuteSuffix => '，手机通知已关闭';
+
+  @override
+  String get lockPC => '锁定电脑';
+
+  @override
+  String logoutDevice(Object name) {
+    return '退出$name登录';
+  }
+
+  @override
+  String get deviceLoggedOut => '已退出登录';
+
+  @override
+  String get devicePC => '电脑';
+
+  @override
+  String get devicePad => '平板';
+
+  @override
+  String get deviceWeb => 'Web';
+
+  @override
+  String get deviceWindows => 'Windows';
+
+  @override
+  String get deviceMac => 'Mac';
+
+  @override
+  String get deviceLinux => 'Linux';
+
+  @override
+  String get deviceHarmonyPC => '鸿蒙PC';
+
+  @override
+  String get deviceHarmonyPad => '鸿蒙Pad';
+
+  @override
+  String get deviceHarmonyPhone => '鸿蒙手机';
+
+  @override
+  String get deviceIPad => 'iPad';
+
+  @override
+  String get deviceAndroidPad => 'Android 平板';
+
+  @override
+  String get deviceWeChatMiniProgram => '微信小程序';
+
+  @override
+  String get deviceMiniProgram => '小程序';
+
+  @override
+  String get deviceWatch => '手表';
+
+  @override
+  String get deviceAndroidWatch => 'Android 手表';
+
+  @override
+  String get deviceHarmonyWatch => '鸿蒙手表';
+
+  @override
+  String get deviceTV => '电视';
+
+  @override
+  String get deviceAndroidTV => 'Android 电视';
+
+  @override
+  String get deviceAppleTV => 'Apple TV';
+
+  @override
+  String get deviceHarmonyTV => '鸿蒙电视';
+
+  @override
+  String get deviceIOS => 'iOS';
+
+  @override
+  String get deviceAndroid => 'Android';
 
   @override
   String get mobileMute => '手机静音';

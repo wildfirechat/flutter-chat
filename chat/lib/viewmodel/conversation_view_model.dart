@@ -408,8 +408,12 @@ class ConversationViewModel extends ChangeNotifier {
       } else {
         _noMoreNewerMsg = true;
         Imclient.getMessages(conversation, 0, 20).then((messages) {
-          _conversationMessageList =
-              messages.map((message) => UIMessage(message)).toList();
+          // 加载历史时按 streamId 归一化去重：同 streamId 的多条「生成中(14)」
+          // 只保留最新一条（或存在「已生成(15)」时全部丢弃），避免切换会话后
+          // 重复显示多条"生成中"气泡，见 _prepareDisplayMessages
+          _conversationMessageList = _prepareDisplayMessages(messages)
+              .map((message) => UIMessage(message))
+              .toList();
           if (messages.length < 20) {
             _noMoreLocalHistoryMsg = true;
           }
@@ -432,8 +436,7 @@ class ConversationViewModel extends ChangeNotifier {
     _noMoreNewerMsg = true;
     Imclient.getMessages(conversation, 0, 20).then((messages) {
       if (session != _session || _currentConversation != conversation) return;
-      _conversationMessageList = messages
-          .where((message) => message.messageId != 0)
+      _conversationMessageList = _prepareDisplayMessages(messages)
           .map((message) => UIMessage(message))
           .toList();
       if (messages.length < 20) {
@@ -457,8 +460,7 @@ class ConversationViewModel extends ChangeNotifier {
       _noMoreNewerMsg = true;
       Imclient.getMessages(conversation, 0, 20).then((messages) {
         if (stale()) return;
-        _conversationMessageList = messages
-            .where((message) => message.messageId != 0)
+        _conversationMessageList = _prepareDisplayMessages(messages)
             .map((message) => UIMessage(message))
             .toList();
         if (messages.length < 20) {
@@ -473,22 +475,38 @@ class ConversationViewModel extends ChangeNotifier {
     var newerMsgs = await Imclient.getMessages(conversation, messageId, -20);
     if (stale()) return;
 
+    // 时间正序合并 older/target/newer 后再统一做流式去重（对齐 HarmonyOS
+    // setMessages(aroundMessages) 的一次归一化），覆盖三段内同 streamId 的重复
+    final combined = <Message>[
+      ...olderMsgs.reversed,
+      targetMsg,
+      ...newerMsgs.reversed,
+    ];
+    final normalized = _prepareDisplayMessages(combined);
+
     List<UIMessage> list = [];
-    list.addAll(olderMsgs.reversed
-        .where((msg) => msg.messageId != 0)
-        .toList()
-        .map((e) => UIMessage(e)));
-    var uiTarget = UIMessage(targetMsg);
-    uiTarget.highlighted = true;
-    list.add(uiTarget);
-    list.addAll(newerMsgs.reversed
-        .where((msg) => msg.messageId != 0)
-        .toList()
-        .map((e) => UIMessage(e)));
+    var targetIndex = -1;
+    UIMessage? highlightedUi;
+    for (var i = 0; i < normalized.length; i++) {
+      final ui = UIMessage(normalized[i]);
+      if (identical(normalized[i], targetMsg)) {
+        ui.highlighted = true;
+        highlightedUi = ui;
+        targetIndex = i;
+      }
+      list.add(ui);
+    }
 
     // 因为 _conversationMessageList 是反的，最新的在最前面
     _conversationMessageList = list.reversed.toList();
-    focusMessageIndex = newerMsgs.length;
+    if (targetIndex != -1) {
+      // 正序下标换算成倒序列表中"目标之前（更新）"的消息数
+      focusMessageIndex = normalized.length - 1 - targetIndex;
+    } else {
+      // 目标消息被去重（定位到的"生成中"已被同 streamId 的"已生成"取代），
+      // 用原始分段数量近似，最终消息与目标相邻，滚动位置基本一致
+      focusMessageIndex = newerMsgs.length;
+    }
     if (olderMsgs.length < 20) {
       _noMoreLocalHistoryMsg = true;
     }
@@ -499,7 +517,7 @@ class ConversationViewModel extends ChangeNotifier {
 
     Future.delayed(const Duration(seconds: 1), () {
       if (stale()) return;
-      uiTarget.highlighted = false;
+      highlightedUi?.highlighted = false;
       notifyListeners();
     });
   }
@@ -533,8 +551,7 @@ class ConversationViewModel extends ChangeNotifier {
         completer.complete();
         return;
       }
-      var newMsgs = messages
-          .where((msg) => msg.messageId != 0)
+      var newMsgs = _prepareDisplayMessages(messages)
           .map((msg) => UIMessage(msg))
           .toList();
       if (newMsgs.isEmpty) {
@@ -610,7 +627,7 @@ class ConversationViewModel extends ChangeNotifier {
   }
 
   void _insertMessages(int index, List<Message> msgs) {
-    var newMsgs = msgs.where((msg) => msg.messageId != 0).toList();
+    var newMsgs = _prepareDisplayMessages(msgs);
     if (newMsgs.isEmpty) {
       return;
     }
@@ -623,6 +640,82 @@ class ConversationViewModel extends ChangeNotifier {
     _conversationMessageList.insertAll(
         index, newMsgs.map((msg) => UIMessage(msg)));
     notifyListeners();
+  }
+
+  /// 把 DB/远端取回的消息整理成可展示列表（对齐 HarmonyOS isDisplayMessage +
+  /// normalizeStreaming）：
+  /// 1. 丢弃 messageId == 0 且非「生成中(14)」的消息（未落库的中间消息不展示，
+  ///    与 HarmonyOS 一致：保留 messageId != 0 或生成中消息）；
+  /// 2. 丢弃「已取消(20)」：Transparent 删除信号正常不落库，这里兜底防历史残留占位；
+  /// 3. 流式消息(14/15)按 streamId 归一化去重，见 [_normalizeStreamingMessages]。
+  List<Message> _prepareDisplayMessages(List<Message> messages) {
+    final result = <Message>[];
+    for (final msg in messages) {
+      final content = msg.content;
+      if (msg.messageId == 0 &&
+          content is! StreamingTextGeneratingMessageContent) {
+        continue;
+      }
+      if (content is StreamingTextCancelledMessageContent) {
+        continue;
+      }
+      result.add(msg);
+    }
+    return _normalizeStreamingMessages(result);
+  }
+
+  /// 加载历史消息时对流式消息按 streamId 归一化去重，切换会话后不会重复显示多条
+  /// 「生成中(14)」气泡（机器人逐字推送、每条都入库）。语义与 HarmonyOS 的
+  /// normalizeStreaming 一致："组内最后一条" = 最新一条（文本最全）——
+  /// HarmonyOS 列表为正序（旧→新）所以取末位下标；本列表为倒序（新→旧）且
+  /// [_loadMessagesAround] 的合并段方向不定，统一按 (serverTime, messageId)
+  /// 比较取最新，结果一致且不依赖列表方向：
+  /// - 同 streamId 存在「已生成(15)」→ 丢弃组内所有「生成中(14)」，只保留最终结果；
+  /// - 只有「生成中(14)」→ 只保留组内最新一条；
+  /// - 非流式消息全部保留，相对顺序不变。
+  List<Message> _normalizeStreamingMessages(List<Message> messages) {
+    if (messages.isEmpty) {
+      return messages;
+    }
+    // 第一遍：按 streamId 统计「已生成(15)」是否存在、该组最新一条「生成中(14)」
+    final hasGenerated = <String, bool>{};
+    final newestGenerating = <String, Message>{};
+    for (final msg in messages) {
+      final content = msg.content;
+      if (content is StreamingTextGeneratedMessageContent) {
+        final streamId = content.streamId;
+        if (streamId.isEmpty) continue;
+        hasGenerated[streamId] = true;
+      } else if (content is StreamingTextGeneratingMessageContent) {
+        final streamId = content.streamId;
+        if (streamId.isEmpty) continue;
+        final prev = newestGenerating[streamId];
+        if (prev == null ||
+            msg.serverTime > prev.serverTime ||
+            (msg.serverTime == prev.serverTime &&
+                msg.messageId > prev.messageId)) {
+          newestGenerating[streamId] = msg;
+        }
+      }
+    }
+    if (hasGenerated.isEmpty && newestGenerating.isEmpty) {
+      return messages;
+    }
+    // 第二遍：过滤重复的「生成中(14)」
+    final result = <Message>[];
+    for (final msg in messages) {
+      final content = msg.content;
+      if (content is StreamingTextGeneratingMessageContent) {
+        final streamId = content.streamId;
+        if (streamId.isNotEmpty &&
+            (hasGenerated[streamId] == true ||
+                !identical(newestGenerating[streamId], msg))) {
+          continue;
+        }
+      }
+      result.add(msg);
+    }
+    return result;
   }
 
   Future<void> loadHistoryMessage() {

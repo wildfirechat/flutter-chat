@@ -1342,7 +1342,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unknownDevice => 'Unknown Device';
 
   @override
-  String get pcOnlineDevices => 'PC Online Devices';
+  String get pcOnlineDevices => 'Logged-in Devices';
 
   @override
   String get noPcOnline => 'No other devices logged in';
@@ -1351,6 +1351,91 @@ class AppLocalizationsEn extends AppLocalizations {
   String pcOnlineDeviceCount(Object count) {
     return '$count devices logged in';
   }
+
+  @override
+  String pcMultiDeviceLoggedIn(Object count) {
+    return '$count devices logged in';
+  }
+
+  @override
+  String get pcOnlineMuteSuffix => ', mobile notifications off';
+
+  @override
+  String get lockPC => 'Lock PC';
+
+  @override
+  String logoutDevice(Object name) {
+    return 'Logout $name';
+  }
+
+  @override
+  String get deviceLoggedOut => 'Logged out';
+
+  @override
+  String get devicePC => 'PC';
+
+  @override
+  String get devicePad => 'Tablet';
+
+  @override
+  String get deviceWeb => 'Web';
+
+  @override
+  String get deviceWindows => 'Windows';
+
+  @override
+  String get deviceMac => 'Mac';
+
+  @override
+  String get deviceLinux => 'Linux';
+
+  @override
+  String get deviceHarmonyPC => 'HarmonyOS PC';
+
+  @override
+  String get deviceHarmonyPad => 'HarmonyOS Pad';
+
+  @override
+  String get deviceHarmonyPhone => 'HarmonyOS Phone';
+
+  @override
+  String get deviceIPad => 'iPad';
+
+  @override
+  String get deviceAndroidPad => 'Android Tablet';
+
+  @override
+  String get deviceWeChatMiniProgram => 'WeChat Mini Program';
+
+  @override
+  String get deviceMiniProgram => 'Mini Program';
+
+  @override
+  String get deviceWatch => 'Watch';
+
+  @override
+  String get deviceAndroidWatch => 'Android Watch';
+
+  @override
+  String get deviceHarmonyWatch => 'HarmonyOS Watch';
+
+  @override
+  String get deviceTV => 'TV';
+
+  @override
+  String get deviceAndroidTV => 'Android TV';
+
+  @override
+  String get deviceAppleTV => 'Apple TV';
+
+  @override
+  String get deviceHarmonyTV => 'HarmonyOS TV';
+
+  @override
+  String get deviceIOS => 'iOS';
+
+  @override
+  String get deviceAndroid => 'Android';
 
   @override
   String get mobileMute => 'Mute Mobile';
