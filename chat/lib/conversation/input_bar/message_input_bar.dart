@@ -3,16 +3,20 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:chat/conversation/input_bar/plugin_board.dart';
-import 'package:chat/conversation/input_bar/record_widget.dart';
 import 'package:chat/conversation/input_bar/channel_menu_widget.dart';
+import 'package:chat/conversation/input_bar/voice_record/voice_record_button.dart';
+import 'package:chat/utils/show_toast.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'message_input_bar_controller.dart';
+import 'voice_input_button.dart';
+import 'voice_input_controller.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/app_shell.dart';
 
@@ -42,6 +46,9 @@ class MessageInputBar extends StatefulWidget {
 class _MessageInputBarState extends State<MessageInputBar>
     with WidgetsBindingObserver {
   static const List<String> emojis = kChatEmojis;
+
+  /// 输入栏，按住说话的浮层按它的宽度确定操作区
+  final GlobalKey _voiceRecordStageKey = GlobalKey();
 
   /// 上一次显示的面板类型（emoji 或 plugin）
   ChatInputBarStatus? _previousBoardStatus;
@@ -329,12 +336,26 @@ class _MessageInputBarState extends State<MessageInputBar>
     );
   }
 
+  /// 切换到按住说话。和 android-chat 一样先申请麦克风权限，按下按钮时就能立即开始录音
+  Future<void> _onVoiceButton(MessageInputBarController controller) async {
+    final PermissionStatus status = await Permission.microphone.request();
+    if (!mounted) {
+      return;
+    }
+    if (status.isGranted) {
+      controller.onVoiceButton();
+    } else {
+      showToast(msg: AppLocalizations.of(context)!.noMicrophonePermission);
+    }
+  }
+
   Widget _buildInputBar(MessageInputBarController controller) {
     const double iconSize = 32;
     bool showMenu = controller.channelInfo?.menus != null &&
         controller.channelInfo!.menus!.isNotEmpty;
 
     return Container(
+      key: _voiceRecordStageKey,
       decoration: BoxDecoration(
         color: AppShell.isDesktopStyle
             ? context.colors.chatBgDesktop
@@ -361,7 +382,7 @@ class _MessageInputBarState extends State<MessageInputBar>
                           'assets/images/input/chat_input_bar_voice.png',
                           width: iconSize,
                           height: iconSize),
-                      onPressed: controller.onVoiceButton),
+                      onPressed: () => _onVoiceButton(controller)),
               if (showMenu)
                 IconButton(
                     icon: controller.status == ChatInputBarStatus.menuStatus
@@ -379,7 +400,9 @@ class _MessageInputBarState extends State<MessageInputBar>
                         menus: controller.channelInfo!.menus!,
                         conversation: controller.conversation)
                     : (controller.status == ChatInputBarStatus.recordStatus
-                        ? RecordWidget(controller.conversation)
+                        ? VoiceRecordButton(
+                            inputBar: controller,
+                            stageKey: _voiceRecordStageKey)
                         : Padding(
                             padding: const EdgeInsets.fromLTRB(0, 5, 5, 5),
                             child: Column(
@@ -387,6 +410,12 @@ class _MessageInputBarState extends State<MessageInputBar>
                                 CupertinoTextField(
                                   maxLines: 3,
                                   minLines: 1,
+                                  // 实时语音输入按钮，放在输入框右下角，多行时不跟着居中（android-chat 交互）
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  suffix: VoiceInputController.isAvailable
+                                      ? VoiceInputButton(
+                                          controller: controller.voiceInput)
+                                      : null,
                                   controller: controller.textEditingController,
                                   focusNode: controller.focusNode,
                                   onSubmitted: (_) => controller.onSendButton(),

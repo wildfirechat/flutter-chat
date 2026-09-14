@@ -150,6 +150,14 @@ scan_runtime_deps() {
 build_deb() {
   echo "==> 扫描运行时依赖 (ldd + dpkg -S)"
   scan_runtime_deps "$BUNDLE_DIR"
+  # ldd 只看得到链接的动态库，看不到运行时才调用的外部命令，这类依赖在这里手工补上：
+  # record_linux（实时语音输入的录音）调用 parecord/pactl，缺了 App 照常启动，但语音输入会报录音失败。
+  local cmd_pkg
+  for cmd_pkg in pulseaudio-utils; do
+    if [[ " ${DEPENDS_PKGS[*]:-} " != *" $cmd_pkg "* ]]; then
+      DEPENDS_PKGS+=("$cmd_pkg")
+    fi
+  done
 
   if [ "${#MISSING_LIBS[@]}" -gt 0 ]; then
     echo "警告：以下库在本机都找不到，说明本机运行这份构建产物也会失败：" >&2

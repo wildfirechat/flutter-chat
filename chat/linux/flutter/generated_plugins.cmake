@@ -11,6 +11,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_webrtc
   fvp
   irondash_engine_context
+  record_linux
   screen_retriever_linux
   super_native_extensions
   tray_manager

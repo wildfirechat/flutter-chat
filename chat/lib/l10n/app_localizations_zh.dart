@@ -1257,13 +1257,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pickRemindUser => '选择提醒的人';
 
   @override
-  String get slideUpToCancel => '手指上滑，取消发送';
-
-  @override
-  String get releaseToSend => '松开发送';
-
-  @override
-  String get holdToTalk => '按下说话';
+  String get holdToTalk => '按住 说话';
 
   @override
   String get noMicrophonePermission => '没有权限，请开启权限!';
@@ -1274,10 +1268,36 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get recordTooShort => '录音时间太短';
+  String get voiceRecordVoice => '语音';
 
   @override
-  String get releaseToCancel => '松开取消';
+  String get voiceRecordReleaseToSend => '松开 发送';
+
+  @override
+  String get voiceRecordReleaseToCancel => '松手 取消';
+
+  @override
+  String get voiceRecordSlideToText => '滑到这里 转文字';
+
+  @override
+  String get voiceRecordReleaseToEdit => '松手 编辑文字';
+
+  @override
+  String get voiceRecordSendVoice => '发送原语音';
+
+  @override
+  String get voiceRecordNoText => '未识别到文字';
+
+  @override
+  String get voiceRecordRecognizeFailed => '转文字失败';
+
+  @override
+  String get voiceRecordTooShort => '说话时间太短';
+
+  @override
+  String voiceRecordCountDown(int seconds) {
+    return '$seconds 秒后将停止录音';
+  }
 
   @override
   String get wfcNotificationTitle => '野火IM 消息通知';
@@ -1579,6 +1599,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get convertingToText => '转文字中...';
+
+  @override
+  String get voiceInput => '语音输入';
+
+  @override
+  String voiceInputError(Object error) {
+    return '语音识别错误: $error';
+  }
+
+  @override
+  String get asrNotConfigured => '未配置语音识别服务地址';
+
+  @override
+  String asrGetAuthCodeFailed(Object code) {
+    return '获取认证码失败: $code';
+  }
+
+  @override
+  String get asrUnauthorized => '语音识别服务鉴权失败';
+
+  @override
+  String asrConnectFailed(Object error) {
+    return '连接失败: $error';
+  }
+
+  @override
+  String get asrConnectTimeout => '连接语音识别服务超时';
+
+  @override
+  String get asrDisconnected => '连接已断开';
 
   @override
   String get inviteReasonHint => '请填入申请理由，等待对方同意';

@@ -2408,22 +2408,10 @@ abstract class AppLocalizations {
   /// **'选择提醒的人'**
   String get pickRemindUser;
 
-  /// No description provided for @slideUpToCancel.
-  ///
-  /// In zh, this message translates to:
-  /// **'手指上滑，取消发送'**
-  String get slideUpToCancel;
-
-  /// No description provided for @releaseToSend.
-  ///
-  /// In zh, this message translates to:
-  /// **'松开发送'**
-  String get releaseToSend;
-
   /// No description provided for @holdToTalk.
   ///
   /// In zh, this message translates to:
-  /// **'按下说话'**
+  /// **'按住 说话'**
   String get holdToTalk;
 
   /// No description provided for @noMicrophonePermission.
@@ -2438,17 +2426,65 @@ abstract class AppLocalizations {
   /// **'录音失败: {error}'**
   String recordFailed(Object error);
 
-  /// No description provided for @recordTooShort.
+  /// No description provided for @voiceRecordVoice.
   ///
   /// In zh, this message translates to:
-  /// **'录音时间太短'**
-  String get recordTooShort;
+  /// **'语音'**
+  String get voiceRecordVoice;
 
-  /// No description provided for @releaseToCancel.
+  /// No description provided for @voiceRecordReleaseToSend.
   ///
   /// In zh, this message translates to:
-  /// **'松开取消'**
-  String get releaseToCancel;
+  /// **'松开 发送'**
+  String get voiceRecordReleaseToSend;
+
+  /// No description provided for @voiceRecordReleaseToCancel.
+  ///
+  /// In zh, this message translates to:
+  /// **'松手 取消'**
+  String get voiceRecordReleaseToCancel;
+
+  /// No description provided for @voiceRecordSlideToText.
+  ///
+  /// In zh, this message translates to:
+  /// **'滑到这里 转文字'**
+  String get voiceRecordSlideToText;
+
+  /// No description provided for @voiceRecordReleaseToEdit.
+  ///
+  /// In zh, this message translates to:
+  /// **'松手 编辑文字'**
+  String get voiceRecordReleaseToEdit;
+
+  /// No description provided for @voiceRecordSendVoice.
+  ///
+  /// In zh, this message translates to:
+  /// **'发送原语音'**
+  String get voiceRecordSendVoice;
+
+  /// No description provided for @voiceRecordNoText.
+  ///
+  /// In zh, this message translates to:
+  /// **'未识别到文字'**
+  String get voiceRecordNoText;
+
+  /// No description provided for @voiceRecordRecognizeFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'转文字失败'**
+  String get voiceRecordRecognizeFailed;
+
+  /// No description provided for @voiceRecordTooShort.
+  ///
+  /// In zh, this message translates to:
+  /// **'说话时间太短'**
+  String get voiceRecordTooShort;
+
+  /// No description provided for @voiceRecordCountDown.
+  ///
+  /// In zh, this message translates to:
+  /// **'{seconds} 秒后将停止录音'**
+  String voiceRecordCountDown(int seconds);
 
   /// No description provided for @wfcNotificationTitle.
   ///
@@ -3007,6 +3043,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'转文字中...'**
   String get convertingToText;
+
+  /// No description provided for @voiceInput.
+  ///
+  /// In zh, this message translates to:
+  /// **'语音输入'**
+  String get voiceInput;
+
+  /// No description provided for @voiceInputError.
+  ///
+  /// In zh, this message translates to:
+  /// **'语音识别错误: {error}'**
+  String voiceInputError(Object error);
+
+  /// No description provided for @asrNotConfigured.
+  ///
+  /// In zh, this message translates to:
+  /// **'未配置语音识别服务地址'**
+  String get asrNotConfigured;
+
+  /// No description provided for @asrGetAuthCodeFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'获取认证码失败: {code}'**
+  String asrGetAuthCodeFailed(Object code);
+
+  /// No description provided for @asrUnauthorized.
+  ///
+  /// In zh, this message translates to:
+  /// **'语音识别服务鉴权失败'**
+  String get asrUnauthorized;
+
+  /// No description provided for @asrConnectFailed.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接失败: {error}'**
+  String asrConnectFailed(Object error);
+
+  /// No description provided for @asrConnectTimeout.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接语音识别服务超时'**
+  String get asrConnectTimeout;
+
+  /// No description provided for @asrDisconnected.
+  ///
+  /// In zh, this message translates to:
+  /// **'连接已断开'**
+  String get asrDisconnected;
 
   /// No description provided for @inviteReasonHint.
   ///

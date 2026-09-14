@@ -23,7 +23,9 @@ import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/app_shell.dart';
 import 'draft_data.dart';
+import 'voice_input_controller.dart';
 
 enum ChatInputBarStatus {
   keyboardStatus,
@@ -94,6 +96,9 @@ class MessageInputBarController extends ChangeNotifier {
   ChannelInfo? channelInfo;
   Function(Conversation conversation)? onMentionTriggered;
   VoidCallback? onSend;
+
+  /// 实时语音输入。移动端和 android-chat 一致，移动光标会结束语音输入；PC 端和 vue-pc-chat 一致，不结束
+  late final VoiceInputController voiceInput;
   final List<Mention> _mentionsList = [];
 
   // 粘贴到输入框的内联附件(图片/文件),按占位符出现顺序一一对应(见 _inlineAttachmentPlaceholder)。
@@ -124,6 +129,8 @@ class MessageInputBarController extends ChangeNotifier {
     focusNode.addListener(_onFocusChanged);
     // 纯光标移动不会触发 onTextChanged,需单独校验 @ 会话
     textEditingController.addListener(_onEditingValueChanged);
+    voiceInput = VoiceInputController(this,
+        cancelOnSelectionChange: !AppShell.isDesktopStyle);
     // 渲染层按占位符序号取对应附件,内联显示在输入框里
     textEditingController.inlineAttachmentResolver = (ordinal) =>
         ordinal < _inlineAttachments.length
@@ -218,6 +225,13 @@ class MessageInputBarController extends ChangeNotifier {
 
     _status = newStatus;
 
+    // 输入框被换掉（按住说话、频道菜单等）时结束语音输入；表情/插件面板下输入框还在，识别继续
+    if (newStatus != ChatInputBarStatus.keyboardStatus &&
+        newStatus != ChatInputBarStatus.emojiStatus &&
+        newStatus != ChatInputBarStatus.pluginStatus) {
+      voiceInput.cancel();
+    }
+
     // 根据新状态管理焦点
     if (newStatus == ChatInputBarStatus.keyboardStatus) {
       if (!focusNode.hasFocus) {
@@ -277,6 +291,8 @@ class MessageInputBarController extends ChangeNotifier {
   }
 
   void onSendButton() {
+    // 正在语音输入时先结束，避免之后返回的识别结果写入已清空的输入框
+    voiceInput.cancel();
     // 以文本中实际存在的占位符数为准,防止极端场景(如 undo)下列表残留看不见的附件
     final int placeholderCount =
         _countInlineAttachmentPlaceholders(textEditingController.text);
@@ -916,6 +932,43 @@ class MessageInputBarController extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 用 [text] 替换输入框中 [start, end) 的文本并设置选区，供程序写入文本（如实时语音输入）使用。
+  ///
+  /// 被替换掉的内联附件、与替换范围重叠的 @提醒 一并移除，其后的 @提醒 平移；
+  /// 和用户输入一样更新草稿、正在输入状态和发送按钮。不会触发 TextField.onChanged。
+  void replaceTextRange(
+      int start, int end, String text, TextSelection selection) {
+    final String oldText = textEditingController.text;
+    final String newText = oldText.replaceRange(start, end, text);
+
+    final int removedAttachments =
+        _countInlineAttachmentPlaceholders(oldText.substring(start, end));
+    if (removedAttachments > 0) {
+      final int before =
+          _countInlineAttachmentPlaceholders(oldText.substring(0, start));
+      _inlineAttachments.removeRange(
+          math.min(before, _inlineAttachments.length),
+          math.min(before + removedAttachments, _inlineAttachments.length));
+    }
+
+    final int delta = text.length - (end - start);
+    _mentionsList.removeWhere((m) => m.start < end && m.end > start);
+    for (final Mention mention in _mentionsList) {
+      if (mention.start >= end) {
+        mention.start += delta;
+        mention.end += delta;
+      }
+    }
+
+    _endMentionSession();
+    _lastText = newText;
+    textEditingController.value =
+        TextEditingValue(text: newText, selection: selection);
+    _sendTyping(newText);
+    _scheduleSaveDraft();
+    notifyListeners();
+  }
+
   void insertText(String text) {
     final currentText = textEditingController.text;
     var selection = textEditingController.selection;
@@ -1007,6 +1060,8 @@ class MessageInputBarController extends ChangeNotifier {
 
   @override
   void dispose() {
+    // 先于 textEditingController 释放：语音输入要从它上面摘掉监听
+    voiceInput.dispose();
     _saveDraftTimer?.cancel();
     _draftUpdatedSubscription?.cancel();
     super.dispose();

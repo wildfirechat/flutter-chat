@@ -16,6 +16,8 @@ import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/conversation/input_bar/channel_menu_widget.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
+import 'package:chat/conversation/input_bar/voice_input_button.dart';
+import 'package:chat/conversation/input_bar/voice_input_controller.dart';
 import 'package:chat/call/av_call_launcher.dart';
 import 'package:chat/pc/pc_layout_view_model.dart';
 import 'package:chat/pc/pc_clipboard_paste_handler.dart';
@@ -341,6 +343,23 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                             onTap: () =>
                                 _pickFile(conversationController, controller),
                           ),
+                          // 实时语音输入(vue-pc-chat 交互):点击开始,再次点击停止,识别结果写入光标处。
+                          // 包一层 TextFieldTapRegion:点它不算点在输入框外面,输入框保留焦点和光标
+                          if (VoiceInputController.isAvailable)
+                            TextFieldTapRegion(
+                              child: _ToolbarButton(
+                                iconWidget: Center(
+                                  child: VoiceInputIcon(
+                                      controller: controller.voiceInput,
+                                      style: VoiceInputIconStyle.micWithText,
+                                      size: 21),
+                                ),
+                                tooltip: l10n.voiceInput,
+                                onTap: () => controller.voiceInput.toggle(
+                                    onError: (error) =>
+                                        showVoiceInputError(l10n, error)),
+                              ),
+                            ),
                           if (controller.conversation.conversationType ==
                                   ConversationType.Group &&
                               Config.collectionServerAddress != null &&

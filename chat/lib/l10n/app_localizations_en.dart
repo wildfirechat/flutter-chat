@@ -1274,12 +1274,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pickRemindUser => 'Pick user to remind';
 
   @override
-  String get slideUpToCancel => 'Slide up to cancel';
-
-  @override
-  String get releaseToSend => 'Release to send';
-
-  @override
   String get holdToTalk => 'Hold to Talk';
 
   @override
@@ -1292,10 +1286,36 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get recordTooShort => 'Recording too short';
+  String get voiceRecordVoice => 'Voice';
 
   @override
-  String get releaseToCancel => 'Release to cancel';
+  String get voiceRecordReleaseToSend => 'Release to Send';
+
+  @override
+  String get voiceRecordReleaseToCancel => 'Release to Cancel';
+
+  @override
+  String get voiceRecordSlideToText => 'Slide here to Text';
+
+  @override
+  String get voiceRecordReleaseToEdit => 'Release to Edit';
+
+  @override
+  String get voiceRecordSendVoice => 'Send Voice';
+
+  @override
+  String get voiceRecordNoText => 'No speech recognized';
+
+  @override
+  String get voiceRecordRecognizeFailed => 'Speech to text failed';
+
+  @override
+  String get voiceRecordTooShort => 'Message too short';
+
+  @override
+  String voiceRecordCountDown(int seconds) {
+    return 'Recording stops in $seconds s';
+  }
 
   @override
   String get wfcNotificationTitle => 'WildfireChat Notification';
@@ -1599,6 +1619,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get convertingToText => 'Converting...';
+
+  @override
+  String get voiceInput => 'Voice Input';
+
+  @override
+  String voiceInputError(Object error) {
+    return 'Speech recognition error: $error';
+  }
+
+  @override
+  String get asrNotConfigured => 'Speech recognition service is not configured';
+
+  @override
+  String asrGetAuthCodeFailed(Object code) {
+    return 'Failed to get auth code: $code';
+  }
+
+  @override
+  String get asrUnauthorized =>
+      'Speech recognition service authentication failed';
+
+  @override
+  String asrConnectFailed(Object error) {
+    return 'Connection failed: $error';
+  }
+
+  @override
+  String get asrConnectTimeout =>
+      'Timed out connecting to speech recognition service';
+
+  @override
+  String get asrDisconnected => 'Connection closed';
 
   @override
   String get inviteReasonHint => 'Please enter reason, wait for approval';

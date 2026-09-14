@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:audioplayers/audioplayers.dart' show AudioPlayer, UrlSource;
@@ -41,13 +40,12 @@ import 'package:chat/utils/show_toast.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/app_server.dart';
-import 'package:chat/config.dart';
+import 'package:chat/asr/asr_service.dart';
 import 'package:chat/model/favorite_item.dart';
 import 'package:chat/utils/media_url_redirector.dart';
 import 'package:chat/widget/popup_menu_overlay.dart';
 import 'package:chat/widget/desktop_popup_menu_item.dart';
 import 'package:chat/widget/bottom_action_sheet.dart';
-import 'package:http/http.dart' as http;
 import 'package:chat/l10n/app_localizations.dart';
 
 import '../collection/collection_service.dart';
@@ -1079,7 +1077,7 @@ class ConversationController extends ChangeNotifier {
         return;
       }
 
-      await _makeAsrRequest(
+      await AsrService.recognize(
           MediaUrlRedirector.redirect(audioMessage.remoteUrl!), (resultChunk) {
         // 回调函数：每接收到结果片段就更新
         audioMessage.speechText = (audioMessage.speechText ?? '') + resultChunk;
@@ -1103,58 +1101,6 @@ class ConversationController extends ChangeNotifier {
       showToast(
           msg: AppLocalizations.of(context)!
               .speechToTextError(error.toString()));
-    }
-  }
-
-  Future<void> _makeAsrRequest(
-      String audioUrl, Function(String) onChunk) async {
-    try {
-      final request = http.Request(
-        'POST',
-        Uri.parse(Config.asrServerUrl ?? Config.ASR_SERVER),
-      );
-
-      request.headers.addAll({
-        'Content-Type': 'application/json',
-        'Accept': '*/*',
-      });
-
-      request.body = jsonEncode({
-        'url': audioUrl,
-        'noReuse': false,
-        'noLlm': false,
-      });
-
-      final streamResponse = await request.send();
-
-      if (!streamResponse.statusCode.toString().startsWith('2')) {
-        debugPrint('ASR API 错误: ${streamResponse.statusCode}');
-        return;
-      }
-
-      // 处理流式响应
-      await streamResponse.stream.transform(utf8.decoder).listen(
-        (chunk) {
-          // 处理接收到的数据块
-          List<String> lines = chunk.split('\n');
-          for (String line in lines) {
-            line = line.replaceAll('\r', '').trim();
-            if (line.isNotEmpty) {
-              String text = line.replaceAll('data:', '').trim();
-              if (text.isNotEmpty) {
-                // 实时回调返回文本片段
-                onChunk(text);
-              }
-            }
-          }
-        },
-        onError: (error) {
-          debugPrint('流处理错误: $error');
-        },
-        cancelOnError: false,
-      ).asFuture();
-    } catch (e) {
-      debugPrint('ASR 请求异常: $e');
     }
   }
 
