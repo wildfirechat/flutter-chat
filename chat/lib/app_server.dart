@@ -5,10 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:imclient/imclient.dart';
 import 'package:imclient/imclient_platform.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
 import 'model/favorite_item.dart';
+import 'utils/auth_token_http.dart';
 import 'utils/dual_network.dart';
 import 'utils/media_url_redirector.dart';
 import 'widget/slide_verify_dialog.dart';
@@ -20,8 +20,6 @@ typedef AppServerLoginSuccessCallback = Function(
 typedef AppServerHTTPCallback = Function(String response);
 
 class AppServer {
-  static String? _authToken;
-
   /// 客户端平台号:鸿蒙手机/平板/电脑分别上报 10/11/12,见 [WfcPlatform]。
   static int _detectClientPlatform() {
     return WfcPlatform.clientPlatformCode;
@@ -113,7 +111,7 @@ class AppServer {
       {Map<String, String>? headers, Object? body}) async {
     final url = Uri.parse(await _resolveAppServerAddress() + path);
     try {
-      return await http.post(url, headers: headers, body: body);
+      return await AuthTokenHttp.post(url, headers: headers, body: body);
     } catch (e) {
       // 请求出现网络错误，可能是网络环境变了，清除探测结果，下次请求重新探测
       _probedAppServerAddress = null;
@@ -780,19 +778,10 @@ class AppServer {
       String jsonStr,
       AppServerHTTPCallback successCallback,
       AppServerErrorCallback errorCallback) async {
-    if (_authToken == null) {
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      _authToken = prefs.getString('app_server_auth_token');
-    }
-
-    Map<String, String> headers = {"content-type": "application/json"};
-    if (_authToken != null) {
-      headers['authToken'] = _authToken!;
-    }
-
     http.Response response;
     try {
-      response = await _post(request, headers: headers, body: jsonStr);
+      response = await _post(request,
+          headers: {"content-type": "application/json"}, body: jsonStr);
     } catch (e) {
       debugPrint('AppServer post $request error: $e');
       errorCallback('网络错误');
@@ -802,12 +791,6 @@ class AppServer {
     if (response.statusCode != 200) {
       errorCallback(response.body);
     } else {
-      _authToken =
-          response.headers['authToken'] ?? response.headers['authtoken'];
-      if (_authToken != null) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setString('app_server_auth_token', _authToken!);
-      }
       successCallback(response.body);
     }
   }

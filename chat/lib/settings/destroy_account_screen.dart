@@ -14,6 +14,7 @@ import 'package:chat/organization/organization_service.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/utils/auth_token_http.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/widget/slide_verify_dialog.dart';
 import 'package:chat/app_shell.dart';
@@ -98,7 +99,7 @@ class _DestroyAccountScreenState extends State<DestroyAccountScreen> {
       final prefs = await SharedPreferences.getInstance();
       prefs.remove('userId');
       prefs.remove('token');
-      prefs.remove('app_server_auth_token');
+      AuthTokenHttp.clear();
       OrganizationService.instance.clearOrgServiceAuthInfos();
       // 服务端已删除账号所有信息,断开时不再与 IM 服务交互推送/会话标记。
       Imclient.disconnect(disablePush: false, clearSession: false);

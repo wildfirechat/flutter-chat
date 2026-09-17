@@ -51,6 +51,7 @@ import 'package:chat/wfc_notification_manager.dart';
 import 'app_navigator.dart';
 import 'app_theme.dart';
 import 'config.dart';
+import 'utils/auth_token_http.dart';
 import 'utils/dual_network.dart';
 
 import 'default_portrait_provider.dart';
@@ -99,6 +100,13 @@ void _registerDesktopVideoBackend() {
 
 void main([List<String>? args]) async {
   final effectiveArgs = args ?? <String>[];
+
+  // 双网环境下，主备地址对应的是同一个服务，authToken 通用，切换网络后不用重新登录。
+  // 主窗口和 PC 子窗口是不同的 isolate，都要登记
+  AuthTokenHttp.addDualNetworkAddress(
+      Config.APP_Server_Address, Config.APP_Server_Backup_Address);
+  AuthTokenHttp.addDualNetworkAddress(
+      Config.ORG_SERVER_ADDRESS, Config.ORG_SERVER_BACKUP_ADDRESS);
 
   // 子窗口入口。必须用 SubWindowWidgetsBinding 而不是默认 binding：
   // macOS 子引擎会收到错误的 hidden 生命周期状态导致帧调度被关闭。
@@ -362,7 +370,7 @@ class _MyAppState extends State<MyApp> {
         SharedPreferences.getInstance().then((value) {
           value.remove('userId');
           value.remove('token');
-          value.remove('app_server_auth_token');
+          AuthTokenHttp.clear();
           value.commit();
           OrganizationService.instance.clearOrgServiceAuthInfos();
           OrganizationCache.instance.clearCaches();

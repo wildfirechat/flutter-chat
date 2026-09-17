@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chat/config.dart';
 import 'package:chat/organization/model/organization.dart';
 import 'package:chat/organization/model/organization_ex.dart';
@@ -9,14 +8,11 @@ import 'package:chat/organization/model/employee.dart';
 import 'package:chat/organization/model/employee_ex.dart';
 import 'package:chat/organization/model/organization_relationship.dart';
 import 'package:chat/organization/organization_cache.dart';
-import 'package:chat/utils/media_url_redirector.dart';
+import 'package:chat/utils/auth_token_http.dart';
 import 'package:imclient/imclient.dart';
 
 class OrganizationService {
-  static const String _authTokenKey = 'org_server_auth_token';
-
   bool _isServiceAvailable = false;
-  String? _orgAuthToken;
 
   // Singleton pattern
   OrganizationService._privateConstructor();
@@ -26,22 +22,13 @@ class OrganizationService {
 
   static OrganizationService get instance => _instance;
 
-  /// 从本地恢复已保存的 auth token。
-  Future<void> _restoreAuthToken() async {
-    if (_orgAuthToken != null && _orgAuthToken!.isNotEmpty) return;
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString(_authTokenKey);
-    if (token != null && token.isNotEmpty) {
-      _orgAuthToken = token;
-    }
-  }
-
+  // 已经按当前网络选好了主备地址，不再做媒体地址转换，保证请求和登录用的是同一个地址，authToken 才对得上
   String get _orgServerBaseUrl {
     final url = Config.orgServerAddress;
     if (url == null || url.isEmpty) {
       throw Exception("ORG_SERVER_ADDRESS is not configured in config.dart");
     }
-    return MediaUrlRedirector.redirect(url);
+    return url;
   }
 
   Future<void> login() async {
@@ -55,8 +42,7 @@ class OrganizationService {
       throw Exception('ORG_SERVER_ADDRESS is not configured');
     }
 
-    await _restoreAuthToken();
-    if (_orgAuthToken != null && _orgAuthToken!.isNotEmpty) {
+    if (await AuthTokenHttp.authToken(Uri.parse(orgServerUrl)) != null) {
       _isServiceAvailable = true;
       print('OrganizationService restored auth token from cache');
       return;
@@ -78,21 +64,14 @@ class OrganizationService {
       });
 
       String authCode = await authCodeCompleter.future;
-      final response = await http.post(
+      // 登录接口在响应 header 里下发 authToken，由 AuthTokenHttp 保存
+      final response = await AuthTokenHttp.post(
         Uri.parse('$orgServerUrl/api/user_login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'authCode': authCode}),
       );
 
       if (response.statusCode == 200) {
-        // The login endpoint returns the token in the response header.
-        final token =
-            response.headers['authToken'] ?? response.headers['authtoken'];
-        if (token != null && token.isNotEmpty) {
-          _orgAuthToken = token;
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString(_authTokenKey, token);
-        }
         _isServiceAvailable = true;
         print('OrganizationService login successful');
       } else {
@@ -280,26 +259,17 @@ class OrganizationService {
   }
 
   Future<http.Response> _post(String url, Map<String, dynamic>? body) async {
-    var response = await http.post(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-        'authToken': _orgAuthToken!
-      },
-      body: body == null ? null : jsonEncode(body),
-    );
+    final uri = Uri.parse(url);
+    const headers = {'Content-Type': 'application/json'};
+    final encodedBody = body == null ? null : jsonEncode(body);
+    var response =
+        await AuthTokenHttp.post(uri, headers: headers, body: encodedBody);
     // 本地恢复的 token 可能已在服务端失效，且 login() 见到缓存 token 会短路，
     // 不重新走认证。这里在鉴权失败时清掉旧 token 重新登录，并用新 token 重试一次。
     if (response.statusCode == 401 || response.statusCode == 403) {
       await _relogin();
-      response = await http.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'authToken': _orgAuthToken!
-        },
-        body: body == null ? null : jsonEncode(body),
-      );
+      response =
+          await AuthTokenHttp.post(uri, headers: headers, body: encodedBody);
     }
     return response;
   }
@@ -309,11 +279,9 @@ class OrganizationService {
   /// 清除失效 token 并重新登录；并发的 401 共享同一次重登录。
   Future<void> _relogin() {
     return _reloginFuture ??= () async {
-      _orgAuthToken = null;
       _isServiceAvailable = false;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_authTokenKey);
       try {
+        await AuthTokenHttp.remove(Uri.parse(_orgServerBaseUrl));
         await login();
       } finally {
         _reloginFuture = null;
@@ -323,10 +291,11 @@ class OrganizationService {
 
   void clearOrgServiceAuthInfos() {
     _isServiceAvailable = false;
-    _orgAuthToken = null;
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.remove(_authTokenKey);
-    });
+    final orgServerAddress = Config.ORG_SERVER_ADDRESS;
+    if (orgServerAddress != null && orgServerAddress.isNotEmpty) {
+      // 双网环境下主备地址的都清除
+      AuthTokenHttp.remove(Uri.parse(orgServerAddress));
+    }
     OrganizationCache.instance.clearCaches();
   }
 }

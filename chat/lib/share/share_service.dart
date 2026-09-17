@@ -6,9 +6,9 @@ import 'package:flutter/services.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/conversation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config.dart';
+import '../utils/auth_token_http.dart';
 
 /// 与 iOS Share Extension 共享数据：会话列表、应用服务认证信息。
 class ShareService {
@@ -76,14 +76,15 @@ class ShareService {
 
       final sharedConversations =
           await _buildSharedConversations(conversations);
-      final prefs = await SharedPreferences.getInstance();
-      final authToken = prefs.getString('app_server_auth_token');
+      // 双网环境下，按进入后台时的网络选择主备地址
+      final appServerAddress = Config.appServerAddress;
+      final authToken =
+          await AuthTokenHttp.authToken(Uri.parse(appServerAddress));
 
       await _channel.invokeMethod('saveSharedConversations', {
         'conversations': sharedConversations.map((c) => c.toJson()).toList(),
         'authToken': authToken,
-        // 双网环境下，按进入后台时的网络选择主备地址
-        'appServerAddress': Config.appServerAddress,
+        'appServerAddress': appServerAddress,
       });
     } catch (e) {
       debugPrint('syncSharedDataOnBackground error: $e');
