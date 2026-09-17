@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/widgets/animated_emoji.dart';
+import 'input_bar_icon.dart';
 import 'sticker_manager.dart';
 import 'package:chat/app_shell.dart';
 
@@ -393,7 +394,9 @@ class _EmojiBoardState extends State<EmojiBoard> {
       height: 40,
       decoration: BoxDecoration(
         color: context.colors.surface,
-        border: Border(bottom: BorderSide(color: context.colors.hairline)),
+        border: Border(
+            bottom:
+                BorderSide(color: context.colors.hairlineSoft, width: 0.5)),
       ),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -414,8 +417,8 @@ class _EmojiBoardState extends State<EmojiBoard> {
                 width: 50,
                 padding: const EdgeInsets.all(8),
                 child: index == 0
-                    ? Image.asset(
-                        'assets/images/input/chat_input_bar_emoji.png')
+                    ? InputBarIcon(InputBarGlyph.emoji,
+                        size: 24, color: context.colors.iconSecondary)
                     : Image.asset(categories[index - 1].coverPath),
               ),
             ),

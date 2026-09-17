@@ -14,6 +14,7 @@ import 'package:chat/utils/show_toast.dart';
 import 'package:imclient/message/image_message_content.dart';
 import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/theme/app_colors.dart';
+import 'input_bar_icon.dart';
 import 'message_input_bar_controller.dart';
 import 'voice_input_button.dart';
 import 'voice_input_controller.dart';
@@ -350,7 +351,7 @@ class _MessageInputBarState extends State<MessageInputBar>
   }
 
   Widget _buildInputBar(MessageInputBarController controller) {
-    const double iconSize = 32;
+    const double iconSize = 30;
     bool showMenu = controller.channelInfo?.menus != null &&
         controller.channelInfo!.menus!.isNotEmpty;
 
@@ -372,26 +373,20 @@ class _MessageInputBarState extends State<MessageInputBar>
             children: [
               controller.status == ChatInputBarStatus.recordStatus
                   ? IconButton(
-                      icon: Image.asset(
-                          'assets/images/input/chat_input_bar_keyboard.png',
-                          width: iconSize,
-                          height: iconSize),
+                      icon: const InputBarIcon(InputBarGlyph.keyboard,
+                          size: iconSize),
                       onPressed: controller.onKeyboardButton)
                   : IconButton(
-                      icon: Image.asset(
-                          'assets/images/input/chat_input_bar_voice.png',
-                          width: iconSize,
-                          height: iconSize),
+                      icon: const InputBarIcon(InputBarGlyph.voice,
+                          size: iconSize),
                       onPressed: () => _onVoiceButton(controller)),
               if (showMenu)
                 IconButton(
                     icon: controller.status == ChatInputBarStatus.menuStatus
-                        ? Image.asset(
-                            'assets/images/input/chat_input_bar_keyboard.png',
-                            width: iconSize,
-                            height: iconSize)
-                        : const Icon(Icons.menu,
-                            size: iconSize, color: Color(0xFF7f7f7f)),
+                        ? const InputBarIcon(InputBarGlyph.keyboard,
+                            size: iconSize)
+                        : const InputBarIcon(InputBarGlyph.menu,
+                            size: iconSize),
                     onPressed: controller.onMenuButton),
               Expanded(
                 child: showMenu &&
@@ -427,8 +422,6 @@ class _MessageInputBarState extends State<MessageInputBar>
                                   decoration: BoxDecoration(
                                     color: context.colors.surface,
                                     borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                        color: context.colors.hairline),
                                   ),
                                   cursorColor: context.colors.accent,
                                 ),
@@ -446,16 +439,12 @@ class _MessageInputBarState extends State<MessageInputBar>
               if (controller.status != ChatInputBarStatus.menuStatus) ...[
                 controller.status == ChatInputBarStatus.emojiStatus
                     ? IconButton(
-                        icon: Image.asset(
-                            'assets/images/input/chat_input_bar_keyboard.png',
-                            width: iconSize,
-                            height: iconSize),
+                        icon: const InputBarIcon(InputBarGlyph.keyboard,
+                            size: iconSize),
                         onPressed: controller.onKeyboardButton)
                     : IconButton(
-                        icon: Image.asset(
-                            'assets/images/input/chat_input_bar_emoji.png',
-                            width: iconSize,
-                            height: iconSize),
+                        icon: const InputBarIcon(InputBarGlyph.emoji,
+                            size: iconSize),
                         onPressed: controller.onEmojiButton),
                 // 发送按钮只订阅"文本是否非空",逐键输入不会触发这里以外的重建
                 Selector<MessageInputBarController, bool>(
@@ -475,10 +464,8 @@ class _MessageInputBarState extends State<MessageInputBar>
                                 minimumSize: const Size(44, 28)),
                             child: Text(AppLocalizations.of(context)!.send))
                         : IconButton(
-                            icon: Image.asset(
-                                'assets/images/input/chat_input_bar_plugin.png',
-                                width: iconSize,
-                                height: iconSize),
+                            icon: const InputBarIcon(InputBarGlyph.plugin,
+                                size: iconSize),
                             onPressed: controller.onPluginButton);
                   },
                 ),
