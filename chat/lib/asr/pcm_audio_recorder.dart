@@ -207,12 +207,14 @@ class _RecordPcmAudioRecorder implements PcmAudioRecorder {
       }
       final Stream<Uint8List> stream = await platform.startStream(
         _recorderId,
-        const record.RecordConfig(
+        record.RecordConfig(
           encoder: record.AudioEncoder.pcm16bits,
           sampleRate: PcmAudioRecorder.sampleRate,
           numChannels: 1,
-          autoGain: true,
-          echoCancel: true,
+          // record_macos 开了回声消除或自动增益就会启用系统的语音处理，麦克风变成 9 声道，
+          // 插件转成单声道时全是 0，录到的都是静音（macOS 27 上实测）。Windows 忽略这两项，Linux 交给 parecord
+          autoGain: !WfcPlatform.isMacOS,
+          echoCancel: !WfcPlatform.isMacOS,
           noiseSuppress: true,
         ),
       );
