@@ -305,8 +305,10 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
+                      // 左右 6 + 按钮内边距 5.5 ≈ 输入区正文的 12,首个图标与文字左对齐
+                      padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
                       child: Row(
+                        spacing: _kToolbarButtonGap,
                         children: [
                           _ToolbarButton(
                             key: _emojiButtonKey,
@@ -321,7 +323,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                                 _pickImage(conversationController, controller),
                           ),
                           // 截图按钮 + 紧贴的下拉箭头(对齐微信 PC):主按钮普通截图
-                          // (窗口入镜),箭头菜单里另有「隐藏窗口截图」。
+                          // (窗口入镜),箭头菜单里另有「隐藏窗口截图」。两者之间不留间距,读作一个按钮。
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -352,7 +354,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                                   child: VoiceInputIcon(
                                       controller: controller.voiceInput,
                                       style: VoiceInputIconStyle.micWithText,
-                                      size: 21),
+                                      size: _kToolbarIconSize),
                                 ),
                                 tooltip: l10n.voiceInput,
                                 onTap: () => controller.voiceInput.toggle(
@@ -366,7 +368,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                               Config.collectionServerAddress!.isNotEmpty)
                             _ToolbarButton(
                               iconWidget: CollectionIcon(
-                                  size: 21,
+                                  size: _kToolbarIconSize,
                                   color: context.colors.iconSecondary),
                               tooltip: l10n.collection,
                               onTap: () => CreateCollectionScreen.show(
@@ -378,7 +380,7 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
                               Config.pollServerAddress!.isNotEmpty)
                             _ToolbarButton(
                               iconWidget: Icon(Icons.poll,
-                                  size: 21,
+                                  size: _kToolbarIconSize,
                                   color: context.colors.iconSecondary),
                               tooltip: l10n.poll,
                               onTap: () => PollHomeScreen.show(
@@ -484,6 +486,15 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
   }
 }
 
+/// 工具条尺寸。图标之间的视觉留白 = 按钮内边距 (32-21) + 间距 6 = 17。
+///
+/// 宽度预算:最窄会话区 ≈ 窗口最小宽 900 - 侧栏 60 - 中栏最大 420 = 420,
+/// 扣掉外边距/描边/工具条内边距后约 380。最满的群聊(9 个按钮 + 截图箭头)
+/// 占 9×32 + 16 + 9×6 = 358。再加按钮或加大间距前先按这个账算,否则窄窗口会溢出。
+const double _kToolbarButtonSize = 32;
+const double _kToolbarButtonGap = 6;
+const double _kToolbarIconSize = 21;
+
 class _ToolbarButton extends StatefulWidget {
   final IconData? icon;
   final Widget? iconWidget;
@@ -517,9 +528,8 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
           onTap: widget.onTap,
           borderRadius: BorderRadius.circular(4),
           child: Container(
-            width: 30,
-            height: 30,
-            margin: const EdgeInsets.only(right: 2),
+            width: _kToolbarButtonSize,
+            height: _kToolbarButtonSize,
             decoration: BoxDecoration(
               color:
                   _hovered ? context.colors.hoverOverlay : Colors.transparent,
@@ -527,7 +537,8 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
             ),
             child: widget.iconWidget ??
                 Icon(widget.icon!,
-                    size: 21, color: context.colors.iconSecondary),
+                    size: _kToolbarIconSize,
+                    color: context.colors.iconSecondary),
           ),
         ),
       ),
@@ -536,7 +547,7 @@ class _ToolbarButtonState extends State<_ToolbarButton> {
 }
 
 /// 截图按钮的紧贴下拉箭头(对齐微信 PC:剪刀图标右侧的小箭头)。
-/// 宽度只有 16,比工具栏按钮(30)窄,视觉上属于截图按钮的一部分。
+/// 宽度只有 16,比工具栏按钮窄,视觉上属于截图按钮的一部分。
 class _ScreenshotMenuArrow extends StatefulWidget {
   /// true = 隐藏窗口截图;false = 普通截图。
   final ValueChanged<bool> onSelected;
@@ -583,8 +594,7 @@ class _ScreenshotMenuArrowState extends State<_ScreenshotMenuArrow> {
         onTapDown: (details) => _showMenu(context, details.globalPosition),
         child: Container(
           width: 16,
-          height: 30,
-          margin: const EdgeInsets.only(right: 2),
+          height: _kToolbarButtonSize,
           decoration: BoxDecoration(
             color: _hovered ? context.colors.hoverOverlay : Colors.transparent,
             borderRadius: BorderRadius.circular(4),
