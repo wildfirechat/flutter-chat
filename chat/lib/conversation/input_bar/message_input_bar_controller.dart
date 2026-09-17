@@ -20,6 +20,8 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/app_shell.dart';
 import 'package:chat/sticker/sticker_outbox.dart';
+import 'package:chat/sticker/sticker_pack.dart';
+import 'package:chat/sticker/sticker_suggestions.dart';
 import 'draft_data.dart';
 import 'voice_input_controller.dart';
 
@@ -111,9 +113,22 @@ class MessageInputBarController extends ChangeNotifier {
   int _mentionAtIndex = -1;
   String _mentionQuery = '';
 
+  // 贴纸联想结果按"检索文本 + 索引"缓存:每次 notify(光标、焦点、状态变化都算)
+  // 联想条的 Selector 都会取一次值,文本没变就不重新匹配
+  String? _stickerSuggestionsQuery;
+  StickerSuggestions? _stickerSuggestionsIndex;
+  List<String> _stickerSuggestions = const [];
+
+  // 桌面端方向键选中的联想贴纸下标,-1 表示没选中;联想结果一变就复位
+  int _stickerSuggestionHighlight = -1;
+
+  // 用户关掉联想(Esc)或恢复草稿时的输入内容;内容一变就失效
+  String? _stickerSuggestionsDismissedFor;
+
   int _sendTypingTime = 0;
   Timer? _saveDraftTimer;
   StreamSubscription<ConversationDraftUpdatedEvent>? _draftUpdatedSubscription;
+  bool _disposed = false;
 
   MessageInputBarController({
     required this.conversation,
@@ -167,6 +182,13 @@ class MessageInputBarController extends ChangeNotifier {
         setDraft(event.draft);
       }
     });
+
+    // 贴纸联想要用贴纸包,表情面板没打开过时它还没加载;加载完输入框里已有可联想的字就刷新一次
+    StickerPacks.load().then((_) {
+      if (!_disposed && stickerSuggestions.isNotEmpty) {
+        notifyListeners();
+      }
+    });
   }
 
   String get conversationDraft => _conversationDraft;
@@ -188,6 +210,72 @@ class MessageInputBarController extends ChangeNotifier {
   String get mentionQuery => _mentionQuery;
 
   double get keyboardHeight => _keyboardHeight;
+
+  /// 输入联想出的贴纸(asset 路径),为空表示不显示联想条。
+  ///
+  /// 输入框里只有一段纯文字时才联想:带引用、@提醒、内联附件的输入,发贴纸会把它们丢掉;
+  /// 输入法组合中(拼音未上屏)的字母不算。输入框不可见或既没焦点也没开表情面板
+  /// (如移动端收起了键盘)时不显示。匹配规则见 [StickerSuggestions]。
+  List<String> get stickerSuggestions {
+    final String? query = _stickerSuggestionQuery();
+    if (query == null) {
+      // 联想条收起后再出现算新的一轮,选中状态不保留
+      _stickerSuggestionsQuery = null;
+      _stickerSuggestionHighlight = -1;
+      return const [];
+    }
+    final StickerSuggestions index = StickerSuggestions.current;
+    if (query != _stickerSuggestionsQuery ||
+        !identical(index, _stickerSuggestionsIndex)) {
+      _stickerSuggestionsQuery = query;
+      _stickerSuggestionsIndex = index;
+      _stickerSuggestions = index.match(query);
+      _stickerSuggestionHighlight = -1;
+    }
+    return _stickerSuggestions;
+  }
+
+  /// 键盘选中的联想贴纸在 [stickerSuggestions] 里的下标,-1 表示没选中(方向键、回车还作用于文字)。
+  int get stickerSuggestionHighlight =>
+      stickerSuggestions.isEmpty ? -1 : _stickerSuggestionHighlight;
+
+  /// 选中第 [index] 个联想贴纸,-1 取消选中;越界时夹到两端。
+  void highlightStickerSuggestion(int index) {
+    final int count = stickerSuggestions.length;
+    final int next = count == 0 ? -1 : index.clamp(-1, count - 1);
+    if (next == _stickerSuggestionHighlight) {
+      return;
+    }
+    _stickerSuggestionHighlight = next;
+    notifyListeners();
+  }
+
+  /// 可以拿去联想的输入内容,不满足联想条件时为 null。
+  String? _stickerSuggestionQuery() {
+    if (_status != ChatInputBarStatus.keyboardStatus &&
+        _status != ChatInputBarStatus.emojiStatus) {
+      return null;
+    }
+    if (!focusNode.hasFocus && _status != ChatInputBarStatus.emojiStatus) {
+      return null;
+    }
+    if (hasQuote || _mentionsList.isNotEmpty || hasMentionSession) {
+      return null;
+    }
+    final TextEditingValue value = textEditingController.value;
+    if (value.text.contains(_inlineAttachmentPlaceholder) ||
+        (value.composing.isValid && !value.composing.isCollapsed) ||
+        value.text == _stickerSuggestionsDismissedFor) {
+      return null;
+    }
+    return value.text;
+  }
+
+  /// 收起联想条,直到输入内容变化。
+  void dismissStickerSuggestions() {
+    _stickerSuggestionsDismissedFor = textEditingController.text;
+    notifyListeners();
+  }
 
   void updateKeyboardHeight(double height) {
     if (height > 0 && _keyboardHeight != height) {
@@ -313,6 +401,13 @@ class MessageInputBarController extends ChangeNotifier {
     if (text.isNotEmpty) {
       _sendTextMessage(conversation, text);
     }
+    _clearInput();
+    onSend?.call();
+    notifyListeners();
+  }
+
+  /// 发出去之后清空输入:文本、内联附件、引用、@提醒和草稿。
+  void _clearInput() {
     _inlineAttachments.clear();
     textEditingController.clear();
     _quotedMessage = null;
@@ -324,8 +419,6 @@ class MessageInputBarController extends ChangeNotifier {
       _conversationDraft = '';
     }
     _lastText = "";
-    onSend?.call();
-    notifyListeners();
   }
 
   void onTextChanged(String text) {
@@ -492,9 +585,14 @@ class MessageInputBarController extends ChangeNotifier {
     _mentionQuery = query;
   }
 
-  /// 纯光标移动(文本未变)时,光标离开查询串尾部即结束会话(微信:点击别处关闭浮层)。
+  /// 输入内容变了就撤销对贴纸联想的关闭。
+  /// 纯光标移动(文本未变)时,光标离开查询串尾部即结束 @ 会话(微信:点击别处关闭浮层)。
   /// 失焦时不结束:移动端 @ 后跳选人页会失焦,会话要保留到选人返回。
   void _onEditingValueChanged() {
+    if (_stickerSuggestionsDismissedFor != null &&
+        textEditingController.text != _stickerSuggestionsDismissedFor) {
+      _stickerSuggestionsDismissedFor = null;
+    }
     if (_mentionAtIndex < 0 ||
         textEditingController.text != _lastText ||
         !focusNode.hasFocus) {
@@ -746,6 +844,14 @@ class MessageInputBarController extends ChangeNotifier {
     _sendTypingTime = 0;
   }
 
+  /// 发送联想出的贴纸。和微信一样,输入框里用来联想的文字随之清掉。
+  void sendSuggestedSticker(String stickerPath) {
+    voiceInput.cancel();
+    _clearInput();
+    notifyListeners();
+    sendSticker(stickerPath);
+  }
+
   /// 发送面板里的内置贴纸,[stickerPath] 为 asset 路径。
   Future<void> sendSticker(String stickerPath) async {
     try {
@@ -831,6 +937,8 @@ class MessageInputBarController extends ChangeNotifier {
         baseOffset: data.content.length, extentOffset: data.content.length);
     _lastText = data.content;
     _conversationDraft = draft;
+    // 打开会话恢复出来的草稿不是刚输入的,不弹联想
+    _stickerSuggestionsDismissedFor = data.content;
 
     for (final m in data.mentions) {
       _mentionsList.add(Mention(
@@ -974,6 +1082,7 @@ class MessageInputBarController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     // 先于 textEditingController 释放：语音输入要从它上面摘掉监听
     voiceInput.dispose();
     _saveDraftTimer?.cancel();

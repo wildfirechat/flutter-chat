@@ -34,6 +34,7 @@ FONT_SHA256 = 'a3041811a78c361b1de50f953c805e0244951c21c5bd412f7232ef0d899af0da'
 NOTO_URL = 'https://fonts.gstatic.com/s/e/notoemoji/latest/{}/lottie.json'
 
 # ── 动态表情:(Noto 码点, 含义)。顺序即面板顺序,高频的放前面 ──────────────
+# 含义用 / 分隔多个,连同表情字符本身一起作为输入联想关键词
 NOTO_EMOJI_PACK = [
     ('1f44d', '点赞'), ('1f44c', 'OK'), ('1f64f', '拜托/感谢'), ('1f44f', '鼓掌'),
     ('1f4aa', '加油'), ('1fae1', '收到'), ('1f91d', '握手'), ('1f64c', '欢呼'),
@@ -184,6 +185,11 @@ def black_font() -> Path:
     return path
 
 
+def emoji_char(codepoint: str) -> str:
+    """Noto 文件名里的码点(如 2764_fe0f)还原成表情字符。"""
+    return ''.join(chr(int(cp, 16)) for cp in codepoint.split('_'))
+
+
 def noto_lottie(codepoint: str) -> dict:
     return read_lottie(fetch_cached(NOTO_URL.format(codepoint), f'noto_{codepoint}.json'))
 
@@ -257,14 +263,15 @@ def build_office_phrases():
     print('职场用语 office_phrases')
     outliner = TextOutliner(black_font())
     pack_dir = reset_pack_dir('office_phrases')
-    files, total = [], 0
+    files, keywords, total = [], {}, 0
     for phrase, codepoint, color, motion in OFFICE_PHRASES_PACK:
         name = f'{phrase}.tgs'
         total += write_tgs(pack_dir / name,
                            office_sticker(outliner, phrase, codepoint, color, motion))
         files.append(name)
+        keywords[name] = [phrase]
     write_manifest(pack_dir, title_zh='职场用语', title_en='Office Phrases',
-                   order=10, cover=files[0], stickers=files)
+                   order=10, cover=files[0], stickers=files, keywords=keywords)
     shutil.copy(SCRIPT_DIR / 'NOTICE_NOTO_EMOJI.txt', pack_dir / 'NOTICE.txt')
     print(f'  {len(files)} 个,共 {total / 1024:.0f} KB')
 
@@ -274,15 +281,16 @@ def build_office_phrases():
 def build_noto_emoji():
     print('动态表情 noto_emoji')
     pack_dir = reset_pack_dir('noto_emoji')
-    files, total = [], 0
-    for codepoint, _meaning in NOTO_EMOJI_PACK:
+    files, keywords, total = [], {}, 0
+    for codepoint, meaning in NOTO_EMOJI_PACK:
         composition = noto_lottie(codepoint)
         composition['tgs'] = 1
         name = f'{codepoint}.tgs'
         total += write_tgs(pack_dir / name, composition)
         files.append(name)
+        keywords[name] = meaning.split('/') + [emoji_char(codepoint)]
     write_manifest(pack_dir, title_zh='动态表情', title_en='Animated Emoji',
-                   order=20, cover=files[0], stickers=files)
+                   order=20, cover=files[0], stickers=files, keywords=keywords)
     shutil.copy(SCRIPT_DIR / 'NOTICE_NOTO_EMOJI.txt', pack_dir / 'NOTICE.txt')
     print(f'  {len(files)} 个,共 {total / 1024:.0f} KB')
 

@@ -14,12 +14,16 @@ import 'sticker_format.dart';
 ///   "title": {"zh": "职场用语", "en": "Office Phrases"},
 ///   "order": 10,
 ///   "cover": "收到.tgs",
-///   "stickers": ["收到.tgs", "好的.tgs"]
+///   "stickers": ["收到.tgs", "好的.tgs"],
+///   "keywords": {"收到.tgs": ["收到"], "好的.tgs": ["好的", "OK"]}
 /// }
 /// ```
 /// order 越小越靠前;stickers 决定面板顺序,不在列表里的文件不显示。
+/// keywords 是输入联想关键词(见 sticker_suggestions.dart),没列出的贴纸不参与联想:
+/// 导入的贴纸包文件名多是编号,不能拿来当关键词。
 /// 没有 pack.json 的旧目录:目录下所有贴纸按文件名排序,封面取
-/// assets/sticker/<目录名>.<扩展名>,没有则取第一个贴纸。
+/// assets/sticker/<目录名>.<扩展名>,没有则取第一个贴纸;文件名本身就是配字,
+/// 去掉扩展名作为关键词。
 /// 新增目录要在 pubspec.yaml 的 flutter.assets 里登记,否则不会打包。
 class StickerPack {
   const StickerPack({
@@ -28,6 +32,7 @@ class StickerPack {
     required this.order,
     required this.coverPath,
     required this.stickerPaths,
+    this.keywords = const {},
   });
 
   /// 目录名
@@ -38,6 +43,9 @@ class StickerPack {
   final int order;
   final String coverPath;
   final List<String> stickerPaths;
+
+  /// 贴纸 asset 路径 → 输入联想关键词,不参与联想的贴纸不在表里。
+  final Map<String, List<String>> keywords;
 
   String titleFor(Locale locale) =>
       titles[locale.languageCode] ?? titles['zh'] ?? id;
@@ -110,10 +118,17 @@ class StickerPacks {
     final json =
         jsonDecode(await rootBundle.loadString('$_root$id/$_manifestName'))
             as Map<String, dynamic>;
+    final keywordsByName = (json['keywords'] as Map?) ?? const {};
     final stickers = <String>[];
+    final keywords = <String, List<String>>{};
     for (final name in (json['stickers'] as List).cast<String>()) {
       if (files.contains(name) && StickerFormat.fromPath(name) != null) {
-        stickers.add('$_root$id/$name');
+        final path = '$_root$id/$name';
+        stickers.add(path);
+        final words = (keywordsByName[name] as List?)?.cast<String>();
+        if (words != null && words.isNotEmpty) {
+          keywords[path] = words;
+        }
       } else {
         debugPrint('sticker pack $id: missing or unsupported $name');
       }
@@ -130,6 +145,7 @@ class StickerPacks {
           ? '$_root$id/$cover'
           : stickers.first,
       stickerPaths: stickers,
+      keywords: keywords,
     );
   }
 
@@ -149,6 +165,12 @@ class StickerPacks {
       order: _defaultOrder,
       coverPath: legacyCover ?? stickers.first,
       stickerPaths: stickers,
+      keywords: {
+        for (final path in stickers)
+          path: [
+            path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'))
+          ],
+      },
     );
   }
 }

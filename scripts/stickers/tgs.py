@@ -52,14 +52,20 @@ def reset_pack_dir(pack_id: str) -> Path:
 
 
 def write_manifest(pack_dir: Path, *, title_zh: str, title_en: str, order: int,
-                   cover: str, stickers: list[str]) -> None:
-    """pack.json 的字段含义见 chat/lib/sticker/sticker_pack.dart。"""
+                   cover: str, stickers: list[str],
+                   keywords: dict[str, list[str]] | None = None) -> None:
+    """pack.json 的字段含义见 chat/lib/sticker/sticker_pack.dart。
+
+    keywords:文件名 → 输入联想关键词,不给则这套贴纸不参与联想。
+    """
     manifest = {
         'title': {'zh': title_zh, 'en': title_en},
         'order': order,
         'cover': cover,
         'stickers': stickers,
     }
+    if keywords:
+        manifest['keywords'] = keywords
     (pack_dir / PACK_MANIFEST).write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + '\n',
         encoding='utf-8')

@@ -16,6 +16,7 @@ import 'package:imclient/message/video_message_content.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'input_bar_icon.dart';
 import 'message_input_bar_controller.dart';
+import 'sticker_suggestion_overlay.dart';
 import 'voice_input_button.dart';
 import 'voice_input_controller.dart';
 import 'package:chat/theme/app_typography.dart';
@@ -244,7 +245,12 @@ class _MessageInputBarState extends State<MessageInputBar>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildInputBar(controller),
+              // 输入联想贴纸条浮在输入栏右上方,靠着表情按钮一侧(同微信)
+              StickerSuggestionOverlay(
+                alignment: Alignment.topRight,
+                offset: const Offset(-8, -6),
+                child: _buildInputBar(controller),
+              ),
               ClipRect(
                 child: useAnimation
                     ? AnimatedContainer(

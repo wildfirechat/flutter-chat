@@ -16,6 +16,7 @@ import 'package:chat/conversation/conversation_controller.dart';
 import 'package:chat/conversation/input_bar/channel_menu_widget.dart';
 import 'package:chat/conversation/input_bar/emoji_board.dart';
 import 'package:chat/conversation/input_bar/message_input_bar_controller.dart';
+import 'package:chat/conversation/input_bar/sticker_suggestion_overlay.dart';
 import 'package:chat/conversation/input_bar/voice_input_button.dart';
 import 'package:chat/conversation/input_bar/voice_input_controller.dart';
 import 'package:chat/call/av_call_launcher.dart';
@@ -121,6 +122,12 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
         _mentionOverlay?.handleKeyEvent(event) ?? KeyEventResult.ignored;
     if (mentionResult != KeyEventResult.ignored) {
       return mentionResult;
+    }
+    // 贴纸联想条可见时方向键选贴纸、回车发送;没选中时回车仍然发文字
+    final KeyEventResult stickerResult =
+        StickerSuggestionOverlay.handleKeyEvent(controller, event);
+    if (stickerResult != KeyEventResult.ignored) {
+      return stickerResult;
     }
     if (event is! KeyDownEvent) {
       return KeyEventResult.ignored;
@@ -295,187 +302,193 @@ class _PcMessageInputBarState extends State<PcMessageInputBar> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.colors.surface,
-                  border: Border.all(color: context.colors.hairline),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      // 左右 6 + 按钮内边距 5.5 ≈ 输入区正文的 12,首个图标与文字左对齐
-                      padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
-                      child: Row(
-                        spacing: _kToolbarButtonGap,
-                        children: [
-                          _ToolbarButton(
-                            key: _emojiButtonKey,
-                            icon: Icons.sentiment_satisfied_outlined,
-                            tooltip: l10n.emoji,
-                            onTap: () => _showEmojiPopover(controller),
-                          ),
-                          _ToolbarButton(
-                            icon: Icons.image_outlined,
-                            tooltip: l10n.image,
-                            onTap: () =>
-                                _pickImage(conversationController, controller),
-                          ),
-                          // 截图按钮 + 紧贴的下拉箭头(对齐微信 PC):主按钮普通截图
-                          // (窗口入镜),箭头菜单里另有「隐藏窗口截图」。两者之间不留间距,读作一个按钮。
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _ToolbarButton(
-                                icon: Icons.cut,
-                                tooltip: l10n.screenshotTool,
-                                onTap: () => _captureScreenshot(controller),
+              // 输入联想贴纸条贴着输入框左上角浮出
+              child: StickerSuggestionOverlay(
+                alignment: Alignment.topLeft,
+                offset: const Offset(0, -6),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: context.colors.surface,
+                    border: Border.all(color: context.colors.hairline),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        // 左右 6 + 按钮内边距 5.5 ≈ 输入区正文的 12,首个图标与文字左对齐
+                        padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
+                        child: Row(
+                          spacing: _kToolbarButtonGap,
+                          children: [
+                            _ToolbarButton(
+                              key: _emojiButtonKey,
+                              icon: Icons.sentiment_satisfied_outlined,
+                              tooltip: l10n.emoji,
+                              onTap: () => _showEmojiPopover(controller),
+                            ),
+                            _ToolbarButton(
+                              icon: Icons.image_outlined,
+                              tooltip: l10n.image,
+                              onTap: () => _pickImage(
+                                  conversationController, controller),
+                            ),
+                            // 截图按钮 + 紧贴的下拉箭头(对齐微信 PC):主按钮普通截图
+                            // (窗口入镜),箭头菜单里另有「隐藏窗口截图」。两者之间不留间距,读作一个按钮。
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _ToolbarButton(
+                                  icon: Icons.cut,
+                                  tooltip: l10n.screenshotTool,
+                                  onTap: () => _captureScreenshot(controller),
+                                ),
+                                _ScreenshotMenuArrow(
+                                  onSelected: (hideWindow) =>
+                                      _captureScreenshot(controller,
+                                          hideWindow: hideWindow),
+                                ),
+                              ],
+                            ),
+                            _ToolbarButton(
+                              icon: Icons.folder_outlined,
+                              tooltip: l10n.filePicker,
+                              onTap: () =>
+                                  _pickFile(conversationController, controller),
+                            ),
+                            // 实时语音输入(vue-pc-chat 交互):点击开始,再次点击停止,识别结果写入光标处。
+                            // 包一层 TextFieldTapRegion:点它不算点在输入框外面,输入框保留焦点和光标
+                            if (VoiceInputController.isAvailable)
+                              TextFieldTapRegion(
+                                child: _ToolbarButton(
+                                  iconWidget: Center(
+                                    child: VoiceInputIcon(
+                                        controller: controller.voiceInput,
+                                        style: VoiceInputIconStyle.micWithText,
+                                        size: _kToolbarIconSize),
+                                  ),
+                                  tooltip: l10n.voiceInput,
+                                  onTap: () => controller.voiceInput.toggle(
+                                      onError: (error) =>
+                                          showVoiceInputError(l10n, error)),
+                                ),
                               ),
-                              _ScreenshotMenuArrow(
-                                onSelected: (hideWindow) => _captureScreenshot(
-                                    controller,
-                                    hideWindow: hideWindow),
+                            if (controller.conversation.conversationType ==
+                                    ConversationType.Group &&
+                                Config.collectionServerAddress != null &&
+                                Config.collectionServerAddress!.isNotEmpty)
+                              _ToolbarButton(
+                                iconWidget: CollectionIcon(
+                                    size: _kToolbarIconSize,
+                                    color: context.colors.iconSecondary),
+                                tooltip: l10n.collection,
+                                onTap: () => CreateCollectionScreen.show(
+                                    context, controller.conversation),
+                              ),
+                            if (controller.conversation.conversationType ==
+                                    ConversationType.Group &&
+                                Config.pollServerAddress != null &&
+                                Config.pollServerAddress!.isNotEmpty)
+                              _ToolbarButton(
+                                iconWidget: Icon(Icons.poll,
+                                    size: _kToolbarIconSize,
+                                    color: context.colors.iconSecondary),
+                                tooltip: l10n.poll,
+                                onTap: () => PollHomeScreen.show(
+                                    context, controller.conversation.target),
+                              ),
+                            // 频道菜单入口:切回菜单栏(切换按钮在菜单栏自己右侧)
+                            if (channelMenus.isNotEmpty)
+                              _ToolbarButton(
+                                icon: Icons.menu,
+                                tooltip: l10n.channelMenu,
+                                onTap: controller.onMenuButton,
+                              ),
+                            const Spacer(),
+                            // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
+                            // 单聊直接发起,群聊先弹选人对话框再发起(见 startAvCall)
+                            if (controller.conversation.conversationType ==
+                                    ConversationType.Single ||
+                                controller.conversation.conversationType ==
+                                    ConversationType.Group) ...[
+                              _ToolbarButton(
+                                icon: Icons.call_outlined,
+                                tooltip: l10n.audioCallAction,
+                                onTap: () => startAvCall(
+                                    context, controller.conversation,
+                                    audioOnly: true),
+                              ),
+                              _ToolbarButton(
+                                icon: Icons.videocam_outlined,
+                                tooltip: l10n.videoCallAction,
+                                onTap: () => startAvCall(
+                                    context, controller.conversation,
+                                    audioOnly: false),
                               ),
                             ],
-                          ),
-                          _ToolbarButton(
-                            icon: Icons.folder_outlined,
-                            tooltip: l10n.filePicker,
-                            onTap: () =>
-                                _pickFile(conversationController, controller),
-                          ),
-                          // 实时语音输入(vue-pc-chat 交互):点击开始,再次点击停止,识别结果写入光标处。
-                          // 包一层 TextFieldTapRegion:点它不算点在输入框外面,输入框保留焦点和光标
-                          if (VoiceInputController.isAvailable)
-                            TextFieldTapRegion(
-                              child: _ToolbarButton(
-                                iconWidget: Center(
-                                  child: VoiceInputIcon(
-                                      controller: controller.voiceInput,
-                                      style: VoiceInputIconStyle.micWithText,
-                                      size: _kToolbarIconSize),
-                                ),
-                                tooltip: l10n.voiceInput,
-                                onTap: () => controller.voiceInput.toggle(
-                                    onError: (error) =>
-                                        showVoiceInputError(l10n, error)),
-                              ),
-                            ),
-                          if (controller.conversation.conversationType ==
-                                  ConversationType.Group &&
-                              Config.collectionServerAddress != null &&
-                              Config.collectionServerAddress!.isNotEmpty)
-                            _ToolbarButton(
-                              iconWidget: CollectionIcon(
-                                  size: _kToolbarIconSize,
-                                  color: context.colors.iconSecondary),
-                              tooltip: l10n.collection,
-                              onTap: () => CreateCollectionScreen.show(
-                                  context, controller.conversation),
-                            ),
-                          if (controller.conversation.conversationType ==
-                                  ConversationType.Group &&
-                              Config.pollServerAddress != null &&
-                              Config.pollServerAddress!.isNotEmpty)
-                            _ToolbarButton(
-                              iconWidget: Icon(Icons.poll,
-                                  size: _kToolbarIconSize,
-                                  color: context.colors.iconSecondary),
-                              tooltip: l10n.poll,
-                              onTap: () => PollHomeScreen.show(
-                                  context, controller.conversation.target),
-                            ),
-                          // 频道菜单入口:切回菜单栏(切换按钮在菜单栏自己右侧)
-                          if (channelMenus.isNotEmpty)
-                            _ToolbarButton(
-                              icon: Icons.menu,
-                              tooltip: l10n.channelMenu,
-                              onTap: controller.onMenuButton,
-                            ),
-                          const Spacer(),
-                          // 通话入口靠右(微信 PC 布局),分语音/视频两个按钮:
-                          // 单聊直接发起,群聊先弹选人对话框再发起(见 startAvCall)
-                          if (controller.conversation.conversationType ==
-                                  ConversationType.Single ||
-                              controller.conversation.conversationType ==
-                                  ConversationType.Group) ...[
-                            _ToolbarButton(
-                              icon: Icons.call_outlined,
-                              tooltip: l10n.audioCallAction,
-                              onTap: () => startAvCall(
-                                  context, controller.conversation,
-                                  audioOnly: true),
-                            ),
-                            _ToolbarButton(
-                              icon: Icons.videocam_outlined,
-                              tooltip: l10n.videoCallAction,
-                              onTap: () => startAvCall(
-                                  context, controller.conversation,
-                                  audioOnly: false),
-                            ),
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
-                        // 内联图片行可能超出输入区视口(如粘贴后拖矮输入栏),
-                        // 裁掉溢出绘制,防止盖住上方工具条
-                        child: ClipRect(
-                          child: LayoutBuilder(
-                            // 微信交互:粘贴的图片按原始尺寸内联显示,最大不超过可见输入区,
-                            // 粘贴后不出现滚动条。拖拽输入栏改变视口约束时 LayoutBuilder
-                            // 重跑,TextField 随之重建 span,图片高度上限实时跟随。
-                            builder: (context, constraints) {
-                              // 48 = 图片行超出图片本身的部分(WidgetSpan 内边距 + 基线下
-                              // 行距,随字体约 15~20)+ 视觉余量,保证整行落在视口内
-                              controller.textEditingController
-                                      .inlineImageMaxHeight =
-                                  (constraints.maxHeight - 48)
-                                      .clamp(40.0, 456.0)
-                                      .toDouble();
-                              return Focus(
-                                onKeyEvent: (node, event) =>
-                                    _handleKeyEvent(node, event, controller),
-                                child: TextField(
-                                  key: _textFieldKey,
-                                  controller: controller.textEditingController,
-                                  focusNode: controller.focusNode,
-                                  onChanged: controller.onTextChanged,
-                                  maxLines: null,
-                                  expands: true,
-                                  // 本引擎的默认 strut 会强制行高:内联图片/大字号都撑不开
-                                  // 行框,超高部分溢出绘制盖住其他行,必须禁用。
-                                  // 回归用例见 test/inline_image_input_test.dart
-                                  strutStyle: StrutStyle.disabled,
-                                  textAlignVertical: TextAlignVertical.top,
-                                  keyboardType: TextInputType.multiline,
-                                  style: AppText.base.copyWith(
-                                      height: 1.5,
-                                      color: context.colors.textPrimary),
-                                  decoration: InputDecoration(
-                                    isCollapsed: true,
-                                    border: InputBorder.none,
-                                    hintText: l10n.enterToSendHint,
-                                    hintStyle: AppText.base.copyWith(
-                                        color: context.colors.textTertiary),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          // 内联图片行可能超出输入区视口(如粘贴后拖矮输入栏),
+                          // 裁掉溢出绘制,防止盖住上方工具条
+                          child: ClipRect(
+                            child: LayoutBuilder(
+                              // 微信交互:粘贴的图片按原始尺寸内联显示,最大不超过可见输入区,
+                              // 粘贴后不出现滚动条。拖拽输入栏改变视口约束时 LayoutBuilder
+                              // 重跑,TextField 随之重建 span,图片高度上限实时跟随。
+                              builder: (context, constraints) {
+                                // 48 = 图片行超出图片本身的部分(WidgetSpan 内边距 + 基线下
+                                // 行距,随字体约 15~20)+ 视觉余量,保证整行落在视口内
+                                controller.textEditingController
+                                        .inlineImageMaxHeight =
+                                    (constraints.maxHeight - 48)
+                                        .clamp(40.0, 456.0)
+                                        .toDouble();
+                                return Focus(
+                                  onKeyEvent: (node, event) =>
+                                      _handleKeyEvent(node, event, controller),
+                                  child: TextField(
+                                    key: _textFieldKey,
+                                    controller:
+                                        controller.textEditingController,
+                                    focusNode: controller.focusNode,
+                                    onChanged: controller.onTextChanged,
+                                    maxLines: null,
+                                    expands: true,
+                                    // 本引擎的默认 strut 会强制行高:内联图片/大字号都撑不开
+                                    // 行框,超高部分溢出绘制盖住其他行,必须禁用。
+                                    // 回归用例见 test/inline_image_input_test.dart
+                                    strutStyle: StrutStyle.disabled,
+                                    textAlignVertical: TextAlignVertical.top,
+                                    keyboardType: TextInputType.multiline,
+                                    style: AppText.base.copyWith(
+                                        height: 1.5,
+                                        color: context.colors.textPrimary),
+                                    decoration: InputDecoration(
+                                      isCollapsed: true,
+                                      border: InputBorder.none,
+                                      hintText: l10n.enterToSendHint,
+                                      hintStyle: AppText.base.copyWith(
+                                          color: context.colors.textTertiary),
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
+                                );
+                              },
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    if (controller.hasQuote)
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                        child: _QuoteChip(controller: controller),
-                      ),
-                  ],
+                      if (controller.hasQuote)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                          child: _QuoteChip(controller: controller),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),

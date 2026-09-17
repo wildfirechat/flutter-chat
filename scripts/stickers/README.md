@@ -16,12 +16,20 @@ App 的贴纸面板读取 `chat/assets/sticker/` 下的目录,每个目录是一
 
 ```
 chat/assets/sticker/office_phrases/
-  pack.json        标题、排序、封面、贴纸顺序
+  pack.json        标题、排序、封面、贴纸顺序、联想关键词
   收到.tgs ...
   NOTICE.txt       素材许可声明(不会显示在面板里)
 ```
 
 `pack.json` 字段见 `chat/lib/sticker/sticker_pack.dart`。没有 `pack.json` 的旧目录(`B数`、`程序员`)按文件名排序,封面取 `assets/sticker/<目录名>.<扩展名>`。
+
+### 输入联想
+
+输入框里整段文字命中贴纸关键词时,输入栏上方浮出候选贴纸,点一下发送并清空输入(微信"表情联想")。匹配规则见 `chat/lib/sticker/sticker_suggestions.dart`。
+
+- 有 `pack.json` 的包:关键词只看 `keywords` 字段(文件名 → 关键词列表),没列出的贴纸不参与联想。职场用语是短语本身;动态表情是脚本里的含义(`/` 分隔)加上表情字符,所以输入 👍 也能联想到动态版。
+- 旧目录:文件名(去掉扩展名)就是配字,直接当关键词。
+- `import_telegram_pack.py` 导入的包不写关键词(文件名多是编号),需要联想时手动在 `pack.json` 里补 `keywords`,重新导入会覆盖。
 
 **新增目录要在 `chat/pubspec.yaml` 的 `flutter.assets` 里登记**(assets 不递归),并且要重新 `flutter run`,热重载不会带上新资源。
 
