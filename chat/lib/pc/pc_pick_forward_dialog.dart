@@ -17,6 +17,8 @@ import 'package:chat/conversation/forward/widgets/forward_search_bar.dart';
 import 'package:chat/conversation/forward/widgets/forward_target_list.dart';
 import 'package:chat/conversation/forward/widgets/selected_avatar_tile.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/organization/organization_view_model.dart';
+import 'package:chat/pc/pc_organization_pick_column.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
@@ -27,6 +29,7 @@ import 'package:chat/theme/app_typography.dart';
 /// 桌面端转发弹窗:左栏选目标,右栏确认发送。
 ///
 /// 建群不跳走:左栏换成好友列表,右栏换成“创建并发送”,建完群直接把消息发过去并关窗。
+/// 建群选人时左栏还能原地切到组织架构浏览器,与好友共用同一份已选。
 class PcPickForwardView extends StatefulWidget {
   final OnForwardTargetsSelected onSelected;
   final List<Message>? messages;
@@ -53,6 +56,11 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
   final ScrollController _memberScrollController = ScrollController();
   String _searchText = '';
   Timer? _searchDebounce;
+
+  // 建群选人时左栏是否处于组织架构浏览模式;组织 VM 首次进入时懒加载,
+  // 之后留着,再进来仍停在上次浏览的部门。
+  bool _orgMode = false;
+  OrganizationViewModel? _orgViewModel;
 
   @override
   void initState() {
@@ -84,6 +92,7 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
     _memberSearchController.dispose();
     _memberScrollController.dispose();
     _searchViewModel.dispose();
+    _orgViewModel?.dispose();
     _controller.dispose();
     super.dispose();
   }
@@ -104,6 +113,13 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
     _memberSearchController.clear();
     _controller.exitMemberSelection();
   }
+
+  void _enterOrgMode() {
+    _orgViewModel ??= OrganizationViewModel()..loadInitialData();
+    setState(() => _orgMode = true);
+  }
+
+  void _exitOrgMode() => setState(() => _orgMode = false);
 
   /// 建群后直接把消息转发到新群并关闭弹窗,不回到会话选择列表。
   void _createGroupAndSend(List<UserInfo> pickedUsers) async {
@@ -226,10 +242,22 @@ class _PcPickForwardViewState extends State<PcPickForwardView> {
   }
 
   Widget _buildMemberColumn(BuildContext context, PickUserViewModel viewModel) {
+    // 组织架构模式整栏替换:它自带返回联系人的面包屑,再叠“创建群聊”返回条会有两个返回键。
+    if (_orgMode) {
+      return PcOrganizationPickColumn(
+        orgViewModel: _orgViewModel!,
+        pickViewModel: viewModel,
+        onBack: _exitOrgMode,
+      );
+    }
     return Column(
       children: [
         _buildBackBar(context),
         ForwardSearchBar(controller: _memberSearchController),
+        if (!viewModel.isSearching) ...[
+          PcOrganizationPickEntry(onTap: _enterOrgMode),
+          const Divider(),
+        ],
         Expanded(
           child: viewModel.userList.isEmpty
               ? Center(

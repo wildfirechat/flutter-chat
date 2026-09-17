@@ -30,6 +30,8 @@ class PickUserViewModel extends ChangeNotifier {
 
   List<String> get disabledAndCheckedUserIds => _disabledAndCheckedUserIds;
 
+  int get maxPickCount => _maxPickCount;
+
   String _query = '';
   List<UIPickUserInfo> _filteredUsers = [];
   Timer? _searchDebounceTimer;
@@ -162,6 +164,18 @@ class PickUserViewModel extends ChangeNotifier {
     }
     notifyListeners();
     return true;
+  }
+
+  /// 用外部选人界面(如组织架构页)编辑后的完整已选整体替换当前已选。
+  /// 不可切换的、重复的用户跳过,超出上限的部分截断。
+  void setPickedUsers(List<UserInfo> users) {
+    _pickedUsers.clear();
+    for (final user in users) {
+      if (_pickedUsers.length >= _maxPickCount) break;
+      if (!isCheckable(user.userId) || isChecked(user.userId)) continue;
+      _pickedUsers.add(user);
+    }
+    notifyListeners();
   }
 
   @override

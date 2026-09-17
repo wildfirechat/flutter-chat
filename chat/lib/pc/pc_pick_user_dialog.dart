@@ -7,11 +7,11 @@ import 'package:chat/l10n/app_localizations.dart';
 
 import 'package:chat/config.dart';
 import 'package:chat/contact/pick_user_screen.dart' show OnPickUserCallback;
-import 'package:chat/organization/model/employee.dart';
-import 'package:chat/organization/model/organization.dart';
 import 'package:chat/organization/organization_view_model.dart';
+import 'package:chat/pc/pc_organization_pick_column.dart';
 import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
+import 'package:chat/pc/widgets/pc_pick_list.dart';
 import 'package:chat/repo/user_repo.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
@@ -26,8 +26,8 @@ import 'package:chat/theme/app_typography.dart';
 /// 左栏为可搜索的联系人列表(勾选框 + 分类字母段),右栏为「已选择」清单(可逐个移除),
 /// 底部统一的取消/完成操作栏。用于发起群聊、群会话添加/移除成员、群通话选人等场景。
 ///
-/// 「从组织架构选择」不再 push 新页面,而是在左栏原地切换为组织架构浏览器(面包屑下钻 +
-/// 成员勾选),勾选结果与联系人共用同一份 pickedUsers,右栏「已选择」实时同步。
+/// 「从组织架构选择」不再 push 新页面,而是在左栏原地切换为组织架构浏览器
+/// ([PcOrganizationPickColumn]),勾选结果与联系人共用同一份 pickedUsers,右栏「已选择」实时同步。
 ///
 /// 本视图仅承担 UI;选人后的动作(建群、加人、踢人…)仍由 [callback] 决定,并负责关闭
 /// 承载本视图的 Dialog。语义与移动端 PickUserScreen 一致:candidates 决定候选来源,
@@ -62,9 +62,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
   late final PickUserViewModel _viewModel;
   final ScrollController _listController = ScrollController();
   final ScrollController _selectedController = ScrollController();
-  final ScrollController _orgListController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _orgSearchController = TextEditingController();
 
   // 左栏是否处于组织架构浏览模式;组织 VM 首次进入时懒加载。
   bool _orgMode = false;
@@ -83,9 +81,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
   void dispose() {
     _listController.dispose();
     _selectedController.dispose();
-    _orgListController.dispose();
     _searchController.dispose();
-    _orgSearchController.dispose();
     _orgViewModel?.dispose();
     _viewModel.dispose();
     super.dispose();
@@ -128,21 +124,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     setState(() => _orgMode = true);
   }
 
-  void _exitOrgMode() {
-    _orgSearchController.clear();
-    _orgViewModel?.clearSearch();
-    setState(() => _orgMode = false);
-  }
-
-  void _toggleOrgEmployee(Employee emp) {
-    final id = emp.employeeId;
-    if (!_viewModel.isCheckable(id)) return;
-    final picked = _viewModel.isChecked(id);
-    // 员工不一定在 IM 本地库里,直接用组织架构的姓名/头像构造 UserInfo。
-    if (!_viewModel.pickUser(emp.toUserInfo(), !picked)) {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
-    }
-  }
+  void _exitOrgMode() => setState(() => _orgMode = false);
 
   @override
   Widget build(BuildContext context) {
@@ -160,7 +142,11 @@ class _PcPickUserViewState extends State<PcPickUserView> {
                   children: [
                     Expanded(
                         child: _orgMode
-                            ? _buildOrgColumn(context, viewModel)
+                            ? PcOrganizationPickColumn(
+                                orgViewModel: _orgViewModel!,
+                                pickViewModel: viewModel,
+                                onBack: _exitOrgMode,
+                              )
                             : _buildContactsColumn(context, viewModel)),
                     VerticalDivider(
                         width: 0.5,
@@ -227,90 +213,16 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       BuildContext context, PickUserViewModel viewModel) {
     return Column(
       children: [
-        _buildSearchField(
+        PcPickSearchField(
           controller: _searchController,
           hint: AppLocalizations.of(context)!.search,
           onChanged: viewModel.search,
         ),
         if (widget.showOrganizationEntry && !viewModel.isSearching)
-          _buildOrganizationEntry(context),
+          PcOrganizationPickEntry(onTap: _enterOrgMode),
         const Divider(),
         Expanded(child: _buildContactList(context, viewModel)),
       ],
-    );
-  }
-
-  Widget _buildSearchField({
-    required TextEditingController controller,
-    required String hint,
-    required ValueChanged<String> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-      child: Container(
-        height: 32,
-        decoration: BoxDecoration(
-          color: context.colors.inputBg,
-          borderRadius: BorderRadius.circular(6),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Row(
-          children: [
-            Icon(Icons.search, size: 16, color: context.colors.textSecondary),
-            const SizedBox(width: 6),
-            Expanded(
-              child: TextField(
-                controller: controller,
-                style: AppText.sm.copyWith(color: context.colors.textPrimary),
-                cursorColor: context.colors.accent,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                  hintText: hint,
-                  hintStyle:
-                      AppText.sm.copyWith(color: context.colors.textTertiary),
-                ),
-                onChanged: onChanged,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOrganizationEntry(BuildContext context) {
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hovered) => GestureDetector(
-        onTap: _enterOrgMode,
-        child: Container(
-          height:
-              LayoutScale.watchScale(context, 44.0, cap: LayoutScale.rowCap),
-          color: hovered ? context.colors.hoverOverlay : Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Icon(Icons.corporate_fare,
-                  size: LayoutScale.watchScale(context, 20.0,
-                      cap: LayoutScale.iconCap),
-                  color: context.colors.accent),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  AppLocalizations.of(context)!.selectFromOrganization,
-                  style: AppText.sm.copyWith(color: context.colors.textPrimary),
-                ),
-              ),
-              Icon(Icons.chevron_right,
-                  size: LayoutScale.watchScale(context, 18.0,
-                      cap: LayoutScale.iconCap),
-                  color: context.colors.textTertiary),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -336,7 +248,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     final bool checked = viewModel.isChecked(userId) ||
         viewModel.disabledAndCheckedUserIds.contains(userId);
 
-    final row = _buildCheckableRow(
+    final row = PcCheckableRow(
       checkable: checkable,
       checked: checked,
       onToggle: (value) => _togglePick(context, userInfo, value),
@@ -359,303 +271,11 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildSectionHeader(item.category == '{'
+        PcPickSectionHeader(item.category == '{'
             ? '#'
             : (item.category == 'AI' ? l10n.aiRobot : item.category)),
         row,
       ],
-    );
-  }
-
-  /// 联系人 / 组织成员共用的勾选行:勾选框 + 头像 + 名称(可选副标题)。
-  Widget _buildCheckableRow({
-    required bool checkable,
-    required bool checked,
-    required ValueChanged<bool> onToggle,
-    required Widget avatar,
-    required String title,
-    String? subtitle,
-  }) {
-    return HoverBuilder(
-      cursor: checkable ? SystemMouseCursors.click : SystemMouseCursors.basic,
-      builder: (context, hovered) => GestureDetector(
-        onTap: checkable ? () => onToggle(!checked) : null,
-        child: Container(
-          height:
-              LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
-          color: checkable && hovered
-              ? context.colors.hoverOverlay
-              : Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Checkbox(
-                value: checked,
-                onChanged: checkable ? (value) => onToggle(value!) : null,
-              ),
-              const SizedBox(width: 10),
-              avatar,
-              const SizedBox(width: 10),
-              Expanded(
-                child: Opacity(
-                  opacity: checkable ? 1.0 : 0.5,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: AppText.sm
-                            .copyWith(color: context.colors.textPrimary),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (subtitle != null && subtitle.isNotEmpty)
-                        Text(
-                          subtitle,
-                          style: AppText.xs
-                              .copyWith(color: context.colors.textTertiary),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader(String text) {
-    return Container(
-      height: LayoutScale.watchScale(context, 24.0, cap: LayoutScale.textCap),
-      alignment: Alignment.centerLeft,
-      padding: const EdgeInsets.only(left: 16),
-      child: Text(
-        text,
-        style: AppText.xs.copyWith(color: context.colors.textSecondary),
-      ),
-    );
-  }
-
-  // ---- 左栏:组织架构模式 ----
-
-  Widget _buildOrgColumn(
-      BuildContext context, PickUserViewModel pickViewModel) {
-    return ListenableBuilder(
-      listenable: _orgViewModel!,
-      builder: (context, _) {
-        final orgVm = _orgViewModel!;
-        return Column(
-          children: [
-            _buildOrgBreadcrumb(context, orgVm),
-            _buildSearchField(
-              controller: _orgSearchController,
-              hint: AppLocalizations.of(context)!.searchOrgMembers,
-              onChanged: orgVm.search,
-            ),
-            const Divider(),
-            Expanded(child: _buildOrgBody(context, orgVm, pickViewModel)),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildOrgBreadcrumb(
-      BuildContext context, OrganizationViewModel orgVm) {
-    final path = orgVm.breadcrumbPath;
-    final List<Widget> items = [
-      // 返回联系人列表
-      HoverBuilder(
-        cursor: SystemMouseCursors.click,
-        builder: (context, hovered) => GestureDetector(
-          onTap: _exitOrgMode,
-          child: Container(
-            width: 26,
-            height: 26,
-            decoration: BoxDecoration(
-              color: hovered ? context.colors.hoverOverlay : Colors.transparent,
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Icon(Icons.arrow_back,
-                size: 16, color: context.colors.textPrimary),
-          ),
-        ),
-      ),
-    ];
-
-    for (int i = 0; i < path.length; i++) {
-      final org = path[i];
-      final isLast = i == path.length - 1;
-      items.add(Icon(Icons.chevron_right,
-          size: 16, color: context.colors.textTertiary));
-      items.add(
-        HoverBuilder(
-          cursor: isLast ? SystemMouseCursors.basic : SystemMouseCursors.click,
-          builder: (context, hovered) => GestureDetector(
-            onTap: isLast ? null : () => orgVm.navigateToOrganization(org),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-              child: Text(
-                org.name,
-                style: AppText.sm.copyWith(
-                    color: isLast
-                        ? context.colors.textPrimary
-                        : context.colors.accent,
-                    fontWeight: isLast ? FontWeight.w500 : FontWeight.normal),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      alignment: Alignment.centerLeft,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(children: items),
-      ),
-    );
-  }
-
-  Widget _buildOrgBody(BuildContext context, OrganizationViewModel orgVm,
-      PickUserViewModel pickViewModel) {
-    if (orgVm.isLoading && orgVm.searchQuery.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (orgVm.error != null && orgVm.searchQuery.isEmpty) {
-      return _buildOrgMessage(orgVm.error!,
-          onRetry: () => orgVm.retryLoadData());
-    }
-    if (orgVm.searchQuery.isNotEmpty) {
-      return _buildOrgSearchResults(context, orgVm, pickViewModel);
-    }
-
-    final details = orgVm.currentOrganizationDetails;
-    final subOrgs = details?.subOrganizations ?? [];
-    final employees = details?.employees ?? [];
-    if (subOrgs.isEmpty && employees.isEmpty) {
-      return _buildOrgMessage(
-          AppLocalizations.of(context)!.orgNoSubOrgOrMembers);
-    }
-
-    return ListView(
-      controller: _orgListController,
-      children: [
-        if (subOrgs.isNotEmpty) ...[
-          _buildSectionHeader(AppLocalizations.of(context)!.subDepartments),
-          ...subOrgs.map((o) => _buildSubOrgTile(context, orgVm, o)),
-        ],
-        if (employees.isNotEmpty) ...[
-          _buildSectionHeader(AppLocalizations.of(context)!.members),
-          ...employees
-              .map((e) => _buildOrgEmployeeTile(context, pickViewModel, e)),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildOrgSearchResults(BuildContext context,
-      OrganizationViewModel orgVm, PickUserViewModel pickViewModel) {
-    if (orgVm.isSearching) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (orgVm.searchError != null) {
-      return _buildOrgMessage(orgVm.searchError!);
-    }
-    if (orgVm.searchResults.isEmpty) {
-      return _buildOrgMessage(AppLocalizations.of(context)!.noMatchedMembers);
-    }
-    return ListView(
-      controller: _orgListController,
-      children: orgVm.searchResults
-          .map((e) => _buildOrgEmployeeTile(context, pickViewModel, e))
-          .toList(),
-    );
-  }
-
-  Widget _buildOrgMessage(String message, {VoidCallback? onRetry}) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: AppText.sm.copyWith(color: context.colors.textSecondary),
-            ),
-            if (onRetry != null) ...[
-              const SizedBox(height: 12),
-              // 重试是错误态的唯一行动,与其他屏的 retry 一致用实底主行动。
-              FilledButton(
-                onPressed: onRetry,
-                child: Text(AppLocalizations.of(context)!.reload),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSubOrgTile(
-      BuildContext context, OrganizationViewModel orgVm, Organization org) {
-    return HoverBuilder(
-      cursor: SystemMouseCursors.click,
-      builder: (context, hovered) => GestureDetector(
-        onTap: () => orgVm.navigateToOrganization(org),
-        child: Container(
-          height:
-              LayoutScale.watchScale(context, 48.0, cap: LayoutScale.rowCap),
-          color: hovered ? context.colors.hoverOverlay : Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Icon(Icons.folder_outlined,
-                  size: LayoutScale.watchScale(context, 22.0,
-                      cap: LayoutScale.iconCap),
-                  color: context.colors.accent),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  '${org.name}(${org.memberCount ?? 0})',
-                  style: AppText.sm.copyWith(color: context.colors.textPrimary),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              Icon(Icons.chevron_right,
-                  size: 18, color: context.colors.textTertiary),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOrgEmployeeTile(
-      BuildContext context, PickUserViewModel pickViewModel, Employee emp) {
-    final id = emp.employeeId;
-    final bool checkable = pickViewModel.isCheckable(id);
-    final bool checked = pickViewModel.isChecked(id) ||
-        pickViewModel.disabledAndCheckedUserIds.contains(id);
-    return _buildCheckableRow(
-      checkable: checkable,
-      checked: checked,
-      onToggle: (_) => _toggleOrgEmployee(emp),
-      avatar: Portrait(emp.displayPortrait, Config.defaultUserPortrait,
-          width: 34, height: 34),
-      title: emp.name,
-      subtitle: emp.title,
     );
   }
 

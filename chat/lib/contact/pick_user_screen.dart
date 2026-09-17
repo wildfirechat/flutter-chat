@@ -15,7 +15,7 @@ import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/widget/app_bar_actions.dart';
 import 'package:chat/widget/sidebar_index.dart';
-import 'package:chat/organization/organization_screen.dart';
+import 'package:chat/organization/pick_from_organization.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/utils/mesh_user_name.dart';
@@ -173,37 +173,6 @@ class _PickUserScreenState extends State<PickUserScreen> {
         context, _pickUserViewModel.pickedUsers.map((u) => u.userId).toList());
   }
 
-  Future<void> _openOrganizationPicker(BuildContext context) async {
-    final remaining =
-        widget.maxSelected - _pickUserViewModel.pickedUsers.length;
-    if (remaining <= 0) {
-      Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
-      return;
-    }
-    final selected =
-        _pickUserViewModel.pickedUsers.map((u) => u.userId).toList();
-    final result = await Navigator.push<List<String>>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => OrganizationScreen(
-          selectMode: true,
-          maxSelected: remaining,
-          initialSelectedUserIds: selected,
-          disabledUserIds: widget.disabledUncheckedUsers,
-          disabledCheckedUserIds: widget.disabledCheckedUsers,
-        ),
-      ),
-    );
-
-    if (result != null && result.isNotEmpty) {
-      final userInfos = await Imclient.getUserInfos(result);
-      for (final userInfo in userInfos) {
-        if (_pickUserViewModel.pickedUsers.length >= widget.maxSelected) break;
-        _pickUserViewModel.pickUser(userInfo, true);
-      }
-    }
-  }
-
   List<String> _getIndexList(List<UIPickUserInfo> userList) {
     List<String> indexList = [];
     indexList.add('↑');
@@ -285,38 +254,11 @@ class _PickUserScreenState extends State<PickUserScreen> {
             body: SafeArea(
               child: Column(
                 children: [
-                  if (widget.showOrganizationEntry) ...[
-                    Container(
-                      constraints: BoxConstraints(
-                        minHeight: LayoutScale.watchScale(context, 56.0,
-                            cap: LayoutScale.rowCap),
-                      ),
-                      child: ListTile(
-                        leading: Icon(
-                          Icons.corporate_fare,
-                          color: Theme.of(context).colorScheme.secondary,
-                          size: LayoutScale.watchScale(context, 24.0,
-                              cap: LayoutScale.iconCap),
-                        ),
-                        title: Text(AppLocalizations.of(context)!
-                            .selectFromOrganization),
-                        trailing: Icon(
-                          Icons.chevron_right,
-                          size: LayoutScale.watchScale(context, 20.0,
-                              cap: LayoutScale.iconCap),
-                        ),
-                        onTap: () => _openOrganizationPicker(context),
-                      ),
+                  if (widget.showOrganizationEntry)
+                    OrganizationPickEntry(
+                      onTap: () =>
+                          pickUsersFromOrganization(context, viewModel),
                     ),
-                    Divider(
-                      indent: AppShell.isDesktopStyle
-                          ? 16.0
-                          : 16.0 +
-                              LayoutScale.watchScale(context, 24.0,
-                                  cap: LayoutScale.iconCap) +
-                              16.0,
-                    ),
-                  ],
                   Container(
                     height: 56,
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),

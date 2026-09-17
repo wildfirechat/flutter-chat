@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/app_navigator.dart';
 import 'package:chat/config.dart';
@@ -15,14 +16,18 @@ import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/app_shell.dart';
 
+/// 组织架构浏览页。
+///
+/// [selectMode] 为 true 时是选人页:点「确定」以 `List<UserInfo>` 作为路由结果 pop,
+/// 内容是编辑后的**完整**已选(含带进来的 [initialSelectedUsers],在这里取消勾选的会被去掉),
+/// [maxSelected] 按总数计;直接返回则结果为 null。
 class OrganizationScreen extends StatefulWidget {
   final int? initialOrganizationId;
   final bool selectMode;
   final int maxSelected;
   final List<String>? disabledUserIds;
   final List<String>? disabledCheckedUserIds;
-  final List<String>? initialSelectedUserIds;
-  final ValueChanged<List<String>>? onSelected;
+  final List<UserInfo>? initialSelectedUsers;
 
   const OrganizationScreen({
     super.key,
@@ -31,8 +36,7 @@ class OrganizationScreen extends StatefulWidget {
     this.maxSelected = 1024,
     this.disabledUserIds,
     this.disabledCheckedUserIds,
-    this.initialSelectedUserIds,
-    this.onSelected,
+    this.initialSelectedUsers,
   });
 
   @override
@@ -42,7 +46,9 @@ class OrganizationScreen extends StatefulWidget {
 class _OrganizationScreenState extends State<OrganizationScreen> {
   late OrganizationViewModel _viewModel;
   final TextEditingController _searchController = TextEditingController();
-  late Set<String> _selectedUserIds;
+
+  /// 已选,按选择顺序。带进来的已选保留原 UserInfo(可能是好友资料),新勾的用员工资料构造。
+  final Map<String, UserInfo> _selectedUsers = {};
 
   /// 面包屑横向滚动。层级一深,末级(当前部门)会被顶到可视区右边外面 ——
   /// 每次层级变化后把它滚到最右,保证"我在哪"始终看得见。
@@ -52,7 +58,9 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedUserIds = Set<String>.from(widget.initialSelectedUserIds ?? []);
+    for (final user in widget.initialSelectedUsers ?? const <UserInfo>[]) {
+      _selectedUsers[user.userId] = user;
+    }
     _viewModel = OrganizationViewModel();
     _viewModel.loadInitialData(organizationId: widget.initialOrganizationId);
   }
@@ -239,21 +247,22 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
   }
 
   bool _isChecked(String userId) {
-    return _selectedUserIds.contains(userId) ||
+    return _selectedUsers.containsKey(userId) ||
         (widget.disabledCheckedUserIds?.contains(userId) ?? false);
   }
 
-  void _toggleEmployeeSelection(String userId) {
-    if (_selectedUserIds.contains(userId)) {
+  void _toggleEmployeeSelection(Employee emp) {
+    final userId = emp.employeeId;
+    if (_selectedUsers.containsKey(userId)) {
       setState(() {
-        _selectedUserIds.remove(userId);
+        _selectedUsers.remove(userId);
       });
       return;
     }
 
     if (_isDisabled(userId)) return;
 
-    if (_selectedUserIds.length >= widget.maxSelected) {
+    if (_selectedUsers.length >= widget.maxSelected) {
       Fluttertoast.showToast(
           msg:
               AppLocalizations.of(context)!.maxSelectCount(widget.maxSelected));
@@ -261,16 +270,12 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     }
 
     setState(() {
-      _selectedUserIds.add(userId);
+      _selectedUsers[userId] = emp.toUserInfo();
     });
   }
 
   void _onDone() {
-    final result = _selectedUserIds.toList();
-    if (widget.onSelected != null) {
-      widget.onSelected!(result);
-    }
-    Navigator.of(context).pop(result);
+    Navigator.of(context).pop(_selectedUsers.values.toList());
   }
 
   Widget _buildSubOrgTile(Organization subOrg) {
@@ -322,11 +327,9 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     if (widget.selectMode) {
       trailing = Checkbox(
         value: isSelected,
-        onChanged:
-            isDisabled ? null : (_) => _toggleEmployeeSelection(emp.employeeId),
+        onChanged: isDisabled ? null : (_) => _toggleEmployeeSelection(emp),
       );
-      onTap =
-          isDisabled ? null : () => _toggleEmployeeSelection(emp.employeeId);
+      onTap = isDisabled ? null : () => _toggleEmployeeSelection(emp);
     } else {
       onTap = () {
         // 用 pushPage:桌面端在右栏 Navigator 里 push(组织架构还压在下面,可以返回),
@@ -452,9 +455,9 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
 
   Widget _buildDoneAction() {
     final l10n = AppLocalizations.of(context)!;
-    final label = _selectedUserIds.isEmpty
+    final label = _selectedUsers.isEmpty
         ? l10n.confirm
-        : l10n.confirmWithCount(_selectedUserIds.length, widget.maxSelected);
+        : l10n.confirmWithCount(_selectedUsers.length, widget.maxSelected);
     return TextButton(
       onPressed: _onDone,
       // 栏标题右侧的确认位,比桌面按钮默认的 13 号大一号才压得住标题。

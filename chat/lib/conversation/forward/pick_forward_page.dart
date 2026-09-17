@@ -14,6 +14,7 @@ import 'package:chat/conversation/forward/widgets/forward_target_list.dart';
 import 'package:chat/conversation/forward/widgets/selected_avatar_tile.dart';
 import 'package:chat/conversation/forward_confirmation_sheet.dart';
 import 'package:chat/l10n/app_localizations.dart';
+import 'package:chat/organization/pick_from_organization.dart';
 import 'package:chat/utils/show_toast.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
@@ -301,6 +302,9 @@ class _PickForwardPageState extends State<PickForwardPage> {
             body: SafeArea(
               child: Column(
                 children: [
+                  OrganizationPickEntry(
+                    onTap: () => pickUsersFromOrganization(context, viewModel),
+                  ),
                   ForwardSearchBar(
                     controller: _memberSearchController,
                     maxChipsWidth: MediaQuery.of(context).size.width - 140,
