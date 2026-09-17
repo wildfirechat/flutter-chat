@@ -7,7 +7,6 @@ import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/utils/layout_scale.dart';
-import '../default_portrait_provider.dart';
 import '../user_info_widget.dart';
 import 'model/employee.dart';
 import 'model/organization.dart';
@@ -346,11 +345,7 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       child: ListTile(
         minTileHeight: LayoutScale.watchScale(context, baseHeight,
             cap: LayoutScale.rowCap),
-        leading: Portrait(
-          emp.portraitUrl ??
-              WFPortraitProvider.instance.userDefaultPortrait(emp.toUserInfo()),
-          Config.defaultUserPortrait,
-        ),
+        leading: Portrait(emp.displayPortrait, Config.defaultUserPortrait),
         title: Text(emp.name, maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: hasSubtitle
             ? Text(emp.title!, maxLines: 1, overflow: TextOverflow.ellipsis)

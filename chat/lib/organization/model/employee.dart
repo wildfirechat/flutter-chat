@@ -1,5 +1,7 @@
 import 'package:imclient/model/user_info.dart';
 
+import 'package:chat/default_portrait_provider.dart';
+
 class Employee {
   final String employeeId;
   final int organizationId;
@@ -87,11 +89,19 @@ class Employee {
     };
   }
 
+  /// 展示用头像:员工没有头像时按姓名生成默认头像,与 SDK 给 UserInfo 的兜底一致。
+  /// 组织架构里的员工不一定在 IM 本地库里,不能指望 getUserInfo 补头像。
+  String get displayPortrait =>
+      WFPortraitProvider.instance.userDefaultPortrait(UserInfo(employeeId)
+        ..displayName = name
+        ..portrait = portraitUrl);
+
+  /// 转成选人等场景用的 UserInfo,头像已按 [displayPortrait] 兜底。
   UserInfo toUserInfo() {
     return UserInfo(employeeId)
       ..displayName = name
-      ..portrait = portraitUrl
-      ..mobile = mobile!
+      ..portrait = displayPortrait
+      ..mobile = mobile
       ..updateDt = updateDt
       ..type = type;
   }

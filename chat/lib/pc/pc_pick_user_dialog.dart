@@ -138,11 +138,8 @@ class _PcPickUserViewState extends State<PcPickUserView> {
     final id = emp.employeeId;
     if (!_viewModel.isCheckable(id)) return;
     final picked = _viewModel.isChecked(id);
-    // 组织成员构造轻量 UserInfo 入选;回调只用到 userId,展示用 name/portrait 足够。
-    final userInfo = UserInfo(id)
-      ..displayName = emp.name
-      ..portrait = emp.portraitUrl;
-    if (!_viewModel.pickUser(userInfo, !picked)) {
+    // 员工不一定在 IM 本地库里,直接用组织架构的姓名/头像构造 UserInfo。
+    if (!_viewModel.pickUser(emp.toUserInfo(), !picked)) {
       Fluttertoast.showToast(msg: AppLocalizations.of(context)!.maxUserLimit);
     }
   }
@@ -655,8 +652,7 @@ class _PcPickUserViewState extends State<PcPickUserView> {
       checkable: checkable,
       checked: checked,
       onToggle: (_) => _toggleOrgEmployee(emp),
-      avatar: Portrait(emp.portraitUrl ?? Config.defaultUserPortrait,
-          Config.defaultUserPortrait,
+      avatar: Portrait(emp.displayPortrait, Config.defaultUserPortrait,
           width: 34, height: 34),
       title: emp.name,
       subtitle: emp.title,
