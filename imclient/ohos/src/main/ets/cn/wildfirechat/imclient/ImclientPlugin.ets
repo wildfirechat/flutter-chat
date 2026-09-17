@@ -35,6 +35,7 @@ import {
     getClientId,
     connect,
     getConnectionStatus,
+    getConnectedNetworkType,
     registerMessageFlag,
     useSM4,
     setProxyInfo,
@@ -229,6 +230,17 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
             switch (event) {
                 case 'onConnectionStatusChange': {
                     this.__callback2UI('onConnectionStatusChanged', args[1])
+                    break
+                }
+                case 'onConnectToServer': {
+                    // 协议栈 OnConnected 回调：host, ip, port, mainNw(1 主网络；0 备选网络)
+                    let data = {
+                        'host': args[1],
+                        'ip': args[2],
+                        'port': args[3],
+                        'mainNetwork': args[4] !== 0
+                    } as Record<string, Object>
+                    this.__callback2UI('onConnected', data)
                     break
                 }
                 case 'onReceiveMessage': {
@@ -775,6 +787,9 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let port = call.argument("port") as number
         setBackupAddress(host, port)
         result.success(null)
+    }
+    _getConnectedNetworkType = (call: MethodCall, result: MethodResult) => {
+        result.success(getConnectedNetworkType())
     }
     _setProtoUserAgent = (call: MethodCall, result: MethodResult) => {
         let agent = call.argument("agent") as string
@@ -1886,6 +1901,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         "setVoipDeviceToken": this._setVoipDeviceToken,
         "setBackupAddressStrategy": this._setBackupAddressStrategy,
         "setBackupAddress": this._setBackupAddress,
+        "getConnectedNetworkType": this._getConnectedNetworkType,
         "setProtoUserAgent": this._setProtoUserAgent,
         "addHttpHeader": this._addHttpHeader,
         "setProxyInfo": this._setProxyInfo,

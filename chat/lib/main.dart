@@ -51,7 +51,7 @@ import 'package:chat/wfc_notification_manager.dart';
 import 'app_navigator.dart';
 import 'app_theme.dart';
 import 'config.dart';
-import 'utils/media_url_redirector.dart';
+import 'utils/dual_network.dart';
 
 import 'default_portrait_provider.dart';
 import 'home/app_home.dart';
@@ -329,6 +329,7 @@ class _MyAppState extends State<MyApp> {
       if (kDebugMode) {
         print(status);
       }
+      DualNetwork.onConnectionStatusChanged(status);
       if (status == kConnectionStatusConnected) {
         if (!_firstConnected) {
           _firstConnected = true;
@@ -398,7 +399,7 @@ class _MyAppState extends State<MyApp> {
       }
     }, onConnectedCallback:
         (String host, String ip, int port, bool mainNetwork) {
-      MediaUrlRedirector.setConnectedToMainNetwork(mainNetwork);
+      DualNetwork.onConnected(mainNetwork);
     }, messageDeliveriedCallback: (Map<String, int> deliveryMap) {
       if (kDebugMode) {
         print('on message deliveried $deliveryMap');

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -8,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config.dart';
 import 'model/favorite_item.dart';
+import 'utils/dual_network.dart';
 import 'utils/media_url_redirector.dart';
 import 'widget/slide_verify_dialog.dart';
 
@@ -25,8 +27,99 @@ class AppServer {
     return WfcPlatform.clientPlatformCode;
   }
 
-  /// AppServer 地址，已兼容双网主备选择。
+  static const Duration _appServerProbeTimeout = Duration(seconds: 5);
+
+  // 登录前等 IM 未连接时，探测到的可用应用服务地址
+  static String? _probedAppServerAddress;
+
+  // 正在进行的探测，探测期间的请求都等这次探测结果
+  static Future<String>? _appServerProbe;
+
+  /// 应用服务地址（同步），根据 IM 当前或最近一次连接的网络选择。
+  /// 登录前等 IM 未连接时可能不准，发请求时用的是 [_resolveAppServerAddress]。
   static String get appServerAddress => Config.appServerAddress;
+
+  /// 发请求时使用的应用服务地址。
+  ///
+  /// IM 已连接或设置了固定的备选网络策略时，直接用 [Config.appServerAddress]；
+  /// IM 未连接时（登录前、断线重连中），主备网络是隔离的，一般只有一个地址可达，
+  /// 并行探测主备地址，用首个可达的地址。
+  /// 探测结果会缓存，避免每次请求都探测；请求出现网络错误时清除缓存，下次请求重新探测。
+  static Future<String> _resolveAppServerAddress() {
+    final backup = Config.APP_Server_Backup_Address;
+    if (backup == null || backup.isEmpty) {
+      return Future.value(Config.APP_Server_Address);
+    }
+    if (DualNetwork.isImConnected ||
+        Imclient.backupAddressStrategy != kBackupAddressStrategyCompound) {
+      // IM 连接后以 IM 连接的网络为准，清除探测结果，IM 断开后（如退出登录）重新探测
+      _probedAppServerAddress = null;
+      return Future.value(Config.appServerAddress);
+    }
+    final probed = _probedAppServerAddress;
+    if (probed != null) {
+      return Future.value(probed);
+    }
+    return _appServerProbe ??=
+        _probeAppServerAddress(Config.APP_Server_Address, backup)
+            .whenComplete(() => _appServerProbe = null);
+  }
+
+  static Future<String> _probeAppServerAddress(String main, String backup) {
+    final completer = Completer<String>();
+    var pendingCount = 2;
+    for (final address in [main, backup]) {
+      _isAppServerReachable(address).then((reachable) {
+        pendingCount--;
+        if (completer.isCompleted) {
+          // 另一个地址已经探测成功了
+          return;
+        }
+        if (reachable) {
+          _probedAppServerAddress = address;
+          completer.complete(address);
+        } else if (pendingCount == 0) {
+          // 都探测失败时，回退到主地址，让后续请求正常报错，不缓存
+          completer.complete(main);
+        }
+      });
+    }
+    return completer.future;
+  }
+
+  static Future<bool> _isAppServerReachable(String address) async {
+    final client = http.Client();
+    try {
+      final response =
+          await client.get(Uri.parse(address)).timeout(_appServerProbeTimeout);
+      // 只有应用服务会返回 Ok，避免被网关、代理之类的返回的 200 误判
+      return response.statusCode == 200 && response.body.trim() == 'Ok';
+    } catch (e) {
+      return false;
+    } finally {
+      // 超时后关闭 client，中止还没完成的请求
+      client.close();
+    }
+  }
+
+  /// url 是否是应用服务的地址，双网环境下，主备地址都算
+  static bool _isAppServerUrl(String url) {
+    final backup = Config.APP_Server_Backup_Address;
+    return url.startsWith(Config.APP_Server_Address) ||
+        (backup != null && backup.isNotEmpty && url.startsWith(backup));
+  }
+
+  static Future<http.Response> _post(String path,
+      {Map<String, String>? headers, Object? body}) async {
+    final url = Uri.parse(await _resolveAppServerAddress() + path);
+    try {
+      return await http.post(url, headers: headers, body: body);
+    } catch (e) {
+      // 请求出现网络错误，可能是网络环境变了，清除探测结果，下次请求重新探测
+      _probedAppServerAddress = null;
+      rethrow;
+    }
+  }
 
   static void sendCode(String phoneNum, Function successCallback,
       AppServerErrorCallback errorCallback,
@@ -184,10 +277,8 @@ class AppServer {
     required Function(String) onError,
   }) async {
     try {
-      final url = Uri.parse(MediaUrlRedirector.redirect(
-          '${Config.appServerAddress}/slide_verify/generate'));
-      final response = await http.post(
-        url,
+      final response = await _post(
+        '/slide_verify/generate',
         headers: {'Content-Type': 'application/json'},
         body: json.encode({}),
       );
@@ -242,10 +333,8 @@ class AppServer {
     required Function onError,
   }) async {
     try {
-      final url = Uri.parse(MediaUrlRedirector.redirect(
-          '${Config.appServerAddress}/slide_verify/verify'));
-      final response = await http.post(
-        url,
+      final response = await _post(
+        '/slide_verify/verify',
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'token': token,
@@ -655,7 +744,7 @@ class AppServer {
         var obj = {};
         String portrait = member['portrait'] ?? '';
         String name = member['name'] ?? '';
-        if (portrait.isEmpty || portrait.startsWith(Config.appServerAddress)) {
+        if (portrait.isEmpty || _isAppServerUrl(portrait)) {
           obj['name'] = name;
         } else {
           obj['avatarUrl'] = portrait;
@@ -691,9 +780,6 @@ class AppServer {
       String jsonStr,
       AppServerHTTPCallback successCallback,
       AppServerErrorCallback errorCallback) async {
-    var url = Config.appServerAddress + request;
-    url = MediaUrlRedirector.redirect(url);
-
     if (_authToken == null) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       _authToken = prefs.getString('app_server_auth_token');
@@ -704,11 +790,14 @@ class AppServer {
       headers['authToken'] = _authToken!;
     }
 
-    // print(json);
-    http.Response response = await http.post(Uri.parse(url), // post地址
-        headers: headers, //设置content-type为json
-        body: jsonStr //json参数
-        );
+    http.Response response;
+    try {
+      response = await _post(request, headers: headers, body: jsonStr);
+    } catch (e) {
+      debugPrint('AppServer post $request error: $e');
+      errorCallback('网络错误');
+      return;
+    }
 
     if (response.statusCode != 200) {
       errorCallback(response.body);

@@ -82,7 +82,8 @@ class ShareService {
       await _channel.invokeMethod('saveSharedConversations', {
         'conversations': sharedConversations.map((c) => c.toJson()).toList(),
         'authToken': authToken,
-        'appServerAddress': Config.APP_Server_Address,
+        // 双网环境下，按进入后台时的网络选择主备地址
+        'appServerAddress': Config.appServerAddress,
       });
     } catch (e) {
       debugPrint('syncSharedDataOnBackground error: $e');

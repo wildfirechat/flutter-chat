@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'utils/dual_network.dart';
+
 class Config {
   //IM服务地址，不能带HTTP头和端口
   static const String IM_Host = 'wildfirechat.net';
@@ -126,8 +128,7 @@ class Config {
   static const String PRIVACY_AGREEMENT_URL =
       "https://example.com/user_privacy.html";
 
-  /// 根据主备地址选择服务地址。
-  /// 当前 Flutter 版本暂不判断实际网络主备，未配置备选时返回主地址。
+  /// 根据当前网络在主/备地址之间选择，网络的判断见 [DualNetwork.isMainNetwork]。
   static String? selectServer(String? main, String? backup) {
     if ((main == null || main.isEmpty) && (backup == null || backup.isEmpty)) {
       return null;
@@ -138,8 +139,7 @@ class Config {
     if (main == null || main.isEmpty) {
       return backup;
     }
-    // TODO: 双网环境下可结合网络状态选择主备
-    return main;
+    return DualNetwork.isMainNetwork ? main : backup;
   }
 
   static String get appServerAddress =>

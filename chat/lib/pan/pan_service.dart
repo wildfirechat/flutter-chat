@@ -10,6 +10,7 @@ import 'package:path/path.dart' as path;
 
 import '../config.dart';
 import '../utils/auth_code_api_client.dart';
+import '../utils/dual_network.dart';
 import '../utils/media_url_redirector.dart';
 import 'package:imclient/imclient_platform.dart';
 
@@ -341,9 +342,9 @@ class PanService {
   }
 
   static String _selectUploadUrl(_UploadUrlInfo info) {
-    // 双网环境下根据主备网络选择；当前版本未接入网络状态，优先主地址。
-    if (info.backupUploadUrl.isNotEmpty) {
-      // TODO: 结合 MediaUrlRedirector 或网络状态选择主备地址。
+    // 和协议栈上传媒体一致：备选网络下有备选上传地址时才用备选地址
+    if (!DualNetwork.isMainNetwork && info.backupUploadUrl.isNotEmpty) {
+      return info.backupUploadUrl;
     }
     return info.uploadUrl;
   }

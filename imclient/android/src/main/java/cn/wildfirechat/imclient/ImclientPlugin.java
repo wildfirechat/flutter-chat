@@ -383,6 +383,10 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
         result.success(null);
     }
 
+    private void getConnectedNetworkType(@NonNull MethodCall call, @NonNull Result result) {
+        result.success(ChatManager.Instance().getConnectedNetworkType());
+    }
+
     private void setProtoUserAgent(@NonNull MethodCall call, @NonNull Result result) {
         String agent = call.argument("agent");
         ChatManager.Instance().setProtoUserAgent(agent);
@@ -3246,6 +3250,8 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
                             String host = (String) args[0];
                             String ip = (String) args[1];
                             int port = (int) args[2];
+                            // 协议栈先回调 onConnectToServer，再更新连接的网络类型，这里读到的可能还是上一次连接的网络，
+                            // Dart 层会在连接状态变为 Connected 时，通过 getConnectedNetworkType 校正
                             boolean mainNetwork = ChatManager.Instance().isConnectedToMainNetwork();
                             Map<String, Object> data = new HashMap<>();
                             data.put("host", host);

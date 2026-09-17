@@ -4,6 +4,7 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/widgets.dart';
 import 'package:imclient/imclient.dart';
 
+import '../../utils/dual_network.dart';
 import 'window_event_channel.dart';
 import 'window_kind.dart';
 
@@ -107,7 +108,7 @@ abstract class SubWindowManagerBase {
 
   // -------------------------------------------------------------- 创建序列
 
-  /// 统一创建序列:createPayload + 注入 kind/_selfUserId → createWindow →
+  /// 统一创建序列:createPayload + 注入 kind/_selfUserId/_mainNetwork → createWindow →
   /// setFrame → center → show。
   /// 必须先 center 再 show:插件创建的 NSWindow 初始位于屏幕原点(macOS 为
   /// 左下角),先 show 会在角落闪现一帧后才跳到屏幕中央。
@@ -118,6 +119,8 @@ abstract class SubWindowManagerBase {
     if (injectSelfUserId) {
       payload['_selfUserId'] = Imclient.currentUserId;
     }
+    // 子窗口没有自己的 IM 连接，双网环境下沿用主窗口当前的网络
+    payload['_mainNetwork'] = DualNetwork.isMainNetwork;
 
     final WindowController created;
     try {

@@ -201,6 +201,24 @@ class ConnectionStatusChangedEvent {
   ConnectionStatusChangedEvent(this.connectionStatus);
 }
 
+///双网环境时，连接到了主网络
+const int kConnectedNetworkTypeMain = 1;
+
+///双网环境时，连接的网络未知，还没有连接过
+const int kConnectedNetworkTypeUnknown = 0;
+
+///双网环境时，连接到了备选网络
+const int kConnectedNetworkTypeBackup = -1;
+
+///备选网络策略：复合连接，主备网络都尝试
+const int kBackupAddressStrategyCompound = 0;
+
+///备选网络策略：只使用主网络
+const int kBackupAddressStrategyMain = 1;
+
+///备选网络策略：只使用备选网络
+const int kBackupAddressStrategyBackup = 2;
+
 class ConnectedToServerEvent {
   String host;
   String ip;
@@ -460,9 +478,24 @@ class Imclient {
     return ImclientPlatform.instance.setVoipDeviceToken(voipToken);
   }
 
+  static int _backupAddressStrategy = kBackupAddressStrategyCompound;
+
   ///设置备选网络策略，双网相关知识请参考：https://docs.wildfirechat.cn/blogs/政企内外双网解决方案.html
+  ///
+  ///[strategy] 见 kBackupAddressStrategyCompound、kBackupAddressStrategyMain、kBackupAddressStrategyBackup
   static Future<void> setBackupAddressStrategy(int strategy) async {
+    _backupAddressStrategy = strategy;
     return ImclientPlatform.instance.setBackupAddressStrategy(strategy);
+  }
+
+  ///备选网络策略，即最近一次调用 [setBackupAddressStrategy] 设置的值
+  static int get backupAddressStrategy => _backupAddressStrategy;
+
+  ///双网环境时，当前连接的网络类型，见 kConnectedNetworkTypeMain、kConnectedNetworkTypeBackup、kConnectedNetworkTypeUnknown。
+  ///
+  ///IM 连接成功后是准确的；未连接时，是最近一次连接的网络；还没有连接过时，是 kConnectedNetworkTypeUnknown
+  static Future<int> get connectedNetworkType async {
+    return ImclientPlatform.instance.connectedNetworkType;
   }
 
   ///设置备选地址和端口，只能设置一个。

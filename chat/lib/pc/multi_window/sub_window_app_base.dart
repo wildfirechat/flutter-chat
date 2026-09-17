@@ -12,6 +12,7 @@ import 'package:window_manager/window_manager.dart';
 import '../../app_theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shortcuts/ambient_shortcuts.dart';
+import '../../utils/dual_network.dart';
 import '../../viewmodel/font_size_view_model.dart';
 import '../../viewmodel/locale_view_model.dart';
 import '../../viewmodel/theme_view_model.dart';
@@ -232,6 +233,10 @@ mixin SubWindowAppBase<T extends StatefulWidget> on State<T>
       final selfUserId = windowArguments['_selfUserId'] as String?;
       if (selfUserId != null) {
         ImclientPlatform.instance.userId = selfUserId;
+      }
+      final mainNetwork = windowArguments['_mainNetwork'] as bool?;
+      if (mainNetwork != null) {
+        DualNetwork.initSubWindow(mainNetwork);
       }
 
       // 1. 替换 IM 通道为共享代理通道(所有子窗口一致)。

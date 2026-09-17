@@ -204,6 +204,10 @@ class ImclientPlatform extends PlatformInterface {
     return _channel.invokeMethod('setBackupAddress', {"host":host, "port":port});
   }
 
+  Future<int> get connectedNetworkType async {
+    return await _channel.invokeMethod('getConnectedNetworkType');
+  }
+
   Future<void> setProtoUserAgent(String agent) async {
     return _channel.invokeMethod('setProtoUserAgent', {"agent":agent});
   }
@@ -300,7 +304,8 @@ class ImclientPlatform extends PlatformInterface {
           String host = args['host'] ?? '';
           String ip = args['ip'] ?? '';
           int port = args['port'] ?? 0;
-          bool mainNetwork = args['mainNetwork'] ?? false;
+          // 网络未知时，和协议栈保持一致，按主网络处理
+          bool mainNetwork = args['mainNetwork'] ?? true;
           if (_onConnectedCallback != null) {
             _onConnectedCallback!(host, ip, port, mainNetwork);
           }

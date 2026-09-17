@@ -166,6 +166,10 @@ ImclientPlugin *gIMClientInstance;
     result(nil);
 }
 
+- (void)getConnectedNetworkType:(NSDictionary *)dict result:(FlutterResult)result {
+    result(@([[WFCCNetworkService sharedInstance] getConnectedNetworkType]));
+}
+
 - (void)setProtoUserAgent:(NSDictionary *)dict result:(FlutterResult)result {
     NSString *agent = dict[@"agent"];
     [[WFCCNetworkService sharedInstance] setProtoUserAgent:agent];

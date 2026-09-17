@@ -637,6 +637,8 @@ class ImclientFfiChannel implements ImclientChannel {
       case 'setBackupAddressStrategy':
         _wf.setBackupAddressStrategy(_int(args, 'strategy'));
         return null;
+      case 'getConnectedNetworkType':
+        return _wf.getConnectedNetworkType();
       case 'setProtoUserAgent':
         return using((a) {
           final agent = _ns(a, _str(args, 'agent'));

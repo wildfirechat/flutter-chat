@@ -259,8 +259,8 @@ Future<void> _loadTab(
   await ensureDsBridgeUserAgent(controller);
 
   final bool isHome = !tab.closable;
-  // 首页地址在加载时才取 Config,与改造前一致 —— selectServer 将来接上双网判断后,
-  // 不至于因为 ViewModel 在启动时缓存过一次而用上旧地址。
+  // 首页地址在加载时才取 Config,与改造前一致 —— selectServer 按当前网络选主备地址,
+  // 不至于因为 ViewModel 在启动时缓存过一次而用上旧网络的地址。
   final String rawUrl = isHome ? (Config.workspaceUrl ?? '') : tab.url;
   if (rawUrl.isEmpty) {
     return;
