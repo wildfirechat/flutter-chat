@@ -32,6 +32,11 @@ const String _kKeyboardHeightKeyLandscape = 'saved_keyboard_height_landscape';
 /// 这样升级当次的表现与升级前完全一致;在某个方向存过一次之后就用不到了。
 const String _kLegacyKeyboardHeightKey = 'saved_keyboard_height';
 
+/// 有无文字时输入栏的形变(加号 ↔ 发送、语音输入按钮收起/展开)共用一条时间线,
+/// 两头同时伸缩,中间输入框的宽度变化才是连贯的一段,而不是先后跳两下
+const Duration _kMorphDuration = Duration(milliseconds: 200);
+const Curve _kMorphCurve = Curves.easeOutCubic;
+
 /// 微信风格的输入栏
 /// 实现原理：
 /// 1. 底部区域高度 = max(键盘高度, 面板高度)
@@ -408,8 +413,8 @@ class _MessageInputBarState extends State<MessageInputBar>
                                   // 实时语音输入按钮，放在输入框右下角，多行时不跟着居中（android-chat 交互）
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   suffix: VoiceInputController.isAvailable
-                                      ? VoiceInputButton(
-                                          controller: controller.voiceInput)
+                                      ? _VoiceInputSuffix(
+                                          voiceInput: controller.voiceInput)
                                       : null,
                                   controller: controller.textEditingController,
                                   focusNode: controller.focusNode,
@@ -446,33 +451,36 @@ class _MessageInputBarState extends State<MessageInputBar>
                         icon: const InputBarIcon(InputBarGlyph.emoji,
                             size: iconSize),
                         onPressed: controller.onEmojiButton),
-                // 发送按钮只订阅"文本是否非空",逐键输入不会触发这里以外的重建
+                // 发送按钮只订阅"是否显示发送",逐键输入不会触发这里以外的重建
                 Selector<MessageInputBarController, bool>(
                   selector: (context, controller) =>
-                      controller.textEditingController.text.isNotEmpty,
-                  builder: (context, hasText, _) {
+                      controller.textEditingController.text.isNotEmpty &&
+                      controller.status != ChatInputBarStatus.recordStatus &&
+                      controller.status != ChatInputBarStatus.pluginStatus,
+                  builder: (context, showSend, _) {
                     final controller = Provider.of<MessageInputBarController>(
                         context,
                         listen: false);
-                    return hasText &&
-                            controller.status !=
-                                ChatInputBarStatus.recordStatus &&
-                            controller.status != ChatInputBarStatus.pluginStatus
-                        ? FilledButton(
-                            onPressed: controller.onSendButton,
-                            style: FilledButton.styleFrom(
-                                minimumSize: const Size(44, 28)),
-                            child: Text(AppLocalizations.of(context)!.send))
-                        : IconButton(
-                            icon: const InputBarIcon(InputBarGlyph.plugin,
-                                size: iconSize),
-                            onPressed: controller.onPluginButton);
+                    return _SendButtonSwitcher(
+                      showSend: showSend,
+                      // 比全局按钮小一档(微信尺寸);可点区域仍由 padded tapTargetSize 撑到 48
+                      sendButton: FilledButton(
+                          onPressed: controller.onSendButton,
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(52, 30),
+                            fixedSize: const Size.fromHeight(30),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                          ),
+                          child: Text(AppLocalizations.of(context)!.send)),
+                      pluginButton: IconButton(
+                          icon: const InputBarIcon(InputBarGlyph.plugin,
+                              size: iconSize),
+                          onPressed: controller.onPluginButton),
+                    );
                   },
                 ),
               ],
-              SizedBox(
-                width: 8.0,
-              ),
+              const SizedBox(width: 8.0),
             ],
           ),
         ],
@@ -544,6 +552,147 @@ class _MessageInputBarState extends State<MessageInputBar>
           ],
         ),
       ),
+    );
+  }
+}
+
+/// 行尾的加号 ↔ 发送按钮(同微信):有文字时发送按钮在自己的位置上,从右边缘开始向左展开显示,
+/// 占位同步变宽把输入框往左挤,加号原地淡出;清空后发送按钮向右收起,加号淡入。
+class _SendButtonSwitcher extends StatelessWidget {
+  const _SendButtonSwitcher({
+    required this.showSend,
+    required this.sendButton,
+    required this.pluginButton,
+  });
+
+  final bool showSend;
+  final Widget sendButton;
+  final Widget pluginButton;
+
+  static const ValueKey<bool> _sendKey = ValueKey<bool>(true);
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSize(
+      duration: _kMorphDuration,
+      curve: _kMorphCurve,
+      // 右缘贴住行尾不动,宽度只往左边伸缩
+      alignment: Alignment.centerRight,
+      child: AnimatedSwitcher(
+        duration: _kMorphDuration,
+        switchInCurve: _kMorphCurve,
+        // 退场是把动画倒着播,用翻转曲线,收起的发送按钮才和收窄的占位逐帧同步;
+        // 加号则在时间轴上先快后慢,一开始就迅速淡出
+        switchOutCurve: _kMorphCurve.flipped,
+        transitionBuilder: _buildTransition,
+        layoutBuilder: _buildLayout,
+        child: KeyedSubtree(
+          key: ValueKey<bool>(showSend),
+          child: showSend ? sendButton : pluginButton,
+        ),
+      ),
+    );
+  }
+
+  static Widget _buildTransition(Widget child, Animation<double> animation) {
+    if (child.key == _sendKey) {
+      return ClipRect(
+        clipper: _RevealFromRightClipper(animation),
+        child: child,
+      );
+    }
+    return FadeTransition(
+      opacity: animation,
+      child: ScaleTransition(
+        scale: animation.drive(Tween<double>(begin: 0.8, end: 1)),
+        child: child,
+      ),
+    );
+  }
+
+  /// 默认布局按新旧按钮中较大的那个占位,发送 → 加号时宽度要等退场结束才缩回去,
+  /// 输入框会慢半拍再跳一下。这里只按新按钮占位,旧按钮以原尺寸右对齐叠在原位退场,不接收点击
+  static Widget _buildLayout(Widget? current, List<Widget> previous) {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.centerRight,
+      children: [
+        for (final Widget child in previous)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: OverflowBox(
+                minWidth: 0,
+                maxWidth: double.infinity,
+                minHeight: 0,
+                maxHeight: double.infinity,
+                alignment: Alignment.centerRight,
+                child: child,
+              ),
+            ),
+          ),
+        if (current != null) current,
+      ],
+    );
+  }
+}
+
+/// 从右边缘向左展开的裁剪区域:进度 0 时宽度为 0,进度 1 时是整个按钮。按钮本身不动也不缩放
+class _RevealFromRightClipper extends CustomClipper<Rect> {
+  _RevealFromRightClipper(this.progress) : super(reclip: progress);
+
+  final Animation<double> progress;
+
+  @override
+  Rect getClip(Size size) => Rect.fromLTRB(
+      size.width * (1 - progress.value), 0, size.width, size.height);
+
+  @override
+  bool shouldReclip(_RevealFromRightClipper oldClipper) =>
+      !identical(oldClipper.progress, progress);
+}
+
+/// 输入框右下角的实时语音输入按钮。输入了文字就收起,把宽度让给输入框,右侧换成发送按钮(同微信);
+/// 语音输入进行中例外:这时它是停止按钮,识别结果写进输入框也不能收,识别结束后再收起。
+class _VoiceInputSuffix extends StatelessWidget {
+  const _VoiceInputSuffix({required this.voiceInput});
+
+  final VoiceInputController voiceInput;
+
+  @override
+  Widget build(BuildContext context) {
+    // 只订阅"文本是否为空",逐键输入不重建
+    return Selector<MessageInputBarController, bool>(
+      selector: (context, controller) =>
+          controller.textEditingController.text.isEmpty,
+      builder: (context, isEmpty, button) => ListenableBuilder(
+        listenable: voiceInput,
+        child: button,
+        builder: (context, button) {
+          final bool visible =
+              isEmpty || voiceInput.state != VoiceInputState.idle;
+          return IgnorePointer(
+            ignoring: !visible,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween<double>(end: visible ? 1 : 0),
+              duration: _kMorphDuration,
+              curve: _kMorphCurve,
+              child: button,
+              // 按钮始终留在树上(图标的录音动画状态不丢),只把占位宽度收到 0;
+              // 右缘贴住输入框边缘原地缩小淡出,不裁剪,否则缩到一半图标会被切掉半边
+              builder: (context, t, button) => Align(
+                alignment: Alignment.centerRight,
+                widthFactor: t,
+                heightFactor: 1,
+                child: Opacity(
+                  opacity: t,
+                  child: Transform.scale(scale: 0.6 + 0.4 * t, child: button),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+      child: VoiceInputButton(controller: voiceInput),
     );
   }
 }
