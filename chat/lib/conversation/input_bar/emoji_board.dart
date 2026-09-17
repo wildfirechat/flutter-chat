@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
 import 'package:chat/widgets/animated_emoji.dart';
+import 'package:chat/sticker/sticker_pack.dart';
+import 'package:chat/sticker/sticker_source.dart';
+import 'package:chat/sticker/sticker_view.dart';
 import 'input_bar_icon.dart';
-import 'sticker_manager.dart';
 import 'package:chat/app_shell.dart';
 
 typedef OnPickerEmojiCallback = void Function(String emoji);
@@ -171,7 +173,7 @@ class EmojiBoard extends StatefulWidget {
 }
 
 class _EmojiBoardState extends State<EmojiBoard> {
-  int _selectedIndex = 0; // 0 for Emoji, 1+ for Sticker Categories
+  int _selectedIndex = 0; // 0 为 emoji,1+ 为贴纸包
   late PageController _pageController;
   final ScrollController _emojiScrollController = ScrollController();
   final GlobalKey _emojiGridKey = GlobalKey();
@@ -184,7 +186,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _selectedIndex);
-    StickerManager().loadStickers().then((_) {
+    StickerPacks.load().then((_) {
       if (mounted) setState(() {});
     });
   }
@@ -289,10 +291,10 @@ class _EmojiBoardState extends State<EmojiBoard> {
                       )
                     ],
                   ),
-                  child: Image.asset(
-                    data.stickerPath!,
-                    gaplessPlayback: true,
-                    cacheWidth: 400, // Optimize memory for preview
+                  child: StickerView(
+                    StickerSource.asset(data.stickerPath!),
+                    width: 140,
+                    height: 140,
                   ),
                 ),
               ),
@@ -355,7 +357,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
   @override
   Widget build(BuildContext context) {
     double boardHeight = widget.height ?? 280;
-    final categories = StickerManager().categories;
+    final packs = StickerPacks.loaded;
 
     return Container(
       height: boardHeight,
@@ -363,12 +365,12 @@ class _EmojiBoardState extends State<EmojiBoard> {
       child: Column(
         children: [
           // Tab Bar (Top Row as requested)
-          _buildTabBar(categories),
+          _buildTabBar(packs),
           // Content Area
           Expanded(
             child: PageView.builder(
               controller: _pageController,
-              itemCount: 1 + categories.length,
+              itemCount: 1 + packs.length,
               onPageChanged: (index) {
                 _hidePreview();
                 setState(() {
@@ -378,9 +380,12 @@ class _EmojiBoardState extends State<EmojiBoard> {
               itemBuilder: (context, index) {
                 if (index == 0) {
                   return _buildEmojiGrid();
-                } else {
-                  return _buildStickerGrid(index - 1);
                 }
+                // 贴纸页 keep-alive,划走后仍挂在树上:只让当前页播动画
+                return TickerMode(
+                  enabled: index == _selectedIndex,
+                  child: _buildStickerGrid(packs[index - 1]),
+                );
               },
             ),
           ),
@@ -389,7 +394,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
     );
   }
 
-  Widget _buildTabBar(List<StickerCategory> categories) {
+  Widget _buildTabBar(List<StickerPack> packs) {
     return Container(
       height: 40,
       decoration: BoxDecoration(
@@ -400,7 +405,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
       ),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: 1 + categories.length, // 1 for Emoji + categories
+        itemCount: 1 + packs.length,
         itemBuilder: (context, index) {
           bool isSelected = _selectedIndex == index;
           return Material(
@@ -419,7 +424,7 @@ class _EmojiBoardState extends State<EmojiBoard> {
                 child: index == 0
                     ? InputBarIcon(InputBarGlyph.emoji,
                         size: 24, color: context.colors.iconSecondary)
-                    : Image.asset(categories[index - 1].coverPath),
+                    : _buildPackCover(packs[index - 1]),
               ),
             ),
           );
@@ -514,10 +519,26 @@ class _EmojiBoardState extends State<EmojiBoard> {
     );
   }
 
-  Widget _buildStickerGrid(int categoryIndex) {
-    final category = StickerManager().categories[categoryIndex];
+  Widget _buildPackCover(StickerPack pack) {
+    final cover = StickerView(
+      StickerSource.asset(pack.coverPath),
+      width: 34,
+      height: 34,
+      animate: false,
+    );
+    // 桌面端悬停显示包名;移动端长按会和翻页手势冲突,不加
+    return AppShell.isPointerInput
+        ? Tooltip(
+            message: pack.titleFor(Localizations.localeOf(context)),
+            child: cover,
+          )
+        : cover;
+  }
+
+  Widget _buildStickerGrid(StickerPack pack) {
     return StickerGridPage(
-      stickerPaths: category.stickerPaths,
+      key: ValueKey(pack.id),
+      stickerPaths: pack.stickerPaths,
       onStickerSelected: (path) => widget.pickerStickerCallback?.call(path),
       onPreviewShow: (path) => _showStickerPreview(path),
       onPreviewHide: () => _hidePreview(),
@@ -640,11 +661,11 @@ class _StickerGridPageState extends State<StickerGridPage>
         ),
         itemCount: widget.stickerPaths.length,
         itemBuilder: (context, index) {
-          final image = Container(
+          final image = Padding(
             padding: const EdgeInsets.all(5),
-            child: Image.asset(
-              widget.stickerPaths[index],
-              cacheWidth: 200, // Optimize memory for grid
+            child: StickerView(
+              StickerSource.asset(widget.stickerPaths[index]),
+              decodeSize: 240,
             ),
           );
           return ValueListenableBuilder<int?>(

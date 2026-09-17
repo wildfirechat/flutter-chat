@@ -63,6 +63,10 @@ dependencies:
   http: ^1.2.1
   event_bus: ^2.0.0
   image: ^4.0.15
+  # Telegram 动态贴纸(.tgs = gzip 压缩的 Lottie JSON)渲染。纯 Dart 实现,六端(含鸿蒙)通用,
+  # 不是原生插件,桌面子窗口插件白名单不用加。见 lib/sticker/。
+  # 3.4.0 起要求 Flutter 3.44,鸿蒙适配版目前是 3.35.8,pub 会自动解析到 3.3.x。
+  lottie: ^3.3.1
   badges: ^3.0.3
   flutter_slidable: ^3.0.0
   intl: ^0.20.2
@@ -302,7 +306,11 @@ flutter:
     - assets/images/input/
     - assets/images/input/voice/
     - assets/sounds/
+    # 贴纸包:每个目录都要单独登记(assets 不递归)。
+    # office_phrases / noto_emoji 由 scripts/stickers/build_builtin_packs.py 生成,不要手改
     - assets/sticker/
+    - assets/sticker/office_phrases/
+    - assets/sticker/noto_emoji/
     - assets/sticker/B数/
     - assets/sticker/程序员/
   # To add assets to your application, add an assets section, like this:

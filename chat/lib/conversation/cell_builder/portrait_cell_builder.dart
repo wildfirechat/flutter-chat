@@ -127,6 +127,10 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
   @protected
   bool get hasBubbleTail => false;
 
+  /// 气泡是否铺底色。关掉后内容直接浮在聊天背景上(如透明底贴纸),高亮色照常叠加。
+  @protected
+  bool get hasBubbleBackground => true;
+
   final GlobalKey _bubbleKey = GlobalKey();
 
   /// 气泡在窗口中的全局矩形,供子类(如文本 cell 内层手势)弹消息菜单时定位
@@ -296,13 +300,15 @@ abstract class PortraitCellBuilder extends MessageCellBuilder {
                     decoration: ShapeDecoration(
                       // 高亮时直接改消息内容 view 的背景色(原气泡色 + 高亮色叠加),而不是染外层。
                       color: () {
-                        final baseColor = isSendMessage
-                            ? (AppShell.isDesktopStyle
-                                ? context.colors.bubbleSentDesktop
-                                : context.colors.bubbleSent)
-                            : (AppShell.isDesktopStyle
-                                ? context.colors.bubbleReceivedDesktop
-                                : context.colors.bubbleReceived);
+                        final baseColor = !hasBubbleBackground
+                            ? Colors.transparent
+                            : isSendMessage
+                                ? (AppShell.isDesktopStyle
+                                    ? context.colors.bubbleSentDesktop
+                                    : context.colors.bubbleSent)
+                                : (AppShell.isDesktopStyle
+                                    ? context.colors.bubbleReceivedDesktop
+                                    : context.colors.bubbleReceived);
                         return model.highlighted
                             ? Color.alphaBlend(
                                 context.colors.messageHighlight, baseColor)
