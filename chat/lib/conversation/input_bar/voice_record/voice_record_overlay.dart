@@ -119,7 +119,6 @@ class _VoiceRecordOverlayState extends State<VoiceRecordOverlay>
   VoiceRecordStage _stage = VoiceRecordStage.recording;
   VoiceRecordZone _zone = VoiceRecordZone.send;
   VoiceBubbleState _bubbleState = VoiceBubbleState.send;
-  bool _textEditable = false;
   bool _exiting = false;
 
   @override
@@ -204,14 +203,6 @@ class _VoiceRecordOverlayState extends State<VoiceRecordOverlay>
         _shake.animateTo(1, duration: _shakeDuration);
       }
     }
-    if (controller.textEditable != _textEditable) {
-      _textEditable = controller.textEditable;
-      if (controller.textEditable) {
-        // 输入框变成可编辑之后再获取焦点
-        WidgetsBinding.instance
-            .addPostFrameCallback((_) => _startEditingText());
-      }
-    }
     if (controller.isExiting && !_exiting) {
       _exiting = true;
       _playExitAnimation();
@@ -232,15 +223,16 @@ class _VoiceRecordOverlayState extends State<VoiceRecordOverlay>
     setState(() {});
   }
 
-  /// 识别结果全部返回：弹出软键盘编辑文字，光标放到末尾
-  void _startEditingText() {
+  /// 识别结果全部返回后不自动弹出软键盘，用户点了气泡才开始编辑文字。
+  /// 点在文字上由输入框自己获取焦点、光标放到点的位置；点在气泡空白处时光标放到末尾
+  void _onBubbleTap() {
     final VoiceRecordController controller = widget.controller;
-    if (!mounted || !controller.textEditable) {
+    if (!controller.textEditable || _textFocusNode.hasFocus) {
       return;
     }
     _textFocusNode.requestFocus();
-    controller.textController.selection = TextSelection.collapsed(
-        offset: controller.textController.text.length);
+    controller.textController.selection =
+        TextSelection.collapsed(offset: controller.textController.text.length);
   }
 
   void _playEnterAnimation() {
@@ -617,52 +609,56 @@ class _VoiceRecordOverlayState extends State<VoiceRecordOverlay>
   Widget _buildBubbleContent(VoiceRecordController controller,
       AppLocalizations l10n, VoiceBubbleFrame frame) {
     const EdgeInsets padding = VoiceRecordLayout.bubblePadding;
-    return Stack(
-      children: [
-        Positioned(
-          left: padding.left,
-          top: padding.top,
-          right: padding.right,
-          child: Opacity(
-            opacity: frame.textAlpha.clamp(0.0, 1.0),
-            child: _buildTextField(controller, l10n),
-          ),
-        ),
-        Positioned(
-          left: padding.left,
-          top: padding.top,
-          right: padding.right,
-          bottom: padding.bottom,
-          child: IgnorePointer(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: controller.textEditable ? _onBubbleTap : null,
+      child: Stack(
+        children: [
+          Positioned(
+            left: padding.left,
+            top: padding.top,
+            right: padding.right,
             child: Opacity(
-              opacity: frame.hintAlpha.clamp(0.0, 1.0),
-              // 提示淡入时轻微上浮
-              child: Transform.translate(
-                offset: Offset(0, (1 - frame.hintAlpha) * 6),
-                child: Center(child: _buildHint()),
-              ),
+              opacity: frame.textAlpha.clamp(0.0, 1.0),
+              child: _buildTextField(controller, l10n),
             ),
           ),
-        ),
-        Positioned(
-          left: frame.waveCenterX - frame.waveWidth / 2,
-          top: frame.waveCenterY - frame.waveHeight / 2,
-          width: frame.waveWidth,
-          height: frame.waveHeight,
-          child: IgnorePointer(
-            child: Opacity(
-              opacity: frame.waveAlpha.clamp(0.0, 1.0),
-              child: RepaintBoundary(
-                child: VoiceWaveView(
-                  level: controller.level,
-                  loading: controller.waveLoading,
-                  color: frame.waveColor,
+          Positioned(
+            left: padding.left,
+            top: padding.top,
+            right: padding.right,
+            bottom: padding.bottom,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: frame.hintAlpha.clamp(0.0, 1.0),
+                // 提示淡入时轻微上浮
+                child: Transform.translate(
+                  offset: Offset(0, (1 - frame.hintAlpha) * 6),
+                  child: Center(child: _buildHint()),
                 ),
               ),
             ),
           ),
-        ),
-      ],
+          Positioned(
+            left: frame.waveCenterX - frame.waveWidth / 2,
+            top: frame.waveCenterY - frame.waveHeight / 2,
+            width: frame.waveWidth,
+            height: frame.waveHeight,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: frame.waveAlpha.clamp(0.0, 1.0),
+                child: RepaintBoundary(
+                  child: VoiceWaveView(
+                    level: controller.level,
+                    loading: controller.waveLoading,
+                    color: frame.waveColor,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -796,8 +792,8 @@ class _VoiceRecordOverlayState extends State<VoiceRecordOverlay>
   /// 第 [index] 个编辑按钮：延迟一段时间后淡入到 [opacity] 并升起
   Widget _staggered(
       {required int index, double opacity = 1, required Widget child}) {
-    final Curve curve = Interval((140 + 40 * index) / 560,
-        (440 + 40 * index) / 560,
+    final Curve curve = Interval(
+        (140 + 40 * index) / 560, (440 + 40 * index) / 560,
         curve: _decelerateFast);
     return AnimatedBuilder(
       animation: _editActions,
