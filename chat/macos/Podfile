@@ -1,4 +1,5 @@
-platform :osx, '15.0'
+MACOS_DEPLOYMENT_TARGET = '15.0'
+platform :osx, MACOS_DEPLOYMENT_TARGET
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -39,5 +40,13 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_macos_build_settings(target)
+
+    # Flutter 只删除依赖 FlutterMacOS 的 pod 的部署版本；WebRTC-SDK 等纯二进制 pod 仍保留 podspec 里的 10.x，
+    # 低于新版 Xcode 支持的下限(12.0)会报错。统一抬到 App 的部署版本，高于它的保持不动。
+    target.build_configurations.each do |config|
+      pod_target = config.build_settings['MACOSX_DEPLOYMENT_TARGET']
+      next unless pod_target && Gem::Version.new(pod_target) < Gem::Version.new(MACOS_DEPLOYMENT_TARGET)
+      config.build_settings['MACOSX_DEPLOYMENT_TARGET'] = MACOS_DEPLOYMENT_TARGET
+    end
   end
 end

@@ -37,6 +37,8 @@ PODS:
   - photo_manager (3.8.3):
     - Flutter
     - FlutterMacOS
+  - record_macos (1.2.1):
+    - FlutterMacOS
   - screen_retriever_macos (0.0.1):
     - FlutterMacOS
   - shared_preferences_foundation (0.0.1):
@@ -78,6 +80,7 @@ DEPENDENCIES:
   - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos`)
   - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
   - photo_manager (from `Flutter/ephemeral/.symlinks/plugins/photo_manager/darwin`)
+  - record_macos (from `Flutter/ephemeral/.symlinks/plugins/record_macos/macos`)
   - screen_retriever_macos (from `Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos`)
   - shared_preferences_foundation (from `Flutter/ephemeral/.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `Flutter/ephemeral/.symlinks/plugins/sqflite_darwin/darwin`)
@@ -126,6 +129,8 @@ EXTERNAL SOURCES:
     :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
   photo_manager:
     :path: Flutter/ephemeral/.symlinks/plugins/photo_manager/darwin
+  record_macos:
+    :path: Flutter/ephemeral/.symlinks/plugins/record_macos/macos
   screen_retriever_macos:
     :path: Flutter/ephemeral/.symlinks/plugins/screen_retriever_macos/macos
   shared_preferences_foundation:
@@ -163,6 +168,7 @@ SPEC CHECKSUMS:
   mobile_scanner: 0e365ed56cad24f28c0fd858ca04edefb40dfac3
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   photo_manager: fe4cbb0808b96f8be4af7ce6ae18dcd9c9b983c6
+  record_macos: 5d55909f9650314be6424ffd6b123ac75a08c3c1
   screen_retriever_macos: c5508cc3c66ff0d4db650480cf0ab691e220d933
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
@@ -174,6 +180,6 @@ SPEC CHECKSUMS:
   webview_flutter_wkwebview: 44d4dee7d7056d5ad185d25b38404436d56c547c
   window_manager: 1d01fa7ac65a6e6f83b965471b1a7fdd3f06166c
 
-PODFILE CHECKSUM: 66986206d6d7bf4d6664223e26ce7baff35b225d
+PODFILE CHECKSUM: 46f05c88a753d2b5979f8732fffea2ee8bea7647
 
 COCOAPODS: 1.16.2
