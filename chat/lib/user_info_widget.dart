@@ -220,8 +220,15 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
           // 标题只会是「用户信息」这个恒定名词,信息量为零 —— 去掉标题,但顶区(返回键、
           // 右上角菜单、三栏共用的 60px 水平线)必须留住,详见 PcPageHeader.bare。
           ? PcPageHeader(bare: true, actions: [actionsBuilder])
+          // 移动端走微信式沉浸顶区:不写标题(「用户详情」是恒定名词,信息量为零),
+          // 底色跟下面第一张资料卡一样取 surface —— 全局 AppBar 默认是 cellTop 的灰,
+          // 与白卡之间会横一道生硬的色阶。elevation/scrolledUnderElevation 一并归零,
+          // 内容滚到顶区下面时也不要浮起分层。
           : AppBar(
-              title: Text(AppLocalizations.of(context)!.userInfo),
+              backgroundColor: context.colors.surface,
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
+              scrolledUnderElevation: 0,
               actions: [actionsBuilder],
             ),
       body: SafeArea(
