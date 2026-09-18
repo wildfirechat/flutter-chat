@@ -14,6 +14,7 @@ import '../widget/portrait.dart';
 import 'collection_model.dart';
 import 'collection_service.dart';
 import 'package:chat/app_shell.dart';
+import 'package:chat/config.dart';
 
 /// 接龙详情:接龙内容 + 参与清单,自己那条可就地编辑。
 ///
@@ -358,7 +359,7 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
                 children: [
                   Portrait(
                     creatorInfo?.portrait ?? '',
-                    '',
+                    Config.defaultUserPortrait,
                     width: 24,
                     height: 24,
                     borderRadius: 12,

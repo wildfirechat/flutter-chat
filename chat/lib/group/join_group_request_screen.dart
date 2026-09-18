@@ -16,6 +16,7 @@ import '../widget/app_bar_actions.dart';
 import '../app_navigator.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/utils/layout_scale.dart';
+import 'package:chat/config.dart';
 
 /// 入群申请管理页面
 ///
@@ -280,7 +281,8 @@ class _JoinGroupRequestItem extends StatelessWidget {
         return ListTile(
           leading: GestureDetector(
             onTap: () => openPage(context, UserInfoWidget(request.memberId)),
-            child: Portrait(memberUserInfo.portrait ?? '', '',
+            child: Portrait(
+                memberUserInfo.portrait ?? '', Config.defaultUserPortrait,
                 width: 44, height: 44, borderRadius: 6),
           ),
           title: _buildTitle(context, requestUserName, memberName,

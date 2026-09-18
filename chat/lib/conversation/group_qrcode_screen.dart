@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/group_info.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:chat/config.dart';
 import 'package:chat/wfc_scheme.dart';
+import 'package:chat/viewmodel/group_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/theme/app_colors.dart';
@@ -10,34 +13,23 @@ import 'package:chat/theme/app_typography.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/app_shell.dart';
 
-class GroupQrCodeScreen extends StatefulWidget {
+class GroupQrCodeScreen extends StatelessWidget {
   final GroupInfo groupInfo;
 
   const GroupQrCodeScreen({super.key, required this.groupInfo});
 
   @override
-  State<StatefulWidget> createState() => _GroupQrCodeState();
-}
-
-class _GroupQrCodeState extends State<GroupQrCodeScreen> {
-  GroupInfo? groupInfo;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchGroupInfo();
-  }
-
-  void _fetchGroupInfo() async {
-    groupInfo = widget.groupInfo;
-    setState(() {});
-  }
-
-  @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    String qrCodeValue = WfcScheme.buildGroupScheme(
-        widget.groupInfo.target, Imclient.currentUserId);
+    String qrCodeValue =
+        WfcScheme.buildGroupScheme(groupInfo.target, Imclient.currentUserId);
+
+    // 群没自己设头像时,头像是「成员头像拼接」出来的兜底地址,要等成员信息到齐才
+    // 算得出来(见 GroupViewModel._refreshComposedPortraitIfNeeded)。所以这里跟着
+    // GroupViewModel 走,而不是只用打开这一页时的那份快照。
+    final live = context.select<GroupViewModel, GroupInfo>(
+        (viewModel) => viewModel.getGroupInfo(groupInfo.target));
+    final info = live.updateDt > 0 ? live : groupInfo;
 
     return Scaffold(
       appBar: AppShell.isDesktopStyle
@@ -63,14 +55,14 @@ class _GroupQrCodeState extends State<GroupQrCodeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Portrait(
-                      groupInfo?.portrait ?? '',
-                      groupInfo?.name ?? '',
+                      info.portrait ?? '',
+                      Config.defaultGroupPortrait,
                       width: 60,
                       height: 60,
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      groupInfo?.name ?? '',
+                      info.name ?? '',
                       style: AppText.xl.copyWith(
                         fontWeight: FontWeight.bold,
                         color: context.colors.textPrimary,

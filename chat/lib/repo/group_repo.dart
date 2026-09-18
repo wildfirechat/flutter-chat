@@ -19,6 +19,9 @@ class GroupRepo {
     _conversationGroupInfosLoaded = true;
   }
 
+  /// 只看缓存,不像 [getGroupInfo] 那样为没见过的群塞一个占位对象。
+  static GroupInfo? peekGroupInfo(String groupId) => _groupMap[groupId];
+
   static GroupInfo getGroupInfo(String groupId) {
     var info = _groupMap[groupId];
     if (info == null) {
