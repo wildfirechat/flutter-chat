@@ -5690,6 +5690,12 @@ abstract class AppLocalizations {
   /// **'安全与数据'**
   String get securityAndData;
 
+  /// No description provided for @official.
+  ///
+  /// In zh, this message translates to:
+  /// **'官方'**
+  String get official;
+
   /// No description provided for @peerTyping.
   ///
   /// In zh, this message translates to:

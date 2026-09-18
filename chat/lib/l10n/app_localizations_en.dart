@@ -3071,6 +3071,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get securityAndData => 'Security & Data';
 
   @override
+  String get official => 'Official';
+
+  @override
   String get peerTyping => 'typing';
 
   @override

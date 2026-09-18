@@ -53,7 +53,9 @@ class PcConversationPane extends StatelessWidget {
                 Expanded(
                   child: DefaultTextStyle.merge(
                     style: PcTheme.paneTitle(context),
-                    child: ConversationAppbarTitle(conversation),
+                    // 桌面标题栏是自绘的 Row,标题恒左对齐
+                    child: ConversationAppbarTitle(conversation,
+                        centered: false),
                   ),
                 ),
                 if (conversation.conversationType != ConversationType.Chatroom)

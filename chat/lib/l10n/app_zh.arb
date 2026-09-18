@@ -946,6 +946,7 @@
   "accountName": "账号: {name}",
   "signOut": "退出登录",
   "securityAndData": "安全与数据",
+  "official": "官方",
   "peerTyping": "对方正在输入",
   "groupMembersTyping": "{count}人正在输入",
   "namedUserTyping": "{name} 正在输入",

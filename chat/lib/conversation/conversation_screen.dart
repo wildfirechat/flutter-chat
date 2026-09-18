@@ -50,6 +50,8 @@ class ConversationScreen extends StatelessWidget {
       backgroundColor: context.colors.conversationBg,
       appBar: AppBar(
         automaticallyImplyLeading: showBackButton,
+        // 标题是两行的,大字号档位下 56 装不下,高度由标题组件算
+        toolbarHeight: ConversationAppbarTitle.toolbarHeight(context),
         title: ConversationAppbarTitle(conversation),
         actions: actions,
       ),

@@ -3018,6 +3018,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get securityAndData => '安全与数据';
 
   @override
+  String get official => '官方';
+
+  @override
   String get peerTyping => '对方正在输入';
 
   @override

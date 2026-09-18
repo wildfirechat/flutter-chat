@@ -829,6 +829,7 @@
   "accountName": "Account: {name}",
   "signOut": "Sign Out",
   "securityAndData": "Security & Data",
+  "official": "Official",
   "peerTyping": "typing",
   "groupMembersTyping": "{count} typing",
   "namedUserTyping": "{name} typing",
