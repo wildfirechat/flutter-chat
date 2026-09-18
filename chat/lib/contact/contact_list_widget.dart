@@ -39,6 +39,33 @@ const double _kRowHeight = 52.0;
 const double _kCategoryHeight = 18.0;
 const double _kDividerHeight = 0.5; // 不随字号缩放
 
+/// 侧栏固定字母表:回到顶部 + 星标 + A-Z + 数字/符号。
+///
+/// 字母表不跟着数据走 —— 只列出「当前有联系人的字母」会让索引条的长度和每个
+/// 字母的位置随好友增删来回跳,用户没法形成肌肉记忆。没有数据的字母照样可点,
+/// 落到其后第一个有数据的分类(见 [_ContactListLayout.build])。
+final List<String> _kIndexTags = List<String>.unmodifiable(<String>[
+  '↑',
+  '☆',
+  for (int code = 0x41; code <= 0x5A; code++) String.fromCharCode(code),
+  '#',
+]);
+
+/// 分类在列表里的排序位次,与 [ContactListViewModel] 的排序规则一致:
+/// 星标 0 < AI 机器人 1 < A-Z 2..27 < 数字/其他符号 28。
+///
+/// 侧栏字母表和联系人分类共用这一套位次,空字母才能算出该落到哪一段。
+int _categoryRank(String category) {
+  if (category == '☆') return 0;
+  if (category.startsWith('AI')) return 1;
+  if (category.length == 1) {
+    final code = category.codeUnitAt(0);
+    if (code >= 0x41 && code <= 0x5A) return 2 + code - 0x41;
+  }
+  // '{'(数字/符号,显示为 '#')与 '#' 本身。
+  return 28;
+}
+
 /// 联系人列表的一次性布局计算结果。
 ///
 /// 两万联系人时不能再用 `ListView.builder(itemExtentBuilder:)`:框架实现里
@@ -51,10 +78,11 @@ class _ContactListLayout {
   /// 表头 + 联系人行的完整高度序列,长度等于列表 itemCount。
   final ItemExtents extents;
 
-  /// 字母 -> 该分类第一行的滚动偏移。
+  /// 侧栏字母 -> 点击后要跳到的滚动偏移。[indexList] 里的每一项都有值,
+  /// 没有联系人的字母落到其后第一个有数据的分类。
   final Map<String, double> indexOffsets;
 
-  /// 侧栏字母表。首项固定是回到顶部的 '↑'。
+  /// 侧栏字母表,固定为 [_kIndexTags]。首项是回到顶部的 '↑'。
   final List<String> indexList;
 
   /// 固定表头行(新的朋友/收藏群组/…/组织)与联系人行共用同一个行高 [rowExtent],
@@ -67,8 +95,9 @@ class _ContactListLayout {
   }) {
     final itemExtents =
         List<double>.filled(headerCount + contactList.length, rowExtent);
-    final indexOffsets = <String, double>{};
-    final indexList = <String>['↑'];
+    // 每个分类首行的 (排序位次, 滚动偏移),按列表顺序。AI 机器人不进字母表,
+    // 但要留在这里:星标为空时 '☆' 应当落到它,而不是越过它跳到 'A'。
+    final sections = <({int rank, double offset})>[];
 
     double offset = headerCount * rowExtent;
     for (int i = 0; i < contactList.length; i++) {
@@ -77,21 +106,30 @@ class _ContactListLayout {
           contact.showCategory ? categoryExtent + rowExtent : rowExtent;
       itemExtents[headerCount + i] = extent;
       if (contact.showCategory) {
-        var category = contact.category;
-        if (category == '{') category = '#';
-        if (!indexOffsets.containsKey(category)) {
-          indexOffsets[category] = offset;
-          // AI 机器人不进侧栏字母表
-          if (!category.startsWith('AI')) {
-            indexList.add(category);
-          }
-        }
+        sections.add((rank: _categoryRank(contact.category), offset: offset));
       }
       offset += extent;
     }
 
+    // 固定字母表的每一项都要有落点:取第一个位次不小于它的分类;它之后没有
+    // 任何分类时落到内容底部(实际跳转时再按 maxScrollExtent 收口)。
+    final contentHeight = offset;
+    final indexOffsets = <String, double>{'↑': 0.0};
+    for (int i = 1; i < _kIndexTags.length; i++) {
+      final tag = _kIndexTags[i];
+      final rank = _categoryRank(tag);
+      double target = contentHeight;
+      for (final section in sections) {
+        if (section.rank >= rank) {
+          target = section.offset;
+          break;
+        }
+      }
+      indexOffsets[tag] = target;
+    }
+
     return _ContactListLayout(
-        ItemExtents(itemExtents), indexOffsets, indexList);
+        ItemExtents(itemExtents), indexOffsets, _kIndexTags);
   }
 }
 
@@ -268,15 +306,17 @@ class _ContactListWidgetState extends State<ContactListWidget> {
                           ),
                         ],
                       ),
-                      if (layout.indexList.isNotEmpty)
+                      // 一个联系人都没有时(未加载完/无好友)不显示光秃秃的字母表。
+                      if (record.contactList.isNotEmpty)
                         SidebarIndex(
                           indexList: layout.indexList,
                           onIndexSelected: (tag) {
-                            final offset =
-                                tag == '↑' ? 0.0 : layout.indexOffsets[tag];
+                            final offset = layout.indexOffsets[tag];
                             if (offset != null &&
                                 _scrollController.hasClients) {
-                              _scrollController.jumpTo(offset);
+                              // 空字母的落点可能算到内容底部,超出可滚动范围。
+                              _scrollController.jumpTo(offset.clamp(0.0,
+                                  _scrollController.position.maxScrollExtent));
                             }
                           },
                           onTouch: (tag, isTouching) {
