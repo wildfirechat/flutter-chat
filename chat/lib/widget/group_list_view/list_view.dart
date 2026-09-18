@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'index_path.dart';
 import 'list_item.dart';
 import 'list_item_type.dart';
+import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/l10n/app_localizations.dart';
 
@@ -371,11 +372,7 @@ class _GroupListViewState extends State<GroupListView> {
           widget.countOfItemInSection(indexPath.section) - 1) {
         return widget.groupExpandBuilder != null
             ? widget.groupExpandBuilder!(context, indexPath.section)
-            : ListTile(
-                dense: true,
-                title: Text(AppLocalizations.of(context)!.expandAll,
-                    style: AppText.sm),
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+            : _ExpandAllTile(
                 onTap: () {
                   setState(() {
                     _sectionExpandStatus[indexPath.section] = true;
@@ -389,5 +386,45 @@ class _GroupListViewState extends State<GroupListView> {
         );
       }
     }
+  }
+}
+
+/// 分组折叠时那条「全部展开」。
+///
+/// 原先是一个裸 [ListTile]:文字走主题默认的正文色,与它上面几行搜索结果的标题
+/// 同色同字号,读起来像「又一条搜不出头像的结果」,看不出能点。这里按微信的做法
+/// 把它做成一条明确的动作行 —— accent 文字 + 向下箭头,左边与列表项同一条 16 的
+/// 边距对齐,点击区仍然整行可点。
+class _ExpandAllTile extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _ExpandAllTile({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        hoverColor: colors.hoverOverlay,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              Text(
+                AppLocalizations.of(context)!.expandAll,
+                style: AppText.sm.copyWith(
+                  color: colors.accent,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 2),
+              Icon(Icons.keyboard_arrow_down, size: 16, color: colors.accent),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

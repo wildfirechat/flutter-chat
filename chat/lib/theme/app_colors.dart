@@ -35,6 +35,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.conversationBg,
     required this.inputBg,
     required this.inputBgHover,
+    required this.searchFieldBg,
     required this.searchBg,
     required this.searchBgHover,
     required this.cellHover,
@@ -127,9 +128,16 @@ class AppColors extends ThemeExtension<AppColors> {
   /// 移动端会话页背景(与桌面端右栏不同色,故单列)。
   final Color conversationBg;
 
-  /// 搜索框 / 输入框底色。
+  /// 输入框底色。给**灰面**上的输入框用(会话背景、桌面中栏、面板),所以压得比较深。
   final Color inputBg;
   final Color inputBgHover;
+
+  /// **白面([surface])上**的搜索输入框底色 —— 移动端搜索页顶栏那颗药丸。
+  ///
+  /// 不能复用 [inputBg]:那一档是按灰底调的,直接铺到白底上反差过大,顶栏会被读成
+  /// 一条深色横带。也不是 [searchBg] —— 那是桌面中栏「比灰面更亮」的方向,在白面上
+  /// 等于没画。暗色下 [surface] 与 [inputBg] 的明度差本来就小,故与 [inputBg] 同值。
+  final Color searchFieldBg;
 
   /// 桌面端中栏顶部搜索框底色（常态 / hover）。
   final Color searchBg;
@@ -226,6 +234,7 @@ class AppColors extends ThemeExtension<AppColors> {
     conversationBg: Color(0xFFE8E8E8),
     inputBg: Color(0xFFDBDAD9),
     inputBgHover: Color(0xFFD5D4D3),
+    searchFieldBg: Color(0xFFF5F5F5),
     searchBg: Color(0xFFFAFAFA),
     searchBgHover: Color(0xFFF6F6F7),
     cellHover: Color(0xFFDBDAD9),
@@ -288,6 +297,7 @@ class AppColors extends ThemeExtension<AppColors> {
     conversationBg: Color(0xFF1C1C1E),
     inputBg: Color(0xFF3A3A3C),
     inputBgHover: Color(0xFF48484A),
+    searchFieldBg: Color(0xFF3A3A3C),
     searchBg: Color(0xFF2C2C2E),
     searchBgHover: Color(0xFF323232),
     cellHover: Color(0x0DFFFFFF),
@@ -347,6 +357,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? conversationBg,
     Color? inputBg,
     Color? inputBgHover,
+    Color? searchFieldBg,
     Color? searchBg,
     Color? searchBgHover,
     Color? cellHover,
@@ -404,6 +415,7 @@ class AppColors extends ThemeExtension<AppColors> {
       conversationBg: conversationBg ?? this.conversationBg,
       inputBg: inputBg ?? this.inputBg,
       inputBgHover: inputBgHover ?? this.inputBgHover,
+      searchFieldBg: searchFieldBg ?? this.searchFieldBg,
       searchBg: searchBg ?? this.searchBg,
       searchBgHover: searchBgHover ?? this.searchBgHover,
       cellHover: cellHover ?? this.cellHover,
@@ -470,6 +482,7 @@ class AppColors extends ThemeExtension<AppColors> {
       conversationBg: mix(conversationBg, other.conversationBg),
       inputBg: mix(inputBg, other.inputBg),
       inputBgHover: mix(inputBgHover, other.inputBgHover),
+      searchFieldBg: mix(searchFieldBg, other.searchFieldBg),
       searchBg: mix(searchBg, other.searchBg),
       searchBgHover: mix(searchBgHover, other.searchBgHover),
       cellHover: mix(cellHover, other.cellHover),

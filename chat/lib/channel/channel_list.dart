@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
 import 'package:imclient/model/conversation.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/channel/search_channel.dart';
 import 'package:chat/config.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
@@ -69,10 +70,7 @@ class ChannelListState extends State<ChannelList> {
   }
 
   void _searchChannel() {
-    showSearch(
-        context: context,
-        delegate: SearchChannelDelegate(
-            searchFieldHint: AppLocalizations.of(context)!.searchChannelHint));
+    openSearchPage(context, const SearchChannelScreen());
   }
 
   Widget _buildRow(BuildContext context, int index) {

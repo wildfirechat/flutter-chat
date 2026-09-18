@@ -126,15 +126,18 @@ void replaceWithConversation(BuildContext context, Conversation conversation) {
   );
 }
 
-/// 打开 [showSearch] 那套搜索页:多栏形态压进右栏,单栏仍是整页。
+/// 打开搜索页([SearchScaffold] 那一套):多栏形态压进右栏那条栈,单栏整页 push。
 ///
-/// 不能走 [openPage] —— SearchDelegate 的界面是一条自带动画与状态的路由,
-/// 只能由 showSearch 自己压。所以这里换的是"压给哪个 Navigator":
-/// 取右栏 Navigator 的 overlay context,它的最近 Navigator 祖先正是右栏那个。
-Future<T?> openSearch<T>(BuildContext context, SearchDelegate<T> delegate) {
-  final paneContext =
-      _shellOf(context)?.paneNavigatorProvider?.call()?.overlay?.context;
-  return showSearch<T>(context: paneContext ?? context, delegate: delegate);
+/// 不走 [openPage] —— 那是"换右栏内容"(整栏替换,其上的浮层路由一并清掉),
+/// 而搜索是临时的一层:点「取消」要能退回打开它之前的右栏内容。所以这里换的是
+/// "压给哪个 Navigator":多栏时压右栏那条嵌套栈,其余情况压当前栈。
+Future<T?> openSearchPage<T>(BuildContext context, Widget page) {
+  final paneNavigator = _shellOf(context)?.paneNavigatorProvider?.call();
+  final route = MaterialPageRoute<T>(builder: (_) => page);
+  if (paneNavigator != null) {
+    return paneNavigator.push(route);
+  }
+  return Navigator.push(context, route);
 }
 
 /// 关闭右栏当前页面,回到占位欢迎页(页面内容已失效时用,如群聊被移出通讯录)。

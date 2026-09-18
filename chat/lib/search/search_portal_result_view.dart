@@ -22,6 +22,7 @@ import '../viewmodel/group_view_model.dart';
 import '../viewmodel/user_view_model.dart';
 import '../widget/group_list_view/index_path.dart';
 import 'search_conversation_result_view.dart';
+import 'search_scaffold.dart';
 import '../user_info_widget.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/utils/layout_scale.dart';
@@ -77,14 +78,22 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                 }));
 
           return groupedSearchResults.isEmpty
-              ? Container(
-                  height: widget.shrinkWrap ? 80.0 : null,
-                  alignment: Alignment.center,
-                  child: Text(
-                    AppLocalizations.of(context)!.noSearchResult,
-                    style: AppText.base.copyWith(color: Colors.black54),
-                  ),
-                )
+              // 桌面端是嵌在浮层里的一小块(shrinkWrap),只给一行字;
+              // 移动端整页,给带图标的空态。
+              ? (widget.shrinkWrap
+                  ? Container(
+                      height: 80.0,
+                      alignment: Alignment.center,
+                      child: Text(
+                        AppLocalizations.of(context)!.noSearchResult,
+                        style: AppText.base
+                            .copyWith(color: context.colors.textSecondary),
+                      ),
+                    )
+                  : SearchStatusView(
+                      icon: Icons.search_off,
+                      message: AppLocalizations.of(context)!.noSearchResult,
+                    ))
               : GroupListView(
                   shrinkWrap: widget.shrinkWrap,
                   keyboardDismissBehavior:

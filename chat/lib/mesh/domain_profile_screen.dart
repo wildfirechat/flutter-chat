@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:imclient/model/domain_info.dart';
+import 'package:chat/app_navigator.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/widgets/pc_icon_action.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
@@ -56,10 +57,7 @@ class _DomainProfileScreenState extends State<DomainProfileScreen> {
   }
 
   void _searchUsersInDomain() {
-    final delegate = SearchUserDelegate(
-        domainId: widget.domainId,
-        searchFieldHint: AppLocalizations.of(context)!.searchUserFieldHint);
-    showSearch(context: context, delegate: delegate);
+    openSearchPage(context, SearchUserScreen(domainId: widget.domainId));
   }
 
   @override

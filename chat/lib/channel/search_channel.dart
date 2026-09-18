@@ -1,143 +1,96 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
+import 'package:chat/search/async_search_result_view.dart';
+import 'package:chat/search/search_scaffold.dart';
+import 'package:chat/theme/app_colors.dart';
+import 'package:chat/theme/app_typography.dart';
+import 'package:chat/widget/portrait.dart';
 
 import '../config.dart';
 import '../l10n/app_localizations.dart';
-import '../utils/media_url_redirector.dart';
-import '../channel/channel_info_widget.dart';
+import 'channel_info_widget.dart';
 
-class SearchChannelDelegate extends SearchDelegate<String> {
-  SearchChannelDelegate({required String searchFieldHint})
-      : super(searchFieldLabel: searchFieldHint);
+/// 搜索频道。与[搜索用户]同一套壳与交互:边打边搜、搜不到有提示。
+class SearchChannelScreen extends StatelessWidget {
+  final String? hint;
 
-  @override
-  List<Widget>? buildActions(BuildContext context) {
-    return [
-      IconButton(
-          onPressed: () {
-            query = "";
-            showSuggestions(context);
-          },
-          icon: const Icon(Icons.clear)),
-    ];
-  }
+  const SearchChannelScreen({super.key, this.hint});
 
   @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: AnimatedIcon(
-          icon: AnimatedIcons.menu_arrow, progress: transitionAnimation),
-      onPressed: () {
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SearchScaffold(
+      hint: hint ?? l10n.searchChannelHint,
+      builder: (context, query) {
         if (query.isEmpty) {
-          close(context, "");
-        } else {
-          query = "";
-          showSuggestions(context);
+          return SearchStatusView(
+            icon: Icons.podcasts_outlined,
+            message: l10n.searchChannelPrompt,
+          );
         }
+        return AsyncSearchResultView<ChannelInfo>(
+          query: query,
+          onSearch: _searchChannels,
+          emptyMessage: l10n.searchChannelNotFound,
+          itemBuilder: (context, channelInfo) =>
+              _ChannelResultItem(channelInfo: channelInfo),
+        );
       },
     );
   }
 
-  Future<List<ChannelInfo>> searchChannelsInServer() async {
-    if (query.isEmpty) {
-      return [];
-    }
-
-    List<ChannelInfo> us = [];
-    bool finish = false;
-
-    Imclient.searchChannel(query, (channelInfos) {
-      us = channelInfos;
-      finish = true;
+  Future<List<ChannelInfo>> _searchChannels(String keyword) {
+    final completer = Completer<List<ChannelInfo>>();
+    Imclient.searchChannel(keyword, (channelInfos) {
+      if (!completer.isCompleted) {
+        completer.complete(channelInfos);
+      }
     }, (errorCode) {
-      finish = true;
+      if (!completer.isCompleted) {
+        completer.completeError(errorCode);
+      }
     });
-
-    while (!finish) {
-      await Future.delayed(const Duration(microseconds: 100));
-    }
-    return us;
+    return completer.future;
   }
+}
 
-  late List<ChannelInfo> searchedChannels;
+class _ChannelResultItem extends StatelessWidget {
+  final ChannelInfo channelInfo;
 
-  Widget _buildRow(BuildContext context, int index) {
-    ChannelInfo channelInfo = searchedChannels[index];
-    return GestureDetector(
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-                child: SizedBox(
-                  width: 40,
-                  height: 40,
-                  child: (channelInfo.portrait == null ||
-                          channelInfo.portrait!.isEmpty)
-                      ? Image.asset(Config.defaultChannelPortrait,
-                          width: 40.0, height: 40.0)
-                      : Image.network(
-                          MediaUrlRedirector.redirect(channelInfo.portrait!),
-                          width: 40,
-                          height: 40,
-                        ),
-                ),
-              ),
-              Expanded(child: Text(channelInfo.name!)),
-            ],
-          ),
-          // height 9 保留原 4+1+4 的行间留白。
-          const Divider(height: 9, indent: 12, endIndent: 12),
-        ],
+  const _ChannelResultItem({required this.channelInfo});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ChannelInfoWidget(channelInfo: channelInfo)),
       ),
-      onTap: () => _toChannelInfoView(context, channelInfo),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            Portrait(channelInfo.portrait ?? Config.defaultChannelPortrait,
+                Config.defaultChannelPortrait,
+                width: 40, height: 40, borderRadius: 4.0),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                channelInfo.name ?? '',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.base.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: context.colors.textPrimary),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
-  }
-
-  void _toChannelInfoView(BuildContext context, ChannelInfo channelInfo) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => ChannelInfoWidget(channelInfo: channelInfo)),
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return FutureBuilder<List<ChannelInfo>>(
-        future: searchChannelsInServer(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.data!.isEmpty) {
-              return Center(
-                child:
-                    Text(AppLocalizations.of(context)!.searchChannelNotFound),
-              );
-            } else {
-              searchedChannels = snapshot.data!;
-              return ListView.builder(
-                itemCount: searchedChannels.length,
-                itemBuilder: (context, index) => _buildRow(context, index),
-              );
-            }
-          }
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        });
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    if (query.isNotEmpty) {
-      return Container();
-    } else {
-      return Container(
-        margin: const EdgeInsets.all(16),
-        child: Text(AppLocalizations.of(context)!.searchChannelPrompt),
-      );
-    }
   }
 }

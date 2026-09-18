@@ -312,7 +312,14 @@ class _ConversationSearchPanelState extends State<ConversationSearchPanel> {
               const BoxConstraints(minWidth: 36, minHeight: 36),
           suffixIcon: _controller.text.isEmpty
               ? null
+              // IconButton 默认按 48×48 的点击区排版(tapTargetSize.padded),
+              // 不收紧的话一输入就把搜索框顶到 48 高(这里外框钉死 36,会直接溢出)。
               : IconButton(
+                  style: IconButton.styleFrom(
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: EdgeInsets.zero,
+                    minimumSize: const Size(34, 36),
+                  ),
                   icon: Icon(Icons.cancel,
                       size: 18, color: context.colors.iconSecondary),
                   onPressed: () {

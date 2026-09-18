@@ -20,7 +20,7 @@ import 'package:chat/config.dart';
 import 'package:chat/contact/pick_user_screen.dart';
 import 'package:chat/pad/pad_workspace_welcome.dart';
 import 'package:chat/contact/search_user.dart';
-import 'package:chat/search/search_portal_delegate.dart';
+import 'package:chat/search/search_portal_screen.dart';
 import 'package:chat/settings/me_tab.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/conversation_list_view_model.dart';
@@ -218,10 +218,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   }
 
   void _onTapSearchButton(BuildContext context) {
-    openSearch(
-        context,
-        SearchPortalDelegate(
-            searchFieldHint: AppLocalizations.of(context)!.pleaseInput));
+    openSearchPage(context, const SearchPortalScreen());
   }
 
   /// 双击消息 tab：把第一个有未读的会话滚动到列表顶部
@@ -322,11 +319,7 @@ class HomeTabBarState extends State<HomeTabBar> {
   }
 
   void _addFriend() {
-    openSearch(
-        context,
-        SearchUserDelegate(
-            searchFieldHint:
-                AppLocalizations.of(context)!.searchUserFieldHint));
+    openSearchPage(context, const SearchUserScreen());
   }
 
   void _showPlusMenu(BuildContext context) {

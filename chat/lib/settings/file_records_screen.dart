@@ -22,6 +22,7 @@ import 'package:provider/provider.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/pc/widgets/pc_page_header.dart';
 import 'package:chat/app_navigator.dart';
+import 'package:chat/search/search_scaffold.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/app_shell.dart';
 
@@ -148,9 +149,9 @@ class FileListScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.search),
               onPressed: () {
-                showSearch(
-                  context: context,
-                  delegate: _FileSearchDelegate(
+                openSearchPage(
+                  context,
+                  FileSearchScreen(
                     type: type,
                     conversation: conversation,
                     userId: userId,
@@ -181,59 +182,40 @@ class FileListScreen extends StatelessWidget {
   }
 }
 
-class _FileSearchDelegate extends SearchDelegate<FileRecord?> {
+/// 文件列表里的关键字搜索页。壳与其它搜索页一致([SearchScaffold]),
+/// 结果直接复用 [FileListWidget](它自己带分页与空态)。
+class FileSearchScreen extends StatelessWidget {
   final FileListType type;
   final Conversation? conversation;
   final String? userId;
 
-  _FileSearchDelegate({
+  const FileSearchScreen({
+    super.key,
     required this.type,
     this.conversation,
     this.userId,
   });
 
   @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      if (query.isNotEmpty)
-        IconButton(
-          icon: const Icon(Icons.clear),
-          onPressed: () {
-            query = '';
-          },
-        ),
-    ];
-  }
-
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, null);
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return SearchScaffold(
+      hint: l10n.searchFiles,
+      builder: (context, query) {
+        if (query.isEmpty) {
+          return SearchStatusView(
+            icon: Icons.folder_open_outlined,
+            message: l10n.searchPrompt,
+          );
+        }
+        // 关键字变了由 FileListWidget 自己 didUpdateWidget 里重拉,不用换 key。
+        return FileListWidget(
+          type: type,
+          conversation: conversation,
+          userId: userId,
+          keyword: query,
+        );
       },
-    );
-  }
-
-  @override
-  Widget buildResults(BuildContext context) {
-    return _buildSearchBody(context);
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    return _buildSearchBody(context);
-  }
-
-  Widget _buildSearchBody(BuildContext context) {
-    if (query.trim().isEmpty) {
-      return Center(child: Text(AppLocalizations.of(context)!.searchPrompt));
-    }
-    return FileListWidget(
-      type: type,
-      conversation: conversation,
-      userId: userId,
-      keyword: query.trim(),
     );
   }
 }
