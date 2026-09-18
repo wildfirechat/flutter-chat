@@ -21,6 +21,8 @@ public class WfcApplication extends FlutterApplication {
     private FlutterEngine flutterEngine;
     // 播放语音消息期间的距离传感器(贴耳切听筒/息屏)，通道挂在预热引擎上
     private ProximityChannel proximityChannel;
+    // 播放语音消息前查一下有没有接耳机，通道同样挂在预热引擎上
+    private AudioOutputChannel audioOutputChannel;
     public static final String FLUTTER_ENGINE_ID = "wfc_flutter_engine";
 
     public static WfcApplication getInstance() {
@@ -72,6 +74,8 @@ public class WfcApplication extends FlutterApplication {
             flutterEngine.getPlatformViewsController().getRegistry();
 
             proximityChannel = new ProximityChannel(
+                    this, flutterEngine.getDartExecutor().getBinaryMessenger());
+            audioOutputChannel = new AudioOutputChannel(
                     this, flutterEngine.getDartExecutor().getBinaryMessenger());
 
             // 缓存引擎

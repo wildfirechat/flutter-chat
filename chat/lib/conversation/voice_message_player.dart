@@ -6,6 +6,7 @@ import 'package:avenginekit/internal/avenginekit_impl.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_sound/flutter_sound.dart'
     show FlutterSoundPlayer, PlaybackDisposition;
+import 'package:chat/utils/audio_output_device.dart';
 import 'package:chat/utils/proximity_monitor.dart';
 import 'package:imclient/imclient_platform.dart';
 import 'package:logger/logger.dart' show Level;
@@ -102,8 +103,12 @@ class VoiceMessagePlayer {
       avEngineKit.currentSession!.status != CallState.STATUS_IDLE;
 
   /// 本次播放是否真的会从听筒出声。用于决定要不要提示"请贴近手机聆听"。
-  static bool get willPlayThroughEarpiece =>
-      VoicePlayMode.isEarpiece && !_isInCall;
+  static Future<bool> willPlayThroughEarpiece() async {
+    if (!VoicePlayMode.isEarpiece || _isInCall) {
+      return false;
+    }
+    return !await AudioOutputDevice.isHeadsetOn();
+  }
 
   FlutterSoundPlayer? _flutterSoundPlayer;
   AudioPlayer? _audioPlayer;
@@ -123,6 +128,9 @@ class VoiceMessagePlayer {
 
   /// 距离传感器把输出通道临时切成了听筒(用户设置仍是扬声器)
   bool _proximityEarpiece = false;
+
+  /// 本次播放开始时有没有接耳机。见 [_contextFor]
+  bool _headsetOn = false;
 
   /// 串行化各个操作。切换输出通道要「停掉 → 改通道 → 重新开始」，与并发进来的
   /// play/stop 交叠会错乱(停了又被拉起来、或者播两路)，所以排队执行。
@@ -151,14 +159,24 @@ class VoiceMessagePlayer {
     _playingUrl = url;
     _onComplete = onComplete;
     _proximityEarpiece = false;
-    await _applyAudioContext(
-        VoicePlayMode.isEarpiece ? _earpieceContext : _speakerContext);
+    _headsetOn = await AudioOutputDevice.isHeadsetOn();
+    await _applyAudioContext(_contextFor(VoicePlayMode.isEarpiece));
     await _startPlayback(url, Duration.zero, onComplete);
-    // 桌面/鸿蒙/平板切不了听筒，也就不用监听距离传感器
-    if (VoicePlayMode.isSupported) {
+    // 桌面/鸿蒙/平板切不了听筒，也就不用监听距离传感器；接了耳机同理，而且耳机多半在
+    // 兜里或桌上，传感器被遮住只会误息屏
+    if (VoicePlayMode.isSupported && !_headsetOn) {
       await ProximityMonitor.start(_onProximityChanged);
     }
   }
+
+  /// 本次播放该用哪套输出通道。
+  ///
+  /// 接了耳机时听筒那套不但没意义，还有害：Android 的通话流走 STRATEGY_PHONE，
+  /// 而该策略不使用 A2DP 蓝牙耳机(那是 SCO 的事)，声音会从听筒而不是耳机出来；
+  /// iOS 的 playAndRecord 则会白白打开麦克风。统一退回扬声器那套——它走媒体流/
+  /// playback，接了耳机声音照样从耳机出。
+  AudioContext _contextFor(bool earpiece) =>
+      earpiece && !_headsetOn ? _earpieceContext : _speakerContext;
 
   Future<void> _stop() async {
     _playingUrl = null;
@@ -246,13 +264,14 @@ class VoiceMessagePlayer {
     if (url == null || onComplete == null) {
       return;
     }
-    if (VoicePlayMode.isEarpiece || _proximityEarpiece == near) {
+    // 接了耳机时压根没注册传感器，这里只是兜底
+    if (VoicePlayMode.isEarpiece || _headsetOn || _proximityEarpiece == near) {
       return;
     }
     _proximityEarpiece = near;
     final position = near ? Duration.zero : await _currentPosition();
     await _stopPlayback();
-    await _applyAudioContext(near ? _earpieceContext : _speakerContext);
+    await _applyAudioContext(_contextFor(near));
     await _startPlayback(url, position, onComplete);
   }
 

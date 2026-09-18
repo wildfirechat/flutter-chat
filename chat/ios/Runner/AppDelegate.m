@@ -3,6 +3,7 @@
 #if USE_CALL_KIT
 #import "WFCCallKitManager.h"
 #endif
+#import <AVFoundation/AVFoundation.h>
 #import <UserNotifications/UserNotifications.h>
 #include <WFChatClient/WFCChatClient.h>
 
@@ -21,6 +22,8 @@ static NSString * const kSharedAppServerAddressKey = @"wfc_share_appserver_addre
 // 播放语音消息期间的距离传感器(贴耳切听筒/息屏)
 @property(nonatomic, strong) FlutterMethodChannel *proximityChannel;
 @property(nonatomic, assign) BOOL proximityMonitoring;
+// 播放语音消息前查当前音频输出设备(有没有接耳机)
+@property(nonatomic, strong) FlutterMethodChannel *audioOutputChannel;
 @end
 
 @implementation AppDelegate
@@ -69,6 +72,7 @@ static NSString * const kSharedAppServerAddressKey = @"wfc_share_appserver_addre
         }];
 
         [self setupProximityChannel:controller];
+        [self setupAudioOutputChannel:controller];
     }
 
     return result;
@@ -131,6 +135,42 @@ static NSString * const kSharedAppServerAddressKey = @"wfc_share_appserver_addre
 - (void)onProximityStateChanged:(NSNotification *)notification {
     [self.proximityChannel invokeMethod:@"onProximityChanged"
                               arguments:@([UIDevice currentDevice].proximityState)];
+}
+
+#pragma mark - 音频输出设备
+
+// 播放语音消息前查一次：接了耳机就不用距离传感器、也不提示贴近手机。
+// 只做一次性查询，不监听路由变化(AVAudioSessionRouteChangeNotification)：语音消息通常
+// 只有几秒，播放中途插拔耳机的收益不值得再引入一份监听状态。
+- (void)setupAudioOutputChannel:(FlutterViewController *)controller {
+    self.audioOutputChannel = [FlutterMethodChannel
+        methodChannelWithName:@"chat.wildfire/audio_output"
+              binaryMessenger:controller.binaryMessenger];
+    __weak typeof(self) weakSelf = self;
+    [self.audioOutputChannel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
+        if ([call.method isEqualToString:@"isHeadsetOn"]) {
+            result(@([weakSelf isHeadsetOn]));
+        } else {
+            result(FlutterMethodNotImplemented);
+        }
+    }];
+}
+
+/// 声音会直接进耳朵的输出设备。判断错了只是多提示一句「请贴近手机聆听」，不影响出声。
+- (BOOL)isHeadsetOn {
+    AVAudioSessionRouteDescription *route = [AVAudioSession sharedInstance].currentRoute;
+    for (AVAudioSessionPortDescription *output in route.outputs) {
+        NSString *portType = output.portType;
+        if ([portType isEqualToString:AVAudioSessionPortHeadphones]
+            || [portType isEqualToString:AVAudioSessionPortBluetoothA2DP]
+            || [portType isEqualToString:AVAudioSessionPortBluetoothHFP]
+            || [portType isEqualToString:AVAudioSessionPortBluetoothLE]
+            || [portType isEqualToString:AVAudioSessionPortUSBAudio]
+            || [portType isEqualToString:AVAudioSessionPortCarAudio]) {
+            return YES;
+        }
+    }
+    return NO;
 }
 
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {

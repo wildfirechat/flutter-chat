@@ -364,10 +364,15 @@ class ConversationController extends ChangeNotifier {
       if (_playingMessageId == model.message.messageId) {
         _stopPlayingVoiceMessage();
       } else {
-        // 听筒播放时声音很小，和 android-chat 一样提示用户贴近手机听
-        if (VoiceMessagePlayer.willPlayThroughEarpiece) {
-          showToast(msg: AppLocalizations.of(context)!.voicePlayEarpieceHint);
-        }
+        // 听筒播放时声音很小，和 android-chat 一样提示用户贴近手机听。
+        // 要查当前有没有接耳机(接了就不必贴近手机)，是个异步的原生调用，先把文案取出来，
+        // 免得回调里再用 context
+        final earpieceHint = AppLocalizations.of(context)!.voicePlayEarpieceHint;
+        VoiceMessagePlayer.willPlayThroughEarpiece().then((earpiece) {
+          if (earpiece) {
+            showToast(msg: earpieceHint);
+          }
+        });
         startPlayVoiceMessage(model);
       }
     } else if (model.message.content is CallStartMessageContent) {
