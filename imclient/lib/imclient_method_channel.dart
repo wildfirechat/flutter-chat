@@ -1001,38 +1001,101 @@ class ImclientPlatform extends PlatformInterface {
     _channel.invokeMethod('registerMessage', map);
   }
 
-  Message? _convertProtoMessage(Map<dynamic, dynamic>? map) {
-    if(map == null) {
+  // -------------------------------------------------------------------
+  // 原生数据的安全取值
+  //
+  // 四端送上来的 map 形状本就不完全一致（移动端嵌套 / 桌面端扁平），遇到服务端
+  // 下发的非法消息时还会出现字段缺失、类型不对、枚举下标越界。这些转换跑在
+  // MethodChannel 回调和 FFI 回调里，抛出去没人接，整批消息转换失败并崩溃。
+  // 所以消息相关的取值一律走下面这组 _safe*：取不到就用默认值，最坏情况这条
+  // 消息显示成未知消息，但不影响同批次的其他消息，更不能 crash。
+  // -------------------------------------------------------------------
+
+  static int _safeInt(dynamic value, [int fallback = 0]) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    // 部分原生实现会把 64 位整型序列化成 "123L" 这样的字符串
+    if (value is String) return int.tryParse(value.replaceAll('L', '')) ?? fallback;
+    return fallback;
+  }
+
+  static String? _safeString(dynamic value) {
+    if (value == null) return null;
+    return value is String ? value : value.toString();
+  }
+
+  static List<String> _safeStringList(dynamic value) {
+    if (value is! List) return <String>[];
+    List<String> list = [];
+    for (var element in value) {
+      if (element == null) continue;
+      list.add(element is String ? element : element.toString());
+    }
+    return list;
+  }
+
+  /// 枚举下标缺失或越界（原生新增了 Dart 侧还没有的取值）时回落到 [fallback]。
+  static T _safeEnum<T>(List<T> values, dynamic index, T fallback) {
+    int i = _safeInt(index, -1);
+    return i >= 0 && i < values.length ? values[i] : fallback;
+  }
+
+  /// [data] 为原生返回的消息 map。类型不对、或是桌面端的 messageId == -1 占位对象
+  /// 时返回 null（调用方按"没有这条消息"处理）。
+  Message? _convertProtoMessage(dynamic data) {
+    if (data == null) {
+      return null;
+    }
+    if (data is! Map) {
+      debugPrint('[Imclient] 消息数据不是 map，已丢弃：$data');
+      return null;
+    }
+    Map<dynamic, dynamic> map = data;
+
+    if (_safeInt(map['messageId']) == -1) {
       return null;
     }
 
-    if ((map['messageId'] ?? 0) == -1) {
-      return null;
-    }
-
+    // late 字段先全部给默认值：下面任何一步出意外，都能把这条消息降级成未知
+    // 消息返回，而不是让整批转换失败。正常路径上这些默认值都会被覆盖。
     Message msg = Message();
-    msg.messageId = map['messageId'];
-    if(map['messageUid'] is String) {
-      String str = map['messageUid'];
-      str = str.replaceAll("L", "");
-      msg.messageUid = int.tryParse(str);
-    } else {
-      msg.messageUid = map['messageUid'];
-    }
+    msg.conversation = Conversation();
+    msg.direction = MessageDirection.MessageDirection_Receive;
+    msg.status = MessageStatus.Message_Status_Readed;
+    msg.serverTime = 0;
+    msg.content = UnknownMessageContent()..decode(MessagePayload());
 
-    msg.conversation = _convertProtoConversation(_extractConversationMap(map));
-    msg.fromUser = map['fromUser'] ?? map['from'] ?? map['sender'] ?? '';
-    // 移动端原生使用 toUsers，桌面端 SDK 使用 to，缺失时保持 null。
-    var toUsers = map['toUsers'] ?? map['to'];
-    if (toUsers != null) {
-      msg.toUsers = Tools.convertDynamicList(toUsers);
+    try {
+      msg.messageId = _safeInt(map['messageId']);
+      var messageUid = map['messageUid'];
+      if (messageUid is String) {
+        msg.messageUid = int.tryParse(messageUid.replaceAll("L", ""));
+      } else {
+        msg.messageUid = messageUid == null ? null : _safeInt(messageUid);
+      }
+
+      msg.conversation = _convertProtoConversation(_extractConversationMap(map));
+      msg.fromUser =
+          _safeString(map['fromUser'] ?? map['from'] ?? map['sender']) ?? '';
+      // 移动端原生使用 toUsers，桌面端 SDK 使用 to，缺失时保持 null。
+      var toUsers = map['toUsers'] ?? map['to'];
+      if (toUsers != null) {
+        msg.toUsers = _safeStringList(toUsers);
+      }
+      msg.direction = _safeEnum(MessageDirection.values, map['direction'],
+          MessageDirection.values[0]);
+      msg.status =
+          _safeEnum(MessageStatus.values, map['status'], MessageStatus.values[0]);
+      msg.serverTime = _safeInt(map.containsKey('serverTime')
+          ? map['serverTime']
+          : map['timestamp']);
+      msg.localExtra = _safeString(map['localExtra']);
+      // content 放最后：即使解码出意外，前面的字段也都已经落到消息上了。
+      msg.content =
+          decodeMessageContent(_convertProtoMessageContent(map['content']));
+    } catch (e, stack) {
+      debugPrint('[Imclient] 消息转换失败，已降级成未知消息：$e\n$stack');
     }
-    msg.content =
-        decodeMessageContent(_convertProtoMessageContent(map['content']));
-    msg.direction = MessageDirection.values[map['direction'] ?? 0];
-    msg.status = MessageStatus.values[map['status'] ?? 0];
-    msg.serverTime = map.containsKey('serverTime') ? (map['serverTime'] ?? 0) : (map['timestamp'] ?? 0);
-    msg.localExtra = map['localExtra'];
     return msg;
   }
 
@@ -1077,13 +1140,12 @@ class ImclientPlatform extends PlatformInterface {
       return Conversation();
     }
     Conversation conversation = Conversation();
-    conversation.conversationType = ConversationType.values[map.containsKey('type') ? map['type'] : map['conversationType'] ?? 0];
-    conversation.target = map['target'] ?? '';
-    if (map['line'] == null) {
-      conversation.line = 0;
-    } else {
-      conversation.line = map['line'];
-    }
+    conversation.conversationType = _safeEnum(
+        ConversationType.values,
+        map.containsKey('type') ? map['type'] : map['conversationType'],
+        ConversationType.Single);
+    conversation.target = _safeString(map['target']) ?? '';
+    conversation.line = _safeInt(map['line']);
 
     return conversation;
   }
@@ -1110,8 +1172,8 @@ class ImclientPlatform extends PlatformInterface {
     ConversationInfo conversationInfo = ConversationInfo();
     conversationInfo.conversation =
         _convertProtoConversation(_extractConversationMap(map));
-    Map<dynamic, dynamic>? lastMessage = map['lastMessage'];
-    if (lastMessage != null) {
+    dynamic lastMessage = map['lastMessage'];
+    if (lastMessage is Map) {
       //桌面端 SDK 在会话没有最后一条消息时返回 messageId<=0 的占位对象。
       var messageId = lastMessage['messageId'];
       if (messageId == null || messageId is! num || messageId <= 0) {
@@ -1253,34 +1315,37 @@ class ImclientPlatform extends PlatformInterface {
       return MessagePayload();
     }
     MessagePayload payload = MessagePayload();
-    payload.contentType = map['type'] ?? 0;
-    payload.searchableContent = map['searchableContent'];
-    payload.pushContent = map['pushContent'];
-    payload.pushData = map['pushData'];
-    payload.content = map['content'];
-    if(map['binaryContent'] != null) {
-      payload.binaryContent = base64Decode(map['binaryContent']);
-      payload.binaryContent = payload.binaryContent!.length > 0 ? payload.binaryContent : null;
+    payload.contentType = _safeInt(map['type']);
+    payload.searchableContent = _safeString(map['searchableContent']);
+    payload.pushContent = _safeString(map['pushContent']);
+    payload.pushData = _safeString(map['pushData']);
+    payload.content = _safeString(map['content']);
+    var binaryContent = map['binaryContent'];
+    if (binaryContent is String) {
+      try {
+        var decoded = base64Decode(binaryContent);
+        payload.binaryContent = decoded.isNotEmpty ? decoded : null;
+      } catch (e) {
+        // 非法 base64，当作没有二进制内容处理
+        debugPrint('[Imclient] binaryContent 解码失败，已忽略：$e');
+      }
     }
-    payload.localContent = map['localContent'];
+    payload.localContent = _safeString(map['localContent']);
     if (map['mentionedType'] != null) {
-      payload.mentionedType = map['mentionedType'];
+      payload.mentionedType = _safeInt(map['mentionedType']);
     }
-    if(map['mentionedTargets'] != null) {
-      payload.mentionedTargets = Tools.convertDynamicList(map['mentionedTargets']);
+    if (map['mentionedTargets'] != null) {
+      payload.mentionedTargets = _safeStringList(map['mentionedTargets']);
     }
 
-    if (map['mediaType'] != null){
-     if( map['mediaType'] >= 0 && map['mediaType'] < 8) {
-       payload.mediaType = MediaType.values[map['mediaType']];
-     }else{
-       payload.mediaType = MediaType.Media_Type_GENERAL;
-     }
+    if (map['mediaType'] != null) {
+      payload.mediaType = _safeEnum(
+          MediaType.values, map['mediaType'], MediaType.Media_Type_GENERAL);
     }
-    payload.remoteMediaUrl = map['remoteMediaUrl'];
-    payload.localMediaPath = map['localMediaPath'];
+    payload.remoteMediaUrl = _safeString(map['remoteMediaUrl']);
+    payload.localMediaPath = _safeString(map['localMediaPath']);
 
-    payload.extra = map['extra'];
+    payload.extra = _safeString(map['extra']);
     return payload;
   }
 
@@ -1698,26 +1763,20 @@ class ImclientPlatform extends PlatformInterface {
     return list;
   }
 
+  /// 消息内容解码。非法消息（缺字段、内容不是合法 JSON、类型注册表里没有等）
+  /// 一律回落成 [UnknownMessageContent]，本方法保证不抛异常。
   MessageContent decodeMessageContent(MessagePayload payload) {
-    MessageContentMeta? meta = _contentMetaMap[payload.contentType];
-    MessageContent content;
-    if (meta == null) {
-      content = UnknownMessageContent();
-    } else {
-      content = meta.creator();
-    }
-
     try {
+      MessageContentMeta? meta = _contentMetaMap[payload.contentType];
+      MessageContent content =
+          meta == null ? UnknownMessageContent() : meta.creator();
       content.decode(payload);
+      return content;
     } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-      content = UnknownMessageContent();
-      content.decode(payload);
+      debugPrint(
+          '[Imclient] 消息内容解码失败，已降级成未知消息，type=${payload.contentType}：$e');
+      return UnknownMessageContent()..decode(payload);
     }
-
-    return content;
   }
 
   static final Map<int, MessageContentMeta> _contentMetaMap = {};

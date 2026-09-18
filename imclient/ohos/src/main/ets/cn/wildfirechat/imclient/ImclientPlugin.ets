@@ -245,7 +245,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
                 }
                 case 'onReceiveMessage': {
                     let value = {
-                        'messages': json.parse(args[1] as string),
+                        'messages': this.__parseMessageList(args[1] as string),
                         'hasMore': args[2] === 1
                     } as Record<string, Object>
                     this.__callback2UI('onReceiveMessage', value)
@@ -513,8 +513,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let fromIndex = call.argument('fromIndex') as number
         let count = call.argument('count') as number
         getMessagesV2(conv, contentTypes ? contentTypes : [], fromIndex, count > 0, count > 0 ? count : -count, withUser, (msgsStr: string) => {
-            let msgs = json.parse(msgsStr) as Record<string, object>[]
-            result.success(msgs.reverse())
+            result.success(this.__parseReversedMessageList(msgsStr))
         }, err => {
             result.success([])
         })
@@ -526,8 +525,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let timestamp = Number(this.__getLongPara(call, 'timestamp'))
         let count = call.argument('count') as number
         getMessagesByTimestampV2(conv, contentTypes ? contentTypes : [], timestamp, count > 0, count > 0 ? count : -count, withUser, (msgsStr: string) => {
-            let msgs = json.parse(msgsStr) as Record<string, object>[]
-            result.success(msgs.reverse())
+            result.success(this.__parseReversedMessageList(msgsStr))
         }, err => {
             result.success([])
         })
@@ -914,7 +912,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let count = call.argument("count") as number
         getRemoteMessages(conv, beforeMessageUid, count, str => {
             let obj = {
-                'messages': json.parse(str),
+                'messages': this.__parseMessageList(str),
                 'requestId': requestId,
             } as Record<string, Object>
             this.__callback2UI('onMessagesCallback', obj)
@@ -925,7 +923,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let messageUid = this.__getLongPara(call, "messageUid")
         getRemoteMessage(messageUid, str => {
             let obj = {
-                'message': str ? json.parse(str) : null,
+                'message': this.__parseMessage(str),
                 'requestId': requestId
             } as Record<string, Object>
             this.__callback2UI('onMessageCallback', obj)
@@ -935,12 +933,12 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
     _getMessage = (call: MethodCall, result: MethodResult) => {
         let messageId = call.argument("messageId") as number
         let msg = getMessage(messageId) as string
-        result.success(msg ? json.parse(msg) : null)
+        result.success(this.__parseMessage(msg))
     }
     _getMessageByUid = (call: MethodCall, result: MethodResult) => {
         let messageUid = this.__getLongPara(call, "messageUid")
         let msg = getMessageByUid(messageUid)
-        result.success(msg ? json.parse(msg) : null)
+        result.success(this.__parseMessage(msg))
     }
     _searchMessages = (call: MethodCall, result: MethodResult) => {
         let conv = this.__conversationFromArgument(call)
@@ -953,7 +951,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let withUser = call.argument("withUser") as string
 
         let msgs = searchMessage(conv, keyword, withUser)
-        result.success(msgs ? (json.parse(msgs) as Record<string, object>[]).reverse() : null)
+        result.success(this.__parseReversedMessageList(msgs))
 
     }
     _searchConversationsMessages = (call: MethodCall, result: MethodResult) => {
@@ -972,7 +970,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         }
         let msgs = searchMessageEx2(cts, lines, contentTypes, keyword, fromIndex, desc, count, withUser)
 
-        result.success(msgs ? json.parse(msgs) : null)
+        result.success(this.__parseMessageList(msgs))
     }
     _sendSavedMessage = (call: MethodCall, result: MethodResult) => {
         let requestId = call.argument("requestId") as number
@@ -1073,7 +1071,7 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
         let sender = call.argument("sender") ? call.argument('sender') as string : this.userId
 
         let msg = insertMessage(conv, sender, json.stringify(this.__map2record(content)), status, false, toUsers, serverTime)
-        result.success(json.parse(msg))
+        result.success(this.__parseMessage(msg))
 
     }
     _updateMessage = (call: MethodCall, result: MethodResult) => {
@@ -2068,6 +2066,50 @@ export default class ImclientPlugin implements FlutterPlugin, MethodCallHandler,
 
     __callback2UI(method: string, args: object ) {
         this.channel?.invokeMethod(method, args)
+    }
+
+    // 消息 JSON 解析兜底。原生返回空串或非法 JSON 时 json.parse 会抛异常，而这些解析
+    // 大多跑在原生回调里，抛出去没人接，直接就是崩溃。这里统一退化成空数组/null：
+    // 最坏是这一批消息拿不到，但不能 crash。字段层面的非法数据由 Dart 侧兜底。
+    __parseMessageList = (str: string): Record<string, object>[] => {
+        if (!str) {
+            return []
+        }
+        try {
+            let parsed = json.parse(str)
+            if (!parsed) {
+                return []
+            }
+            return parsed as Record<string, object>[]
+        } catch (err) {
+            Log.e(TAG, 'parse message list failed: ' + err)
+            return []
+        }
+    }
+
+    __parseReversedMessageList = (str: string): Record<string, object>[] => {
+        try {
+            return this.__parseMessageList(str).reverse()
+        } catch (err) {
+            Log.e(TAG, 'reverse message list failed: ' + err)
+            return []
+        }
+    }
+
+    __parseMessage = (str: string): Record<string, object> | null => {
+        if (!str) {
+            return null
+        }
+        try {
+            let parsed = json.parse(str)
+            if (!parsed) {
+                return null
+            }
+            return parsed as Record<string, object>
+        } catch (err) {
+            Log.e(TAG, 'parse message failed: ' + err)
+            return null
+        }
     }
 
     __fixConversationInfo = (conv: Record<string, object | null> | null): Record<string, object | null> | null => {

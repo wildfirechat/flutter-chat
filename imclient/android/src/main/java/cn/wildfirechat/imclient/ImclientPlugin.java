@@ -36,6 +36,7 @@ import cn.wildfirechat.message.CallStartMessageContent;
 import cn.wildfirechat.message.Message;
 import cn.wildfirechat.message.MessageContent;
 import cn.wildfirechat.message.MessageContentMediaType;
+import cn.wildfirechat.message.core.MessageContentType;
 import cn.wildfirechat.message.core.MessageDirection;
 import cn.wildfirechat.message.core.MessagePayload;
 import cn.wildfirechat.message.core.MessageStatus;
@@ -2573,7 +2574,7 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
 
         map.put("direction", protoData.direction.value());
         map.put("status", protoData.status.value());
-        map.put("content", convertMessageContent(protoData.content.encode()));
+        map.put("content", convertMessageContent(protoData.content));
         return map;
     }
 
@@ -2602,6 +2603,34 @@ public class ImclientPlugin implements FlutterPlugin, MethodCallHandler {
             output.add(a);
         }
         return output;
+    }
+
+    /**
+     * 消息体可能是残缺的（比如服务端下发的 CallStartMessageContent 没有 targetIds），这种消息
+     * encode() 会抛异常。异常以前会一路冒泡到 Handler，导致整批消息转换失败、进程崩溃。
+     * 这里把非法消息降级成未知消息（type 0），Dart 侧会解码成 UnknownMessageContent，
+     * 只是这一条消息显示成未知消息，不影响同批次的其他消息。
+     */
+    private static Map<String, Object> convertMessageContent(MessageContent content) {
+        MessagePayload payload = null;
+        if (content == null) {
+            Log.e(TAG, "message content is null, fallback to unknown message content");
+        } else {
+            try {
+                payload = content.encode();
+                if (payload == null) {
+                    Log.e(TAG, "message content encoded to null, fallback to unknown message content, content: " + content.getClass().getName());
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "encode message content failed, fallback to unknown message content, content: " + content.getClass().getName(), e);
+            }
+        }
+
+        if (payload == null) {
+            payload = new MessagePayload();
+            payload.type = MessageContentType.ContentType_Unknown;
+        }
+        return convertMessageContent(payload);
     }
 
     private static Map<String, Object> convertMessageContent(MessagePayload protoData) {

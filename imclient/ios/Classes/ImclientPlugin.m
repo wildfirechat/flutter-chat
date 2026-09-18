@@ -212,7 +212,7 @@ ImclientPlugin *gIMClientInstance;
 
 - (void)getConversationInfo:(NSDictionary *)dict result:(FlutterResult)result {
     WFCCConversationInfo *info = [[WFCCIMService sharedWFCIMService] getConversationInfo:[self conversationFromDict:dict]];
-    result([info toJsonObj]);
+    result([self modelToJson:info]);
 }
 
 - (void)searchConversation:(NSDictionary *)dict result:(FlutterResult)result {
@@ -414,7 +414,7 @@ ImclientPlugin *gIMClientInstance;
     int requestId = [dict[@"requestId"] intValue];
 
     [[WFCCIMService sharedWFCIMService] getRemoteMessage:messageUid success:^(WFCCMessage *message) {
-        [self.channel invokeMethod:@"onMessageCallback" arguments:@{@"requestId":@(requestId), @"message":[message toJsonObj]}];
+        [self.channel invokeMethod:@"onMessageCallback" arguments:@{@"requestId":@(requestId), @"message":[self messageToJson:message] ?: @{}}];
     } error:^(int error_code) {
         [self callbackOperationFailure:requestId errorCode:error_code];
     }];
@@ -424,14 +424,14 @@ ImclientPlugin *gIMClientInstance;
     long messageId = [dict[@"messageId"] longValue];
     
     WFCCMessage *msg = [[WFCCIMService sharedWFCIMService] getMessage:messageId];
-    result([msg toJsonObj]);
+    result([self messageToJson:msg]);
 }
 
 - (void)getMessageByUid:(NSDictionary *)dict result:(FlutterResult)result {
     long long messageUid = [dict[@"messageUid"] longLongValue];
     
     WFCCMessage *msg = [[WFCCIMService sharedWFCIMService] getMessageByUid:messageUid];
-    result([msg toJsonObj]);
+    result([self messageToJson:msg]);
 }
 
 - (void)searchMessages:(NSDictionary *)dict result:(FlutterResult)result {
@@ -505,10 +505,10 @@ ImclientPlugin *gIMClientInstance;
     [idArray addObject:@(message.messageId)];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self.channel invokeMethod:@"onSendMessageStart" arguments:@{@"requestId":@(requestId), @"message":[message toJsonObj]}];
+        [self.channel invokeMethod:@"onSendMessageStart" arguments:@{@"requestId":@(requestId), @"message":[self messageToJson:message] ?: @{}}];
     });
     
-    result([message toJsonObj]);
+    result([self messageToJson:message]);
 }
 
 - (void)sendSavedMessage:(NSDictionary *)dict result:(FlutterResult)result {
@@ -683,7 +683,7 @@ ImclientPlugin *gIMClientInstance;
     }
 
     WFCCMessage *msg = [[WFCCIMService sharedWFCIMService] insert:[self conversationFromDict:conversation] sender:sender content:[self contentFromDict:content] status:(WFCCMessageStatus)status notify:NO toUsers:toUsers serverTime:serverTime];
-    result([msg toJsonObj]);
+    result([self messageToJson:msg]);
 }
 
 - (void)updateMessage:(NSDictionary *)dict result:(FlutterResult)result {
@@ -1998,10 +1998,102 @@ ImclientPlugin *gIMClientInstance;
     [self.channel invokeMethod:@"onOperationFailure" arguments:@{@"requestId":@(requestId), @"errorCode":@(errorCode)}];
 }
 
+#pragma mark - 非法消息兜底
+
+// WFChatClient 是预编译 framework，消息体非法时（服务端下发的内容缺字段、类型不对
+// 等）[content encode] 可能抛 NSException。这些序列化跑在 Flutter 回调里，异常冒上去
+// 就是崩溃，SDK 又改不了，只能在插件这层兜住：消息降级成未知消息（content type 0，
+// Dart 侧解析成 UnknownMessageContent），只有这一条显示成未知消息，不影响同批次的
+// 其他消息。
+
+/// 消息序列化。[message] 为 nil 时返回 nil（与原来的 [nil toJsonObj] 行为一致）。
+- (NSDictionary *)messageToJson:(WFCCMessage *)message {
+    if (!message) {
+        return nil;
+    }
+    @try {
+        NSDictionary *obj = [message toJsonObj];
+        if (obj) {
+            return obj;
+        }
+        NSLog(@"[imclient] message toJsonObj returned nil, fallback to unknown message content, messageId: %ld", message.messageId);
+    } @catch (NSException *exception) {
+        NSLog(@"[imclient] message toJsonObj failed, fallback to unknown message content, messageId: %ld, exception: %@", message.messageId, exception);
+    }
+    return [self unknownMessageJson:message];
+}
+
+/// 降级结果：保留消息本身的元信息，content 固定为未知消息。
+- (NSDictionary *)unknownMessageJson:(WFCCMessage *)message {
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    @try {
+        [message setDict:dict key:@"messageId" longlongValue:message.messageId];
+        [message setDict:dict key:@"messageUid" longlongValue:message.messageUid];
+        [message setDict:dict key:@"serverTime" longlongValue:message.serverTime];
+        dict[@"conversation"] = [message.conversation toJsonObj];
+        dict[@"sender"] = message.fromUser;
+        dict[@"toUsers"] = message.toUsers;
+        dict[@"direction"] = @(message.direction);
+        dict[@"status"] = @(message.status);
+        dict[@"localExtra"] = message.localExtra;
+    } @catch (NSException *exception) {
+        NSLog(@"[imclient] build unknown message json failed, messageId: %ld, exception: %@", message.messageId, exception);
+    }
+    // content 必须有：Dart 侧靠 type 0 把它解析成 UnknownMessageContent。
+    dict[@"content"] = @{@"type": @(0)};
+    return dict;
+}
+
+/// 模型序列化兜底。消息降级成未知消息；会话信息单独兜底（最后一条消息非法时不能让
+/// 整个会话从列表里消失）；其余模型序列化失败就丢弃这一条。
+- (id)modelToJson:(WFCCJsonSerializer *)model {
+    if (!model) {
+        return nil;
+    }
+    if ([model isKindOfClass:[WFCCMessage class]]) {
+        return [self messageToJson:(WFCCMessage *)model];
+    }
+    @try {
+        id obj = [model toJsonObj];
+        if (obj) {
+            return obj;
+        }
+        NSLog(@"[imclient] %@ toJsonObj returned nil", NSStringFromClass([model class]));
+    } @catch (NSException *exception) {
+        NSLog(@"[imclient] %@ toJsonObj failed: %@", NSStringFromClass([model class]), exception);
+    }
+    if ([model isKindOfClass:[WFCCConversationInfo class]]) {
+        return [self conversationInfoJson:(WFCCConversationInfo *)model];
+    }
+    return nil;
+}
+
+/// 与 WFCCConversationInfo -toJsonObj 等价，区别只在最后一条消息走 messageToJson: 兜底。
+- (NSDictionary *)conversationInfoJson:(WFCCConversationInfo *)info {
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    @try {
+        dict[@"conversation"] = [info.conversation toJsonObj];
+        dict[@"lastMessage"] = [self messageToJson:info.lastMessage];
+        dict[@"draft"] = info.draft;
+        [info setDict:dict key:@"timestamp" longlongValue:info.timestamp];
+        dict[@"unreadCount"] = [info.unreadCount toJsonObj];
+        dict[@"isTop"] = @(info.isTop);
+        dict[@"isSilent"] = @(info.isSilent);
+    } @catch (NSException *exception) {
+        NSLog(@"[imclient] build conversation info json failed: %@", exception);
+    }
+    return dict;
+}
+
+#pragma mark -
+
 - (NSArray<NSDictionary *> *)convertModelList:(NSArray<WFCCJsonSerializer *> *)models {
     __block NSMutableArray *arr = [[NSMutableArray alloc] init];
     [models enumerateObjectsUsingBlock:^(WFCCJsonSerializer *  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        [arr addObject:[obj toJsonObj]];
+        id json = [self modelToJson:obj];
+        if (json) {
+            [arr addObject:json];
+        }
     }];
     return arr;
 }
@@ -2132,7 +2224,7 @@ ImclientPlugin *gIMClientInstance;
     }
     
     if(newStatus == Message_Status_Sending) {
-        [self.channel invokeMethod:@"onSendMessageStart" arguments:@{@"requestId":@(0), @"message":[message toJsonObj]}];
+        [self.channel invokeMethod:@"onSendMessageStart" arguments:@{@"requestId":@(0), @"message":[self messageToJson:message] ?: @{}}];
     } else if(newStatus == Message_Status_Sent) {
         [self.channel invokeMethod:@"onSendMessageSuccess" arguments:@{@"requestId":@(0), @"messageId":@(message.messageId), @"messageUid":@(message.messageUid), @"timestamp":@(message.serverTime)}];
     } else if(newStatus == Message_Status_Send_Failure) {
