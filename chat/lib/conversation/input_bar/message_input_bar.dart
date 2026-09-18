@@ -63,19 +63,31 @@ class _MessageInputBarState extends State<MessageInputBar>
   /// 面板→键盘过渡期间保持面板可见
   bool _keepBoardVisible = false;
 
-  /// 收起动画时显示的面板类型
-  ChatInputBarStatus? _animatingBoardStatus;
-
   /// 持久化的键盘高度
   double _savedKeyboardHeight = 0;
 
-  /// 上一次的键盘高度（用于检测稳定）
-  double _lastKeyboardHeight = 0;
+  /// 上一次 metrics 回调里的键盘高度,用来判断键盘动画停没停。
+  ///
+  /// 只由 [didChangeMetrics] 维护:build 的节奏混进来的话(面板状态、引用态变化也会
+  /// 重建),"两次采样相同"就不再等于"键盘停在这个高度"了。
+  double _lastMetricsKeyboardHeight = 0;
+
+  /// 上一帧 build 看到的键盘高度,只用来判断这一帧要不要走动画
+  double _lastBuildKeyboardHeight = 0;
 
   /// 键盘高度连续稳定的次数
   int _keyboardStableCount = 0;
 
+  /// 本次键盘会话(弹出 → 完全收起)内见过的最大插入量。键盘收起是单向下降的,
+  /// 只认不低于峰值的采样,收起途中的中间值就进不了缓存。
+  double _keyboardSessionMaxHeight = 0;
+
   static const double _minBoardHeight = 280.0;
+
+  /// 能当成真实键盘高度的下限。键盘收起动画的最后几帧会报出 1~2px 的插入量,
+  /// 只要相邻两帧撞上同一个值,就会被当成"键盘停在这里"记下来 —— 表情面板于是
+  /// 缩到 [_minBoardHeight],还写进了 prefs,下次打开依旧是错的。
+  static const double _minValidKeyboardHeight = 120.0;
 
   @override
   void initState() {
@@ -108,7 +120,10 @@ class _MessageInputBarState extends State<MessageInputBar>
     final prefs = await SharedPreferences.getInstance();
     final savedHeight =
         prefs.getDouble(key) ?? prefs.getDouble(_kLegacyKeyboardHeightKey) ?? 0;
-    if (savedHeight > 0 && mounted && _loadedHeightKey == key) {
+    // 旧版本可能把键盘收起途中的中间值存了进来,按下限过掉,让缓存自己愈合
+    if (savedHeight >= _minValidKeyboardHeight &&
+        mounted &&
+        _loadedHeightKey == key) {
       setState(() {
         _savedKeyboardHeight = savedHeight;
       });
@@ -127,43 +142,65 @@ class _MessageInputBarState extends State<MessageInputBar>
     if (_loadedHeightKey != null && _loadedHeightKey != _keyboardHeightKey) {
       _loadSavedKeyboardHeight();
     }
-    final keyboardHeight = WidgetsBinding
-            .instance.platformDispatcher.views.first.viewInsets.bottom /
-        WidgetsBinding.instance.platformDispatcher.views.first.devicePixelRatio;
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final double keyboardHeight =
+        view.viewInsets.bottom / view.devicePixelRatio;
 
-    // 检测键盘高度是否稳定
-    if (keyboardHeight == _lastKeyboardHeight && keyboardHeight > 0) {
-      _keyboardStableCount++;
-    } else {
+    if (keyboardHeight <= 0) {
+      // 键盘完全收起,一次键盘会话结束。此刻的峰值就是这套键盘的完整高度,
+      // 兜底记一次 —— 有的平台不会在键盘停稳后重复派发一次插入量(见下面的
+      // isStable),光靠"相邻两次采样相同"可能一次都命中不了。
+      _latchKeyboardHeight(_keyboardSessionMaxHeight);
+      _keyboardSessionMaxHeight = 0;
       _keyboardStableCount = 0;
+      _lastMetricsKeyboardHeight = 0;
+      return;
     }
 
-    // 键盘高度稳定时保存（避免动画过程中的中间值）；IO 放在这里而不是 build 中
-    if (keyboardHeight > 0 && keyboardHeight == _lastKeyboardHeight) {
-      if ((_savedKeyboardHeight - keyboardHeight).abs() > 1) {
-        _savedKeyboardHeight = keyboardHeight;
-        _saveKeyboardHeight(keyboardHeight);
-      }
+    // 键盘动画的每一帧都会走到这里,插入量和上一次一样就说明动画停住了
+    final bool isStable = keyboardHeight == _lastMetricsKeyboardHeight;
+    _keyboardStableCount = isStable ? _keyboardStableCount + 1 : 0;
+    _lastMetricsKeyboardHeight = keyboardHeight;
+
+    final bool isPeak = keyboardHeight >= _keyboardSessionMaxHeight;
+    if (isPeak) {
+      _keyboardSessionMaxHeight = keyboardHeight;
+    }
+
+    // 只认"停稳 + 不低于本次会话峰值"的采样:收起动画是单向下降的,中途哪一帧
+    // 重复了都算不上键盘高度。IO 放在这里而不是 build 中。
+    if (isStable && isPeak) {
+      _latchKeyboardHeight(keyboardHeight);
     }
 
     // 键盘弹出到目标高度时，结束面板→键盘的过渡
-    if (_keepBoardVisible && keyboardHeight > 0) {
+    if (_keepBoardVisible) {
       final targetHeight =
           _savedKeyboardHeight > 0 ? _savedKeyboardHeight : _minBoardHeight;
       // 条件1: 键盘高度达到目标高度
       // 条件2: 键盘高度稳定3帧以上（说明键盘已弹出完成，即使高度不同）
       if (keyboardHeight >= targetHeight || _keyboardStableCount >= 3) {
-        // 更新保存的高度为实际键盘高度，确保下次过渡平滑
-        if (keyboardHeight > 0 &&
-            (_savedKeyboardHeight - keyboardHeight).abs() > 1) {
-          _savedKeyboardHeight = keyboardHeight;
-          _saveKeyboardHeight(keyboardHeight);
-        }
         setState(() {
           _keepBoardVisible = false;
           _previousBoardStatus = null;
         });
       }
+    }
+  }
+
+  /// 记住键盘高度:表情/插件面板按它开,才能和键盘严丝合缝地换位。
+  ///
+  /// 低于 [_minValidKeyboardHeight] 的一概不认 —— 没有哪套软键盘只有这么高,
+  /// 这种值只会来自键盘动画的中间帧。
+  void _latchKeyboardHeight(double height) {
+    if (height < _minValidKeyboardHeight) return;
+    if ((_savedKeyboardHeight - height).abs() <= 1) return;
+    _savedKeyboardHeight = height;
+    _saveKeyboardHeight(height);
+    // 命中这里的那一帧插入量和上一帧相同,MediaQuery 没变,不会有别的东西触发重建;
+    // 面板正开着(面板→键盘的过渡里)时高度要立刻跟上,所以自己标一次脏。
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -188,7 +225,8 @@ class _MessageInputBarState extends State<MessageInputBar>
             controller.status == ChatInputBarStatus.emojiStatus ||
                 controller.status == ChatInputBarStatus.pluginStatus;
 
-        _lastKeyboardHeight = keyboardHeight;
+        final bool wasKeyboardVisible = _lastBuildKeyboardHeight > 0;
+        _lastBuildKeyboardHeight = keyboardHeight;
 
         final double targetBoardHeight =
             max(_savedKeyboardHeight, _minBoardHeight);
@@ -219,24 +257,19 @@ class _MessageInputBarState extends State<MessageInputBar>
           bottomHeight = targetBoardHeight;
         } else if (_keepBoardVisible) {
           bottomHeight = max(keyboardHeight, targetBoardHeight);
-        } else if (keyboardHeight > 0) {
-          bottomHeight = keyboardHeight;
         } else {
-          // 无键盘无面板时，添加安全区高度
-          bottomHeight = bottomPadding;
+          // 跟着键盘插入量走,但不低于底部安全区。收起动画的尾段插入量已经比
+          // 安全区还小,只跟插入量的话输入栏会先压到导航条上,等插入量归零那一帧
+          // 才被安全区顶回来 —— 看着就是"先掉下去再弹上来"。取较大值,整段是单向的。
+          bottomHeight = max(keyboardHeight, bottomPadding);
         }
 
         // 判断是否使用动画：
         // 只有"纯面板显示/隐藏"才用动画（即：当前无键盘、上一帧也无键盘、且不在过渡中）
         // 所有涉及键盘的场景都不用动画
         final bool useAnimation = keyboardHeight == 0 &&
-            _lastKeyboardHeight == 0 &&
+            !wasKeyboardVisible &&
             !_keepBoardVisible;
-
-        // 记录当前显示的面板类型，用于收起动画
-        if (isInBoardMode) {
-          _animatingBoardStatus = controller.status;
-        }
 
         return Container(
           color: AppShell.isDesktopStyle
@@ -252,21 +285,20 @@ class _MessageInputBarState extends State<MessageInputBar>
                 child: _buildInputBar(controller),
               ),
               ClipRect(
-                child: useAnimation
-                    ? AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeOutCubic,
-                        height: bottomHeight,
-                        child: showBoard
-                            ? _buildBoardsStack(controller, targetBoardHeight)
-                            : null,
-                      )
-                    : Container(
-                        height: bottomHeight,
-                        child: showBoard
-                            ? _buildBoardsStack(controller, targetBoardHeight)
-                            : null,
-                      ),
+                // 始终是同一个 AnimatedContainer,不走动画时把时长设成 0(零时长会
+                // 当帧跳到目标值)。换成 Container 的话这一层的 element 类型变了,
+                // 面板整棵子树会被重建 —— 键盘插入量归零那一帧正好撞上,表情面板的
+                // 分页和滚动位置就丢了。
+                child: AnimatedContainer(
+                  duration: useAnimation
+                      ? const Duration(milliseconds: 250)
+                      : Duration.zero,
+                  curve: Curves.easeOutCubic,
+                  height: bottomHeight,
+                  child: showBoard
+                      ? _buildBoardsStack(controller, targetBoardHeight)
+                      : null,
+                ),
               ),
             ],
           ),
@@ -490,38 +522,6 @@ class _MessageInputBarState extends State<MessageInputBar>
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  /// 构建面板（用于动画，使用记录的面板类型）
-  Widget _buildBoardsStackForAnimation(
-      MessageInputBarController controller, double height) {
-    // 使用记录的面板类型，确保收起动画显示正确的面板
-    int index = 0;
-    final statusToUse = _animatingBoardStatus ?? controller.status;
-    if (statusToUse == ChatInputBarStatus.pluginStatus) {
-      index = 1;
-    }
-
-    return Align(
-      alignment: Alignment.topCenter,
-      child: SizedBox(
-        height: height,
-        child: IndexedStack(
-          index: index,
-          children: [
-            EmojiBoard(
-              emojis,
-              pickerEmojiCallback: (emoji) => controller.insertText(emoji),
-              delEmojiCallback: () => controller.backspace(emojis),
-              pickerStickerCallback: (stickerPath) =>
-                  controller.sendSticker(stickerPath),
-              height: height,
-            ),
-            PluginBoard(controller.conversation, height: height),
-          ],
-        ),
       ),
     );
   }
