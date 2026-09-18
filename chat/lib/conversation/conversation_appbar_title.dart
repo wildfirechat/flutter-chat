@@ -186,8 +186,7 @@ class ConversationAppbarTitle extends StatelessWidget {
         return OnlineStateBuilder(
           userId: conversation.target,
           builder: (context, state) {
-            final status =
-                OnlineStateFormatter.conversationStatusText(state, l10n);
+            final status = OnlineStateFormatter.statusText(state, l10n);
             if (status == null || status.isEmpty) {
               return const SizedBox.shrink();
             }

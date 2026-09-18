@@ -23,15 +23,12 @@ import 'package:chat/ui_model/ui_contact_info.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
+import 'package:chat/widget/contact_name_online_state.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/mesh/domain_profile_screen.dart';
 import 'package:chat/mesh/mesh_cache.dart';
-import 'package:chat/utils/external_target_utils.dart';
-import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utils/mesh_user_name.dart';
-import 'package:chat/utils/online_state_builder.dart';
-import 'package:chat/utils/online_state_formatter.dart';
 import 'package:chat/utilities.dart';
 import 'package:imclient/model/domain_info.dart';
 
@@ -457,8 +454,7 @@ class _PcContactListState extends State<PcContactList> {
     for (final c in regular) {
       // showCategory 由 view model 按字母边界预置;拆出星标/AI 后首个普通好友仍为 true。
       if (c.showCategory) {
-        rows.add(
-            _ContactRowSpec.label(c.category == '{' ? '#' : c.category));
+        rows.add(_ContactRowSpec.label(c.category == '{' ? '#' : c.category));
       }
       rows.add(_ContactRowSpec.contact('pc-contact', c));
     }
@@ -735,52 +731,14 @@ class _ContactRow extends StatelessWidget {
   }
 
   Widget _buildName(BuildContext context, bool isSelected) {
-    if (ExternalTargetUtils.isExternalTarget(userInfo.userId)) {
-      return MeshUserName(userInfo,
-          style: PcTheme.cellTitle(context)
-              .copyWith(color: isSelected ? Colors.white : null),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis);
-    }
-    return OnlineStateBuilder(
-      userId: userInfo.userId,
-      builder: (context, state) {
-        final l10n = AppLocalizations.of(context)!;
-        final showIndicator = OnlineStateFormatter.showIndicator(state);
-        final statusText = OnlineStateFormatter.contactStatusText(state, l10n);
-
-        final nameSpan = MeshUserDisplay.getReadableNameSpan(userInfo);
-        final spans = List<InlineSpan>.from(nameSpan.children ?? [nameSpan]);
-        if (statusText != null && statusText.isNotEmpty) {
-          spans.add(TextSpan(
-            text: '($statusText)',
-            style: TextStyle(
-                fontSize: 12,
-                color:
-                    isSelected ? Colors.white70 : context.colors.textSecondary),
-          ));
-        }
-        if (showIndicator) {
-          spans.add(WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                    color: Colors.green, shape: BoxShape.circle),
-              ),
-            ),
-          ));
-        }
-
-        return Text.rich(
-          TextSpan(children: spans, style: nameSpan.style),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        );
-      },
+    // 选中行是深色底,名字与状态都要跟着反白
+    return ContactNameOnlineState(
+      userInfo,
+      nameStyle: PcTheme.cellTitle(context)
+          .copyWith(color: isSelected ? Colors.white : null),
+      statusStyle: isSelected
+          ? PcTheme.cellSubtitle(context).copyWith(color: Colors.white70)
+          : null,
     );
   }
 }

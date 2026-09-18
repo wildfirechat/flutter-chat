@@ -35,18 +35,6 @@ class OnlineStateFormatter {
     return state.clientStates!.any((cs) => cs.state == 0);
   }
 
-  /// 判断是否有手机端 session（state == 1）。
-  static bool _hasMobileSession(UserOnlineState? state) {
-    if (state?.clientStates == null) return false;
-    return state!.clientStates!.any(
-      (cs) =>
-          (cs.platform == _OnlinePlatform.iOS ||
-              cs.platform == _OnlinePlatform.android ||
-              cs.platform == _OnlinePlatform.harmony) &&
-          cs.state == 1,
-    );
-  }
-
   /// 获取手机端最后可见时间（ms）。
   static int _mobileLastSeen(UserOnlineState? state) {
     if (state?.clientStates == null) return 0;
@@ -63,11 +51,13 @@ class OnlineStateFormatter {
     return lastSeen;
   }
 
-  /// 返回会话标题应追加的在线状态文本，null 表示不需要追加。
-  static String? conversationStatusText(
-      UserOnlineState? state, AppLocalizations l10n) {
-    if (state?.clientStates == null || state!.clientStates!.isEmpty)
+  /// 在线状态文案，会话标题第二行与联系人行第二行共用。
+  /// 在线时给出「手机在线 / 电脑在线 / 忙碌…」，离线则退到「手机 5 分钟前在线」，
+  /// null 表示这个人没有任何可展示的状态(未登录过、或对方隐身)。
+  static String? statusText(UserOnlineState? state, AppLocalizations l10n) {
+    if (state?.clientStates == null || state!.clientStates!.isEmpty) {
       return null;
+    }
     if (state.customState != null && state.customState!.state == 4) return null;
 
     var pcState = -1;
@@ -121,27 +111,6 @@ class OnlineStateFormatter {
       return l10n.away;
     }
     return null;
-  }
-
-  /// 联系人列表中显示的在线/最近在线文本。
-  static String? contactStatusText(
-      UserOnlineState? state, AppLocalizations l10n) {
-    if (state?.clientStates == null || state!.clientStates!.isEmpty)
-      return null;
-    if (state.customState != null && state.customState!.state == 4) return null;
-
-    final online = isOnline(state);
-    if (online) return null; // 在线时只显示绿点，不追加文字
-    return _lastSeenText(state, l10n);
-  }
-
-  /// 是否应该在联系人列表显示在线指示器（绿点）。
-  static bool showIndicator(UserOnlineState? state) {
-    if (state?.clientStates == null || state!.clientStates!.isEmpty)
-      return false;
-    if (state.customState != null && state.customState!.state == 4)
-      return false;
-    return isOnline(state) || _hasMobileSession(state);
   }
 
   static String? _lastSeenText(UserOnlineState? state, AppLocalizations l10n) {

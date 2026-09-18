@@ -15,6 +15,7 @@ import 'package:chat/pc/pc_shell_view_model.dart';
 import 'package:chat/ui_model/ui_contact_info.dart';
 import 'package:chat/contact/friend_request_page.dart';
 import 'package:chat/viewmodel/contact_list_view_model.dart';
+import 'package:chat/widget/contact_name_online_state.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/organization/organization_screen.dart';
 import 'package:chat/widget/prefix_extent_list.dart';
@@ -28,10 +29,6 @@ import '../mesh/domain_list_screen.dart';
 import '../mesh/mesh_cache.dart';
 import '../utils/layout_scale.dart';
 import '../utils/external_target_utils.dart';
-import '../utils/mesh_user_display.dart';
-import '../utils/mesh_user_name.dart';
-import '../utils/online_state_builder.dart';
-import '../utils/online_state_formatter.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/app_shell.dart';
@@ -531,7 +528,8 @@ class _ContactListItemState extends State<ContactListItem> {
           Container(
             margin: const EdgeInsets.only(left: 16),
           ),
-          Expanded(child: _buildNameWithOnlineStatus(context, userInfo)),
+          Expanded(
+              child: ContactNameOnlineState(userInfo, nameStyle: AppText.lg)),
           if (!AppShell.isDesktopStyle) const SizedBox(width: 12),
         ],
       ),
@@ -600,56 +598,6 @@ class _ContactListItemState extends State<ContactListItem> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildNameWithOnlineStatus(BuildContext context, UserInfo userInfo) {
-    if (ExternalTargetUtils.isExternalTarget(userInfo.userId)) {
-      return MeshUserName(
-        userInfo,
-        style: AppText.lg,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      );
-    }
-    return OnlineStateBuilder(
-      userId: userInfo.userId,
-      builder: (context, state) {
-        final l10n = AppLocalizations.of(context)!;
-        final showIndicator = OnlineStateFormatter.showIndicator(state);
-        final statusText = OnlineStateFormatter.contactStatusText(state, l10n);
-
-        final nameSpan =
-            MeshUserDisplay.getReadableNameSpan(userInfo, style: AppText.lg);
-        final spans = List<InlineSpan>.from(nameSpan.children ?? [nameSpan]);
-        if (statusText != null && statusText.isNotEmpty) {
-          spans.add(TextSpan(
-            text: '($statusText)',
-            style: AppText.sm
-                .copyWith(color: Theme.of(context).colorScheme.secondary),
-          ));
-        }
-        if (showIndicator) {
-          spans.add(WidgetSpan(
-            alignment: PlaceholderAlignment.middle,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 4),
-              child: Container(
-                width: 8,
-                height: 8,
-                decoration: const BoxDecoration(
-                    color: Colors.green, shape: BoxShape.circle),
-              ),
-            ),
-          ));
-        }
-
-        return Text.rich(
-          TextSpan(children: spans, style: nameSpan.style),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        );
-      },
     );
   }
 

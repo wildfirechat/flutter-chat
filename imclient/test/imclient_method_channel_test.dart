@@ -1,6 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:imclient/imclient_method_channel.dart';
+import 'package:imclient/message/sound_message_content.dart';
+import 'package:imclient/message/text_message_content.dart';
+import 'package:imclient/message/unknown_message_content.dart';
 import 'package:imclient/model/conversation.dart';
 import 'package:imclient/src/imclient_channel.dart';
 
@@ -222,6 +225,111 @@ void main() {
       expect(infos.first.conversation.conversationType, ConversationType.Group);
       expect(infos.first.lastMessage, isNull,
           reason: 'messageId<=0 的占位 lastMessage 应被过滤为 null');
+    });
+  });
+
+  group('非法消息兜底', () {
+    final conversation = Conversation(
+        conversationType: ConversationType.Single, target: 'friendB');
+
+    setUpAll(() async {
+      // 只有注册过的类型才会走对应的解码器，这里注册文本/语音用于和未知消息对照。
+      await mockChannel({'registerMessage': (_) => null});
+      platform.registerMessage(textContentMeta);
+      platform.registerMessage(soundContentMeta);
+      await Future<void>.delayed(Duration.zero);
+    });
+
+    test('字段类型不对、枚举越界的消息降级成未知消息，不影响同批次的其他消息', () async {
+      await mockChannel({
+        'getMessages': (_) => [
+              {
+                // 每个字段的类型都不是 Dart 侧声明的类型
+                'messageId': '31L',
+                'messageUid': 3.0,
+                'sender': 12345,
+                'conversation': {'type': 99, 'target': 7, 'line': '0'},
+                'toUsers': ['u1', 2, null],
+                'direction': 99,
+                'status': 99,
+                'serverTime': '123456',
+                'content': {
+                  'type': 'x',
+                  'mentionedType': '2',
+                  'mentionedTargets': [1],
+                  'mediaType': 99,
+                  'binaryContent': '这不是合法的 base64!!',
+                },
+              },
+              {
+                'messageId': 32,
+                'sender': 's',
+                'conversation': {'type': 0, 'target': 'friendB', 'line': 0},
+                'direction': 0,
+                'status': 0,
+                'timestamp': 1,
+                'content': {'type': 1, 'searchableContent': 'hello'},
+              },
+            ],
+      });
+
+      final messages = await platform.getMessages(conversation, 0, 10);
+
+      expect(messages, hasLength(2), reason: '非法消息不能拖垮整批转换');
+      final broken = messages.firstWhere((m) => m.messageId == 31);
+      expect(broken.content, isA<UnknownMessageContent>());
+      expect(broken.fromUser, '12345');
+      expect(broken.toUsers, ['u1', '2']);
+      expect(broken.conversation.conversationType, ConversationType.Single,
+          reason: '越界的会话类型回落到默认值');
+      expect(broken.serverTime, 123456);
+      expect((messages.firstWhere((m) => m.messageId == 32).content
+              as TextMessageContent)
+          .text, 'hello');
+    });
+
+    test('消息不是 map 时被丢弃', () async {
+      await mockChannel({
+        'getMessages': (_) => [
+              'not a message',
+              {
+                'messageId': 33,
+                'sender': 's',
+                'conversation': {'type': 0, 'target': 'friendB', 'line': 0},
+                'direction': 0,
+                'status': 0,
+                'timestamp': 1,
+                'content': {'type': 1},
+              },
+            ],
+      });
+
+      final messages = await platform.getMessages(conversation, 0, 10);
+
+      expect(messages, hasLength(1));
+      expect(messages.first.messageId, 33);
+    });
+
+    test('已注册类型但内容非法时，降级成未知消息而不是抛异常', () async {
+      // 语音消息(type 2)的 content 不是合法 JSON，SoundMessageContent.decode 会抛异常
+      await mockChannel({
+        'getMessages': (_) => [
+              {
+                'messageId': 34,
+                'sender': 's',
+                'conversation': {'type': 0, 'target': 'friendB', 'line': 0},
+                'direction': 0,
+                'status': 0,
+                'timestamp': 1,
+                'content': {'type': 2, 'content': '{不是合法 json'},
+              },
+            ],
+      });
+
+      final messages = await platform.getMessages(conversation, 0, 10);
+
+      expect(messages, hasLength(1));
+      expect(messages.first.content, isA<UnknownMessageContent>());
     });
   });
 }
