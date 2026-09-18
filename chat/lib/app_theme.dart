@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
+import 'package:chat/theme/page_transitions.dart';
 import 'package:chat/app_shell.dart';
 
 /// 全端共享的 ThemeData(移动端 + 桌面端通用)。
@@ -28,6 +29,12 @@ class AppTheme {
     return _withColors(base, colors).copyWith(
       scaffoldBackgroundColor: colors.surface,
       canvasColor: colors.surface,
+      // 页面转场:移动端(含平板)走微信那套"从右侧推入、向右侧退出",
+      // 见 theme/page_transitions.dart。桌面端传 null 即保持 SDK 默认 ——
+      // PC 的页面切换语义是"右栏换内容",走 app_navigator / pc_home 里的
+      // 零时长路由,本来就不该有转场。
+      pageTransitionsTheme:
+          AppShell.isDesktopStyle ? null : AppPageTransitions.mobile,
       appBarTheme: base.appBarTheme.copyWith(
         backgroundColor: colors.cellTop,
         surfaceTintColor: Colors.transparent,
