@@ -618,7 +618,9 @@ class _MyAppState extends State<MyApp> {
                 textScaler:
                     TextScaler.linear(fontSizeViewModel.textScaleFactor),
               ),
-              child: child!,
+              // 水印必须挂在 builder(Navigator 之外),挂在 home 里只能盖住
+              // 首页,任何 push 出来的子页面都会压在它上面。
+              child: _wrapWatermark(child!),
             );
             if (!WfcPlatform.isDesktop) {
               // 这里的 context 位于 MaterialApp 的 Theme 之下,themeMode 为
@@ -697,15 +699,21 @@ class _MyAppState extends State<MyApp> {
       // 在这儿读窗口宽会让整个 MaterialApp 跟着尺寸变化重建。
       home = const AppHome();
     }
-    // 启动页/登录页还没有用户身份,不显示水印。此时 _currentUserId 为 null,
-    // WatermarkOverlay 会回退到尚未初始化的 Imclient.currentUserId 而抛
-    // LateInitializationError。
-    if (isLogined != true) {
-      return home;
+    return home;
+  }
+
+  /// 给整个 Navigator 罩上全局水印。
+  ///
+  /// 启动页/登录页还没有用户身份,不显示水印。此时 _currentUserId 为 null,
+  /// WatermarkOverlay 会回退到尚未初始化的 Imclient.currentUserId 而抛
+  /// LateInitializationError。
+  Widget _wrapWatermark(Widget child) {
+    if (isLogined != true || _currentUserId == null) {
+      return child;
     }
     return Stack(
       children: [
-        home,
+        child,
         Positioned.fill(
           child: WatermarkOverlay(userId: _currentUserId),
         ),
