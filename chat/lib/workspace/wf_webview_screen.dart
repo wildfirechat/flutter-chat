@@ -28,7 +28,8 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
   late String _pageTitle;
 
   /// 有全屏内容(联系人选择、内嵌网页跳转等)盖住本页时置 true,build() 据此
-  /// 摘掉 [WebViewWidget]。见 [JsApi.pushOverlay] 的用法说明。
+  /// 摘掉 [WebViewWidget]。只有 [isInlineWebViewNativeOverlay] 那一端会用到,
+  /// 其余各端恒为 false。见 [JsApi.pushOverlay] 的用法说明。
   bool _hideForOverlay = false;
 
   @override
@@ -73,9 +74,14 @@ class _WFWebViewScreenState extends State<WFWebViewScreen> {
     if (!mounted) {
       return;
     }
-    setState(() => _hideForOverlay = true);
+    // 只有原生浮层那一端需要先把网页摘掉;其它端摘了反而在返回时白屏
+    // —— 原因见 [isInlineWebViewNativeOverlay]。
+    final bool detach = isInlineWebViewNativeOverlay;
+    if (detach) {
+      setState(() => _hideForOverlay = true);
+    }
     await Navigator.push(context, MaterialPageRoute(builder: builder));
-    if (mounted) {
+    if (detach && mounted) {
       setState(() => _hideForOverlay = false);
     }
   }

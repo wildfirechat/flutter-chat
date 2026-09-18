@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_all_linux/webview_all_linux.dart';
 import 'package:webview_all_windows/webview_all_windows.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:imclient/imclient_platform.dart';
 
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/theme/app_colors.dart';
@@ -25,6 +26,23 @@ import 'package:chat/utils/show_toast.dart';
 /// 实现,这里自动就通了。所有内嵌网页入口都要先问这里,不支持时退化成用系统
 /// 浏览器打开。
 bool get isInlineWebViewSupported => WebViewPlatform.instance != null;
+
+/// 内嵌 WebView 是不是"Flutter 盖不住的原生浮层"。
+///
+/// Linux(webview_all_linux)把 WebKitGTK 挂成叠在 FlView 上的独立 GTK 窗口,位置
+/// 只在 Flutter `paint()` 时才推给原生侧。上层压一条不透明路由时 Flutter 会跳过
+/// 下层的 paint,原生窗口收不到任何通知,继续悬浮在最上层挡住新页面、吞掉点击
+/// —— 所以只有这一端必须在 push 之前把 WebViewWidget 真正从树上摘掉
+/// (见 JsApi.pushOverlay)。
+///
+/// 其余各端的网页都由 Flutter 自己合成(Android 的 TLHC / hybrid composition、
+/// iOS 与 macOS 的平台视图、Windows 的 Texture),被路由盖住本来就是对的,**不能**
+/// 跟着摘。摘了会在返回时白屏一大段:`Navigator.push` 的 Future 要等退场动画
+/// 整个放完才完成(TransitionRoute.finishedWhenPopped 在动画期间为 false,
+/// finalizeRoute 要等 AnimationStatus.dismissed),这一整段时间网页都是空的,
+/// 动画结束后重建平台视图又要几帧 —— 表现为"返回后先白屏、再重新显示",
+/// 而网页其实并没有重新加载。
+bool get isInlineWebViewNativeOverlay => WfcPlatform.isLinux;
 
 /// 内嵌 WebView 不可用时的占位:说明文案 + 跳系统浏览器。
 class WebViewUnsupportedView extends StatelessWidget {

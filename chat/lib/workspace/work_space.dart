@@ -166,18 +166,26 @@ class _WorkspaceTabViewState extends State<_WorkspaceTabView> {
   }
 }
 
-/// [JsApi.pushOverlay] 在工作台页签里的实现:先摘掉这个页签的 [WebViewWidget]
-/// (真正卸载,而不是被上层路由盖住 —— 见 [JsApi.pushOverlay] 的说明),
-/// push 对应路由,弹出后再挂回来。
+/// [JsApi.pushOverlay] 在工作台页签里的实现:在原生浮层那一端先摘掉这个页签的
+/// [WebViewWidget](真正卸载,而不是被上层路由盖住 —— 见 [JsApi.pushOverlay]
+/// 的说明),push 对应路由,弹出后再挂回来。
+///
+/// 其它端不摘,直接让路由盖上去:那些端的网页由 Flutter 合成,盖得住,而摘掉会
+/// 让返回时白屏一大段,见 [isInlineWebViewNativeOverlay]。
 Future<void> _pushTabOverlay(
   WorkspaceWebViewHost host,
   WorkspaceTabsViewModel vm,
   BuildContext hostContext,
   WidgetBuilder builder,
 ) async {
-  vm.setHostOverlayHidden(host, true);
+  final bool detach = isInlineWebViewNativeOverlay;
+  if (detach) {
+    vm.setHostOverlayHidden(host, true);
+  }
   await Navigator.push(hostContext, MaterialPageRoute(builder: builder));
-  vm.setHostOverlayHidden(host, false);
+  if (detach) {
+    vm.setHostOverlayHidden(host, false);
+  }
 }
 
 /// 给页签配上 WebView 宿主并开始加载:优先复用池子里的,没有才新建。

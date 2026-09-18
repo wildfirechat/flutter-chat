@@ -34,6 +34,7 @@ class WorkspaceWebViewHost {
   WorkspaceTab? tab;
 
   /// 有全屏内容(联系人选择、内嵌网页跳转等)盖住这个页签时置 true。
+  /// 只有 `isInlineWebViewNativeOverlay` 那一端会置,其余各端恒为 false。
   ///
   /// 挂在 host 而不是 [WorkspaceTab] 上:[JsApi.pushOverlay] 的回调在 host 首次
   /// 创建时就绑死了(见 work_space.dart 的 `_bindTabHost`),页签回收复用时不会

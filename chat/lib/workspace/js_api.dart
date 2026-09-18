@@ -31,13 +31,16 @@ class JsApi extends JavaScriptNamespaceInterface {
 
   /// 推入一个盖住当前 WebView 的全屏页面(联系人选择、内嵌网页跳转等)。
   ///
-  /// 不能自己简单 `Navigator.push`:Linux 上原生 WebView 是叠在 Flutter 画面上的
-  /// 独立 GTK 窗口,位置只在 [WebViewWidget] 对应 RenderObject `paint()` 时才会
-  /// 同步给原生侧;仅仅被上层不透明路由盖住,Navigator 会跳过它的 `paint()`,
-  /// 原生窗口收不到通知,会继续悬浮在最上层挡住新页面、吞掉点击。宿主实现这个
-  /// 回调时要先把自己的 [WebViewWidget] 从树上真正摘掉(让插件自身正确的
+  /// 之所以不让 JsApi 自己 `Navigator.push`:Linux 上原生 WebView 是叠在 Flutter
+  /// 画面上的独立 GTK 窗口,位置只在 [WebViewWidget] 对应 RenderObject `paint()`
+  /// 时才会同步给原生侧;仅仅被上层不透明路由盖住,Navigator 会跳过它的
+  /// `paint()`,原生窗口收不到通知,会继续悬浮在最上层挡住新页面、吞掉点击。
+  /// 宿主在那一端要先把自己的 [WebViewWidget] 从树上真正摘掉(让插件自身正确的
   /// dispose 流程去隐藏原生窗口),等 [builder] 对应的路由弹出后再挂回来
   /// (重新挂载时第一帧 paint 会自动把原生窗口位置复位)。
+  ///
+  /// **其余各端不要摘**:网页由 Flutter 自己合成,盖得住,而摘掉会让返回时白屏
+  /// 一大段 —— 判断与原因都在 `isInlineWebViewNativeOverlay`。
   final Future<void> Function(WidgetBuilder builder) pushOverlay;
 
   JsApi(
