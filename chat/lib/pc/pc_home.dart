@@ -207,9 +207,11 @@ class _PCHomeState extends State<PCHome> with AmbientShortcutsMixin {
     );
   }
 
-  void _openUser(String userId) {
+  void _openUser(String userId, {bool fromOrganization = false}) {
     _shellViewModel.selectContactItem('user-$userId');
-    _openPage(UserInfoWidget(userId, key: ValueKey('pc-user-$userId')));
+    _openPage(UserInfoWidget(userId,
+        fromOrganization: fromOrganization,
+        key: ValueKey('pc-user-$userId')));
   }
 
   /// 右栏当前页面请求关闭(内容已失效,如群聊被移出通讯录):清回占位欢迎页,
@@ -293,9 +295,9 @@ class _PCHomeState extends State<PCHome> with AmbientShortcutsMixin {
                   child: PcSearchView(
                     middleColumnWidth: middleColumnWidth,
                     onClose: () => Navigator.of(routeContext).pop(),
-                    onUserSelected: (userId) {
+                    onUserSelected: (userId, {bool fromOrganization = false}) {
                       Navigator.of(routeContext).pop();
-                      _openUser(userId);
+                      _openUser(userId, fromOrganization: fromOrganization);
                     },
                     onConversationSelected: (conversation, {focusMessageId}) {
                       Navigator.of(routeContext).pop();

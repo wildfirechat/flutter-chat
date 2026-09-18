@@ -41,9 +41,17 @@ import 'package:chat/theme/app_typography.dart';
 import 'package:chat/app_shell.dart';
 
 class UserInfoWidget extends StatefulWidget {
-  const UserInfoWidget(this.userId, {this.inGroupId, super.key});
+  const UserInfoWidget(this.userId,
+      {this.inGroupId, this.fromOrganization = false, super.key});
   final String userId;
   final String? inGroupId;
+
+  /// 是否从组织架构进来(组织架构页、全局搜索里的"组织架构"分组)。
+  ///
+  /// 组织里的同事本来就该能直接沟通，不必先加好友，所以**动作区**(发消息、
+  /// 音频/视频通话)不按好友关系裁剪。右上角「...」菜单不受影响，仍按真实好友
+  /// 关系展示(加好友/删除好友/星标/黑名单)——那本来就是管好友关系的地方。
+  final bool fromOrganization;
 
   @override
   State<UserInfoWidget> createState() => _UserInfoWidgetState();
@@ -329,8 +337,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   Widget _buildDesktopActions(BuildContext context, bool isFriend, bool isMe) {
     final l10n = AppLocalizations.of(context)!;
     final accent = context.colors.accent;
+    final bool canContact = _canContact(isFriend, isMe);
     final List<Widget> actions = [];
-    if (isMe || isFriend) {
+    if (canContact) {
       actions.add(PcIconAction(
         icon: Icons.chat_bubble_outline_rounded,
         label: l10n.sendMsg,
@@ -339,7 +348,7 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       ));
     }
     // 给自己打电话没意义;AI 机器人也没有音视频能力(_isFriend 对机器人恒为 true)。
-    if (isFriend && !isMe && !Config.AI_ROBOTS.contains(widget.userId)) {
+    if (canContact && !isMe && !Config.AI_ROBOTS.contains(widget.userId)) {
       actions.add(PcIconAction(
         icon: Icons.call_outlined,
         label: l10n.audioCallAction,
@@ -354,7 +363,8 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
             startSingleAvCall(context, widget.userId, audioOnly: false),
       ));
     }
-    if (!isMe && !isFriend) {
+    // 从组织架构进来的不在这里放「加好友」:动作区只留沟通入口,加好友仍在右上角菜单里
+    if (!isMe && !canContact) {
       actions.add(PcIconAction(
         icon: Icons.person_add_alt_1_outlined,
         label: l10n.addFriend,
@@ -377,6 +387,10 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
   Widget _buildMobileBody(
       BuildContext context, UserInfo userInfo, bool isFriend, bool isMe) {
     final l10n = AppLocalizations.of(context)!;
+    final bool canContact = _canContact(isFriend, isMe);
+    // 给自己打电话没意义;AI 机器人也没有音视频能力(_isFriend 对机器人恒为 true)。
+    final bool canCall =
+        canContact && !isMe && !Config.AI_ROBOTS.contains(widget.userId);
     return SingleChildScrollView(
       child: Column(
         children: [
@@ -424,9 +438,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
             child: Column(
               children: [
                 OptionButtonItem(
-                  isMe || isFriend ? l10n.sendMsg : l10n.addFriend,
+                  canContact ? l10n.sendMsg : l10n.addFriend,
                   () {
-                    if (isMe || isFriend) {
+                    if (canContact) {
                       _openSingleConversation(context);
                     } else {
                       _openInviteFriendPage(context);
@@ -434,13 +448,9 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
                   },
                   // 发消息/加好友不是危险操作,不该走 OptionButtonItem 的 danger 默认色。
                   titleColor: context.colors.accent,
-                  showBottomDivider: isFriend &&
-                      !isMe &&
-                      !Config.AI_ROBOTS.contains(widget.userId),
+                  showBottomDivider: canCall,
                 ),
-                if (isFriend &&
-                    !isMe &&
-                    !Config.AI_ROBOTS.contains(widget.userId))
+                if (canCall)
                   OptionButtonItem(
                     l10n.audioVideoCall,
                     () {
@@ -498,6 +508,11 @@ class _UserInfoWidgetState extends State<UserInfoWidget> {
       }).toList(),
     );
   }
+
+  /// 动作区(发消息、音视频通话)是否放行。好友、自己自然放行；
+  /// 从组织架构进来的同事也放行，见 [UserInfoWidget.fromOrganization]。
+  bool _canContact(bool isFriend, bool isMe) =>
+      isMe || isFriend || widget.fromOrganization;
 
   Future<bool> _isFriend(String userId) async {
     if (Config.AI_ROBOTS.contains(userId)) {

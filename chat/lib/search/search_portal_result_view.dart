@@ -32,7 +32,8 @@ class SearchPortalResultView extends StatefulWidget {
   final String query;
 
   /// 桌面端 Shell 注入:点击结果时回调(替代默认的全屏 push)。移动端不传,保持原有行为。
-  final void Function(String userId)? onUserSelected;
+  /// [fromOrganization] 见 [UserInfoWidget.fromOrganization]。
+  final void Function(String userId, {bool fromOrganization})? onUserSelected;
   final void Function(Conversation conversation, {int? focusMessageId})?
       onConversationSelected;
 
@@ -167,14 +168,16 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
     );
   }
 
-  void _openUser(String userId) {
+  void _openUser(String userId, {bool fromOrganization = false}) {
     if (widget.onUserSelected != null) {
-      widget.onUserSelected!(userId);
+      widget.onUserSelected!(userId, fromOrganization: fromOrganization);
       return;
     }
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => UserInfoWidget(userId)),
+      MaterialPageRoute(
+          builder: (context) =>
+              UserInfoWidget(userId, fromOrganization: fromOrganization)),
     );
   }
 
@@ -258,7 +261,7 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
               style: AppText.xs.copyWith(color: context.colors.textSecondary),
             )
           : null,
-      onTap: () => _openUser(employee.employeeId),
+      onTap: () => _openUser(employee.employeeId, fromOrganization: true),
     );
   }
 

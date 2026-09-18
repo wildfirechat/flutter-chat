@@ -13,7 +13,7 @@ import 'package:chat/theme/app_typography.dart';
 /// 根节点透明,由 PCHome 以透明 modal 路由承载。
 class PcSearchView extends StatefulWidget {
   final VoidCallback onClose;
-  final void Function(String userId) onUserSelected;
+  final void Function(String userId, {bool fromOrganization}) onUserSelected;
   final void Function(Conversation conversation, {int? focusMessageId})
       onConversationSelected;
 

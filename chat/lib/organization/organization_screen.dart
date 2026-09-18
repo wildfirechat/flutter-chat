@@ -334,7 +334,8 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
       onTap = () {
         // 用 pushPage:桌面端在右栏 Navigator 里 push(组织架构还压在下面,可以返回),
         // 而不是把整个右栏换掉;移动端仍是整页 push。
-        pushPage(context, UserInfoWidget(emp.employeeId));
+        pushPage(
+            context, UserInfoWidget(emp.employeeId, fromOrganization: true));
       };
     }
 
