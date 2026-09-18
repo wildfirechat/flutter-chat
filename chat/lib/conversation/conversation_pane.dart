@@ -897,6 +897,8 @@ class _ConversationPaneState extends State<ConversationPane>
           maxSelected: 1,
           candidates: candidates,
           showMentionAll: showAll,
+          // @ 只能提醒本群成员(及 AI 机器人),组织架构会选出群外的人,这里不给入口。
+          showOrganizationEntry: false,
         ),
       ),
     );
