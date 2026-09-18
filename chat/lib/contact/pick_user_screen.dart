@@ -22,6 +22,8 @@ import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/app_shell.dart';
 
+/// 选人完成回调。pickedUsers 永远非空:一个都没选时右上角是"取消",
+/// 选人页自己关掉,不会打扰业务方。
 typedef OnPickUserCallback = void Function(
     BuildContext context, List<String> pickedUsers);
 
@@ -173,6 +175,16 @@ class _PickUserScreenState extends State<PickUserScreen> {
         context, _pickUserViewModel.pickedUsers.map((u) => u.userId).toList());
   }
 
+  // 一个人都没选时右上角按钮是"取消",按下就该直接关掉选人页;不能再回调业务方,
+  // 否则业务方拿到空列表只会弹"请选择…"之类的提示,页面还留在原地。
+  void _onPressedCancel() {
+    if (widget.onBack != null) {
+      widget.onBack!();
+      return;
+    }
+    Navigator.of(context).maybePop();
+  }
+
   List<String> _getIndexList(List<UIPickUserInfo> userList) {
     List<String> indexList = [];
     indexList.add('↑');
@@ -232,7 +244,9 @@ class _PickUserScreenState extends State<PickUserScreen> {
                     ? AppLocalizations.of(context)!
                         .doneWithCount(viewModel.pickedUsers.length.toString())
                     : AppLocalizations.of(context)!.cancel,
-                onPressed: () => _onPressedDone(context),
+                onPressed: viewModel.pickedUsers.isNotEmpty
+                    ? () => _onPressedDone(context)
+                    : _onPressedCancel,
                 textColor: viewModel.pickedUsers.isNotEmpty
                     ? null
                     : context.colors.textSecondary,

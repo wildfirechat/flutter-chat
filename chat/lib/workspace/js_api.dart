@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:dsbridge_flutter/dsbridge_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -136,20 +135,20 @@ class JsApi extends JavaScriptNamespaceInterface {
     showToast(msg: '$text');
   }
 
+  /// H5 在等一个结果,选人页的每条退出路径都得回一次:选完回 0 + 用户列表,
+  /// 用户取消(取消按钮 / 返回键 / 手势返回)回 -1 —— 与 android-chat
+  /// `JsApi.handlePickContactResult` 的约定一致。少回一次,H5 的 Promise 就永远挂着。
   void chooseContacts(Object obj, CompletionHandler handler) {
     if (!_preCheck()) {
       _callbackJs(handler, -2);
       return;
     }
-    unawaited(pushOverlay((context) =>
-        PickUserScreen(title: AppLocalizations.of(context)!.selectContacts,
-            (_, members) async {
-          if (members.isEmpty) {
-            Fluttertoast.showToast(
-                msg: AppLocalizations.of(context)!.pickFriendsToSubmitReport);
-          } else {
-            //callbackJs(handler, 0, userInfos);
-
+    bool answered = false;
+    unawaited(() async {
+      await pushOverlay(
+        (overlayContext) => PickUserScreen(
+          (pickerContext, members) async {
+            // members 必定非空:一个都没选时选人页自己关掉,走下面的取消分支。
             List<UserInfo> userInfos = await Imclient.getUserInfos(members);
             List<Map<String, dynamic>> userInfoList = [];
             for (var userInfo in userInfos) {
@@ -160,10 +159,19 @@ class JsApi extends JavaScriptNamespaceInterface {
                 'portrait': userInfo.portrait,
               });
             }
+            answered = true;
             _callbackJs2(handler, 0, json.encode(userInfoList));
-            Navigator.pop(context);
-          }
-        })));
+            if (pickerContext.mounted) {
+              Navigator.pop(pickerContext);
+            }
+          },
+          title: AppLocalizations.of(overlayContext)!.selectContacts,
+        ),
+      );
+      if (!answered) {
+        _callbackJs(handler, -1);
+      }
+    }());
   }
 
   _preCheck() {

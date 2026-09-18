@@ -44,25 +44,23 @@ class OrganizationPickEntry extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(
-          constraints: BoxConstraints(
-            minHeight:
-                LayoutScale.watchScale(context, 56.0, cap: LayoutScale.rowCap),
+        // 用 minTileHeight 而不是外层 Container(minHeight):后者只会把容器撑高,
+        // ListTile 的内容仍按自身高度锚在顶部,导致行内不垂直居中。
+        ListTile(
+          minTileHeight:
+              LayoutScale.watchScale(context, 56.0, cap: LayoutScale.rowCap),
+          leading: Icon(
+            Icons.corporate_fare,
+            color: Theme.of(context).colorScheme.secondary,
+            size: iconSize,
           ),
-          child: ListTile(
-            leading: Icon(
-              Icons.corporate_fare,
-              color: Theme.of(context).colorScheme.secondary,
-              size: iconSize,
-            ),
-            title: Text(AppLocalizations.of(context)!.selectFromOrganization),
-            trailing: Icon(
-              Icons.chevron_right,
-              size: LayoutScale.watchScale(context, 20.0,
-                  cap: LayoutScale.iconCap),
-            ),
-            onTap: onTap,
+          title: Text(AppLocalizations.of(context)!.selectFromOrganization),
+          trailing: Icon(
+            Icons.chevron_right,
+            size:
+                LayoutScale.watchScale(context, 20.0, cap: LayoutScale.iconCap),
           ),
+          onTap: onTap,
         ),
         Divider(
           indent: AppShell.isDesktopStyle ? 16.0 : 16.0 + iconSize + 16.0,
