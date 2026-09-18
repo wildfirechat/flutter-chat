@@ -8,6 +8,7 @@ import 'package:imclient/model/group_search_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
 import 'package:chat/config.dart';
+import 'package:chat/organization/model/employee.dart';
 import 'package:chat/viewmodel/search_view_model.dart';
 import 'package:chat/widget/group_list_view/list_view.dart';
 import 'package:chat/widget/portrait.dart';
@@ -95,6 +96,9 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                   itemBuilder: (BuildContext context, IndexPath index) {
                     return switch (
                         groupedSearchResults.keys.toList()[index.section]) {
+                      SearchType.Employee => _buildEmployeeSearchResultItem(
+                          groupedSearchResults.values.toList()[index.section]
+                              [index.index] as Employee),
                       SearchType.User => _buildUserSearchResultItem(
                           groupedSearchResults.values.toList()[index.section]
                               [index.index] as UserInfo),
@@ -116,6 +120,8 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
                   groupHeaderBuilder: (BuildContext context, int section) {
                     var sectionTitle =
                         switch (groupedSearchResults.keys.toList()[section]) {
+                      SearchType.Employee =>
+                        AppLocalizations.of(context)!.organization,
                       SearchType.User => AppLocalizations.of(context)!.user,
                       SearchType.Friend =>
                         AppLocalizations.of(context)!.contact,
@@ -225,6 +231,34 @@ class _SearchPortalResultViewState extends State<SearchPortalResultView> {
       TextSpan(children: spans),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  /// 组织架构里的员工。他不一定是好友、甚至可能不在本地用户表里，所以头像、姓名
+  /// 都取组织服务给的那份(Employee.displayPortrait 已按姓名兜底)；点进去仍是用户
+  /// 详情页，那里会自己去组织服务补部门等信息。
+  Widget _buildEmployeeSearchResultItem(Employee employee) {
+    final title = employee.title;
+    return _SearchItem(
+      leading: Portrait(employee.displayPortrait, Config.defaultUserPortrait,
+          width: 36, height: 36, borderRadius: 4.0),
+      title: _buildHighlightedText(
+        employee.name,
+        widget.query,
+        AppText.base.copyWith(
+            fontWeight: FontWeight.w500, color: context.colors.textPrimary),
+        AppText.base.copyWith(
+            fontWeight: FontWeight.bold, color: context.colors.accent),
+      ),
+      subtitle: title != null && title.isNotEmpty
+          ? Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppText.xs.copyWith(color: context.colors.textSecondary),
+            )
+          : null,
+      onTap: () => _openUser(employee.employeeId),
     );
   }
 

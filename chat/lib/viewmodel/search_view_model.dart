@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:chat/organization/model/employee.dart';
+import 'package:chat/organization/organization_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:imclient/imclient.dart';
 import 'package:imclient/model/channel_info.dart';
@@ -9,7 +11,10 @@ import 'package:imclient/model/group_search_info.dart';
 import 'package:imclient/model/im_constant.dart';
 import 'package:imclient/model/user_info.dart';
 
+/// 搜索结果的分组。**枚举顺序就是结果里的分组顺序**(展示层按 index 排序)，
+/// 所以组织架构放在最前面。
 enum SearchType {
+  Employee,
   User,
   Friend,
   Group,
@@ -19,6 +24,7 @@ enum SearchType {
 
 class SearchViewModel extends ChangeNotifier {
   String? _keyword;
+  List<Employee> _searchedEmployees = [];
   List<UserInfo> _searchedUsers = [];
   List<UserInfo> _searchedFriends = [];
   List<ChannelInfo> _searchedChannels = [];
@@ -26,6 +32,10 @@ class SearchViewModel extends ChangeNotifier {
   List<GroupSearchInfo> _searchedGroupInfos = [];
 
   Map<SearchType, List<Object>> _groupedSearchResult = {};
+
+  List<Employee> get searchedEmployees {
+    return _searchedEmployees;
+  }
 
   List<UserInfo> get searchedUsers {
     return _searchedUsers;
@@ -53,6 +63,7 @@ class SearchViewModel extends ChangeNotifier {
 
   search(String keyword,
       {List<SearchType> searchTypes = const [
+        SearchType.Employee,
         SearchType.User,
         SearchType.Friend,
         SearchType.Channel,
@@ -63,6 +74,9 @@ class SearchViewModel extends ChangeNotifier {
       return;
     }
     _keyword = keyword;
+    if (searchTypes.contains(SearchType.Employee)) {
+      searchEmployee(keyword);
+    }
     if (searchTypes.contains(SearchType.User)) {
       searchUser(keyword);
     }
@@ -78,6 +92,20 @@ class SearchViewModel extends ChangeNotifier {
     if (searchTypes.contains(SearchType.Group)) {
       searchGroup(keyword);
     }
+  }
+
+  /// 从组织架构搜索员工。组织服务没配置/没登录上时静默返回空结果，
+  /// 不影响其它几类结果的展示。
+  searchEmployee(String keyword) async {
+    final employees = await OrganizationService.instance
+        .searchEmployeeInAllOrganizations(keyword);
+    // 组织服务是 HTTP 调用，回来时用户可能已经改了关键字，过期结果直接丢掉
+    if (keyword != _keyword) {
+      return;
+    }
+    _searchedEmployees = employees;
+    _groupedSearchResult[SearchType.Employee] = _searchedEmployees;
+    notifyListeners();
   }
 
   searchUser(String keyword,

@@ -258,6 +258,51 @@ class OrganizationService {
     });
   }
 
+  /// 全局搜索员工(不限定部门)。组织服务没有"全库搜索"接口，只能按根组织逐个搜再合并，
+  /// 与 android-chat 的 `OrganizationService.searchEmployee(keyword, callback)` 一致。
+  ///
+  /// 与上面那些接口不同，本方法**不抛异常**：它用在全局搜索里，组织架构只是其中一节，
+  /// 组织服务没登录上或某个根组织搜失败，不该让整个搜索结果报错，返回空/部分结果即可。
+  Future<List<Employee>> searchEmployeeInAllOrganizations(
+      String keyword) async {
+    if (!_isServiceAvailable) {
+      return [];
+    }
+
+    // 根组织 id 登录后就缓存并持久化了，正常不用再请求一次
+    List<int> rootOrgIds = OrganizationCache.instance.rootOrganizationIds;
+    if (rootOrgIds.isEmpty) {
+      try {
+        rootOrgIds = (await getRootOrganization())
+            .map((org) => org.id)
+            .where((id) => id != 0)
+            .toList();
+      } catch (e) {
+        print('searchEmployeeInAllOrganizations '
+            'get root organization failed: $e');
+        return [];
+      }
+    }
+
+    final results = await Future.wait(rootOrgIds.map((orgId) async {
+      try {
+        return await searchEmployee(orgId, keyword);
+      } catch (e) {
+        print('searchEmployeeInAllOrganizations in org $orgId failed: $e');
+        return <Employee>[];
+      }
+    }));
+
+    // 同一个人可能同时挂在多个根组织下，按 employeeId 去重，保留先搜到的那条
+    final Map<String, Employee> merged = {};
+    for (final employees in results) {
+      for (final employee in employees) {
+        merged.putIfAbsent(employee.employeeId, () => employee);
+      }
+    }
+    return merged.values.toList();
+  }
+
   Future<http.Response> _post(String url, Map<String, dynamic>? body) async {
     final uri = Uri.parse(url);
     const headers = {'Content-Type': 'application/json'};
