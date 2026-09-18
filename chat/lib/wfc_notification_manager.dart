@@ -54,7 +54,23 @@ class WfcNotificationManager {
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
 
-    _createNotificationChannel();
+    await _createNotificationChannel();
+    await _requestAndroidNotificationPermission();
+  }
+
+  /// Android 13(API 33)起通知需要运行时授权。未授权时本地通知不展示,厂商离线
+  /// 推送代发的通知栏消息同样被过滤,表现为"推送链路全通但收不到"。
+  /// iOS/macOS 由 [DarwinInitializationSettings] 在 initialize 时申请,鸿蒙不适用,
+  /// 所以这里只补 Android。
+  Future<void> _requestAndroidNotificationPermission() async {
+    if (!Platform.isAndroid) {
+      return;
+    }
+    final granted = await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+    debugPrint('android notification permission granted: $granted');
   }
 
   Future<void> _createNotificationChannel() async {
