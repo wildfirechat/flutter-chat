@@ -22,6 +22,8 @@ static NSString * const kSharedAppServerAddressKey = @"wfc_share_appserver_addre
 // 播放语音消息期间的距离传感器(贴耳切听筒/息屏)
 @property(nonatomic, strong) FlutterMethodChannel *proximityChannel;
 @property(nonatomic, assign) BOOL proximityMonitoring;
+// 兜底超时，防止 Flutter 侧没来得及 stop 时贴近息屏一直生效(与 Android 侧的 wake lock 超时对齐)
+@property(nonatomic, strong) NSTimer *proximityTimeoutTimer;
 // 播放语音消息前查当前音频输出设备(有没有接耳机)
 @property(nonatomic, strong) FlutterMethodChannel *audioOutputChannel;
 @end
@@ -80,6 +82,10 @@ static NSString * const kSharedAppServerAddressKey = @"wfc_share_appserver_addre
 
 #pragma mark - 距离传感器
 
+// 兜底超时。语音消息最长 60 秒，正常播完 Flutter 侧就会 stop；真漏了的话
+// proximityMonitoringEnabled 是全局的，之后在 App 里任何地方贴近手机都会息屏。
+static const NSTimeInterval kProximityMonitoringTimeout = 10 * 60;
+
 // 播放语音消息时用。iOS 打开 proximityMonitoring 之后，贴近时系统自己会息屏，
 // 我们只把远近变化报给 Flutter 侧，由它决定切听筒还是扬声器。
 - (void)setupProximityChannel:(FlutterViewController *)controller {
@@ -110,6 +116,12 @@ static NSString * const kSharedAppServerAddressKey = @"wfc_share_appserver_addre
         return NO;
     }
     self.proximityMonitoring = YES;
+    self.proximityTimeoutTimer =
+        [NSTimer scheduledTimerWithTimeInterval:kProximityMonitoringTimeout
+                                         target:self
+                                       selector:@selector(stopProximityMonitoring)
+                                       userInfo:nil
+                                        repeats:NO];
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(onProximityStateChanged:)
                                                  name:UIDeviceProximityStateDidChangeNotification
@@ -126,6 +138,8 @@ static NSString * const kSharedAppServerAddressKey = @"wfc_share_appserver_addre
         return;
     }
     self.proximityMonitoring = NO;
+    [self.proximityTimeoutTimer invalidate];
+    self.proximityTimeoutTimer = nil;
     [[NSNotificationCenter defaultCenter] removeObserver:self
                                                     name:UIDeviceProximityStateDidChangeNotification
                                                   object:nil];

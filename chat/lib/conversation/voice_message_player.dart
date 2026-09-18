@@ -129,6 +129,9 @@ class VoiceMessagePlayer {
   /// 距离传感器把输出通道临时切成了听筒(用户设置仍是扬声器)
   bool _proximityEarpiece = false;
 
+  /// 本次播放注册的距离传感器凭据，0 表示没在监听。见 [ProximityMonitor]
+  int _proximitySession = 0;
+
   /// 本次播放开始时有没有接耳机。见 [_contextFor]
   bool _headsetOn = false;
 
@@ -160,13 +163,23 @@ class VoiceMessagePlayer {
     _onComplete = onComplete;
     _proximityEarpiece = false;
     _headsetOn = await AudioOutputDevice.isHeadsetOn();
+    await _stopProximity();
     await _applyAudioContext(_contextFor(VoicePlayMode.isEarpiece));
     await _startPlayback(url, Duration.zero, onComplete);
     // 桌面/鸿蒙/平板切不了听筒，也就不用监听距离传感器；接了耳机同理，而且耳机多半在
     // 兜里或桌上，传感器被遮住只会误息屏
     if (VoicePlayMode.isSupported && !_headsetOn) {
-      await ProximityMonitor.start(_onProximityChanged);
+      _proximitySession = await ProximityMonitor.start(_onProximityChanged);
     }
+  }
+
+  /// 停掉本次播放注册的距离传感器。**播放一结束就必须调用**：贴近息屏是原生侧
+  /// 持有的全局状态(Android 的 wake lock / iOS 的 proximityMonitoring)，漏关的话
+  /// 之后在 App 里的任何地方贴近手机都会息屏。
+  Future<void> _stopProximity() async {
+    final int session = _proximitySession;
+    _proximitySession = 0;
+    await ProximityMonitor.stop(session);
   }
 
   /// 本次播放该用哪套输出通道。
@@ -182,7 +195,7 @@ class VoiceMessagePlayer {
     _playingUrl = null;
     _onComplete = null;
     _proximityEarpiece = false;
-    await ProximityMonitor.stop(_onProximityChanged);
+    await _stopProximity();
     await _stopPlayback();
     if (_appliedContext != null) {
       await _applyAudioContext(_speakerContext);
