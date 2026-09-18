@@ -14,6 +14,8 @@ import 'destroy_account_screen.dart';
 import 'font_size_settings_screen.dart';
 import 'privacy_settings_screen.dart';
 import '../widget/option_item.dart';
+import '../widget/option_switch_item.dart';
+import '../conversation/voice_message_player.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/app_shell.dart';
@@ -61,11 +63,23 @@ class GeneralSettings extends StatelessWidget {
                     ),
                     OptionItem(
                       AppLocalizations.of(context)!.theme,
-                      showBottomDivider: false,
+                      showBottomDivider: VoicePlayMode.isSupported,
                       onTap: () {
                         _showThemeDialog(context);
                       },
                     ),
+                    // 与语音消息长按菜单里的「听筒/扬声器播放」是同一个全局设置，
+                    // 两边改都会立刻同步(会话标题上的听筒图标同理)
+                    if (VoicePlayMode.isSupported)
+                      ValueListenableBuilder<bool>(
+                        valueListenable: VoicePlayMode.listenable,
+                        builder: (context, earpiece, _) => OptionSwitchItem(
+                          AppLocalizations.of(context)!.playVoiceInEarpiece,
+                          earpiece,
+                          showBottomDivider: false,
+                          (value) => VoicePlayMode.setEarpiece(value),
+                        ),
+                      ),
                   ],
                 ),
               ),

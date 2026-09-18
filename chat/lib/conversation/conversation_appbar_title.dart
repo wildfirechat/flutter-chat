@@ -10,6 +10,7 @@ import 'package:chat/utils/external_target_utils.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utils/online_state_builder.dart';
 import 'package:chat/utils/online_state_formatter.dart';
+import 'package:chat/conversation/voice_message_player.dart';
 import 'package:chat/viewmodel/channel_view_model.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/viewmodel/group_view_model.dart';
@@ -130,10 +131,53 @@ class ConversationAppbarTitle extends StatelessWidget {
     );
 
     // 移动端标题字号比 AppBar 默认小 2pt
-    if (AppShell.isDesktopStyle) return child;
-    return DefaultTextStyle.merge(
-      style: TextStyle(
-          fontSize: (DefaultTextStyle.of(context).style.fontSize ?? 18) - 2),
+    if (!AppShell.isDesktopStyle) {
+      child = DefaultTextStyle.merge(
+        style: TextStyle(
+            fontSize: (DefaultTextStyle.of(context).style.fontSize ?? 18) - 2),
+        child: child,
+      );
+    }
+    return _EarpieceModeIndicator(child: child);
+  }
+}
+
+/// 听筒播放模式下，在标题后缀一个听筒图标(参考 android-chat)：这是个全局设置，
+/// 用户可能是很久以前在别的会话里开的，会话页得有个常驻提示。
+class _EarpieceModeIndicator extends StatelessWidget {
+  final Widget child;
+
+  const _EarpieceModeIndicator({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!VoicePlayMode.isSupported) {
+      return child;
+    }
+    return ValueListenableBuilder<bool>(
+      valueListenable: VoicePlayMode.listenable,
+      builder: (context, earpiece, child) {
+        if (!earpiece) {
+          return child!;
+        }
+        final fontSize = DefaultTextStyle.of(context).style.fontSize ?? 16;
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 标题自身仍可省略，图标不被挤掉
+            Flexible(child: child!),
+            const SizedBox(width: 6),
+            Icon(
+              Icons.hearing,
+              size: fontSize,
+              color: DefaultTextStyle.of(context)
+                  .style
+                  .color
+                  ?.withValues(alpha: 0.5),
+            ),
+          ],
+        );
+      },
       child: child,
     );
   }

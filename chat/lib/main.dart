@@ -72,6 +72,7 @@ import 'package:chat/utils/join_group_request_unread_cache.dart';
 import 'package:chat/organization/organization_cache.dart';
 import 'package:chat/organization/organization_service.dart';
 import 'package:chat/conversation/input_bar/wf_asset_picker_delegate.dart';
+import 'package:chat/conversation/voice_message_player.dart';
 import 'package:chat/pc/call_window/call_window_app.dart';
 import 'package:chat/pc/call_window/main_avengine_kit_proxy.dart';
 import 'package:chat/pc/media_preview_window/media_preview_window_app.dart';
@@ -182,6 +183,8 @@ void main([List<String>? args]) async {
   // 同理,首帧之前读出明暗设置,否则暗色用户开屏会先闪一帧浅色
   final themeViewModel = ThemeViewModel();
   await themeViewModel.load();
+  // 语音消息的播放方式(扬声器/听筒),长按菜单要同步取值,也在首帧之前读出
+  await VoicePlayMode.load();
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider<UserViewModel>(create: (_) => UserViewModel()),

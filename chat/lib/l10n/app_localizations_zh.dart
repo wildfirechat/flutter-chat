@@ -1555,6 +1555,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get speechToText => '转文字';
 
   @override
+  String get voicePlayModeSpeaker => '扬声器播放';
+
+  @override
+  String get voicePlayModeEarpiece => '听筒播放';
+
+  @override
+  String get voicePlayModeSpeakerToast => '已切换为扬声器播放';
+
+  @override
+  String get voicePlayModeEarpieceToast => '已切换为听筒播放';
+
+  @override
+  String get voicePlayEarpieceHint => '听筒播放，请贴近手机聆听';
+
+  @override
+  String get playVoiceInEarpiece => '使用听筒播放语音消息';
+
+  @override
   String get recall => '撤回';
 
   @override

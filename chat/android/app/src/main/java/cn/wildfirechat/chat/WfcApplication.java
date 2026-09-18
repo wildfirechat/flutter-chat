@@ -19,6 +19,8 @@ public class WfcApplication extends FlutterApplication {
     private static final String TAG = "WfcApplication";
     private static WfcApplication instance;
     private FlutterEngine flutterEngine;
+    // 播放语音消息期间的距离传感器(贴耳切听筒/息屏)，通道挂在预热引擎上
+    private ProximityChannel proximityChannel;
     public static final String FLUTTER_ENGINE_ID = "wfc_flutter_engine";
 
     public static WfcApplication getInstance() {
@@ -68,6 +70,9 @@ public class WfcApplication extends FlutterApplication {
 
             // 预先加载一些资源
             flutterEngine.getPlatformViewsController().getRegistry();
+
+            proximityChannel = new ProximityChannel(
+                    this, flutterEngine.getDartExecutor().getBinaryMessenger());
 
             // 缓存引擎
             FlutterEngineCache.getInstance().put(FLUTTER_ENGINE_ID, flutterEngine);

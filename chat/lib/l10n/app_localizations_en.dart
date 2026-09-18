@@ -1574,6 +1574,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get speechToText => 'Speech to Text';
 
   @override
+  String get voicePlayModeSpeaker => 'Speaker';
+
+  @override
+  String get voicePlayModeEarpiece => 'Earpiece';
+
+  @override
+  String get voicePlayModeSpeakerToast => 'Switched to speaker';
+
+  @override
+  String get voicePlayModeEarpieceToast => 'Switched to earpiece';
+
+  @override
+  String get voicePlayEarpieceHint =>
+      'Earpiece mode, hold the phone to your ear';
+
+  @override
+  String get playVoiceInEarpiece => 'Play voice messages through earpiece';
+
+  @override
   String get recall => 'Recall';
 
   @override

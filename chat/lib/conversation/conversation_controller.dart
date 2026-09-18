@@ -1,14 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:audioplayers/audioplayers.dart' show AudioPlayer, UrlSource;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:imclient/imclient_platform.dart';
 import 'package:imclient/message/call_start_message_content.dart';
-import 'package:logger/logger.dart' show Level;
-import 'package:flutter_sound/flutter_sound.dart';
 import 'package:image/image.dart' as img;
 import 'package:imclient/imclient.dart';
 import 'package:imclient/message/card_message_content.dart';
@@ -60,6 +57,7 @@ import 'package:provider/provider.dart';
 import 'input_bar/message_input_bar_controller.dart';
 import 'package:chat/event_bus.dart';
 import 'package:chat/conversation/cell_builder/voice_cell_builder.dart';
+import 'package:chat/conversation/voice_message_player.dart';
 
 import 'package:chat/conversation/read_receipt_detail_screen.dart';
 import 'package:chat/app_shell.dart';
@@ -67,16 +65,16 @@ import 'package:chat/app_shell.dart';
 class ConversationController extends ChangeNotifier {
   late ConversationViewModel conversationViewModel;
 
-  ConversationController(this.conversationViewModel);
+  ConversationController(this.conversationViewModel) {
+    // 语音播放方式在别处被改了(长按菜单或设置页)：停掉当前播放，下一条按新方式播，
+    // 与 android-chat 一致
+    VoicePlayMode.listenable.addListener(_stopPlayingVoiceMessage);
+  }
 
   final GlobalKey<MMPreviewViewState> _mmPreviewKey = GlobalKey();
 
   int _playingMessageId = 0;
-  final FlutterSoundPlayer _soundPlayer =
-      FlutterSoundPlayer(logLevel: Level.error);
-  // flutter_sound 桌面端(Windows/macOS/Linux)没有实现，语音消息播放在桌面端改走这个
-  AudioPlayer? _desktopSoundPlayer;
-  StreamSubscription<void>? _desktopSoundCompleteSubscription;
+  final VoiceMessagePlayer _voicePlayer = VoiceMessagePlayer();
 
   void onPickImage(Conversation conversation, String imagePath) {
     ImageMessageContent imgCont = ImageMessageContent();
@@ -364,18 +362,12 @@ class ConversationController extends ChangeNotifier {
       });
     } else if (model.message.content is SoundMessageContent) {
       if (_playingMessageId == model.message.messageId) {
-        stopPlayVoiceMessage(model);
+        _stopPlayingVoiceMessage();
       } else {
-        // TODO
-        // if (_playingMessageId > 0) {
-        //   for (var value in models) {
-        //     if (value.message.messageId == _playingMessageId) {
-        //       stopPlayVoiceMessage(model);
-        //       break;
-        //     }
-        //   }
-        // }
-
+        // 听筒播放时声音很小，和 android-chat 一样提示用户贴近手机听
+        if (VoiceMessagePlayer.willPlayThroughEarpiece) {
+          showToast(msg: AppLocalizations.of(context)!.voicePlayEarpieceHint);
+        }
         startPlayVoiceMessage(model);
       }
     } else if (model.message.content is CallStartMessageContent) {
@@ -398,20 +390,15 @@ class ConversationController extends ChangeNotifier {
     }
   }
 
-  void stopPlayVoiceMessage(UIMessage model) {
-    _stopCurrentVoicePlayback();
-    eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, false));
-    _playingMessageId = 0;
-  }
-
-  Future<void> _stopCurrentVoicePlayback() async {
-    _desktopSoundCompleteSubscription?.cancel();
-    _desktopSoundCompleteSubscription = null;
-    if (WfcPlatform.isNativeDesktop) {
-      await _desktopSoundPlayer?.stop();
-    } else if (_soundPlayer.isPlaying) {
-      await _soundPlayer.stopPlayer();
+  /// 停止当前正在播放的语音(没有在播就什么都不做)，并复位其气泡的播放动画
+  Future<void> _stopPlayingVoiceMessage() async {
+    if (_playingMessageId == 0) {
+      return;
     }
+    final playingMessageId = _playingMessageId;
+    _playingMessageId = 0;
+    eventBus.fire(VoicePlayStatusChangedEvent(playingMessageId, false));
+    await _voicePlayer.stop();
   }
 
   void startPlayVoiceMessage(UIMessage model) async {
@@ -425,29 +412,13 @@ class ConversationController extends ChangeNotifier {
     // 已有另一条语音在播放:必须先停掉，flutter_sound/audioplayers 在同一个
     // player 实例仍在播放时再 startPlayer/play 大概率静默失败，表现为"切不到
     // 下一条"；同时把上一条气泡的播放动画复位，否则它会一直卡在播放态。
-    if (_playingMessageId != 0 &&
-        _playingMessageId != model.message.messageId) {
-      final previousMessageId = _playingMessageId;
-      await _stopCurrentVoicePlayback();
-      eventBus.fire(VoicePlayStatusChangedEvent(previousMessageId, false));
-      _playingMessageId = 0;
+    if (_playingMessageId != model.message.messageId) {
+      await _stopPlayingVoiceMessage();
     }
-    if (WfcPlatform.isNativeDesktop) {
-      // flutter_sound 桌面端(Windows/macOS/Linux)没有实现，改走 audioplayers
-      final player = _desktopSoundPlayer ??= AudioPlayer();
-      _desktopSoundCompleteSubscription = player.onPlayerComplete.listen((_) {
-        stopPlayVoiceMessage(model);
-      });
-      await player.play(
-          UrlSource(MediaUrlRedirector.redirect(soundContent.remoteUrl!)));
-    } else {
-      await _soundPlayer.openPlayer();
-      await _soundPlayer.startPlayer(
-          fromURI: soundContent.remoteUrl!,
-          whenFinished: () {
-            stopPlayVoiceMessage(model);
-          });
-    }
+    await _voicePlayer.play(
+      MediaUrlRedirector.redirect(soundContent.remoteUrl!),
+      onComplete: () => _stopPlayingVoiceMessage(),
+    );
     eventBus.fire(VoicePlayStatusChangedEvent(model.message.messageId, true));
     _playingMessageId = model.message.messageId;
   }
@@ -684,6 +655,16 @@ class ConversationController extends ChangeNotifier {
           'icon': Icons.subtitles
         });
       }
+      // 菜单上显示的是"切换到"的目标方式：当前听筒则提供"扬声器播放"，反之亦然
+      if (VoicePlayMode.isSupported) {
+        menuItems.add({
+          'label': VoicePlayMode.isEarpiece
+              ? AppLocalizations.of(context)!.voicePlayModeSpeaker
+              : AppLocalizations.of(context)!.voicePlayModeEarpiece,
+          'value': 'voice_play_mode',
+          'icon': VoicePlayMode.isEarpiece ? Icons.volume_up : Icons.hearing,
+        });
+      }
     }
 
     menuItems.add({
@@ -890,6 +871,9 @@ class ConversationController extends ChangeNotifier {
       case "speech_to_text":
         _performSpeechToText(model, context);
         break;
+      case "voice_play_mode":
+        _switchVoicePlayMode(context);
+        break;
       case "forward":
         showPickForwardTarget(
           context,
@@ -1052,6 +1036,18 @@ class ConversationController extends ChangeNotifier {
     conversationViewModel.deleteMessage(messageId);
   }
 
+  /// 切换语音消息的播放方式(扬声器/听筒)。这是个全局设置，设置页里是同一个开关；
+  /// 当前播放由构造函数里登记的监听停掉，下次播放即按新方式生效。
+  void _switchVoicePlayMode(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final earpiece = !VoicePlayMode.isEarpiece;
+    VoicePlayMode.setEarpiece(earpiece);
+    showToast(
+        msg: earpiece
+            ? l10n.voicePlayModeEarpieceToast
+            : l10n.voicePlayModeSpeakerToast);
+  }
+
   Future<void> _performSpeechToText(
       UIMessage model, BuildContext context) async {
     SoundMessageContent audioMessage =
@@ -1109,12 +1105,7 @@ class ConversationController extends ChangeNotifier {
     super.dispose();
     // 关闭任何打开的弹出菜单
     PopupMenuOverlay.dismiss();
-    if (_soundPlayer.isPlaying) {
-      _soundPlayer.stopPlayer();
-    }
-    // stopPlayer 仅停止播放,closePlayer 才真正释放底层播放器资源
-    _soundPlayer.closePlayer();
-    _desktopSoundCompleteSubscription?.cancel();
-    _desktopSoundPlayer?.dispose();
+    VoicePlayMode.listenable.removeListener(_stopPlayingVoiceMessage);
+    _voicePlayer.dispose();
   }
 }

@@ -34,7 +34,8 @@ abstract final class VoiceRecordFeedback {
     }
   }
 
-  /// 播放发送语音的提示音。移动端语音消息本来就用 flutter_sound 播放，提示音也用它，不另外引入播放器抢音频会话
+  /// 播放发送语音的提示音。移动端录音用的就是 flutter_sound，提示音也用它，
+  /// 不另外引入播放器抢音频会话(语音消息的播放见 [VoiceMessagePlayer])
   static Future<void> playSendSound() async {
     final Future<FlutterSoundPlayer> opening = _player ??= _openPlayer();
     final FlutterSoundPlayer player;

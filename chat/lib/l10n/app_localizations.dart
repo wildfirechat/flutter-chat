@@ -2960,6 +2960,42 @@ abstract class AppLocalizations {
   /// **'转文字'**
   String get speechToText;
 
+  /// No description provided for @voicePlayModeSpeaker.
+  ///
+  /// In zh, this message translates to:
+  /// **'扬声器播放'**
+  String get voicePlayModeSpeaker;
+
+  /// No description provided for @voicePlayModeEarpiece.
+  ///
+  /// In zh, this message translates to:
+  /// **'听筒播放'**
+  String get voicePlayModeEarpiece;
+
+  /// No description provided for @voicePlayModeSpeakerToast.
+  ///
+  /// In zh, this message translates to:
+  /// **'已切换为扬声器播放'**
+  String get voicePlayModeSpeakerToast;
+
+  /// No description provided for @voicePlayModeEarpieceToast.
+  ///
+  /// In zh, this message translates to:
+  /// **'已切换为听筒播放'**
+  String get voicePlayModeEarpieceToast;
+
+  /// No description provided for @voicePlayEarpieceHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'听筒播放，请贴近手机聆听'**
+  String get voicePlayEarpieceHint;
+
+  /// No description provided for @playVoiceInEarpiece.
+  ///
+  /// In zh, this message translates to:
+  /// **'使用听筒播放语音消息'**
+  String get playVoiceInEarpiece;
+
   /// No description provided for @recall.
   ///
   /// In zh, this message translates to:

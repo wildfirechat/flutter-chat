@@ -18,6 +18,9 @@ static NSString * const kSharedAppServerAddressKey = @"wfc_share_appserver_addre
 #endif
 @property(nonatomic, strong) FlutterMethodChannel *shareChannel;
 @property(nonatomic, strong) NSArray<NSDictionary *> *pendingShareItems;
+// 播放语音消息期间的距离传感器(贴耳切听筒/息屏)
+@property(nonatomic, strong) FlutterMethodChannel *proximityChannel;
+@property(nonatomic, assign) BOOL proximityMonitoring;
 @end
 
 @implementation AppDelegate
@@ -64,9 +67,70 @@ static NSString * const kSharedAppServerAddressKey = @"wfc_share_appserver_addre
                 result(FlutterMethodNotImplemented);
             }
         }];
+
+        [self setupProximityChannel:controller];
     }
 
     return result;
+}
+
+#pragma mark - 距离传感器
+
+// 播放语音消息时用。iOS 打开 proximityMonitoring 之后，贴近时系统自己会息屏，
+// 我们只把远近变化报给 Flutter 侧，由它决定切听筒还是扬声器。
+- (void)setupProximityChannel:(FlutterViewController *)controller {
+    self.proximityChannel = [FlutterMethodChannel
+        methodChannelWithName:@"chat.wildfire/proximity"
+              binaryMessenger:controller.binaryMessenger];
+    __weak typeof(self) weakSelf = self;
+    [self.proximityChannel setMethodCallHandler:^(FlutterMethodCall *call, FlutterResult result) {
+        if ([call.method isEqualToString:@"start"]) {
+            result(@([weakSelf startProximityMonitoring]));
+        } else if ([call.method isEqualToString:@"stop"]) {
+            [weakSelf stopProximityMonitoring];
+            result(nil);
+        } else {
+            result(FlutterMethodNotImplemented);
+        }
+    }];
+}
+
+/// @return 是否真的开始监听。没有距离传感器的设备(如 iPad)打开后依然是 NO，Flutter 侧据此不做自动切换。
+- (BOOL)startProximityMonitoring {
+    if (self.proximityMonitoring) {
+        return YES;
+    }
+    UIDevice *device = [UIDevice currentDevice];
+    device.proximityMonitoringEnabled = YES;
+    if (!device.proximityMonitoringEnabled) {
+        return NO;
+    }
+    self.proximityMonitoring = YES;
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onProximityStateChanged:)
+                                                 name:UIDeviceProximityStateDidChangeNotification
+                                               object:device];
+    // 开始播放时手机可能已经贴在耳边了，iOS 只在状态变化时才发通知，这里补报一次当前状态
+    if (device.proximityState) {
+        [self.proximityChannel invokeMethod:@"onProximityChanged" arguments:@YES];
+    }
+    return YES;
+}
+
+- (void)stopProximityMonitoring {
+    if (!self.proximityMonitoring) {
+        return;
+    }
+    self.proximityMonitoring = NO;
+    [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                    name:UIDeviceProximityStateDidChangeNotification
+                                                  object:nil];
+    [UIDevice currentDevice].proximityMonitoringEnabled = NO;
+}
+
+- (void)onProximityStateChanged:(NSNotification *)notification {
+    [self.proximityChannel invokeMethod:@"onProximityChanged"
+                              arguments:@([UIDevice currentDevice].proximityState)];
 }
 
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
