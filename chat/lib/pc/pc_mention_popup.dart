@@ -337,7 +337,7 @@ class PcMentionOverlay {
           Material(
             color: context.colors.popupBg,
             elevation: 6,
-            shadowColor: context.colors.shadow,
+            shadowColor: context.colors.elevationShadow,
             borderRadius: BorderRadius.circular(6),
             clipBehavior: Clip.antiAlias,
             child: SizedBox(

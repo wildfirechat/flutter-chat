@@ -15,6 +15,7 @@ import 'package:imclient/model/conversation_info.dart';
 import 'package:imclient/model/group_info.dart';
 import 'package:imclient/model/user_info.dart';
 import 'package:provider/provider.dart';
+import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/widgets/hover_builder.dart';
 import 'package:chat/utilities.dart';
 import 'package:chat/utils/layout_scale.dart';
@@ -424,10 +425,20 @@ class _ConversationListItemState extends State<ConversationListItem> {
     return RepaintBoundary(child: _buildCell(context, false));
   }
 
+  /// 上下文菜单(移动端长按 / 桌面端右键)是否正挂在这一行上。
+  ///
+  /// 两端都得自己维持,原生的按压/悬停反馈在菜单弹出的那一刻恰好都断了:
+  /// - 移动端:长按一旦被识别,InkWell 的 TapGestureRecognizer 就被挤出竞技场
+  ///   并收到 onTapCancel,按住高亮立刻淡出;
+  /// - 桌面端:右键后指针移到菜单上,这一行的 hover 随即消失,不接管的话完全
+  ///   看不出菜单是从哪一行弹出来的。
+  bool _menuOpen = false;
+
   /// 桌面端:透明底衬在中栏灰面上,选中走品牌色,置顶会话微微加深。
   /// hover 是半透明蒙层,叠在该行的静止底色上 —— 置顶行自带一层加深,
   /// 直接换成实色会跟它的静止态撞色,hover 就没了。
-  /// 移动端:列表铺在 surface 上,没有 hover,置顶同样加深一档。
+  /// 移动端:列表铺在 surface 上,没有 hover,置顶同样加深一档;菜单挂着时
+  /// 整行再压一层 [AppColors.pressOverlay]。
   ///
   /// 移动端原先用 CupertinoColors.systemBackground —— 那是 CupertinoDynamicColor,
   /// 不经 resolve 直接当 Color 用只会拿到浅色变体,暗色下会一直是白底。
@@ -437,13 +448,21 @@ class _ConversationListItemState extends State<ConversationListItem> {
     if (AppShell.isDesktopStyle) {
       if (widget.isSelected) return colors.cellSelectedDesktop;
       final isTop = conversationInfo.isTop > 0;
-      if (!hovered) return isTop ? colors.cellTopDesktop : Colors.transparent;
+      // 右键菜单挂着时按「悬停中」处理:指针此刻在菜单上,真实 hover 已经没了,
+      // 不接管这一行就会弹回静止态,看不出菜单属于谁。
+      if (!hovered && !_menuOpen) {
+        return isTop ? colors.cellTopDesktop : Colors.transparent;
+      }
       // 蒙层要叠在实底上才有效:普通行的实底是 PCHome/本列表铺的中栏灰面
       return Color.alphaBlend(colors.cellHoverDesktop,
           isTop ? colors.cellTopDesktop : colors.middleBgDesktop);
     }
     if (widget.isSelected) return colors.cellSelected;
-    return conversationInfo.isTop > 0 ? colors.cellTop : colors.surface;
+    final Color base =
+        conversationInfo.isTop > 0 ? colors.cellTop : colors.surface;
+    // 菜单弹出期间整行压一层按压蒙版:白底菜单压在白底列表上,这一层顺带让
+    // 「是哪一行弹出的菜单」有迹可循。
+    return _menuOpen ? Color.alphaBlend(colors.pressOverlay, base) : base;
   }
 
   Widget _buildCell(BuildContext context, bool hovered) {
@@ -820,9 +839,11 @@ class _ConversationListItemState extends State<ConversationListItem> {
 
   void _onLongPressed(BuildContext context, ConversationInfo conversationInfo,
       Offset position) {
+    // 移动端参照微信:行高比 kMinInteractiveDimension(48)再松一档,面板也更宽,
+    // 长按后手指抬起时菜单足够大、好点。桌面端仍是紧凑的右键菜单。
     final double itemHeight = AppShell.isDesktopStyle
         ? LayoutScale.scale(context, 34, cap: LayoutScale.rowCap)
-        : kMinInteractiveDimension;
+        : LayoutScale.scale(context, 56, cap: LayoutScale.rowCap);
     final List<Map<String, dynamic>> menuDefs = [];
 
     if (conversationInfo.isTop > 0) {
@@ -871,6 +892,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
         return PopupMenuItem<String>(
           value: def['value'] as String,
           height: itemHeight,
+          padding: const EdgeInsets.symmetric(horizontal: 18),
           child: Text(def['label'] as String),
         );
       }
@@ -878,6 +900,7 @@ class _ConversationListItemState extends State<ConversationListItem> {
 
     var conversationListViewModel =
         Provider.of<ConversationListViewModel>(context, listen: false);
+    setState(() => _menuOpen = true);
     showMenu(
       context: context,
       // 桌面端菜单直接从鼠标位置展开;移动端保留左偏,避免长按时菜单出屏
@@ -886,8 +909,20 @@ class _ConversationListItemState extends State<ConversationListItem> {
               position.dx, position.dy, position.dx, position.dy)
           : RelativeRect.fromLTRB(
               position.dx - 120, position.dy, position.dx, position.dy),
+      // 面板底色是 popupBg(浅色下就是白),与白色会话列表同色,靠
+      // popupMenuTheme 的描边 + 阴影分层(见 app_theme.dart「弹窗 / 浮层基线」)。
+      //
+      // 桌面端与会话页消息右键菜单同宽(PcTheme.contextMenuMinWidth);
+      constraints: BoxConstraints(
+          minWidth: LayoutScale.scale(
+              context,
+              AppShell.isDesktopStyle ? PcTheme.contextMenuMinWidth : 128,
+              cap: LayoutScale.rowCap)),
       items: items,
     ).then((selected) {
+      if (mounted) {
+        setState(() => _menuOpen = false);
+      }
       if (selected != null) {
         switch (selected) {
           case "delete":

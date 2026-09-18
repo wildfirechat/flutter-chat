@@ -145,7 +145,7 @@ class _PcPopoverRoute<T> extends PopupRoute<T> {
             color: backgroundColor ?? context.colors.popupBg,
             // 卡片压在聊天区上:阴影拉开纵深,再用一道极淡的边收住轮廓。
             elevation: 12,
-            shadowColor: context.colors.shadow,
+            shadowColor: context.colors.elevationShadow,
             shape: tail
                 ? _PcPopoverTailBorder(
                     radius: radius,

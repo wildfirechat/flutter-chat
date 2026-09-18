@@ -362,7 +362,7 @@ class _ConversationPaneState extends State<ConversationPane>
       color: context.colors.surface,
       borderRadius: BorderRadius.circular(18),
       elevation: 2,
-      shadowColor: context.colors.shadow,
+      shadowColor: context.colors.elevationShadow,
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
         onTap: () {

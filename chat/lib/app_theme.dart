@@ -12,32 +12,18 @@ class AppTheme {
 
   /// ThemeData 不可变,且 `ColorScheme.fromSeed` 每次都要跑一遍 HCT 色彩推导,
   /// 各建一次缓存起来,不要在 build 里反复构造。
-  static final ThemeData _light = _buildLight();
-  static final ThemeData _dark = _buildDark();
+  static final ThemeData _light = _build(AppColors.light, Brightness.light);
+  static final ThemeData _dark = _build(AppColors.dark, Brightness.dark);
 
   static ThemeData light() => _light;
 
   static ThemeData dark() => _dark;
 
-  /// 浅色主题。把关键槽位钉到 [AppColors.light] 的蓝色与中性白灰,
-  /// 参考 PC 端配色方案优化,避免 Material 3 默认的蓝紫色调。
-  static ThemeData _buildLight() {
-    const colors = AppColors.light;
+  /// 明暗两套主题只有取哪套 [AppColors] 的区别,共用这一条装配线。
+  static ThemeData _build(AppColors colors, Brightness brightness) {
     final base = ThemeData(
-      brightness: Brightness.light,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: colors.accent,
-        brightness: Brightness.light,
-      ).copyWith(
-        primary: colors.accent,
-        onPrimary: colors.onAccent,
-        // FilledButton.tonal(次要按钮)的灰底/前景,见「按钮基线」。
-        secondaryContainer: colors.buttonSecondaryBg,
-        onSecondaryContainer: colors.textPrimary,
-        surface: colors.surface,
-        onSurface: colors.textPrimary,
-        error: colors.danger,
-      ),
+      brightness: brightness,
+      colorScheme: colorScheme(colors, brightness),
     );
     return _withColors(base, colors).copyWith(
       scaffoldBackgroundColor: colors.surface,
@@ -46,7 +32,7 @@ class AppTheme {
         backgroundColor: colors.cellTop,
         surfaceTintColor: Colors.transparent,
         foregroundColor: colors.textPrimary,
-        systemOverlayStyle: systemOverlayStyle(Brightness.light),
+        systemOverlayStyle: systemOverlayStyle(brightness),
       ),
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: colors.accent,
@@ -56,40 +42,100 @@ class AppTheme {
     );
   }
 
-  /// 暗色主题。Material 的暗色默认值带蓝紫色调(surface tint),这里把关键槽位
-  /// 全部钉到 [AppColors.dark] 的中性灰,与 vue-pc-chat 的面板色一致。
-  static ThemeData _buildDark() {
-    const colors = AppColors.dark;
-    final base = ThemeData(
-      brightness: Brightness.dark,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: colors.accent,
-        brightness: Brightness.dark,
-      ).copyWith(
-        primary: colors.accent,
-        onPrimary: colors.onAccent,
-        // FilledButton.tonal(次要按钮)的灰底/前景,见「按钮基线」。
-        secondaryContainer: colors.buttonSecondaryBg,
-        onSecondaryContainer: colors.textPrimary,
-        surface: colors.surface,
-        onSurface: colors.textPrimary,
-        error: colors.danger,
-      ),
-    );
-    return _withColors(base, colors).copyWith(
-      scaffoldBackgroundColor: colors.surface,
-      canvasColor: colors.surface,
-      appBarTheme: base.appBarTheme.copyWith(
-        backgroundColor: colors.cellTop,
-        surfaceTintColor: Colors.transparent,
-        foregroundColor: colors.textPrimary,
-        systemOverlayStyle: systemOverlayStyle(Brightness.dark),
-      ),
-      textSelectionTheme: TextSelectionThemeData(
-        cursorColor: colors.accent,
-        selectionColor: colors.accent.withValues(alpha: 0.35),
-        selectionHandleColor: colors.accent,
-      ),
+  // ---- 配色槽位 ----
+  //
+  // `ColorScheme.fromSeed` 是按种子色的 **HCT 色相**推出整套中性色的,而品牌蓝的
+  // 色相落在 270°(暗色主色 263°)—— 紫色区。于是所有没被钉住的槽位都带紫:
+  //
+  // | 槽位                    | 浅色    | 暗色    | 谁在用               |
+  // |-------------------------|---------|---------|----------------------|
+  // | `surfaceContainerHigh`  | #E8E7EF | #282A2F | AlertDialog          |
+  // | `surfaceContainer`      | #EEEDF4 | #1D2024 | PopupMenu(右键菜单) |
+  // | `surfaceContainerLow`   | #F4F3FA | #191C20 | BottomSheet / Card   |
+  // | `secondaryContainer`    | #DCE2F9 | #3E4759 | FilledButton.tonal   |
+  // | `primaryContainer`      | #DAE2FF | #274777 | FAB                  |
+  // | `outlineVariant`        | #C5C6D0 | #44474E | 描边、DatePicker     |
+  // | `tertiary`              | #735471 | #DCBCE0 | TimePicker           |
+  //
+  // 这就是「到处是 flutter 紫」的来源。挨个给组件配主题只会补一处漏一处,所以在
+  // [colorScheme] 里**逐槽位**钉死中性灰:组件主题只负责表达「谁该用哪一层」,
+  // 没单独配主题的 M3 组件也不会再漏紫。
+
+  /// 全端共用的 [ColorScheme]:种子推导只留主色一族,其余槽位全部钉到 [AppColors]。
+  ///
+  /// 桌面子树的 `PcTheme.themeData`(pc/pc_theme.dart)也走这里 —— 它此前自己
+  /// `fromSeed` 了一遍,把这些钉好的槽位又丢了回去。
+  static ColorScheme colorScheme(AppColors colors, Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+
+    // M3 的「容器阶梯」:Lowest → Highest,浅色逐级变深、暗色逐级变亮。
+    // 逐级映到 app 自己的中性灰,层级方向与 M3 一致,取值全部来自既有令牌。
+    final Color lowest, low, container, high, highest;
+    if (isDark) {
+      lowest = colors.primaryBackground; // #1C1C1E
+      low = colors.middleBg; // #252527
+      container = colors.surface; // #2C2C2E
+      high = colors.popupBg; // #323232
+      highest = colors.inputBg; // #3A3A3C
+    } else {
+      lowest = colors.surface; // #FFFFFF
+      low = colors.searchBg; // #FAFAFA
+      container = colors.chatBg; // #F5F5F5
+      high = colors.buttonSecondaryBg; // #F2F2F2
+      highest = colors.primaryBackground; // #EBEBEB
+    }
+    // surfaceDim / surfaceBright 就是阶梯的两端,谁暗谁亮随明暗主题对调。
+    final Color dim = isDark ? lowest : highest;
+    final Color bright = isDark ? highest : lowest;
+
+    return ColorScheme.fromSeed(
+      seedColor: colors.accent,
+      brightness: brightness,
+    ).copyWith(
+      primary: colors.accent,
+      onPrimary: colors.onAccent,
+      primaryContainer: colors.accentSoft,
+      onPrimaryContainer: colors.accent,
+      // 单品牌色 app,secondary / tertiary 没有独立语义,一并收到主色 ——
+      // 留给 M3 自己推,推出来的就是上表那支紫。
+      secondary: colors.accent,
+      onSecondary: colors.onAccent,
+      tertiary: colors.accent,
+      onTertiary: colors.onAccent,
+      tertiaryContainer: colors.accentSoft,
+      onTertiaryContainer: colors.accent,
+      // secondaryContainer 例外:它是 FilledButton.tonal(次要按钮)的灰底,
+      // 不跟 secondary 同族,见下面的「按钮基线」。
+      secondaryContainer: colors.buttonSecondaryBg,
+      onSecondaryContainer: colors.textPrimary,
+      error: colors.danger,
+      // error 被换成了饱和红,M3 自己推的 onError(暗色 #690005)压在上面糊成
+      // 一团,跟 accent 一样用白字。
+      onError: colors.onAccent,
+      surface: colors.surface,
+      onSurface: colors.textPrimary,
+      onSurfaceVariant: colors.textSecondary,
+      surfaceDim: dim,
+      surfaceBright: bright,
+      surfaceContainerLowest: lowest,
+      surfaceContainerLow: low,
+      surfaceContainer: container,
+      surfaceContainerHigh: high,
+      surfaceContainerHighest: highest,
+      outline: colors.hairline,
+      outlineVariant: colors.hairlineSoft,
+      // Material 海拔投影必须用不透明色,见 [AppColors.elevationShadow]
+      shadow: colors.elevationShadow,
+      scrim: colors.scrim,
+      // 反色面(SnackBar 底、滑块数值气泡)= 正文色与基础面对调,天生就是
+      // 「浅色近黑 / 暗色近白」的一对。
+      inverseSurface: colors.textPrimary,
+      onInverseSurface: colors.surface,
+      inversePrimary: colors.accent,
+      // M3 的「海拔染色」:Material 会按 elevation 把主色按不同浓度混进底色 ——
+      // 既是另一条漏紫的路,也会让同一张白面在不同层级上颜色对不齐。整体关掉,
+      // 层次交给 [AppColors] 自己的明度阶梯 + 阴影。
+      surfaceTint: Colors.transparent,
     );
   }
 
@@ -103,8 +149,93 @@ class AppTheme {
         // hairline 留给结构边界(header 下边线、栏间分隔),用 Border/VerticalDivider 画。
         dividerTheme: DividerThemeData(
             color: colors.hairlineSoft, thickness: 0.5, space: 0.5),
+        // ---- 按压反馈 ----
+        // 裸 InkWell / ListTile 的水波与按住高亮。M2 默认值两层叠起来能把白色
+        // 会话行压到 ~#D9D9D9,偏深;统一走 [AppColors.pressOverlay]。按钮不受
+        // 影响,M3 的 ButtonStyle.overlayColor 另有来源。
+        //
+        // ⚠️ 它撑不起「上下文菜单弹出中」的高亮:长按被识别的那一刻 InkWell 的
+        // TapGestureRecognizer 就被挤出竞技场、收到 onTapCancel,高亮随即淡出
+        // —— 恰好是菜单刚弹出、用户正看着的时候。那个状态得由调用方自己维持,
+        // 见 home/conversation_list_widget.dart 的 `_menuOpen`。
+        highlightColor: colors.pressOverlay,
+        splashColor: colors.pressOverlay,
+        // ---- 次要图标基线 ----
+        // 裸 IconButton、ListTile 的 leading/trailing:M3 默认取 onSurfaceVariant,
+        // 而那一档在这里是**文字**灰 [AppColors.textSecondary],压到图标上偏淡。
+        // 图标有自己的令牌,走 [AppColors.iconSecondary]。
+        // AppBar 里的图标不受影响 —— 它自套一层 IconTheme,优先级高于本主题。
+        iconButtonTheme: IconButtonThemeData(
+          style: IconButton.styleFrom(foregroundColor: colors.iconSecondary),
+        ),
+        listTileTheme: ListTileThemeData(iconColor: colors.iconSecondary),
+        // ---- 弹窗 / 浮层基线 ----
+        //
+        // 容器阶梯已在 [colorScheme] 里钉成中性灰,这三支再按 app 的语义分层
+        // (M3 默认挑的那一级对本 app 不成立):
+        // - 对话框 / 底部弹窗 → 基础面 [AppColors.surface]
+        // - 弹出菜单 → 浮层面 [AppColors.popupBg](暗色下比 surface 亮一档,
+        //   暗色模式没有阴影可用,只能靠明度差浮起来)
+        //
+        // 全端基线,桌面端不要再在 pc_theme.dart 里配一遍:形态差异走
+        // [AppShell.isDesktopStyle] 分叉,PcTheme 是 base.copyWith,自动继承。
+        dialogTheme: DialogThemeData(
+          backgroundColor: colors.surface,
+          surfaceTintColor: Colors.transparent,
+          shadowColor: colors.elevationShadow,
+          barrierColor: colors.scrim,
+          iconColor: colors.accent,
+          // 桌面端对齐 showPcDialog 的 8 圆角;移动端留 M3 默认(28)。
+          shape: AppShell.isDesktopStyle
+              ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
+              : null,
+          // 正文不跟 onSurfaceVariant 走:那一档是 textSecondary,给副标题/提示
+          // 用的,压在对话框正文上太弱。只换色,字号仍是 M3 的 bodyMedium。
+          contentTextStyle:
+              base.textTheme.bodyMedium?.copyWith(color: colors.textPrimary),
+        ),
+        popupMenuTheme: PopupMenuThemeData(
+          color: colors.popupBg,
+          surfaceTintColor: Colors.transparent,
+          shadowColor: colors.elevationShadow,
+          elevation: AppShell.isDesktopStyle ? 6 : 12,
+          // ⚠️ 白底菜单压在白底会话列表上时,光靠 elevation 分不出**顶边**:
+          // Material 的海拔投影是有方向的(引擎按上方光源算),浓度大头的 spot
+          // 落在下沿与两侧,顶边只剩 ambient 的 3.9%。四边均匀的软投影是 CSS
+          // box-shadow 的形态,PopupMenuThemeData 给不了(只有 elevation /
+          // shadowColor)。所以补一圈发丝描边兜住四条边,阴影只负责纵深。
+          shape: RoundedRectangleBorder(
+            side: BorderSide(color: colors.hairline, width: 0.5),
+            borderRadius:
+                BorderRadius.circular(AppShell.isDesktopStyle ? 6 : 8),
+          ),
+          // ⚠️ M3 只读 labelTextStyle,PopupMenuThemeData.textStyle 是 M2 遗留
+          // 字段,写在那儿不生效(见 popup_menu.dart 的 _PopupMenuDefaultsM3)。
+          // 移动端取 lg,与 widget/bottom_action_sheet.dart 的动作项同档。
+          labelTextStyle: WidgetStateProperty.resolveWith((states) {
+            final TextStyle style =
+                AppShell.isDesktopStyle ? AppText.sm : AppText.lg;
+            return style.copyWith(
+              color: states.contains(WidgetState.disabled)
+                  ? colors.textTertiary
+                  : colors.textPrimary,
+            );
+          }),
+        ),
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: colors.surface,
+          modalBackgroundColor: colors.surface,
+          surfaceTintColor: Colors.transparent,
+        ),
+        // ---- 控件 ----
         checkboxTheme: checkboxTheme(colors, base.brightness),
         switchTheme: switchTheme(colors, base.brightness),
+        // FAB 跟「实底主行动」一个语义,走 accent 实底,而不是 M3 默认的
+        // primaryContainer(淡底)。
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: colors.accent,
+          foregroundColor: colors.onAccent,
+        ),
         filledButtonTheme: FilledButtonThemeData(style: buttonShapeStyle()),
         textButtonTheme: TextButtonThemeData(style: textButtonStyle()),
         // 过渡兜底:repo 内已无 ElevatedButton / OutlinedButton 调用点,这两支只防

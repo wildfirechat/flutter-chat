@@ -25,7 +25,7 @@ Future<T?> showPcSideSheet<T>({
           width: width,
           child: Material(
             elevation: 16,
-            shadowColor: context.colors.shadow,
+            shadowColor: context.colors.elevationShadow,
             child: Builder(builder: builder),
           ),
         ),

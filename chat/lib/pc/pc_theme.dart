@@ -54,6 +54,13 @@ class PcTheme {
   /// 分隔条命中区厚度。视觉仍是贴边的 0.5 发丝线,加厚只为好抓。
   static const double resizeHandleThickness = 6;
 
+  /// 右键菜单的最小宽度基准(调用点还要过一遍 `LayoutScale.scale(rowCap)`)。
+  ///
+  /// 会话列表与会话页消息用同一个值:两处菜单形态相同、常在同一屏里先后弹出,
+  /// 宽度各写各的就会互相看着「错位」。单项菜单(如头像右键的「@某人」)不受此限,
+  /// 它的宽度本来就由那一条文案决定。
+  static const double contextMenuMinWidth = 140;
+
   // ---- 角色化文字样式(桌面) ----
   // 字号阶梯本身按大小命名(AppText.xs/base/lg…),刻意不带用途语义 ——「角色」这一层
   // 就落在这里:桌面 cell/栏标题该用哪一档,由下面这几个方法钉死,调用点不要再自己挑档。
@@ -82,15 +89,10 @@ class PcTheme {
     // 暗色下 hover/highlight 要提白,浅色下压黑。
     final overlay = colors.hoverOverlay;
     return base.copyWith(
-      colorScheme: ColorScheme.fromSeed(
-              seedColor: colors.accent, brightness: base.brightness)
-          .copyWith(
-        primary: colors.accent,
-        onPrimary: colors.onAccent,
-        surface: colors.surface,
-        onSurface: colors.textPrimary,
-        error: colors.danger,
-      ),
+      // 与 MaterialApp 主题同一套槽位。此前这里自己 `fromSeed` 了一遍并只钉
+      // 5 个槽位,把 app_theme.dart 钉好的其余槽位又还给了 M3 的紫色推导
+      // —— 桌面弹窗底、右键菜单底、FilledButton.tonal 的灰底都是从这儿漏的。
+      colorScheme: AppTheme.colorScheme(colors, base.brightness),
       splashFactory: NoSplash.splashFactory,
       highlightColor: overlay,
       hoverColor: overlay,
@@ -105,14 +107,6 @@ class PcTheme {
         elevation: 0,
         titleTextStyle: paneTitle(context),
         toolbarHeight: headerHeight,
-      ),
-      popupMenuTheme: PopupMenuThemeData(
-        color: colors.popupBg,
-        surfaceTintColor: Colors.transparent,
-        elevation: 6,
-        shadowColor: colors.shadow,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        textStyle: AppText.sm.copyWith(color: colors.textPrimary),
       ),
       tooltipTheme: TooltipThemeData(
         waitDuration: const Duration(milliseconds: 500),
@@ -145,8 +139,10 @@ class PcTheme {
         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
         visualDensity: VisualDensity.compact,
       ),
-      // 按钮、分割线不在这里覆盖:基线在 app_theme.dart(那里挂在 MaterialApp 主题上,
-      // 能覆盖到 PcTheme 子树之外的 PC 登录窗/根导航对话框),base.copyWith 自动继承。
+      // 按钮、分割线、对话框/菜单/底部弹窗不在这里覆盖:基线在 app_theme.dart
+      // (那里挂在 MaterialApp 主题上,能覆盖到 PcTheme 子树之外的 PC 登录窗/
+      // 根导航对话框),桌面形态差异在那边按 AppShell.isDesktopStyle 分叉,
+      // base.copyWith 自动继承。
     );
   }
 }

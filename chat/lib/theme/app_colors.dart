@@ -46,6 +46,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.cellTopDesktop,
     required this.sidebarHoverBg,
     required this.hoverOverlay,
+    required this.pressOverlay,
     required this.messageHighlight,
     required this.sectionGap,
     required this.bubbleSent,
@@ -67,6 +68,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.resizeHandleHover,
     required this.scrim,
     required this.shadow,
+    required this.elevationShadow,
   });
 
   // ---- 品牌色 ----
@@ -158,6 +160,11 @@ class AppColors extends ThemeExtension<AppColors> {
   /// 浅色压黑、暗色提白,所以不能用固定实色。
   final Color hoverOverlay;
 
+  /// 触摸按压蒙版,比 [hoverOverlay] 重一档 —— 手指按下需要比鼠标悬停更明确的
+  /// 反馈,何况按压区常被手指自己挡掉一半。同时是全局 highlightColor / splashColor,
+  /// 以及会话行「菜单弹出中」的底色。
+  final Color pressOverlay;
+
   /// 搜索/引用跳转定位到某条消息时的整行高亮,半透明盖在气泡上。
   final Color messageHighlight;
 
@@ -205,8 +212,18 @@ class AppColors extends ThemeExtension<AppColors> {
   /// 模态遮罩(Dialog barrier)。暗色下压得更狠,否则深色弹窗和深色背景糊在一起。
   final Color scrim;
 
-  /// 浮层投影。暗色下阴影几乎不可见,靠 [popupBg] 的明度差分层,这里只做轻微加重。
+  /// **`BoxShadow` 专用**的投影色,alpha 就是投影浓度。
+  /// 暗色下阴影几乎不可见,靠 [popupBg] 的明度差分层,这里只做轻微加重。
   final Color shadow;
+
+  /// **Material 海拔投影专用**(`Material.shadowColor` / `colorScheme.shadow`)。
+  ///
+  /// 和 [shadow] 分成两个令牌,是因为两条路径对 alpha 的解释完全不同:
+  /// `BoxShadow` 里 alpha 直接就是浓度,而 `Material(elevation:)` 最终走引擎的
+  /// `Canvas.drawShadow`,里面**还要再乘一遍**(spot ×0.25、ambient ×0.039)。
+  /// 把 [shadow] 的 0x40 传进去只剩 ~6%,在白面上等于没画 —— 白底菜单压在白底
+  /// 列表上就是这么糊掉的。所以这里必须是**不透明**色,浓淡交给 elevation 调。
+  final Color elevationShadow;
 
   /// 浅色:重构前的既有色值,不改观感。
   static const AppColors light = AppColors(
@@ -247,6 +264,9 @@ class AppColors extends ThemeExtension<AppColors> {
     cellTopDesktop: Color(0xFFE6E6E7),
     sidebarHoverBg: Color(0xFFDCDCDC),
     hoverOverlay: Color(0x0A000000),
+    // 8%:落在白行上是 #EBEBEB,与微信长按态同档(重构前 Material 默认的
+    // highlight+splash 叠出 ~#D9D9D9,用户反馈过深)
+    pressOverlay: Color(0x14000000),
     messageHighlight: Color(0x809E9E9E),
     sectionGap: Color(0xFFEBEBEB),
     bubbleSent: Color(0xF0A8BDFF),
@@ -268,6 +288,7 @@ class AppColors extends ThemeExtension<AppColors> {
     resizeHandleHover: Color(0xFFC2C1C0),
     scrim: Color(0x4D000000),
     shadow: Color(0x40000000),
+    elevationShadow: Color(0xFF000000),
   );
 
   /// 暗色:对齐 vue-pc-chat/src/theme/dark.css。
@@ -308,6 +329,7 @@ class AppColors extends ThemeExtension<AppColors> {
     cellTopDesktop: Color(0xFF1C1C1E),
     sidebarHoverBg: Color(0xFF3A3A3C),
     hoverOverlay: Color(0x14FFFFFF),
+    pressOverlay: Color(0x1FFFFFFF),
     messageHighlight: Color(0x1FFFFFFF),
     sectionGap: Color(0xFF1C1C1E),
     bubbleSent: Color(0xFF409CFF),
@@ -329,6 +351,7 @@ class AppColors extends ThemeExtension<AppColors> {
     resizeHandleHover: Color(0xFF48484A),
     scrim: Color(0x99000000),
     shadow: Color(0x99000000),
+    elevationShadow: Color(0xFF000000),
   );
 
   @override
@@ -368,6 +391,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? cellTopDesktop,
     Color? sidebarHoverBg,
     Color? hoverOverlay,
+    Color? pressOverlay,
     Color? messageHighlight,
     Color? sectionGap,
     Color? bubbleSent,
@@ -389,6 +413,7 @@ class AppColors extends ThemeExtension<AppColors> {
     Color? resizeHandleHover,
     Color? scrim,
     Color? shadow,
+    Color? elevationShadow,
   }) {
     return AppColors(
       accent: accent ?? this.accent,
@@ -426,6 +451,7 @@ class AppColors extends ThemeExtension<AppColors> {
       cellTopDesktop: cellTopDesktop ?? this.cellTopDesktop,
       sidebarHoverBg: sidebarHoverBg ?? this.sidebarHoverBg,
       hoverOverlay: hoverOverlay ?? this.hoverOverlay,
+      pressOverlay: pressOverlay ?? this.pressOverlay,
       messageHighlight: messageHighlight ?? this.messageHighlight,
       sectionGap: sectionGap ?? this.sectionGap,
       bubbleSent: bubbleSent ?? this.bubbleSent,
@@ -448,6 +474,7 @@ class AppColors extends ThemeExtension<AppColors> {
       resizeHandleHover: resizeHandleHover ?? this.resizeHandleHover,
       scrim: scrim ?? this.scrim,
       shadow: shadow ?? this.shadow,
+      elevationShadow: elevationShadow ?? this.elevationShadow,
     );
   }
 
@@ -493,6 +520,7 @@ class AppColors extends ThemeExtension<AppColors> {
       cellTopDesktop: mix(cellTopDesktop, other.cellTopDesktop),
       sidebarHoverBg: mix(sidebarHoverBg, other.sidebarHoverBg),
       hoverOverlay: mix(hoverOverlay, other.hoverOverlay),
+      pressOverlay: mix(pressOverlay, other.pressOverlay),
       messageHighlight: mix(messageHighlight, other.messageHighlight),
       sectionGap: mix(sectionGap, other.sectionGap),
       bubbleSent: mix(bubbleSent, other.bubbleSent),
@@ -515,6 +543,7 @@ class AppColors extends ThemeExtension<AppColors> {
       resizeHandleHover: mix(resizeHandleHover, other.resizeHandleHover),
       scrim: mix(scrim, other.scrim),
       shadow: mix(shadow, other.shadow),
+      elevationShadow: mix(elevationShadow, other.elevationShadow),
     );
   }
 }

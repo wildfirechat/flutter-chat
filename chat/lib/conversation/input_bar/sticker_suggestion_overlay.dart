@@ -214,7 +214,7 @@ class _StickerSuggestionOverlayState extends State<StickerSuggestionOverlay> {
       child: Material(
         color: colors.popupBg,
         elevation: 6,
-        shadowColor: colors.shadow,
+        shadowColor: colors.elevationShadow,
         borderRadius: BorderRadius.circular(10),
         clipBehavior: Clip.antiAlias,
         child: ConstrainedBox(

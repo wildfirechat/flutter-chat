@@ -31,6 +31,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:chat/conversation/media_cell_anchor.dart';
 import 'package:chat/conversation/mm_preview_view.dart';
 import 'package:chat/call/av_call_launcher.dart';
+import 'package:chat/pc/pc_theme.dart';
 import 'package:chat/pc/media_preview_window/media_preview_window_manager.dart';
 import 'package:chat/utils/mesh_user_display.dart';
 import 'package:chat/utils/show_toast.dart';
@@ -824,7 +825,8 @@ class ConversationController extends ChangeNotifier {
       position: RelativeRect.fromRect(
           localAnchor & Size.zero, Offset.zero & overlayBox.size),
       constraints: BoxConstraints(
-          minWidth: LayoutScale.scale(context, 140, cap: LayoutScale.rowCap)),
+          minWidth: LayoutScale.scale(context, PcTheme.contextMenuMinWidth,
+              cap: LayoutScale.rowCap)),
       items: sortedItems
           .map((item) => DesktopPopupMenuItem<String>(
                 value: item['value'],
