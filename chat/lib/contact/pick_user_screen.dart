@@ -14,6 +14,7 @@ import 'package:chat/repo/user_repo.dart';
 import 'package:chat/viewmodel/pick_user_view_model.dart';
 import 'package:chat/widget/portrait.dart';
 import 'package:chat/widget/app_bar_actions.dart';
+import 'package:chat/widget/bottom_sheet_page.dart';
 import 'package:chat/widget/sidebar_index.dart';
 import 'package:chat/organization/pick_from_organization.dart';
 import 'package:chat/viewmodel/font_size_view_model.dart';
@@ -21,14 +22,16 @@ import 'package:chat/utils/layout_scale.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/app_shell.dart';
+import 'package:chat/app_theme.dart';
 
 /// 选人完成回调。pickedUsers 永远非空:一个都没选时右上角是"取消",
 /// 选人页自己关掉,不会打扰业务方。
 typedef OnPickUserCallback = void Function(
     BuildContext context, List<String> pickedUsers);
 
-/// 按平台形态呈现选人页:桌面居中 Dialog(420x560),移动端整页 push。
-/// 回调中的 Navigator.pop(context) 在两种形态下都会关闭选人 UI。
+/// 按平台形态呈现选人页:桌面居中 Dialog(420x560),移动端整页 push;
+/// [asSheet] 为真时移动端改成从底部升起的半屏弹窗(微信 @ 提醒那种形态)。
+/// 回调中的 Navigator.pop(context) 在三种形态下都会关闭选人 UI。
 Future<void> showPickUserScreen(
   BuildContext context,
   OnPickUserCallback callback, {
@@ -39,7 +42,20 @@ Future<void> showPickUserScreen(
   List<String>? disabledUncheckedUsers,
   bool showMentionAll = false,
   bool showOrganizationEntry = true,
+  bool asSheet = false,
 }) {
+  PickUserScreen buildScreen({bool sheetStyle = false}) => PickUserScreen(
+        callback,
+        title: title,
+        maxSelected: maxSelected,
+        candidates: candidates,
+        disabledCheckedUsers: disabledCheckedUsers,
+        disabledUncheckedUsers: disabledUncheckedUsers,
+        showMentionAll: showMentionAll,
+        showOrganizationEntry: showOrganizationEntry,
+        sheetStyle: sheetStyle,
+      );
+
   // 桌面端多选走微信式分栏弹窗(左选人 / 右已选);单选仍用紧凑列表弹窗;移动端整页 push。
   if (AppShell.isDesktopStyle) {
     if (maxSelected > 1) {
@@ -63,31 +79,21 @@ Future<void> showPickUserScreen(
       context: context,
       width: 420,
       height: 560,
-      builder: (dialogContext) => PickUserScreen(
-        callback,
-        title: title,
-        maxSelected: maxSelected,
-        candidates: candidates,
-        disabledCheckedUsers: disabledCheckedUsers,
-        disabledUncheckedUsers: disabledUncheckedUsers,
-        showMentionAll: showMentionAll,
-        showOrganizationEntry: showOrganizationEntry,
-      ),
+      builder: (dialogContext) => buildScreen(),
     );
   }
+
+  if (asSheet) {
+    return showBottomSheetPage(
+      context: context,
+      builder: (sheetContext) => buildScreen(sheetStyle: true),
+    );
+  }
+
   return Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (routeContext) => PickUserScreen(
-        callback,
-        title: title,
-        maxSelected: maxSelected,
-        candidates: candidates,
-        disabledCheckedUsers: disabledCheckedUsers,
-        disabledUncheckedUsers: disabledUncheckedUsers,
-        showMentionAll: showMentionAll,
-        showOrganizationEntry: showOrganizationEntry,
-      ),
+      builder: (routeContext) => buildScreen(),
     ),
   );
 }
@@ -103,6 +109,10 @@ class PickUserScreen extends StatefulWidget {
   final bool showOrganizationEntry;
   final VoidCallback? onBack;
 
+  /// 装在底部半屏弹窗里(见 [showBottomSheetPage]):头部换成弹窗标题栏 ——
+  /// 左侧"取消"、标题居中、不画返回箭头(弹窗不是页面栈里的一层,箭头会读成"回上一页")。
+  final bool sheetStyle;
+
   const PickUserScreen(this.callback,
       {this.title = '',
       this.maxSelected = 1024,
@@ -112,6 +122,7 @@ class PickUserScreen extends StatefulWidget {
       this.showMentionAll = false,
       this.showOrganizationEntry = true,
       this.onBack,
+      this.sheetStyle = false,
       super.key});
 
   @override
@@ -225,6 +236,32 @@ class _PickUserScreenState extends State<PickUserScreen> {
     }
   }
 
+  /// 半屏弹窗的标题栏:左"取消"关弹窗,标题居中,右侧仍是多选时的"完成(n)"。
+  /// 弹窗路由抹掉了顶部安全区,这里 primary: false 免得 AppBar 再补一次状态栏留白。
+  PreferredSizeWidget _buildSheetHeader(
+      BuildContext context, String title, List<Widget> actions) {
+    return AppBar(
+      primary: false,
+      automaticallyImplyLeading: false,
+      centerTitle: true,
+      titleSpacing: 0,
+      leadingWidth: 76,
+      leading: Align(
+        alignment: Alignment.centerLeft,
+        child: Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: TextButton(
+            style: AppTheme.mutedTextButtonStyle(context.colors),
+            onPressed: _onPressedCancel,
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+        ),
+      ),
+      title: Text(title),
+      actions: actions,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     context.watch<FontSizeViewModel>();
@@ -261,10 +298,12 @@ class _PickUserScreenState extends State<PickUserScreen> {
                     onBack: widget.onBack,
                     actions: actions,
                   )
-                : AppBar(
-                    title: Text(title),
-                    actions: actions,
-                  ),
+                : widget.sheetStyle
+                    ? _buildSheetHeader(context, title, actions)
+                    : AppBar(
+                        title: Text(title),
+                        actions: actions,
+                      ),
             body: SafeArea(
               child: Column(
                 children: [

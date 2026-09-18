@@ -873,34 +873,33 @@ class _ConversationPaneState extends State<ConversationPane>
     if (!mounted) {
       return;
     }
-    Navigator.push(
+    // 微信手机端交互:选人从底部半屏升起盖在会话上,选完就地回到输入框接着打字,
+    // 不像整页 push 那样把会话整个换掉。
+    showPickUserScreen(
       context,
-      MaterialPageRoute(
-        builder: (context) => PickUserScreen(
-          (context, pickedUsers) {
-            if (pickedUsers.isNotEmpty) {
-              if (pickedUsers[0] == '@all') {
-                UserInfo all = UserInfo('@all');
-                all.displayName = AppLocalizations.of(context)!.allMembers;
-                _inputBarController.addMention(all);
-              } else {
-                Imclient.getUserInfo(pickedUsers[0]).then((userInfo) {
-                  if (userInfo != null) {
-                    _inputBarController.addMention(userInfo);
-                  }
-                });
+      (context, pickedUsers) {
+        if (pickedUsers.isNotEmpty) {
+          if (pickedUsers[0] == '@all') {
+            UserInfo all = UserInfo('@all');
+            all.displayName = AppLocalizations.of(context)!.allMembers;
+            _inputBarController.addMention(all);
+          } else {
+            Imclient.getUserInfo(pickedUsers[0]).then((userInfo) {
+              if (userInfo != null) {
+                _inputBarController.addMention(userInfo);
               }
-            }
-            Navigator.pop(context);
-          },
-          title: AppLocalizations.of(context)!.pickRemindUser,
-          maxSelected: 1,
-          candidates: candidates,
-          showMentionAll: showAll,
-          // @ 只能提醒本群成员(及 AI 机器人),组织架构会选出群外的人,这里不给入口。
-          showOrganizationEntry: false,
-        ),
-      ),
+            });
+          }
+        }
+        Navigator.pop(context);
+      },
+      title: AppLocalizations.of(context)!.pickRemindUser,
+      maxSelected: 1,
+      candidates: candidates,
+      showMentionAll: showAll,
+      // @ 只能提醒本群成员(及 AI 机器人),组织架构会选出群外的人,这里不给入口。
+      showOrganizationEntry: false,
+      asSheet: true,
     );
   }
 
