@@ -260,7 +260,12 @@ class _VoipCallScreenState extends State<VoipCallScreen>
           ? null
           : _statusLabel(AppLocalizations.of(context)!),
     );
-    Navigator.of(context).pop();
+    // 只有确实压着上一页时才 pop。PC 通话子窗口里本页是**根路由**，
+    // pop 会把 Navigator 的 history 掏空（反复通话若干次后 build 时抛
+    // '_history.isNotEmpty' 断言，见 sub_window_app_base 的 Navigator）。
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
   }
 
   // --- CallSessionCallback ---
@@ -282,7 +287,14 @@ class _VoipCallScreenState extends State<VoipCallScreen>
             AppShell.isDesktopStyle ? context.read<PCShellViewModel>() : null;
         if (shell != null && shell.activeCallSession != null) {
           shell.endCallSession();
-        } else {
+        } else if (Navigator.of(context).canPop()) {
+          // ★ 只有压着上一页时才 pop：
+          //   - 移动端：通话页是 push 上来的 → 整页 pop；
+          //   - PC 通话子窗口：本页是**根路由**（canPop == false），而且窗口里的
+          //     PCShellViewModel 是子窗口自己的那份、activeCallSession 恒为 null，
+          //     所以以前必然走到这里 pop 根路由 → 反复通话后 Navigator 的 history 被掏空
+          //     → build 时抛 `'_history.isNotEmpty': is not true` 断言（实测几十次后复现）。
+          //     子窗口通话结束的收尾由 CallWindowApp.didCallEnded → _hideForReuse() 负责。
           Navigator.of(context).pop();
         }
       });
