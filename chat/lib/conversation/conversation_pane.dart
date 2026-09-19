@@ -34,6 +34,8 @@ import 'package:chat/utilities.dart';
 import 'package:chat/viewmodel/conversation_view_model.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/utils/mesh_user_display.dart';
+import 'package:chat/widgets/passive_tap_listener.dart';
+import 'package:chat/widgets/route_covered_listener.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/theme/app_typography.dart';
 import 'package:chat/app_shell.dart';
@@ -576,6 +578,29 @@ class _ConversationPaneState extends State<ConversationPane>
                 ),
             ],
           );
+
+          // 移动端长按消息弹出的菜单是跟着选区走的,不能像别的弹出菜单那样垫一层
+          // 遮罩——遮罩会盖住选择手柄,选区就没法再拖动调整(见 SelectableMessageText)。
+          // 没有遮罩,菜单"该收了"的两种时机就得自己盯:
+          // - 点到了页面别处。消息列表原本挂了 onTap 兜着,但输入栏的表情按钮、
+          //   输入框、头像都有自己的识别器,在竞技场里赢在外层之前,外层的 onTap
+          //   轮不上 —— 点它们时菜单不消失,靠 PassiveTapListener 旁听指针补上,
+          //   且不吃掉这一下点击(按钮照常响应);
+          // - 有新页面压上来(点了标题栏的"⋯"、头像、正文里的链接)。菜单挂在根
+          //   Overlay 最顶层,新路由压不住它,不收就会浮在新页面上。
+          // PC 端的消息菜单走 showMenu,是自带遮罩的路由,两层都不需要;鼠标拖选出的
+          // 选区也不该因为点了一下输入框就没。
+          if (!AppShell.isPointerInput) {
+            void dismissBubbleSelection() =>
+                _conversationController?.clearTextSelection();
+            content = PassiveTapListener(
+              onTap: dismissBubbleSelection,
+              child: RouteCoveredListener(
+                onCovered: dismissBubbleSelection,
+                child: content,
+              ),
+            );
+          }
 
           // 会话页快捷键(Esc 退出多选、Cmd/Ctrl+C 复制气泡选区)见 _handleLateKeyEvent,
           // 挂在 FocusManager 上而不是这里的 Focus 节点,不受焦点归属影响。
