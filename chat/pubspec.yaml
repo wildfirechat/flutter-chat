@@ -171,7 +171,11 @@ dependencies:
   pinyin: ^3.3.0
   flutter_linkify: ^6.0.0
 
-  mobile_scanner: ^7.4.2
+  # 7.x Apple 平台走系统 Vision API(不再依赖无 arm64-simulator 切片的
+  # GoogleMLKit),修复 iOS 模拟器编译;Android 侧固定 7.1.4 —— 7.2 起插件的
+  # Gradle 文件迁到 Kotlin DSL(面向 AGP 9 newDsl),在当前 AGP 8.x 下
+  # 脚本编译不过。
+  mobile_scanner: 7.1.4
   qr_flutter: ^4.1.0
   pointycastle: ^4.0.0
   win32: ^5.15.0

@@ -97,6 +97,30 @@ class WindowEventChannel {
     }
   }
 
+  /// 与 [invoke] 类似，但返回是否**真正送达**：目标窗口引擎尚未注册
+  /// method handler（子窗口 isolate 还在初始化、插件未就绪）时返回
+  /// false 而不是吞掉异常——调用方可以据此把事件放回队列重投，
+  /// 避免 MissingPluginException 把信令静默丢掉（实测观测到
+  /// connectionStatus/startCall 在子引擎就绪前被吞）。
+  static Future<bool> invokeChecked(
+      int targetWindowId, String method, dynamic args) async {
+    try {
+      await DesktopMultiWindow.invokeMethod(
+        targetWindowId,
+        method,
+        _encode(args),
+      );
+      return true;
+    } on MissingPluginException {
+      print('$_tag invoke $method to window $targetWindowId: plugin not ready');
+      return false;
+    } on PlatformException catch (e) {
+      print(
+          '$_tag invoke $method to window $targetWindowId error: ${e.message}');
+      rethrow;
+    }
+  }
+
   /// method channel 已支持 Map/List/基本类型跨 isolate 传递，
   /// 这里只做类型归一化（把 Map<Object?, Object?>/List<Object?> 转成
   /// Map<String, dynamic>/List<dynamic>），不再二次 JSON 编解码，

@@ -33,6 +33,25 @@ class MainAvEngineKitProxy {
   StreamSubscription? _conferenceEventSubscription;
   StreamSubscription? _connectionStatusSubscription;
 
+  /// IM 事件串行化链。EventBus 的 listen 回调里启动的异步任务互不等待，
+  /// 多条消息/会议事件会在 await 点交错执行——典型场景：两批信令几乎同时
+  /// 到达(一通普通来电 + 一个会议邀请)，两个 [_onReceiveMessages] 都看到
+  /// `_callWindowId == null`，各自建一个窗口，后建者把前一个还没 ready 的
+  /// 窗口关掉(recreate)，前一个窗口积压的信令又被 flush 给后一个窗口，
+  /// 两通通话的信令串线。这里把要转发给 Call 窗口的 IM 事件按到达顺序
+  /// 串成单链执行，从根上消除交错。
+  Future<void> _imEventChain = Future.value();
+
+  void _enqueueImEvent(Future<void> Function() task) {
+    _imEventChain = _imEventChain.then((_) async {
+      try {
+        await task();
+      } catch (e, s) {
+        print('$_tag IM event task error: $e\n$s');
+      }
+    });
+  }
+
   /// 当前活跃的 Call 窗口信息。
   int? _callWindowId;
   bool _callWindowReady = false;
@@ -62,15 +81,16 @@ class MainAvEngineKitProxy {
 
     _receiveMessageSubscription =
         _eventBus.on<ReceiveMessagesEvent>().listen((event) {
-      _onReceiveMessages(event.messages, event.hasMore);
+      _enqueueImEvent(() => _onReceiveMessages(event.messages, event.hasMore));
     });
     _conferenceEventSubscription =
         _eventBus.on<ConferenceEvent>().listen((event) {
-      _onConferenceEvent(event.event);
+      _enqueueImEvent(() async => _onConferenceEvent(event.event));
     });
     _connectionStatusSubscription =
         _eventBus.on<ConnectionStatusChangedEvent>().listen((event) {
-      _onConnectionStatusChanged(event.connectionStatus);
+      _enqueueImEvent(
+          () async => _onConnectionStatusChanged(event.connectionStatus));
     });
 
     // 监听 Call 窗口发回的事件。
@@ -254,14 +274,23 @@ class MainAvEngineKitProxy {
           '$_tag voip message type=$type direction=${msg.direction} age=${age}ms');
 
       // 来电/邀请类消息需要先创建 Call 窗口。
+      var deliveredAsInitialEvent = false;
       if (_callWindowId == null &&
           (type == mc.VOIP_CONTENT_TYPE_START ||
               type == mc.VOIP_CONTENT_TYPE_ADD_PARTICIPANT ||
               type == mc.VOIP_CONTENT_CONFERENCE_INVITE)) {
         await _ensureCallWindowFromIncomingMessage(msg);
+        // 这条消息已作为新窗口的 initialEvent 投递(窗口 ready 后由
+        // _flushEventQueue 补发),这里必须跳过通用投递——否则窗口 ready
+        // 后子窗口会再收到一次相同的 START/INVITE,且这次直发落在队列里
+        // 已排好的其它信令之后,造成重复振铃/会话状态错乱(有时同步错误)。
+        deliveredAsInitialEvent = true;
       }
 
-      _emitToCallWindow(CallWindowEvents.message, IpcCodec.encodeMessage(msg));
+      if (!deliveredAsInitialEvent) {
+        _emitToCallWindow(
+            CallWindowEvents.message, IpcCodec.encodeMessage(msg));
+      }
     }
   }
 
@@ -321,7 +350,7 @@ class MainAvEngineKitProxy {
         // 先发初始事件（如 startCall / incoming message），再处理队列里积压的消息，
         // 确保 Call 窗口按正确时序初始化会话状态。
         _emitToCallWindow(initialEvent, initialArgs);
-        _flushEventQueue();
+        unawaited(_flushEventQueue());
       },
       onClose: () {
         print('$_tag call window closed');
@@ -333,7 +362,7 @@ class MainAvEngineKitProxy {
     // Windows 上子窗口初始化可能很快，ready 回调在 createCallWindow 返回前就已
     // 触发；此时 _callWindowId 还未赋值，初始事件会被暂存到队列。这里再刷一次
     // 队列，确保 startCall / 来电消息等能真正发给 Call 窗口。
-    _flushEventQueue();
+    unawaited(_flushEventQueue());
   }
 
   String _resolveWindowType(Conversation? conversation, bool isConference) {
@@ -346,19 +375,41 @@ class MainAvEngineKitProxy {
   /// 转发事件到 Call 窗口，窗口未 ready 时入队。
   void _emitToCallWindow(String event, dynamic args) {
     if (_callWindowReady && _callWindowId != null) {
-      WindowEventChannel.invoke(_callWindowId!, event, args);
+      _invokeToCallWindow(event, args);
     } else {
-      print(
-          '$_tag queue $event (windowId=$_callWindowId ready=$_callWindowReady)');
       _eventQueue.add(_QueuedEvent(event, args));
     }
   }
 
-  void _flushEventQueue() {
-    if (_callWindowId == null) return;
+  /// 直发事件；目标引擎尚未注册 handler（MissingPlugin）时放回队首，
+  /// 等窗口 ready 后的 flush 重投，避免信令静默丢失。
+  void _invokeToCallWindow(String event, dynamic args) {
+    final id = _callWindowId;
+    if (id == null) {
+      _eventQueue.insert(0, _QueuedEvent(event, args));
+      return;
+    }
+    unawaited(WindowEventChannel.invokeChecked(id, event, args)
+        .then((delivered) {
+      if (!delivered && _callWindowId == id) {
+        print('$_tag $event 未送达(目标窗口插件未就绪)，放回队首等重投');
+        _eventQueue.insert(0, _QueuedEvent(event, args));
+      }
+    }));
+  }
+
+  Future<void> _flushEventQueue() async {
+    final id = _callWindowId;
+    if (id == null) return;
     while (_eventQueue.isNotEmpty) {
       final item = _eventQueue.removeAt(0);
-      WindowEventChannel.invoke(_callWindowId!, item.event, item.args);
+      final delivered =
+          await WindowEventChannel.invokeChecked(id, item.event, item.args);
+      if (!delivered && _callWindowId == id) {
+        print('$_tag ${item.event} 未送达(目标窗口插件未就绪)，放回队首等下次 flush');
+        _eventQueue.insert(0, item);
+        return;
+      }
     }
   }
 

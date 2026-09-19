@@ -71,7 +71,12 @@ class FlutterWindow: BaseFlutterWindow {
       backing: .buffered, defer: false)
     let project = FlutterDartProject()
     project.dartEntrypointArguments = ["multi_window", "\(windowId)", arguments]
-    let flutterViewController = FlutterViewController(project: project)
+    // [临时诊断] 显式创建并启动引擎,直接拿到 run 的成败;隐式的
+    // FlutterViewController(project:) 内部也会 run,但成败不可见。
+    let engine = FlutterEngine(name: "multi_window_\(windowId)", project: project)
+    let running = engine.run(withEntrypoint: nil)
+    print("Subwindow engine id=\(windowId) run() -> \(running)")
+    let flutterViewController = FlutterViewController(engine: engine, nibName: nil, bundle: nil)
     window.contentViewController = flutterViewController
 
     let plugin = flutterViewController.registrar(forPlugin: "FlutterMultiWindowPlugin")
