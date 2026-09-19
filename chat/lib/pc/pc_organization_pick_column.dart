@@ -288,10 +288,11 @@ class _PcOrganizationPickColumnState extends State<PcOrganizationPickColumn> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              Icon(Icons.folder_outlined,
+              // 与组织架构页的部门行同图标,见 OrganizationScreen。
+              Icon(Icons.domain,
                   size: LayoutScale.watchScale(context, 22.0,
                       cap: LayoutScale.iconCap),
-                  color: context.colors.accent),
+                  color: context.colors.textSecondary),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(

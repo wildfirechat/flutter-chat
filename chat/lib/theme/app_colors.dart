@@ -151,7 +151,9 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color cellSelected;
   final Color cellSelectedDesktop;
 
-  /// 置顶会话底色。
+  /// 置顶会话底色。移动端这一档同时是 AppBar / 多端登录条的底色
+  /// (见 app_theme.dart 的 appBarTheme),取微信导航栏那一档 #EDEDED ——
+  /// 比白行深一级读得出「置顶」,又不至于压成一条深色横带。
   final Color cellTop;
   final Color cellTopDesktop;
   final Color sidebarHoverBg;
@@ -260,7 +262,7 @@ class AppColors extends ThemeExtension<AppColors> {
     cellHoverDesktop: Color(0x14000000),
     cellSelected: Color(0xFFC8C7C6),
     cellSelectedDesktop: Color(0xFF2B62DE),
-    cellTop: Color(0xFFE6E5E5),
+    cellTop: Color(0xFFEDEDED),
     cellTopDesktop: Color(0xFFE6E6E7),
     sidebarHoverBg: Color(0xFFDCDCDC),
     hoverOverlay: Color(0x0A000000),

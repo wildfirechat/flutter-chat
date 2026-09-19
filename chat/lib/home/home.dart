@@ -30,6 +30,7 @@ import 'package:chat/group/group_info_screen.dart';
 import 'package:chat/user_info_widget.dart';
 import 'package:chat/theme/app_colors.dart';
 import 'package:chat/widget/popup_menu_overlay.dart';
+import 'package:chat/widget/search_icon.dart';
 
 import 'package:chat/wfc_scheme.dart';
 import 'package:chat/pc/pc_login_screen.dart';
@@ -500,7 +501,7 @@ class HomeTabBarState extends State<HomeTabBar> {
               : [
                   IconButton(
                     onPressed: () => _onTapSearchButton(context),
-                    icon: const Icon(Icons.search_rounded),
+                    icon: const SearchIcon(),
                   ),
                   IconButton(
                     key: _plusButtonKey,

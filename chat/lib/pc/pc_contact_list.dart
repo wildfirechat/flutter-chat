@@ -28,6 +28,7 @@ import 'package:chat/widget/portrait.dart';
 import 'package:chat/l10n/app_localizations.dart';
 import 'package:chat/mesh/domain_profile_screen.dart';
 import 'package:chat/mesh/mesh_cache.dart';
+import 'package:chat/mesh/mesh_entry_icon.dart';
 import 'package:chat/utils/mesh_user_name.dart';
 import 'package:chat/utilities.dart';
 import 'package:imclient/model/domain_info.dart';
@@ -254,7 +255,8 @@ class _PcContactListState extends State<PcContactList> {
             // 「外部单位/Mesh」可折叠分组
             if (_meshEnabled) ...[
               _SectionHeader(
-                icon: Icons.domain,
+                // 与移动端联系人页的「外部单位」入口同一块图标。
+                iconWidget: const MeshEntryIcon(baseSize: 28),
                 title: l10n.mesh,
                 expanded: _meshExpanded,
                 onTap: _toggleMesh,
@@ -515,6 +517,9 @@ class _ContactRowSpec {
 class _SectionHeader extends StatelessWidget {
   final String? iconAsset;
   final IconData? icon;
+
+  /// 自带底色/形状的图标(如「外部单位」的彩色圆角块),由调用方整件给出。
+  final Widget? iconWidget;
   final String title;
   final bool expanded;
   final int badgeCount;
@@ -523,11 +528,12 @@ class _SectionHeader extends StatelessWidget {
   const _SectionHeader({
     this.iconAsset,
     this.icon,
+    this.iconWidget,
     required this.title,
     required this.expanded,
     required this.onTap,
     this.badgeCount = 0,
-  }) : assert(iconAsset != null || icon != null);
+  }) : assert(iconAsset != null || icon != null || iconWidget != null);
 
   @override
   Widget build(BuildContext context) {
@@ -554,13 +560,14 @@ class _SectionHeader extends StatelessWidget {
                 width: _iconBox(context),
                 height: _iconBox(context),
                 child: Center(
-                  child: icon != null
-                      ? Icon(icon,
-                          size: LayoutScale.watchScale(context, 24),
-                          color: context.colors.accent)
-                      : Image.asset(iconAsset!,
-                          width: LayoutScale.watchScale(context, 28),
-                          height: LayoutScale.watchScale(context, 28)),
+                  child: iconWidget ??
+                      (icon != null
+                          ? Icon(icon,
+                              size: LayoutScale.watchScale(context, 24),
+                              color: context.colors.accent)
+                          : Image.asset(iconAsset!,
+                              width: LayoutScale.watchScale(context, 28),
+                              height: LayoutScale.watchScale(context, 28))),
                 ),
               ),
               const SizedBox(width: _kIconGap),

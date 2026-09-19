@@ -286,9 +286,12 @@ class _OrganizationScreenState extends State<OrganizationScreen> {
     return ListTile(
       minTileHeight:
           LayoutScale.watchScale(context, baseHeight, cap: LayoutScale.rowCap),
+      // 与「外部单位」子行同一块灰色楼宇图标(见 PcContactList 的域行)。
+      // 部门行和域行不会同屏出现:域行在桌面端左栏,部门行在右栏/移动端独立页。
+      // 桌面端选人弹窗的部门行(PcOrganizationPickColumn)同此。
       leading: Icon(
-        Icons.corporate_fare,
-        color: Theme.of(context).colorScheme.secondary,
+        Icons.domain,
+        color: context.colors.textSecondary,
         size: LayoutScale.watchScale(context, 24.0, cap: LayoutScale.iconCap),
       ),
       title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),

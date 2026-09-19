@@ -221,7 +221,19 @@ class StatusNotificationHeader extends StatelessWidget {
             },
             child: Container(
               height: 44,
-              color: context.colors.chatBg,
+              // 底色跟 AppBar(cellTop)一条,视觉上是顶栏的延伸;上下各压一条
+              // 分割线,才不至于和顶栏、会话列表糊成一整块。
+              //
+              // 线走 [hairline] 而不是更淡的 [hairlineSoft]:后者(浅色 #EBEAE9)
+              // 比 cellTop 本身还亮,压在这条灰带上方向是反的,等于没画。
+              decoration: BoxDecoration(
+                color: context.colors.cellTop,
+                border: Border(
+                  top: BorderSide(color: context.colors.hairline, width: 0.5),
+                  bottom:
+                      BorderSide(color: context.colors.hairline, width: 0.5),
+                ),
+              ),
               padding: const EdgeInsets.only(left: 16, right: 16),
               child: Row(
                 children: [
