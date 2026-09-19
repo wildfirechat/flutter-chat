@@ -29,7 +29,8 @@ PODS:
   - irondash_engine_context (0.0.1):
     - FlutterMacOS
   - mdk (0.36.0)
-  - mobile_scanner (6.0.2):
+  - mobile_scanner (7.0.0):
+    - Flutter
     - FlutterMacOS
   - path_provider_foundation (0.0.1):
     - Flutter
@@ -77,7 +78,7 @@ DEPENDENCIES:
   - fvp (from `Flutter/ephemeral/.symlinks/plugins/fvp/darwin`)
   - imclient (from `Flutter/ephemeral/.symlinks/plugins/imclient/macos`)
   - irondash_engine_context (from `Flutter/ephemeral/.symlinks/plugins/irondash_engine_context/macos`)
-  - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos`)
+  - mobile_scanner (from `Flutter/ephemeral/.symlinks/plugins/mobile_scanner/darwin`)
   - path_provider_foundation (from `Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin`)
   - photo_manager (from `Flutter/ephemeral/.symlinks/plugins/photo_manager/darwin`)
   - record_macos (from `Flutter/ephemeral/.symlinks/plugins/record_macos/macos`)
@@ -124,7 +125,7 @@ EXTERNAL SOURCES:
   irondash_engine_context:
     :path: Flutter/ephemeral/.symlinks/plugins/irondash_engine_context/macos
   mobile_scanner:
-    :path: Flutter/ephemeral/.symlinks/plugins/mobile_scanner/macos
+    :path: Flutter/ephemeral/.symlinks/plugins/mobile_scanner/darwin
   path_provider_foundation:
     :path: Flutter/ephemeral/.symlinks/plugins/path_provider_foundation/darwin
   photo_manager:
@@ -157,7 +158,7 @@ SPEC CHECKSUMS:
   device_info_plus: 4fb280989f669696856f8b129e4a5e3cd6c48f76
   file_picker: 7584aae6fa07a041af2b36a2655122d42f578c1a
   file_selector_macos: 6280b52b459ae6c590af5d78fc35c7267a3c4b31
-  flutter_local_notifications: 7e5a17a1dbc00d83dc10d43c2c4c05f2ceed233c
+  flutter_local_notifications: 13862b132e32eb858dea558a86d45d08daeacfe7
   flutter_localization: 3cda759884c7dab4466fe963d97fba723a492666
   flutter_webrtc: fec3dc9284a1f6d21ec2caa91c90bb4c1824eb04
   FlutterMacOS: d0db08ddef1a9af05a5ec4b724367152bb0500b1
@@ -165,7 +166,7 @@ SPEC CHECKSUMS:
   imclient: 7f16737688e0ae74172004a6f53a7ed68bf06ab3
   irondash_engine_context: 893c7d96d20ce361d7e996f39d360c4c2f9869ba
   mdk: 3bfb53e0bcc9643180eaa864360051f281e4c17b
-  mobile_scanner: 0e365ed56cad24f28c0fd858ca04edefb40dfac3
+  mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   photo_manager: fe4cbb0808b96f8be4af7ce6ae18dcd9c9b983c6
   record_macos: 5d55909f9650314be6424ffd6b123ac75a08c3c1
@@ -182,4 +183,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 46f05c88a753d2b5979f8732fffea2ee8bea7647
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.17.0

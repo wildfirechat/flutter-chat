@@ -81,16 +81,29 @@ else
   echo "WARNING: Rust library not found at expected path"
 fi
 
-# 恢复构建系统期望的产品符号链接,指向稍后 Libtool 产出的 ObjC 静态库,
-# 保证 Runner 的 -lsuper_native_extensions 在链接时能找到。
-ln -sfh ../../../IntermediateBuildFilesPath/UninstalledProducts/iphoneos/libsuper_native_extensions.a "$objc_lib"
-echo "Recreated product symlink for ObjC static library"
+if [ "$PLATFORM_NAME" = "iphonesimulator" ]; then
+  # 模拟器(arm64+x86_64 双架构)的产物由 CreateUniversalBinary(lipo)
+  # 直接写入该路径;若留下符号链接,lipo 会报 "File exists" (EEXIST)。
+  # 删掉即可,lipo 会产出真实的 fat 静态库供 Runner 链接。
+  rm -f "$objc_lib"
+  echo "Removed product symlink for simulator build (lipo writes the real archive)"
+else
+  # 真机:恢复构建系统期望的产品符号链接,指向稍后 Libtool 产出的 ObjC 静态库,
+  # 保证 Runner 的 -lsuper_native_extensions 在链接时能找到。
+  ln -sfh "../../../IntermediateBuildFilesPath/UninstalledProducts/${PLATFORM_NAME}/libsuper_native_extensions.a" "$objc_lib"
+  echo "Recreated product symlink for ObjC static library"
+fi
 }
         end
       end
     end
 
     target.build_configurations.each do |config|
+      # Xcode 27 支持的最低部署版本是 15.0，部分老 pod 的 podspec 仍声明
+      # 12.0/13.0，会导致 Target Integrity 报错，统一抬到 15.0
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 15.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      end
       # You can remove unused permissions here
       # for more infomation: https://github.com/BaseflowIT/flutter-permission-handler/blob/master/permission_handler/ios/Classes/PermissionHandlerEnums.h
       # e.g. when you don't need camera permission, just add 'PERMISSION_CAMERA=0'

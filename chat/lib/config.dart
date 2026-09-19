@@ -4,11 +4,11 @@ import 'utils/dual_network.dart';
 
 class Config {
   //IM服务地址，不能带HTTP头和端口
-  static const String IM_Host = 'wildfirechat.net';
+  static const String IM_Host = '192.168.1.81';
 
   //应用服务地址。默认应用服务端口为8888，建议上线前添加HTTPS支持，可以用NG之类工具。
   // static const String APP_Server_Address = 'http://wildfirechat.net:8888';
-  static const String APP_Server_Address = 'https://app.wildfirechat.net';
+  static const String APP_Server_Address = 'http://192.168.1.81:8888';
   //应用服务备选地址，双网环境下使用。不需要双网时保持为 null。
   static String? APP_Server_Backup_Address = null;
 

@@ -171,7 +171,7 @@ dependencies:
   pinyin: ^3.3.0
   flutter_linkify: ^6.0.0
 
-  mobile_scanner: ^6.0.11
+  mobile_scanner: ^7.4.2
   qr_flutter: ^4.1.0
   pointycastle: ^4.0.0
   win32: ^5.15.0
